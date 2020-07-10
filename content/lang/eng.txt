@@ -1,0 +1,60 @@
+gui.mainmenu.singleplayer=Singleplayer
+gui.mainmenu.multiplayer=Multiplayer
+gui.mainmenu.options=Settings
+gui.mainmenu.quit=Quit
+
+gui.ingamemenu.backtogame=Back To Game
+gui.ingamemenu.settings=Settings
+gui.ingamemenu.tomainmenu=Exit To Main Menu
+
+gui.connecting=Connecting...
+connect.failed=Connection Failed
+
+gui.settings.mainText=Settings
+settings.section.sound=Sound
+settings.soundVolume=Sound Volume
+
+settings.section.graphics=Graphics
+settings.vSync=VSync
+
+settings.section.camera=Camera
+settings.cameraMoveByScreenBorders=Move Camera By Screen Borders
+settings.cameraMoveByScreenBordersSpeed=Move Speed By Screen Borders
+settings.cameraMoveByScreenBordersOffset=Borders Offset
+settings.cameraZoomSpeed=Zoom Speed
+settings.cameraFollowPlayer=Follow Ship
+
+settings.section.lang=Language
+settings.language=Language
+
+settings.section.debug=Debug
+settings.isDebug=Debug
+
+gui.settings.save=Save Settings
+
+gui.connect.host=Host Address
+gui.connect.username=Login
+gui.connect.password=Password
+gui.connect.connect=Connect
+
+gui.selectFaction.maintext=Welcome! Please select a faction for which you will fight
+gui.selectFaction.human=Humans
+gui.selectFaction.saimon=Saimons
+gui.selectFaction.engi=Engi
+gui.selectFaction.humanDisc=Strong armor %NEffective weapons against armor
+gui.selectFaction.saimonDisc=Strong shields %NEffective weapons against shields
+gui.selectFaction.engiDisc=Effective reactors %NEffective weapons against hull
+
+gui.destroyed.shipWasDestroyed=All your ships was destroyed
+gui.destroyed.respawn=Respawn
+gui.destroyed.destroyedBy=Was destroyed by
+
+gui.back=Back
+
+gui.control=Control Ship
+gui.cancelControl=Cancel Control
+
+gui.chat.typeSomething=Type something...
+
+gui.shipCargo=Cargo
+gui.shipCrew=Crew

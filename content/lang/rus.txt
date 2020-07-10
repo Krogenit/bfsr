@@ -1,0 +1,60 @@
+gui.mainmenu.singleplayer=Одиночная Игра
+gui.mainmenu.multiplayer=Сетевая Игра
+gui.mainmenu.options=Настройки
+gui.mainmenu.quit=Выход
+
+gui.ingamemenu.backtogame=Назад К Игре
+gui.ingamemenu.settings=Настройки
+gui.ingamemenu.tomainmenu=Выйти В Меню
+
+gui.connecting=Подключение...
+connect.failed=Ошибка Подключения
+
+gui.settings.mainText=Настройки
+settings.section.sound=Звук
+settings.soundVolume=Громкость Звуков
+
+settings.section.graphics=Графика
+settings.vSync=Вертикальная Синхронизация
+
+settings.section.camera=Камера
+settings.cameraMoveByScreenBorders=Перемещение Камеры Границами Экрана
+settings.cameraMoveByScreenBordersSpeed=Скорость Перемещения Границами Экрана
+settings.cameraMoveByScreenBordersOffset=Отступ От Границ Экрана
+settings.cameraZoomSpeed=Скорость Зума
+settings.cameraFollowPlayer=Следование Камеры За Кораблем
+
+settings.section.lang=Язык
+settings.language=Язык
+
+settings.section.debug=Отладка
+settings.isDebug=Отладка
+
+gui.settings.save=Сохранить
+
+gui.connect.host=Адресс Сервера
+gui.connect.username=Логин
+gui.connect.password=Пароль
+gui.connect.connect=Подключиться
+
+gui.selectFaction.maintext=Добро пожаловать! Пожалуйста выберите фракцию за которую вы будете сражаться
+gui.selectFaction.human=Люди
+gui.selectFaction.saimon=Саймоны
+gui.selectFaction.engi=Энжи
+gui.selectFaction.humanDisc=Прочная броня \nЭффективное оружие против брони
+gui.selectFaction.saimonDisc=Прочные щиты \nЭффективное оружие против щитов
+gui.selectFaction.engiDisc=Эффективные реакторы \nЭффективное оружие против корпуса
+
+gui.destroyed.shipWasDestroyed=Все ваши корабли были уничтожены
+gui.destroyed.respawn=Респавн
+gui.destroyed.destroyedBy=Вас уничтожил
+
+gui.back=Назад
+
+gui.control=Управлять Кораблем
+gui.cancelControl=Отменить Управление
+
+gui.chat.typeSomething=Введите сообщение...
+
+gui.shipCargo=Трюм
+gui.shipCrew=Экипаж
