@@ -39,7 +39,7 @@ public class PacketShipFaction extends ServerPacket {
 	@Override
 	public void processOnClientSide(NetworkManagerClient networkManager) {
 		CollisionObject obj = Core.getCore().getWorld().getEntityById(id);
-		if (obj != null) {
+		if (obj instanceof Ship) {
 			Ship ship = (Ship) obj;
 			ship.setFaction(Faction.values()[faction]);
 		}
