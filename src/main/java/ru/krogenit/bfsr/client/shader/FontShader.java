@@ -4,8 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-import ru.krogenit.bfsr.core.Core;
-
+@Deprecated
 public class FontShader extends ShaderProgram {
 
 	private int location_color;
