@@ -1,5 +1,7 @@
 package ru.krogenit.bfsr.client.font;
 
+import ru.krogenit.bfsr.core.Core;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -7,14 +9,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import ru.krogenit.bfsr.core.Core;
-
 /**
  * Provides functionality for getting the values from a font file.
  * 
  * @author Karl
  *
  */
+@Deprecated
 public class MetaFile {
 
 	private static final int PAD_TOP = 0;
@@ -27,11 +28,11 @@ public class MetaFile {
 	private static final String SPLITTER = " ";
 	private static final String NUMBER_SEPARATOR = ",";
 
-	private final double aspectRatio;
+	private final float aspectRatio;
 
-	private double verticalPerPixelSize;
-	private double horizontalPerPixelSize;
-	private double spaceWidth;
+	private float verticalPerPixelSize;
+	private float horizontalPerPixelSize;
+	private float spaceWidth;
 	private int[] padding;
 	private int paddingWidth;
 	private int paddingHeight;
@@ -48,7 +49,7 @@ public class MetaFile {
 	 *            - the font file.
 	 */
 	protected MetaFile(File file) {
-		this.aspectRatio = Core.getCore().getWidth() / (double) Core.getCore().getHeight();
+		this.aspectRatio = Core.getCore().getWidth() / (float) Core.getCore().getHeight();
 		openFile(file);
 		loadPaddingData();
 		loadLineSizes();
@@ -57,7 +58,7 @@ public class MetaFile {
 		close();
 	}
 
-	protected double getSpaceWidth() {
+	protected float getSpaceWidth() {
 		return spaceWidth == 0 ? 0.004f : spaceWidth;
 	}
 
@@ -165,7 +166,7 @@ public class MetaFile {
 	private void loadLineSizes() {
 		processNextLine();
 		int lineHeightPixels = getValueOfVariable("lineHeight") - paddingHeight;
-		verticalPerPixelSize = TextMeshCreator.LINE_HEIGHT / (double) lineHeightPixels;
+		verticalPerPixelSize = TextMeshCreator.LINE_HEIGHT / (float) lineHeightPixels;
 		horizontalPerPixelSize = verticalPerPixelSize / aspectRatio;
 	}
 
@@ -202,17 +203,17 @@ public class MetaFile {
 			this.spaceWidth = (getValueOfVariable("xadvance") - paddingWidth) * horizontalPerPixelSize;
 			return null;
 		}
-		double xTex = ((double) getValueOfVariable("x") + (padding[PAD_LEFT] - DESIRED_PADDING)) / imageSize;
-		double yTex = ((double) getValueOfVariable("y") + (padding[PAD_TOP] - DESIRED_PADDING)) / imageSize;
+		float xTex = ((float) getValueOfVariable("x") + (padding[PAD_LEFT] - DESIRED_PADDING)) / imageSize;
+		float yTex = ((float) getValueOfVariable("y") + (padding[PAD_TOP] - DESIRED_PADDING)) / imageSize;
 		int width = getValueOfVariable("width") - (paddingWidth - (2 * DESIRED_PADDING));
 		int height = getValueOfVariable("height") - ((paddingHeight) - (2 * DESIRED_PADDING));
-		double quadWidth = width * horizontalPerPixelSize;
-		double quadHeight = height * verticalPerPixelSize;
-		double xTexSize = (double) width / imageSize;
-		double yTexSize = (double) height / imageSize;
-		double xOff = (getValueOfVariable("xoffset") + padding[PAD_LEFT] - DESIRED_PADDING) * horizontalPerPixelSize;
-		double yOff = (getValueOfVariable("yoffset") + (padding[PAD_TOP] - DESIRED_PADDING)) * verticalPerPixelSize;
-		double xAdvance = (getValueOfVariable("xadvance") - paddingWidth) * horizontalPerPixelSize;
+		float quadWidth = width * horizontalPerPixelSize;
+		float quadHeight = height * verticalPerPixelSize;
+		float xTexSize = (float) width / imageSize;
+		float yTexSize = (float) height / imageSize;
+		float xOff = (getValueOfVariable("xoffset") + padding[PAD_LEFT] - DESIRED_PADDING) * horizontalPerPixelSize;
+		float yOff = (getValueOfVariable("yoffset") + (padding[PAD_TOP] - DESIRED_PADDING)) * verticalPerPixelSize;
+		float xAdvance = (getValueOfVariable("xadvance") - paddingWidth) * horizontalPerPixelSize;
 		return new Character(id, xTex, yTex, xTexSize, yTexSize, xOff, yOff, quadWidth, quadHeight, xAdvance);
 	}
 }
