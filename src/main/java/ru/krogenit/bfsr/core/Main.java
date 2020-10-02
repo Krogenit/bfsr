@@ -1,23 +1,22 @@
 package ru.krogenit.bfsr.core;
 
-import java.nio.IntBuffer;
-
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
-
-import ru.krogenit.bfsr.util.Timer;
 import ru.krogenit.bfsr.client.input.Keyboard;
 import ru.krogenit.bfsr.client.input.Mouse;
 import ru.krogenit.bfsr.log.LoggingSystem;
 import ru.krogenit.bfsr.settings.ClientSettings;
+import ru.krogenit.bfsr.util.Timer;
 
-import static org.lwjgl.glfw.Callbacks.*;
+import java.nio.IntBuffer;
+
+import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.system.MemoryStack.*;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Main extends Loop {
 	
@@ -90,7 +89,7 @@ public class Main extends Loop {
 
 		glfwSetWindowSizeCallback(window, (window, width1, height1) -> {
 			if(width1 == 0) width1 = 1;
-			if(height1 == 0) height1= 1;
+			if(height1 == 0) height1 = 1;
 			resize(width1, height1);
 		});
 
@@ -112,7 +111,7 @@ public class Main extends Loop {
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
-		glClearColor(0.25F, 0.5F, 1.0F, 1.0F);
+		glClearColor(0.05F, 0.1F, 0.2F, 1.0F);
 	}
 
 	private void init() {
