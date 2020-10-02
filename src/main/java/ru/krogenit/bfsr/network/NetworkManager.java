@@ -14,8 +14,6 @@ import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.GenericFutureListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.Marker;
-import org.apache.logging.log4j.MarkerManager;
 import ru.krogenit.bfsr.network.status.EnumConnectionState;
 
 import java.io.IOException;
@@ -24,9 +22,6 @@ import java.util.Queue;
 
 public abstract class NetworkManager extends SimpleChannelInboundHandler<Packet> {
 	protected static final Logger logger = LogManager.getLogger();
-	public static final Marker LOG_MARKER_NETWORK = MarkerManager.getMarker("NETWORK");
-	public static final Marker LOG_NETWORK_PACKETS = MarkerManager.getMarker("NETWORK_PACKETS", LOG_MARKER_NETWORK);
-	public static final Marker LOG_NETWORK_STAT = MarkerManager.getMarker("NETWORK_STAT", LOG_MARKER_NETWORK);
 	public static final AttributeKey<EnumConnectionState> attrKeyConnectionState = AttributeKey.valueOf("protocol");
 	public static final AttributeKey<BiMap> attrKeyReceivable = AttributeKey.valueOf("receivable_packets");
 	public static final AttributeKey<BiMap> attrKeySendable = AttributeKey.valueOf("sendable_packets");
