@@ -2,8 +2,9 @@ package ru.krogenit.bfsr.client.gui.input;
 
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
-import ru.krogenit.bfsr.client.font.GUIText;
+import ru.krogenit.bfsr.client.font.FontRenderer;
 import ru.krogenit.bfsr.client.font.TextMeshCreator;
+import ru.krogenit.bfsr.client.font_new.FontRegistry;
 import ru.krogenit.bfsr.client.gui.Scroll;
 import ru.krogenit.bfsr.client.input.Keyboard;
 import ru.krogenit.bfsr.client.language.Lang;
@@ -21,13 +22,14 @@ import java.util.List;
 public class InputChat extends InputBox {
 	
 	private final List<String> lines = new ArrayList<>();
-	private final GUIText chatText;
+//	private final GUIText chatText;
 	private float offsetByScroll;
 	private final Scroll scroll;
+	private List<String> linesToDraw = new ArrayList<>();
 
 	public InputChat(Vector2f pos, Scroll scroll) {
 		super(null, pos, new Vector2f(225, 100),"gui.chat.typeSomething", EnumParticlePositionType.GuiInGame, new Vector2f(0.65f, 0.35f), new Vector2f(-94, 61), new Vector2f(-141, 55), EnumInputType.Any);
-		this.chatText = new GUIText("", this.fontSize, font, Transformation.getOffsetByScale(new Vector2f(pos.x, pos.y)), textColor, 0.69f, false, posType);
+//		this.chatText = new GUIText("", this.fontSize, font, Transformation.getOffsetByScale(new Vector2f(pos.x, pos.y)), textColor, 0.69f, false, posType);
 		this.scroll = scroll;
 	}
 	
@@ -45,8 +47,8 @@ public class InputChat extends InputBox {
 	public void init() {
 		super.init();
 		setMaxLineSize(0.31f);
-		chatText.setFontSize(fontSize);
-		chatText.updateText(chatText.getTextString());
+//		chatText.setFontSize(fontSize);
+//		chatText.updateText(chatText.getTextString());
 	}
 	
 	public void addEmptyText() {
@@ -96,17 +98,20 @@ public class InputChat extends InputBox {
 		int maxLine = lines.size() - (int) offsetByScroll;
 //		System.out.println("Line from " + startLine + " to " + maxLine);
 //		lines.clear();
-		StringBuilder finalString = new StringBuilder();
+//		StringBuilder finalString = new StringBuilder();
+		linesToDraw.clear();
 		for(int i=startLine;i<maxLine;i++) {
 			if(i == lines.size()) break;
 			String s = lines.get(i);
-			finalString.append(s);
-			if(i < lines.size() - 1) {
-				finalString.append(" \n");
-			}
+			linesToDraw.add(s);
+//			finalString.append(s);
+//			if(i < lines.size() - 1) {
+//				finalString.append(" \n");
+//			}
 		}
-		
-		chatText.updateText(finalString.toString());
+
+//		chatString = finalString.toString();
+//		chatText.updateText(finalString.toString());
 	}
 
 	@Override
@@ -125,15 +130,21 @@ public class InputChat extends InputBox {
 //		GL11.glEnd();
 //		GL11.glPopMatrix();
 //		shader.enable();
-		
-		int visible = (int)scroll.getVisible();
-		int linesCount = Math.min(lines.size(), visible);
+		//TODO: почистить весь мусор, доработать чат
+		int linesCount = linesToDraw.size();
 //		System.out.println("lines: " + linesCount  + " offset: " + offsetByScroll);
 //		updateLines();
 		Vector2f pos = getPosition();
-		float lineHeihgt = startFontSize.y * 28f;
-		Vector2f pos1 = (new Vector2f(-114 * Transformation.guiScale.x, (34 - ((linesCount) * lineHeihgt))* Transformation.guiScale.y));
-		chatText.setPosition(new Vector2f(pos.x + pos1.x, pos.y + pos1.y));
+		float lineHeight = FontRegistry.Default.getStringCache().getStringHeight("A");
+		Vector2f pos1 = new Vector2f(-114 * Transformation.guiScale.x, 44 * Transformation.guiScale.y - linesCount * lineHeight);
+//		FontRenderer.getInstance().renderString(FontType.Default, chatString, (int) (pos.x + pos1.x), (int) (pos.y + pos1.y), fontSize.x, fontSize.y, textColor.x, textColor.y, textColor.z, textColor.w, false, EnumZoomFactor.Gui, true, 0.69f);
+//		chatText.setPosition(new Vector2f(pos.x + pos1.x, pos.y + pos1.y));
+		FontRenderer fontRenderer = FontRenderer.getInstance();
+
+		for (String line : linesToDraw) {
+			fontRenderer.renderString(FontRegistry.Default, line, (int) (pos.x + pos1.x), (int) (pos.y + pos1.y), fontSize.x, fontSize.y, textColor.x, textColor.y, textColor.z, textColor.w, false, EnumZoomFactor.Gui, true, 0.69f);
+			pos1.y += FontRegistry.Default.getStringCache().getStringHeight(line);
+		}
 
 		float cursorOffset = 5;
 		float lineWidth = cursorOffset;
@@ -149,6 +160,7 @@ public class InputChat extends InputBox {
 			if (cursorPositionEnd != cursorPosition) {
 				String subString = typingText.getTextString().substring(cursorPosition, cursorPositionEnd);
 				subLineWidth = TextMeshCreator.getLineWidth(subString, font, fontSize.x) * 1400 - cursorOffset;
+				shader.enable();
 				shader.setColor(selectionColor);
 				shader.disableTexture();
 				shader.setModelViewMatrix(Transformation.getModelViewMatrix(pos.x + scaleOffsetX + lineWidth + subLineWidth / 2f, pos.y + scaleOffsetY, 0, subLineWidth, cursorSize, EnumZoomFactor.Gui));
@@ -158,6 +170,7 @@ public class InputChat extends InputBox {
 		}
 
 		if (renderCursor) {
+			shader.enable();
 			shader.disableTexture();
 			shader.setColor(getColor());
 			shader.setModelViewMatrix(Transformation.getModelViewMatrix(pos.x + scaleOffsetX + lineWidth, pos.y + scaleOffsetY, 0, 1, cursorSize, EnumZoomFactor.Gui));
@@ -180,6 +193,6 @@ public class InputChat extends InputBox {
 	public void clear() {
 		super.clear();
 		lines.clear();
-		chatText.clear();
+//		chatText.clear();
 	}
 }
