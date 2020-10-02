@@ -3,8 +3,7 @@ package ru.krogenit.bfsr.client.gui;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-
-import ru.krogenit.bfsr.client.font.FontRenderer;
+import ru.krogenit.bfsr.client.font.FontRegistry;
 import ru.krogenit.bfsr.client.font.GUIText;
 import ru.krogenit.bfsr.client.gui.button.Button;
 import ru.krogenit.bfsr.client.loader.TextureLoader;
@@ -30,9 +29,9 @@ public class GuiDisconnected extends Gui {
 		this.prevGui = prevGui;
 		this.description = description;
 		this.background = new GuiTextureObject(TextureLoader.getTexture(TextureRegister.guiAdd));
-		this.text = new GUIText(errorMessage, new Vector2f(1,1), FontRenderer.XOLONIUM,
+		this.text = new GUIText(errorMessage, new Vector2f(1,1), FontRegistry.XOLONIUM,
 				Transformation.getOffsetByScale(new Vector2f(center.x - 286, center.y - 128)), new Vector4f(1,1,1,1), false, EnumParticlePositionType.Gui);
-		this.textDescription = new GUIText(description, new Vector3f(1,1,1.2f), FontRenderer.CONSOLA,
+		this.textDescription = new GUIText(description, new Vector3f(1,1,1.2f), FontRegistry.CONSOLA,
 				Transformation.getOffsetByScale(new Vector2f(center.x - 286, center.y - 74)), new Vector4f(1,1,1,1), 0.415f, false, EnumParticlePositionType.Gui);
 	}
 	
