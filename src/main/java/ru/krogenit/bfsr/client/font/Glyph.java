@@ -1,5 +1,6 @@
 package ru.krogenit.bfsr.client.font;
 
+@Deprecated
 public class Glyph
 {
 	public final int width;
