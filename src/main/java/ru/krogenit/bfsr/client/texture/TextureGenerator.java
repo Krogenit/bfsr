@@ -1,21 +1,11 @@
 package ru.krogenit.bfsr.client.texture;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.*;
-import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL14.*;
-import static org.lwjgl.opengl.GL30.*;
-
-import java.nio.ByteBuffer;
-import java.util.Random;
-
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryUtil;
-
 import ru.krogenit.bfsr.client.render.FrameBuffer;
 import ru.krogenit.bfsr.client.render.OpenGLHelper;
 import ru.krogenit.bfsr.client.render.Renderer;
@@ -23,6 +13,12 @@ import ru.krogenit.bfsr.client.shader.NebulaShader;
 import ru.krogenit.bfsr.client.shader.StarsShader;
 import ru.krogenit.bfsr.core.Core;
 import ru.krogenit.bfsr.util.RandomHelper;
+
+import java.nio.ByteBuffer;
+import java.util.Random;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.*;
 
 public class TextureGenerator {
 	
@@ -104,7 +100,9 @@ public class TextureGenerator {
 		buffer.generateTexture(2, width, height);
 		
 		NebulaShader nebulaShader = new NebulaShader();
+		nebulaShader.initialize();
 		StarsShader starsShader = new StarsShader();
+		starsShader.initialize();
 //		if(!init) {
 //			buffer = new FrameBuffer();
 //			buffer.generate();
