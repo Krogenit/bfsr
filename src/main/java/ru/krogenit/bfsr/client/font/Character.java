@@ -7,18 +7,19 @@ package ru.krogenit.bfsr.client.font;
  * @author Karl
  *
  */
+@Deprecated
 public class Character {
 
 	private final int id;
-	private final double xTextureCoord;
-	private final double yTextureCoord;
-	private final double xMaxTextureCoord;
-	private final double yMaxTextureCoord;
-	private final double xOffset;
-	private final double yOffset;
-	private final double sizeX;
-	private final double sizeY;
-	private final double xAdvance;
+	private final float xTextureCoord;
+	private final float yTextureCoord;
+	private final float xMaxTextureCoord;
+	private final float yMaxTextureCoord;
+	private final float xOffset;
+	private final float yOffset;
+	private final float sizeX;
+	private final float sizeY;
+	private final float xAdvance;
 
 	/**
 	 * @param id
@@ -47,8 +48,8 @@ public class Character {
 	 *            - how far in pixels the cursor should advance after adding
 	 *            this character.
 	 */
-	protected Character(int id, double xTextureCoord, double yTextureCoord, double xTexSize, double yTexSize,
-			double xOffset, double yOffset, double sizeX, double sizeY, double xAdvance) {
+	protected Character(int id, float xTextureCoord, float yTextureCoord, float xTexSize, float yTexSize,
+						float xOffset, float yOffset, float sizeX, float sizeY, float xAdvance) {
 		this.id = id;
 		this.xTextureCoord = xTextureCoord;
 		this.yTextureCoord = yTextureCoord;
@@ -65,39 +66,39 @@ public class Character {
 		return id;
 	}
 
-	protected double getxTextureCoord() {
+	protected float getXTextureCoord() {
 		return xTextureCoord;
 	}
 
-	protected double getyTextureCoord() {
+	protected float getYTextureCoord() {
 		return yTextureCoord;
 	}
 
-	protected double getXMaxTextureCoord() {
+	protected float getXMaxTextureCoord() {
 		return xMaxTextureCoord;
 	}
 
-	protected double getYMaxTextureCoord() {
+	protected float getYMaxTextureCoord() {
 		return yMaxTextureCoord;
 	}
 
-	protected double getxOffset() {
+	protected float getXOffset() {
 		return xOffset;
 	}
 
-	protected double getyOffset() {
+	protected float getYOffset() {
 		return yOffset;
 	}
 
-	protected double getSizeX() {
+	protected float getSizeX() {
 		return sizeX;
 	}
 
-	protected double getSizeY() {
+	protected float getSizeY() {
 		return sizeY;
 	}
 
-	protected double getxAdvance() {
+	protected float getXAdvance() {
 		return xAdvance;
 	}
 
