@@ -1,89 +1,74 @@
 package ru.krogenit.bfsr.client.font;
 
+import lombok.Getter;
+import org.joml.Vector2f;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.joml.Vector2f;
-
+@Deprecated
 public class TextMeshCreator {
 
-	protected static final double LINE_HEIGHT = 0.03f;
+	protected static final float LINE_HEIGHT = 0.03f;
 	protected static final int SPACE_ASCII = 32;
-	protected static final double OFFSET_DEPENDS_ON_FONT_SIZE = 0.004f;
+	protected static final float OFFSET_DEPENDS_ON_FONT_SIZE = 0.004f;
 
-	private final MetaFile metaData;
+	private static final List<Line> LINES = new ArrayList<>();
+	private static final List<Float> VERTICES_AND_TEXTURE_COORDS = new ArrayList<>();
+
+	private final List<Float> vertices = new ArrayList<>();
+	private final List<Float> textureCoords = new ArrayList<>();
+
+	@Getter private final MetaFile metaData;
 
 	protected TextMeshCreator(File metaFile) {
 		metaData = new MetaFile(metaFile);
 	}
 
 	protected TextMeshData createTextMesh(GUIText text) {
-		List<Line> lines = createStructure(text.getTextString(), text.getFontSize(), text.getMaxLineSize());
-		return createQuadVertices(lines, text.getFontSize(), text.isCentered(), text.getLineHeight());
+		Vector2f fontSize = text.getFontSize();
+		List<Line> lines = createStructure(text.getTextString(), fontSize.x, text.getMaxLineSize());
+		return createQuadVertices(lines, fontSize, text.isCentered(), text.getLineHeight());
 	}
-	
-	public TextMeshData createTextMesh(String text, Vector2f fontSize, float maxLineSize, boolean isCentered, float lineHeight) {
-		List<Line> lines = createStructure(text, fontSize, maxLineSize);
-		return createQuadVertices(lines, fontSize, isCentered, lineHeight);
+
+	public float[] createTextMeshOptimized(String text, float fontSizeX, float fontSizeY, float maxLineSize, boolean isCentered, float lineHeight) {
+		List<Line> lines = createStructure(text, fontSizeX, maxLineSize);
+		return createQuadVerticesOptimized(lines, fontSizeX, fontSizeY, isCentered, lineHeight);
 	}
 	
 	public boolean hasCharacter(char ascii) {
 		return ascii == SPACE_ASCII || metaData.getCharacter(ascii) != null;
 	}
 
-	private List<Line> createStructure(GUIText text) {
-		char[] chars = text.getTextString().toCharArray();
-		List<Line> lines = new ArrayList<>();
-		Line currentLine = new Line(metaData.getSpaceWidth(), text.getFontSize().x, text.getMaxLineSize());
-		Word currentWord = new Word(text.getFontSize().x);
-		for (char c : chars) {
-			if ((int) c == SPACE_ASCII) {
-				boolean added = currentLine.attemptToAddWord(currentWord);
-				if (!added) {
-					lines.add(currentLine);
-					currentLine = new Line(metaData.getSpaceWidth(), text.getFontSize().x, text.getMaxLineSize());
-					currentLine.attemptToAddWord(currentWord);
-				}
-				currentWord = new Word(text.getFontSize().x);
-				continue;
-			} 
-			
-			if(c == '\n') {
-				lines.add(currentLine);
-				currentLine = new Line(metaData.getSpaceWidth(), text.getFontSize().x, text.getMaxLineSize());
-				continue;
-			}
-			
-			Character character = metaData.getCharacter(c);
-			if(character != null) {
-				currentWord.addCharacter(character);
-			}
-		}
-		completeStructure(lines, currentLine, currentWord, text.getFontSize().x, text.getMaxLineSize());
-		return lines;
-	}
-	
-	private List<Line> createStructure(String text, Vector2f fontSize, float maxLineSize) {
+
+	private List<Line> createStructure(String text, float fontSizeX, float maxLineSize) {
 		char[] chars = text.toCharArray();
-		List<Line> lines = new ArrayList<>();
-		Line currentLine = new Line(metaData.getSpaceWidth(), fontSize.x, maxLineSize);
-		Word currentWord = new Word(fontSize.x);
+		LINES.clear();
+		Line currentLine = new Line(metaData.getSpaceWidth(), fontSizeX, maxLineSize);
+		Word currentWord = new Word(fontSizeX);
 		for (char c : chars) {
 			if ((int) c == SPACE_ASCII) {
 				boolean added = currentLine.attemptToAddWord(currentWord);
 				if (!added) {
-					lines.add(currentLine);
-					currentLine = new Line(metaData.getSpaceWidth(), fontSize.x, maxLineSize);
+					LINES.add(currentLine);
+					currentLine = new Line(metaData.getSpaceWidth(), fontSizeX, maxLineSize);
 					currentLine.attemptToAddWord(currentWord);
 				}
-				currentWord = new Word(fontSize.x);
+				currentWord = new Word(fontSizeX);
 				continue;
 			} 
 			
 			if(c == '\n') {
-				lines.add(currentLine);
-				currentLine = new Line(metaData.getSpaceWidth(), fontSize.x, maxLineSize);
+				boolean added = currentLine.attemptToAddWord(currentWord);
+				if (!added) {
+					LINES.add(currentLine);
+					currentLine = new Line(metaData.getSpaceWidth(), fontSizeX, maxLineSize);
+					currentLine.attemptToAddWord(currentWord);
+				}
+				currentWord = new Word(fontSizeX);
+				LINES.add(currentLine);
+				currentLine = new Line(metaData.getSpaceWidth(), fontSizeX, maxLineSize);
 				continue;
 			}
 			
@@ -92,11 +77,10 @@ public class TextMeshCreator {
 				currentWord.addCharacter(character);
 			}
 		}
-		completeStructure(lines, currentLine, currentWord, fontSize.x, maxLineSize);
-		return lines;
+		completeStructure(LINES, currentLine, currentWord, fontSizeX, maxLineSize);
+		return LINES;
 	}
 
-	
 	private void completeStructure(List<Line> lines, Line currentLine, Word currentWord, float fontSizeX, float maxLineSize) {
 		boolean added = currentLine.attemptToAddWord(currentWord);
 		if (!added) {
@@ -108,7 +92,7 @@ public class TextMeshCreator {
 	}
 	
 	public static int getCursorPositionInLine(String text, FontType font, float fontSize, Vector2f mousePos) {
-		double spaceWidth = font.getLoader().getMetaData().getSpaceWidth();
+		float spaceWidth = font.getLoader().getMetaData().getSpaceWidth();
 		float maxLineWidth = 1.0f;
 		char[] chars = text.toCharArray();
 		List<Line> lines = new ArrayList<>();
@@ -152,12 +136,11 @@ public class TextMeshCreator {
 			int cursorPos = 0;
 			for (Word word : line.getWords()) {
 				for (Character letter : word.getCharacters()) {
-					double charSize = letter.getxAdvance() * fontSize * 1400;
+					double charSize = letter.getXAdvance() * fontSize * 1400;
 					curserX += charSize;
 					if(curserX - charSize/4.0 >= mousePos.x) return cursorPos;
 					cursorPos++;
 				}
-				//Skip null chars
 				if(word.getCharacters().size() > 0) curserX += spaceWidth * fontSize;
 			}
 			return cursorPos;
@@ -167,17 +150,17 @@ public class TextMeshCreator {
 	}
 	
 	public static float getLineWidth(String text, FontType font, float fontSize) {
-		double spaceWidth = font.getLoader().getMetaData().getSpaceWidth();
+		float spaceWidth = font.getLoader().getMetaData().getSpaceWidth();
 		float maxLineWidth = 1.0f;
 		char[] chars = text.toCharArray();
-		List<Line> lines = new ArrayList<>();
+		LINES.clear();
 		Line currentLine = new Line(spaceWidth, fontSize, maxLineWidth);
 		Word currentWord = new Word(fontSize);
 		for (char c : chars) {
 			if ((int) c == SPACE_ASCII) {
 				boolean added = currentLine.attemptToAddWord(currentWord);
 				if (!added) {
-					lines.add(currentLine);
+					LINES.add(currentLine);
 					currentLine = new Line(spaceWidth, fontSize, maxLineWidth);
 					currentLine.attemptToAddWord(currentWord);
 				}
@@ -186,7 +169,7 @@ public class TextMeshCreator {
 			} 
 			
 			if(c == '\n') {
-				lines.add(currentLine);
+				LINES.add(currentLine);
 				currentLine = new Line(spaceWidth, fontSize, maxLineWidth);
 				continue;
 			}
@@ -197,22 +180,21 @@ public class TextMeshCreator {
 		}
 		boolean added = currentLine.attemptToAddWord(currentWord);
 		if (!added) {
-			lines.add(currentLine);
+			LINES.add(currentLine);
 			currentLine = new Line(spaceWidth, fontSize, maxLineWidth);
 			currentLine.attemptToAddWord(currentWord);
 		}
-		lines.add(currentLine);
+		LINES.add(currentLine);
 		double curserX;
 		double initX;
 
-		for (Line line : lines) {
+		for (Line line : LINES) {
 			initX = 0.5f;
 			curserX  = initX;
 			for (Word word : line.getWords()) {
 				for (Character letter : word.getCharacters()) {
-					curserX += letter.getxAdvance() * fontSize;
+					curserX += letter.getXAdvance() * fontSize;
 				}
-				//Skip null chars
 				curserX += spaceWidth * fontSize;
 			}
 			return (float) (curserX - initX);
@@ -222,17 +204,17 @@ public class TextMeshCreator {
 	}
 	
 	public static int getLineSubPosIfTooBig(String text, FontType font, float fontSize, float maxLineSize) {
-		double spaceWidth = font.getLoader().getMetaData().getSpaceWidth();
+		float spaceWidth = font.getLoader().getMetaData().getSpaceWidth();
 		float maxLineWidth = 1.0f;
 		char[] chars = text.toCharArray();
-		List<Line> lines = new ArrayList<>();
+		LINES.clear();
 		Line currentLine = new Line(spaceWidth, fontSize, maxLineWidth);
 		Word currentWord = new Word(fontSize);
 		for (char c : chars) {
 			if ((int) c == SPACE_ASCII) {
 				boolean added = currentLine.attemptToAddWord(currentWord);
 				if (!added) {
-					lines.add(currentLine);
+					LINES.add(currentLine);
 					currentLine = new Line(spaceWidth, fontSize, maxLineWidth);
 					currentLine.attemptToAddWord(currentWord);
 				}
@@ -241,7 +223,7 @@ public class TextMeshCreator {
 			} 
 			
 			if(c == '\n') {
-				lines.add(currentLine);
+				LINES.add(currentLine);
 				currentLine = new Line(spaceWidth, fontSize, maxLineWidth);
 				continue;
 			}
@@ -252,24 +234,24 @@ public class TextMeshCreator {
 		}
 		boolean added = currentLine.attemptToAddWord(currentWord);
 		if (!added) {
-			lines.add(currentLine);
+			LINES.add(currentLine);
 			currentLine = new Line(spaceWidth, fontSize, maxLineWidth);
 			currentLine.attemptToAddWord(currentWord);
 		}
-		lines.add(currentLine);
+		LINES.add(currentLine);
 		double curserX;
 		double initX;
 		int index = 0;
-		for (Line line : lines) {
+		for (Line line : LINES) {
 			initX = 0.5f;
 			curserX  = initX;
 			for (Word word : line.getWords()) {
 				int size = word.getCharacters().size();
 				for (Character letter : word.getCharacters()) {
-					curserX += letter.getxAdvance() * fontSize;
+					curserX += letter.getXAdvance() * fontSize;
 				}
 				if(curserX > maxLineSize) return index;
-				//Skip null chars
+
 				index += size + 1;
 				curserX += spaceWidth * fontSize;
 				if(curserX > maxLineSize) return index;
@@ -280,35 +262,27 @@ public class TextMeshCreator {
 		return 0;
 	}
 
-	private TextMeshData createQuadVertices(GUIText text, List<Line> lines) {
-		text.setNumberOfLines(lines.size());
-		double curserX;
-		double initX;
-		double curserY = text.isCentered() ? (-LINE_HEIGHT / 2.0 + 0.003f) : 0.001f;
-		curserY *=  text.getFontSize().y;
-		List<Float> vertices = new ArrayList<>();
-		List<Float> textureCoords = new ArrayList<>();
+	private float[] createQuadVerticesOptimized(List<Line> lines, float fontSizeX, float fontSizeY, boolean isCentered, float lineHeight) {
+		float curserX = 0f;
+		float curserY = 0f;
+		VERTICES_AND_TEXTURE_COORDS.clear();
 		for (Line line : lines) {
-			if (text.isCentered()) {
-				initX = (line.getMaxLength() - line.getLineLength()) / 2.0;
-			} else {
-				initX = 0.5f;
+			if (isCentered) {
+				curserX = (line.getMaxLength() - line.getLineLength()) / 2f;
 			}
-			curserX  = initX;
 			for (Word word : line.getWords()) {
 				for (Character letter : word.getCharacters()) {
-					addVerticesForCharacter(curserX, curserY, letter, text.getFontSize(), vertices);
-					addTexCoords(textureCoords, letter.getxTextureCoord(), letter.getyTextureCoord(),
-							letter.getXMaxTextureCoord(), letter.getYMaxTextureCoord());
-					curserX += letter.getxAdvance() * text.getFontSize().x;
+					addVerticesAndTextureCoordsForCharacter(curserX, curserY, letter, fontSizeX, fontSizeY, letter.getXTextureCoord(), letter.getYTextureCoord(), letter.getXMaxTextureCoord(), letter.getYMaxTextureCoord());
+					curserX += letter.getXAdvance() * fontSizeX;
 				}
-				//Skip null chars
-				curserX += metaData.getSpaceWidth() * text.getFontSize().x;
+
+				curserX += metaData.getSpaceWidth() * fontSizeX;
 			}
-			text.setLineWidth((float) (curserX - initX));
-			curserY += LINE_HEIGHT / 1.5f * text.getLineHeight() * text.getFontSize().y;
-		}		
-		return new TextMeshData(listToArray(vertices), listToArray(textureCoords));
+
+			curserY += lineHeight * fontSizeY;
+			curserX = 0;
+		}
+		return listToArray(VERTICES_AND_TEXTURE_COORDS);
 	}
 	
 	private TextMeshData createQuadVertices(List<Line> lines, Vector2f fontSize, boolean isCentered, float lineHeight) {
@@ -316,8 +290,8 @@ public class TextMeshCreator {
 		double initX;
 		double curserY = isCentered ? (-LINE_HEIGHT / 2.0 + 0.003f) : 0.001f;
 		curserY *=  fontSize.y;
-		List<Float> vertices = new ArrayList<>();
-		List<Float> textureCoords = new ArrayList<>();
+		vertices.clear();
+		textureCoords.clear();
 		for (Line line : lines) {
 			if (isCentered) {
 				initX = (line.getMaxLength() - line.getLineLength()) / 2.0;
@@ -328,11 +302,11 @@ public class TextMeshCreator {
 			for (Word word : line.getWords()) {
 				for (Character letter : word.getCharacters()) {
 					addVerticesForCharacter(curserX, curserY, letter, fontSize, vertices);
-					addTexCoords(textureCoords, letter.getxTextureCoord(), letter.getyTextureCoord(),
+					addVertices(textureCoords, letter.getXTextureCoord(), letter.getYTextureCoord(),
 							letter.getXMaxTextureCoord(), letter.getYMaxTextureCoord());
-					curserX += letter.getxAdvance() * fontSize.x;
+					curserX += letter.getXAdvance() * fontSize.x;
 				}
-				//Skip null chars
+
 				curserX += metaData.getSpaceWidth() * fontSize.x;
 			}
 
@@ -341,16 +315,51 @@ public class TextMeshCreator {
 		return new TextMeshData(listToArray(vertices), listToArray(textureCoords));
 	}
 
-	private void addVerticesForCharacter(double curserX, double curserY, Character character, Vector2f fontSize,
-			List<Float> vertices) {
-		double x = curserX + (character.getxOffset() * fontSize.x);
-		double y = curserY + (character.getyOffset() * fontSize.y) - OFFSET_DEPENDS_ON_FONT_SIZE * fontSize.y;
+	private void addVerticesAndTextureCoordsForCharacter(float curserX, float curserY, Character character, float fontSizeX, float fontSizeY, float textureCoordX, float textureCoordY, float textureCoordMaxX, float textureCoordMaxY) {
+		float x = curserX + (character.getXOffset() * fontSizeX);
+		float y = curserY + (character.getYOffset() * fontSizeY);
+		float maxX = x + (character.getSizeX() * fontSizeX);
+		float maxY = y + (character.getSizeY() * fontSizeY);
+		float properX = (2f * x) - 1f;
+		float properY = (-2f * y) + 1f;
+		float properMaxX = (2f * maxX) - 1f;
+		float properMaxY = (-2f * maxY) + 1f;
+
+		VERTICES_AND_TEXTURE_COORDS.add(properX);
+		VERTICES_AND_TEXTURE_COORDS.add(properY);
+		VERTICES_AND_TEXTURE_COORDS.add(textureCoordX);
+		VERTICES_AND_TEXTURE_COORDS.add(textureCoordY);
+		VERTICES_AND_TEXTURE_COORDS.add(properX);
+		VERTICES_AND_TEXTURE_COORDS.add(properMaxY);
+		VERTICES_AND_TEXTURE_COORDS.add(textureCoordX);
+		VERTICES_AND_TEXTURE_COORDS.add(textureCoordMaxY);
+		VERTICES_AND_TEXTURE_COORDS.add(properMaxX);
+		VERTICES_AND_TEXTURE_COORDS.add(properMaxY);
+		VERTICES_AND_TEXTURE_COORDS.add(textureCoordMaxX);
+		VERTICES_AND_TEXTURE_COORDS.add(textureCoordMaxY);
+		VERTICES_AND_TEXTURE_COORDS.add(properMaxX);
+		VERTICES_AND_TEXTURE_COORDS.add(properMaxY);
+		VERTICES_AND_TEXTURE_COORDS.add(textureCoordMaxX);
+		VERTICES_AND_TEXTURE_COORDS.add(textureCoordMaxY);
+		VERTICES_AND_TEXTURE_COORDS.add(properMaxX);
+		VERTICES_AND_TEXTURE_COORDS.add(properY);
+		VERTICES_AND_TEXTURE_COORDS.add(textureCoordMaxX);
+		VERTICES_AND_TEXTURE_COORDS.add(textureCoordY);
+		VERTICES_AND_TEXTURE_COORDS.add(properX);
+		VERTICES_AND_TEXTURE_COORDS.add(properY);
+		VERTICES_AND_TEXTURE_COORDS.add(textureCoordX);
+		VERTICES_AND_TEXTURE_COORDS.add(textureCoordY);
+	}
+
+	private void addVerticesForCharacter(double curserX, double curserY, Character character, Vector2f fontSize, List<Float> vertices) {
+		double x = curserX + (character.getXOffset() * fontSize.x);
+		double y = curserY + (character.getYOffset() * fontSize.y) - OFFSET_DEPENDS_ON_FONT_SIZE * fontSize.y;
 		double maxX = x + (character.getSizeX() * fontSize.x);
 		double maxY = y + (character.getSizeY() * fontSize.y);
-		double properX = (2 * x) - 1;
-		double properY = (-2 * y) + 1;
-		double properMaxX = (2 * maxX) - 1;
-		double properMaxY = (-2 * maxY) + 1;
+		double properX = (2.0 * x) - 1.0;
+		double properY = (-2.0 * y) + 1.0;
+		double properMaxX = (2.0 * maxX) - 1.0;
+		double properMaxY = (-2.0 * maxY) + 1.0;
 		addVertices(vertices, properX, properY, properMaxX, properMaxY);
 	}
 
@@ -369,21 +378,6 @@ public class TextMeshCreator {
 		vertices.add((float) y);
 	}
 
-	private static void addTexCoords(List<Float> texCoords, double x, double y, double maxX, double maxY) {
-		texCoords.add((float) x);
-		texCoords.add((float) y);
-		texCoords.add((float) x);
-		texCoords.add((float) maxY);
-		texCoords.add((float) maxX);
-		texCoords.add((float) maxY);
-		texCoords.add((float) maxX);
-		texCoords.add((float) maxY);
-		texCoords.add((float) maxX);
-		texCoords.add((float) y);
-		texCoords.add((float) x);
-		texCoords.add((float) y);
-	}
-
 	private static float[] listToArray(List<Float> listOfFloats) {
 		float[] array = new float[listOfFloats.size()];
 		for (int i = 0; i < array.length; i++) {
@@ -392,7 +386,17 @@ public class TextMeshCreator {
 		return array;
 	}
 
-	public MetaFile getMetaData() {
-		return metaData;
+	public float calculateFontHeight() {
+		float height = 0;
+		String string = "!#№$&;%:?*()[]{}\\|/AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZzАаБбВвГгДдЕеЁёЖжЗзИиЙйКкЛлМмНнОоПпРрСсТтУуФфХхЦцЧчШшЩщЪъЫыЬьЭэЮюЯя";
+		for (char c : string.toCharArray()) {
+			Character character = metaData.getCharacter(c);
+			if(character != null) {
+				float sizeY = character.getSizeY();
+				if (sizeY > height) height = sizeY;
+			}
+		}
+
+		return height;
 	}
 }
