@@ -2,7 +2,6 @@ package ru.krogenit.bfsr.math;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
-
 import ru.krogenit.bfsr.client.camera.Camera;
 import ru.krogenit.bfsr.client.font.GUIText;
 import ru.krogenit.bfsr.core.Core;
@@ -14,6 +13,7 @@ public class Transformation {
 	private static final Matrix4f viewMatrixBackground = new Matrix4f();
 	private static final Matrix4f viewMatrixGui = new Matrix4f();
 	private static final Matrix4f modelViewMatrix = new Matrix4f();
+	private static final Matrix4f finalModelViewMatrix = new Matrix4f();
 	
 	public static Vector2f guiScale = new Vector2f(Core.getCore().getWidth() / 1280f, Core.getCore().getHeight() / 720f);
 
@@ -22,16 +22,15 @@ public class Transformation {
 		if(rotation != 0) modelViewMatrix.rotateZ(rotation);
 		modelViewMatrix.scale(scaleX, -scaleY, 1);
 		
-		Matrix4f viewCurr = getViewMatrixByType(factor);
-		return viewCurr.mul(modelViewMatrix);
+		Matrix4f viewMatrixByType = getViewMatrixByType(factor);
+		return viewMatrixByType.mul(modelViewMatrix, finalModelViewMatrix);
 	}
 	
 	public static Matrix4f getModelViewMatrixGui(float x, float y, float rotation, float scaleX, float scaleY) {
 		modelViewMatrix.identity().translate(x, y, 0);
 		if(rotation != 0) modelViewMatrix.rotateZ(rotation);
 		modelViewMatrix.scale(scaleX, -scaleY, 1);
-		Matrix4f viewCurr = new Matrix4f(viewMatrixGui);
-		return viewCurr.mul(modelViewMatrix);
+		return viewMatrixGui.mul(modelViewMatrix, finalModelViewMatrix);
 	}
 
 	public static Matrix4f getModelViewMatrix(TextureObject gameObj) {
@@ -44,36 +43,42 @@ public class Transformation {
 		if(rotation != 0) modelViewMatrix.rotateZ(rotation);
 		modelViewMatrix.scale(scale.x, -scale.y, 1);
 		
-		Matrix4f viewCurr = getViewMatrixByType(zoomFactor);
-		return viewCurr.mul(modelViewMatrix);
+		Matrix4f viewMatrixByType = getViewMatrixByType(zoomFactor);
+		return viewMatrixByType.mul(modelViewMatrix, finalModelViewMatrix);
+	}
+
+	public static Matrix4f getOrthographicViewMatrixForFontRendering(float x, float y, EnumZoomFactor factor) {
+		modelViewMatrix.identity().translate(x, y, 0).scale(2f, 1f, 1);
+		Matrix4f viewMatrixByType = getViewMatrixByType(factor);
+		return viewMatrixByType.mul(modelViewMatrix, finalModelViewMatrix);
 	}
 	
 	public static Matrix4f getModelViewMatrixForTextRendering(Vector2f pos, EnumZoomFactor factor) {
 		modelViewMatrix.identity().translate(pos.x, pos.y, 0).scale(700, -700, 1).translate(0, -1f, 0);
-		Matrix4f viewCurr = getViewMatrixByType(factor);
-		return viewCurr.mul(modelViewMatrix);
+		Matrix4f viewMatrixByType = getViewMatrixByType(factor);
+		return viewMatrixByType.mul(modelViewMatrix, finalModelViewMatrix);
 	}
 	
 	public static Matrix4f getModelViewMatrixForTextRendering(Vector2f pos, EnumZoomFactor factor, Vector2f offset) {
 		modelViewMatrix.identity().translate(pos.x + offset.x, pos.y + offset.y, 0).scale(700, -700, 1).translate(0, -1f, 0);
-		Matrix4f viewCurr = getViewMatrixByType(factor);
-		return viewCurr.mul(modelViewMatrix);
+		Matrix4f viewMatrixByType = getViewMatrixByType(factor);
+		return viewMatrixByType.mul(modelViewMatrix, finalModelViewMatrix);
 	}
 
 	public static Matrix4f getModelViewMatrix(GUIText text) {
 		EnumZoomFactor zoomFactor = text.getZoomFactor();
-		
+
 		modelViewMatrix.identity().translate(text.getPosition().x, text.getPosition().y + 700, 0).scale(700, -700, 1);
-		Matrix4f viewCurr = getViewMatrixByType(zoomFactor);
-		return viewCurr.mul(modelViewMatrix);
+		Matrix4f viewMatrixByType = getViewMatrixByType(zoomFactor);
+		return viewMatrixByType.mul(modelViewMatrix, finalModelViewMatrix);
 	}
 	
 	public static Matrix4f getModelViewMatrix(GUIText text, Vector2f offset) {
 		EnumZoomFactor zoomFactor = text.getZoomFactor();
 		
 		modelViewMatrix.identity().translate(text.getPosition().x + offset.x, text.getPosition().y + offset.y + 700, 0).scale(700, -700, 1);
-		Matrix4f viewCurr = getViewMatrixByType(zoomFactor);
-		return viewCurr.mul(modelViewMatrix);
+		Matrix4f viewMatrixByType = getViewMatrixByType(zoomFactor);
+		return viewMatrixByType.mul(modelViewMatrix, finalModelViewMatrix);
 	}
 
 	public static Matrix4f getViewMatrix(Camera camera) {
@@ -98,7 +103,7 @@ public class Transformation {
 		viewMatrix.scale(zoom, zoom, 1);
 		viewMatrix.translate(-camPos.x, -camPos.y, 0);
 		
-		zoom = camera.getZoomFarthest();
+		zoom = camera.getZoomBackground();
 		float moveFactor = 0.005f;
 		
 		viewMatrixBackground.identity();
@@ -115,17 +120,16 @@ public class Transformation {
 	
 	public static Matrix4f getViewMatrixByType(EnumZoomFactor zoomFactor) {
 		if(zoomFactor == EnumZoomFactor.Background) {
-			return new Matrix4f(viewMatrixBackground);
+			return viewMatrixBackground;
 		} else if(zoomFactor == EnumZoomFactor.Gui) {
-			return new Matrix4f(viewMatrixGui);
+			return viewMatrixGui;
 		} else {
-			return new Matrix4f(viewMatrix);
+			return viewMatrix;
 		}
 	}
 
 	public static void updateGenericViewMatrix(Vector2f position, float rotation, Matrix4f matrix) {
 		if(rotation != 0) matrix.rotationZ(rotation);
-
 		matrix.translate(-position.x, -position.y, -0);
 	}
 
