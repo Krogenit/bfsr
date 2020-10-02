@@ -1,15 +1,10 @@
 package ru.krogenit.bfsr.client.camera;
 
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
-
+import lombok.Getter;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
-
 import ru.krogenit.bfsr.client.input.Keyboard;
 import ru.krogenit.bfsr.client.input.Mouse;
 import ru.krogenit.bfsr.collision.AxisAlignedBoundingBox;
@@ -20,20 +15,22 @@ import ru.krogenit.bfsr.network.packet.client.PacketCameraPosition;
 import ru.krogenit.bfsr.settings.ClientSettings;
 import ru.krogenit.bfsr.world.World;
 
+import static org.lwjgl.glfw.GLFW.*;
+
 public class Camera {
 
 	private final Core core;
 	private final ClientSettings settings;
 	private final float Z_NEAR = 0.0f;
 	private final float Z_FAR = 100.f;
-	private final Matrix4f orthographicMatrix;
-	private final AxisAlignedBoundingBox boundingBox;
+	@Getter private final Matrix4f orthographicMatrix;
+	@Getter private final AxisAlignedBoundingBox boundingBox;
 
-	private final Vector2f position;
+	@Getter private final Vector2f position;
 	private final Vector2f positionAndOrigin;
-	private float rotation;
-	private Vector2f origin;
-	private float zoom, zoomBackground;
+	@Getter private float rotation;
+	@Getter private final Vector2f origin;
+	@Getter private float zoom, zoomBackground;
 
 	private int width, height;
 
@@ -62,12 +59,13 @@ public class Camera {
 		Ship playerShip = core.getWorld().getPlayerShip();
 		if (playerShip != null) {
 			Vector2f shipPosition = playerShip.getPosition();
+			float minDistance = 2f;
 			double dis = shipPosition.distance(position);
-			if (dis > 2) {
+			if (dis > minDistance) {
 				double mDx = shipPosition.x - position.x;
 				double mDy = shipPosition.y - position.y;
-				position.x += mDx / 20f * 60f * delta;
-				position.y += mDy / 20f * 60f * delta;
+				position.x += mDx * 3f * delta;
+				position.y += mDy * 3f * delta;
 			}
 		} else {
 //			boolean hasShip = false;
@@ -96,7 +94,8 @@ public class Camera {
 				} else {
 					Vector2f shipPosition = followShip.getPosition();
 					double dis = shipPosition.distance(position);
-					if (dis > 2) {
+					float minDistance = 2f;
+					if (dis > minDistance) {
 						double mDx = shipPosition.x - position.x;
 						double mDy = shipPosition.y - position.y;
 						float max = 400f;
@@ -105,8 +104,8 @@ public class Camera {
 						if(mDy < -max) mDy = -max;
 						else if(mDy > max) mDy = max;
 						
-						position.x += mDx / 20f * 60f * delta;
-						position.y += mDy / 20f * 60f * delta;
+						position.x += mDx * 3f * delta;
+						position.y += mDy * 3f * delta;
 					}
 				}
 //			}
@@ -116,17 +115,18 @@ public class Camera {
 	private void moveByScreenBorders(double delta) {
 		float screenMoveSpeed = settings.getCameraMoveByScreenBordersSpeed() / zoom;
 		float offset = settings.getCameraMoveByScreenBordersOffset();
+		float moveSpeed = 60f;
 		Vector2f cursorPosition = Mouse.getPosition();
 		if (cursorPosition.x <= offset) {
-			position.x -= screenMoveSpeed * 60f * delta;
+			position.x -= screenMoveSpeed * moveSpeed * delta;
 		} else if (cursorPosition.x >= width - offset) {
-			position.x += screenMoveSpeed * 60f * delta;
+			position.x += screenMoveSpeed * moveSpeed * delta;
 		}
 
 		if (cursorPosition.y <= offset) {
-			position.y -= screenMoveSpeed * 60f * delta;
+			position.y -= screenMoveSpeed * moveSpeed * delta;
 		} else if (cursorPosition.y >= height - offset) {
-			position.y += screenMoveSpeed * 60f * delta;
+			position.y += screenMoveSpeed * moveSpeed * delta;
 		}
 	}
 
@@ -204,7 +204,10 @@ public class Camera {
 		}
 	}
 
-	public void setupOpenGLMatrix() {
+	/**
+	 * Uses for debug rendering
+	 */
+	public void setupOldOpenGLMatrixForDebugRendering() {
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
 		GL11.glOrtho(0, width, height, 0, Z_NEAR, Z_FAR);
@@ -217,17 +220,14 @@ public class Camera {
 		GL11.glTranslatef(-position.x, -position.y, 0);
 	}
 
-	public Matrix4f getOrthographicMatrix() {
-		return this.orthographicMatrix;
-	}
-
 	public void resize(int width, int height) {
 		this.orthographicMatrix.identity();
 		this.orthographicMatrix.ortho(0, width, height, 0, Z_NEAR, Z_FAR);
 		Transformation.resize(width, height);
 		this.width = width;
 		this.height = height;
-		this.origin = new Vector2f(-width / 2.0f, -height / 2.0f);
+		this.origin.x = -width / 2f;
+		this.origin.y = -height / 2f;
 	}
 
 	public void setPosition(float x, float y) {
@@ -257,30 +257,6 @@ public class Camera {
 
 	public void clear() {
 		followShip = null;
-	}
-
-	public Vector2f getOrigin() {
-		return origin;
-	}
-
-	public Vector2f getPosition() {
-		return position;
-	}
-
-	public float getRotation() {
-		return rotation;
-	}
-
-	public float getZoom() {
-		return zoom;
-	}
-
-	public float getZoomFarthest() {
-		return zoomBackground;
-	}
-	
-	public AxisAlignedBoundingBox getBoundingBox() {
-		return boundingBox;
 	}
 	
 	public boolean isIntersects(Vector2f pos) {
