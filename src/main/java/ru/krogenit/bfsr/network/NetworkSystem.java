@@ -1,33 +1,27 @@
 package ru.krogenit.bfsr.network;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.*;
+import io.netty.channel.local.LocalAddress;
+import io.netty.channel.local.LocalServerChannel;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.timeout.ReadTimeoutHandler;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.joml.Vector2f;
+import ru.krogenit.bfsr.entity.ship.PlayerServer;
+import ru.krogenit.bfsr.network.packet.server.PacketDisconnectPlay;
+import ru.krogenit.bfsr.network.server.NetworkManagerServer;
+import ru.krogenit.bfsr.server.MainServer;
+
 import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.joml.Vector2f;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
-import ru.krogenit.bfsr.entity.ship.PlayerServer;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelException;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.local.LocalAddress;
-import io.netty.channel.local.LocalServerChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.timeout.ReadTimeoutHandler;
-import ru.krogenit.bfsr.network.server.NetworkManagerServer;
-import ru.krogenit.bfsr.network.packet.server.PacketDisconnectPlay;
-import ru.krogenit.bfsr.server.MainServer;
 
 public class NetworkSystem {
 	private static final Logger logger = LogManager.getLogger();
@@ -63,7 +57,7 @@ public class NetworkSystem {
 
 					channel.pipeline()
 							.addLast("timeout", new ReadTimeoutHandler(READ_TIMEOUT))
-							.addLast("legacy_query", new PingResponseHandler(NetworkSystem.this))
+							.addLast("legacy_query", new PingResponseHandler())
 							.addLast("splitter", new PacketDecoder2())
 							.addLast("decoder", new PacketDecoder(NetworkManager.statistics))
 							.addLast("prepender", new PacketEncoder2())
