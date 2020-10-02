@@ -1,14 +1,8 @@
 package ru.krogenit.bfsr.network;
 
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.Marker;
-import org.apache.logging.log4j.MarkerManager;
 
 public class NetworkStatistics {
-	private static final Logger loger = LogManager.getLogger();
-	private static final Marker marker = MarkerManager.getMarker("NETSTAT_MARKER", NetworkManager.LOG_NETWORK_STAT);
 	private final NetworkStatistics.Tracker receiveTracker = new NetworkStatistics.Tracker();
 	private final NetworkStatistics.Tracker sendTracker = new NetworkStatistics.Tracker();
 
@@ -63,9 +57,7 @@ public class NetworkStatistics {
 					packetstatdata1 = packetstatdata.addBytes(bytesCount);
 				} while (!this.packetStatistics[id].compareAndSet(packetstatdata, packetstatdata1));
 			} catch (Exception exception) {
-				if (NetworkStatistics.loger.isDebugEnabled()) {
-					NetworkStatistics.loger.debug(NetworkStatistics.marker, "NetStat failed with packetId: " + id, exception);
-				}
+				exception.printStackTrace();
 			}
 		}
 	}
