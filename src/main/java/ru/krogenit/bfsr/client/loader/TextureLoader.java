@@ -1,5 +1,12 @@
 package ru.krogenit.bfsr.client.loader;
 
+import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.system.MemoryStack;
+import ru.krogenit.bfsr.client.texture.Texture;
+import ru.krogenit.bfsr.client.texture.TextureRegister;
+import ru.krogenit.bfsr.util.PathHelper;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -8,32 +15,22 @@ import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.system.MemoryStack;
-
-import ru.krogenit.bfsr.client.texture.Texture;
-import ru.krogenit.bfsr.client.texture.TextureRegister;
-import ru.krogenit.bfsr.util.PathHelper;
-import static org.lwjgl.stb.STBImage.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.stb.STBImage.*;
 
 public class TextureLoader {
 	private static final Map<TextureRegister, Texture> LOADED_TEXTURES = new HashMap<>();
 
 	public static Texture getTexture(TextureRegister texture, boolean createMips) {
-		if (!LOADED_TEXTURES.containsKey(texture)) loadNoFlippedTexture(texture, createMips);
+		if(texture == null) return null;
+		if (!LOADED_TEXTURES.containsKey(texture)) loadPngTexture(texture, createMips);
 		
 		return LOADED_TEXTURES.get(texture);
 	}
 	
 	public static Texture getTexture(TextureRegister texture) {
-		if(texture == null) return null;
-
-		if (!LOADED_TEXTURES.containsKey(texture)) loadNoFlippedTexture(texture, true);
-		
-		return LOADED_TEXTURES.get(texture);
+		return getTexture(texture, true);
 	}
 	
 	public static Texture loadDDSTexture(TextureRegister name) {
@@ -55,62 +52,29 @@ public class TextureLoader {
 		return texture;
 	}
 
-	public static void loadNoFlippedTexture(TextureRegister name, boolean createMips) {
-		if (LOADED_TEXTURES.containsKey(name)) {
-			LOADED_TEXTURES.get(name);
-			return;
-		}
-
+	public static void loadPngTexture(TextureRegister name, boolean createMips) {
 		ByteBuffer image;
-		int width, height;
+		int width, height, channels;
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			IntBuffer w = stack.mallocInt(1);
 			IntBuffer h = stack.mallocInt(1);
 			IntBuffer comp = stack.mallocInt(1);
 
 			stbi_set_flip_vertically_on_load(false);
-			image = stbi_load(new File(PathHelper.texture, name.getPath().replace("/", File.separator) + ".png").toString(), w, h, comp, 4);
+			image = stbi_load(new File(PathHelper.texture, name.getPath().replace("/", File.separator) + ".png").toString(), w, h, comp, 0);
 			if (image == null) {
 				throw new RuntimeException("Failed to load a texture file!" + System.lineSeparator() + stbi_failure_reason());
 			}
 
+			channels = comp.get();
 			width = w.get();
 			height = h.get();
 		}
 
-		Texture texture = generateTexture(width, height, image, createMips);
+		Texture texture = createOpenGLTexture(width, height, image, channels, createMips);
 		if(name.getNumberOfRows() != 0) texture.setNumberOfRows(name.getNumberOfRows());
 		
 		LOADED_TEXTURES.put(name, texture);
-
-	}
-
-	public static Texture loadTexture(TextureRegister name, boolean createMips) {
-		if (LOADED_TEXTURES.containsKey(name)) return LOADED_TEXTURES.get(name);
-
-		ByteBuffer image;
-		int width, height;
-		try (MemoryStack stack = MemoryStack.stackPush()) {
-			IntBuffer w = stack.mallocInt(1);
-			IntBuffer h = stack.mallocInt(1);
-			IntBuffer comp = stack.mallocInt(1);
-
-			stbi_set_flip_vertically_on_load(true);
-			image = stbi_load(new File(PathHelper.texture, name.getPath().replace("/", File.separator) + ".png").toString(), w, h, comp, 4);
-			if (image == null) {
-				throw new RuntimeException("Failed to load a texture file!" + System.lineSeparator() + stbi_failure_reason());
-			}
-
-			width = w.get();
-			height = h.get();
-		}
-
-		Texture texture = generateTexture(width, height, image, createMips);
-		if(name.getNumberOfRows() != 0) texture.setNumberOfRows(name.getNumberOfRows());
-		
-		LOADED_TEXTURES.put(name, texture);
-		
-		return texture;
 	}
 
 	public static Texture generateDDSTexture(DDSFile dds) {
@@ -149,10 +113,21 @@ public class TextureLoader {
 		return texture;
 	}
 
-	public static Texture generateTexture(int width, int height, ByteBuffer image, boolean createMips) {
+	public static Texture createOpenGLTexture(int width, int height, ByteBuffer image, int channels, boolean createMips) {
 		Texture texture = new Texture(width, height);
+
+		int internalFormat;
+		int format;
+		switch (channels) {
+			case 1: internalFormat = format = GL_R; break;
+			case 2: internalFormat = format = GL_RG; break;
+			case 3: internalFormat = format = GL_RGB; break;
+			case 4: internalFormat = format = GL_RGBA; break;
+			default: throw new RuntimeException("Unsupported image channels " + channels);
+		}
+
 		glBindTexture(GL_TEXTURE_2D, texture.getId());
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, image);
 
 		if(createMips) glGenerateMipmap(GL_TEXTURE_2D);
 
