@@ -3,8 +3,7 @@ package ru.krogenit.bfsr.client.gui.input;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
-
-import ru.krogenit.bfsr.client.font.FontRenderer;
+import ru.krogenit.bfsr.client.font.FontRegistry;
 import ru.krogenit.bfsr.client.font.FontType;
 import ru.krogenit.bfsr.client.font.GUIText;
 import ru.krogenit.bfsr.client.font.TextMeshCreator;
@@ -33,7 +32,7 @@ public class InputBox extends TextureObject {
 	protected int cursorPosition, cursorPositionEnd;
 	protected boolean wasEndPos;
 	private final EnumInputType[] types;
-	protected final FontType font = FontRenderer.XOLONIUM;
+	protected final FontType font = FontRegistry.XOLONIUM;
 	private final Vector2f baseScale;
 	protected final Vector2f fontSize;
 	protected final Vector2f startFontSize;
