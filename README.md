@@ -1,2 +1,2 @@
-# bfsr
-Battle For Space Resources - 2D fps space shooter
+# Battle For Space Resources 
+2D fps space shooter
