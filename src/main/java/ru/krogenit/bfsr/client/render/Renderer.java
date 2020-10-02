@@ -1,7 +1,6 @@
 package ru.krogenit.bfsr.client.render;
 
 import org.joml.Vector4f;
-
 import ru.krogenit.bfsr.client.camera.Camera;
 import ru.krogenit.bfsr.client.font.FontRenderer;
 import ru.krogenit.bfsr.client.gui.Gui;
@@ -30,6 +29,7 @@ public class Renderer {
 		this.camera = new Camera(core.getWidth(), core.getHeight());
 		this.fontRenderer = new FontRenderer();
 		this.shader = new BaseShader();
+		this.shader.initialize();
 		this.guiInGame = new GuiInGame();
 		this.guiInGame.init();
 	}
@@ -44,7 +44,7 @@ public class Renderer {
 	}
 
 	public void render() {
-		fontRenderer.updateOrthoMatrix(camera.getOrthographicMatrix());
+		fontRenderer.updateOrthographicMatrix(camera.getOrthographicMatrix());
 		shader.enable();
 		shader.enableTexture();
 		shader.setOrthoMatrix(camera.getOrthographicMatrix());
@@ -69,7 +69,7 @@ public class Renderer {
 			Main.checkGlError("particles");
 			if(core.getSettings().isDebug()) {
 				shader.disable();
-				camera.setupOpenGLMatrix();
+				camera.setupOldOpenGLMatrixForDebugRendering();
 				world.renderDebug();
 				Main.checkGlError("debug");
 			}
@@ -119,5 +119,9 @@ public class Renderer {
 	
 	public int getDrawCalls() {
 		return drawCalls;
+	}
+
+	public void increaseDrawCalls() {
+		this.drawCalls++;
 	}
 }
