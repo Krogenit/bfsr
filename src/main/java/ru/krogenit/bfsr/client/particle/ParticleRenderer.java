@@ -56,6 +56,7 @@ public class ParticleRenderer {
 		this.cam = core.getRenderer().getCamera();
 		this.defaultShader = core.getRenderer().getShader();
 		this.particleShader = new ParticleInstancedShader();
+		this.particleShader.initialize();
 		this.meshLoader = new MeshLoader();
 		this.quad = new Mesh(VERTICES);
 		this.vbo = meshLoader.createEmptyVbo(INSTANCE_DATA_LENGTH * MAX_INSTANCES);
@@ -121,7 +122,7 @@ public class ParticleRenderer {
 		
 		if(core.getSettings().isDebug()) {
 			defaultShader.disable();
-			core.getRenderer().getCamera().setupOpenGLMatrix();
+			core.getRenderer().getCamera().setupOldOpenGLMatrixForDebugRendering();
 			for (ParticleWreck particle : particles) {
 				particle.renderDebug();
 			}
