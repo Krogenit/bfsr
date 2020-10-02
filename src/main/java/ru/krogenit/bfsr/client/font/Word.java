@@ -8,17 +8,18 @@ import java.util.List;
  * @author Karl
  *
  */
+@Deprecated
 public class Word {
 	
 	private final List<Character> characters = new ArrayList<>();
-	private double width = 0;
-	private final double fontSize;
+	private float width = 0;
+	private final float fontSize;
 	
 	/**
 	 * Create a new empty word.
 	 * @param fontSize - the font size of the text which this word is in.
 	 */
-	protected Word(double fontSize){
+	protected Word(float fontSize){
 		this.fontSize = fontSize;
 	}
 	
@@ -28,7 +29,7 @@ public class Word {
 	 */
 	protected void addCharacter(Character character){
 		characters.add(character);
-		width += character.getxAdvance() * fontSize;
+		width += character.getXAdvance() * fontSize;
 	}
 	
 	/**
@@ -41,7 +42,7 @@ public class Word {
 	/**
 	 * @return The width of the word in terms of screen size.
 	 */
-	protected double getWordWidth(){
+	protected float getWordWidth(){
 		return width;
 	}
 
