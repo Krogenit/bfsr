@@ -28,6 +28,9 @@ public abstract class ShaderProgram {
 		programId = shader[0];
 		vertexShaderId = shader[1];
 		fragmentShaderId = shader[2];
+	}
+
+	public void initialize() {
 		getAllUniformLocations();
 		enable();
 		init();
