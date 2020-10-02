@@ -1,8 +1,8 @@
 package ru.krogenit.bfsr.client.font;
 
-import java.io.File;
+import lombok.Getter;
 
-import org.joml.Vector2f;
+import java.io.File;
 
 /**
  * Represents a font. It holds the font's texture atlas as well as having the
@@ -11,10 +11,12 @@ import org.joml.Vector2f;
  * @author Karl
  *
  */
+@Deprecated
 public class FontType {
 
 	private final int textureAtlas;
 	private final TextMeshCreator loader;
+	@Getter private final float lineHeight;
 
 	/**
 	 * Creates a new font and loads up the data about each character from the
@@ -29,6 +31,7 @@ public class FontType {
 	public FontType(int textureAtlas, File fontFile) {
 		this.textureAtlas = textureAtlas;
 		this.loader = new TextMeshCreator(fontFile);
+		this.lineHeight = loader.calculateFontHeight();
 	}
 
 	/**
@@ -50,13 +53,12 @@ public class FontType {
 	public TextMeshData loadText(GUIText text) {
 		return loader.createTextMesh(text);
 	}
-	
-	public TextMeshData loadText(String text, Vector2f fontSize, float maxLineWidth, boolean isCentered, float lineHeight) {
-		return loader.createTextMesh(text, fontSize, maxLineWidth, isCentered, lineHeight);
+
+	public float[] loadTextOptimized(String text, float fontSizeX, float fontSizeY, float maxLineWidth, boolean isCentered) {
+		return loader.createTextMeshOptimized(text, fontSizeX, fontSizeY, maxLineWidth, isCentered, this.lineHeight);
 	}
 	
 	public TextMeshCreator getLoader() {
 		return loader;
 	}
-
 }
