@@ -1,62 +1,60 @@
 package ru.krogenit.bfsr.client.font;
 
-import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL11.glDrawArrays;
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
-import static org.lwjgl.opengl.GL15.glBufferData;
-import static org.lwjgl.opengl.GL15.glGenBuffers;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
-import static org.lwjgl.opengl.GL30.glGenVertexArrays;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
+import lombok.Getter;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
-
+import ru.krogenit.bfsr.client.font_new.FontRegistry;
+import ru.krogenit.bfsr.client.font_new.StringCache;
+import ru.krogenit.bfsr.client.font_new.StringRenderer;
 import ru.krogenit.bfsr.client.loader.MeshLoader;
-import ru.krogenit.bfsr.client.loader.TextureLoader;
 import ru.krogenit.bfsr.client.particle.EnumParticlePositionType;
 import ru.krogenit.bfsr.client.render.OpenGLHelper;
 import ru.krogenit.bfsr.client.render.Renderer;
 import ru.krogenit.bfsr.client.shader.FontShader;
-import ru.krogenit.bfsr.client.texture.TextureRegister;
 import ru.krogenit.bfsr.core.Core;
 import ru.krogenit.bfsr.math.EnumZoomFactor;
 import ru.krogenit.bfsr.math.Transformation;
-import ru.krogenit.bfsr.util.PathHelper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL30.*;
+
+/**
+ * TODO: Удалить старые методы отрисовки текста. Перенести необходимое в StringRenderer, либо сюда
+ */
+@Deprecated
 public class FontRenderer {
 
-	private final int vaoForTextRendering;
-	private final int posVbo;
-	private final int textVbo;
+	@Getter private static FontRenderer instance;
+
+	private int vaoForTextRendering;
+	private int posVbo;
+	private int textVbo;
 
 	private static final MeshLoader MESH_LOADER = new MeshLoader();
-	private static final HashMap<EnumParticlePositionType, HashMap<FontType, List<GUIText>>> TEXTS = new HashMap<>();
-	private final FontShader shader;
+	private static final HashMap<EnumParticlePositionType, HashMap<ru.krogenit.bfsr.client.font.FontType, List<GUIText>>> TEXTS = new HashMap<>();
+	private final FontShader fontShader = new FontShader();
 	private final Vector4f shadowColor = new Vector4f(0, 0, 0, 1);
 	private final Vector2f shadowOffset = new Vector2f(1, 1);
 
-	public static final FontType ARIAL = new FontType(TextureLoader.getTexture(TextureRegister.fontArialNew, false).getId(), new File(PathHelper.font, "arial_new.fnt"));
-	public static final FontType BAHNSCHRIFT = new FontType(TextureLoader.getTexture(TextureRegister.fontBahnschrift, false).getId(), new File(PathHelper.font, "bahnschrift.fnt"));
-
-	public static final FontType CONSOLA = new FontType(TextureLoader.getTexture(TextureRegister.fontConsola, false).getId(), new File(PathHelper.font, "consola.fnt"));
-	public static final FontType NASALIZATION_RG = new FontType(TextureLoader.getTexture(TextureRegister.fontNasalization_rg, false).getId(), new File(PathHelper.font, "nasalization-rg.fnt"));
-
-	public static final FontType CONTHRAX = new FontType(TextureLoader.getTexture(TextureRegister.fontConthrax, false).getId(), new File(PathHelper.font, "conthrax-sb.fnt"));
-	public static final FontType XOLONIUM = new FontType(TextureLoader.getTexture(TextureRegister.fontXolonium, false).getId(), new File(PathHelper.font, "xolonium-regular.fnt"));
+	private final StringRenderer stringRenderer = new StringRenderer();
 
 	public FontRenderer() {
-		shader = new FontShader();
+		this.fontShader.initialize();
+		initVao();
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+		instance = this;
+	}
+
+	private void initVao() {
 		vaoForTextRendering = glGenVertexArrays();
 		glBindVertexArray(vaoForTextRendering);
 		posVbo = glGenBuffers();
@@ -65,18 +63,16 @@ public class FontRenderer {
 		textVbo = glGenBuffers();
 		glBindBuffer(GL_ARRAY_BUFFER, textVbo);
 		glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
 	}
 
 	public static void loadText(GUIText text) {
 		text.setRemoved(false);
-		FontType font = text.getFont();
+		ru.krogenit.bfsr.client.font.FontType font = text.getFont();
 		TextMeshData data = font.loadText(text);
 		int vao = MESH_LOADER.loadToVAO(text, data.getVertexPositions(), data.getTextureCoords());
 		text.setMeshInfo(vao, data.getVertexCount());
 
-		HashMap<FontType, List<GUIText>> mapByFontType = TEXTS.computeIfAbsent(text.getPositionType(), k -> new HashMap<>());
+		HashMap<ru.krogenit.bfsr.client.font.FontType, List<GUIText>> mapByFontType = TEXTS.computeIfAbsent(text.getPositionType(), k -> new HashMap<>());
 		List<GUIText> textBatch = mapByFontType.computeIfAbsent(font, k -> new ArrayList<>());
 
 		textBatch.add(text);
@@ -84,7 +80,7 @@ public class FontRenderer {
 
 	public static void updateText(GUIText text) {
 		int vao = text.getTextMeshVao();
-		FontType font = text.getFont();
+		ru.krogenit.bfsr.client.font.FontType font = text.getFont();
 		TextMeshData data = font.loadText(text);
 		text.setVertexCount(data.getVertexCount());
 		int[] vbos = MESH_LOADER.getVBOs(vao);
@@ -98,7 +94,7 @@ public class FontRenderer {
 		if (!text.isRemoved()) {
 			text.setRemoved(true);
 			MESH_LOADER.removeVao(text.getTextMeshVao());
-			HashMap<FontType, List<GUIText>> mapByFontType = TEXTS.get(text.getPositionType());
+			HashMap<ru.krogenit.bfsr.client.font.FontType, List<GUIText>> mapByFontType = TEXTS.get(text.getPositionType());
 			if (mapByFontType != null) {
 				List<GUIText> textBatch = mapByFontType.get(text.getFont());
 				textBatch.remove(text);
@@ -111,18 +107,18 @@ public class FontRenderer {
 		}
 	}
 
-	public void updateOrthoMatrix(Matrix4f orthoMatrix) {
-		shader.enable();
-		shader.setOrthoMatrix(orthoMatrix);
+	public void updateOrthographicMatrix(Matrix4f orthographicMatrix) {
+		fontShader.enable();
+		fontShader.setOrthoMatrix(orthographicMatrix);
+		stringRenderer.updateMatrix(orthographicMatrix);
 	}
 
 	public void render(EnumParticlePositionType positionType) {
-//		prepare();
-		shader.enable();
+		fontShader.enable();
 
-		HashMap<FontType, List<GUIText>> mapByFontType = TEXTS.get(positionType);
+		HashMap<ru.krogenit.bfsr.client.font.FontType, List<GUIText>> mapByFontType = TEXTS.get(positionType);
 		if (mapByFontType != null) {
-			for (FontType font : mapByFontType.keySet()) {
+			for (ru.krogenit.bfsr.client.font.FontType font : mapByFontType.keySet()) {
 				OpenGLHelper.activateTexture0();
 				OpenGLHelper.bindTexture(font.getTextureAtlas());
 				for (GUIText text : mapByFontType.get(font)) {
@@ -130,15 +126,18 @@ public class FontRenderer {
 				}
 			}
 		}
-//		endRendering();
 	}
 
 	public void clear() {
-		shader.clear();
+		fontShader.clear();
+		glDeleteBuffers(posVbo);
+		glDeleteBuffers(textVbo);
+		glDeleteVertexArrays(vaoForTextRendering);
+		stringRenderer.clear();
 	}
 
 	private void prepare() {
-		shader.enable();
+		fontShader.enable();
 	}
 
 	private void renderText(GUIText text) {
@@ -148,46 +147,28 @@ public class FontRenderer {
 		Core core = Core.getCore();
 		Renderer renderer = core.getRenderer();
 		if (text.isShadow()) {
-			shader.setColor(new Vector4f(shadowColor.x, shadowColor.y, shadowColor.z, text.getColor().w));
-			shader.setModelViewMatrix(Transformation.getModelViewMatrix(text, shadowOffset));
+			fontShader.setColor(new Vector4f(shadowColor.x, shadowColor.y, shadowColor.z, text.getColor().w));
+			fontShader.setModelViewMatrix(Transformation.getModelViewMatrix(text, shadowOffset));
 			glDrawArrays(GL_TRIANGLES, 0, text.getVertexCount());
 			renderer.setDrawCalls(renderer.getDrawCalls() + 1);
 		}
-		shader.setColor(text.getColor());
-		shader.setModelViewMatrix(Transformation.getModelViewMatrix(text));
+		fontShader.setColor(text.getColor());
+		fontShader.setModelViewMatrix(Transformation.getModelViewMatrix(text));
 		glDrawArrays(GL_TRIANGLES, 0, text.getVertexCount());
 		renderer.setDrawCalls(renderer.getDrawCalls() + 1);
-//		glDisableVertexAttribArray(0);
-//		glDisableVertexAttribArray(1);
-//		glBindVertexArray(0);
 	}
 
-	public void renderString(String text, Vector2f pos, Vector2f fontSize, FontType font, Vector4f color, boolean isCentered, EnumZoomFactor factor, boolean shadow) {
-		shader.enable();
-		TextMeshData data = font.loadText(text, fontSize, 1.0f, isCentered, 1f);
-		glBindVertexArray(vaoForTextRendering);
-		glBindBuffer(GL_ARRAY_BUFFER, posVbo);
-		glBufferData(GL_ARRAY_BUFFER, data.getVertexPositions(), GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, textVbo);
-		glBufferData(GL_ARRAY_BUFFER, data.getTextureCoords(), GL_STATIC_DRAW);
-//		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		OpenGLHelper.bindTexture(font.getTextureAtlas());
+	public void renderString(FontRegistry font, String text, int x, int y, float fontSizeX, float fontSizeY, float r, float g, float b, float a,
+							 boolean isCentered, EnumZoomFactor factor, boolean shadow, float maxLineWidth) {
+		Renderer renderer = Core.getCore().getRenderer();
+		StringCache stringCache = font.getStringCache();
+
 		if (shadow) {
-			shader.setColor(new Vector4f(shadowColor.x, shadowColor.y, shadowColor.z, color.w));
-			shader.setModelViewMatrix(Transformation.getModelViewMatrixForTextRendering(pos, factor, shadowOffset));
-			glDrawArrays(GL_TRIANGLES, 0, data.getVertexCount());
+			stringRenderer.renderString(stringCache, text, (int)(x + shadowOffset.x), (int)(y + shadowOffset.y), shadowColor.x, shadowColor.y, shadowColor.z, a, factor);
+			renderer.increaseDrawCalls();
 		}
-		shader.setColor(color);
-		shader.setModelViewMatrix(Transformation.getModelViewMatrixForTextRendering(pos, factor));
-		glDrawArrays(GL_TRIANGLES, 0, data.getVertexCount());
-//		glDisableVertexAttribArray(0);
-//		glDisableVertexAttribArray(1);
-//		glBindVertexArray(0);
-	}
 
-	private void endRendering() {
-		shader.disable();
+		stringRenderer.renderString(stringCache, text, x, y, r, g, b, a, factor);
+		renderer.increaseDrawCalls();
 	}
 }
