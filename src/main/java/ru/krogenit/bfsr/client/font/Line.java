@@ -9,13 +9,14 @@ import java.util.List;
  * @author Karl
  *
  */
+@Deprecated
 public class Line {
 
-	private final double maxLength;
-	private final double spaceSize;
+	private final float maxLength;
+	private final float spaceSize;
 
 	private final List<Word> words = new ArrayList<>();
-	private double currentLineLength = 0;
+	private float currentLineLength = 0;
 
 	/**
 	 * Creates an empty line.
@@ -27,7 +28,7 @@ public class Line {
 	 * @param maxLength
 	 *            - the screen-space maximum length of a line.
 	 */
-	protected Line(double spaceWidth, double fontSize, double maxLength) {
+	protected Line(float spaceWidth, float fontSize, float maxLength) {
 		this.spaceSize = spaceWidth * fontSize;
 		this.maxLength = maxLength;
 	}
@@ -42,7 +43,7 @@ public class Line {
 	 * @return {@code true} if the word has successfully been added to the line.
 	 */
 	protected boolean attemptToAddWord(Word word) {
-		double additionalLength = word.getWordWidth();
+		float additionalLength = word.getWordWidth();
 		additionalLength += !words.isEmpty() ? spaceSize : 0;
 		if (currentLineLength + additionalLength <= maxLength) {
 			words.add(word);
@@ -56,14 +57,14 @@ public class Line {
 	/**
 	 * @return The max length of the line.
 	 */
-	protected double getMaxLength() {
+	protected float getMaxLength() {
 		return maxLength;
 	}
 
 	/**
 	 * @return The current screen-space length of the line.
 	 */
-	protected double getLineLength() {
+	protected float getLineLength() {
 		return currentLineLength;
 	}
 
