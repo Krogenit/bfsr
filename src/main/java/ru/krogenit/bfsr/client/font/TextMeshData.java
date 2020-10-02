@@ -5,6 +5,7 @@ package ru.krogenit.bfsr.client.font;
  * @author Karl
  *
  */
+@Deprecated
 public class TextMeshData {
 	
 	private final float[] vertexPositions;
