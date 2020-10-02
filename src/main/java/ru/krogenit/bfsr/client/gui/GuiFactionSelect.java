@@ -3,8 +3,7 @@ package ru.krogenit.bfsr.client.gui;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-
-import ru.krogenit.bfsr.client.font.FontRenderer;
+import ru.krogenit.bfsr.client.font.FontRegistry;
 import ru.krogenit.bfsr.client.font.GUIText;
 import ru.krogenit.bfsr.client.gui.button.Button;
 import ru.krogenit.bfsr.client.gui.button.ButtonBase;
@@ -87,13 +86,13 @@ public class GuiFactionSelect extends Gui {
 				new Vector4f(1, 1, 1, 1), true, EnumParticlePositionType.Gui);
 
 		float discFontSize = 0.7f;
-		humanDisc = new GUIText(Lang.getString("gui.selectFaction.humanDisc"), new Vector3f(discFontSize, discFontSize, 1.1f), FontRenderer.XOLONIUM,
+		humanDisc = new GUIText(Lang.getString("gui.selectFaction.humanDisc"), new Vector3f(discFontSize, discFontSize, 1.1f), FontRegistry.XOLONIUM,
 				Transformation.getOffsetByScale(new Vector2f(center.x - 450, center.y - 80)), new Vector4f(1, 1, 1, 1), 
 				0.21f, false, EnumParticlePositionType.Gui);
-		saimonDisc = new GUIText(Lang.getString("gui.selectFaction.saimonDisc"), new Vector3f(discFontSize, discFontSize, 1.1f), FontRenderer.XOLONIUM,
+		saimonDisc = new GUIText(Lang.getString("gui.selectFaction.saimonDisc"), new Vector3f(discFontSize, discFontSize, 1.1f), FontRegistry.XOLONIUM,
 				Transformation.getOffsetByScale(new Vector2f(center.x - 142, center.y - 80)), new Vector4f(1, 1, 1, 1), 
 				0.21f, false, EnumParticlePositionType.Gui);
-		engiDisc = new GUIText(Lang.getString("gui.selectFaction.engiDisc"), new Vector3f(discFontSize, discFontSize, 1.1f), FontRenderer.XOLONIUM,
+		engiDisc = new GUIText(Lang.getString("gui.selectFaction.engiDisc"), new Vector3f(discFontSize, discFontSize, 1.1f), FontRegistry.XOLONIUM,
 				Transformation.getOffsetByScale(new Vector2f(center.x + 166, center.y - 80)), new Vector4f(1, 1, 1, 1), 
 				0.21f, false, EnumParticlePositionType.Gui);
 	}
