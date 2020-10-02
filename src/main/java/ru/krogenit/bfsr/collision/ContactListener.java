@@ -5,7 +5,6 @@ import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.contact.ContactPoint;
 import org.dyn4j.dynamics.contact.PersistedContactPoint;
 import org.dyn4j.dynamics.contact.SolvedContactPoint;
-
 import ru.krogenit.bfsr.entity.bullet.Bullet;
 import ru.krogenit.bfsr.entity.ship.Ship;
 
@@ -49,20 +48,17 @@ public class ContactListener implements org.dyn4j.dynamics.contact.ContactListen
 
 	@Override
 	public boolean persist(PersistedContactPoint point) {
-
 		return true;
 	}
 
 	@Override
 	public boolean preSolve(ContactPoint point) {
-
 		return true;
 	}
 
 	@Override
 	public void postSolve(SolvedContactPoint point) {
 
-		
 	}
 
 }
