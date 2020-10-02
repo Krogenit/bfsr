@@ -1,17 +1,10 @@
 package ru.krogenit.bfsr.client.gui.ingame;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import lombok.Setter;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
-
 import ru.krogenit.bfsr.client.camera.Camera;
-import ru.krogenit.bfsr.client.font.FontRenderer;
 import ru.krogenit.bfsr.client.font.GUIText;
 import ru.krogenit.bfsr.client.gui.Gui;
 import ru.krogenit.bfsr.client.gui.GuiTextureObject;
@@ -48,6 +41,11 @@ import ru.krogenit.bfsr.server.MainServer;
 import ru.krogenit.bfsr.world.World;
 import ru.krogenit.bfsr.world.WorldClient;
 import ru.krogenit.bfsr.world.WorldServer;
+
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class GuiInGame extends Gui {
 
@@ -116,24 +114,24 @@ public class GuiInGame extends Gui {
 		chat = new GuiTextureObject(TextureRegister.guiChat);
 		
 		chatScroll = new Scroll(new Vector2f(center.x + 490, center.y + 130), Transformation.getScale(18, 130));
-		chatScroll.setVisible(9);
+		chatScroll.setVisible(8);
 		
 		chatInput = new InputChat(new Vector2f(center.x + 460, center.y - 216), chatScroll);
 		chatInput.setMaxLineSize(0.4f);
 		
 		controlText = new GUIText(Lang.getString("gui.control"), new Vector2f(0.9f * Transformation.guiScale.x,0.48f*Transformation.guiScale.y), 
-				FontRenderer.XOLONIUM, Transformation.getOffsetByScale(new Vector2f(center.x + 490, center.y + 130)),
+				ru.krogenit.bfsr.client.font.FontRegistry.XOLONIUM, Transformation.getOffsetByScale(new Vector2f(center.x + 490, center.y + 130)),
 				new Vector4f(1,1,1,1), 1f, false, EnumParticlePositionType.GuiInGame);
 		
-		upperText = new GUIText("", debugFontSize, FontRenderer.CONSOLA, new Vector2f(0, 0), white, false, EnumParticlePositionType.Last);
-		worldText = new GUIText("", debugFontSize, FontRenderer.CONSOLA, new Vector2f(0, 0), white, false, EnumParticlePositionType.Last);
-		shipText = new GUIText("", debugFontSize, FontRenderer.CONSOLA, new Vector2f(0, 0), white, false, EnumParticlePositionType.Last);
+		upperText = new GUIText("", debugFontSize, ru.krogenit.bfsr.client.font.FontRegistry.CONSOLA, new Vector2f(0, 0), white, false, EnumParticlePositionType.Last);
+		worldText = new GUIText("", debugFontSize, ru.krogenit.bfsr.client.font.FontRegistry.CONSOLA, new Vector2f(0, 0), white, false, EnumParticlePositionType.Last);
+		shipText = new GUIText("", debugFontSize, ru.krogenit.bfsr.client.font.FontRegistry.CONSOLA, new Vector2f(0, 0), white, false, EnumParticlePositionType.Last);
 		
-		shipCargo = new GUIText("", new Vector2f(1,1), FontRenderer.CONSOLA, new Vector2f(0, 0), white, false, EnumParticlePositionType.GuiInGame);
-		shipCrew = new GUIText("", new Vector2f(1,1), FontRenderer.CONSOLA, new Vector2f(0, 0), white, false, EnumParticlePositionType.GuiInGame);
+		shipCargo = new GUIText("", new Vector2f(1,1), ru.krogenit.bfsr.client.font.FontRegistry.CONSOLA, new Vector2f(0, 0), white, false, EnumParticlePositionType.GuiInGame);
+		shipCrew = new GUIText("", new Vector2f(1,1), ru.krogenit.bfsr.client.font.FontRegistry.CONSOLA, new Vector2f(0, 0), white, false, EnumParticlePositionType.GuiInGame);
 		
-		textHull = new GUIText("", new Vector2f(1,1), FontRenderer.CONSOLA, new Vector2f(0, 0), white, true, EnumParticlePositionType.GuiInGame);
-		textShield = new GUIText("", new Vector2f(1,1), FontRenderer.CONSOLA, new Vector2f(0, 0), white, true, EnumParticlePositionType.GuiInGame);
+		textHull = new GUIText("", new Vector2f(1,1), ru.krogenit.bfsr.client.font.FontRegistry.CONSOLA, new Vector2f(0, 0), white, true, EnumParticlePositionType.GuiInGame);
+		textShield = new GUIText("", new Vector2f(1,1), ru.krogenit.bfsr.client.font.FontRegistry.CONSOLA, new Vector2f(0, 0), white, true, EnumParticlePositionType.GuiInGame);
 	}
 	
 	@Override
@@ -453,7 +451,7 @@ public class GuiInGame extends Gui {
 		mapPos.y = center.y - 286;
 		float mapScaleX = 50f;
 		float mapScaleY = 70f;
-		float shipScale = 10f;
+		float shipSize = 10f;
 		GL11.glEnable(GL11.GL_SCISSOR_TEST);
 		Vector2f mappos1 = this.map.getPosition();
 		mapScale.x = this.map.getScale().x;
@@ -473,12 +471,12 @@ public class GuiInGame extends Gui {
 		for (Ship s : ships) {
 			Vector2f pos = s.getPosition();
 			Vector2f scale = s.getScale();
-			this.shipScale.x = scale.x;
-			this.shipScale.y = scale.y;
-			this.shipScale.x /= shipScale;
-			this.shipScale.y /= shipScale;
-			float sX = this.shipScale.x / 2f;
-			float sY = this.shipScale.y / 2f;
+			shipScale.x = scale.x;
+			shipScale.y = scale.y;
+			shipScale.x /= shipSize;
+			shipScale.y /= shipSize;
+			float sX = shipScale.x / 2f;
+			float sY = shipScale.y / 2f;
 			shipAABB.setMinX(pos.x - sX);
 			shipAABB.setMaxX(pos.x + sX);
 			shipAABB.setMinY(pos.y - sY);
@@ -497,10 +495,10 @@ public class GuiInGame extends Gui {
 			for (Ship s : ss) {
 				Vector2f pos = s.getPosition();
 				Vector2f scale = s.getScale();
-				this.shipScale.x = scale.x;
-				this.shipScale.y = scale.y;
-				this.shipScale.x /= shipScale;
-				this.shipScale.y /= shipScale;
+				shipScale.x = scale.x;
+				shipScale.y = scale.y;
+				shipScale.x /= shipSize;
+				shipScale.y /= shipSize;
 				Faction faction = s.getFaction();
 				if (faction == Faction.Engi) {
 					color.x = 0.5f;
@@ -518,15 +516,15 @@ public class GuiInGame extends Gui {
 
 				shipPos.x = mapPos.x + (pos.x - camPos.x) / mapScaleX;
 				shipPos.y = mapPos.y + (pos.y - camPos.y) / mapScaleY;
-				renderQuad(shader, color, s.getTexture(), shipPos, s.getRotation(), this.shipScale);
+				renderQuad(shader, color, s.getTexture(), shipPos, s.getRotation(), shipScale);
 			}
 		}
 		
 //		for(Ship s : ships) {
 //			Vector2f pos = s.getPosition();
 //			Vector2f scale = new Vector2f(s.getScale());
-//			scale.x /= shipScale;
-//			scale.y /= shipScale;
+//			scale.x /= shipSize;
+//			scale.y /= shipSize;
 //			float sX = scale.x/2f;
 //			float sY = scale.y/2f;
 //			shipAABB.setMinX(pos.x - sX);
@@ -721,7 +719,6 @@ public class GuiInGame extends Gui {
 			renderShipHud(shader, world, otherShip, true);
 			renderChat(shader, world);
 		}
-
 	}
 	
 	private void renderQuad(BaseShader shader, Vector4f color, Texture texture, Vector2f pos, float rot, Vector2f scale) {
