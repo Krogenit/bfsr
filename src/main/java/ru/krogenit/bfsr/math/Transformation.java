@@ -8,7 +8,6 @@ import ru.krogenit.bfsr.core.Core;
 import ru.krogenit.bfsr.entity.TextureObject;
 
 public class Transformation {
-
 	private static final Matrix4f viewMatrix = new Matrix4f();
 	private static final Matrix4f viewMatrixBackground = new Matrix4f();
 	private static final Matrix4f viewMatrixGui = new Matrix4f();
@@ -48,7 +47,7 @@ public class Transformation {
 	}
 
 	public static Matrix4f getOrthographicViewMatrixForFontRendering(float x, float y, EnumZoomFactor factor) {
-		modelViewMatrix.identity().translate(x, y, 0).scale(2f, 1f, 1);
+		modelViewMatrix.identity().translate(x, y, 0).scale(2.0f, 2.0f, 1.0f);
 		Matrix4f viewMatrixByType = getViewMatrixByType(factor);
 		return viewMatrixByType.mul(modelViewMatrix, finalModelViewMatrix);
 	}
