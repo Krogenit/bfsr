@@ -63,7 +63,7 @@ public class Renderer {
 //			OpenGLHelper.bindTexture(TextureLoader.getTexture(Textures.particleWreckSaimonSmall0Wreck1).getId());
 //			shader.setModelViewMatrix(Transformation.getModelViewMatrix(0, 0, 0, 100, 100, EnumZoomFactor.Default));
 //			quad.render();
-			Main.checkGlError("entitys");
+			Main.checkGlError("entities");
 			fontRenderer.render(EnumParticlePositionType.Default);
 			world.renderParticles();
 			Main.checkGlError("particles");
