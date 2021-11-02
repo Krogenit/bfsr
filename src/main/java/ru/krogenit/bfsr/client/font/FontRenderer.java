@@ -158,6 +158,12 @@ public class FontRenderer {
 		renderer.setDrawCalls(renderer.getDrawCalls() + 1);
 	}
 
+	public void renderString(FontRegistry font, String text, int x, int y, int fontSize, float r, float g, float b, float a, EnumZoomFactor factor) {
+		StringCache stringCache = font.getStringCache();
+		stringCache.setFontSize(fontSize);
+		stringRenderer.renderString(stringCache, text, x, y, r, g, b, a, factor);
+	}
+
 	public void renderString(FontRegistry font, String text, int x, int y, float fontSizeX, float fontSizeY, float r, float g, float b, float a,
 							 boolean isCentered, EnumZoomFactor factor, boolean shadow, float maxLineWidth) {
 		Renderer renderer = Core.getCore().getRenderer();
