@@ -1,10 +1,8 @@
 package ru.krogenit.bfsr.client.font_new;
 
 public enum FontRegistry {
-
     Default(new StringCache()),
-
-    Xolonium(new StringCache("Xolonium-Regular.ttf", 48, true));
+    Xolonium(new StringCache("Xolonium-Regular.ttf", true));
 
     private final StringCache stringCache;
 
