@@ -22,7 +22,7 @@ public class Camera {
 	private final Core core;
 	private final ClientSettings settings;
 	private final float Z_NEAR = 0.0f;
-	private final float Z_FAR = 100.f;
+	private final float Z_FAR = 100.0f;
 	@Getter private final Matrix4f orthographicMatrix;
 	@Getter private final AxisAlignedBoundingBox boundingBox;
 
@@ -41,7 +41,7 @@ public class Camera {
 	private Ship followShip;
 
 	public Camera(int width, int height) {
-		this.orthographicMatrix = new Matrix4f().ortho(0, width, height, 0, Z_NEAR, Z_FAR);
+		this.orthographicMatrix = new Matrix4f().ortho(0.0f, width, height, 0.0f, Z_NEAR, Z_FAR);
 
 		this.position = new Vector2f(0, 0);
 		this.rotation = 0f;
@@ -222,7 +222,7 @@ public class Camera {
 
 	public void resize(int width, int height) {
 		this.orthographicMatrix.identity();
-		this.orthographicMatrix.ortho(0, width, height, 0, Z_NEAR, Z_FAR);
+		this.orthographicMatrix.ortho(0.0f, width, height, 0.0f, Z_NEAR, Z_FAR);
 		Transformation.resize(width, height);
 		this.width = width;
 		this.height = height;
