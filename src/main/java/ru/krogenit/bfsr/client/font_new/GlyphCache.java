@@ -1,5 +1,7 @@
 package ru.krogenit.bfsr.client.font_new;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
 import org.lwjgl.opengl.GL11;
 import ru.krogenit.bfsr.client.render.OpenGLHelper;
@@ -41,13 +43,13 @@ public class GlyphCache {
      * The width in pixels of every texture used for caching pre-rendered glyph images. Used by GlyphCache when calculating
      * floating point 0.0-1.0 texture coordinates. Must be a power of two for mip-mapping to work.
      */
-    private static final int TEXTURE_WIDTH = 2048;
+    private static final int TEXTURE_WIDTH = 256;
 
     /**
      * The height in pixels of every texture used for caching pre-rendered glyph images. Used by GlyphCache when calculating
      * floating point 0.0-1.0 texture coordinates. Must be a power of two for mip-mapping to work.
      */
-    private static final int TEXTURE_HEIGHT = 2048;
+    private static final int TEXTURE_HEIGHT = 256;
 
     /**
      * Initial width in pixels of the stringImage buffer used to extract individual glyph images.
@@ -74,6 +76,8 @@ public class GlyphCache {
     /**
      * The point size at which every OpenType font is rendered.
      */
+    @Getter
+    @Setter
     private int fontSize = 18;
 
     /**
@@ -256,10 +260,9 @@ public class GlyphCache {
      * Load font from file
      *
      * @param fontFileName font file name
-     * @param size font size
      * @param antiAlias is antialiasing enabled
      */
-    void setFontFromFile(String fontFileName, int size, boolean antiAlias) {
+    void setFontFromFile(String fontFileName, boolean antiAlias) {
         try {
             InputStream stream = new FileInputStream(new File(PathHelper.font, fontFileName));
 
@@ -271,7 +274,6 @@ public class GlyphCache {
             usedFonts.clear();
             usedFonts.add(font);
 
-            fontSize = size;
             antiAliasEnabled = antiAlias;
             setRenderingHints();
         } catch (Exception e) {
