@@ -66,8 +66,8 @@ public class Main extends Loop {
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
 		GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-		windowWidth = vidmode.width();
-		windowHeight = vidmode.height();
+		windowHeight = 720;
+		windowWidth = 1280;
 
 		window = glfwCreateWindow(windowWidth, windowHeight, "BFSR Client", NULL, NULL);
 		if (window == NULL) throw new RuntimeException("Failed to create the GLFW window");
