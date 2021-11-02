@@ -54,10 +54,6 @@ public class StringRenderer {
     }
 
     public int renderString(StringCache stringCache, String str, int startX, int startY, float r, float g, float b, float a, EnumZoomFactor factor) {
-        if (str == null || str.isEmpty()) {
-            return startX;
-        }
-
         Entry entry = stringCache.cacheString(str);
         Matrix4f orthographicViewMatrixForFontRendering = Transformation.getOrthographicViewMatrixForFontRendering(startX, startY, factor);
 
