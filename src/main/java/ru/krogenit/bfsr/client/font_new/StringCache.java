@@ -105,14 +105,14 @@ public class StringCache
         cacheDightGlyphs();
     }
 
-    public StringCache(String fontFileName, int fontSize, boolean antiAlias)
+    public StringCache(String fontFileName, boolean antiAlias)
     {
         /* StringCache is created by the main game thread; remember it for later thread safety checks */
         mainThread = Thread.currentThread();
 
         glyphCache = new GlyphCache();
 
-        setFontFromFile(fontFileName, fontSize, antiAlias);
+        setFontFromFile(fontFileName, antiAlias);
     }
 
     /**
@@ -135,16 +135,27 @@ public class StringCache
         cacheDightGlyphs();
     }
 
-    public void setFontFromFile(String fontFileName, int fontSize, boolean antiAlias)
+    public void setFontFromFile(String fontFileName, boolean antiAlias)
     {
         /* Change the font in the glyph cache and clear the string cache so all strings have to be re-layed out and re-rendered */
-        glyphCache.setFontFromFile(fontFileName, fontSize, antiAlias);
+        glyphCache.setFontFromFile(fontFileName, antiAlias);
         antiAliasEnabled = antiAlias;
         weakRefCache.clear();
         stringCache.clear();
 
         /* Pre-cache the ASCII digits to allow for fast glyph substitution */
         cacheDightGlyphs();
+    }
+
+    public void setFontSize(int fontSize) {
+        if(glyphCache.getFontSize() != fontSize) {
+            glyphCache.setFontSize(fontSize);
+            weakRefCache.clear();
+            stringCache.clear();
+
+            /* Pre-cache the ASCII digits to allow for fast glyph substitution */
+            cacheDightGlyphs();
+        }
     }
 
     /**
