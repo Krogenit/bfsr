@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL45;
 import java.nio.FloatBuffer;
 
 public class GLFloatArrayVsFloatBuffer {
+    //buffer better
     public static void test() {
         int buffer = GL45.glCreateBuffers();
         int size = 1000 * 16;

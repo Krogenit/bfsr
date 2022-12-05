@@ -12,7 +12,6 @@ import java.net.SocketAddress;
 
 @Getter
 public class ThreadLocalServer extends Thread {
-
     private final MainServer server;
 
     public ThreadLocalServer() {
@@ -33,7 +32,7 @@ public class ThreadLocalServer extends Thread {
             try {
                 Thread.sleep(10);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
         }
 

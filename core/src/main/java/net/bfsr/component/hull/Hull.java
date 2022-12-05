@@ -41,7 +41,7 @@ public class Hull {
         if (hull <= 0) {
             if (!ship.getWorld().isRemote()) {
                 ship.setDestroing();
-                MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketDestroingShip(ship), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+                MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketDestroingShip(ship), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
             }
         }
     }

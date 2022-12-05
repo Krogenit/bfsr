@@ -378,7 +378,7 @@ public class ParticleWreck extends Particle {
                 aliveTimer = 0;
             }
         } else {
-            MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketObjectPosition(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketObjectPosition(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         }
 
         if (!canCollide) {
@@ -511,7 +511,7 @@ public class ParticleWreck extends Particle {
 //				}
             } else if (wreckLifeTime <= 0) {
                 if (!world.isRemote()) {
-                    MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+                    MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
                     setDead(true);
                 }
             }
@@ -541,7 +541,7 @@ public class ParticleWreck extends Particle {
                 if (color.w <= 0) {
                     color.w = 0;
                     if (!world.isRemote()) {
-                        MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+                        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
                         setDead(true);
                     }
                 }
@@ -554,7 +554,7 @@ public class ParticleWreck extends Particle {
     public void damage(float damage) {
         hull -= damage;
         if (!world.isRemote() && hull <= 0) {
-            MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
             setDead(true);
         }
     }

@@ -1,5 +1,7 @@
 package net.bfsr.client.render;
 
+import lombok.Getter;
+import lombok.Setter;
 import net.bfsr.client.camera.Camera;
 import net.bfsr.client.font.FontRenderer;
 import net.bfsr.client.gui.Gui;
@@ -29,6 +31,9 @@ public class Renderer {
     private int drawCalls;
     private int viewDataUBO;
     private float[] viewBuffer = new float[16 * 3];
+    @Setter
+    @Getter
+    private int fps;
 
     public Renderer(Core core) {
         this.core = core;

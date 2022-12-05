@@ -2,6 +2,7 @@ package net.bfsr.core;
 
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import lombok.Setter;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.ingame.GuiInGame;
 import net.bfsr.client.gui.menu.GuiMainMenu;
@@ -24,9 +25,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
 public class Core {
-
     private static Core instance;
 
+    private final Main main;
     private int screenWidth, screenHeight;
 
     private final SoundManager soundManager;
@@ -39,14 +40,16 @@ public class Core {
     private ThreadLocalServer localServer;
     private NetworkManagerClient networkManager;
 
-    private boolean isActive = true;
+    @Setter
+    private boolean focused = true;
 
     private String playerName;
 
     private final Queue<ListenableFutureTask<?>> futureTasks = Queues.newArrayDeque();
 
-    public Core(int screenWidth, int screenHeight) {
+    public Core(Main main, int screenWidth, int screenHeight) {
         instance = this;
+        this.main = main;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
 
@@ -70,7 +73,7 @@ public class Core {
     public void input() {
         profiler.startSection("input");
         renderer.input();
-        if (isActive && currentGui != null) currentGui.input();
+        if (focused && currentGui != null) currentGui.input();
         if (world != null) world.input();
     }
 
@@ -208,12 +211,8 @@ public class Core {
         return instance;
     }
 
-    public void setActive(boolean isActive) {
-        this.isActive = isActive;
-    }
-
-    public boolean isActive() {
-        return isActive;
+    public boolean isFocused() {
+        return focused;
     }
 
     public ClientSettings getSettings() {
@@ -255,5 +254,9 @@ public class Core {
 
     public void setNetworkManager(NetworkManagerClient networkManager) {
         this.networkManager = networkManager;
+    }
+
+    public void stop() {
+        main.stop();
     }
 }

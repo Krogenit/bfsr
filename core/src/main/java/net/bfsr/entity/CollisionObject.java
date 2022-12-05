@@ -131,7 +131,7 @@ public class CollisionObject extends TextureObject {
                         if (ship == world.getPlayerShip()) {
                             Core.getCore().sendPacket(new PacketShipEngine(id, dir.ordinal()));
                         }
-                    } else MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketShipEngine(id, dir.ordinal()), pos, WorldServer.PACKET_UPDATE_DISTANCE);
+                    } else MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipEngine(id, dir.ordinal()), pos, WorldServer.PACKET_UPDATE_DISTANCE);
                 }
 
                 if (Math.abs(y) > 10) {
@@ -141,7 +141,7 @@ public class CollisionObject extends TextureObject {
                         if (ship == world.getPlayerShip()) {
                             Core.getCore().sendPacket(new PacketShipEngine(id, dir.ordinal()));
                         }
-                    } else MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketShipEngine(id, dir.ordinal()), pos, WorldServer.PACKET_UPDATE_DISTANCE);
+                    } else MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipEngine(id, dir.ordinal()), pos, WorldServer.PACKET_UPDATE_DISTANCE);
                 }
 
                 return;
@@ -152,7 +152,7 @@ public class CollisionObject extends TextureObject {
             if (ship == world.getPlayerShip()) Core.getCore().sendPacket(new PacketShipEngine(id, dir.ordinal()));
         } else {
             if (prevMoveDir != null && prevMoveDir != dir)
-                MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketShipEngine(id, dir.ordinal()), pos, WorldServer.PACKET_UPDATE_DISTANCE);
+                MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipEngine(id, dir.ordinal()), pos, WorldServer.PACKET_UPDATE_DISTANCE);
             prevMoveDir = dir;
         }
     }

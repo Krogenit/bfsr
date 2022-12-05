@@ -1,8 +1,8 @@
 package net.bfsr.core;
 
+import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
-import net.bfsr.client.test.GLFloatArrayVsFloatBuffer;
 import net.bfsr.log.LoggingSystem;
 import net.bfsr.settings.ClientSettings;
 import net.bfsr.util.Timer;
@@ -17,8 +17,8 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.IntBuffer;
 
+@Log4j2
 public class Main extends Loop {
-
     static {
         LoggingSystem.initClient();
     }
@@ -27,14 +27,13 @@ public class Main extends Loop {
     private Core core;
     private long window;
     private Timer timer;
-    public static boolean isRunning = true;
 
-    public static int fps;
-
+    @Override
     public void run() {
+        super.run();
         timer = new Timer();
         initGLFW();
-        core = new Core(windowWidth, windowHeight);
+        core = new Core(this, windowWidth, windowHeight);
         init();
         loop();
 
@@ -69,7 +68,7 @@ public class Main extends Loop {
         windowWidth = 1280;
 
         window = GLFW.glfwCreateWindow(windowWidth, windowHeight, "BFSR Client", MemoryUtil.NULL, MemoryUtil.NULL);
-        if (window == MemoryUtil.NULL) throw new RuntimeException("Failed to create the GLFW window");
+        if (window == MemoryUtil.NULL) throw new IllegalStateException("Failed to create the GLFW window");
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer pWidth = stack.mallocInt(1);
@@ -86,15 +85,9 @@ public class Main extends Loop {
 
         GL.createCapabilities();
 
-        GLFW.glfwSetWindowSizeCallback(window, (window, width1, height1) -> {
-            if (width1 == 0) width1 = 1;
-            if (height1 == 0) height1 = 1;
-            resize(width1, height1);
-        });
+        GLFW.glfwSetWindowSizeCallback(window, (window1, width1, height1) -> resize(width1, height1));
 
-        GLFW.glfwSetWindowFocusCallback(window, (window, focused) -> {
-            setActive(focused);
-        });
+        GLFW.glfwSetWindowFocusCallback(window, (window1, focused) -> setFocused(focused));
     }
 
     private void setupOpenGL(int width, int height) {
@@ -108,10 +101,6 @@ public class Main extends Loop {
         GL11.glCullFace(GL11.GL_BACK);
 
         GL11.glClearColor(0.05F, 0.1F, 0.2F, 1.0F);
-
-        for (int i = 0; i < 10; i++) {
-            GLFloatArrayVsFloatBuffer.test();
-        }
     }
 
     private void init() {
@@ -158,18 +147,18 @@ public class Main extends Loop {
     }
 
     @Override
-    protected boolean isRunning() {
-        return !GLFW.glfwWindowShouldClose(window) && isRunning;
+    public boolean isRunning() {
+        return !GLFW.glfwWindowShouldClose(window) && super.isRunning();
     }
 
     @Override
     protected void setFps(int fps) {
-        Main.fps = fps;
+        core.getRenderer().setFps(fps);
     }
 
     @Override
-    protected void last() {
-        org.lwjgl.glfw.GLFW.glfwSwapBuffers(window);
+    protected void onPostRender() {
+        GLFW.glfwSwapBuffers(window);
         GLFW.glfwPollEvents();
     }
 
@@ -184,7 +173,7 @@ public class Main extends Loop {
     }
 
     @Override
-    protected boolean shouldWaitBeforeNextFrame(double now, double lastUpdateTime) {
+    protected boolean shouldWait(double now, double lastUpdateTime) {
         int maxFps = core.getSettings().getMaxFps();
         return maxFps < 240 && now - lastUpdateTime < 1_000_000_000 / (float) maxFps;
     }
@@ -193,14 +182,14 @@ public class Main extends Loop {
         int i = GL11.glGetError();
 
         if (i != 0) {
-            System.err.println("########## GL ERROR ##########");
-            System.err.println("Erorr number " + i);
-            System.err.println("Error in " + name);
+            log.error("########## GL ERROR ##########");
+            log.error("Erorr number {}", i);
+            log.error("Error in {}", name);
         }
     }
 
-    private void setActive(boolean isActive) {
-        core.setActive(isActive);
+    private void setFocused(boolean focused) {
+        core.setFocused(focused);
     }
 
     public static void main(String[] args) {

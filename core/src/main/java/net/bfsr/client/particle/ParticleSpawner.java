@@ -72,7 +72,7 @@ public class ParticleSpawner {
         float sizeVel = 0.f;
         Vector4f color = new Vector4f(0.5f, 0.5f, 0.5f, 1f);
         ParticleWreck p = new ParticleWreck(s.getWorld().getNextId(), textureOffset, s, new Vector2f(pos), velocity1, angle, angleVel, size1, sizeVel, color, alphaVel, wreckLifeTime);
-        MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(p), pos, WorldServer.PACKET_SPAWN_DISTANCE);
+        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(p), pos, WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     public static void spawnDamageDerbis(World world, int count, float x, float y, float velocityX, float velocityY, float size) {
@@ -90,7 +90,7 @@ public class ParticleSpawner {
             boolean isFireExplosion = isFire && rand.nextInt(5) == 0;
             Vector2f pos = new Vector2f(x, y);
             ParticleWreck p = new ParticleWreck(world.getNextId(), rand.nextInt(6), false, isFire, isFireExplosion, pos, velocity1, angle, angleVel, size1, sizeVel, color, alphaVel);
-            MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(p), pos, WorldServer.PACKET_SPAWN_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(p), pos, WorldServer.PACKET_SPAWN_DISTANCE);
         }
     }
 
@@ -106,7 +106,7 @@ public class ParticleSpawner {
             float alphaVel = 0.04f;//RandomHelper.randomFloat(rand, 0.00015f, 0.0003f) * 60f;
             boolean isFireExplosion = rand.nextInt(4) == 0;
             ParticleWreck p = new ParticleWreck(world.getNextId(), rand.nextInt(3), true, true, isFireExplosion, new Vector2f(pos), velocity1, angle, angleVel, size1, sizeVel, color, alphaVel);
-            MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(p), pos, WorldServer.PACKET_SPAWN_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(p), pos, WorldServer.PACKET_SPAWN_DISTANCE);
         }
     }
 

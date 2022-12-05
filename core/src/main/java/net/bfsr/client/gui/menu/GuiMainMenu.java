@@ -12,7 +12,6 @@ import net.bfsr.client.loader.TextureLoader;
 import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.texture.TextureRegister;
 import net.bfsr.core.Core;
-import net.bfsr.core.Main;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.math.EnumZoomFactor;
 import org.joml.Vector2f;
@@ -60,7 +59,7 @@ public class GuiMainMenu extends Gui {
                 Core.getCore().setCurrentGui(new GuiSettings(this));
                 return;
             case 3:
-                Main.isRunning = false;
+                Core.getCore().stop();
         }
     }
 

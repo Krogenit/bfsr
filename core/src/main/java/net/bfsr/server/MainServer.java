@@ -1,5 +1,7 @@
 package net.bfsr.server;
 
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import net.bfsr.core.Loop;
 import net.bfsr.entity.ship.PlayerServer;
 import net.bfsr.log.LoggingSystem;
@@ -12,56 +14,55 @@ import net.bfsr.network.status.ServerStatusResponse;
 import net.bfsr.profiler.Profiler;
 import net.bfsr.settings.ServerSettings;
 import net.bfsr.world.WorldServer;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 
+@Log4j2
 public class MainServer extends Loop {
-
     static {
         LoggingSystem.initServer();
     }
 
-    private static final Logger LOGGER = LogManager.getLogger(MainServer.class);
+    @Getter
     private static MainServer instance;
 
-    private boolean isRunning;
-    private int tps;
+    @Getter
+    private final boolean singlePlayer;
+    @Getter
+    private int ups;
 
+    @Getter
     private WorldServer world;
+    @Getter
     private SimpleDataBase dataBase;
+    @Getter
     private NetworkSystem networkSystem;
+    @Getter
     private Profiler profiler;
     private ServerSettings settings;
     private PlayerManager playerManager;
 
-    private final boolean isSinglePlayer;
-
-    public static void main(String[] args) {
-        new MainServer(false).run();
-    }
-
-    public MainServer(boolean isSinglePlayer) {
+    public MainServer(boolean singlePlayer) {
         instance = this;
-        this.isSinglePlayer = isSinglePlayer;
-        if (isSinglePlayer) {
-            LOGGER.log(Level.INFO, "Starting local server...");
+        this.singlePlayer = singlePlayer;
+        if (singlePlayer) {
+            log.info("Starting local server...");
         } else {
-            LOGGER.log(Level.INFO, "Starting dedicated server...");
+            log.info("Starting dedicated server...");
         }
     }
 
+    @Override
     public void run() {
-        LOGGER.log(Level.INFO, "Initialization server...");
+        super.run();
+        log.info("Initialization server...");
         init();
-        LOGGER.log(Level.INFO, "Initialized");
-        isRunning = true;
-        LOGGER.log(Level.INFO, "Started");
+        log.info("Initialized");
         loop();
     }
 
@@ -73,38 +74,29 @@ public class MainServer extends Loop {
         playerManager = new PlayerManager(this, world);
 //		world.spawnShips();
 
-        if (!isSinglePlayer) {
+        if (!singlePlayer) {
             settings = new ServerSettings();
             settings.readSettings();
             InetAddress inetaddress;
             try {
                 inetaddress = InetAddress.getByName(settings.getHostName());
                 networkSystem.addLanEndpoint(inetaddress, settings.getPort());
-                LOGGER.log(Level.INFO, "Set server address " + settings.getHostName() + ":" + settings.getPort());
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.exit(0);
+                log.info("Set server address {}:{}", settings.getHostName(), settings.getPort());
+            } catch (UnknownHostException e) {
+                throw new IllegalStateException("Can't start server on address " + settings.getHostName() + ":" + settings.getPort(), e);
             }
 
             Thread t = new Thread(() -> {
-                while (!isRunning) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                while (isRunning) {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                while (isRunning()) {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
                     String name;
                     try {
                         name = reader.readLine();
-                        if (name.equals("stop")) {
-                            isRunning = false;
+                        if ("stop".equals(name)) {
+                            stop();
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        log.error("Can't read line from console input", e);
                     }
                 }
             });
@@ -119,22 +111,12 @@ public class MainServer extends Loop {
         networkManager.scheduleOutboundPacket(new PacketJoinGame(world.getSeed()));
         if (player.getFaction() != null) {
             dataBase.getPlayerShips(player);
-            if (player.getShips().size() == 0) {
+            if (player.getShips().isEmpty()) {
                 playerManager.respawnPlayer(player, 0, 0);
             }
         } else {
             networkSystem.sendPacketTo(new PacketOpenGui(EnumGui.SelectFaction), player);
         }
-    }
-
-    @Override
-    protected void input() {
-
-    }
-
-    @Override
-    protected void postInputUpdate() {
-
     }
 
     @Override
@@ -147,79 +129,35 @@ public class MainServer extends Loop {
     }
 
     @Override
-    protected void render(float interpolation) {
-
-    }
-
-    @Override
-    protected void setFps(int tps) {
-        this.tps = tps;
-    }
-
-    @Override
-    protected void last() {
-
+    protected void setFps(int fps) {
+        ups = fps;
     }
 
     @Override
     protected void clear() {
-        LOGGER.log(Level.INFO, "Terminating network...");
-        if (getNetworkSystem() != null && !isSinglePlayer) {
-            getNetworkSystem().terminateEndpoints();
+        log.info("Terminating network...");
+        if (networkSystem != null && !singlePlayer) {
+            networkSystem.terminateEndpoints();
         }
 
-        LOGGER.log(Level.INFO, "Save base data...");
+        log.info("Save base data...");
         dataBase.save();
-        LOGGER.log(Level.INFO, "Clearing world...");
+        log.info("Clearing world...");
         world.clear();
         world = null;
-        LOGGER.log(Level.INFO, "Stopped");
-    }
-
-    @Override
-    protected boolean isVSync() {
-        return false;
+        log.info("Stopped");
     }
 
     public void stop() {
-        LOGGER.log(Level.INFO, "Stopping server...");
-        isRunning = false;
-    }
-
-    public NetworkSystem getNetworkSystem() {
-        return networkSystem;
+        log.info("Stopping server...");
+        super.stop();
     }
 
     public ServerStatusResponse getStatus() {
         return new ServerStatusResponse(10, "0.0.4");
     }
 
-    public boolean isSinglePlayer() {
-        return isSinglePlayer;
+    public static void main(String[] args) {
+        new MainServer(false).run();
     }
-
-    public boolean isRunning() {
-        return isRunning;
-    }
-
-    public int getTps() {
-        return tps;
-    }
-
-    public SimpleDataBase getDataBase() {
-        return dataBase;
-    }
-
-    public WorldServer getWorld() {
-        return world;
-    }
-
-    public static MainServer getServer() {
-        return instance;
-    }
-
-    public Profiler getProfiler() {
-        return profiler;
-    }
-
 }

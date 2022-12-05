@@ -109,7 +109,7 @@ public abstract class Ship extends CollisionObject {
         this.ai.addTask(new AiAttackTarget(this, 40000f));
         init();
         world.addShip(this);
-        MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     public Ship(WorldClient w, int id, TextureRegister texture, Vector2f pos, float rot, Vector2f scale, Vector3f effectsColor) {
@@ -215,14 +215,14 @@ public abstract class Ship extends CollisionObject {
             PlayerServer player = world.getPlayer(getName());
             Vector2f pos = getPosition();
             if (controlledByPlayer) {
-                MainServer.getServer().getNetworkSystem().sendPacketToAllNearbyExcept(new PacketObjectPosition(this), pos, WorldServer.PACKET_SPAWN_DISTANCE, player);
-                MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketShipInfo(this), pos, WorldServer.PACKET_UPDATE_DISTANCE);
+                MainServer.getInstance().getNetworkSystem().sendPacketToAllNearbyExcept(new PacketObjectPosition(this), pos, WorldServer.PACKET_SPAWN_DISTANCE, player);
+                MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipInfo(this), pos, WorldServer.PACKET_UPDATE_DISTANCE);
             } else {
                 if (destroingTimer == 0 && ai != null) ai.update(delta);
 
 //				if(--updateTimer <= 0) {
-                MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketObjectPosition(this), pos, WorldServer.PACKET_SPAWN_DISTANCE);
-                MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketShipInfo(this), pos, WorldServer.PACKET_UPDATE_DISTANCE);
+                MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketObjectPosition(this), pos, WorldServer.PACKET_SPAWN_DISTANCE);
+                MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipInfo(this), pos, WorldServer.PACKET_UPDATE_DISTANCE);
 //					updateTimer = UPDATE_POS_TIMER;
 //				}
             }
@@ -425,7 +425,7 @@ public abstract class Ship extends CollisionObject {
     public void destroyShip() {
         createDestroyParticles();
         if (!world.isRemote()) {
-            MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
             setDead(true);
         }
     }
@@ -537,7 +537,7 @@ public abstract class Ship extends CollisionObject {
         this.weaponSlots.set(i, slot);
 
         if (!world.isRemote()) {
-            MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketShipSetWeaponSlot(this, slot), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipSetWeaponSlot(this, slot), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         }
     }
 
@@ -655,14 +655,14 @@ public abstract class Ship extends CollisionObject {
         if (world.isRemote()) {
             if (isSpawned()) createName();
         } else {
-            MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketShipName(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipName(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         }
     }
 
     public void setFaction(Faction faction) {
         this.faction = faction;
         if (!world.isRemote()) {
-            MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketShipFaction(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipFaction(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         }
     }
 

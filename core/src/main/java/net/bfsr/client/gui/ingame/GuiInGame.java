@@ -27,7 +27,6 @@ import net.bfsr.component.reactor.Reactor;
 import net.bfsr.component.shield.Shield;
 import net.bfsr.component.weapon.WeaponSlot;
 import net.bfsr.core.Core;
-import net.bfsr.core.Main;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
@@ -299,7 +298,7 @@ public class GuiInGame extends Gui {
         float xPos = 6;
 
         Profiler profiler = core.getProfiler();
-        Profiler sProfiler = MainServer.getServer() != null ? MainServer.getServer().getProfiler() : null;
+        Profiler sProfiler = MainServer.getInstance() != null ? MainServer.getInstance().getProfiler() : null;
         float updateTime = profiler.getResult("update");
         float renderTime = profiler.getResult("render");
         int drawCalls = core.getRenderer().getDrawCalls();
@@ -318,11 +317,11 @@ public class GuiInGame extends Gui {
         long freeMemoryMB = freeMemory / 1024L / 1024L;
         String openGlVersion = GL11.glGetString(GL11.GL_VERSION);
         String openGlRenderer = GL11.glGetString(GL11.GL_RENDERER);
-        int tps = MainServer.getServer() != null ? MainServer.getServer().getTps() : 0;
+        int tps = MainServer.getInstance() != null ? MainServer.getInstance().getUps() : 0;
 //        String openGlVendor = GL11.glGetString(GL11.GL_VENDOR);
 
         upperText.updateText("BFSR Client Dev 0.0.4 \n" +
-                "FPS " + Main.fps + "/" + tps + " \n" +
+                "FPS " + Core.getCore().getRenderer().getFps() + "/" + tps + " \n" +
                 //"System: " + System.getProperty("os.name") + " (" + System.getProperty("os.arch") + ") v." + System.getProperty("os.version") + " \n" +
                 //"Java: " + System.getProperty("java.version") + ", " + System.getProperty("java.vendor") + " \n" +
                 //System.getProperty("java.vm.name") + " (" + System.getProperty("java.vm.info") + "), " + System.getProperty("java.vm.vendor") + " \n" +
@@ -348,7 +347,7 @@ public class GuiInGame extends Gui {
             int particlesCount = world.getParticleRenderer().getParticles().size();
             int physicParticles = world.getParticleRenderer().getParticlesWrecks().size();
 
-            WorldServer sWorld = MainServer.getServer() != null ? MainServer.getServer().getWorld() : null;
+            WorldServer sWorld = MainServer.getInstance() != null ? MainServer.getInstance().getWorld() : null;
             int sBulletsCount = sWorld != null ? sWorld.getBullets().size() : 0;
             int sShipsCount = sWorld != null ? sWorld.getShips().size() : 0;
             int sParticlesCount = sWorld != null ? sWorld.getParticles().size() : 0;

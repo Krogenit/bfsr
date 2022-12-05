@@ -57,7 +57,7 @@ public class Bullet extends CollisionObject {
         this.energy = damage.getAverageDamage();
         setBulletVelocityAndStartTransform(radRot, pos);
         world.addBullet(this);
-        MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnBullet(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnBullet(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     private void setBulletVelocityAndStartTransform(float radRot, Vector2f pos) {

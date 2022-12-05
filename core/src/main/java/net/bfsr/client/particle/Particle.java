@@ -53,7 +53,7 @@ public class Particle extends CollisionObject {
 
     public Particle(int id, Vector2f pos, Vector2f velocity, float rot, float rotSpeed,
                     Vector2f size, float sizeSpeed, Vector4f color, float alphaSpeed, float greater, boolean isAlphaFromZero, boolean canCollide, EnumParticlePositionType positionType, EnumParticleRenderType renderType) {
-        this(MainServer.getServer().getWorld(), id, null, pos, velocity, rot, rotSpeed, size, sizeSpeed, color, alphaSpeed, greater, isAlphaFromZero, canCollide, positionType, renderType);
+        this(MainServer.getInstance().getWorld(), id, null, pos, velocity, rot, rotSpeed, size, sizeSpeed, color, alphaSpeed, greater, isAlphaFromZero, canCollide, positionType, renderType);
     }
 
     public Particle(int id, TextureRegister text, Vector2f pos, Vector2f velocity, float rot, float rotSpeed,

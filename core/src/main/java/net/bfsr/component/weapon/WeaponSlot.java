@@ -75,7 +75,7 @@ public abstract class WeaponSlot extends TextureObject {
             if (world.isRemote()) {
                 Core.getCore().sendPacket(new PacketWeaponShoot(ship.getId(), id));
             } else {
-                MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketWeaponShoot(ship.getId(), id), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+                MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketWeaponShoot(ship.getId(), id), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
                 createBullet();
                 shootTimer = shootTimerMax;
                 ship.getReactor().setEnergy(energy - energyCost);

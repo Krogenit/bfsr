@@ -152,7 +152,7 @@ public abstract class Shield extends CollisionObject {
                 Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldUp1, getPosition()));
             }
         } else {
-            MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRebuild(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRebuild(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         }
 
         createBody(ship.getPosition());
@@ -165,7 +165,7 @@ public abstract class Shield extends CollisionObject {
         } else {
             if (!world.isRemote()) {
                 setRebuildingTime(0);
-                MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRebuildingTime(ship.getId(), 0), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+                MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRebuildingTime(ship.getId(), 0), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
             }
         }
 
@@ -196,7 +196,7 @@ public abstract class Shield extends CollisionObject {
             ParticleSpawner.spawnDisableShield(getPosition(), ship.getScale().x * 4f, -240f, new Vector4f(color));
             Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldDown, ship.getPosition()));
         } else {
-            MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRemove(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRemove(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         }
 
         rebuildingTime = 0;
