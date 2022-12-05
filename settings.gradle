@@ -1,0 +1,3 @@
+rootProject.name = 'BFSR'
+include 'dyn4j'
+include 'core'

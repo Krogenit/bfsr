@@ -1,0 +1,3 @@
+[submodule "dyn4j"]
+	path = dyn4j
+	url = git@github.com:https://github.com/Krogenit/dyn4j.git
