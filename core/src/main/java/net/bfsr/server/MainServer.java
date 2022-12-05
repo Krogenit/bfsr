@@ -107,7 +107,9 @@ public class MainServer extends Loop {
                         e.printStackTrace();
                     }
                 }
-            }); t.setName("Console Input"); t.start();
+            });
+            t.setName("Console Input");
+            t.start();
         }
     }
 
