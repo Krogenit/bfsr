@@ -59,10 +59,10 @@ public class MainServer extends Loop {
 
     @Override
     public void run() {
-        super.run();
         log.info("Initialization server...");
         init();
         log.info("Initialized");
+        super.run();
         loop();
     }
 
