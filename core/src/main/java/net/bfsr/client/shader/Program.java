@@ -22,6 +22,9 @@ public abstract class Program {
 
     protected Program(Definition... definitions) {
         this.definitions = definitions;
+    }
+
+    public void load() {
         ProgramManager.INSTANCE.createProgram(this);
     }
 

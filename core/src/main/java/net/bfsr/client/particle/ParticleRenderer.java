@@ -56,6 +56,7 @@ public class ParticleRenderer {
         this.cam = core.getRenderer().getCamera();
         this.defaultShader = core.getRenderer().getShader();
         this.particleShader = new ParticleInstancedShader();
+        this.particleShader.load();
         this.particleShader.init();
         this.meshLoader = new MeshLoader();
         this.quad = new Mesh(VERTICES);

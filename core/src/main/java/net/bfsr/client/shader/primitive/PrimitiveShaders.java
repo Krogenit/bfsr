@@ -8,4 +8,9 @@ public class PrimitiveShaders {
 
     private final VertexColorShader vertexColorShader = new VertexColorShader();
     private final VertexColorTextureShader vertexColorTextureShader = new VertexColorTextureShader();
+
+    public void init() {
+        vertexColorShader.load();
+        vertexColorTextureShader.load();
+    }
 }

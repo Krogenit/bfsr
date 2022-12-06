@@ -99,8 +99,10 @@ public class TextureGenerator {
         buffer.generateTexture(2, width, height);
 
         NebulaShader nebulaShader = new NebulaShader();
+        nebulaShader.load();
         nebulaShader.init();
         StarsShader starsShader = new StarsShader();
+        starsShader.load();
         starsShader.init();
 //		if(!init) {
 //			buffer = new FrameBuffer();

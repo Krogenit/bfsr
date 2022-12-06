@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.language.Lang;
 import net.bfsr.core.Core;
-import net.bfsr.core.Main;
 
 import java.io.File;
 import java.io.FileReader;
@@ -58,7 +57,7 @@ public class ClientSettings implements IConfig {
             value = getFloat(option, (float) value);
         } else if (type == boolean.class) {
             if (option == EnumOption.vSync) {
-                Main.setVSync((boolean) value);
+                Core.getCore().getRenderer().setVSync((boolean) value);
             } else if (option == EnumOption.isProfiling) {
                 Core.getCore().getProfiler().setEnable((boolean) value);
             }

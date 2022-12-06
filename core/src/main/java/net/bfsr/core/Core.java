@@ -18,6 +18,8 @@ import net.bfsr.server.ThreadLocalServer;
 import net.bfsr.settings.ClientSettings;
 import net.bfsr.world.WorldClient;
 import org.joml.Vector3f;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.openal.AL11;
 
 import java.util.Queue;
@@ -27,8 +29,9 @@ import java.util.concurrent.Executors;
 public class Core {
     private static Core instance;
 
-    private final Main main;
+    @Setter
     private int screenWidth, screenHeight;
+    private long window;
 
     private final SoundManager soundManager;
     private WorldClient world;
@@ -47,11 +50,8 @@ public class Core {
 
     private final Queue<ListenableFutureTask<?>> futureTasks = Queues.newArrayDeque();
 
-    public Core(Main main, int screenWidth, int screenHeight) {
+    public Core() {
         instance = this;
-        this.main = main;
-        this.screenWidth = screenWidth;
-        this.screenHeight = screenHeight;
 
         Lang.load();
         this.settings = new ClientSettings();
@@ -59,15 +59,18 @@ public class Core {
         this.soundManager = new SoundManager();
         this.soundManager.init();
         this.renderer = new Renderer(this);
-        this.currentGui = new GuiMainMenu();
-        this.currentGui.init();
-
         this.profiler = new Profiler(settings.isProfiling());
     }
 
-    public void init() {
+    public void init(long window, GLFWVidMode vidMode) {
+        this.window = window;
+        this.screenWidth = vidMode.width();
+        this.screenHeight = vidMode.height();
         soundManager.setAttenuationModel(AL11.AL_EXPONENT_DISTANCE);
         soundManager.setListener(new SoundListener(new Vector3f(0, 0, 0)));
+        renderer.init(window, vidMode);
+        this.currentGui = new GuiMainMenu();
+        this.currentGui.init();
     }
 
     public void input() {
@@ -257,6 +260,6 @@ public class Core {
     }
 
     public void stop() {
-        main.stop();
+        GLFW.glfwSetWindowShouldClose(window, true);
     }
 }

@@ -50,12 +50,17 @@ public class FontRenderer {
     private final StringRenderer stringRenderer = new StringRenderer();
 
     public FontRenderer() {
+        instance = this;
+    }
+
+    public void init() {
+        fontShader.load();
         fontShader.init();
+        texturedFontShader.load();
         texturedFontShader.init();
         initVao();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         GL30.glBindVertexArray(0);
-        instance = this;
     }
 
     private void initVao() {
