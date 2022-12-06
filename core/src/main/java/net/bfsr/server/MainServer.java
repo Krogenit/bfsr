@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.core.Loop;
 import net.bfsr.entity.ship.PlayerServer;
-import net.bfsr.log.LoggingSystem;
 import net.bfsr.network.EnumGui;
 import net.bfsr.network.NetworkSystem;
 import net.bfsr.network.packet.server.PacketJoinGame;
@@ -24,10 +23,6 @@ import java.nio.charset.StandardCharsets;
 
 @Log4j2
 public class MainServer extends Loop {
-    static {
-        LoggingSystem.initServer();
-    }
-
     @Getter
     private static MainServer instance;
 

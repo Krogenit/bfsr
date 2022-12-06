@@ -3,7 +3,6 @@ package net.bfsr.core;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
-import net.bfsr.log.LoggingSystem;
 import net.bfsr.settings.ClientSettings;
 import net.bfsr.util.Timer;
 import org.lwjgl.glfw.Callbacks;
@@ -19,10 +18,6 @@ import java.nio.IntBuffer;
 
 @Log4j2
 public class Main extends Loop {
-    static {
-        LoggingSystem.initClient();
-    }
-
     private int windowWidth, windowHeight;
     private Core core;
     private long window;
