@@ -8,6 +8,7 @@ import net.bfsr.collision.ContactListener;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.physics.CustomValueMixer;
 import net.bfsr.profiler.Profiler;
 import org.dyn4j.dynamics.Body;
 
@@ -39,6 +40,7 @@ public class World {
         physicWorld.getSettings().setPositionConstraintSolverIterations(1);
         physicWorld.getSettings().setVelocityConstraintSolverIterations(1);
         physicWorld.addContactListener(new ContactListener());
+        physicWorld.setValueMixer(new CustomValueMixer());
 //		physicWorld.addListener(new CollisionListener());
     }
 
