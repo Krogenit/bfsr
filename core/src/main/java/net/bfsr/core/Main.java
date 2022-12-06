@@ -22,6 +22,7 @@ public class Main extends Loop {
     private Core core;
     private long window;
     private Timer timer;
+    private GLFWVidMode vidMode;
 
     @Override
     public void run() {
@@ -58,7 +59,7 @@ public class Main extends Loop {
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
 
-        GLFWVidMode vidmode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
+        vidMode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
         windowHeight = 720;
         windowWidth = 1280;
 
@@ -70,7 +71,7 @@ public class Main extends Loop {
             IntBuffer pHeight = stack.mallocInt(1);
 
             GLFW.glfwGetWindowSize(window, pWidth, pHeight);
-            GLFW.glfwSetWindowPos(window, (vidmode.width() - pWidth.get(0)) / 2, (vidmode.height() - pHeight.get(0)) / 2);
+            GLFW.glfwSetWindowPos(window, (vidMode.width() - pWidth.get(0)) / 2, (vidMode.height() - pHeight.get(0)) / 2);
         }
 
         GLFW.glfwMakeContextCurrent(window);
@@ -106,7 +107,7 @@ public class Main extends Loop {
         setVSync(settings.isVSync());
         if (settings.isDebug()) {
             GLFW.glfwSetWindowSize(window, 1280, 720);
-            GLFW.glfwSetWindowPos(window, (windowWidth - 1280) / 2, (windowHeight - 720) / 2);
+            GLFW.glfwSetWindowPos(window, (vidMode.width() - 1280) / 2, (vidMode.height() - 720) / 2);
         }
     }
 
