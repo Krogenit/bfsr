@@ -56,7 +56,7 @@ public class Camera {
         origin = new Vector2f(-width / 2.0f, -height / 2.0f);
         this.width = width;
         this.height = height;
-        zoom = 1.0f;
+        zoom = zoomBackground = 1.0f;
         positionAndOrigin = new Vector2f();
         core = Core.getCore();
         settings = core.getSettings();
@@ -140,14 +140,12 @@ public class Camera {
         }
     }
 
-    private void scroll() {
-        Vector2f scroll = Mouse.getScroll();
-
+    public void scroll(float y) {
         float zoomMax = 2.5f;
         float zoomMin = 0.3f;
         float step = settings.getCameraZoomSpeed() * zoom;
         float maxSteps = (zoomMax - zoomMin) / step;
-        zoom += scroll.y * step;
+        zoom += y * step;
 
         if (zoom > zoomMax) {
             zoom = zoomMax;
@@ -159,7 +157,7 @@ public class Camera {
         zoomMin = 0.9925f;
         step = (zoomMax - zoomMin) / maxSteps;
 
-        zoomBackground += scroll.y * step;
+        zoomBackground += y * step;
 
         if (zoomBackground > zoomMax) {
             zoomBackground = zoomMax;
@@ -171,7 +169,6 @@ public class Camera {
     public void update(double delta) {
         if (core.getWorld() != null) {
             if (core.canControlShip()) {
-                scroll();
                 if (settings.isCameraMoveByScreenBorders()) moveByScreenBorders(delta);
             }
 

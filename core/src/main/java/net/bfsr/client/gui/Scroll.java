@@ -44,8 +44,8 @@ public class Scroll extends TextureObject {
         this.value = maxValue - ((this.position.y - minYpos) / (maxYpos - minYpos)) * maxValue;
     }
 
-    public void scroll(Vector2f scroll) {
-        value += scroll.y;
+    public void scroll(float y) {
+        value += y;
         if (value > maxValue) {
             value = maxValue;
         } else if (value < 0) {

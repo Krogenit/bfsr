@@ -1,70 +1,63 @@
 package net.bfsr.client.input;
 
 import net.bfsr.client.camera.Camera;
+import net.bfsr.client.gui.Gui;
+import net.bfsr.core.Core;
+import net.bfsr.world.WorldClient;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.function.Consumer;
+
 public class Mouse {
-    static Vector2f pos, prevPos, scroll;
-    static Vector2f deltaPos;
+    private static final Vector2f pos = new Vector2f(), prevPos = new Vector2f();
+    private static final Vector2f deltaPos = new Vector2f();
 
-    static int isLeftDown, isRightDown, isMiddleDown;
-    static int isLeftRelease, isRightRelease, isMiddleRelease;
-    static int isLeftStartDown, isRightStartDown, isMiddleStartDown;
+    private static long window;
 
-    static boolean isActive;
+    private static boolean isActive;
+
+    private static final MouseConsumer[][] mouseConsumers = new MouseConsumer[2][2];
+
+    private interface MouseConsumer {
+        void input(int action);
+    }
 
     public static void init(long window) {
-        GLFW.glfwSetCursorPosCallback(window, (windowHandle, xpos, ypos) -> {
-            pos.x = (float) xpos;
-            pos.y = (float) ypos;
-        });
+        Mouse.window = window;
 
-        GLFW.glfwSetCursorEnterCallback(window, (windowHandle, entered) -> {
-            isActive = entered;
-        });
+        mouseConsumers[0][1] = action -> guiAndWorldInput(Gui::onMouseLeftClicked, WorldClient::onMouseLeftClicked);
+        mouseConsumers[0][0] = action -> guiAndWorldInput(Gui::onMouseLeftRelease, WorldClient::onMouseLeftRelease);
+        mouseConsumers[1][1] = action -> guiAndWorldInput(Gui::onMouseRightClicked, WorldClient::onMouseRightClicked);
+        mouseConsumers[1][0] = action -> guiInput(Gui::onMouseRightRelease);
+
+        GLFW.glfwSetCursorPosCallback(window, (windowHandle, xpos, ypos) -> pos.set((float) xpos, (float) ypos));
+        GLFW.glfwSetCursorEnterCallback(window, (windowHandle, entered) -> isActive = entered);
         GLFW.glfwSetMouseButtonCallback(window, (windowHandle, button, action, mode) -> {
-            if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-                if (!isLeftDown() && action == 1) isLeftStartDown = 1;
-                isLeftDown = action;
-                if (!isLeftDown()) isLeftRelease = 1;
-            }
-            if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-                if (!isRightDown() && action == 1) isRightStartDown = 1;
-                isRightDown = action;
-                if (!isRightDown()) isRightRelease = 1;
-            }
-            if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE) {
-                if (!isMiddleDown() && action == 1) isMiddleStartDown = 1;
-                isMiddleDown = action;
-                if (!isMiddleDown()) isMiddleRelease = 1;
+            if (button < 2) {
+                mouseConsumers[button][action].input(action);
             }
         });
-        GLFW.glfwSetScrollCallback(window, (windowHandle, xoffset, yoffset) -> {
-            scroll.x += xoffset;
-            scroll.y += yoffset;
+        GLFW.glfwSetScrollCallback(window, (windowHandle, x, y) -> {
+            float floatY = (float) y;
+            guiInput(gui -> gui.onMouseScroll(floatY));
+            Core.getCore().getRenderer().getCamera().scroll(floatY);
         });
-
-        scroll = new Vector2f();
-        pos = new Vector2f();
-        prevPos = new Vector2f();
-        deltaPos = new Vector2f();
     }
 
-    public void onMouseScroll(double x, double y) {
-        scroll.x += x;
-        scroll.y += y;
+    private static void guiInput(Consumer<Gui> consumer) {
+        Gui gui = Core.getCore().getCurrentGui();
+        if (gui != null) {
+            consumer.accept(gui);
+        }
+
+        consumer.accept(Core.getCore().getGuiInGame());
     }
 
-    public static void postUpdateState() {
-        isLeftStartDown = 0;
-        isRightStartDown = 0;
-        isMiddleStartDown = 0;
-        isLeftRelease = 0;
-        isRightRelease = 0;
-        isMiddleRelease = 0;
-        scroll.x = 0;
-        scroll.y = 0;
+    private static void guiAndWorldInput(Consumer<Gui> guiConsumer, Consumer<WorldClient> worldConsumer) {
+        guiInput(guiConsumer);
+        WorldClient world = Core.getCore().getWorld();
+        if (world != null) worldConsumer.accept(world);
     }
 
     public static void updateState() {
@@ -88,36 +81,16 @@ public class Mouse {
         prevPos.y = pos.y;
     }
 
-    public static boolean isLeftRelease() {
-        return isLeftRelease == 1;
-    }
-
-    public static boolean isRightRelease() {
-        return isRightRelease == 1;
-    }
-
     public static boolean isLeftDown() {
-        return isLeftDown == 1;
+        return GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
     }
 
     public static boolean isRightDown() {
-        return isRightDown == 1;
+        return GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
     }
 
     public static boolean isMiddleDown() {
-        return isMiddleDown == 1;
-    }
-
-    public static boolean isLeftStartDown() {
-        return isLeftStartDown == 1;
-    }
-
-    public static boolean isRightStartDown() {
-        return isRightStartDown == 1;
-    }
-
-    public static boolean isMiddleStartDown() {
-        return isMiddleStartDown == 1;
+        return GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_MIDDLE) == GLFW.GLFW_PRESS;
     }
 
     public static Vector2f getDelta() {
@@ -130,9 +103,5 @@ public class Mouse {
 
     public static Vector2f getWorldPosition(Camera cam) {
         return cam.getWorldVector(pos);
-    }
-
-    public static Vector2f getScroll() {
-        return scroll;
     }
 }

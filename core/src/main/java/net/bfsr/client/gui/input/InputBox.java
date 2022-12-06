@@ -140,15 +140,45 @@ public class InputBox extends TextureObject {
         }
     }
 
+    public void onMouseLeftClicked() {
+        if (isIntersects()) {
+            if (!isTyping) setTyping(true);
+
+            if (typingText != null) {
+                setCursorPositionByMouse();
+                Core.getCore().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
+            }
+        } else {
+            setTyping(false);
+        }
+    }
+
     public void input() {
+        if (typingText != null && isIntersects()) {
+            if (Mouse.isLeftDown()) {
+                Vector2f mousePos = Mouse.getPosition();
+                Vector2f pos = new Vector2f(mousePos.x - this.position.x - textOffset.x, mousePos.y);
+                int endPos = TextMeshCreator.getCursorPositionInLine(typingText.getTextString(), font, fontSize.x, pos);
+                if (endPos <= cursorPosition) {
+                    cursorPosition = endPos;
+                    wasEndPos = false;
+                } else {
+                    cursorPositionEnd = endPos;
+                    wasEndPos = true;
+                }
+            }
+        }
+    }
+
+    public void input(int key) {
         if (typingText != null) {
-            if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && Keyboard.isKeyPressed(GLFW.GLFW_KEY_A)) {
+            if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_A) {
                 cursorPosition = 0;
                 cursorPositionEnd = typingText.getTextString().length();
                 wasEndPos = true;
             }
 
-            if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_LEFT) || Keyboard.isKeyRepeating(GLFW.GLFW_KEY_LEFT)) {
+            if (key == GLFW.GLFW_KEY_LEFT) {
                 if (wasEndPos) cursorPosition = cursorPositionEnd;
                 cursorPosition--;
                 if (cursorPosition < 0) cursorPosition = 0;
@@ -156,7 +186,7 @@ public class InputBox extends TextureObject {
                 else {
                     wasEndPos = false;
                 }
-            } else if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_RIGHT) || Keyboard.isKeyRepeating(GLFW.GLFW_KEY_RIGHT)) {
+            } else if (key == GLFW.GLFW_KEY_RIGHT) {
                 if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT)) {
                     if (!wasEndPos) cursorPositionEnd = cursorPosition;
                     cursorPositionEnd++;
@@ -171,7 +201,7 @@ public class InputBox extends TextureObject {
                 }
             }
 
-            if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_BACKSPACE) || Keyboard.isKeyRepeating(GLFW.GLFW_KEY_BACKSPACE)) {
+            if (key == GLFW.GLFW_KEY_BACKSPACE) {
                 String prevString = typingText.getTextString();
 
                 if (prevString.length() > 0) {
@@ -195,7 +225,7 @@ public class InputBox extends TextureObject {
                     Vector2f pos = new Vector2f(pos1.x + textOffset.x, pos1.y + textOffset.y);
                     typingText = new GUIText(newString, fontSize, font, pos, textColor, false, posType);
                 }
-            } else if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_DELETE) || Keyboard.isKeyRepeating(GLFW.GLFW_KEY_DELETE)) {
+            } else if (key == GLFW.GLFW_KEY_DELETE) {
                 String prevString = typingText.getTextString();
 
                 if (prevString.length() > 0) {
@@ -213,24 +243,6 @@ public class InputBox extends TextureObject {
                     Vector2f pos1 = getPosition();
                     Vector2f pos = new Vector2f(pos1.x + textOffset.x, pos1.y + textOffset.y);
                     typingText = new GUIText(newString, fontSize, font, pos, textColor, false, posType);
-                }
-            }
-
-            if (isIntersects()) {
-                if (Mouse.isLeftStartDown()) {
-                    setCursorPositionByMouse();
-                    Core.getCore().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
-                } else if (Mouse.isLeftDown()) {
-                    Vector2f mousePos = Mouse.getPosition();
-                    Vector2f pos = new Vector2f(mousePos.x - this.position.x - textOffset.x, mousePos.y);
-                    int endPos = TextMeshCreator.getCursorPositionInLine(typingText.getTextString(), font, fontSize.x, pos);
-                    if (endPos <= cursorPosition) {
-                        cursorPosition = endPos;
-                        wasEndPos = false;
-                    } else {
-                        cursorPositionEnd = endPos;
-                        wasEndPos = true;
-                    }
                 }
             }
         }

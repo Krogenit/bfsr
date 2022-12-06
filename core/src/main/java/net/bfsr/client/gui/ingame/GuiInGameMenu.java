@@ -5,7 +5,6 @@ import net.bfsr.client.gui.GuiSettings;
 import net.bfsr.client.gui.GuiTextureObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.button.ButtonBase;
-import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.loader.TextureLoader;
 import net.bfsr.client.render.Renderer;
 import net.bfsr.client.shader.BaseShader;
@@ -46,10 +45,10 @@ public class GuiInGameMenu extends Gui {
     }
 
     @Override
-    public void input() {
-        super.input();
+    public void textInput(int key) {
+        super.textInput(key);
 
-        if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_ESCAPE)) {
+        if (key == GLFW.GLFW_KEY_ESCAPE) {
             Core.getCore().setCurrentGui(null);
         }
     }

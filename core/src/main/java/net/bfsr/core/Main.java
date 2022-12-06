@@ -69,12 +69,6 @@ public class Main extends Loop {
     }
 
     @Override
-    protected void postInputUpdate() {
-        Keyboard.update();
-        Mouse.postUpdateState();
-    }
-
-    @Override
     protected void update(double delta) {
         core.update(delta);
     }

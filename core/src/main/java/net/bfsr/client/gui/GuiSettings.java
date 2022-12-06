@@ -3,8 +3,6 @@ package net.bfsr.client.gui;
 import net.bfsr.client.font.GUIText;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.button.ButtonBase;
-import net.bfsr.client.input.Keyboard;
-import net.bfsr.client.input.Mouse;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.render.Renderer;
@@ -22,13 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GuiSettings extends Gui {
-
     private final Gui prevGui;
     private boolean isInGame;
     private final List<GUIText> sections;
     private final Scroll scroll;
     private final GUIText mainText;
-    private boolean firstInit = false;
+    private boolean firstInit;
 
     public GuiSettings(Gui prevGui) {
         this.prevGui = prevGui;
@@ -110,16 +107,11 @@ public class GuiSettings extends Gui {
     }
 
     @Override
-    public void input() {
-        super.input();
-        if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_ESCAPE)) {
-            Core.getCore().setCurrentGui(prevGui);
-        }
+    public void textInput(int key) {
+        super.textInput(key);
 
-        Vector2f scroll = Mouse.getScroll();
-        if (scroll.y != 0 || this.scroll.isMoving()) {
-            clear();
-            init();
+        if (key == GLFW.GLFW_KEY_ESCAPE) {
+            Core.getCore().setCurrentGui(prevGui);
         }
     }
 
@@ -130,12 +122,13 @@ public class GuiSettings extends Gui {
         }
     }
 
-    public Vector2f getScissorSize() {
-        return new Vector2f();
-    }
-
-    public Vector2f getScissorPos() {
-        return new Vector2f();
+    @Override
+    public void onMouseScroll(float y) {
+        super.onMouseScroll(y);
+        if (y != 0) {
+            clear();
+            init();
+        }
     }
 
     @Override
@@ -145,6 +138,11 @@ public class GuiSettings extends Gui {
             shader.setModelViewMatrix(Transformation.getModelViewMatrixGui(width / 2.0F, height / 2.0f, 0, width, height));
             shader.disableTexture();
             Renderer.quad.render();
+        }
+
+        if (scroll.isMoving()) {
+            clear();
+            init();
         }
 
         super.render(shader);

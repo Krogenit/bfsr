@@ -29,7 +29,6 @@ public class Loop extends AbstractLoop {
                 update(delta);
                 lastUpdateTime += timeBetweenUpdates;
                 updateCount++;
-                postInputUpdate();
             }
 
             // If for some reason an update takes forever, we don't want to do an insane number of catchups.
@@ -83,9 +82,6 @@ public class Loop extends AbstractLoop {
 
     @Override
     protected void input() {}
-
-    @Override
-    protected void postInputUpdate() {}
 
     @Override
     protected void update(double delta) {}

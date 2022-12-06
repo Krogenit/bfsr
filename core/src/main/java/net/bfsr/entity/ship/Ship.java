@@ -165,7 +165,7 @@ public abstract class Ship extends CollisionObject {
 
             engine.setMaxPower(false);
 
-            if (Core.getCore().getSettings().isDebug() && Keyboard.isKeyPressed(GLFW.GLFW_KEY_R)) {
+            if (Core.getCore().getSettings().isDebug() && Keyboard.isKeyDown(GLFW.GLFW_KEY_R)) {
 //				createSpark();
                 float baseSize = 40f + scale.x * 0.25f;
                 Random rand = world.getRand();

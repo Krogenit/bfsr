@@ -2,79 +2,40 @@ package net.bfsr.client.input;
 
 import net.bfsr.client.gui.Gui;
 import net.bfsr.core.Core;
+import net.bfsr.world.WorldClient;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Keyboard {
-    static long window;
-
-    private static final Map<Integer, Boolean> KEY_STATES = new HashMap<>();
-    private static final Map<Integer, Integer> KEY_REPEATING = new HashMap<>();
+    private static long window;
 
     public static void init(long win) {
         window = win;
 
-        glfwSetCharCallback(window, (window, key) -> {
-            Gui gui = Core.getCore().getCurrentGui();
-            if (gui != null) {
-                gui.textInput(key);
-            }
+        glfwSetKeyCallback(window, (window1, key, scancode, action, mods) -> {
+            if (action != GLFW_RELEASE) {
+                WorldClient world = Core.getCore().getWorld();
+                if (world != null) world.input(key);
 
-            gui = Core.getCore().getGuiInGame();
-            if (gui != null) {
-                gui.textInput(key);
+                guiInput(gui -> gui.input(key));
             }
         });
+
+        glfwSetCharCallback(window, (window, key) -> guiInput(gui -> gui.textInput(key)));
     }
 
-    public static void setKeyState(int keyId, int isPress) {
+    private static void guiInput(Consumer<Gui> guiConsumer) {
+        Gui gui = Core.getCore().getCurrentGui();
+        if (gui != null) {
+            guiConsumer.accept(gui);
+        }
 
+        guiConsumer.accept(gui);
     }
 
     public static boolean isKeyDown(int keyCode) {
         return glfwGetKey(window, keyCode) == GLFW_PRESS;
-    }
-
-    public static void update() {
-        for (Map.Entry<Integer, Integer> next : KEY_REPEATING.entrySet()) {
-            Integer i = next.getValue();
-            if (i > 0 && !isKeyDown(next.getKey())) {
-                KEY_REPEATING.put(next.getKey(), 0);
-            }
-        }
-    }
-
-    public static boolean isKeyRepeating(int keyCode) {
-        Integer timer = KEY_REPEATING.get(keyCode);
-        if (timer == null) {
-            timer = 0;
-        }
-
-        boolean repeating = false;
-
-        if (timer < 30) timer++;
-        else repeating = true;
-
-        KEY_REPEATING.put(keyCode, timer);
-        return repeating;
-    }
-
-    public static boolean isKeyPressed(int keyCode) {
-        boolean prevKeyState = false;
-        if (KEY_STATES.containsKey(keyCode)) prevKeyState = KEY_STATES.get(keyCode);
-
-        boolean keyDown = isKeyDown(keyCode);
-        boolean pressed = !prevKeyState && keyDown;
-
-        KEY_STATES.put(keyCode, keyDown);
-
-        return pressed;
-    }
-
-    public static boolean isKeyRelease(int keyCode) {
-        return glfwGetKey(window, keyCode) == GLFW_RELEASE;
     }
 }

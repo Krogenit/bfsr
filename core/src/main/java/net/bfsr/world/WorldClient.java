@@ -1,7 +1,6 @@
 package net.bfsr.world;
 
 import net.bfsr.client.gui.ingame.GuiInGameMenu;
-import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleRenderer;
@@ -55,18 +54,33 @@ public class WorldClient extends World {
         this.background.setZoomFactor(EnumZoomFactor.Background);
     }
 
+    public void onMouseLeftClicked() {
+        if (playerShip == null && core.canControlShip()) {
+            core.getGuiInGame().selectShip(null);
+            for (Ship ship : ships) {
+                if (ship.getAABB().isIntersects(Mouse.getWorldPosition(core.getRenderer().getCamera()))) {
+                    core.getGuiInGame().selectShip(ship);
+                }
+            }
+        }
+    }
+
+    public void onMouseLeftRelease() {
+        DecimalFormat f = new DecimalFormat("0.00");
+        Vector2f mpos = Mouse.getWorldPosition(core.getRenderer().getCamera());
+        System.out.println("vertecies[0] = new Vector2(" + f.format(mpos.x) + "f, " + f.format(mpos.y) + "f);");
+    }
+
+    public void onMouseRightClicked() {
+        core.getGuiInGame().selectShipSecondary(null);
+        for (Ship ship : ships) {
+            if (ship.getAABB().isIntersects(Mouse.getWorldPosition(core.getRenderer().getCamera()))) {
+                core.getGuiInGame().selectShipSecondary(ship);
+            }
+        }
+    }
+
     public void input() {
-        if (Mouse.isLeftRelease()) {
-            DecimalFormat f = new DecimalFormat("0.00");
-            Vector2f mpos = Mouse.getWorldPosition(core.getRenderer().getCamera());
-            System.out.println("vertecies[0] = new Vector2(" + f.format(mpos.x) + "f, " + f.format(mpos.y) + "f);");
-        }
-
-        if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_ESCAPE) && Core.getCore().canControlShip()) {
-            Core.getCore().setCurrentGui(new GuiInGameMenu());
-        }
-
-
         int bots = 0;
         boolean sameFaction = true;
         Faction lastFaction = null;
@@ -81,9 +95,15 @@ public class WorldClient extends World {
 
             lastFaction = s.getFaction();
         }
+    }
 
-//		if(Core.getCore().canControlShip()) {
-        if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_F)
+    public void input(int key) {
+        if (key == GLFW.GLFW_KEY_ESCAPE && Core.getCore().canControlShip()) {
+            Core.getCore().setCurrentGui(new GuiInGameMenu());
+        }
+
+        //		if(Core.getCore().canControlShip()) {
+        if (key == GLFW.GLFW_KEY_F
 //					|| --spawnTimer <= 0
 //					|| ((bots == 0 || sameFaction) && --spawnTimer <= 0)
         ) {
@@ -95,7 +115,7 @@ public class WorldClient extends World {
                 core.sendPacket(new PacketCommand(EnumCommand.SpawnShip, "" + pos.x, "" + pos.y));
 //					}
             spawnTimer = 60;
-        } else if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_G)) {
+        } else if (key == GLFW.GLFW_KEY_G) {
             Vector2f pos = Mouse.getWorldPosition(Core.getCore().getRenderer().getCamera());
             Vector2f randomVector1 = new Vector2f(pos).add(-10 + rand.nextInt(21), -10 + rand.nextInt(21));
             core.sendPacket(new PacketCommand(EnumCommand.SpawnParticle, "" + randomVector1.x, "" + randomVector1.y));
@@ -108,7 +128,7 @@ public class WorldClient extends World {
 //				particleSystem.spawnLight(randomVector1, 5f, new Vector4f(1.0f, 0.5f, 0.5f, 0.7f), 0.04f, false, EnumParticlePositionType.Default);
 //				particleSystem.spawnSpark(randomVector1, 0.5f);
 //				particleSystem.spawnExplosion(randomVector1, 0.125F);
-        } else if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_J)) {
+        } else if (key == GLFW.GLFW_KEY_J) {
             if (playerShip != null) {
 //				playerShip.getDamages().clear();
                 //saimon
@@ -128,26 +148,6 @@ public class WorldClient extends World {
 //				playerShip.addDamage(new Damage(playerShip, 0.8f, 2, new Vector2f(8, -2), 0.5f));
             }
 
-        }
-
-        if (Mouse.isRightStartDown()) {
-            core.getGuiInGame().selectShipSecondary(null);
-            for (Ship ship : ships) {
-                if (ship.getAABB().isIntersects(Mouse.getWorldPosition(core.getRenderer().getCamera()))) {
-                    core.getGuiInGame().selectShipSecondary(ship);
-                }
-            }
-        }
-
-        if (playerShip == null) {
-            if (Mouse.isLeftStartDown() && core.canControlShip()) {
-                core.getGuiInGame().selectShip(null);
-                for (Ship ship : ships) {
-                    if (ship.getAABB().isIntersects(Mouse.getWorldPosition(core.getRenderer().getCamera()))) {
-                        core.getGuiInGame().selectShip(ship);
-                    }
-                }
-            }
         }
     }
 

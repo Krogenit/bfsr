@@ -4,7 +4,6 @@ import net.bfsr.client.font.FontRenderer;
 import net.bfsr.client.font.TextMeshCreator;
 import net.bfsr.client.font_new.FontType;
 import net.bfsr.client.gui.Scroll;
-import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.render.Renderer;
@@ -57,10 +56,10 @@ public class InputChat extends InputBox {
     }
 
     @Override
-    public void input() {
-        super.input();
+    public void textInput(int key) {
+        super.textInput(key);
 
-        if (Keyboard.isKeyPressed(GLFW.GLFW_KEY_ENTER)) {
+        if (key == GLFW.GLFW_KEY_ENTER) {
             String input = typingText.getTextString().trim();
             if (input.length() > 0) {
 //				addNewLineToChat(Core.getCore().getPlayerName() + ": " + input);

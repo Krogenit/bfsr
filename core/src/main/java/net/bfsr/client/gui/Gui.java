@@ -94,7 +94,7 @@ public class Gui {
 
     }
 
-    protected void onLeftClicked() {
+    public void onMouseLeftClicked() {
         for (int i = 0; i < buttons.size(); i++) {
             Button b = buttons.get(i);
             if (b.isIntersects()) {
@@ -104,23 +104,33 @@ public class Gui {
         }
 
         for (Slider slider : sliders) {
-            slider.setMoving(false);
+            if (slider.isIntersects()) {
+                slider.setMoving(true);
+            }
         }
 
+        for (Scroll scroll : scrolls) {
+            if (scroll.isIntersects()) {
+                scroll.setMoving(true);
+            }
+        }
+
+        for (InputBox inputBox : inputBoxes) {
+            inputBox.onMouseLeftClicked();
+        }
+    }
+
+    public void onMouseLeftRelease() {
         for (Scroll scroll : scrolls) {
             scroll.setMoving(false);
         }
 
-        for (InputBox inputBox : inputBoxes) {
-            if (inputBox.isIntersects()) {
-                if (!inputBox.isTyping()) inputBox.setTyping(true);
-            } else {
-                inputBox.setTyping(false);
-            }
+        for (Slider slider : sliders) {
+            slider.setMoving(false);
         }
     }
 
-    protected void onRightClicked() {
+    public void onMouseRightClicked() {
         for (Button b : buttons) {
             if (b.isIntersects()) {
                 b.rightClick();
@@ -129,14 +139,29 @@ public class Gui {
         }
     }
 
+    public void onMouseRightRelease() {
+
+    }
+
+    public void onMouseScroll(float y) {
+        for (Scroll scroll : scrolls) {
+            scroll.scroll(y);
+        }
+    }
+
     public void resize(int width, int height) {
         init();
     }
 
-    public void input() {
-        if (Mouse.isLeftStartDown()) onLeftClicked();
-        if (Mouse.isRightStartDown()) onRightClicked();
+    public void input(int key) {
+        for (InputBox in : inputBoxes) {
+            if (in.isTyping()) {
+                in.input(key);
+            }
+        }
+    }
 
+    public void input() {
         Vector2f mousePos = Mouse.getPosition();
 
         if (Mouse.isLeftDown()) {
@@ -153,35 +178,9 @@ public class Gui {
             }
         }
 
-        if (Mouse.isLeftStartDown()) {
-            for (Slider slider : sliders) {
-                if (slider.isIntersects()) {
-                    slider.setMoving(true);
-                }
-            }
-
-            for (Scroll scroll : scrolls) {
-                if (scroll.isIntersects()) {
-                    scroll.setMoving(true);
-                }
-            }
-        }
-
         for (InputBox in : inputBoxes) {
             if (in.isTyping()) {
                 in.input();
-            }
-        }
-
-        Vector2f mouseScroll = Mouse.getScroll();
-
-        for (Scroll scroll : scrolls) {
-            scroll.scroll(mouseScroll);
-        }
-
-        if (Mouse.isLeftRelease()) {
-            for (Scroll scroll : scrolls) {
-                scroll.setMoving(false);
             }
         }
     }

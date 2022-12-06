@@ -87,7 +87,6 @@ public class GuiInGame extends Gui {
 
     private boolean controlWasPressed;
     private boolean controlButtonCreated;
-    private boolean needExitFromChat;
 
     private Ship currentShip;
     private Ship otherShip;
@@ -220,7 +219,7 @@ public class GuiInGame extends Gui {
     }
 
     @Override
-    protected void onLeftClicked() {
+    public void onMouseLeftClicked() {
         for (Button b : buttons) {
             if (b.isIntersects()) {
                 b.leftClick();
@@ -228,18 +227,15 @@ public class GuiInGame extends Gui {
             } else controlWasPressed = false;
         }
 
-        chatScroll.setMoving(false);
-
-        if (chatInput.isIntersects()) {
-            if (!chatInput.isTyping()) chatInput.setTyping(true);
-        } else {
-            if (chatInput.isTyping()) needExitFromChat = true;
-            chatInput.setTyping(false);
+        if (chatScroll.isIntersects()) {
+            chatScroll.setMoving(true);
         }
+
+        chatInput.onMouseLeftClicked();
     }
 
     public boolean isActive() {
-        if (controlWasPressed || needExitFromChat) return true;
+        if (controlWasPressed) return true;
         return chatInput.isTyping() || chatScroll.isMoving();
     }
 
@@ -252,11 +248,6 @@ public class GuiInGame extends Gui {
 
     @Override
     public void input() {
-        if (Mouse.isLeftStartDown())
-            onLeftClicked();
-        if (Mouse.isRightStartDown())
-            onRightClicked();
-
         Vector2f mousePos = Mouse.getPosition();
 
         if (Mouse.isLeftDown()) {
@@ -265,28 +256,27 @@ public class GuiInGame extends Gui {
             }
         }
 
-        if (Mouse.isLeftStartDown()) {
-            if (chatScroll.isIntersects()) {
-                chatScroll.setMoving(true);
-            }
-        }
-
         if (chatInput.isTyping()) {
             chatInput.input();
             chatScroll.setMaxValue(chatInput.getLines().size());
         }
+    }
 
+    @Override
+    public void onMouseLeftRelease() {
+        super.onMouseLeftRelease();
+        controlWasPressed = false;
+        chatScroll.setMoving(false);
+    }
+
+    @Override
+    public void onMouseScroll(float y) {
+        super.onMouseScroll(y);
         if (chatInput.isTyping()) {
-            Vector2f scroll = Mouse.getScroll();
-            chatScroll.scroll(scroll);
+            chatScroll.scroll(y);
             chatInput.setOffsetByScroll(chatScroll.getValue());
             chatScroll.setScale(Transformation.getScale(12, 99));
             chatScroll.setPosition(Transformation.getOffsetByScale(new Vector2f(center.x - 400, center.y + 284)));
-        }
-
-        if (Mouse.isLeftRelease()) {
-            needExitFromChat = false;
-            controlWasPressed = false;
         }
     }
 
@@ -416,7 +406,6 @@ public class GuiInGame extends Gui {
         controlText.clear();
         controlText.updateText(Lang.getString("gui.cancelControl"));
     }
-
 
     public void cancelShipControl() {
         controlText.clear();

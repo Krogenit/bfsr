@@ -1,6 +1,5 @@
 package net.bfsr.client.gui.menu;
 
-import net.bfsr.client.font.FontRenderer;
 import net.bfsr.client.font_new.FontType;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.GuiSettings;
@@ -13,7 +12,6 @@ import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.texture.TextureRegister;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
-import net.bfsr.math.EnumZoomFactor;
 import org.joml.Vector2f;
 
 public class GuiMainMenu extends Gui {
@@ -70,12 +68,12 @@ public class GuiMainMenu extends Gui {
 
     @Override
     public void render(BaseShader shader) {
-        long nano = System.nanoTime();
-        FontRenderer.getInstance().render(staticStrings.get(0));
+//        long nano = System.nanoTime();
+//        FontRenderer.getInstance().render(staticStrings.get(0));
 //        System.out.println("static: " + (System.nanoTime() - nano) / 1_000_000.0f + "ms");
-        nano = System.nanoTime();
-        FontRenderer.getInstance().renderString(FontType.Xolonium, "Привет как дела что делаеш ахфзах зфза фщыа" +
-                "щзфшыазщ фщзыа зфщлыазщ флыщзал фщзлыа зфщзыа", 0, 50, 16, 1.0f, 1.0f, 1.0f, 1.0f, EnumZoomFactor.Gui);
+//        nano = System.nanoTime();
+//        FontRenderer.getInstance().renderString(FontType.Xolonium, "Привет как дела что делаеш ахфзах зфза фщыа" +
+//                "щзфшыазщ фщзыа зфщлыазщ флыщзал фщзлыа зфщзыа", 0, 50, 16, 1.0f, 1.0f, 1.0f, 1.0f, EnumZoomFactor.Gui);
 //        System.out.println("dynamic: " + (System.nanoTime() - nano) / 1_000_000.0f + "ms");
         shader.enable();
         bfsrLogo.render(shader);
