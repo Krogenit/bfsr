@@ -75,8 +75,7 @@ public class PacketShipInfo extends ServerPacket {
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
         CollisionObject obj = Core.getCore().getWorld().getEntityById(id);
-        if (obj != null) {
-            Ship ship = (Ship) obj;
+        if (obj instanceof Ship ship) {
             Armor shipArmor = ship.getArmor();
             ArmorPlate[] plates = shipArmor.getArmorPlates();
             for (int i = 0; i < plates.length; i++) {

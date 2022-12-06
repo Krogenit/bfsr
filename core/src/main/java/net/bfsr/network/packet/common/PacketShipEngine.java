@@ -41,7 +41,7 @@ public class PacketShipEngine extends Packet {
     public void processOnClientSide(NetworkManagerClient networkManager) {
         Direction direction = Direction.values()[dir];
         CollisionObject obj = Core.getCore().getWorld().getEntityById(id);
-        if (obj != null) {
+        if (obj instanceof Ship) {
             ((Ship) obj).setMoveDirection(direction);
         }
     }
