@@ -4,7 +4,6 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.settings.ClientSettings;
-import net.bfsr.util.Timer;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -21,13 +20,11 @@ public class Main extends Loop {
     private int windowWidth, windowHeight;
     private Core core;
     private long window;
-    private Timer timer;
     private GLFWVidMode vidMode;
 
     @Override
     public void run() {
         super.run();
-        timer = new Timer();
         initGLFW();
         core = new Core(this, windowWidth, windowHeight);
         init();
@@ -43,11 +40,7 @@ public class Main extends Loop {
     }
 
     public static void setVSync(boolean value) {
-        if (value) {
-            GLFW.glfwSwapInterval(1);
-        } else {
-            GLFW.glfwSwapInterval(0);
-        }
+        GLFW.glfwSwapInterval(value ? 1 : 0);
     }
 
     private void initGLFW() {
@@ -82,7 +75,6 @@ public class Main extends Loop {
         GL.createCapabilities();
 
         GLFW.glfwSetWindowSizeCallback(window, (window1, width1, height1) -> resize(width1, height1));
-
         GLFW.glfwSetWindowFocusCallback(window, (window1, focused) -> setFocused(focused));
     }
 
@@ -100,7 +92,6 @@ public class Main extends Loop {
     }
 
     private void init() {
-        timer.init();
         core.init();
         setupOpenGL(core.getWidth(), core.getHeight());
         ClientSettings settings = core.getSettings();
