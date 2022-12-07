@@ -22,7 +22,7 @@ public class AmbientCloud extends TextureObject {
     }
 
     @Override
-    public void update(double delta) {
+    public void update() {
         if (type == CloudType.Far) updateFarSmoke();
         else updateNearSmoke();
     }

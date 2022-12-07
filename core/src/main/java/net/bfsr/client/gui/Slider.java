@@ -87,8 +87,8 @@ public class Slider extends TextureObject {
     }
 
     @Override
-    public void update(double delta) {
-        super.update(delta);
+    public void update() {
+        super.update();
 
         if (button.isIntersects()) {
             if (!collided) {

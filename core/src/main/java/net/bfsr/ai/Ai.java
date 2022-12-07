@@ -21,10 +21,10 @@ public class Ai {
         this.tasks.add(task);
     }
 
-    public void update(double delta) {
+    public void update() {
         for (AiTask task : tasks) {
             if (task.shouldExecute())
-                task.execute(delta);
+                task.execute();
         }
     }
 

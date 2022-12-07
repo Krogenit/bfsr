@@ -68,8 +68,8 @@ public class Main extends Loop {
     }
 
     @Override
-    protected void update(double delta) {
-        core.update(delta);
+    protected void update() {
+        core.update();
     }
 
     @Override

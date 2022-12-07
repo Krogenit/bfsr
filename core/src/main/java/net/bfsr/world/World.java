@@ -11,13 +11,13 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.physics.CustomValueMixer;
 import net.bfsr.profiler.Profiler;
 import org.dyn4j.dynamics.Body;
+import org.dyn4j.world.PhysicsWorld;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class World {
-
     protected org.dyn4j.world.World<Body> physicWorld;
     protected final boolean isRemote;
     protected final Profiler profiler;
@@ -25,7 +25,7 @@ public class World {
     protected final List<Ship> ships = new ArrayList<>();
     protected final List<Bullet> bullets = new ArrayList<>();
     protected final TIntObjectMap<CollisionObject> entitiesById = new TIntObjectHashMap<>();
-    protected int nextId = 0;
+    protected int nextId;
 
     public World(boolean isRemote, Profiler profiler) {
         this.isRemote = isRemote;
@@ -35,23 +35,22 @@ public class World {
 
     private void initPhysicWorld() {
         physicWorld = new org.dyn4j.world.World<>();
-        physicWorld.setGravity(org.dyn4j.world.World.ZERO_GRAVITY);
+        physicWorld.setGravity(PhysicsWorld.ZERO_GRAVITY);
         physicWorld.getSettings().setMaximumTranslation(30);
         physicWorld.getSettings().setPositionConstraintSolverIterations(1);
         physicWorld.getSettings().setVelocityConstraintSolverIterations(1);
         physicWorld.addContactListener(new ContactListener());
         physicWorld.setValueMixer(new CustomValueMixer());
-//		physicWorld.addListener(new CollisionListener());
     }
 
-    public void update(double delta) {
-        updateShips(delta);
-        updateBullets(delta);
+    public void update() {
+        updateShips();
+        updateBullets();
 
         profiler.endStartSection("physics");
         physicWorld.step(1);
         profiler.endStartSection("postPhysicsUpdate");
-        postPhysicsUpdate(delta);
+        postPhysicsUpdate();
         removeDeadShips();
     }
 
@@ -65,16 +64,18 @@ public class World {
         }
     }
 
-    protected void updateShips(double delta) {
-        for (Ship s : ships) {
-            s.update(delta);
+    private void updateShips() {
+        int size = ships.size();
+        for (int i = 0; i < size; i++) {
+            Ship s = ships.get(i);
+            s.update();
         }
     }
 
-    protected void updateBullets(double delta) {
+    private void updateBullets() {
         for (int i = 0; i < bullets.size(); i++) {
             Bullet bullet = bullets.get(i);
-            bullet.update(delta);
+            bullet.update();
 
             if (bullet.isDead()) {
                 removeObjectById(bullet.getId());
@@ -85,13 +86,17 @@ public class World {
         }
     }
 
-    public void postPhysicsUpdate(double delta) {
-        for (Ship s : ships) {
-            s.postPhysicsUpdate(delta);
+    private void postPhysicsUpdate() {
+        int size = ships.size();
+        for (int i = 0; i < size; i++) {
+            Ship s = ships.get(i);
+            s.postPhysicsUpdate();
         }
 
-        for (Bullet bullet : bullets) {
-            bullet.postPhysicsUpdate(delta);
+        size = bullets.size();
+        for (int i = 0; i < size; i++) {
+            Bullet bullet = bullets.get(i);
+            bullet.postPhysicsUpdate();
         }
     }
 
@@ -160,7 +165,7 @@ public class World {
     }
 
     public CollisionObject getEntityById(int id) {
-        return this.entitiesById.get(id);
+        return entitiesById.get(id);
     }
 
     public ParticleRenderer getParticleRenderer() {

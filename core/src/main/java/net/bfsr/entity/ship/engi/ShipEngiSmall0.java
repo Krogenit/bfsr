@@ -53,7 +53,7 @@ public class ShipEngiSmall0 extends Ship {
         armor.setArmorPlateByDir(Direction.RIGHT, new ArmorPlate(17.5f, 0.25f, 1.05f));
         this.setArmor(armor);
         this.setShield(new ShieldSmall0(this, new Vector4f(0.8f, 1.0f, 0.5f, 1.0f), 12.5f, 0.55f, 225f));
-        this.setWeapoinsCount(2);
+        this.setWeaponsCount(2);
         this.setCrew(new Crew(2));
         this.setCargo(new Cargo(2));
         this.createWeaponPosition(new Vector2f(18f, 18f));
@@ -86,7 +86,7 @@ public class ShipEngiSmall0 extends Ship {
     }
 
     @Override
-    public void spawnEngineParticles(Direction dir, double delta) {
+    public void spawnEngineParticles(Direction dir) {
         Vector2f shipPos = getPosition();
 
         switch (dir) {

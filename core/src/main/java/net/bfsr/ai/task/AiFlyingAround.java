@@ -26,7 +26,7 @@ public class AiFlyingAround extends AiTask {
     }
 
     @Override
-    public void execute(double delta) {
+    public void execute() {
         if (obj != null) {
             if (currentPoint == null || ship.getPosition().distance(currentPoint.x, currentPoint.y) <= UPDATE_LENGTH) {
                 calculateNewPoint(obj.getPosition());

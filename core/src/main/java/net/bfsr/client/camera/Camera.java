@@ -65,7 +65,7 @@ public class Camera {
         viewMatrix.get(viewMatrixBuffer);
     }
 
-    private void followPlayer(double delta) {
+    private void followPlayer() {
         Ship playerShip = core.getWorld().getPlayerShip();
         if (playerShip != null) {
             Vector2f shipPosition = playerShip.getPosition();
@@ -74,8 +74,8 @@ public class Camera {
             if (dis > minDistance) {
                 double mDx = shipPosition.x - position.x;
                 double mDy = shipPosition.y - position.y;
-                position.x += mDx * 3.0f * delta;
-                position.y += mDy * 3.0f * delta;
+                position.x += mDx * 0.05f;
+                position.y += mDy * 0.05f;
             }
         } else {
 //			boolean hasShip = false;
@@ -114,29 +114,29 @@ public class Camera {
                     if (mDy < -max) mDy = -max;
                     else if (mDy > max) mDy = max;
 
-                    position.x += mDx * 3.0f * delta;
-                    position.y += mDy * 3.0f * delta;
+                    position.x += mDx * 0.05f;
+                    position.y += mDy * 0.05f;
                 }
             }
 //			}
         }
     }
 
-    private void moveByScreenBorders(double delta) {
+    private void moveByScreenBorders() {
         float screenMoveSpeed = settings.getCameraMoveByScreenBordersSpeed() / zoom;
         float offset = settings.getCameraMoveByScreenBordersOffset();
-        float moveSpeed = 60.0f;
+        float moveSpeed = 1.0f;
         Vector2f cursorPosition = Mouse.getPosition();
         if (cursorPosition.x <= offset) {
-            position.x -= screenMoveSpeed * moveSpeed * delta;
+            position.x -= screenMoveSpeed * moveSpeed;
         } else if (cursorPosition.x >= width - offset) {
-            position.x += screenMoveSpeed * moveSpeed * delta;
+            position.x += screenMoveSpeed * moveSpeed;
         }
 
         if (cursorPosition.y <= offset) {
-            position.y -= screenMoveSpeed * moveSpeed * delta;
+            position.y -= screenMoveSpeed * moveSpeed;
         } else if (cursorPosition.y >= height - offset) {
-            position.y += screenMoveSpeed * moveSpeed * delta;
+            position.y += screenMoveSpeed * moveSpeed;
         }
     }
 
@@ -176,24 +176,24 @@ public class Camera {
     public void update() {
         if (core.getWorld() != null) {
             if (core.canControlShip()) {
-                if (settings.isCameraMoveByScreenBorders()) moveByScreenBorders(delta);
+                if (settings.isCameraMoveByScreenBorders()) moveByScreenBorders();
             }
 
             boolean noShip = core.getWorld().getPlayerShip() == null;
             float keyMoveSpeed = settings.getCameraMoveByKeySpeed();
             if (Keyboard.isKeyDown(GLFW_KEY_LEFT) || (noShip && Keyboard.isKeyDown(GLFW_KEY_A))) {
-                position.x -= keyMoveSpeed * 60.0f * delta;
+                position.x -= keyMoveSpeed;
             } else if (Keyboard.isKeyDown(GLFW_KEY_RIGHT) || (noShip && Keyboard.isKeyDown(GLFW_KEY_D))) {
-                position.x += keyMoveSpeed * 60.0f * delta;
+                position.x += keyMoveSpeed;
             }
 
             if (Keyboard.isKeyDown(GLFW_KEY_UP) || (noShip && Keyboard.isKeyDown(GLFW_KEY_W))) {
-                position.y -= keyMoveSpeed * 60.0f * delta;
+                position.y -= keyMoveSpeed;
             } else if (Keyboard.isKeyDown(GLFW_KEY_DOWN) || (noShip && Keyboard.isKeyDown(GLFW_KEY_S))) {
                 position.y += keyMoveSpeed;
             }
 
-            if (settings.isCameraFollowPlayer()) followPlayer(delta);
+            if (settings.isCameraFollowPlayer()) followPlayer();
         } else {
             zoom = zoomBackground = 1.0f;
             position.x = 0;

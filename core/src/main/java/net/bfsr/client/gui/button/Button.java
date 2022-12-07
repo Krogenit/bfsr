@@ -59,8 +59,8 @@ public class Button extends TextureObject {
     }
 
     @Override
-    public void update(double delta) {
-        super.update(delta);
+    public void update() {
+        super.update();
 
         if (collideSound != null) {
             if (boundingBox.isIntersects(Mouse.getPosition())) {

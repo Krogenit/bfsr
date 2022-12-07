@@ -13,7 +13,7 @@ public abstract class AbstractLoop {
 
     protected abstract void input();
 
-    protected abstract void update(double delta);
+    protected abstract void update();
 
     protected abstract void render(float interpolation);
 

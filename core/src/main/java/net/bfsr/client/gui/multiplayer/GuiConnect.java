@@ -40,8 +40,8 @@ public class GuiConnect extends Gui {
     }
 
     @Override
-    public void update(double delta) {
-        super.update(delta);
+    public void update() {
+        super.update();
 
         if (errorMessage != null) {
             setErrorMessage(errorMessage);

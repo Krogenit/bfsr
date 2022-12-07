@@ -9,6 +9,6 @@ public abstract class AiTask {
         this.ship = ship;
     }
 
-    public abstract void execute(double delta);
+    public abstract void execute();
     public abstract boolean shouldExecute();
 }

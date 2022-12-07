@@ -152,13 +152,13 @@ public class WorldClient extends World {
     }
 
     @Override
-    public void update(double delta) {
-        super.update(delta);
-        particleRenderer.update(delta);
+    public void update() {
+        super.update();
+        particleRenderer.update();
 
         if (playerShip != null) {
             if (core.canControlShip() && playerShip.isSpawned())
-                playerShip.control(delta);
+                playerShip.control();
         }
     }
 

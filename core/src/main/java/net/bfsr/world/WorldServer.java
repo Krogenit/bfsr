@@ -131,12 +131,12 @@ public class WorldServer extends World {
     }
 
     @Override
-    public void update(double delta) {
-        super.update(delta);
+    public void update() {
+        super.update();
 
         for (int i = 0; i < particles.size(); i++) {
             Particle p = particles.get(i);
-            p.update(delta);
+            p.update();
             if (p.isDead()) {
                 removeDynamicParticle(p);
                 particles.remove(i);

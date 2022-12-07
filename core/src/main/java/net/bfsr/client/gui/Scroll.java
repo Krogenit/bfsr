@@ -55,8 +55,8 @@ public class Scroll extends TextureObject {
         setPosition(basePos.x, basePos.y);
     }
 
-    public void update(double delta) {
-        super.update(delta);
+    public void update() {
+        super.update();
 
         if (aabb.isIntersects(Mouse.getPosition())) {
             if (!collided) {

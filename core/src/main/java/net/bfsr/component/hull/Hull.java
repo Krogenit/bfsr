@@ -19,17 +19,17 @@ public class Hull {
         this.ship = ship;
     }
 
-    public void update(double delta) {
-        regenHull(delta);
+    public void update() {
+        regenHull();
     }
 
-    private void regenHull(double delta) {
+    private void regenHull() {
         if (hull < 0) {
             hull = 0;
         }
 
         if (hull < maxHull) {
-            hull += (regenHull + ship.getCrew().getCrewRegen()) * delta;
+            hull += (regenHull + ship.getCrew().getCrewRegen()) * 0.01666666753590107f;
         } else if (hull > maxHull) {
             hull = maxHull;
         }

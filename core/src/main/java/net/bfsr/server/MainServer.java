@@ -115,9 +115,9 @@ public class MainServer extends Loop {
     }
 
     @Override
-    protected void update(double delta) {
+    protected void update() {
         profiler.startSection("update");
-        world.update(delta);
+        world.update();
         profiler.endStartSection("network");
         networkSystem.networkTick();
         profiler.endSection();

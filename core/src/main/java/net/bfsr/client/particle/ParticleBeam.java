@@ -20,7 +20,7 @@ public class ParticleBeam extends Particle {
     }
 
     @Override
-    public void update(double delta) {
+    public void update() {
         Vector2f slotScale = slot.getScale();
         Vector2f slotPos = slot.getPosition();
         Vector4f beamColor = slot.getBeamColor();

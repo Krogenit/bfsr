@@ -10,13 +10,13 @@ public class Reactor {
         this.regenEnergy = regenEnergy;
     }
 
-    public void update(double delta) {
-        regenEnergy(delta);
+    public void update() {
+        regenEnergy();
     }
 
-    private void regenEnergy(double delta) {
+    private void regenEnergy() {
         if (energy < maxEnergy) {
-            energy += regenEnergy * delta;
+            energy += regenEnergy * 0.01666666753590107f;
 
             if (energy > maxEnergy) {
                 energy = maxEnergy;

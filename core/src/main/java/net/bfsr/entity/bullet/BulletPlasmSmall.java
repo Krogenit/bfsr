@@ -48,8 +48,8 @@ public class BulletPlasmSmall extends Bullet {
     }
 
     @Override
-    public void postPhysicsUpdate(double delta) {
-        super.postPhysicsUpdate(delta);
+    public void postPhysicsUpdate() {
+        super.postPhysicsUpdate();
         if (world.isRemote()) {
             float size = 60f;
             Vector2f pos = getPosition();

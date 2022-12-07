@@ -16,7 +16,6 @@ import org.joml.Vector4f;
 import java.util.Random;
 
 public class Damage extends TextureObject {
-
     private final Ship ship;
     private final int type;
     private boolean isCreated, changeFire, changeLight, damaged;
@@ -40,39 +39,39 @@ public class Damage extends TextureObject {
     public Damage(Ship ship, float damage, int type, Vector2f addPos, float size) {
         super(TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipDamage0.ordinal() + type]), new Vector2f(ship.getPosition()));
         this.ship = ship;
-        this.creationDamage = damage;
+        creationDamage = damage;
         this.type = type;
         this.addPos = addPos;
 
-        this.textureFire = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipDamageFire0.ordinal() + type]);
-        this.textureFix = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipFix0.ordinal() + type]);
-        this.textureDamage = texture;
+        textureFire = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipDamageFire0.ordinal() + type]);
+        textureFix = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipFix0.ordinal() + type]);
+        textureDamage = texture;
 
         if (type > 1) {
             textureLight = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipDamageLight2.ordinal() + type - 2]);
         }
 
-        this.colorFire = new Vector4f(0.5f, 0.5f, 0.5f, 0.5f);
-        this.colorLight = new Vector4f(0, 0, 0, 0);
-        this.colorFix = new Vector4f(0, 0, 0, 0);
-        this.rand = ship.getWorld().getRand();
-        this.scale.x *= size;
-        this.scale.y *= size;
+        colorFire = new Vector4f(0.5f, 0.5f, 0.5f, 0.5f);
+        colorLight = new Vector4f(0, 0, 0, 0);
+        colorFix = new Vector4f(0, 0, 0, 0);
+        rand = ship.getWorld().getRand();
+        scale.x *= size;
+        scale.y *= size;
     }
 
     public void updatePos() {
-        this.rotate = ship.getRotation() + addRotation;
+        rotate = ship.getRotation() + addRotation;
         Vector2f pos = ship.getPosition();
         float cos = ship.getCos();
         float sin = ship.getSin();
         float xPos = cos * addPos.x - sin * addPos.y;
         float yPos = sin * addPos.x + cos * addPos.y;
-        this.position.x = pos.x + xPos;
-        this.position.y = pos.y + yPos;
+        position.x = pos.x + xPos;
+        position.y = pos.y + yPos;
     }
 
     @Override
-    public void update(double delta) {
+    public void update() {
         updatePos();
 
         Hull hull = ship.getHull();
@@ -83,18 +82,17 @@ public class Damage extends TextureObject {
         if (damaged) {
             if (!isCreated) {
                 addRotation = RotationHelper.TWOPI * rand.nextFloat();
-                ParticleSpawner.spawnExplosion(position, scale.x, 20f);
-                ParticleSpawner.spawnSpark(position, scale.x, 20f);
-                ParticleSpawner.spawnLight(position, (scale.x + scale.y), new Vector4f(1.0f, 0.5f, 0.5f, 0.7f), 2f, true, EnumParticlePositionType.Default);
+                ParticleSpawner.spawnExplosion(position, scale.x, 20.0f);
+                ParticleSpawner.spawnSpark(position, scale.x, 20.0f);
+                ParticleSpawner.spawnLight(position, (scale.x + scale.y), new Vector4f(1.0f, 0.5f, 0.5f, 0.7f), 2.0f, true, EnumParticlePositionType.Default);
                 isCreated = true;
             }
 
-            double dt = 60f * delta;
-            smokeTimer -= dt;
-            ionTimer -= dt;
+            smokeTimer -= 1;
+            ionTimer -= 1;
             if (smokeTimer <= 0) {
-                ParticleSpawner.spawnDamageSmoke(position, 5F * rand.nextFloat() + scale.x / 4f, 10f, 0.4f);
-                if (rand.nextInt(4) == 0) ParticleSpawner.spawnSmallGarbage(1, position.x, position.y, 0.01f, 10f);
+                ParticleSpawner.spawnDamageSmoke(position, 5.0F * rand.nextFloat() + scale.x / 4.0f, 10.0f, 0.4f);
+                if (rand.nextInt(4) == 0) ParticleSpawner.spawnSmallGarbage(1, position.x, position.y, 0.01f, 10.0f);
                 smokeTimer = 1 + rand.nextInt(2);//3 + rand.nextInt(10);
             }
             if (ionTimer <= 0 && type > 1) {
@@ -106,7 +104,7 @@ public class Damage extends TextureObject {
             colorFix.z = 1;
             colorFix.w = 1;
         } else if (colorFix.w > 0) {
-            float fixSpeed = (float) (0.0005f * 60 * delta);
+            float fixSpeed = 0.0005f;
             if (colorFix.w >= 1.0f && repairTimer != 1000) {
                 repairTimer = 1000;
                 colorFix.w -= fixSpeed;
@@ -114,10 +112,10 @@ public class Damage extends TextureObject {
                 colorFix.y -= fixSpeed;
                 colorFix.z -= fixSpeed;
             }
-            repairTimer -= 60f * delta;
+            repairTimer -= 1;
             if (repairTimer <= 0) {
                 if (isCreated) {
-                    ParticleSpawner.spawnLight(position, (scale.x + scale.y), new Vector4f(0.25f, 0.75f, 1f, 1f), 5f, true, EnumParticlePositionType.Default);
+                    ParticleSpawner.spawnLight(position, (scale.x + scale.y), new Vector4f(0.25f, 0.75f, 1.0f, 1.0f), 5.0f, true, EnumParticlePositionType.Default);
                     isCreated = false;
                 }
                 colorFix.w -= fixSpeed;
@@ -128,17 +126,8 @@ public class Damage extends TextureObject {
         }
 
         if (damaged || repairTimer > 0) {
-            float fireSpeed = (float) (0.005f * 60 * delta);
-            if (!changeFire) {
-                if (colorFire.w < 1) {
-                    colorFire.w += fireSpeed;
-                    colorFire.x += fireSpeed;
-                    colorFire.y += fireSpeed;
-                    colorFire.z += fireSpeed;
-                } else {
-                    changeFire = true;
-                }
-            } else {
+            float fireSpeed = 0.005f;
+            if (changeFire) {
                 if (colorFire.w > 0.5F) {
                     colorFire.w -= fireSpeed;
                     colorFire.x -= fireSpeed;
@@ -147,22 +136,21 @@ public class Damage extends TextureObject {
                 } else {
                     changeFire = false;
                 }
+            } else {
+                if (colorFire.w < 1) {
+                    colorFire.w += fireSpeed;
+                    colorFire.x += fireSpeed;
+                    colorFire.y += fireSpeed;
+                    colorFire.z += fireSpeed;
+                } else {
+                    changeFire = true;
+                }
             }
             if (type > 1) {
-                lightingTimer1 -= 60f * delta;
-                float lightSpeed = (float) (0.2f * 60 * delta);
+                lightingTimer1 -= 1;
+                float lightSpeed = 0.2f;
                 if (lightingTimer1 <= 0) {
-                    if (!changeLight) {
-                        if (colorLight.w < 1F) {
-                            colorLight.w += lightSpeed;
-                            colorLight.x += lightSpeed;
-                            colorLight.y += lightSpeed;
-                            colorLight.z += lightSpeed;
-                        } else {
-                            changeLight = true;
-                            lightingTimer += 25 + rand.nextInt(25);
-                        }
-                    } else {
+                    if (changeLight) {
                         if (colorLight.w > 0.0F) {
                             colorLight.w -= lightSpeed;
                             colorLight.x -= lightSpeed;
@@ -170,6 +158,16 @@ public class Damage extends TextureObject {
                             colorLight.z -= lightSpeed;
                         } else {
                             changeLight = false;
+                            lightingTimer += 25 + rand.nextInt(25);
+                        }
+                    } else {
+                        if (colorLight.w < 1.0F) {
+                            colorLight.w += lightSpeed;
+                            colorLight.x += lightSpeed;
+                            colorLight.y += lightSpeed;
+                            colorLight.z += lightSpeed;
+                        } else {
+                            changeLight = true;
                             lightingTimer += 25 + rand.nextInt(25);
                         }
                     }
@@ -195,36 +193,36 @@ public class Damage extends TextureObject {
         if (damaged || repairTimer > 0) {
             super.render(shader);
         } else if (repairTimer <= 0) {
-            this.texture = textureFix;
-            this.color.w = colorFix.w;
+            texture = textureFix;
+            color.w = colorFix.w;
             super.render(shader);
-            this.texture = textureDamage;
-            this.color.w = 1;
+            texture = textureDamage;
+            color.w = 1;
         }
     }
 
     public void renderEffects(BaseShader shader) {
         if (damaged || repairTimer > 0) {
-            this.texture = textureFire;
-            this.color.x = colorFire.x;
-            this.color.y = colorFire.y;
-            this.color.z = colorFire.z;
-            this.color.w = colorFire.w;
+            texture = textureFire;
+            color.x = colorFire.x;
+            color.y = colorFire.y;
+            color.z = colorFire.z;
+            color.w = colorFire.w;
             super.render(shader);
             if (textureLight != null) {
-                this.texture = textureLight;
-                this.color.x = colorLight.x;
-                this.color.y = colorLight.y;
-                this.color.z = colorLight.z;
-                this.color.w = colorLight.w;
+                texture = textureLight;
+                color.x = colorLight.x;
+                color.y = colorLight.y;
+                color.z = colorLight.z;
+                color.w = colorLight.w;
                 super.render(shader);
             }
 
-            this.texture = textureDamage;
-            this.color.x = 1;
-            this.color.y = 1;
-            this.color.z = 1;
-            this.color.w = 1;
+            texture = textureDamage;
+            color.x = 1;
+            color.y = 1;
+            color.z = 1;
+            color.w = 1;
         }
     }
 }

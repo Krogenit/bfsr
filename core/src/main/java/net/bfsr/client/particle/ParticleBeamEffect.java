@@ -16,19 +16,19 @@ public class ParticleBeamEffect extends Particle {
     private final Random rand;
     private boolean changeColor;
 
-    public ParticleBeamEffect(WeaponSlotBeam slot, TextureRegister text) {
-        super(text, new Vector2f(), new Vector2f(), 0f, 0f, new Vector2f(), 0f, new Vector4f(), 0f, 0.001f, false, false, EnumParticlePositionType.Default, EnumParticleRenderType.Additive);
+    ParticleBeamEffect(WeaponSlotBeam slot, TextureRegister text) {
+        super(text, new Vector2f(), new Vector2f(), 0.0f, 0.0f, new Vector2f(), 0.0f, new Vector4f(), 0.0f, 0.001f, false, false, EnumParticlePositionType.Default, EnumParticleRenderType.Additive);
         this.slot = slot;
-        this.ship = slot.getShip();
-        this.rand = ship.getWorld().getRand();
-        this.color = new Vector4f(slot.getBeamColor());
+        ship = slot.getShip();
+        rand = ship.getWorld().getRand();
+        color = new Vector4f(slot.getBeamColor());
         Vector2f slotScale = slot.getScale();
-        this.addPos = new Vector2f(rand.nextFloat(), (rand.nextFloat() * 2f - 1f) * slotScale.y / 2f);
-        this.addScale = new Vector2f(50f + 28f * rand.nextFloat(), slotScale.y / 2f + 4f * rand.nextFloat());
+        addPos = new Vector2f(rand.nextFloat(), (rand.nextFloat() * 2.0f - 1.0f) * slotScale.y / 2.0f);
+        addScale = new Vector2f(50.0f + 28.0f * rand.nextFloat(), slotScale.y / 2.0f + 4.0f * rand.nextFloat());
     }
 
     @Override
-    public void update(double delta) {
+    public void update() {
         float beamRange = slot.getCurrentBeamRange();
         Vector2f slotPos = slot.getPosition();
         Vector4f beamColor = slot.getBeamColor();
@@ -36,7 +36,7 @@ public class ParticleBeamEffect extends Particle {
         float cos = ship.getCos();
         float sin = ship.getSin();
 
-        float l = beamRange * addPos.x + (rand.nextFloat() * 2f - 1f);
+        float l = beamRange * addPos.x + (rand.nextFloat() * 2.0f - 1.0f);
         float k = addPos.y;
         Vector2f pos = new Vector2f(cos * l - sin * k, sin * l + cos * k);
         pos.x += slotPos.x;
@@ -48,21 +48,21 @@ public class ParticleBeamEffect extends Particle {
         scale.x = addScale.x;
         scale.y = addScale.y;
 
-        float colorSpeed = (float) (15f * rand.nextFloat() * delta);
+        float colorSpeed = 0.25f * rand.nextFloat();
         if (changeColor) {
             if (color.w > 0) {
                 color.w -= colorSpeed;
             }
         } else {
-            if (color.w < beamColor.w * 2f) {
+            if (color.w < beamColor.w * 2.0f) {
                 color.w += colorSpeed;
             } else {
                 changeColor = true;
             }
         }
 
-        if (color.w > beamColor.w * 2f)
-            color.w = beamColor.w * 2f;
+        if (color.w > beamColor.w * 2.0f)
+            color.w = beamColor.w * 2.0f;
 
         if (ship.isDead() || color.w <= 0) {
             setDead(true);

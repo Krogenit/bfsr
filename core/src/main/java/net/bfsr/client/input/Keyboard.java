@@ -32,7 +32,7 @@ public class Keyboard {
             guiConsumer.accept(gui);
         }
 
-        guiConsumer.accept(gui);
+        guiConsumer.accept(Core.getCore().getGuiInGame());
     }
 
     public static boolean isKeyDown(int keyCode) {

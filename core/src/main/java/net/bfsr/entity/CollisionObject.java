@@ -68,9 +68,9 @@ public class CollisionObject extends TextureObject {
     }
 
     @Override
-    public void update(double delta) {
+    public void update() {
         if (world.isRemote()) {
-            aliveTimer += 60f * delta;
+            aliveTimer += 1;
             if (aliveTimer > 120) {
                 setDead(true);
                 aliveTimer = 0;
@@ -82,12 +82,12 @@ public class CollisionObject extends TextureObject {
         Vector2 velocity = body.getLinearVelocity();
 
         if (speedLimit) {
-            float maxTranslation = maxSpeed * 50f;
+            float maxTranslation = maxSpeed * 50.0f;
             float maxTranslationSqrd = maxTranslation * maxTranslation;
             double magnitude = velocity.getMagnitudeSquared();
 
             if (magnitude > maxTranslationSqrd) {
-                double percent = (maxTranslationSqrd / magnitude) / 10f;
+                double percent = (maxTranslationSqrd / magnitude) / 10.0f;
                 if (percent < 0.99f) percent = 0.99f;
                 velocity.multiply(0.99f * percent);
             }
@@ -97,7 +97,7 @@ public class CollisionObject extends TextureObject {
         body.applyForce(f);
     }
 
-    public void move(Ship ship, double delta, Direction dir) {
+    public void move(Ship ship, Direction dir) {
         Engine engine = ship.getEngine();
         Vector2 r = new Vector2(body.getTransform().getRotationAngle());
         Vector2f pos = getPosition();
@@ -127,7 +127,7 @@ public class CollisionObject extends TextureObject {
                 if (Math.abs(x) > 10) {
                     dir = calculateDirectionToOtherObject(x + pos.x, pos.y);
                     if (world.isRemote()) {
-                        ship.spawnEngineParticles(dir, delta);
+                        ship.spawnEngineParticles(dir);
                         if (ship == world.getPlayerShip()) {
                             Core.getCore().sendPacket(new PacketShipEngine(id, dir.ordinal()));
                         }
@@ -137,7 +137,7 @@ public class CollisionObject extends TextureObject {
                 if (Math.abs(y) > 10) {
                     dir = calculateDirectionToOtherObject(pos.x, y + pos.y);
                     if (world.isRemote()) {
-                        ship.spawnEngineParticles(dir, delta);
+                        ship.spawnEngineParticles(dir);
                         if (ship == world.getPlayerShip()) {
                             Core.getCore().sendPacket(new PacketShipEngine(id, dir.ordinal()));
                         }
@@ -148,7 +148,7 @@ public class CollisionObject extends TextureObject {
         }
 
         if (world.isRemote()) {
-            ship.spawnEngineParticles(dir, delta);
+            ship.spawnEngineParticles(dir);
             if (ship == world.getPlayerShip()) Core.getCore().sendPacket(new PacketShipEngine(id, dir.ordinal()));
         } else {
             if (prevMoveDir != null && prevMoveDir != dir)
@@ -165,17 +165,17 @@ public class CollisionObject extends TextureObject {
         rotateToVector.x = (float) (vector.x - transform.getTranslationX());
         rotateToVector.y = (float) (vector.y - transform.getTranslationY());
 
-        RotationHelper.angleToVelocity(getRotation(), 1f, angleToVelocity);
+        RotationHelper.angleToVelocity(getRotation(), 1.0f, angleToVelocity);
         return angleToVelocity.angle(rotateToVector);
     }
 
-    public void rotateToVector(Vector2f vector, float rotateSpeed, double delta) {
+    public void rotateToVector(Vector2f vector, float rotateSpeed) {
         Transform transform = body.getTransform();
         double rot = transform.getRotationAngle();
         rotateToVector.x = (float) (vector.x - transform.getTranslationX());
         rotateToVector.y = (float) (vector.y - transform.getTranslationY());
 
-        RotationHelper.angleToVelocity(rot, 1f, angleToVelocity);
+        RotationHelper.angleToVelocity(rot, 1.0f, angleToVelocity);
         float diffRad = angleToVelocity.angle(rotateToVector);
         double diff = Math.toDegrees(diffRad);
         double diffAbs = Math.abs(diff);
@@ -185,14 +185,8 @@ public class CollisionObject extends TextureObject {
             if (diffAbs <= 5) {
                 if (diffAbs <= 1) {
                     body.setAngularVelocity(0);
-                } else
-//					body.setAngularVelocity(rotateSpeed / 4.0);
-                    addRot = rotateSpeed / 4.0 * delta;
-//					transform.setRotation(rot + );
-            } else
-//				body.setAngularVelocity(rotateSpeed);
-                addRot = rotateSpeed * delta;
-//			transform.setRotation(rot + rotateSpeed * delta);
+                } else addRot = rotateSpeed / 4.0 * 0.01666666753590107f;
+            } else addRot = rotateSpeed * 0.01666666753590107f;
 
             if (addRot >= diffRad) {
                 transform.setRotation(Math.atan2(rotateToVector.x, -rotateToVector.y) - Math.PI / 2.0);
@@ -201,34 +195,12 @@ public class CollisionObject extends TextureObject {
                 transform.setRotation(rot + addRot);
                 body.setAngularVelocity(body.getAngularVelocity() * 0.99f);
             }
-
-//			pos = RotationHelper.angleToVelocity(rot, 1f);
-//			diff = Math.toDegrees(pos.angle(new Vector2f(mDx, mDy)));
-
-//			if(diff < 0) {
-//				transform.setRotation(Math.atan2(mDx, -mDy) - Math.PI /  2.0);
-//				body.setAngularVelocity(0);
-//			}
         } else {
             if (diffAbs <= 5) {
                 if (diffAbs <= 1) {
                     body.setAngularVelocity(0);
-                } else
-//					body.setAngularVelocity(-rotateSpeed / 4.0);
-                    addRot = -rotateSpeed / 4.0 * delta;
-//					transform.setRotation(rot - rotateSpeed / 4.0 * delta);
-            } else
-//				body.setAngularVelocity(-rotateSpeed);
-//				transform.setRotation(rot - rotateSpeed * delta);
-                addRot = -rotateSpeed * delta;
-
-//			pos = RotationHelper.angleToVelocity(rot, 1f);
-//			diff = Math.toDegrees(pos.angle(new Vector2f(mDx, mDy)));
-
-//			if(diff > 0) {
-//				transform.setRotation(Math.atan2(mDx, -mDy) - Math.PI /  2.0);
-//				body.setAngularVelocity(0);
-//			}
+                } else addRot = -rotateSpeed / 4.0 * 0.01666666753590107f;
+            } else addRot = -rotateSpeed * 0.01666666753590107f;
 
             if (addRot <= diffRad) {
                 transform.setRotation(Math.atan2(rotateToVector.x, -rotateToVector.y) - Math.PI / 2.0);
@@ -247,7 +219,7 @@ public class CollisionObject extends TextureObject {
         Vector2f pos = getPosition();
         rotateToVector.x = x - pos.x;
         rotateToVector.y = y - pos.y;
-        RotationHelper.angleToVelocity(getRotation(), 1f, angleToVelocity);
+        RotationHelper.angleToVelocity(getRotation(), 1.0f, angleToVelocity);
         double diff = Math.toDegrees(angleToVelocity.angle(rotateToVector));
         double diffAbs = Math.abs(diff);
         if (diffAbs > 112.5f) {
@@ -270,7 +242,7 @@ public class CollisionObject extends TextureObject {
         Vector2f pos = getPosition();
         rotateToVector.x = x - pos.x;
         rotateToVector.y = y - pos.y;
-        RotationHelper.angleToVelocity(getRotation(), 1f, angleToVelocity);
+        RotationHelper.angleToVelocity(getRotation(), 1.0f, angleToVelocity);
         double diff = Math.toDegrees(angleToVelocity.angle(rotateToVector));
         double diffAbs = Math.abs(diff);
         if (diffAbs > 135) {
@@ -300,14 +272,13 @@ public class CollisionObject extends TextureObject {
         float x = (float) body.getLinearVelocity().x;
         float y = (float) body.getLinearVelocity().y;
         GL11.glVertex2d(center.x, center.y);
-        GL11.glVertex2d(x / 5f + center.x, y / 5f + center.y);
+        GL11.glVertex2d(x / 5.0f + center.x, y / 5.0f + center.y);
         GL11.glEnd();
 
         List<BodyFixture> fixtures = body.getFixtures();
         for (BodyFixture bodyFixture : fixtures) {
             Convex convex = bodyFixture.getShape();
-            if (convex instanceof Rectangle) {
-                Rectangle rect = (Rectangle) convex;
+            if (convex instanceof Rectangle rect) {
                 GL11.glPushMatrix();
                 GL11.glTranslated(center.x, center.y, 0);
                 GL11.glRotated(rot, 0, 0, 1);
@@ -318,8 +289,7 @@ public class CollisionObject extends TextureObject {
                 }
                 GL11.glEnd();
                 GL11.glPopMatrix();
-            } else if (convex instanceof Polygon) {
-                Polygon polygon = (Polygon) convex;
+            } else if (convex instanceof Polygon polygon) {
                 GL11.glPushMatrix();
                 GL11.glTranslated(center.x, center.y, 0);
                 GL11.glRotated(rot, 0, 0, 1);
@@ -330,14 +300,13 @@ public class CollisionObject extends TextureObject {
                 }
                 GL11.glEnd();
                 GL11.glPopMatrix();
-            } else if (convex instanceof Circle) {
-                Circle circle = (Circle) convex;
+            } else if (convex instanceof Circle circle) {
                 GL11.glPushMatrix();
                 GL11.glTranslated(center.x, center.y, 0);
                 GL11.glBegin(GL11.GL_LINE_LOOP);
-                float count = 10f;
+                float count = 10.0f;
                 float angleAdd = RotationHelper.TWOPI / count;
-                float startAngle = 0f;
+                float startAngle = 0.0f;
                 for (int i = 0; i < count; i++) {
                     Vector2f pos = RotationHelper.angleToVelocity(startAngle, (float) circle.getRadius());
                     GL11.glVertex2f(pos.x, pos.y);
@@ -350,16 +319,16 @@ public class CollisionObject extends TextureObject {
     }
 
     public void updateClientPositionFromPacket(Vector2f pos, float rot, Vector2f velocity, float angularVelocity) {
-        this.aliveTimer = 0;
+        aliveTimer = 0;
         body.setAtRest(false);
-        this.updatePos(pos);
-        this.updateRot(rot);
-        this.updateVelocity(velocity);
-        this.updateAngularVelocity(angularVelocity);
+        updatePos(pos);
+        updateRot(rot);
+        updateVelocity(velocity);
+        updateAngularVelocity(angularVelocity);
     }
 
     public void updateServerPositionFromPacket(Vector2f pos, float rot, Vector2f velocity, float angularVelocity) {
-        this.aliveTimer = 0;
+        aliveTimer = 0;
         body.setAtRest(false);
         body.getTransform().setTranslation(pos.x, pos.y);
         body.setLinearVelocity(velocity.x, velocity.y);
@@ -368,11 +337,6 @@ public class CollisionObject extends TextureObject {
     }
 
     private void updateVelocity(Vector2f velocity) {
-//		Vector2 pos = body.getLinearVelocity();
-//		
-//		double x = pos.x + 0.5f * (velocity.x - pos.x);
-//		double y = pos.y + 0.5f * (velocity.y - pos.y);
-
         body.setLinearVelocity(velocity.x, velocity.y);
     }
 
@@ -403,13 +367,6 @@ public class CollisionObject extends TextureObject {
     }
 
     private void updateAngularVelocity(float re) {
-//		double rs = body.getAngularVelocity();
-//
-//		double diff = re - rs;
-//		if (diff < -Math.PI) diff += Geometry.TWO_PI;
-//		if (diff > Math.PI) diff -= Geometry.TWO_PI;
-//		double a = diff * 0.5f + rs;
-
         body.setAngularVelocity(re);
     }
 
@@ -421,15 +378,15 @@ public class CollisionObject extends TextureObject {
     @Override
     public Vector2f getPosition() {
         Vector2 pos = body.getTransform().getTranslation();
-        this.position.x = (float) pos.x;
-        this.position.y = (float) pos.y;
+        position.x = (float) pos.x;
+        position.y = (float) pos.y;
         return position;
     }
 
     public Vector2f getVelocity() {
         Vector2 vel = body.getLinearVelocity();
-        this.velocity.x = (float) vel.x;
-        this.velocity.y = (float) vel.y;
+        velocity.x = (float) vel.x;
+        velocity.y = (float) vel.y;
         return velocity;
     }
 

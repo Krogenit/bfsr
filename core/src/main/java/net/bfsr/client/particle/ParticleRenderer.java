@@ -72,10 +72,10 @@ public class ParticleRenderer {
         instance = this;
     }
 
-    public void update(double delta) {
+    public void update() {
         for (int i = 0; i < particles.size(); i++) {
             Particle particle = particles.get(i);
-            particle.update(delta);
+            particle.update();
             if (particle.isDead()) {
                 removeParticle(particle);
                 i--;
@@ -84,7 +84,7 @@ public class ParticleRenderer {
 
         for (int i = 0; i < particlesWrecks.size(); i++) {
             ParticleWreck particle = particlesWrecks.get(i);
-            particle.update(delta);
+            particle.update();
             if (particle.isDead()) {
                 removeParticle(particle);
                 i--;

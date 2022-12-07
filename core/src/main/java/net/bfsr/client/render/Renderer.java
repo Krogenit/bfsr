@@ -91,10 +91,10 @@ public class Renderer {
         GL11.glClearColor(0.05F, 0.1F, 0.2F, 1.0F);
     }
 
-    public void update(double delta) {
-        camera.update(delta);
+    public void update() {
+        camera.update();
         updateViewUBO();
-        guiInGame.update(delta);
+        guiInGame.update();
     }
 
     private void updateViewUBO() {

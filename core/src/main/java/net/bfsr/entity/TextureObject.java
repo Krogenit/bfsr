@@ -49,7 +49,7 @@ public class TextureObject {
         this(null, new Vector2f(), 0, null, new Vector4f(1, 1, 1, 1));
     }
 
-    public void update(double delta) {
+    public void update() {
 
     }
 

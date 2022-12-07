@@ -26,8 +26,7 @@ import org.joml.Vector4f;
 
 import java.util.List;
 
-public abstract class Shield extends CollisionObject {
-
+public class Shield extends CollisionObject {
     private float shield, maxShield;
     private float shieldRegen;
     private Vector2f radius;
@@ -37,10 +36,10 @@ public abstract class Shield extends CollisionObject {
     private final Ship ship;
     private boolean alive;
 
-    public Shield(Ship ship) {
-        this.world = ship.getWorld();
+    protected Shield(Ship ship) {
+        world = ship.getWorld();
         this.ship = ship;
-        this.size = 1.0f;
+        size = 1.0f;
     }
 
     @Override
@@ -57,11 +56,10 @@ public abstract class Shield extends CollisionObject {
             }
         }
 
-        this.radius = new Vector2f();
+        radius = new Vector2f();
         for (BodyFixture bodyFixture : ship.getBody().getFixtures()) {
             Convex convex = bodyFixture.getShape();
-            if (convex instanceof Polygon) {
-                Polygon polygon = (Polygon) convex;
+            if (convex instanceof Polygon polygon) {
                 for (Vector2 vertex : polygon.getVertices()) {
                     float x = (float) Math.abs(vertex.x);
                     if (x > radius.x) {
@@ -76,48 +74,35 @@ public abstract class Shield extends CollisionObject {
 
         }
 
-        float offset = 14f;
-        this.diameter = new Vector2f(radius.x * 2f + offset, radius.y * 2f + offset);
+        float offset = 14.0f;
+        diameter = new Vector2f(radius.x * 2.0f + offset, radius.y * 2.0f + offset);
 
-//		double angleStep = 30f;
-//		double radianStep = Math.toRadians(angleStep);
-//		int size = (int) (360 / angleStep);
-//		Vector2[] points = new Vector2[size];
-//		float angle = 0f;
-//		for (int i = 0; i < size; i++) {
-//			points[i] = new Vector2(radius, 0);
-//			MathRotationHelper.rotateAboutZ(points[i], angle);
-//
-//			angle += radianStep;
-//		}
-
-//		Polygon polygon = Geometry.createPolygon(points);
         Polygon ellipse = Geometry.createPolygonalEllipse(16, diameter.x, diameter.y);
         BodyFixture bodyFixture = new BodyFixture(ellipse);
         bodyFixture.setUserData(this);
         bodyFixture.setDensity(0.0001f);
-        bodyFixture.setFriction(0f);
+        bodyFixture.setFriction(0.0f);
         bodyFixture.setRestitution(0.1f);
         bodyFixture.setFilter(new ShipFilter(ship));
         ship.getBody().addFixture(bodyFixture);
         ship.recalculateMass();
-        this.diameter.x += 1f;
-        this.diameter.y += 1f;
+        diameter.x += 1.0f;
+        diameter.y += 1.0f;
         alive = true;
     }
 
     @Override
-    public void update(double delta) {
+    public void update() {
         if (!world.isRemote() && alive && shield <= 0) {
             removeShield();
         }
 
         if (shield < maxShield && shieldAlive()) {
-            shield += shieldRegen * delta;
+            shield += shieldRegen * 0.01666666753590107f;
 
-            if (world.isRemote() && size < 1f) {
-                size += 3.6f * delta;
-                if (size > 1f) size = 1f;
+            if (world.isRemote() && size < 1.0f) {
+                size += 0.06f;
+                if (size > 1.0f) size = 1.0f;
             }
 
             if (shield > maxShield) {
@@ -126,7 +111,7 @@ public abstract class Shield extends CollisionObject {
         }
 
         if (!world.isRemote() && rebuildingTime < timeToRebuild) {
-            rebuildingTime += 60f * delta;
+            rebuildingTime += 1;
 
             if (rebuildingTime >= timeToRebuild) {
                 rebuildShield();
@@ -139,13 +124,13 @@ public abstract class Shield extends CollisionObject {
     }
 
     public void rebuildShield() {
-        shield = maxShield / 5f;
+        shield = maxShield / 5.0f;
         rebuildingTime = timeToRebuild;
 
         if (world.isRemote()) {
             Vector3f shipEffectColor = ship.getEffectsColor();
             Vector4f color = new Vector4f(shipEffectColor.x, shipEffectColor.y, shipEffectColor.z, 1.0f);
-            ParticleSpawner.spawnLight(getPosition(), ship.getScale().x * 2f, color, 0.04f * 60f, false, EnumParticlePositionType.Default);
+            ParticleSpawner.spawnLight(getPosition(), ship.getScale().x * 2.0f, color, 0.04f * 60.0f, false, EnumParticlePositionType.Default);
             if (ship.getWorld().getRand().nextInt(2) == 0) {
                 Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldUp0, getPosition()));
             } else {
@@ -192,15 +177,15 @@ public abstract class Shield extends CollisionObject {
         if (world.isRemote()) {
             Vector3f shipEffectColor = ship.getEffectsColor();
             Vector4f color = new Vector4f(shipEffectColor.x, shipEffectColor.y, shipEffectColor.z, 1.0f);
-            ParticleSpawner.spawnLight(getPosition(), ship.getScale().x * 2f, 5f * 60f, color, 0.04f * 60f, false, EnumParticlePositionType.Default);
-            ParticleSpawner.spawnDisableShield(getPosition(), ship.getScale().x * 4f, -240f, new Vector4f(color));
+            ParticleSpawner.spawnLight(getPosition(), ship.getScale().x * 2.0f, 5.0f * 60.0f, color, 0.04f * 60.0f, false, EnumParticlePositionType.Default);
+            ParticleSpawner.spawnDisableShield(getPosition(), ship.getScale().x * 4.0f, -240.0f, new Vector4f(color));
             Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldDown, ship.getPosition()));
         } else {
             MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRemove(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         }
 
         rebuildingTime = 0;
-        size = 0f;
+        size = 0.0f;
         shield = 0;
         alive = false;
     }
@@ -227,16 +212,16 @@ public abstract class Shield extends CollisionObject {
         this.shield = shield;
     }
 
-    public void setMaxShield(float maxShield) {
+    void setMaxShield(float maxShield) {
         this.maxShield = maxShield;
     }
 
-    public void setTimeToRebuild(float timeToRebuild) {
-        this.rebuildingTime = timeToRebuild;
+    void setTimeToRebuild(float timeToRebuild) {
+        rebuildingTime = timeToRebuild;
         this.timeToRebuild = timeToRebuild;
     }
 
-    public void setShieldRegen(float shieldRegen) {
+    void setShieldRegen(float shieldRegen) {
         this.shieldRegen = shieldRegen;
     }
 

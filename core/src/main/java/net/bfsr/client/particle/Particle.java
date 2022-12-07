@@ -30,17 +30,17 @@ public class Particle extends CollisionObject {
         this.positionType = positionType;
         this.renderType = renderType;
 
-        this.alphaVelocity = alphaSpeed;
-        this.sizeVelocity = sizeSpeed;
+        alphaVelocity = alphaSpeed;
+        sizeVelocity = sizeSpeed;
         this.color = color;
         this.greater = greater;
         this.velocity = velocity;
-        this.rotate = rot;
-        this.rotationSpeed = rotSpeed;
-        this.zeroVelocity = velocity.length() != 0;
+        rotate = rot;
+        rotationSpeed = rotSpeed;
+        zeroVelocity = velocity.length() != 0;
 
         if (isAlphaFromZero) {
-            this.maxAlpha = color.w;
+            maxAlpha = color.w;
             this.color.w = 0.0f;
         }
 
@@ -75,11 +75,7 @@ public class Particle extends CollisionObject {
         updateBody();
     }
 
-    private void updateBody() {
-//		for(BodyFixture bodyFixture : body.getFixtures()) {
-//			bodyFixture.setSensor(isSensor);
-//		}
-    }
+    private void updateBody() {}
 
     @Override
     protected void createAABB() {
@@ -120,20 +116,21 @@ public class Particle extends CollisionObject {
     }
 
     @Override
-    public void update(double delta) {
+    public void update() {
+        float factor = 0.01666666753590107f;
         if (!canCollide) {
-            position.x += velocity.x * delta;
-            position.y += velocity.y * delta;
-            rotate += rotationSpeed * delta;
+            position.x += velocity.x * factor;
+            position.y += velocity.y * factor;
+            rotate += rotationSpeed * factor;
 
             if (!zeroVelocity) {
-                velocity.x *= 0.99f * delta;
-                velocity.y *= 0.99f * delta;
+                velocity.x *= 0.99f * factor;
+                velocity.y *= 0.99f * factor;
             }
         }
 
         if (sizeVelocity != 0) {
-            float sizeVel = (float) (sizeVelocity * delta);
+            float sizeVel = sizeVelocity * factor;
             scale.add(sizeVel, sizeVel);
 
             if (scale.x <= 0.0f || scale.y <= 0.0f)
@@ -143,21 +140,21 @@ public class Particle extends CollisionObject {
         if (alphaVelocity != 0) {
             if (isAlphaFromZero) {
                 if (maxAlpha != 0) {
-                    this.color.w += alphaVelocity * delta;
+                    color.w += alphaVelocity * factor;
 
-                    if (color.w >= maxAlpha * 2f)
+                    if (color.w >= maxAlpha * 2.0f)
                         setDead(true);
 
                     if (color.w >= maxAlpha) {
-                        maxAlpha = 0f;
+                        maxAlpha = 0.0f;
                     }
                 } else {
-                    color.w -= alphaVelocity * delta;
+                    color.w -= alphaVelocity * factor;
                     if (color.w <= 0)
                         setDead(true);
                 }
             } else {
-                color.w -= alphaVelocity * delta;
+                color.w -= alphaVelocity * factor;
                 if (color.w <= 0)
                     setDead(true);
             }
@@ -165,12 +162,12 @@ public class Particle extends CollisionObject {
     }
 
     public void setVelocity(Vector2f velocity) {
-        if (canCollide) this.body.setLinearVelocity(velocity.x, velocity.y);
+        if (canCollide) body.setLinearVelocity(velocity.x, velocity.y);
         else this.velocity = velocity;
     }
 
     public void renderParticle(ParticleShader shader) {
-        super.render(shader);
+        render(shader);
     }
 
     public void setSizeVelocity(float sizeVelocity) {

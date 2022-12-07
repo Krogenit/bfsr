@@ -290,7 +290,7 @@ public class InputBox extends TextureObject {
         }
     }
 
-    public void update(double delta) {
+    public void update() {
         if (aabb.isIntersects(Mouse.getPosition())) {
             if (!collided) {
                 collided = true;

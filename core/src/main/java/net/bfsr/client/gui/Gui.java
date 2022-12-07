@@ -46,21 +46,21 @@ public class Gui {
         }
     }
 
-    public void update(double delta) {
+    public void update() {
         for (Button button : buttons) {
-            button.update(delta);
+            button.update();
         }
 
         for (Slider slider : sliders) {
-            slider.update(delta);
+            slider.update();
         }
 
         for (InputBox boxes : inputBoxes) {
-            boxes.update(delta);
+            boxes.update();
         }
 
         for (Scroll scroll : scrolls) {
-            scroll.update(delta);
+            scroll.update();
         }
     }
 

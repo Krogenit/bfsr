@@ -10,9 +10,10 @@ public class Armor {
         this.armorPlates = new ArmorPlate[4];
     }
 
-    public void update(double delta) {
-        for (ArmorPlate armorPlate : armorPlates) {
-            if (armorPlate != null) armorPlate.update(delta);
+    public void update() {
+        for (int i = 0; i < armorPlates.length; i++) {
+            ArmorPlate armorPlate = armorPlates[i];
+            if (armorPlate != null) armorPlate.update();
         }
     }
 

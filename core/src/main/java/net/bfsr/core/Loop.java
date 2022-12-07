@@ -26,7 +26,7 @@ public class Loop extends AbstractLoop {
             // Do as many game updates as we need to, potentially playing catchup.
             while (now - lastUpdateTime > timeBetweenUpdates && updateCount < maxUpdatesBeforeRender) {
                 input();
-                update(delta);
+                update();
                 lastUpdateTime += timeBetweenUpdates;
                 updateCount++;
             }
@@ -84,7 +84,7 @@ public class Loop extends AbstractLoop {
     protected void input() {}
 
     @Override
-    protected void update(double delta) {}
+    protected void update() {}
 
     @Override
     protected void render(float interpolation) {}

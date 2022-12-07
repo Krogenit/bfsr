@@ -80,7 +80,7 @@ public class Core {
         if (world != null) world.input();
     }
 
-    public void update(double delta) {
+    public void update() {
         profiler.endStartSection("tasks");
         synchronized (this.futureTasks) {
             while (!this.futureTasks.isEmpty()) {
@@ -103,12 +103,12 @@ public class Core {
 
         profiler.endStartSection("update");
         if (world != null) {
-            renderer.update(delta);
+            renderer.update();
             soundManager.updateListenerPosition(renderer.getCamera());
-            world.update(delta);
+            world.update();
         }
 
-        if (currentGui != null) currentGui.update(delta);
+        if (currentGui != null) currentGui.update();
     }
 
     public void render() {

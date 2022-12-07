@@ -15,9 +15,9 @@ public class ArmorPlate {
         this.armorHullProtection = armorHullProtection;
     }
 
-    public void update(double delta) {
+    public void update() {
         if (armor < armorMax) {
-            armor += armorRegenSpeed * delta;
+            armor += armorRegenSpeed * 0.01666666753590107f;
         }
     }
 

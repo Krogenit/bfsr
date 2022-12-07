@@ -1,11 +1,9 @@
 package net.bfsr.component.weapon;
 
 import net.bfsr.client.loader.TextureLoader;
-import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.client.texture.TextureRegister;
-import net.bfsr.component.EnumWeapon;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.entity.ship.Ship;
@@ -22,7 +20,6 @@ import java.util.List;
 import java.util.Random;
 
 public abstract class WeaponSlot extends TextureObject {
-
     protected int id;
     protected World world;
     protected Ship ship;
@@ -31,13 +28,12 @@ public abstract class WeaponSlot extends TextureObject {
     protected float shootTimer, shootTimerMax;
     private final float alphaReducer;
     protected Vector2f addPosition;
-    private EnumWeapon weaponType;
     private SoundRegistry[] shootSounds;
 
-    public WeaponSlot(Ship ship, float shootTimerMax, float energyCost, float bulletSpeed, float alphaReducer, Vector2f scale) {
+    protected WeaponSlot(Ship ship, float shootTimerMax, float energyCost, float bulletSpeed, float alphaReducer, Vector2f scale) {
         this.ship = ship;
-        this.world = ship.getWorld();
-        this.color = new Vector4f(1, 1, 1, 1);
+        world = ship.getWorld();
+        color = new Vector4f(1, 1, 1, 1);
 
         this.shootTimerMax = shootTimerMax;
         this.energyCost = energyCost;
@@ -46,11 +42,13 @@ public abstract class WeaponSlot extends TextureObject {
         this.alphaReducer = alphaReducer;
     }
 
-    public WeaponSlot(Ship ship, SoundRegistry[] shootSounds, float shootTimerMax, float energyCost, float bulletSpeed, float alphaReducer, Vector2f scale, TextureRegister texture) {
+    public abstract void createBody();
+
+    protected WeaponSlot(Ship ship, SoundRegistry[] shootSounds, float shootTimerMax, float energyCost, float bulletSpeed, float alphaReducer, Vector2f scale, TextureRegister texture) {
         this.shootSounds = shootSounds;
         this.ship = ship;
-        this.world = ship.getWorld();
-        this.color = new Vector4f(1, 1, 1, 1);
+        world = ship.getWorld();
+        color = new Vector4f(1, 1, 1, 1);
 
         this.shootTimerMax = shootTimerMax;
         this.energyCost = energyCost;
@@ -61,10 +59,6 @@ public abstract class WeaponSlot extends TextureObject {
         if (ship.getWorld().isRemote()) {
             this.texture = TextureLoader.getTexture(texture);
         }
-    }
-
-    public void createBody() {
-
     }
 
     protected abstract void spawnShootParticles();
@@ -104,16 +98,16 @@ public abstract class WeaponSlot extends TextureObject {
     protected abstract void createBullet();
 
     @Override
-    public void update(double delta) {
+    public void update() {
         updatePos();
         if (shootTimer > 0) {
-            shootTimer -= 50f * delta;
+            shootTimer -= 0.8333334f;
             if (shootTimer < 0) shootTimer = 0;
         }
     }
 
     public void updatePos() {
-        this.rotate = ship.getRotation();
+        rotate = ship.getRotation();
         Vector2f shipPos = ship.getPosition();
         float x = addPosition.x;
         float y = addPosition.y;
@@ -122,12 +116,7 @@ public abstract class WeaponSlot extends TextureObject {
         float xPos = cos * x - sin * y;
         float yPos = sin * x + cos * y;
 
-        this.position = new Vector2f(xPos + shipPos.x, yPos + shipPos.y);
-    }
-
-    @Override
-    public void render(BaseShader shader) {
-        super.render(shader);
+        position = new Vector2f(xPos + shipPos.x, yPos + shipPos.y);
     }
 
     public Vector2f getAddPosition() {

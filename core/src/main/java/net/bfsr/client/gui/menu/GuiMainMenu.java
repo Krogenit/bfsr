@@ -62,8 +62,8 @@ public class GuiMainMenu extends Gui {
     }
 
     @Override
-    public void update(double delta) {
-        super.update(delta);
+    public void update() {
+        super.update();
     }
 
     @Override

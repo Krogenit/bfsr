@@ -21,7 +21,7 @@ public class AiAttackTarget extends AiTask {
     }
 
     @Override
-    public void execute(double delta) {
+    public void execute() {
         CollisionObject target = ship.getTarget();
         Vector2f targetPos = target.getPosition();
         Vector2f pos = ship.getPosition();
@@ -45,7 +45,9 @@ public class AiAttackTarget extends AiTask {
         Vector2f targetVelocity = target.getVelocity();
 
         List<WeaponSlot> slots = ship.getWeaponSlots();
-        for (WeaponSlot slot : slots) {
+        int size = slots.size();
+        for (int i = 0; i < size; i++) {
+            WeaponSlot slot = slots.get(i);
             if (slot != null) {
                 Vector2f slotPos = slot.getAddPosition();
                 float x1 = ship.getCos();
@@ -62,7 +64,7 @@ public class AiAttackTarget extends AiTask {
                 } else {
                     float bulletSpeed = slot.getBulletSpeed();
                     int totalIterations = (int) (1.5f / slot.getAlphaReducer());
-//					Vector2f shipVelocity = ship.getVelocity();
+
                     Vector2f totalVelocity = new Vector2f(-x1 * bulletSpeed * 50f,
                             -y1 * bulletSpeed * 50f).mul(totalIterations).mul(0.016666f);
                     Vector2f bulletFinalPos = new Vector2f(pos.x + xPos + totalVelocity.x, pos.y + yPos + totalVelocity.y);
@@ -96,15 +98,15 @@ public class AiAttackTarget extends AiTask {
         }
 
         if (pointToRotate != null) {
-            ship.rotateToVector(pointToRotate, ship.getEngine().getRotationSpeed(), delta);
+            ship.rotateToVector(pointToRotate, ship.getEngine().getRotationSpeed());
         } else {
-            ship.rotateToVector(targetPos, ship.getEngine().getRotationSpeed(), delta);
+            ship.rotateToVector(targetPos, ship.getEngine().getRotationSpeed());
         }
-//		ship.move(ship, delta, Direction.STOP);
+
         Direction[] dirs = ship.calculateDirectionsToOtherObject(targetPos.x, targetPos.y);
         if (minTargetToShip >= maxDistance) {
-            if (dirs[0] != null) ship.move(ship, delta, dirs[0]);
-            if (dirs[1] != null) ship.move(ship, delta, dirs[1]);
+            if (dirs[0] != null) ship.move(ship, dirs[0]);
+            if (dirs[1] != null) ship.move(ship, dirs[1]);
         } else if (distanceToTarget < maxDistance - targetSizeAverage - shipSizeAverage) {
             Direction dir = ship.calculateDirectionToOtherObject(targetPos.x, targetPos.y);
             if (dir == Direction.BACKWARD) {
@@ -116,10 +118,10 @@ public class AiAttackTarget extends AiTask {
             } else if (dir == Direction.RIGHT) {
                 dir = Direction.LEFT;
             }
-            ship.move(ship, delta, dir);
+            ship.move(ship, dir);
             if (curDir != null && changeDirTimer > 0) {
-                changeDirTimer -= 60f * delta;
-                ship.move(ship, delta, curDir);
+                changeDirTimer -= 1;
+                ship.move(ship, curDir);
             } else {
                 Random rand = ship.getWorld().getRand();
                 if (rand.nextInt(2) == 0)
@@ -130,8 +132,8 @@ public class AiAttackTarget extends AiTask {
             }
         } else {
             if (curDir != null && changeDirTimer > 0) {
-                changeDirTimer -= 60f * delta;
-                ship.move(ship, delta, curDir);
+                changeDirTimer -= 1;
+                ship.move(ship, curDir);
             } else {
                 Random rand = ship.getWorld().getRand();
                 if (rand.nextInt(2) == 0)

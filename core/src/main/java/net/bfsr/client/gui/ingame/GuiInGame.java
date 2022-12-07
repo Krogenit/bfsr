@@ -281,7 +281,7 @@ public class GuiInGame extends Gui {
     }
 
     @Override
-    public void update(double delta) {
+    public void update() {
 //		init();
 
         float yPos = 6 + map.getScale().y * 0.93f;
@@ -328,8 +328,8 @@ public class GuiInGame extends Gui {
         yPos += yOffset * 11;
         World world = core.getWorld();
         if (world != null) {
-            chatInput.update(delta);
-            chatScroll.update(delta);
+            chatInput.update();
+            chatScroll.update();
             Camera cam = core.getRenderer().getCamera();
             Vector2f camPos = cam.getPosition();
             int bulletsCount = world.getBullets().size();
@@ -394,7 +394,7 @@ public class GuiInGame extends Gui {
         }
 
         if (world != null) {
-            super.update(delta);
+            super.update();
         }
     }
 

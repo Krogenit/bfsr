@@ -42,7 +42,7 @@ public class Bullet extends CollisionObject {
         this.damage = damage;
         this.ship = ship;
         this.bulletSpeed = bulletSpeed;
-        this.energy = damage.getAverageDamage();
+        energy = damage.getAverageDamage();
         setBulletVelocityAndStartTransform(radRot, pos);
         world.addBullet(this);
     }
@@ -54,7 +54,7 @@ public class Bullet extends CollisionObject {
         this.damage = damage;
         this.ship = ship;
         this.bulletSpeed = bulletSpeed;
-        this.energy = damage.getAverageDamage();
+        energy = damage.getAverageDamage();
         setBulletVelocityAndStartTransform(radRot, pos);
         world.addBullet(this);
         MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnBullet(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
@@ -64,11 +64,9 @@ public class Bullet extends CollisionObject {
         double x1 = Math.cos(radRot);
         double y1 = Math.sin(radRot);
         Vector2 velocity = new Vector2(x1 * bulletSpeed, y1 * bulletSpeed);
-//        Vector2 shipVelocity = ship.getBody().getLinearVelocity();
-//        body.setLinearVelocity(velocity.x * 50f + shipVelocity.x, velocity.y * 50f + shipVelocity.y);
-        body.setLinearVelocity(velocity.x * 50f, velocity.y * 50f);
+        body.setLinearVelocity(velocity.x * 50.0f, velocity.y * 50.0f);
         body.getTransform().setRotation(radRot);
-        body.getTransform().setTranslation(pos.x + velocity.x / 10f, pos.y + velocity.y / 10f);
+        body.getTransform().setTranslation(pos.x + velocity.x / 10.0f, pos.y + velocity.y / 10.0f);
     }
 
     @Override
@@ -77,26 +75,21 @@ public class Bullet extends CollisionObject {
     }
 
     @Override
-    public void update(double delta) {
-        super.update(delta);
+    public void update() {
+        super.update();
 
-        color.w -= alphaReducer * delta;
+        color.w -= alphaReducer * 0.01666666753590107f;
 
         if (color.w <= 0) {
             setDead(true);
         }
 
-        if (!world.isRemote()) {
-//			if(updateTimer <= 0) {
-//				updateTimer = 5;
-//				MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new SObjectPosition(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
-//			} else updateTimer-= 60 * delta;
-        } else {
+        if (world.isRemote()) {
             aliveTimer = 0;
         }
     }
 
-    public void postPhysicsUpdate(double delta) {
+    public void postPhysicsUpdate() {
         Vector2 velocity = body.getLinearVelocity();
         double mDx = velocity.x;
         double mDy = velocity.y;
@@ -108,8 +101,7 @@ public class Bullet extends CollisionObject {
     public void checkCollision(Contact contact, Vector2 normal, Body body) {
         Object userData = body.getUserData();
         if (userData != null) {
-            if (userData instanceof Ship) {
-                Ship ship = (Ship) userData;
+            if (userData instanceof Ship ship) {
                 if (canDamageShip(ship)) {
                     previousAObject = ship;
                     if (damageShip(ship)) {
@@ -151,17 +143,15 @@ public class Bullet extends CollisionObject {
 //				}
 
 
-            } else if (userData instanceof Bullet) {
+            } else if (userData instanceof Bullet bullet) {
                 //Bullet vs bullet
-                Bullet bullet = (Bullet) userData;
                 bullet.damage(this);
                 previousAObject = bullet;
 
                 if (bullet.isDead()) {
                     bullet.destroyBullet(this, contact, normal);
                 }
-            } else if (userData instanceof ParticleWreck) {
-                ParticleWreck wreck = (ParticleWreck) userData;
+            } else if (userData instanceof ParticleWreck wreck) {
                 wreck.damage(damage.bulletDamageHull);
                 destroyBullet(wreck, contact, normal);
             }
@@ -170,7 +160,7 @@ public class Bullet extends CollisionObject {
 
     private void damage(Bullet bullet) {
         float damage = bullet.damage.getAverageDamage();
-        damage /= 3f;
+        damage /= 3.0f;
 
         this.damage.bulletDamageArmor -= damage;
         this.damage.bulletDamageHull -= damage;
@@ -192,12 +182,9 @@ public class Bullet extends CollisionObject {
     private void destroyBullet(CollisionObject destroyer, Contact contact, Vector2 normal) {
         if (world.isRemote()) {
             if (destroyer != null) {
-                if (destroyer instanceof Ship) {
-                    Ship s = (Ship) destroyer;
+                if (destroyer instanceof Ship s) {
                     Shield shield = s.getShield();
-                    if (shield != null && shield.getShield() > 0) {
-
-                    } else {
+                    if (shield == null || shield.getShield() <= 0) {
                         Hull hull = s.getHull();
                         Vector2 pos1 = contact.getPoint();
                         Vector2f pos = new Vector2f((float) pos1.x, (float) pos1.y);
@@ -209,14 +196,13 @@ public class Bullet extends CollisionObject {
                             ParticleSpawner.spawnShipOst(1, pos, new Vector2f(velocity).add(angletovel), 0.5f);
                         }
                         Vector2f angletovel = RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 2.5f * (rand.nextFloat() + 0.5f));
-                        ParticleSpawner.spawnSmallGarbage(1 + rand.nextInt(3), pos.x, pos.y, velocity.x + angletovel.x, velocity.y + angletovel.y, 20f * (rand.nextFloat() + 0.5f), 50f, 0.5f);
+                        ParticleSpawner.spawnSmallGarbage(1 + rand.nextInt(3), pos.x, pos.y, velocity.x + angletovel.x, velocity.y + angletovel.y, 20.0f * (rand.nextFloat() + 0.5f), 50.0f, 0.5f);
                     }
-
 
                     ParticleSpawner.spawnDirectedSpark(contact, normal, getScale().x * 1.5f, new Vector4f(color));
 
                 } else if (destroyer instanceof Bullet) {
-                    ParticleSpawner.spawnLight(getPosition(), getScale().x * 5f, 7f * 60f, new Vector4f(color.x, color.y, color.z, 0.5f), 0.25f * 60f, true, EnumParticlePositionType.Default);
+                    ParticleSpawner.spawnLight(getPosition(), getScale().x * 5.0f, 7.0f * 60.0f, new Vector4f(color.x, color.y, color.z, 0.5f), 0.25f * 60.0f, true, EnumParticlePositionType.Default);
                 } else if (destroyer instanceof ParticleWreck) {
                     Vector2 pos1 = contact.getPoint();
                     Vector2f pos = new Vector2f((float) pos1.x, (float) pos1.y);
@@ -227,20 +213,17 @@ public class Bullet extends CollisionObject {
                         ParticleSpawner.spawnShipOst(1, pos, new Vector2f(velocity).add(angletovel), 0.5f);
                     }
                     Vector2f angletovel = RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 2.5f * (rand.nextFloat() + 0.5f));
-                    ParticleSpawner.spawnSmallGarbage(1 + rand.nextInt(3), pos.x, pos.y, velocity.x + angletovel.x, velocity.y + angletovel.y, 20f * (rand.nextFloat() + 0.5f), 50f, 0.5f);
+                    ParticleSpawner.spawnSmallGarbage(1 + rand.nextInt(3), pos.x, pos.y, velocity.x + angletovel.x, velocity.y + angletovel.y, 20.0f * (rand.nextFloat() + 0.5f), 50.0f, 0.5f);
                 }
             } else {
                 ParticleSpawner.spawnDirectedSpark(contact, normal, getScale().x * 1.5f, new Vector4f(color));
             }
-            ParticleSpawner.spawnLight(getPosition(), getScale().x * 3f, 3f * 60f, new Vector4f(color.x, color.y, color.z, 0.4f), 0.5f * 60f, true, EnumParticlePositionType.Default);
+            ParticleSpawner.spawnLight(getPosition(), getScale().x * 3.0f, 3.0f * 60.0f, new Vector4f(color.x, color.y, color.z, 0.4f), 0.5f * 60.0f, true, EnumParticlePositionType.Default);
         } else {
             if (destroyer != null) {
-                if (destroyer instanceof Ship) {
-                    Ship s = (Ship) destroyer;
+                if (destroyer instanceof Ship s) {
                     Shield shield = s.getShield();
-                    if (shield != null && shield.getShield() > 0) {
-
-                    } else {
+                    if (shield == null || shield.getShield() <= 0) {
                         Hull hull = s.getHull();
                         Vector2 pos1 = contact.getPoint();
                         Vector2f pos = new Vector2f((float) pos1.x, (float) pos1.y);
@@ -257,21 +240,12 @@ public class Bullet extends CollisionObject {
         }
     }
 
-    @Override
-    public void setDead(boolean isDead) {
-        super.setDead(isDead);
-
-//		if(!world.isRemote()) {
-//			MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new SObjectDead(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
-//		}
-    }
-
     private boolean canDamageShip(Ship ship) {
         return this.ship != ship && previousAObject != ship;
     }
 
     private boolean damageShip(Ship ship) {
-        return ship.attackShip(damage, ship, getPosition(), ship.getFaction() == ship.getFaction() ? 0.5f : 1f);
+        return ship.attackShip(damage, ship, getPosition(), ship.getFaction() == ship.getFaction() ? 0.5f : 1.0f);
     }
 
     @Override

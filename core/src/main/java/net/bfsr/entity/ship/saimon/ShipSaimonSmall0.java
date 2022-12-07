@@ -57,7 +57,7 @@ public class ShipSaimonSmall0 extends Ship {
 
         this.setShield(new ShieldSmall0(this, new Vector4f(1.0f, 0.6f, 0.5f, 1.0f), 17.5f, 0.64f, 185));
 
-        this.setWeapoinsCount(2);
+        this.setWeaponsCount(2);
 
         this.setCrew(new Crew(2));
 
@@ -130,7 +130,7 @@ public class ShipSaimonSmall0 extends Ship {
     }
 
     @Override
-    public void spawnEngineParticles(Direction dir, double delta) {
+    public void spawnEngineParticles(Direction dir) {
         Vector2f shipPos = getPosition();
 
         switch (dir) {

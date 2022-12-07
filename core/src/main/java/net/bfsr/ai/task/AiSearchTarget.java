@@ -16,7 +16,7 @@ public class AiSearchTarget extends AiTask {
     }
 
     @Override
-    public void execute(double delta) {
+    public void execute() {
         AiAggressiveType type = ship.getAi().getAggressiveType();
         switch (type) {
             case ATTACK:

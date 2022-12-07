@@ -144,8 +144,8 @@ public class GuiFactionSelect extends Gui {
     }
 
     @Override
-    public void update(double delta) {
-        super.update(delta);
+    public void update() {
+        super.update();
         updateRot(shipHuman, aabbHuman);
         updateRot(shipSaimon, aabbSaimon);
         updateRot(shipEngi, aabbEngi);
