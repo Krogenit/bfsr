@@ -99,7 +99,7 @@ public abstract class Ship extends CollisionObject {
 
         rotate = rot;
         jumpVelocity = RotationHelper.angleToVelocity(rotate + Math.PI, -jumpSpeed * 6.0f);
-        jumpPosition = new Vector2f(jumpVelocity.x / 60.0f * (6.4f + scale.x * 0.1f) * -0.5f + pos.x, jumpVelocity.y / 60.0f * (6.4f + scale.y * 0.1f) * -0.5f + pos.y);
+        jumpPosition = new Vector2f(jumpVelocity.x / 60.0f * (64.0f + scale.x * 0.1f) * -0.5f + pos.x, jumpVelocity.y / 60.0f * (64.0f + scale.y * 0.1f) * -0.5f + pos.y);
         position = new Vector2f(pos);
         this.effectsColor = effectsColor;
         setRotation(rotate);
@@ -120,7 +120,7 @@ public abstract class Ship extends CollisionObject {
         damages = new ArrayList<>();
         rotate = rot;
         jumpVelocity = RotationHelper.angleToVelocity(rotate + Math.PI, -jumpSpeed * 6.0f);
-        jumpPosition = new Vector2f(jumpVelocity.x / 60.0f * (6.4f + scale.x * 0.1f) * -0.5f + pos.x, jumpVelocity.y / 60.0f * (6.4f + scale.y * 0.1f) * -0.5f + pos.y);
+        jumpPosition = new Vector2f(jumpVelocity.x / 60.0f * (64.0f + scale.x * 0.1f) * -0.5f + pos.x, jumpVelocity.y / 60.0f * (64.0f + scale.y * 0.1f) * -0.5f + pos.y);
         position = new Vector2f(pos);
         this.effectsColor = effectsColor;
         setRotation(rotate);
@@ -263,9 +263,9 @@ public abstract class Ship extends CollisionObject {
                 setSpawmed();
                 setVelocity(jumpVelocity.mul(0.26666668f));
                 if (world.isRemote()) {
-                    ParticleSpawner.spawnLight(position, new Vector2f(getVelocity()).mul(0.02f), 32.0f + scale.x * 0.25f, new Vector4f(effectsColor.x, effectsColor.y, effectsColor.z, 1.0f), 3.6f,
+                    ParticleSpawner.spawnLight(position, new Vector2f(getVelocity()).mul(0.5f), 32.0f + scale.x * 0.25f, new Vector4f(effectsColor.x, effectsColor.y, effectsColor.z, 1.0f), 3.6f,
                             true, EnumParticlePositionType.Default);
-                    ParticleSpawner.spawnDisableShield(position, getVelocity(), 32.0f + scale.x * 0.25f, new Vector4f(effectsColor.x, effectsColor.y, effectsColor.z, 1.0f));
+                    ParticleSpawner.spawnDisableShield(position, new Vector2f(getVelocity()).mul(0.5f), 32.0f + scale.x * 0.25f, new Vector4f(effectsColor.x, effectsColor.y, effectsColor.z, 1.0f));
                     Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.jump, position));
                 }
             } else {
@@ -454,8 +454,7 @@ public abstract class Ship extends CollisionObject {
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
             shader.enableTexture();
             OpenGLHelper.bindTexture(TextureLoader.getTexture(TextureRegister.particleJump).getId());
-            shader.setModelViewMatrix(Transformation.getModelViewMatrix(jumpPosition.x, jumpPosition.y, rotate,
-                    (400.0f) * color.w, (400.0f) * color.w, EnumZoomFactor.Default));
+            shader.setModelViewMatrix(Transformation.getModelViewMatrix(jumpPosition.x, jumpPosition.y, rotate, 40.0f * color.w, 40.0f * color.w, EnumZoomFactor.Default));
             Renderer.quad.render();
         }
     }
