@@ -5,6 +5,7 @@ import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.texture.TextureRegister;
 import net.bfsr.collision.filter.BulletFilter;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.world.WorldClient;
 import net.bfsr.world.WorldServer;
 import org.dyn4j.dynamics.BodyFixture;
@@ -35,7 +36,7 @@ public class BulletLaserSmall extends Bullet {
         vertices[3] = new Vector2(-0.6f, 0.2f);
         Polygon polygon = Geometry.createPolygon(vertices);
         BodyFixture bodyFixture = new BodyFixture(polygon);
-        bodyFixture.setDensity(0.0001f);
+        bodyFixture.setDensity(PhysicsUtils.BULLET_FIXTURE_DENSITY);
         bodyFixture.setFriction(0.0f);
         bodyFixture.setRestitution(1.0f);
         bodyFixture.setFilter(new BulletFilter(this));

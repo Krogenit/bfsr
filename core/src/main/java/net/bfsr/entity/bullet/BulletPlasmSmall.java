@@ -36,7 +36,7 @@ public class BulletPlasmSmall extends Bullet {
         vertices[3] = new Vector2(-0.6f, 0.2f);
         Polygon polygon = Geometry.createPolygon(vertices);
         BodyFixture bodyFixture = new BodyFixture(polygon);
-        bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
+        bodyFixture.setDensity(PhysicsUtils.BULLET_FIXTURE_DENSITY);
         bodyFixture.setFriction(0.0f);
         bodyFixture.setRestitution(1.0f);
         bodyFixture.setFilter(new BulletFilter(this));
