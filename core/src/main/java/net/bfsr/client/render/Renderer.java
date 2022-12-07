@@ -11,7 +11,6 @@ import net.bfsr.client.model.TexturedQuad;
 import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.shader.primitive.PrimitiveShaders;
-import net.bfsr.client.shader.primitive.VertexColorShader;
 import net.bfsr.core.Core;
 import net.bfsr.math.Transformation;
 import net.bfsr.settings.ClientSettings;
@@ -20,10 +19,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL45;
+import org.lwjgl.opengl.*;
 
 @Log4j2
 public class Renderer {
@@ -48,7 +44,7 @@ public class Renderer {
 
     public Renderer(Core core) {
         this.core = core;
-        camera = new Camera(core.getWidth(), core.getHeight());
+        camera = new Camera();
     }
 
     public void init(long window, GLFWVidMode vidMode) {
@@ -58,6 +54,7 @@ public class Renderer {
 
         quad = new TexturedQuad();
 
+        camera.init(core.getWidth(), core.getHeight());
         fontRenderer.init();
         shader.load();
         shader.init();
@@ -131,9 +128,8 @@ public class Renderer {
             world.renderParticles();
             checkGlError("particles");
             if (core.getSettings().isDebug()) {
-                VertexColorShader vertexColorShader = PrimitiveShaders.INSTANCE.getVertexColorShader();
-                vertexColorShader.enable();
-                world.renderDebug(vertexColorShader);
+                GL20.glUseProgram(0);
+                world.renderDebug(null);
                 checkGlError("debug");
                 shader.enable();
             }

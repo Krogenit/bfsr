@@ -20,7 +20,7 @@ public class SoundSource {
         setBuffer(SoundLoader.getBufferId(soundName));
         setGain(soundName.getVolume());
         setRolloffFactor(3f);
-        setReferenceDistance(900f);
+        setReferenceDistance(90f);
     }
 
     public void setBuffer(int bufferId) {

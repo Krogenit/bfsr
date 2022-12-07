@@ -8,8 +8,6 @@ import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.render.Renderer;
 import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.shader.ParticleInstancedShader;
-import net.bfsr.client.shader.primitive.PrimitiveShaders;
-import net.bfsr.client.shader.primitive.VertexColorShader;
 import net.bfsr.client.texture.Texture;
 import net.bfsr.core.Core;
 import net.bfsr.math.Transformation;
@@ -122,8 +120,9 @@ public class ParticleRenderer {
         }
 
         if (core.getSettings().isDebug()) {
-            VertexColorShader vertexColorShader = PrimitiveShaders.INSTANCE.getVertexColorShader();
-            vertexColorShader.enable();
+            core.getRenderer().getCamera().setupOpenGLMatrix();
+
+            GL20.glUseProgram(0);
             for (ParticleWreck particle : particles) {
                 particle.renderDebug();
             }

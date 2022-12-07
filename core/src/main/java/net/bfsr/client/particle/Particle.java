@@ -5,6 +5,7 @@ import net.bfsr.client.texture.TextureRegister;
 import net.bfsr.core.Core;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.server.MainServer;
+import net.bfsr.util.TimeUtils;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Convex;
@@ -117,20 +118,19 @@ public class Particle extends CollisionObject {
 
     @Override
     public void update() {
-        float factor = 0.01666666753590107f;
         if (!canCollide) {
-            position.x += velocity.x * factor;
-            position.y += velocity.y * factor;
-            rotate += rotationSpeed * factor;
+            position.x += velocity.x * TimeUtils.UPDATE_DELTA_TIME;
+            position.y += velocity.y * TimeUtils.UPDATE_DELTA_TIME;
+            rotate += rotationSpeed * TimeUtils.UPDATE_DELTA_TIME;
 
             if (!zeroVelocity) {
-                velocity.x *= 0.99f * factor;
-                velocity.y *= 0.99f * factor;
+                velocity.x *= 0.99f * TimeUtils.UPDATE_DELTA_TIME;
+                velocity.y *= 0.99f * TimeUtils.UPDATE_DELTA_TIME;
             }
         }
 
         if (sizeVelocity != 0) {
-            float sizeVel = sizeVelocity * factor;
+            float sizeVel = sizeVelocity * TimeUtils.UPDATE_DELTA_TIME;
             scale.add(sizeVel, sizeVel);
 
             if (scale.x <= 0.0f || scale.y <= 0.0f)
@@ -140,7 +140,7 @@ public class Particle extends CollisionObject {
         if (alphaVelocity != 0) {
             if (isAlphaFromZero) {
                 if (maxAlpha != 0) {
-                    color.w += alphaVelocity * factor;
+                    color.w += alphaVelocity * TimeUtils.UPDATE_DELTA_TIME;
 
                     if (color.w >= maxAlpha * 2.0f)
                         setDead(true);
@@ -149,12 +149,12 @@ public class Particle extends CollisionObject {
                         maxAlpha = 0.0f;
                     }
                 } else {
-                    color.w -= alphaVelocity * factor;
+                    color.w -= alphaVelocity * TimeUtils.UPDATE_DELTA_TIME;
                     if (color.w <= 0)
                         setDead(true);
                 }
             } else {
-                color.w -= alphaVelocity * factor;
+                color.w -= alphaVelocity * TimeUtils.UPDATE_DELTA_TIME;
                 if (color.w <= 0)
                     setDead(true);
             }

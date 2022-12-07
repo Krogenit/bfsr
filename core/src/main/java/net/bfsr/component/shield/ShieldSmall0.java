@@ -14,7 +14,7 @@ public class ShieldSmall0 extends Shield {
         setShield(maxShield);
         setShieldRegen(shieldRegen);
         setTimeToRebuild(rebuildTime);
-        setScale(new Vector2f(80, 80));
+        setScale(new Vector2f(1, 1));
 
         if (ship.getWorld().isRemote()) {
             setColor(color);
@@ -30,7 +30,7 @@ public class ShieldSmall0 extends Shield {
         setShield(15);
         setShieldRegen(0.6f);
         setTimeToRebuild(200);
-        setScale(new Vector2f(80, 80));
+        setScale(new Vector2f(1, 1));
 
         if (ship.getWorld().isRemote()) {
             setColor(color);

@@ -18,25 +18,25 @@ import org.joml.Vector4f;
 public class BulletLaserSmall extends Bullet {
 
     public BulletLaserSmall(WorldServer world, int id, float radRot, Vector2f pos, Ship ship) {
-        super(world, id, 15f, radRot, pos, new Vector2f(24, 24), ship, new Vector4f(1.0f, 0.5f, 0.5f, 1.5f), 1.68f, new BulletDamage(2.5f, 2.5f, 5f));
+        super(world, id, 1.5f, radRot, pos, new Vector2f(2.4f, 2.4f), ship, new Vector4f(1.0f, 0.5f, 0.5f, 1.5f), 1.68f, new BulletDamage(2.5f, 2.5f, 5.0f));
     }
 
     public BulletLaserSmall(WorldClient world, int id, float radRot, Vector2f pos, Ship ship) {
-        super(world, id, 15f, radRot, pos, new Vector2f(24, 24), ship, TextureRegister.smallLaser, new Vector4f(1.0f, 0.5f, 0.5f, 1.5f), 1.68f, new BulletDamage(2.5f, 2.5f, 5f));
+        super(world, id, 1.5f, radRot, pos, new Vector2f(2.4f, 2.4f), ship, TextureRegister.smallLaser, new Vector4f(1.0f, 0.5f, 0.5f, 1.5f), 1.68f, new BulletDamage(2.5f, 2.5f, 5.0f));
     }
 
     @Override
     protected void createBody(Vector2f pos) {
         super.createBody(pos);
         Vector2[] vertices = new Vector2[4];
-        vertices[0] = new Vector2(-6f, -2f);
-        vertices[1] = new Vector2(6f, -2f);
-        vertices[2] = new Vector2(6f, 2f);
-        vertices[3] = new Vector2(-6f, 2f);
+        vertices[0] = new Vector2(-0.6f, -0.2f);
+        vertices[1] = new Vector2(0.6f, -0.2f);
+        vertices[2] = new Vector2(0.6f, 0.2f);
+        vertices[3] = new Vector2(-0.6f, 0.2f);
         Polygon polygon = Geometry.createPolygon(vertices);
         BodyFixture bodyFixture = new BodyFixture(polygon);
-        bodyFixture.setDensity(0.00001f);
-        bodyFixture.setFriction(0f);
+        bodyFixture.setDensity(0.0001f);
+        bodyFixture.setFriction(0.0f);
         bodyFixture.setRestitution(1.0f);
         bodyFixture.setFilter(new BulletFilter(this));
         body.addFixture(bodyFixture);
@@ -51,10 +51,9 @@ public class BulletLaserSmall extends Bullet {
     public void postPhysicsUpdate() {
         super.postPhysicsUpdate();
         if (world.isRemote()) {
-            float size = 60f;
+            float size = 6.0f;
             Vector2f pos = getPosition();
-            ParticleSpawner.spawnLight(pos, size, new Vector4f(color.x, color.y, color.z, color.w / 2f), 0.5f * 60f, false, EnumParticlePositionType.Background);
+            ParticleSpawner.spawnLight(pos, size, new Vector4f(color.x, color.y, color.z, color.w / 2.0f), 0.5f * 60.0f, false, EnumParticlePositionType.Background);
         }
     }
-
 }

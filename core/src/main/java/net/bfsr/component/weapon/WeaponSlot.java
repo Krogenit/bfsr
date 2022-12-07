@@ -9,6 +9,7 @@ import net.bfsr.entity.TextureObject;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.network.packet.common.PacketWeaponShoot;
 import net.bfsr.server.MainServer;
+import net.bfsr.util.TimeUtils;
 import net.bfsr.world.World;
 import net.bfsr.world.WorldServer;
 import org.dyn4j.dynamics.Body;
@@ -101,7 +102,7 @@ public abstract class WeaponSlot extends TextureObject {
     public void update() {
         updatePos();
         if (shootTimer > 0) {
-            shootTimer -= 0.8333334f;
+            shootTimer -= 50.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (shootTimer < 0) shootTimer = 0;
         }
     }

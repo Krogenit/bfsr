@@ -51,6 +51,8 @@ public class GUIText {
     private boolean shadow = true;
     @Getter
     private float lineHeight = 1.0f;
+    @Getter
+    private final Vector2f shadowOffset = new Vector2f();
 
     public GUIText(String text, Vector3f fontSize, FontType font, Vector2f position, Vector4f color, float maxLineLength, boolean centered, EnumParticlePositionType positionType) {
         this.textString = text;
@@ -144,5 +146,9 @@ public class GUIText {
     public void setMeshInfo(int vao, int verticesCount) {
         this.textMeshVao = vao;
         this.vertexCount = verticesCount;
+    }
+
+    public void setShadowOffset(float x, float y) {
+        shadowOffset.set(x, y);
     }
 }

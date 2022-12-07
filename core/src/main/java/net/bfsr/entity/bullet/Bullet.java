@@ -16,6 +16,7 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.server.PacketSpawnBullet;
 import net.bfsr.server.MainServer;
+import net.bfsr.util.TimeUtils;
 import net.bfsr.world.WorldClient;
 import net.bfsr.world.WorldServer;
 import org.dyn4j.dynamics.Body;
@@ -27,7 +28,6 @@ import org.joml.Vector4f;
 import java.util.Random;
 
 public class Bullet extends CollisionObject {
-
     protected final Ship ship;
     private final float bulletSpeed;
     private float alphaReducer;
@@ -78,7 +78,7 @@ public class Bullet extends CollisionObject {
     public void update() {
         super.update();
 
-        color.w -= alphaReducer * 0.01666666753590107f;
+        color.w -= alphaReducer * TimeUtils.UPDATE_DELTA_TIME;
 
         if (color.w <= 0) {
             setDead(true);
@@ -196,13 +196,13 @@ public class Bullet extends CollisionObject {
                             ParticleSpawner.spawnShipOst(1, pos, new Vector2f(velocity).add(angletovel), 0.5f);
                         }
                         Vector2f angletovel = RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 2.5f * (rand.nextFloat() + 0.5f));
-                        ParticleSpawner.spawnSmallGarbage(1 + rand.nextInt(3), pos.x, pos.y, velocity.x + angletovel.x, velocity.y + angletovel.y, 20.0f * (rand.nextFloat() + 0.5f), 50.0f, 0.5f);
+                        ParticleSpawner.spawnSmallGarbage(1 + rand.nextInt(3), pos.x, pos.y, velocity.x + angletovel.x, velocity.y + angletovel.y, 2.0f * (rand.nextFloat() + 0.5f), 5.0f, 0.5f);
                     }
 
                     ParticleSpawner.spawnDirectedSpark(contact, normal, getScale().x * 1.5f, new Vector4f(color));
 
                 } else if (destroyer instanceof Bullet) {
-                    ParticleSpawner.spawnLight(getPosition(), getScale().x * 5.0f, 7.0f * 60.0f, new Vector4f(color.x, color.y, color.z, 0.5f), 0.25f * 60.0f, true, EnumParticlePositionType.Default);
+                    ParticleSpawner.spawnLight(getPosition(), getScale().x * 5.0f, 7.0f * 6.0f, new Vector4f(color.x, color.y, color.z, 0.5f), 0.25f * 60.0f, true, EnumParticlePositionType.Default);
                 } else if (destroyer instanceof ParticleWreck) {
                     Vector2 pos1 = contact.getPoint();
                     Vector2f pos = new Vector2f((float) pos1.x, (float) pos1.y);
@@ -213,12 +213,12 @@ public class Bullet extends CollisionObject {
                         ParticleSpawner.spawnShipOst(1, pos, new Vector2f(velocity).add(angletovel), 0.5f);
                     }
                     Vector2f angletovel = RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 2.5f * (rand.nextFloat() + 0.5f));
-                    ParticleSpawner.spawnSmallGarbage(1 + rand.nextInt(3), pos.x, pos.y, velocity.x + angletovel.x, velocity.y + angletovel.y, 20.0f * (rand.nextFloat() + 0.5f), 50.0f, 0.5f);
+                    ParticleSpawner.spawnSmallGarbage(1 + rand.nextInt(3), pos.x, pos.y, velocity.x + angletovel.x, velocity.y + angletovel.y, 2.0f * (rand.nextFloat() + 0.5f), 5.0f, 0.5f);
                 }
             } else {
                 ParticleSpawner.spawnDirectedSpark(contact, normal, getScale().x * 1.5f, new Vector4f(color));
             }
-            ParticleSpawner.spawnLight(getPosition(), getScale().x * 3.0f, 3.0f * 60.0f, new Vector4f(color.x, color.y, color.z, 0.4f), 0.5f * 60.0f, true, EnumParticlePositionType.Default);
+            ParticleSpawner.spawnLight(getPosition(), getScale().x * 3.0f, 3.0f * 6.0f, new Vector4f(color.x, color.y, color.z, 0.4f), 0.5f * 60.0f, true, EnumParticlePositionType.Default);
         } else {
             if (destroyer != null) {
                 if (destroyer instanceof Ship s) {

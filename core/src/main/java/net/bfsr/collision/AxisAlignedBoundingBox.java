@@ -9,9 +9,20 @@ public class AxisAlignedBoundingBox {
 
     private static final AxisAlignedBoundingBox TRANSLATED_AABB = new AxisAlignedBoundingBox(new Vector2f(), new Vector2f());
 
+    public AxisAlignedBoundingBox() {
+        this(new Vector2f(), new Vector2f());
+    }
+
     public AxisAlignedBoundingBox(Vector2f min, Vector2f max) {
         this.max = max;
         this.min = min;
+    }
+
+    public void set(float minX, float minY, float maxX, float maxY) {
+        this.min.x = minX;
+        this.min.y = minY;
+        this.max.x = maxX;
+        this.max.y = maxY;
     }
 
     public void setMinX(float x) {

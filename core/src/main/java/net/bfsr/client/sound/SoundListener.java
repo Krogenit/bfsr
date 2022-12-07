@@ -30,7 +30,7 @@ public class SoundListener {
     }
 
     public void setPosition(Vector2f position) {
-        alListener3f(AL_POSITION, position.x, position.y, -500);
+        alListener3f(AL_POSITION, position.x, position.y, -50);
     }
 
     public void setPosition(Vector3f position) {

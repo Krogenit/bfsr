@@ -12,6 +12,7 @@ import net.bfsr.math.Direction;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.common.PacketShipEngine;
 import net.bfsr.server.MainServer;
+import net.bfsr.util.TimeUtils;
 import net.bfsr.world.World;
 import net.bfsr.world.WorldServer;
 import org.dyn4j.dynamics.Body;
@@ -70,7 +71,7 @@ public class CollisionObject extends TextureObject {
     @Override
     public void update() {
         if (world.isRemote()) {
-            aliveTimer += 1;
+            aliveTimer += 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (aliveTimer > 120) {
                 setDead(true);
                 aliveTimer = 0;
@@ -78,22 +79,8 @@ public class CollisionObject extends TextureObject {
         }
     }
 
-    private void move(Direction dir, Vector2 r, float speed, float maxSpeed, float maneuverability, boolean speedLimit) {
-        Vector2 velocity = body.getLinearVelocity();
-
-        if (speedLimit) {
-            float maxTranslation = maxSpeed * 50.0f;
-            float maxTranslationSqrd = maxTranslation * maxTranslation;
-            double magnitude = velocity.getMagnitudeSquared();
-
-            if (magnitude > maxTranslationSqrd) {
-                double percent = (maxTranslationSqrd / magnitude) / 10.0f;
-                if (percent < 0.99f) percent = 0.99f;
-                velocity.multiply(0.99f * percent);
-            }
-        }
-
-        Vector2 f = r.product(speed * 16_666_600.0);
+    private void move(Vector2 r, float speed) {
+        Vector2 f = r.product(speed);
         body.applyForce(f);
     }
 
@@ -104,19 +91,19 @@ public class CollisionObject extends TextureObject {
 
         switch (dir) {
             case FORWARD:
-                move(dir, r, engine.getForwardSpeed(), engine.getMaxForwardSpeed(), engine.getManeuverability(), true);
+                move(r, engine.getForwardSpeed());
                 break;
             case BACKWARD:
                 r.negate();
-                move(dir, r, engine.getBackwardSpeed(), engine.getMaxBackwardSpeed(), engine.getManeuverability(), !engine.isMaxPower());
+                move(r, engine.getBackwardSpeed());
                 break;
             case LEFT:
                 r.left();
-                move(dir, r, engine.getSideSpeed(), engine.getMaxSideSpeed(), engine.getManeuverability(), !engine.isMaxPower());
+                move(r, engine.getSideSpeed());
                 break;
             case RIGHT:
                 r.right();
-                move(dir, r, engine.getSideSpeed(), engine.getMaxSideSpeed(), engine.getManeuverability(), !engine.isMaxPower());
+                move(r, engine.getSideSpeed());
                 break;
             case STOP:
                 body.getLinearVelocity().multiply(engine.getManeuverability() / 1.02f);
@@ -185,8 +172,8 @@ public class CollisionObject extends TextureObject {
             if (diffAbs <= 5) {
                 if (diffAbs <= 1) {
                     body.setAngularVelocity(0);
-                } else addRot = rotateSpeed / 4.0 * 0.01666666753590107f;
-            } else addRot = rotateSpeed * 0.01666666753590107f;
+                } else addRot = rotateSpeed / 4.0 * TimeUtils.UPDATE_DELTA_TIME;
+            } else addRot = rotateSpeed * TimeUtils.UPDATE_DELTA_TIME;
 
             if (addRot >= diffRad) {
                 transform.setRotation(Math.atan2(rotateToVector.x, -rotateToVector.y) - Math.PI / 2.0);
@@ -199,8 +186,8 @@ public class CollisionObject extends TextureObject {
             if (diffAbs <= 5) {
                 if (diffAbs <= 1) {
                     body.setAngularVelocity(0);
-                } else addRot = -rotateSpeed / 4.0 * 0.01666666753590107f;
-            } else addRot = -rotateSpeed * 0.01666666753590107f;
+                } else addRot = -rotateSpeed / 4.0 * TimeUtils.UPDATE_DELTA_TIME;
+            } else addRot = -rotateSpeed * TimeUtils.UPDATE_DELTA_TIME;
 
             if (addRot <= diffRad) {
                 transform.setRotation(Math.atan2(rotateToVector.x, -rotateToVector.y) - Math.PI / 2.0);

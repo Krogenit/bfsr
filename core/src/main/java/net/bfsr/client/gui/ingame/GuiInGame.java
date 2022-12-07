@@ -421,17 +421,17 @@ public class GuiInGame extends Gui {
         map.render(shader);
         List<Ship> ships = world.getShips();
         Vector2f camPos = core.getRenderer().getCamera().getPosition();
-        float mapOffsetX = 6000;
-        float mapOffsetY = 6000;
+        float mapOffsetX = 600;
+        float mapOffsetY = 600;
         mapBoundingBox.getMin().x = camPos.x - mapOffsetX;
         mapBoundingBox.getMin().y = camPos.y - mapOffsetY;
         mapBoundingBox.getMax().x = camPos.x + mapOffsetX;
         mapBoundingBox.getMax().y = camPos.y + mapOffsetY;
         mapPos.x = center.x - 550;
-        mapPos.y = center.y - 286;
-        float mapScaleX = 50f;
-        float mapScaleY = 70f;
-        float shipSize = 10f;
+        mapPos.y = center.y - 286f;
+        float mapScaleX = 5f;
+        float mapScaleY = 7f;
+        float shipSize = 1.0f;
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         Vector2f mappos1 = this.map.getPosition();
         mapScale.x = this.map.getScale().x;
@@ -500,37 +500,6 @@ public class GuiInGame extends Gui {
             }
         }
 
-//		for(Ship s : ships) {
-//			Vector2f pos = s.getPosition();
-//			Vector2f scale = new Vector2f(s.getScale());
-//			scale.x /= shipSize;
-//			scale.y /= shipSize;
-//			float sX = scale.x/2f;
-//			float sY = scale.y/2f;
-//			shipAABB.setMinX(pos.x - sX);
-//			shipAABB.setMaxX(pos.x + sX);
-//			shipAABB.setMinY(pos.y - sY);
-//			shipAABB.setMaxY(pos.y + sY);
-//			if(mapAABB.isIntersects(shipAABB)) {
-//				Faction faction = s.getFaction();
-//				if(faction == Faction.Engi) {
-//					color.x = 0.5f;
-//					color.y = 1.0f;
-//					color.z = 0.5f;
-//				} else if(faction == Faction.Human) {
-//					color.x = 0.5f;
-//					color.y = 0.5f;
-//					color.z = 1.0f;
-//				} else {
-//					color.x = 1.0f;
-//					color.y = 1.0f;
-//					color.z = 0.5f;
-//				}
-//				
-//				Vector2f onMapPos = new Vector2f(mapPos.x + (pos.x - camPos.x) / mapScaleX, mapPos.y + (pos.y - camPos.y) / mapScaleY);
-//				renderQuad(shader, color, s.getTexture(), onMapPos, s.getRotation(), scale);
-//			}
-//		}
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 

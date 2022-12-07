@@ -1,5 +1,7 @@
 package net.bfsr.core;
 
+import net.bfsr.util.TimeUtils;
+
 public class Loop extends AbstractLoop {
     private float timeBetweenUpdates;
 
@@ -7,7 +9,7 @@ public class Loop extends AbstractLoop {
     protected void loop() {
         // At the very most we will update the game this many times before a new render.
         // If you're worried about visual hitches more than perfect timing, set this to 1.
-        final int maxUpdatesBeforeRender = 1;
+        final int maxUpdatesBeforeRender = 2;
         // We will need the last update time.
         double lastUpdateTime = System.nanoTime();
 
@@ -92,7 +94,7 @@ public class Loop extends AbstractLoop {
 
     @Override
     protected int getUpdatesPerSecond() {
-        return 60;
+        return TimeUtils.UPDATES_PER_SECOND;
     }
 
     @Override

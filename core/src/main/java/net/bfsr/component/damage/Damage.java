@@ -10,6 +10,7 @@ import net.bfsr.component.hull.Hull;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.RotationHelper;
+import net.bfsr.util.TimeUtils;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -82,17 +83,17 @@ public class Damage extends TextureObject {
         if (damaged) {
             if (!isCreated) {
                 addRotation = RotationHelper.TWOPI * rand.nextFloat();
-                ParticleSpawner.spawnExplosion(position, scale.x, 20.0f);
-                ParticleSpawner.spawnSpark(position, scale.x, 20.0f);
+                ParticleSpawner.spawnExplosion(position, scale.x, 2.0f);
+                ParticleSpawner.spawnSpark(position, scale.x, 2.0f);
                 ParticleSpawner.spawnLight(position, (scale.x + scale.y), new Vector4f(1.0f, 0.5f, 0.5f, 0.7f), 2.0f, true, EnumParticlePositionType.Default);
                 isCreated = true;
             }
 
-            smokeTimer -= 1;
-            ionTimer -= 1;
+            smokeTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+            ionTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (smokeTimer <= 0) {
-                ParticleSpawner.spawnDamageSmoke(position, 5.0F * rand.nextFloat() + scale.x / 4.0f, 10.0f, 0.4f);
-                if (rand.nextInt(4) == 0) ParticleSpawner.spawnSmallGarbage(1, position.x, position.y, 0.01f, 10.0f);
+                ParticleSpawner.spawnDamageSmoke(position, 0.5F * rand.nextFloat() + scale.x / 4.0f, 1.0f, 0.4f);
+                if (rand.nextInt(4) == 0) ParticleSpawner.spawnSmallGarbage(1, position.x, position.y, 0.01f, 1.0f);
                 smokeTimer = 1 + rand.nextInt(2);//3 + rand.nextInt(10);
             }
             if (ionTimer <= 0 && type > 1) {
@@ -104,7 +105,7 @@ public class Damage extends TextureObject {
             colorFix.z = 1;
             colorFix.w = 1;
         } else if (colorFix.w > 0) {
-            float fixSpeed = 0.0005f;
+            float fixSpeed = 0.03f * TimeUtils.UPDATE_DELTA_TIME;
             if (colorFix.w >= 1.0f && repairTimer != 1000) {
                 repairTimer = 1000;
                 colorFix.w -= fixSpeed;
@@ -112,7 +113,7 @@ public class Damage extends TextureObject {
                 colorFix.y -= fixSpeed;
                 colorFix.z -= fixSpeed;
             }
-            repairTimer -= 1;
+            repairTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (repairTimer <= 0) {
                 if (isCreated) {
                     ParticleSpawner.spawnLight(position, (scale.x + scale.y), new Vector4f(0.25f, 0.75f, 1.0f, 1.0f), 5.0f, true, EnumParticlePositionType.Default);
@@ -126,7 +127,7 @@ public class Damage extends TextureObject {
         }
 
         if (damaged || repairTimer > 0) {
-            float fireSpeed = 0.005f;
+            float fireSpeed = 0.3f * TimeUtils.UPDATE_DELTA_TIME;
             if (changeFire) {
                 if (colorFire.w > 0.5F) {
                     colorFire.w -= fireSpeed;
@@ -147,8 +148,8 @@ public class Damage extends TextureObject {
                 }
             }
             if (type > 1) {
-                lightingTimer1 -= 1;
-                float lightSpeed = 0.2f;
+                lightingTimer1 -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+                float lightSpeed = 12.0f * TimeUtils.UPDATE_DELTA_TIME;
                 if (lightingTimer1 <= 0) {
                     if (changeLight) {
                         if (colorLight.w > 0.0F) {

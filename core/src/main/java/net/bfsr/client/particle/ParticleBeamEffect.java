@@ -24,7 +24,7 @@ public class ParticleBeamEffect extends Particle {
         color = new Vector4f(slot.getBeamColor());
         Vector2f slotScale = slot.getScale();
         addPos = new Vector2f(rand.nextFloat(), (rand.nextFloat() * 2.0f - 1.0f) * slotScale.y / 2.0f);
-        addScale = new Vector2f(50.0f + 28.0f * rand.nextFloat(), slotScale.y / 2.0f + 4.0f * rand.nextFloat());
+        addScale = new Vector2f(5.0f + 2.8f * rand.nextFloat(), slotScale.y / 2.0f + 0.4f * rand.nextFloat());
     }
 
     @Override

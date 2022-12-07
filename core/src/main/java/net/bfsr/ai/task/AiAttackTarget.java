@@ -5,6 +5,7 @@ import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.Direction;
+import net.bfsr.util.TimeUtils;
 import org.joml.Vector2f;
 
 import java.util.List;
@@ -65,11 +66,10 @@ public class AiAttackTarget extends AiTask {
                     float bulletSpeed = slot.getBulletSpeed();
                     int totalIterations = (int) (1.5f / slot.getAlphaReducer());
 
-                    Vector2f totalVelocity = new Vector2f(-x1 * bulletSpeed * 50f,
-                            -y1 * bulletSpeed * 50f).mul(totalIterations).mul(0.016666f);
+                    Vector2f totalVelocity = new Vector2f(-x1 * bulletSpeed * 5.0f, -y1 * bulletSpeed * 5.0f).mul(totalIterations).mul(TimeUtils.UPDATE_DELTA_TIME);
                     Vector2f bulletFinalPos = new Vector2f(pos.x + xPos + totalVelocity.x, pos.y + yPos + totalVelocity.y);
 
-                    bulletToShip = bulletFinalPos.distance(pos) - 100f;
+                    bulletToShip = bulletFinalPos.distance(pos) - 10.0f;
 
                     if (distanceToTarget < bulletToShip) {
                         totalIterations *= distanceToTarget / bulletToShip;
@@ -120,7 +120,7 @@ public class AiAttackTarget extends AiTask {
             }
             ship.move(ship, dir);
             if (curDir != null && changeDirTimer > 0) {
-                changeDirTimer -= 1;
+                changeDirTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
                 ship.move(ship, curDir);
             } else {
                 Random rand = ship.getWorld().getRand();
@@ -132,7 +132,7 @@ public class AiAttackTarget extends AiTask {
             }
         } else {
             if (curDir != null && changeDirTimer > 0) {
-                changeDirTimer -= 1;
+                changeDirTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
                 ship.move(ship, curDir);
             } else {
                 Random rand = ship.getWorld().getRand();

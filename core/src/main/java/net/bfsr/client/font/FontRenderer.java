@@ -159,7 +159,7 @@ public class FontRenderer {
         Renderer renderer = core.getRenderer();
         if (text.isShadow()) {
             fontShader.setColor(new Vector4f(shadowColor.x, shadowColor.y, shadowColor.z, text.getColor().w));
-            fontShader.setModelViewMatrix(Transformation.getModelViewMatrix(text, shadowOffset));
+            fontShader.setModelViewMatrix(Transformation.getModelViewMatrix(text, new Vector2f(shadowOffset.x + text.getShadowOffset().x, shadowOffset.y + text.getShadowOffset().y)));
             GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, text.getVertexCount());
             renderer.setDrawCalls(renderer.getDrawCalls() + 1);
         }

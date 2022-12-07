@@ -65,7 +65,7 @@ public class MainServer extends Loop {
         networkSystem = new NetworkSystem(this);
         profiler = new Profiler(true);
         dataBase = new SimpleDataBase(this);
-        world = new WorldServer(this, profiler);
+        world = new WorldServer(profiler);
         playerManager = new PlayerManager(this, world);
 //		world.spawnShips();
 

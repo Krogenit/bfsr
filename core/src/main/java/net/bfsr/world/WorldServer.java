@@ -16,7 +16,6 @@ import net.bfsr.math.RotationHelper;
 import net.bfsr.network.EnumGui;
 import net.bfsr.network.packet.server.PacketOpenGui;
 import net.bfsr.profiler.Profiler;
-import net.bfsr.server.MainServer;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;
@@ -24,13 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 
 public class WorldServer extends World {
-
-    public static final float PACKET_SPAWN_DISTANCE = 6000;
-    public static final float PACKET_UPDATE_DISTANCE = 4000;
+    public static final float PACKET_SPAWN_DISTANCE = 600;
+    public static final float PACKET_UPDATE_DISTANCE = 400;
 
     private float updateTime, physicsTime, networkTime;
 
-    private final MainServer server;
     private final List<PlayerServer> players = new ArrayList<>();
     private final HashMap<String, PlayerServer> playersByName = new HashMap<>();
     private final long seed;
@@ -38,9 +35,8 @@ public class WorldServer extends World {
 
     private float timer;
 
-    public WorldServer(MainServer server, Profiler profiler) {
+    public WorldServer(Profiler profiler) {
         super(false, profiler);
-        this.server = server;
         this.seed = rand.nextLong();
     }
 
@@ -65,13 +61,13 @@ public class WorldServer extends World {
             int maxCount = 20;
             int count = maxCount;
 
-            Vector2f pos = new Vector2f(-1500, 0);
+            Vector2f pos = new Vector2f(-150, 0);
             Ship ship;
             float angle = 0.1f;
             if (sameFaction && lastFaction == Faction.Human) count = count - botCount;
             for (int i = 0; i < count; i++) {
-                pos.x = rand.nextInt(1) - 2500;
-                pos.y = rand.nextInt(1000) - 500;
+                pos.x = rand.nextInt(1) - 250;
+                pos.y = rand.nextInt(100) - 50;
 //				pos = RotationHelper.rotate(angle, pos.x, pos.y);
                 ship = new ShipHumanSmall0(this, pos, rand.nextFloat() * RotationHelper.TWOPI, false);
                 ship.setFaction(Faction.Human);
@@ -91,8 +87,8 @@ public class WorldServer extends World {
             count = maxCount;
             if (sameFaction && lastFaction == Faction.Saimon) count = count - botCount;
             for (int i = 0; i < count; i++) {
-                pos.y = rand.nextInt(1) - 3500;
-                pos.x = rand.nextInt(1000) - 500;
+                pos.y = rand.nextInt(1) - 350;
+                pos.x = rand.nextInt(100) - 50;
 //				pos = RotationHelper.rotate(angle, pos.x, pos.y);
                 ship = new ShipSaimonSmall0(this, pos, rand.nextFloat() * RotationHelper.TWOPI, false);
                 ship.setFaction(Faction.Saimon);
@@ -108,12 +104,12 @@ public class WorldServer extends World {
             }
 
 //			pos = RotationHelper.rotate((float) (Math.PI * 2f / 3f), pos.x, pos.y);
-            pos = new Vector2f(1500, 0);
+            pos = new Vector2f(150, 0);
             count = maxCount;
             if (sameFaction && lastFaction == Faction.Engi) count = count - botCount;
             for (int i = 0; i < count; i++) {
-                pos.x = rand.nextInt(1) + 2500;
-                pos.y = rand.nextInt(1000) - 500;
+                pos.x = rand.nextInt(1) + 250;
+                pos.y = rand.nextInt(100) - 50;
 //				pos = RotationHelper.rotate(angle, pos.x, pos.y);
                 ship = new ShipEngiSmall0(this, pos, rand.nextFloat() * RotationHelper.TWOPI, false);
                 ship.setFaction(Faction.Engi);

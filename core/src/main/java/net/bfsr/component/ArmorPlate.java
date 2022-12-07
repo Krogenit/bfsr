@@ -1,5 +1,7 @@
 package net.bfsr.component;
 
+import net.bfsr.util.TimeUtils;
+
 public class ArmorPlate {
 
     private float armor;
@@ -17,7 +19,7 @@ public class ArmorPlate {
 
     public void update() {
         if (armor < armorMax) {
-            armor += armorRegenSpeed * 0.01666666753590107f;
+            armor += armorRegenSpeed * TimeUtils.UPDATE_DELTA_TIME;
         }
     }
 

@@ -14,7 +14,9 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.Transformation;
 import net.bfsr.network.packet.common.PacketObjectPosition;
 import net.bfsr.network.packet.server.PacketRemoveObject;
+import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.server.MainServer;
+import net.bfsr.util.TimeUtils;
 import net.bfsr.world.WorldServer;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
@@ -28,7 +30,6 @@ import org.joml.Vector4f;
 import java.util.Random;
 
 public class ParticleWreck extends Particle {
-
     private final int textureOffset;
 
     private boolean fire;
@@ -221,9 +222,15 @@ public class ParticleWreck extends Particle {
                     vertecies[3] = new Vector2(8.81f, -7.24f);
                     break;
             }
+
+            for (int i = 0; i < vertecies.length; i++) {
+                Vector2 vertex = vertecies[i];
+                vertex.divide(10.0f);
+            }
+
             Polygon p = Geometry.createPolygon(vertecies);
             BodyFixture bodyFixture = new BodyFixture(p);
-            bodyFixture.setDensity(1.0f);
+            bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
             bodyFixture.setFilter(new WreckFilter(this));
             body.addFixture(bodyFixture);
         } else if (light) {
@@ -260,7 +267,7 @@ public class ParticleWreck extends Particle {
             }
             Polygon p = Geometry.createPolygon(vertecies);
             BodyFixture bodyFixture = new BodyFixture(p);
-            bodyFixture.setDensity(0.1f);
+            bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
             bodyFixture.setFilter(new WreckFilter(this));
             body.addFixture(bodyFixture);
         } else {
@@ -320,7 +327,7 @@ public class ParticleWreck extends Particle {
             }
             Polygon p = Geometry.createPolygon(vertecies);
             BodyFixture bodyFixture = new BodyFixture(p);
-            bodyFixture.setDensity(0.1f);
+            bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
             bodyFixture.setFilter(new WreckFilter(this));
             body.addFixture(bodyFixture);
         }
@@ -371,7 +378,7 @@ public class ParticleWreck extends Particle {
     @Override
     public void update() {
         if (world.isRemote()) {
-            aliveTimer += 1;
+            aliveTimer += 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (aliveTimer > 120) {
                 setDead(true);
                 aliveTimer = 0;
@@ -381,9 +388,9 @@ public class ParticleWreck extends Particle {
         }
 
         if (!canCollide) {
-            position.x += velocity.x * 0.01666666753590107f;
-            position.y += velocity.y * 0.01666666753590107f;
-            rotate += rotationSpeed * 0.01666666753590107f;
+            position.x += velocity.x * TimeUtils.UPDATE_DELTA_TIME;
+            position.y += velocity.y * TimeUtils.UPDATE_DELTA_TIME;
+            rotate += rotationSpeed * TimeUtils.UPDATE_DELTA_TIME;
 
             if (!zeroVelocity) {
                 velocity.x *= 0.999f;
@@ -391,19 +398,19 @@ public class ParticleWreck extends Particle {
             }
         }
 
-        float fireSpeed = 0.002f;
-        float fireSpeed1 = 0.003f;
-        float fireSpeed2 = 0.002f;
-        float fireAddSpeed = 0.0005f;
-        float lightSpeed = 0.2f;
+        float fireSpeed = 0.120f * TimeUtils.UPDATE_DELTA_TIME;
+        float fireSpeed1 = 0.180f * TimeUtils.UPDATE_DELTA_TIME;
+        float fireSpeed2 = 0.120F * TimeUtils.UPDATE_DELTA_TIME;
+        float fireAddSpeed = 0.0300f * TimeUtils.UPDATE_DELTA_TIME;
+        float lightSpeed = 12.0f * TimeUtils.UPDATE_DELTA_TIME;
 
         if (fire && world.isRemote()) {
             if (fireExplosion) {
-                explosionTimer -= 1;
+                explosionTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
                 if (explosionTimer <= 0 && color.w > 0.6f) {
                     float size = scale.x / 4.0f;
                     ParticleSpawner.spawnExplosion(new Vector2f(getPosition()), size / 10.0f);
-                    ParticleSpawner.spawnDamageSmoke(new Vector2f(getPosition()), size + 10.0f);
+                    ParticleSpawner.spawnDamageSmoke(new Vector2f(getPosition()), size + 1.0f);
                     explosionTimer = 8 + world.getRand().nextInt(8);
                 }
             }
@@ -444,7 +451,7 @@ public class ParticleWreck extends Particle {
         }
 
         if (light && world.isRemote()) {
-            timerLight1 -= 1;
+            timerLight1 -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (timerLight1 <= 0.0f) {
                 if (changeLight) {
                     if (colorLight.w > 0.0f) {
@@ -485,7 +492,7 @@ public class ParticleWreck extends Particle {
                 }
             }
 
-            wreckLifeTime -= 1;
+            wreckLifeTime -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (wreckLifeTime <= maxWreckLifeTime / 7.0f) {
                 if (world.isRemote() && colorLight.w > 0.0f) {
                     light = false;
@@ -545,7 +552,7 @@ public class ParticleWreck extends Particle {
                     }
                 }
             } else {
-                color.w -= alphaVelocity * 0.01666666753590107f;
+                color.w -= alphaVelocity * TimeUtils.UPDATE_DELTA_TIME;
             }
         }
     }

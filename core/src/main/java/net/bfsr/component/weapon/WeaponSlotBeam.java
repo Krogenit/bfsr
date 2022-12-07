@@ -13,6 +13,7 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.common.PacketWeaponShoot;
 import net.bfsr.server.MainServer;
+import net.bfsr.util.TimeUtils;
 import net.bfsr.world.WorldServer;
 import org.dyn4j.collision.narrowphase.Raycast;
 import org.dyn4j.dynamics.Body;
@@ -63,11 +64,11 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                 if (shootTimer <= shootTimerMax / 3.0f) {
                     maxColor = false;
                     if (beamColor.w > 0.0f) {
-                        beamColor.w -= 0.058333337f;
+                        beamColor.w -= 3.5f * TimeUtils.UPDATE_DELTA_TIME;
                     }
                 } else {
                     if (!maxColor && beamColor.w < 1.0f) {
-                        beamColor.w += 0.058333337f;
+                        beamColor.w += 3.5f * TimeUtils.UPDATE_DELTA_TIME;
                     } else {
                         maxColor = true;
                     }
@@ -78,9 +79,9 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
 
                     ParticleSpawner.spawnLight(position, scale.x * 2.5f, new Vector4f(beamColor.x, beamColor.y, beamColor.z, 0.6f * beamColor.w), EnumParticlePositionType.Default);
                     float alphaSpeed = 6.0f;
-                    float size = 20.0f;
-                    float sizeSpeed = 300.0f;
-                    new Particle(TextureRegister.particleBeamDamage, position, RotationHelper.angleToVelocity(rotate, 100.0f), rotate, 0, new Vector2f(size, size), sizeSpeed, new Vector4f(beamColor), alphaSpeed, 0.001f, false, false, EnumParticlePositionType.Default, EnumParticleRenderType.Additive);
+                    float size = 2.0f;
+                    float sizeSpeed = 30.0f;
+                    new Particle(TextureRegister.particleBeamDamage, position, RotationHelper.angleToVelocity(rotate, 10.0f), rotate, 0, new Vector2f(size, size), sizeSpeed, new Vector4f(beamColor), alphaSpeed, 0.001f, false, false, EnumParticlePositionType.Default, EnumParticleRenderType.Additive);
                 }
 
                 rayCast();
@@ -93,14 +94,13 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                     }
 
                     while (particlesEffects.size() < currentBeamRange / 90.0f) {
-
                         Particle p = ParticleSpawner.spawnBeamEffect(this);
                         particlesEffects.add(p);
                     }
                 }
             } else {
                 if (beamColor.w > 0.0f) {
-                    beamColor.w -= 0.058333337f;
+                    beamColor.w -= 3.5f * TimeUtils.UPDATE_DELTA_TIME;
                 }
             }
 
@@ -117,11 +117,11 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                 if (shootTimer <= shootTimerMax / 3.0f) {
                     maxColor = false;
                     if (beamColor.w > 0.0f) {
-                        beamColor.w -= 0.058333337f;
+                        beamColor.w -= 3.5f * TimeUtils.UPDATE_DELTA_TIME;
                     }
                 } else {
                     if (!maxColor && beamColor.w < 1.0f) {
-                        beamColor.w += 0.058333337f;
+                        beamColor.w += 3.5f * TimeUtils.UPDATE_DELTA_TIME;
                     } else {
                         maxColor = true;
                     }
@@ -134,7 +134,7 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                 rayCast();
             } else {
                 if (beamColor.w > 0.0f) {
-                    beamColor.w -= 0.058333337f;
+                    beamColor.w -= 3.5f * TimeUtils.UPDATE_DELTA_TIME;
                 }
             }
         }
@@ -190,9 +190,10 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
             Object userData = body.getUserData();
 
             if (userData != null) {
-                float sizeSpeed = 300.0f;
+                float sizeSpeed = 30.0f;
                 if (userData instanceof Ship ship) {
-                    ship.attackShip(damage, this.ship, collisionPoint, ship.getFaction() == this.ship.getFaction() ? beamColor.w / 2.0f : beamColor.w);
+                    ship.attackShip(damage, this.ship, collisionPoint, ship.getFaction() == this.ship.getFaction() ? beamColor.w / 2.0f * 60.0f * TimeUtils.UPDATE_DELTA_TIME :
+                            beamColor.w * 60.0f * TimeUtils.UPDATE_DELTA_TIME);
                     if (world.isRemote()) {
                         Random rand = world.getRand();
                         ParticleSpawner.spawnBeamDamage(raycast, scale.x, sizeSpeed, beamColor);
@@ -209,7 +210,7 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                                     ParticleSpawner.spawnShipOst(1, pos, new Vector2f(velocity).add(angletovel), 0.5f);
                                 }
                                 Vector2f angletovel = RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 1.5f);
-                                ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), pos.x, pos.y, velocity.x + angletovel.x, velocity.y + angletovel.y, 20.0f * rand.nextFloat());
+                                ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), pos.x, pos.y, velocity.x + angletovel.x, velocity.y + angletovel.y, 2.0f * rand.nextFloat());
                             }
 
                         }
@@ -228,7 +229,7 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                                 ParticleSpawner.spawnShipOst(1, pos, new Vector2f(velocity).add(angletovel), 0.5f);
                             }
                             Vector2f angletovel = RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 1.5f);
-                            ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), pos.x, pos.y, velocity.x + angletovel.x, velocity.y + angletovel.y, 20.0f * rand.nextFloat());
+                            ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), pos.x, pos.y, velocity.x + angletovel.x, velocity.y + angletovel.y, 2.0f * rand.nextFloat());
                         }
                     }
                 } else if (userData instanceof CollisionObject) {
@@ -245,7 +246,7 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                                 ParticleSpawner.spawnShipOst(1, pos, new Vector2f(velocity).add(angletovel), 0.5f);
                             }
                             Vector2f angletovel = RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 1.5f);
-                            ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), pos.x, pos.y, velocity.x + angletovel.x, velocity.y + angletovel.y, 20.0f * rand.nextFloat());
+                            ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), pos.x, pos.y, velocity.x + angletovel.x, velocity.y + angletovel.y, 2.0f * rand.nextFloat());
                         }
                     }
                 }

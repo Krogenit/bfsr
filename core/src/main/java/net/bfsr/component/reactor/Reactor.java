@@ -1,5 +1,7 @@
 package net.bfsr.component.reactor;
 
+import net.bfsr.util.TimeUtils;
+
 public class Reactor {
 
     private float energy, maxEnergy, regenEnergy;
@@ -16,7 +18,7 @@ public class Reactor {
 
     private void regenEnergy() {
         if (energy < maxEnergy) {
-            energy += regenEnergy * 0.01666666753590107f;
+            energy += regenEnergy * TimeUtils.UPDATE_DELTA_TIME;
 
             if (energy > maxEnergy) {
                 energy = maxEnergy;

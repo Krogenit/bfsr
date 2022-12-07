@@ -10,6 +10,7 @@ import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.physics.CustomValueMixer;
 import net.bfsr.profiler.Profiler;
+import net.bfsr.util.TimeUtils;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.world.PhysicsWorld;
 
@@ -39,6 +40,7 @@ public class World {
         physicWorld.getSettings().setMaximumTranslation(30);
         physicWorld.getSettings().setPositionConstraintSolverIterations(1);
         physicWorld.getSettings().setVelocityConstraintSolverIterations(1);
+        physicWorld.getSettings().setStepFrequency(TimeUtils.UPDATE_DELTA_TIME);
         physicWorld.addContactListener(new ContactListener());
         physicWorld.setValueMixer(new CustomValueMixer());
     }
@@ -64,7 +66,7 @@ public class World {
         }
     }
 
-    private void updateShips() {
+    protected void updateShips() {
         int size = ships.size();
         for (int i = 0; i < size; i++) {
             Ship s = ships.get(i);

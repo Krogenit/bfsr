@@ -157,7 +157,11 @@ public class WorldClient extends World {
     public void update() {
         super.update();
         particleRenderer.update();
+    }
 
+    @Override
+    protected void updateShips() {
+        super.updateShips();
         if (playerShip != null) {
             if (core.canControlShip() && playerShip.isSpawned())
                 playerShip.control();
@@ -257,6 +261,8 @@ public class WorldClient extends World {
     }
 
     public void renderDebug(Program shaderProgram) {
+        core.getRenderer().getCamera().setupOpenGLMatrix();
+
         int size = ships.size();
         for (int i = 0; i < size; i++) {
             Ship s = ships.get(i);

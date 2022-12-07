@@ -3,6 +3,7 @@ package net.bfsr.component.hull;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.network.packet.server.PacketDestroingShip;
 import net.bfsr.server.MainServer;
+import net.bfsr.util.TimeUtils;
 import net.bfsr.world.WorldServer;
 
 public class Hull {
@@ -29,7 +30,7 @@ public class Hull {
         }
 
         if (hull < maxHull) {
-            hull += (regenHull + ship.getCrew().getCrewRegen()) * 0.01666666753590107f;
+            hull += (regenHull + ship.getCrew().getCrewRegen()) * TimeUtils.UPDATE_DELTA_TIME;
         } else if (hull > maxHull) {
             hull = maxHull;
         }
