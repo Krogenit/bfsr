@@ -120,29 +120,6 @@ public class Bullet extends CollisionObject {
                     //We can damage ship after some collission with other object
                     destroyBullet(ship, contact, normal);
                 }
-
-
-//			}
-//			if(userData instanceof Shield) {
-//				Ship ship = ((Shield) userData).getOwnerShip();
-//				if(canDamageShip(ship)) {
-//					previousAObject = ship;
-//					if(damageShip(ship)) {
-//						//Hull damage
-//						destroyBullet(ship, contact);
-//						setDead(true);
-//					} else {
-//						//Shield reflection
-//						destroyBullet(ship, contact);
-//						damage(this);
-//					}
-//				} else if(previousAObject != null && previousAObject != ship && ship == ship) {
-//					previousAObject = ship;
-//					//We can damage ship after some collission with other object
-//					destroyBullet(ship, contact);
-//				}
-
-
             } else if (userData instanceof Bullet bullet) {
                 //Bullet vs bullet
                 bullet.damage(this);
@@ -200,7 +177,6 @@ public class Bullet extends CollisionObject {
                     }
 
                     ParticleSpawner.spawnDirectedSpark(contact, normal, getScale().x * 1.5f, new Vector4f(color));
-
                 } else if (destroyer instanceof Bullet) {
                     ParticleSpawner.spawnLight(getPosition(), getScale().x * 5.0f, 7.0f * 6.0f, new Vector4f(color.x, color.y, color.z, 0.5f), 0.25f * 60.0f, true, EnumParticlePositionType.Default);
                 } else if (destroyer instanceof ParticleWreck) {
@@ -234,7 +210,6 @@ public class Bullet extends CollisionObject {
                             ParticleSpawner.spawnDamageDerbis(world, rand.nextInt(2), pos.x, pos.y, velocity.x + angletovel.x, velocity.y + angletovel.y, 0.75f);
                         }
                     }
-
                 }
             }
         }
