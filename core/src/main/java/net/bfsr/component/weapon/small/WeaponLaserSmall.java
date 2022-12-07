@@ -18,7 +18,7 @@ import org.joml.Vector4f;
 
 public class WeaponLaserSmall extends WeaponSlot {
     public WeaponLaserSmall(Ship ship) {
-        super(ship, new SoundRegistry[]{SoundRegistry.weaponShootLaser0, SoundRegistry.weaponShootLaser1}, 30.0f, 5.0f, 15.0f, 0.028f, new Vector2f(2.6f, 1.4f), TextureRegister.laserSmall);
+        super(ship, new SoundRegistry[]{SoundRegistry.weaponShootLaser0, SoundRegistry.weaponShootLaser1}, 30.0f, 5.0f, 1.5f, 0.028f, new Vector2f(2.6f, 1.4f), TextureRegister.laserSmall);
     }
 
     @Override

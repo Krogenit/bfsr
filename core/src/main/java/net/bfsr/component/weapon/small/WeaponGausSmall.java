@@ -19,7 +19,7 @@ import org.joml.Vector4f;
 
 public class WeaponGausSmall extends WeaponSlot {
     public WeaponGausSmall(Ship ship) {
-        super(ship, new SoundRegistry[]{SoundRegistry.weaponShootGaus0, SoundRegistry.weaponShootGaus1, SoundRegistry.weaponShootGaus2}, 30.0f, 5.0f, 14.0f, 0.026f, new Vector2f(2.6f, 1.4f), TextureRegister.gaussSmall);
+        super(ship, new SoundRegistry[]{SoundRegistry.weaponShootGaus0, SoundRegistry.weaponShootGaus1, SoundRegistry.weaponShootGaus2}, 30.0f, 5.0f, 1.4f, 1.56f, new Vector2f(2.6f, 1.4f), TextureRegister.gaussSmall);
     }
 
     @Override
