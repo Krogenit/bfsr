@@ -37,6 +37,7 @@ public class Shield extends CollisionObject {
     private float size;
     private final Ship ship;
     private boolean alive;
+    private BodyFixture shieldFixture;
 
     protected Shield(Ship ship) {
         world = ship.getWorld();
@@ -48,18 +49,15 @@ public class Shield extends CollisionObject {
     protected void createBody(Vector2f pos) {
         super.createBody(pos);
 
-        List<BodyFixture> shipFixtures = ship.getBody().getFixtures();
-        for (int i = 0; i < shipFixtures.size(); i++) {
-            BodyFixture fixture = shipFixtures.get(i);
-            Object userData = fixture.getUserData();
-            if (userData instanceof Shield) {
-                ship.getBody().removeFixture(fixture);
-                i--;
-            }
+        List<BodyFixture> fixtures = ship.getBody().getFixtures();
+        if (shieldFixture != null) {
+            ship.getBody().removeFixture(shieldFixture);
+            shieldFixture = null;
         }
 
         radius = new Vector2f();
-        for (BodyFixture bodyFixture : ship.getBody().getFixtures()) {
+        for (int i = 0; i < fixtures.size(); i++) {
+            BodyFixture bodyFixture = fixtures.get(i);
             Convex convex = bodyFixture.getShape();
             if (convex instanceof Polygon polygon) {
                 for (Vector2 vertex : polygon.getVertices()) {
@@ -80,13 +78,13 @@ public class Shield extends CollisionObject {
         diameter = new Vector2f(radius.x * 2.0f + offset, radius.y * 2.0f + offset);
 
         Polygon ellipse = Geometry.createPolygonalEllipse(16, diameter.x, diameter.y);
-        BodyFixture bodyFixture = new BodyFixture(ellipse);
-        bodyFixture.setUserData(this);
-        bodyFixture.setDensity(PhysicsUtils.SHIELD_FIXTURE_DENSITY);
-        bodyFixture.setFriction(0.0f);
-        bodyFixture.setRestitution(0.1f);
-        bodyFixture.setFilter(new ShipFilter(ship));
-        ship.getBody().addFixture(bodyFixture);
+        shieldFixture = new BodyFixture(ellipse);
+        shieldFixture.setUserData(this);
+        shieldFixture.setDensity(PhysicsUtils.SHIELD_FIXTURE_DENSITY);
+        shieldFixture.setFriction(0.0f);
+        shieldFixture.setRestitution(0.1f);
+        shieldFixture.setFilter(new ShipFilter(ship));
+        ship.getBody().addFixture(shieldFixture);
         ship.recalculateMass();
         diameter.x += 0.1f;
         diameter.y += 0.1f;
@@ -164,16 +162,8 @@ public class Shield extends CollisionObject {
     }
 
     public void removeShield() {
-        List<BodyFixture> shipFixtures = ship.getBody().getFixtures();
-        for (int i = 0; i < shipFixtures.size(); i++) {
-            BodyFixture fixture = shipFixtures.get(i);
-            Object userData = fixture.getUserData();
-            if (userData instanceof Shield) {
-                ship.getBody().removeFixture(fixture);
-                i--;
-            }
-        }
-
+        ship.getBody().removeFixture(shieldFixture);
+        shieldFixture = null;
         ship.recalculateMass();
 
         if (world.isRemote()) {
