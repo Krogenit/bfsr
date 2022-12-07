@@ -5,7 +5,6 @@ import net.bfsr.client.font_new.FontType;
 import net.bfsr.client.font_new.GLString;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.input.InputBox;
-import net.bfsr.client.input.Mouse;
 import net.bfsr.client.shader.BaseShader;
 import net.bfsr.core.Core;
 import org.joml.Vector2f;
@@ -39,27 +38,35 @@ public class Gui {
     }
 
     public void textInput(int key) {
-        for (InputBox inputBox : inputBoxes) {
-            if (inputBox.isTyping()) {
-                inputBox.textInput(key);
-            }
+        int size = inputBoxes.size();
+        for (int i = 0; i < size; i++) {
+            InputBox inputBox = inputBoxes.get(i);
+            inputBox.textInput(key);
         }
     }
 
     public void update() {
-        for (Button button : buttons) {
+        int size = buttons.size();
+        for (int i = 0; i < size; i++) {
+            Button button = buttons.get(i);
             button.update();
         }
 
-        for (Slider slider : sliders) {
+        size = sliders.size();
+        for (int i = 0; i < size; i++) {
+            Slider slider = sliders.get(i);
             slider.update();
         }
 
-        for (InputBox boxes : inputBoxes) {
+        size = inputBoxes.size();
+        for (int i = 0; i < size; i++) {
+            InputBox boxes = inputBoxes.get(i);
             boxes.update();
         }
 
-        for (Scroll scroll : scrolls) {
+        size = scrolls.size();
+        for (int i = 0; i < size; i++) {
+            Scroll scroll = scrolls.get(i);
             scroll.update();
         }
     }
@@ -69,19 +76,27 @@ public class Gui {
     }
 
     public void render(BaseShader shader) {
-        for (Button button : buttons) {
+        int size = buttons.size();
+        for (int i = 0; i < size; i++) {
+            Button button = buttons.get(i);
             button.render(shader);
         }
 
-        for (Slider slider : sliders) {
+        size = sliders.size();
+        for (int i = 0; i < size; i++) {
+            Slider slider = sliders.get(i);
             slider.render(shader);
         }
 
-        for (InputBox inputBox : inputBoxes) {
+        size = inputBoxes.size();
+        for (int i = 0; i < size; i++) {
+            InputBox inputBox = inputBoxes.get(i);
             inputBox.render(shader);
         }
 
-        for (Scroll scroll : scrolls) {
+        size = scrolls.size();
+        for (int i = 0; i < size; i++) {
+            Scroll scroll = scrolls.get(i);
             scroll.render(shader);
         }
     }
@@ -103,35 +118,43 @@ public class Gui {
             }
         }
 
-        for (Slider slider : sliders) {
-            if (slider.isIntersects()) {
-                slider.setMoving(true);
-            }
+        int size = sliders.size();
+        for (int i = 0; i < size; i++) {
+            Slider slider = sliders.get(i);
+            slider.onMouseLeftClicked();
         }
 
-        for (Scroll scroll : scrolls) {
-            if (scroll.isIntersects()) {
-                scroll.setMoving(true);
-            }
+        size = scrolls.size();
+        for (int i = 0; i < size; i++) {
+            Scroll scroll = scrolls.get(i);
+            scroll.onMouseLeftClicked();
         }
 
-        for (InputBox inputBox : inputBoxes) {
+        size = inputBoxes.size();
+        for (int i = 0; i < size; i++) {
+            InputBox inputBox = inputBoxes.get(i);
             inputBox.onMouseLeftClicked();
         }
     }
 
     public void onMouseLeftRelease() {
-        for (Scroll scroll : scrolls) {
-            scroll.setMoving(false);
+        int size = scrolls.size();
+        for (int i = 0; i < size; i++) {
+            Scroll scroll = scrolls.get(i);
+            scroll.onMouseLeftRelease();
         }
 
-        for (Slider slider : sliders) {
-            slider.setMoving(false);
+        size = sliders.size();
+        for (int i = 0; i < size; i++) {
+            Slider slider = sliders.get(i);
+            slider.onMouseLeftRelease();
         }
     }
 
     public void onMouseRightClicked() {
-        for (Button b : buttons) {
+        int size = buttons.size();
+        for (int i = 0; i < size; i++) {
+            Button b = buttons.get(i);
             if (b.isIntersects()) {
                 b.rightClick();
                 onButtonRightClick(b);
@@ -144,7 +167,9 @@ public class Gui {
     }
 
     public void onMouseScroll(float y) {
-        for (Scroll scroll : scrolls) {
+        int size = scrolls.size();
+        for (int i = 0; i < size; i++) {
+            Scroll scroll = scrolls.get(i);
             scroll.scroll(y);
         }
     }
@@ -154,34 +179,10 @@ public class Gui {
     }
 
     public void input(int key) {
-        for (InputBox in : inputBoxes) {
-            if (in.isTyping()) {
-                in.input(key);
-            }
-        }
-    }
-
-    public void input() {
-        Vector2f mousePos = Mouse.getPosition();
-
-        if (Mouse.isLeftDown()) {
-            for (Slider slider : sliders) {
-                if (slider.isMoving()) {
-                    slider.input(mousePos.x, mousePos.y);
-                }
-            }
-
-            for (Scroll scroll : scrolls) {
-                if (scroll.isMoving()) {
-                    scroll.input(mousePos.x, mousePos.y);
-                }
-            }
-        }
-
-        for (InputBox in : inputBoxes) {
-            if (in.isTyping()) {
-                in.input();
-            }
+        int size = inputBoxes.size();
+        for (int i = 0; i < size; i++) {
+            InputBox in = inputBoxes.get(i);
+            in.input(key);
         }
     }
 
@@ -189,12 +190,21 @@ public class Gui {
         while (staticStrings.size() > 0) {
             staticStrings.remove(0).clear();
         }
-        for (Button b : buttons)
+        int size = buttons.size();
+        for (int i = 0; i < size; i++) {
+            Button b = buttons.get(i);
             b.clear();
-        for (Slider b : sliders)
+        }
+        size = sliders.size();
+        for (int i = 0; i < size; i++) {
+            Slider b = sliders.get(i);
             b.clear();
-        for (InputBox b : inputBoxes)
+        }
+        size = inputBoxes.size();
+        for (int i = 0; i < size; i++) {
+            InputBox b = inputBoxes.get(i);
             b.clear();
+        }
         buttons.clear();
         sliders.clear();
         inputBoxes.clear();

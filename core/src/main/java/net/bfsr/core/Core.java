@@ -73,13 +73,6 @@ public class Core {
         this.currentGui.init();
     }
 
-    public void input() {
-        profiler.startSection("input");
-        renderer.input();
-        if (focused && currentGui != null) currentGui.input();
-        if (world != null) world.input();
-    }
-
     public void update() {
         profiler.endStartSection("tasks");
         synchronized (this.futureTasks) {

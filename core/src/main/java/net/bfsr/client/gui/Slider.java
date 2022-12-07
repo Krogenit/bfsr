@@ -55,33 +55,6 @@ public class Slider extends TextureObject {
         setZoomFactor(EnumZoomFactor.Gui);
     }
 
-    public void input(float mouseX, float mouseY) {
-        this.position.x = mouseX;
-
-        float maxXpos = button.getPosition().x + button.getScale().x / 2.0f - this.getScale().x / 2.0f - sideOut;
-        float minXpos = button.getPosition().x - button.getScale().x / 2.0f + this.getScale().x / 2.0f + sideOut;
-
-        if (this.position.x > maxXpos) this.position.x = maxXpos;
-        else if (this.position.x < minXpos) this.position.x = minXpos;
-
-        this.value = (this.position.x - minXpos) / (maxXpos - minXpos);
-
-        if (option != null) {
-            float value;
-            if (option.getType() == int.class) {
-                Core.getCore().getSettings().setOptionValue(option, this.value);
-                value = (int) Core.getCore().getSettings().getOptionValue(option);
-            } else {
-                Core.getCore().getSettings().setOptionValue(option, this.value);
-                value = (float) Core.getCore().getSettings().getOptionValue(option);
-            }
-            button.setText(new GUIText(Lang.getString("settings." + option.toString()) + ": " + formatter.format(value), new Vector2f(0.8f * Transformation.guiScale.x, 1f * Transformation.guiScale.y),
-                    button.getPosition(), new Vector4f(1, 1, 1, 1), true, EnumParticlePositionType.Gui));
-        }
-
-        this.aabb = new AxisAlignedBoundingBox(new Vector2f(position.x + origin.x, position.y + origin.y), new Vector2f(position.x - origin.x, position.y - origin.y));
-    }
-
     public void setOption(EnumOption option) {
         this.option = option;
     }
@@ -89,6 +62,33 @@ public class Slider extends TextureObject {
     @Override
     public void update() {
         super.update();
+
+        if (isMoving) {
+            this.position.x = Mouse.getPosition().x;
+
+            float maxXpos = button.getPosition().x + button.getScale().x / 2.0f - this.getScale().x / 2.0f - sideOut;
+            float minXpos = button.getPosition().x - button.getScale().x / 2.0f + this.getScale().x / 2.0f + sideOut;
+
+            if (this.position.x > maxXpos) this.position.x = maxXpos;
+            else if (this.position.x < minXpos) this.position.x = minXpos;
+
+            this.value = (this.position.x - minXpos) / (maxXpos - minXpos);
+
+            if (option != null) {
+                float value;
+                if (option.getType() == int.class) {
+                    Core.getCore().getSettings().setOptionValue(option, this.value);
+                    value = (int) Core.getCore().getSettings().getOptionValue(option);
+                } else {
+                    Core.getCore().getSettings().setOptionValue(option, this.value);
+                    value = (float) Core.getCore().getSettings().getOptionValue(option);
+                }
+                button.setText(new GUIText(Lang.getString("settings." + option.toString()) + ": " + formatter.format(value), new Vector2f(0.8f * Transformation.guiScale.x, 1f * Transformation.guiScale.y),
+                        button.getPosition(), new Vector4f(1, 1, 1, 1), true, EnumParticlePositionType.Gui));
+            }
+
+            this.aabb = new AxisAlignedBoundingBox(new Vector2f(position.x + origin.x, position.y + origin.y), new Vector2f(position.x - origin.x, position.y - origin.y));
+        }
 
         if (button.isIntersects()) {
             if (!collided) {
@@ -131,11 +131,6 @@ public class Slider extends TextureObject {
     }
 
     public boolean isIntersects() {
-        if (button.isIntersects()) {
-            Vector2f mousePos = Mouse.getPosition();
-            input(mousePos.x, mousePos.y);
-        }
-
         return aabb.isIntersects(Mouse.getPosition());
     }
 
@@ -157,5 +152,15 @@ public class Slider extends TextureObject {
 
     public Vector2f getPositionOnScreen() {
         return position;
+    }
+
+    public void onMouseLeftClicked() {
+        if (isIntersects()) {
+            setMoving(true);
+        }
+    }
+
+    public void onMouseLeftRelease() {
+        setMoving(false);
     }
 }

@@ -12,7 +12,6 @@ import org.joml.Vector2f;
 import org.lwjgl.opengl.GL11;
 
 public class Scroll extends TextureObject {
-
     private float value, maxValue;
     private float visible;
     private AxisAlignedBoundingBox aabb;
@@ -26,22 +25,6 @@ public class Scroll extends TextureObject {
         this.aabb = new AxisAlignedBoundingBox(new Vector2f(position.x + origin.x, position.y + origin.y), new Vector2f(position.x - origin.x, position.y - origin.y));
         this.basePos = new Vector2f(pos);
         setZoomFactor(EnumZoomFactor.Gui);
-    }
-
-    public void input(float mouseX, float mouseY) {
-        this.position.y = mouseY;
-
-        float factor = visible / (maxValue + visible);
-        float littleScale = scale.y * factor / 2f;
-        float maxYpos = basePos.y + scale.y / 2f - littleScale;//button.getPosition().x + button.getScale().x / 2.0f - this.getScale().x / 2.0f - sideOut;
-        float minYpos = basePos.y + (-scale.y / 2f + littleScale);
-//		System.out.println("pos: " + position.y + " maxYPos: " + maxYpos + " baseY: " + basePos.y);
-        if (this.position.y > maxYpos)
-            this.position.y = maxYpos;
-        else if (this.position.y < minYpos)
-            this.position.y = minYpos;
-
-        this.value = maxValue - ((this.position.y - minYpos) / (maxYpos - minYpos)) * maxValue;
     }
 
     public void scroll(float y) {
@@ -58,6 +41,22 @@ public class Scroll extends TextureObject {
     public void update() {
         super.update();
 
+        if (isMoving) {
+            this.position.y = Mouse.getPosition().y;
+
+            float factor = visible / (maxValue + visible);
+            float littleScale = scale.y * factor / 2f;
+            float maxYpos = basePos.y + scale.y / 2f - littleScale;//button.getPosition().x + button.getScale().x / 2.0f - this.getScale().x / 2.0f - sideOut;
+            float minYpos = basePos.y + (-scale.y / 2f + littleScale);
+//		System.out.println("pos: " + position.y + " maxYPos: " + maxYpos + " baseY: " + basePos.y);
+            if (this.position.y > maxYpos)
+                this.position.y = maxYpos;
+            else if (this.position.y < minYpos)
+                this.position.y = minYpos;
+
+            this.value = maxValue - ((this.position.y - minYpos) / (maxYpos - minYpos)) * maxValue;
+        }
+
         if (aabb.isIntersects(Mouse.getPosition())) {
             if (!collided) {
                 collided = true;
@@ -69,13 +68,7 @@ public class Scroll extends TextureObject {
     }
 
     public boolean isIntersects() {
-        Vector2f mPos = Mouse.getPosition();
-        if (aabb.isIntersects(mPos)) {
-            input(mPos.x, mPos.y);
-            return true;
-        }
-
-        return false;
+        return aabb.isIntersects(Mouse.getPosition());
     }
 
     public void setMoving(boolean moving) {
@@ -186,5 +179,15 @@ public class Scroll extends TextureObject {
 
     public float getMaxValue() {
         return maxValue;
+    }
+
+    public void onMouseLeftClicked() {
+        if (isIntersects()) {
+            setMoving(true);
+        }
+    }
+
+    public void onMouseLeftRelease() {
+        setMoving(false);
     }
 }

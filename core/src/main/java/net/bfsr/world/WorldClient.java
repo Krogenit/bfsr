@@ -57,7 +57,9 @@ public class WorldClient extends World {
     public void onMouseLeftClicked() {
         if (playerShip == null && core.canControlShip()) {
             core.getGuiInGame().selectShip(null);
-            for (Ship ship : ships) {
+            int size = ships.size();
+            for (int i = 0; i < size; i++) {
+                Ship ship = ships.get(i);
                 if (ship.getAABB().isIntersects(Mouse.getWorldPosition(core.getRenderer().getCamera()))) {
                     core.getGuiInGame().selectShip(ship);
                 }
@@ -73,14 +75,16 @@ public class WorldClient extends World {
 
     public void onMouseRightClicked() {
         core.getGuiInGame().selectShipSecondary(null);
-        for (Ship ship : ships) {
+        int size = ships.size();
+        for (int i = 0; i < size; i++) {
+            Ship ship = ships.get(i);
             if (ship.getAABB().isIntersects(Mouse.getWorldPosition(core.getRenderer().getCamera()))) {
                 core.getGuiInGame().selectShipSecondary(ship);
             }
         }
     }
 
-    public void input() {
+    public void input(int key) {
         int bots = 0;
         boolean sameFaction = true;
         Faction lastFaction = null;
@@ -95,9 +99,7 @@ public class WorldClient extends World {
 
             lastFaction = s.getFaction();
         }
-    }
 
-    public void input(int key) {
         if (key == GLFW.GLFW_KEY_ESCAPE && Core.getCore().canControlShip()) {
             Core.getCore().setCurrentGui(new GuiInGameMenu());
         }

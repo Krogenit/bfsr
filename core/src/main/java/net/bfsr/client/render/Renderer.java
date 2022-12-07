@@ -109,10 +109,6 @@ public class Renderer {
         GL45.glNamedBufferSubData(viewDataUBO, 32 * 4, modelMatrix.get(modelMatrixFloatArray));
     }
 
-    public void input() {
-        if (core.getWorld() != null) guiInGame.input();
-    }
-
     public void render() {
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
         fontRenderer.updateOrthographicMatrix(camera.getOrthographicMatrix());

@@ -9,7 +9,6 @@ import net.bfsr.client.gui.GuiTextureObject;
 import net.bfsr.client.gui.Scroll;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.input.InputChat;
-import net.bfsr.client.input.Mouse;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.loader.TextureLoader;
 import net.bfsr.client.particle.EnumParticlePositionType;
@@ -220,17 +219,16 @@ public class GuiInGame extends Gui {
 
     @Override
     public void onMouseLeftClicked() {
-        for (Button b : buttons) {
+        int size = buttons.size();
+        for (int i = 0; i < size; i++) {
+            Button b = buttons.get(i);
             if (b.isIntersects()) {
                 b.leftClick();
                 onButtonLeftClick(b);
             } else controlWasPressed = false;
         }
 
-        if (chatScroll.isIntersects()) {
-            chatScroll.setMoving(true);
-        }
-
+        chatScroll.onMouseLeftClicked();
         chatInput.onMouseLeftClicked();
     }
 
@@ -253,26 +251,10 @@ public class GuiInGame extends Gui {
     }
 
     @Override
-    public void input() {
-        Vector2f mousePos = Mouse.getPosition();
-
-        if (Mouse.isLeftDown()) {
-            if (chatScroll.isMoving()) {
-                chatScroll.input(mousePos.x, mousePos.y);
-            }
-        }
-
-        if (chatInput.isTyping()) {
-            chatInput.input();
-            chatScroll.setMaxValue(chatInput.getLines().size());
-        }
-    }
-
-    @Override
     public void onMouseLeftRelease() {
         super.onMouseLeftRelease();
         controlWasPressed = false;
-        chatScroll.setMoving(false);
+        chatScroll.onMouseLeftRelease();
     }
 
     @Override
@@ -288,7 +270,9 @@ public class GuiInGame extends Gui {
 
     @Override
     public void update() {
-//		init();
+        if (chatInput.isTyping()) {
+            chatScroll.setMaxValue(chatInput.getLines().size());
+        }
 
         float yPos = 6 + map.getScale().y * 0.93f;
         float xPos = 6;

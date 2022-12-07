@@ -153,25 +153,8 @@ public class InputBox extends TextureObject {
         }
     }
 
-    public void input() {
-        if (typingText != null && isIntersects()) {
-            if (Mouse.isLeftDown()) {
-                Vector2f mousePos = Mouse.getPosition();
-                Vector2f pos = new Vector2f(mousePos.x - this.position.x - textOffset.x, mousePos.y);
-                int endPos = TextMeshCreator.getCursorPositionInLine(typingText.getTextString(), font, fontSize.x, pos);
-                if (endPos <= cursorPosition) {
-                    cursorPosition = endPos;
-                    wasEndPos = false;
-                } else {
-                    cursorPositionEnd = endPos;
-                    wasEndPos = true;
-                }
-            }
-        }
-    }
-
     public void input(int key) {
-        if (typingText != null) {
+        if (isTyping && typingText != null) {
             if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_A) {
                 cursorPosition = 0;
                 cursorPositionEnd = typingText.getTextString().length();
@@ -258,8 +241,8 @@ public class InputBox extends TextureObject {
     }
 
     public void textInput(int key) {
-        if (typingText == null || TextMeshCreator.getLineWidth(typingText.getTextString().substring(0, cursorPosition) +
-                typingText.getTextString().substring(cursorPositionEnd), font, fontSize.x) < maxLineSize * fontSize.x) {
+        if (isTyping && (typingText == null || TextMeshCreator.getLineWidth(typingText.getTextString().substring(0, cursorPosition) +
+                typingText.getTextString().substring(cursorPositionEnd), font, fontSize.x) < maxLineSize * fontSize.x)) {
             char keyName = (char) key;// GLFW.glfwGetKeyName(key, 0);
             if (font.getLoader().hasCharacter(keyName)) {
                 String prevString = "";
@@ -291,6 +274,21 @@ public class InputBox extends TextureObject {
     }
 
     public void update() {
+        if (isTyping && typingText != null && isIntersects()) {
+            if (Mouse.isLeftDown()) {
+                Vector2f mousePos = Mouse.getPosition();
+                Vector2f pos = new Vector2f(mousePos.x - this.position.x - textOffset.x, mousePos.y);
+                int endPos = TextMeshCreator.getCursorPositionInLine(typingText.getTextString(), font, fontSize.x, pos);
+                if (endPos <= cursorPosition) {
+                    cursorPosition = endPos;
+                    wasEndPos = false;
+                } else {
+                    cursorPositionEnd = endPos;
+                    wasEndPos = true;
+                }
+            }
+        }
+
         if (aabb.isIntersects(Mouse.getPosition())) {
             if (!collided) {
                 collided = true;
