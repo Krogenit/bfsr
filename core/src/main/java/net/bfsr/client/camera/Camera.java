@@ -166,7 +166,14 @@ public class Camera {
         }
     }
 
-    public void update(double delta) {
+    public void mouseMove(float dx, float dy) {
+        if (Mouse.isRightDown()) {
+            position.x -= dx / zoom;
+            position.y -= dy / zoom;
+        }
+    }
+
+    public void update() {
         if (core.getWorld() != null) {
             if (core.canControlShip()) {
                 if (settings.isCameraMoveByScreenBorders()) moveByScreenBorders(delta);
@@ -183,13 +190,7 @@ public class Camera {
             if (Keyboard.isKeyDown(GLFW_KEY_UP) || (noShip && Keyboard.isKeyDown(GLFW_KEY_W))) {
                 position.y -= keyMoveSpeed * 60.0f * delta;
             } else if (Keyboard.isKeyDown(GLFW_KEY_DOWN) || (noShip && Keyboard.isKeyDown(GLFW_KEY_S))) {
-                position.y += keyMoveSpeed * 60.0f * delta;
-            }
-
-            if (Mouse.isRightDown()) {
-                Vector2f delta1 = Mouse.getDelta();
-                position.x -= delta1.x / zoom * 60.0f * delta;
-                position.y -= delta1.y / zoom * 60.0f * delta;
+                position.y += keyMoveSpeed;
             }
 
             if (settings.isCameraFollowPlayer()) followPlayer(delta);
@@ -233,10 +234,6 @@ public class Camera {
         position.y = y;
     }
 
-    public void setRotation(float x) {
-        rotation = x;
-    }
-
     public void rotate(float offsetX) {
         rotation += offsetX;
     }
@@ -257,11 +254,11 @@ public class Camera {
         followShip = null;
     }
 
-    public boolean isIntersects(Vector2f pos) {
-        return boundingBox.isIntersects(pos);
+    public boolean isIntersects(Vector2f vector) {
+        return boundingBox.isIntersects(vector);
     }
 
-    public boolean isIntersects(AxisAlignedBoundingBox aabb1) {
-        return boundingBox.isIntersects(aabb1);
+    public boolean isIntersects(AxisAlignedBoundingBox aabb) {
+        return boundingBox.isIntersects(aabb);
     }
 }

@@ -64,7 +64,6 @@ public class Main extends Loop {
 
     @Override
     protected void input() {
-        Mouse.updateState();
         core.input();
     }
 

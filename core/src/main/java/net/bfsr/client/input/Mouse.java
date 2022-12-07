@@ -9,19 +9,10 @@ import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Consumer;
 
-public class Mouse {
-    private static final Vector2f pos = new Vector2f(), prevPos = new Vector2f();
-    private static final Vector2f deltaPos = new Vector2f();
-
+public final class Mouse {
     private static long window;
-
-    private static boolean isActive;
-
+    private static final Vector2f position = new Vector2f(), lastPosition = new Vector2f();
     private static final MouseConsumer[][] mouseConsumers = new MouseConsumer[2][2];
-
-    private interface MouseConsumer {
-        void input(int action);
-    }
 
     public static void init(long window) {
         Mouse.window = window;
@@ -31,8 +22,12 @@ public class Mouse {
         mouseConsumers[1][1] = action -> guiAndWorldInput(Gui::onMouseRightClicked, WorldClient::onMouseRightClicked);
         mouseConsumers[1][0] = action -> guiInput(Gui::onMouseRightRelease);
 
-        GLFW.glfwSetCursorPosCallback(window, (windowHandle, xpos, ypos) -> pos.set((float) xpos, (float) ypos));
-        GLFW.glfwSetCursorEnterCallback(window, (windowHandle, entered) -> isActive = entered);
+        GLFW.glfwSetCursorPosCallback(window, (windowHandle, xpos, ypos) -> {
+            lastPosition.set(position.x, position.y);
+            position.set((float) xpos, (float) ypos);
+            Core.getCore().getRenderer().getCamera().mouseMove(position.x - lastPosition.x, position.y - lastPosition.y);
+        });
+        GLFW.glfwSetCursorEnterCallback(window, (windowHandle, entered) -> {});
         GLFW.glfwSetMouseButtonCallback(window, (windowHandle, button, action, mode) -> {
             if (button < 2) {
                 mouseConsumers[button][action].input(action);
@@ -60,27 +55,6 @@ public class Mouse {
         if (world != null) worldConsumer.accept(world);
     }
 
-    public static void updateState() {
-        deltaPos.x = 0;
-        deltaPos.y = 0;
-
-        if (prevPos.x > 0 && prevPos.y > 0 && isActive) {
-            double deltax = pos.x - prevPos.x;
-            double deltay = pos.y - prevPos.y;
-            boolean rotateX = deltax != 0;
-            boolean rotateY = deltay != 0;
-            if (rotateX) {
-                deltaPos.x = (float) deltax;
-            }
-            if (rotateY) {
-                deltaPos.y = (float) deltay;
-            }
-        }
-
-        prevPos.x = pos.x;
-        prevPos.y = pos.y;
-    }
-
     public static boolean isLeftDown() {
         return GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
     }
@@ -93,15 +67,11 @@ public class Mouse {
         return GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_MIDDLE) == GLFW.GLFW_PRESS;
     }
 
-    public static Vector2f getDelta() {
-        return deltaPos;
-    }
-
     public static Vector2f getPosition() {
-        return pos;
+        return position;
     }
 
-    public static Vector2f getWorldPosition(Camera cam) {
-        return cam.getWorldVector(pos);
+    public static Vector2f getWorldPosition(Camera camera) {
+        return camera.getWorldVector(position);
     }
 }
