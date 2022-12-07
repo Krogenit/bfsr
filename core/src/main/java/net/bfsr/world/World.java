@@ -12,6 +12,7 @@ import net.bfsr.physics.CustomValueMixer;
 import net.bfsr.profiler.Profiler;
 import net.bfsr.util.TimeUtils;
 import org.dyn4j.dynamics.Body;
+import org.dyn4j.dynamics.ContinuousDetectionMode;
 import org.dyn4j.world.PhysicsWorld;
 
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ public class World {
         physicWorld.getSettings().setPositionConstraintSolverIterations(1);
         physicWorld.getSettings().setVelocityConstraintSolverIterations(1);
         physicWorld.getSettings().setStepFrequency(TimeUtils.UPDATE_DELTA_TIME);
+        physicWorld.getSettings().setContinuousDetectionMode(ContinuousDetectionMode.BULLETS_ONLY);
         physicWorld.addContactListener(new ContactListener());
         physicWorld.setValueMixer(new CustomValueMixer());
     }
