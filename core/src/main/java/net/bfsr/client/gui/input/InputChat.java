@@ -56,8 +56,8 @@ public class InputChat extends InputBox {
     }
 
     @Override
-    public void textInput(int key) {
-        super.textInput(key);
+    public void input(int key) {
+        super.input(key);
 
         if (key == GLFW.GLFW_KEY_ENTER) {
             String input = typingText.getTextString().trim();
@@ -70,7 +70,6 @@ public class InputChat extends InputBox {
             }
             typingText.updateText("");
             resetCursorPosition();
-
         }
     }
 

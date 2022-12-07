@@ -240,6 +240,12 @@ public class GuiInGame extends Gui {
     }
 
     @Override
+    public void input(int key) {
+        super.input(key);
+        chatInput.input(key);
+    }
+
+    @Override
     public void textInput(int key) {
         if (chatInput.isTyping()) {
             chatInput.textInput(key);
