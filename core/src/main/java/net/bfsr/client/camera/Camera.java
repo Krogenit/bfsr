@@ -36,6 +36,8 @@ public class Camera {
 
     @Getter
     private final Vector2f position;
+    @Getter
+    private final Vector2f lastPosition = new Vector2f();
     private final Vector2f positionAndOrigin;
     @Getter
     private float rotation;
@@ -195,6 +197,8 @@ public class Camera {
     }
 
     public void update() {
+        lastPosition.set(position.x, position.y);
+
         if (core.getWorld() != null) {
             if (core.canControlShip()) {
                 if (settings.isCameraMoveByScreenBorders()) moveByScreenBorders();

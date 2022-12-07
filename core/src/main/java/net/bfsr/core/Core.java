@@ -104,9 +104,9 @@ public class Core {
         if (currentGui != null) currentGui.update();
     }
 
-    public void render() {
+    public void render(float interpolation) {
         profiler.endStartSection("render");
-        renderer.render();
+        renderer.render(interpolation);
         profiler.endSection();
     }
 

@@ -33,12 +33,17 @@ public class Transformation {
     }
 
     public static Matrix4f getModelViewMatrix(TextureObject gameObj) {
+        return getModelViewMatrix(gameObj, 1.0f);
+    }
+
+    public static Matrix4f getModelViewMatrix(TextureObject gameObj, float interpolation) {
+        Vector2f lastPosition = gameObj.getLastPosition();
         Vector2f position = gameObj.getPosition();
         float rotation = gameObj.getRotation();
         Vector2f scale = gameObj.getScale();
         EnumZoomFactor zoomFactor = gameObj.getZoomFactor();
 
-        modelViewMatrix.identity().translate(position.x, position.y, 0);
+        modelViewMatrix.identity().translate(lastPosition.x + (position.x - lastPosition.x) * interpolation, lastPosition.y + (position.y - lastPosition.y) * interpolation, 0);
         if (rotation != 0) modelViewMatrix.rotateZ(rotation);
         modelViewMatrix.scale(scale.x, -scale.y, 1);
 
@@ -94,8 +99,9 @@ public class Transformation {
         return viewMatrix;
     }
 
-    public static void updateViewMatrix(Camera camera) {
+    public static void updateViewMatrix(Camera camera, float interpolation) {
         Vector2f camPos = camera.getPosition();
+        Vector2f lastPosition = camera.getLastPosition();
         Vector2f camOrigin = camera.getOrigin();
         float rotation = camera.getRotation();
         float zoom = camera.getZoom();
@@ -104,7 +110,9 @@ public class Transformation {
         viewMatrix.rotateZ(rotation);
         viewMatrix.translate(-camOrigin.x, -camOrigin.y, 0);
         viewMatrix.scale(zoom, zoom, 1);
-        viewMatrix.translate(-camPos.x, -camPos.y, 0);
+        float x = lastPosition.x + (camPos.x - lastPosition.x) * interpolation;
+        float y = lastPosition.y + (camPos.y - lastPosition.y) * interpolation;
+        viewMatrix.translate(-x, -y, 0);
 
         zoom = camera.getZoomBackground();
         float moveFactor = 0.005f;
@@ -113,9 +121,8 @@ public class Transformation {
         viewMatrixBackground.rotateZ(rotation);
         viewMatrixBackground.translate(-camOrigin.x, -camOrigin.y, 0);
         viewMatrixBackground.scale(zoom, zoom, 1);
-        float x = -camPos.x;
-        float y = -camPos.y;
-        viewMatrixBackground.translate(x * moveFactor, y * moveFactor, 0);
+
+        viewMatrixBackground.translate(-x * moveFactor, -y * moveFactor, 0);
     }
 
     public static Matrix4f getViewMatrixByType(EnumZoomFactor zoomFactor) {

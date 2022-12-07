@@ -175,6 +175,9 @@ public abstract class Ship extends CollisionObject {
     }
 
     private void updateShip() {
+        Vector2f position = getPosition();
+        lastPosition.set(position.x, position.y);
+
         if (world.isRemote()) {
             if (this == world.getPlayerShip()) {
                 Core.getCore().sendPacket(new PacketObjectPosition(this));
@@ -198,7 +201,7 @@ public abstract class Ship extends CollisionObject {
         } else {
             WorldServer world = (WorldServer) this.world;
             PlayerServer player = world.getPlayer(name);
-            Vector2f pos = getPosition();
+            Vector2f pos = position;
             if (controlledByPlayer) {
                 MainServer.getInstance().getNetworkSystem().sendPacketToAllNearbyExcept(new PacketObjectPosition(this), pos, WorldServer.PACKET_SPAWN_DISTANCE, player);
                 MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipInfo(this), pos, WorldServer.PACKET_UPDATE_DISTANCE);
@@ -417,11 +420,11 @@ public abstract class Ship extends CollisionObject {
         }
     }
 
-    public void render(BaseShader shader) {
+    public void render(BaseShader shader, float interpolation) {
         if (spawned) {
             OpenGLHelper.alphaGreater(0.75f);
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-            super.render(shader);
+            super.render(shader, interpolation);
             shader.setColor(new Vector4f(effectsColor, 1.0f));
             OpenGLHelper.bindTexture(textureDamage.getId());
             Vector2f pos = getPosition();

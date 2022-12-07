@@ -69,7 +69,7 @@ public class Main extends Loop {
 
     @Override
     protected void render(float interpolation) {
-        core.render();
+        core.render(interpolation);
     }
 
     @Override

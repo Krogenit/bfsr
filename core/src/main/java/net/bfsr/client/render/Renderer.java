@@ -106,7 +106,7 @@ public class Renderer {
         GL45.glNamedBufferSubData(viewDataUBO, 32 * 4, modelMatrix.get(modelMatrixFloatArray));
     }
 
-    public void render() {
+    public void render(float interpolation) {
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
         fontRenderer.updateOrthographicMatrix(camera.getOrthographicMatrix());
         shader.enable();
@@ -114,7 +114,7 @@ public class Renderer {
         shader.setOrthoMatrix(camera.getOrthographicMatrix());
         shader.setColor(new Vector4f(1, 1, 1, 1));
         checkGlError("init shaders");
-        Transformation.updateViewMatrix(camera);
+        Transformation.updateViewMatrix(camera, interpolation);
         OpenGLHelper.alphaGreater(0.5f);
 
         WorldClient world = core.getWorld();
@@ -122,7 +122,7 @@ public class Renderer {
             world.renderAmbient(shader);
             world.renderBackParticles();
             OpenGLHelper.alphaGreater(0.75f);
-            world.renderEntities(shader);
+            world.renderEntities(shader, interpolation);
             checkGlError("entities");
             fontRenderer.render(EnumParticlePositionType.Default);
             world.renderParticles();

@@ -187,7 +187,7 @@ public class WorldClient extends World {
         }
     }
 
-    public void renderEntities(BaseShader shader) {
+    public void renderEntities(BaseShader shader, float interpolation) {
         shader.enable();
         AxisAlignedBoundingBox cameraAABB = core.getRenderer().getCamera().getBoundingBox();
 
@@ -215,7 +215,7 @@ public class WorldClient extends World {
             size = ss.size();
             for (int i = 0; i < size; i++) {
                 Ship s = ss.get(i);
-                s.render(shader);
+                s.render(shader, interpolation);
             }
         }
 

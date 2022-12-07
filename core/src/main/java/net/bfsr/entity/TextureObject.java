@@ -1,5 +1,6 @@
 package net.bfsr.entity;
 
+import lombok.Getter;
 import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.render.Renderer;
 import net.bfsr.client.shader.BaseShader;
@@ -12,6 +13,8 @@ import org.joml.Vector4f;
 public class TextureObject {
     protected Texture texture;
     protected Vector2f position, origin, scale;
+    @Getter
+    protected Vector2f lastPosition = new Vector2f();
     protected Vector4f color;
     protected float rotate;
     protected EnumZoomFactor zoomFactor = EnumZoomFactor.Default;
@@ -54,10 +57,14 @@ public class TextureObject {
     }
 
     public void render(BaseShader shader) {
+        render(shader, 1.0f);
+    }
+
+    public void render(BaseShader shader, float interpolation) {
         shader.setColor(getColor());
         shader.enableTexture();
         OpenGLHelper.bindTexture(texture.getId());
-        shader.setModelViewMatrix(Transformation.getModelViewMatrix(this));
+        shader.setModelViewMatrix(Transformation.getModelViewMatrix(this, interpolation));
         Renderer.quad.render();
     }
 
