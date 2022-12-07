@@ -63,12 +63,8 @@ public class Main extends Loop {
     }
 
     @Override
-    protected void input() {
-        core.input();
-    }
-
-    @Override
     protected void update() {
+        core.input();
         core.update();
     }
 

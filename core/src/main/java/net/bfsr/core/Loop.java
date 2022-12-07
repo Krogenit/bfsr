@@ -5,7 +5,6 @@ public class Loop extends AbstractLoop {
 
     @Override
     protected void loop() {
-        final float delta = 1.0f / getUpdatesPerSecond();
         // At the very most we will update the game this many times before a new render.
         // If you're worried about visual hitches more than perfect timing, set this to 1.
         final int maxUpdatesBeforeRender = 1;
@@ -25,7 +24,6 @@ public class Loop extends AbstractLoop {
 
             // Do as many game updates as we need to, potentially playing catchup.
             while (now - lastUpdateTime > timeBetweenUpdates && updateCount < maxUpdatesBeforeRender) {
-                input();
                 update();
                 lastUpdateTime += timeBetweenUpdates;
                 updateCount++;
@@ -79,9 +77,6 @@ public class Loop extends AbstractLoop {
     protected boolean shouldWait(double now, double lastUpdateTime) {
         return now - lastUpdateTime < timeBetweenUpdates;
     }
-
-    @Override
-    protected void input() {}
 
     @Override
     protected void update() {}
