@@ -6,7 +6,7 @@ import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleRenderer;
 import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.shader.Program;
+import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.client.texture.Texture;
 import net.bfsr.client.texture.TextureGenerator;
 import net.bfsr.collision.AxisAlignedBoundingBox;
@@ -260,7 +260,7 @@ public class WorldClient extends World {
         particleRenderer.render(EnumParticlePositionType.Default);
     }
 
-    public void renderDebug(Program shaderProgram) {
+    public void renderDebug(ShaderProgram shaderProgram) {
         core.getRenderer().getCamera().setupOpenGLMatrix();
 
         int size = ships.size();

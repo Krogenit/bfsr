@@ -18,9 +18,9 @@ public class ProgramManager {
     private static final int PREPROCESS_ONLY_PROGRAM = 0;
     private final FileManager fileManager = new FileManager();
     private boolean preprocessOnly;
-    private final List<Program> programs = new ArrayList<>();
+    private final List<ShaderProgram> programs = new ArrayList<>();
 
-    public Program createProgram(Program program) {
+    public ShaderProgram createProgram(ShaderProgram program) {
         setupProgram(program);
 
         for (int i = 0; i < programs.size(); i++) {
@@ -34,7 +34,7 @@ public class ProgramManager {
         return program;
     }
 
-    private boolean setupProgram(Program program) {
+    private boolean setupProgram(ShaderProgram program) {
         program.setProgram(0);
 
         boolean allFound = true;
@@ -150,7 +150,7 @@ public class ProgramManager {
 
         boolean old = preprocessOnly;
 
-        Program program = programs.get(programId);
+        ShaderProgram program = programs.get(programId);
         if (program.getProgram() != PREPROCESS_ONLY_PROGRAM) {
             program.delete();
         }
@@ -171,7 +171,7 @@ public class ProgramManager {
 
     public void deletePrograms() {
         for (int i = 0; i < programs.size(); i++) {
-            Program program = programs.get(i);
+            ShaderProgram program = programs.get(i);
             if (program.getProgram() != PREPROCESS_ONLY_PROGRAM) {
                 program.delete();
             }

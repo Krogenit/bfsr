@@ -7,7 +7,7 @@ import org.joml.Vector4f;
 import org.lwjgl.opengl.GL20;
 
 @Deprecated
-public class FontShader extends Program {
+public class FontShader extends ShaderProgram {
     private int location_color;
     private int location_translation;
     private int loc_orthoMat;

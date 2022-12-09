@@ -4,7 +4,7 @@ import net.bfsr.client.shader.loader.Definition;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL20;
 
-public class FontShaderTextured extends Program {
+public class FontShaderTextured extends ShaderProgram {
     private int loc_projection;
     private int loc_modeView;
 

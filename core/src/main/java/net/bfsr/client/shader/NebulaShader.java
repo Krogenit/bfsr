@@ -6,7 +6,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL20;
 
-public class NebulaShader extends Program {
+public class NebulaShader extends ShaderProgram {
     private int loc_textureOpaque, loc_textureNoise;
     private int loc_color;
     private int loc_offset;

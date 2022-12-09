@@ -5,7 +5,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL20;
 
-public class BaseShader extends Program {
+public class BaseShader extends ShaderProgram {
     protected int loc_useTexture;
     protected int loc_textureOpaque;
     protected int loc_color;

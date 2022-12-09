@@ -5,7 +5,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL20;
 
-public class StarsShader extends Program {
+public class StarsShader extends ShaderProgram {
     int loc_textureOpaque;
     int loc_coreColor, loc_haloColor;
     int loc_center, loc_resolution;

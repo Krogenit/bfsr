@@ -4,7 +4,7 @@ import net.bfsr.client.shader.loader.Definition;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL20;
 
-public class ParticleInstancedShader extends Program {
+public class ParticleInstancedShader extends ShaderProgram {
     private int loc_useTexture;
     private int loc_textureOpaque;
     private int loc_orthoMat;

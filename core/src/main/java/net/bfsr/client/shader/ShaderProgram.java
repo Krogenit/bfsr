@@ -13,14 +13,14 @@ import org.lwjgl.opengl.GL20;
 import java.nio.FloatBuffer;
 
 @Getter
-public abstract class Program {
+public abstract class ShaderProgram {
     private static final FloatBuffer MATRIX_BUFFER = BufferUtils.createFloatBuffer(16);
 
     @Setter
     private int program;
     private final Definition[] definitions;
 
-    protected Program(Definition... definitions) {
+    protected ShaderProgram(Definition... definitions) {
         this.definitions = definitions;
     }
 
