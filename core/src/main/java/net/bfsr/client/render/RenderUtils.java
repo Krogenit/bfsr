@@ -9,22 +9,22 @@ public class RenderUtils {
     private static final VAO VERTEX_COLOR_VAO = VAO.create(2);
 
     static {
-        VERTEX_COLOR_VAO.createAttribute(0, 2, 0);
-        VERTEX_COLOR_VAO.createAttribute(1, 4, 1);
-        VERTEX_COLOR_VAO.bindAttribs();
+        VERTEX_COLOR_VAO.createVertexBuffer(0);
+        VERTEX_COLOR_VAO.createVertexBuffer(1);
+        VERTEX_COLOR_VAO.enableAttributes(2);
     }
 
     public static void render(int drawType, VertexColorBuffer vertexColorBuffer) {
         VERTEX_COLOR_VAO.bind();
-        VERTEX_COLOR_VAO.updateAttribute(0, vertexColorBuffer.getVertexBuffer(), GL15.GL_DYNAMIC_DRAW);
-        VERTEX_COLOR_VAO.updateAttribute(1, vertexColorBuffer.getColorBuffer(), GL15.GL_DYNAMIC_DRAW);
+        VERTEX_COLOR_VAO.updateBuffer(0, vertexColorBuffer.getVertexBuffer(), GL15.GL_DYNAMIC_DRAW);
+        VERTEX_COLOR_VAO.updateBuffer(1, vertexColorBuffer.getColorBuffer(), GL15.GL_DYNAMIC_DRAW);
         GL11.glDrawArrays(drawType, 0, vertexColorBuffer.getVertexCount());
     }
 
     public static void render(int drawType, DynamicVertexColorBuffer vertexColorBuffer) {
         VERTEX_COLOR_VAO.bind();
-        VERTEX_COLOR_VAO.updateAttribute(0, vertexColorBuffer.getVertexBuffer(), GL15.GL_DYNAMIC_DRAW);
-        VERTEX_COLOR_VAO.updateAttribute(1, vertexColorBuffer.getColorBuffer(), GL15.GL_DYNAMIC_DRAW);
+        VERTEX_COLOR_VAO.updateBuffer(0, vertexColorBuffer.getVertexBuffer(), GL15.GL_DYNAMIC_DRAW);
+        VERTEX_COLOR_VAO.updateBuffer(1, vertexColorBuffer.getColorBuffer(), GL15.GL_DYNAMIC_DRAW);
         GL11.glDrawArrays(drawType, 0, vertexColorBuffer.getVertexCount());
     }
 }
