@@ -15,6 +15,8 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL44;
+import org.lwjgl.opengl.GL45;
 
 import java.nio.FloatBuffer;
 
@@ -36,6 +38,7 @@ public class Camera {
 
     @Getter
     private final Vector2f position;
+    private final Vector2f mouseMovingAccumulator = new Vector2f();
     @Getter
     private final Vector2f lastPosition = new Vector2f();
     private final Vector2f positionAndOrigin;
@@ -191,13 +194,17 @@ public class Camera {
 
     public void mouseMove(float dx, float dy) {
         if (Mouse.isRightDown()) {
-            position.x -= dx / zoom;
-            position.y -= dy / zoom;
+            mouseMovingAccumulator.x -= dx / zoom;
+            mouseMovingAccumulator.y -= dy / zoom;
         }
     }
 
     public void update() {
         lastPosition.set(position.x, position.y);
+
+        position.x += mouseMovingAccumulator.x;
+        position.y += mouseMovingAccumulator.y;
+        mouseMovingAccumulator.set(0, 0);
 
         if (core.getWorld() != null) {
             if (core.canControlShip()) {
