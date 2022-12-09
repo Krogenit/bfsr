@@ -12,7 +12,6 @@ import net.bfsr.client.render.Renderer;
 import net.bfsr.client.shader.FontShader;
 import net.bfsr.client.shader.FontShaderTextured;
 import net.bfsr.core.Core;
-import net.bfsr.math.EnumZoomFactor;
 import net.bfsr.math.Transformation;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -47,6 +46,7 @@ public class FontRenderer {
     private final Vector4f shadowColor = new Vector4f(0, 0, 0, 1);
     private final Vector2f shadowOffset = new Vector2f(1, 1);
 
+    @Getter
     private final StringRenderer stringRenderer = new StringRenderer();
 
     public FontRenderer() {
@@ -61,6 +61,7 @@ public class FontRenderer {
         initVao();
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         GL30.glBindVertexArray(0);
+        stringRenderer.init();
     }
 
     private void initVao() {
@@ -121,9 +122,9 @@ public class FontRenderer {
         fontShader.setOrthoMatrix(orthographicMatrix);
         texturedFontShader.enable();
         texturedFontShader.setOrthographicMatrix(orthographicMatrix);
-//        stringRenderer.updateMatrix(orthographicMatrix);
     }
 
+    @Deprecated
     public void render(EnumParticlePositionType positionType) {
         fontShader.enable();
 
@@ -144,13 +145,9 @@ public class FontRenderer {
         GL15.glDeleteBuffers(posVbo);
         GL15.glDeleteBuffers(textVbo);
         GL30.glDeleteVertexArrays(vaoForTextRendering);
-//        stringRenderer.clear();
     }
 
-    private void prepare() {
-        fontShader.enable();
-    }
-
+    @Deprecated
     private void renderText(GUIText text) {
         GL30.glBindVertexArray(text.getMesh());
         GL20.glEnableVertexAttribArray(0);
@@ -169,50 +166,31 @@ public class FontRenderer {
         renderer.setDrawCalls(renderer.getDrawCalls() + 1);
     }
 
-    public GLString createString(FontType font, String text, int x, int y, int fontSize, float r, float g, float b, float a) {
-        StringCache stringCache = font.getStringCache();
-        stringCache.setFontSize(fontSize << 1);
+    public GLString createString(FontType font, String string, int x, int y, int fontSize, float r, float g, float b, float a) {
         GLString glString = new GLString();
-        stringRenderer.updateDynamicGLString(glString, stringCache, text, x, y, fontSize, r, g, b, a);
+        glString.init();
+        stringRenderer.createString(glString, font.getStringCache(), string, x, y, fontSize, r, g, b, a);
         return glString;
     }
 
-    public int createTExtGLList(FontType font, String text, int x, int y, int fontSize, float r, float g, float b, float a, EnumZoomFactor factor) {
-        int list = GL11.glGenLists(1);
-        GL11.glNewList(list, GL11.GL_COMPILE);
-        renderString(font, text, x, y, fontSize, r, g, b, a, factor);
-        GL11.glEndList();
-        return list;
-    }
-
     public void render(List<GLString> strings) {
-        texturedFontShader.enable();
-        texturedFontShader.setModelViewMatrix(Transformation.getGuiViewMatrix());
+        fontShader.enable();
         for (int i = 0; i < strings.size(); i++) {
             stringRenderer.render(strings.get(i));
         }
     }
 
-    public void render(GLString glString) {
-//        stringRenderer.render(glString);
-    }
-
-    public void renderString(FontType font, String text, int x, int y, int fontSize, float r, float g, float b, float a, EnumZoomFactor factor) {
-        StringCache stringCache = font.getStringCache();
-//        stringRenderer.render(stringCache, text, x, y, r, g, b, a, factor);
-    }
-
-    public void renderString(FontType font, String text, int x, int y, float fontSizeX, float fontSizeY, float r, float g, float b, float a,
-                             boolean isCentered, EnumZoomFactor factor, boolean shadow, float maxLineWidth) {
+    @Deprecated
+    public void renderString(FontType font, String text, int x, int y, float fontSizeY, float r, float g, float b, float a, boolean shadow, float maxLineWidth) {
         Renderer renderer = Core.getCore().getRenderer();
         StringCache stringCache = font.getStringCache();
 
         if (shadow) {
-//            stringRenderer.render(stringCache, text, (int) (x + shadowOffset.x), (int) (y + shadowOffset.y), shadowColor.x, shadowColor.y, shadowColor.z, a, factor);
+            stringRenderer.render(text, stringCache, (int) fontSizeY, (int) (x + shadowOffset.x), (int) (y + shadowOffset.y), shadowColor.x, shadowColor.y, shadowColor.z, a);
             renderer.increaseDrawCalls();
         }
 
-//        stringRenderer.render(stringCache, text, x, y, r, g, b, a, factor);
+        stringRenderer.render(text, stringCache, (int) fontSizeY, x, y, r, g, b, a);
         renderer.increaseDrawCalls();
     }
 }

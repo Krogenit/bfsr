@@ -139,7 +139,7 @@ public class InputChat extends InputBox {
         FontRenderer fontRenderer = FontRenderer.getInstance();
 
         for (String line : linesToDraw) {
-            fontRenderer.renderString(FontType.Default, line, (int) (pos.x + pos1.x), (int) (pos.y + pos1.y), fontSize.x, fontSize.y, textColor.x, textColor.y, textColor.z, textColor.w, false, EnumZoomFactor.Gui, true, 0.69f);
+            fontRenderer.renderString(FontType.Default, line, (int) (pos.x + pos1.x), (int) (pos.y + pos1.y), fontSize.y, textColor.x, textColor.y, textColor.z, textColor.w, true, 0.69f);
             pos1.y += FontType.Default.getStringCache().getHeight(line);
         }
 
