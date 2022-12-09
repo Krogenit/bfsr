@@ -23,10 +23,14 @@ import java.nio.FloatBuffer;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Camera {
-    private final Core core;
-    private final ClientSettings settings;
+    public static final int PROJECTION_MATRIX_UBO = 0;
+    public static final int VIEW_MATRIX_UBO = 1;
+
     private static final float Z_NEAR = 0.0f;
     private static final float Z_FAR = 100.0f;
+
+    private final Core core;
+    private final ClientSettings settings;
     @Getter
     private final Matrix4f orthographicMatrix;
     @Getter
@@ -54,6 +58,13 @@ public class Camera {
     private long lastSendTime;
     private Ship followShip;
 
+    @Getter
+    private int projectionMatrixUBO;
+    @Getter
+    private int viewMatrixUBO;
+    @Getter
+    private int GUIViewMatrixUBO;
+
     public Camera() {
         orthographicMatrix = new Matrix4f();
 
@@ -75,6 +86,14 @@ public class Camera {
         boundingBox.set(position.x + origin.x, position.y + origin.y, position.x - origin.x, position.y - origin.y);
         viewMatrix.translate(-origin.x, -origin.y, 0).scale(zoom, zoom, 1.0f).translate(-position.x, -position.y, 0);
         viewMatrix.get(viewMatrixBuffer);
+        projectionMatrixUBO = GL45.glCreateBuffers();
+        GL45.glNamedBufferStorage(projectionMatrixUBO, projectionMatrixBuffer, GL44.GL_DYNAMIC_STORAGE_BIT);
+        viewMatrixUBO = GL45.glCreateBuffers();
+        GL45.glNamedBufferStorage(viewMatrixUBO, 16 * 4, GL44.GL_DYNAMIC_STORAGE_BIT);
+        GUIViewMatrixUBO = GL45.glCreateBuffers();
+        Matrix4f matrix = new Matrix4f();
+        matrix.get(viewMatrixBuffer);
+        GL45.glNamedBufferStorage(GUIViewMatrixUBO, viewMatrixBuffer, 0);
     }
 
     @Deprecated
@@ -232,21 +251,25 @@ public class Camera {
             position.y = 0;
         }
 
-        viewMatrix.identity();
-        viewMatrix.translate(-origin.x, -origin.y, 0);
-        viewMatrix.scale(zoom, zoom, 1.0f);
-        viewMatrix.translate(-position.x, -position.y, 0);
-        viewMatrix.get(viewMatrixBuffer);
+        if (position.x != lastPosition.x || position.y != lastPosition.y) {
+            viewMatrix.identity();
+            viewMatrix.translate(-origin.x, -origin.y, 0);
+            viewMatrix.scale(zoom, zoom, 1.0f);
+            viewMatrix.translate(-position.x, -position.y, 0);
+            viewMatrix.get(viewMatrixBuffer);
 
-        boundingBox.setMinX(position.x + origin.x / zoom);
-        boundingBox.setMinY(position.y + origin.y / zoom);
-        boundingBox.setMaxX(position.x - origin.x / zoom);
-        boundingBox.setMaxY(position.y - origin.y / zoom);
+            GL45.glNamedBufferSubData(viewMatrixUBO, 0, viewMatrixBuffer);
 
-        long time = System.currentTimeMillis();
-        if (time - lastSendTime > 500) {
-            core.sendPacket(new PacketCameraPosition(position.x, position.y));
-            lastSendTime = time;
+            boundingBox.setMinX(position.x + origin.x / zoom);
+            boundingBox.setMinY(position.y + origin.y / zoom);
+            boundingBox.setMaxX(position.x - origin.x / zoom);
+            boundingBox.setMaxY(position.y - origin.y / zoom);
+
+            long time = System.currentTimeMillis();
+            if (time - lastSendTime > 500) {
+                core.sendPacket(new PacketCameraPosition(position.x, position.y));
+                lastSendTime = time;
+            }
         }
     }
 
@@ -259,15 +282,15 @@ public class Camera {
         this.height = height;
         origin.x = -width / 2.0f;
         origin.y = -height / 2.0f;
-    }
+        GL45.glNamedBufferSubData(projectionMatrixUBO, 0, projectionMatrixBuffer);
 
-    public void setPosition(float x, float y) {
-        position.x = x;
-        position.y = y;
-    }
+        viewMatrix.identity();
+        viewMatrix.translate(-origin.x, -origin.y, 0);
+        viewMatrix.scale(zoom, zoom, 1.0f);
+        viewMatrix.translate(-position.x, -position.y, 0);
+        viewMatrix.get(viewMatrixBuffer);
 
-    public void rotate(float offsetX) {
-        rotation += offsetX;
+        GL45.glNamedBufferSubData(viewMatrixUBO, 0, viewMatrixBuffer);
     }
 
     public Vector2f getWorldVector(Vector2f pos) {
