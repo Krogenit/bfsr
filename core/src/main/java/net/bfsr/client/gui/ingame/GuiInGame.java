@@ -39,6 +39,7 @@ import net.bfsr.world.WorldClient;
 import net.bfsr.world.WorldServer;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 import java.text.DecimalFormat;
@@ -236,6 +237,10 @@ public class GuiInGame extends Gui {
     public void input(int key) {
         super.input(key);
         chatInput.input(key);
+
+        if (key == GLFW.GLFW_KEY_ESCAPE && Core.getCore().canControlShip()) {
+            Core.getCore().setCurrentGui(new GuiInGameMenu());
+        }
     }
 
     @Override

@@ -1,6 +1,5 @@
 package net.bfsr.world;
 
-import net.bfsr.client.gui.ingame.GuiInGameMenu;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleRenderer;
@@ -98,10 +97,6 @@ public class WorldClient extends World {
             }
 
             lastFaction = s.getFaction();
-        }
-
-        if (key == GLFW.GLFW_KEY_ESCAPE && Core.getCore().canControlShip()) {
-            Core.getCore().setCurrentGui(new GuiInGameMenu());
         }
 
         //		if(Core.getCore().canControlShip()) {

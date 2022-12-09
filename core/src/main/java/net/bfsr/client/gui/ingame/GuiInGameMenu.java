@@ -17,6 +17,7 @@ import org.lwjgl.glfw.GLFW;
 
 public class GuiInGameMenu extends Gui {
     private final TextureObject logoBFSR;
+    private boolean wantCloseGui;
 
     public GuiInGameMenu() {
         logoBFSR = new GuiTextureObject(TextureLoader.getTexture(TextureRegister.guiLogoBFSR));
@@ -43,11 +44,21 @@ public class GuiInGameMenu extends Gui {
     }
 
     @Override
+    public void update() {
+        super.update();
+        
+        if (wantCloseGui) {
+            Core.getCore().setCurrentGui(null);
+            wantCloseGui = false;
+        }
+    }
+
+    @Override
     public void input(int key) {
         super.input(key);
 
         if (key == GLFW.GLFW_KEY_ESCAPE) {
-            Core.getCore().setCurrentGui(null);
+            wantCloseGui = true;
         }
     }
 

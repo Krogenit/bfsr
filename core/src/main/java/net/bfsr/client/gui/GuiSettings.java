@@ -108,8 +108,8 @@ public class GuiSettings extends Gui {
     }
 
     @Override
-    public void textInput(int key) {
-        super.textInput(key);
+    public void input(int key) {
+        super.input(key);
 
         if (key == GLFW.GLFW_KEY_ESCAPE) {
             Core.getCore().setCurrentGui(prevGui);
