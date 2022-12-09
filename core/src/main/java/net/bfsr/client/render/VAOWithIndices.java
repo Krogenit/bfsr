@@ -1,7 +1,6 @@
 package net.bfsr.client.render;
 
 import org.lwjgl.opengl.GL11C;
-import org.lwjgl.opengl.GL15;
 
 import java.nio.IntBuffer;
 
@@ -13,9 +12,9 @@ public class VAOWithIndices extends VAO {
         super(id, vboCount);
     }
 
-    public void createIndexBuffer(IntBuffer indices) {
+    public void createIndexBuffer(IntBuffer indices, int flags) {
         indexVbo = VBO.create();
-        indexVbo.storeData(indices, GL15.GL_STATIC_DRAW);
+        indexVbo.storeData(indices, flags);
         indexCount = indices.remaining();
     }
 
