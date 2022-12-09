@@ -5,3 +5,5 @@ struct ViewData {
 };
 
 #define USB_VIEW 0
+#define UBO_PROJECTION_MATRIX 0
+#define UBO_VIEW_MATRIX 1
