@@ -9,6 +9,8 @@ public class Key {
      */
     public String str;
 
+    public int fontSize;
+
     /**
      * Computes a hash code on str in the same manner as the String class, except all ASCII digits hash as '0'
      *
@@ -33,6 +35,8 @@ public class Key {
             code = (code * 31) + c;
             colorCode = (c == '\u00A7');
         }
+
+        code = (code * 31) + fontSize;
 
         return code;
     }
@@ -59,6 +63,10 @@ public class Key {
         int length = str.length();
 
         if (length != other.length()) {
+            return false;
+        }
+
+        if (fontSize != ((Key) o).fontSize) {
             return false;
         }
 

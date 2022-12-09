@@ -1,8 +1,7 @@
 package net.bfsr.client.font_new;
 
-import lombok.Getter;
-import lombok.Setter;
 import net.bfsr.util.PathHelper;
+import org.lwjgl.opengl.ARBBindlessTexture;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL13C;
@@ -70,13 +69,6 @@ public class GlyphCache {
     private static final Color BACK_COLOR = new Color(255, 255, 255, 0);
 
     /**
-     * The point size at which every OpenType font is rendered.
-     */
-    @Getter
-    @Setter
-    private int fontSize = 18;
-
-    /**
      * If true, then enble anti-aliasing when rendering the font glyph
      */
     private boolean antiAliasEnabled;
@@ -140,6 +132,8 @@ public class GlyphCache {
      */
     private int textureName;
 
+    private long textureHandle;
+
     /**
      * A cache of all fonts that have at least one glyph pre-rendered in a texture. Each font maps to an integer (monotonically
      * increasing) which forms the upper 32 bits of the key into the glyphCache map. This font cache can include different styles
@@ -185,6 +179,8 @@ public class GlyphCache {
          * The OpenGL texture ID that contains this glyph image.
          */
         public int textureName;
+
+        public long textureHandle;
 
         /**
          * The width in pixels of the glyph image.
@@ -247,7 +243,6 @@ public class GlyphCache {
         usedFonts.clear();
         usedFonts.add(new Font(name, Font.PLAIN, 72));
 
-        fontSize = size;
         antiAliasEnabled = antiAlias;
         setRenderingHints();
     }
@@ -277,14 +272,14 @@ public class GlyphCache {
         }
     }
 
-    int getHeight(String s) {
-        Font font = lookupFont(s.toCharArray(), 0, s.length(), Font.PLAIN);
+    int getHeight(String s, int fontSize) {
+        Font font = lookupFont(s.toCharArray(), 0, s.length(), Font.PLAIN, fontSize);
         LineMetrics lineMetrics = font.getLineMetrics(s, fontRenderContext);
         return (int) lineMetrics.getHeight() / 2;
     }
 
-    public int getAscent(String s) {
-        Font font = lookupFont(s.toCharArray(), 0, s.length(), Font.PLAIN);
+    public int getAscent(String s, int fontSize) {
+        Font font = lookupFont(s.toCharArray(), 0, s.length(), Font.PLAIN, fontSize);
         LineMetrics lineMetrics = font.getLineMetrics(s, fontRenderContext);
         return (int) lineMetrics.getAscent() / 2;
     }
@@ -317,7 +312,7 @@ public class GlyphCache {
      * @param style combination of the Font.PLAIN, Font.BOLD, and Font.ITALIC to request a particular font style
      * @return an OpenType font capable of displaying at least the first character at the start position in text
      */
-    Font lookupFont(char[] text, int start, int limit, int style) {
+    Font lookupFont(char[] text, int start, int limit, int style, int fontSize) {
         /* Try using an already known base font; the first font in usedFonts list is the one set with setDefaultFont() */
         Iterator<Font> iterator = usedFonts.iterator();
         while (iterator.hasNext()) {
@@ -498,6 +493,7 @@ public class GlyphCache {
              */
             Entry entry = new Entry();
             entry.textureName = textureName;
+            entry.textureHandle = textureHandle;
             entry.width = rect.width;
             entry.height = rect.height;
             entry.u1 = ((float) rect.x) / TEXTURE_WIDTH;
@@ -607,6 +603,9 @@ public class GlyphCache {
         /* Explicitely disable mipmap support becuase updateTexture() will only update the base level 0 */
         GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MIN_FILTER, GL11C.GL_LINEAR);
         GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MAG_FILTER, GL11C.GL_LINEAR);
+
+        textureHandle = ARBBindlessTexture.glGetTextureHandleARB(textureName);
+        ARBBindlessTexture.glMakeTextureHandleResidentARB(textureHandle);
     }
 
     /**

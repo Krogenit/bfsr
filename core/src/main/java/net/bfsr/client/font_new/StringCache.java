@@ -90,43 +90,19 @@ public class StringCache {
     private final Key lookupKey = new Key();
 
     /**
-     * Pre-cached glyphs for the ASCII digits 0-9 (in that order). Used by renderString() to substiture digit glyphs on the fly
-     * as a performance boost. The speed up is most noticable on the F3 screen which rapidly displays lots of changing numbers.
-     * The 4 element array is index by the font style (combination of Font.PLAIN, Font.BOLD, and Font.ITALIC), and each of the
-     * nested elements is index by the digit value 0-9.
+     * The point size at which every OpenType font is rendered.
      */
-    private final Glyph[][] digitGlyphs = new Glyph[4][];
-
-    /** True if digitGlyphs[] has been assigned and cacheString() can begin replacing all digits with '0' in the string. */
-    private boolean digitGlyphsReady;
-
-    /**
-     * Reference to the main Minecraft thread that created this GlyphCache object. Starting with Minecraft 1.3.1, it is possible
-     * for GlyphCache.cacheGlyphs() to be invoked from the TcpReaderThread while processing a chat packet and computing the width
-     * of the incoming chat text. Unfortunately, if cacheGlyphs() makes any OpenGL calls from any thread except the main one,
-     * it will crash LWJGL with a NullPointerException. By remembering the initial thread and comparing it later against
-     * Thread.currentThread(), the StringCache code can avoid calling cacheGlyphs() when it's not safe to do so.
-     */
-    private final Thread mainThread;
+    private int fontSize = 18;
 
     /**
      * A single StringCache object is allocated by Minecraft's FontRenderer which forwards all string drawing and requests for
      * string width to this class.
      */
     StringCache() {
-        /* StringCache is created by the main game thread; remember it for later thread safety checks */
-        mainThread = Thread.currentThread();
-
         glyphCache = new GlyphCache();
-
-        /* Pre-cache the ASCII digits to allow for fast glyph substitution */
-        cacheDightGlyphs();
     }
 
     StringCache(String fontFileName, boolean antiAlias) {
-        /* StringCache is created by the main game thread; remember it for later thread safety checks */
-        mainThread = Thread.currentThread();
-
         glyphCache = new GlyphCache();
 
         setFontFromFile(fontFileName, antiAlias);
@@ -145,9 +121,6 @@ public class StringCache {
         glyphCache.setDefaultFont(fontName, fontSize, antiAlias);
         weakRefCache.clear();
         stringCache.clear();
-
-        /* Pre-cache the ASCII digits to allow for fast glyph substitution */
-        cacheDightGlyphs();
     }
 
     public void setFontFromFile(String fontFileName, boolean antiAlias) {
@@ -155,35 +128,11 @@ public class StringCache {
         glyphCache.setFontFromFile(fontFileName, antiAlias);
         weakRefCache.clear();
         stringCache.clear();
-
-        /* Pre-cache the ASCII digits to allow for fast glyph substitution */
-        cacheDightGlyphs();
     }
 
     public void setFontSize(int fontSize) {
         fontSize <<= 1;
-        if (glyphCache.getFontSize() != fontSize) {
-            glyphCache.setFontSize(fontSize);
-            weakRefCache.clear();
-            stringCache.clear();
-
-            /* Pre-cache the ASCII digits to allow for fast glyph substitution */
-            cacheDightGlyphs();
-        }
-    }
-
-    /**
-     * Pre-cache the ASCII digits to allow for fast glyph substitution. Called once from the constructor and called any time the font selection
-     * changes at runtime via setDefaultFont().
-     */
-    private void cacheDightGlyphs() {
-        /* Need to cache each font style combination; the digitGlyphsReady = false disabled the normal glyph substitution mechanism */
-        digitGlyphsReady = false;
-        digitGlyphs[Font.PLAIN] = cacheString("0123456789").glyphs;
-        digitGlyphs[Font.BOLD] = cacheString("\u00A7l0123456789").glyphs;
-        digitGlyphs[Font.ITALIC] = cacheString("\u00A7o0123456789").glyphs;
-        digitGlyphs[Font.BOLD | Font.ITALIC] = cacheString("\u00A7l\u00A7o0123456789").glyphs;
-        digitGlyphsReady = true;
+        this.fontSize = fontSize;
     }
 
     /**
@@ -327,17 +276,12 @@ public class StringCache {
          */
         Key key;
 
-        /* Either a newly created Entry object for the string, or the cached Entry if the string is already in the cache */
-        Entry entry = null;
+        /* Re-use existing lookupKey to avoid allocation overhead on the critical rendering path */
+        lookupKey.str = str;
+        lookupKey.fontSize = fontSize;
 
-        /* Don't perform a cache lookup from other threads because the stringCache is not synchronized */
-        if (mainThread == Thread.currentThread()) {
-            /* Re-use existing lookupKey to avoid allocation overhead on the critical rendering path */
-            lookupKey.str = str;
-
-            /* If this string is already in the cache, simply return the cached Entry object */
-            entry = stringCache.get(lookupKey);
-        }
+        /* If this string is already in the cache, simply return the cached Entry object */
+        Entry entry = stringCache.get(lookupKey);
 
         /* If string is not cached (or not on main thread) then layout the string */
         if (entry == null) {
@@ -380,35 +324,28 @@ public class StringCache {
                 glyph.stringIndex += shift;
             }
 
-            /*
-             * Do not actually cache the string when called from other threads because GlyphCache.cacheGlyphs() will not have been called
-             * and the cache entry does not contain any texture data needed for rendering.
-             */
-            if (mainThread == Thread.currentThread()) {
-                /* Wrap the string in a Key object (to change how ASCII digits are compared) and cache it along with the newly generated Entry */
-                key = new Key();
+            /* Wrap the string in a Key object (to change how ASCII digits are compared) and cache it along with the newly generated Entry */
+            key = new Key();
 
-                /* Make a copy of the original String to avoid creating a strong reference to it */
-                key.str = str;
-                entry.keyRef = new WeakReference<>(key);
-                stringCache.put(key, entry);
-            }
+            /* Make a copy of the original String to avoid creating a strong reference to it */
+            key.str = str;
+            key.fontSize = fontSize;
+            entry.keyRef = new WeakReference<>(key);
+            stringCache.put(key, entry);
         }
 
-        /* Do not access weakRefCache from other threads since it is unsynchronized, and for a newly created entry, the keyRef is null */
-        if (mainThread == Thread.currentThread()) {
-            /*
-             * Add the String passed into this method to the stringWeakMap so it keeps the Key reference live as long as the String is in use.
-             * If an existing Entry was already found in the stringCache, it's possible that its Key has already been garbage collected. The
-             * code below checks for this to avoid adding (str, null) entries into weakRefCache. Note that if a new Key object was created, it
-             * will still be live because of the strong reference created by the "key" variable.
-             */
-            Key oldKey = entry.keyRef.get();
-            if (oldKey != null) {
-                weakRefCache.put(str, oldKey);
-            }
-            lookupKey.str = null;
+        /*
+         * Add the String passed into this method to the stringWeakMap so it keeps the Key reference live as long as the String is in use.
+         * If an existing Entry was already found in the stringCache, it's possible that its Key has already been garbage collected. The
+         * code below checks for this to avoid adding (str, null) entries into weakRefCache. Note that if a new Key object was created, it
+         * will still be live because of the strong reference created by the "key" variable.
+         */
+        Key oldKey = entry.keyRef.get();
+        if (oldKey != null) {
+            weakRefCache.put(str, oldKey);
         }
+        lookupKey.str = null;
+        lookupKey.fontSize = 0;
 
         /* Return either the existing or the newly created entry so it can be accessed immediately */
         return entry;
@@ -635,24 +572,9 @@ public class StringCache {
      * @todo Use bitmap fonts as a fallback if no OpenType font could be found
      */
     private int layoutString(List<Glyph> glyphList, char[] text, int start, int limit, int layoutFlags, int advance, int style) {
-        /*
-         * Convert all digits in the string to a '0' before layout to ensure that any glyphs replaced on the fly will all have
-         * the same positions. Under Windows, Java's "SansSerif" logical font uses the "Arial" font for digits, in which the "1"
-         * digit is slightly narrower than all other digits. Checking the digitGlyphsReady flag prevents a chicken-and-egg
-         * problem where the digit glyphs have to be initially cached and the digitGlyphs[] array initialized without replacing
-         * every digit with '0'.
-         */
-        if (digitGlyphsReady) {
-            for (int index = start; index < limit; index++) {
-                if (text[index] >= '0' && text[index] <= '9') {
-                    text[index] = '0';
-                }
-            }
-        }
-
         /* Break the string up into segments, where each segment can be displayed using a single font */
         while (start < limit) {
-            Font font = glyphCache.lookupFont(text, start, limit, style);
+            Font font = glyphCache.lookupFont(text, start, limit, style, fontSize);
             int next = font.canDisplayUpTo(text, start, limit);
 
             /* canDisplayUpTo returns -1 if the entire string range is supported by this font */
@@ -697,9 +619,7 @@ public class StringCache {
          * cacheString() will also not insert the entry into the stringCache since it may be incomplete if lookupGlyph()
          * returns null for any glyphs not yet stored in the glyph cache.
          */
-        if (mainThread == Thread.currentThread()) {
-            glyphCache.cacheGlyphs(font, text, start, limit, layoutFlags);
-        }
+        glyphCache.cacheGlyphs(font, text, start, limit, layoutFlags);
 
         /* Creating a GlyphVector takes care of all language specific OpenType glyph substitutions and positionings */
         GlyphVector vector = glyphCache.layoutGlyphVector(font, text, start, limit, layoutFlags);
@@ -743,11 +663,11 @@ public class StringCache {
     }
 
     public int getHeight(String s) {
-        return glyphCache.getHeight(s);
+        return glyphCache.getHeight(s, fontSize);
     }
 
     public int getAscent(String s) {
-        return glyphCache.getAscent(s);
+        return glyphCache.getAscent(s, fontSize);
     }
 }
 
