@@ -18,7 +18,6 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class GuiDestroyed extends Gui {
-
     private final String errorMessage;
     private final String description;
     private final GUIText text;
@@ -46,10 +45,16 @@ public class GuiDestroyed extends Gui {
 
         Button button = new Button(0, TextureRegister.guiButtonBase, new Vector2f(center.x + 160 * scale.x * Transformation.guiScale.x, center.y + 100 * scale.y * Transformation.guiScale.y),
                 new Vector2f(250 * scale.x, 50 * scale.y), "gui.destroyed.respawn", new Vector2f(1f * scale.x, 0.9f * scale.y));
+        button.setOnMouseClickedRunnable(() -> {
+            Vector2f position = Core.getCore().getRenderer().getCamera().getPosition();
+            Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketRespawn(position.x, position.y));
+            Core.getCore().setCurrentGui(null);
+        });
         buttons.add(button);
 
         button = new Button(1, TextureRegister.guiButtonBase, new Vector2f(center.x - 160 * scale.x * Transformation.guiScale.x, center.y + 100 * scale.y * Transformation.guiScale.y),
                 new Vector2f(250 * scale.x, 50 * scale.y), "gui.ingamemenu.tomainmenu", new Vector2f(1f * scale.x, 0.9f * scale.y));
+        button.setOnMouseClickedRunnable(() -> Core.getCore().quitToMainMenu());
         buttons.add(button);
 
         text.setFontSize(Transformation.getScale(new Vector2f(1 * scale.x, 1 * scale.y)));
@@ -58,17 +63,6 @@ public class GuiDestroyed extends Gui {
         textDescription.setFontSize(Transformation.getScale(new Vector2f(1 * scale.x, 1 * scale.y)));
         textDescription.setPosition(Transformation.getOffsetByScale(new Vector2f(center.x - 286 * scale.x, center.y - 74 * scale.y)));
         textDescription.updateText(Lang.getString("gui.destroyed.destroyedBy") + ": " + description);
-    }
-
-    @Override
-    protected void onButtonLeftClick(Button b) {
-        if (b.getId() == 0) {
-            Vector2f position = Core.getCore().getRenderer().getCamera().getPosition();
-            Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketRespawn(position.x, position.y));
-            Core.getCore().setCurrentGui(null);
-        } else {
-            Core.getCore().quitToMainMenu();
-        }
     }
 
     @Override
@@ -84,5 +78,4 @@ public class GuiDestroyed extends Gui {
         text.clear();
         textDescription.clear();
     }
-
 }

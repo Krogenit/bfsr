@@ -1,8 +1,8 @@
 package net.bfsr.client.gui.multiplayer;
 
+import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.font.GUIText;
 import net.bfsr.client.gui.Gui;
-import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.button.ButtonBase;
 import net.bfsr.client.gui.input.EnumInputType;
 import net.bfsr.client.gui.input.InputBox;
@@ -16,18 +16,14 @@ import net.bfsr.network.client.NetworkManagerClient;
 import net.bfsr.network.packet.PacketHandshake;
 import net.bfsr.network.packet.PacketLoginStart;
 import net.bfsr.network.status.EnumConnectionState;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+@Log4j2
 public class GuiConnect extends Gui {
-
-    private static final Logger logger = LogManager.getLogger();
-
     private final Gui previousGui;
     private GUIText connectingText;
     private final Core core;
@@ -35,8 +31,8 @@ public class GuiConnect extends Gui {
     private String errorMessage;
 
     public GuiConnect(Gui gui) {
-        this.previousGui = gui;
-        this.core = Core.getCore();
+        previousGui = gui;
+        core = Core.getCore();
     }
 
     @Override
@@ -72,14 +68,7 @@ public class GuiConnect extends Gui {
         inputBoxes.add(input);
 
         ButtonBase b = new ButtonBase(0, new Vector2f(center.x, center.y + 50), "gui.connect.connect");
-        buttons.add(b);
-        b = new ButtonBase(1, new Vector2f(center.x, center.y + 200), "gui.back");
-        buttons.add(b);
-    }
-
-    @Override
-    protected void onButtonLeftClick(Button b) {
-        if (b.getId() == 0) {
+        b.setOnMouseClickedRunnable(() -> {
             if (connectingText == null) {
                 errorMessage = Lang.getString("gui.connecting");
                 Thread t = new Thread(() -> {
@@ -118,14 +107,14 @@ public class GuiConnect extends Gui {
                             networkManager.scheduleOutboundPacket(new PacketLoginStart(plaerName, password, false));
                             core.setNetworkManager(networkManager);
                         } catch (UnknownHostException unknownhostexception) {
-                            logger.error("Couldn't connect to server", unknownhostexception);
+                            log.error("Couldn't connect to server", unknownhostexception);
                             errorMessage = Lang.getString("connect.failed") + " Unknown Host";
                         } catch (Exception exception) {
-                            logger.error("Couldn't connect to server", exception);
+                            log.error("Couldn't connect to server", exception);
                             String s = exception.toString();
 
                             if (inetaddress != null) {
-                                String s1 = inetaddress.toString() + ":" + port;
+                                String s1 = inetaddress + ":" + port;
                                 s = s.replaceAll(s1, "");
                             }
 
@@ -137,15 +126,19 @@ public class GuiConnect extends Gui {
                 });
                 t.start();
             }
-        } else {
+        });
+        buttons.add(b);
+        b = new ButtonBase(1, new Vector2f(center.x, center.y + 200), "gui.back");
+        b.setOnMouseClickedRunnable(() -> {
             core.clearNetwork();
             Core.getCore().setCurrentGui(previousGui);
-        }
+        });
+        buttons.add(b);
     }
 
     private void setErrorMessage(String text) {
         if (connectingText != null) connectingText.clear();
-        connectingText = new GUIText(text, new Vector2f(center.x + messagePos.x, center.y + messagePos.y * Transformation.guiScale.y), new Vector4f(1f, 1f, 1f, 1f), EnumParticlePositionType.Gui);
+        connectingText = new GUIText(text, new Vector2f(center.x + messagePos.x, center.y + messagePos.y * Transformation.guiScale.y), new Vector4f(1.0f, 1.0f, 1.0f, 1.0f), EnumParticlePositionType.Gui);
     }
 
     @Override

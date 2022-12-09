@@ -1,5 +1,6 @@
 package net.bfsr.client.gui.button;
 
+import lombok.Setter;
 import net.bfsr.client.font.GUIText;
 import net.bfsr.client.gui.GuiSettings;
 import net.bfsr.client.input.Mouse;
@@ -17,6 +18,7 @@ import net.bfsr.math.EnumZoomFactor;
 import net.bfsr.math.Transformation;
 import net.bfsr.settings.ClientSettings;
 import net.bfsr.settings.EnumOption;
+import net.bfsr.util.RunnableUtils;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -27,6 +29,8 @@ public class Button extends TextureObject {
     private SoundRegistry collideSound, clickSound;
     private boolean collided;
     private EnumOption option;
+    @Setter
+    private Runnable onMouseClickedRunnable = RunnableUtils.EMPTY_RUNNABLE;
 
     public Button(int id, TextureRegister texture, Vector2f pos, Vector2f scale, String text, Vector2f fontSize) {
         super(TextureLoader.getTexture(texture), pos, new Vector2f(scale.x * Transformation.guiScale.x, scale.y * Transformation.guiScale.y));
@@ -75,6 +79,8 @@ public class Button extends TextureObject {
     }
 
     public void leftClick() {
+        onMouseClickedRunnable.run();
+
         if (clickSound != null) {
             Core.getCore().getSoundManager().play(new GuiSoundSource(clickSound));
         }

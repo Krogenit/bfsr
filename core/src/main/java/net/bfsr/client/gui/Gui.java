@@ -1,8 +1,5 @@
 package net.bfsr.client.gui;
 
-import net.bfsr.client.font.FontRenderer;
-import net.bfsr.client.font_new.FontType;
-import net.bfsr.client.font_new.GLString;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.input.InputBox;
 import net.bfsr.client.shader.BaseShader;
@@ -18,7 +15,6 @@ public class Gui {
     protected List<Slider> sliders = new ArrayList<>();
     protected List<InputBox> inputBoxes = new ArrayList<>();
     protected List<Scroll> scrolls = new ArrayList<>();
-    protected final List<GLString> staticStrings = new ArrayList<>(0);
     protected Vector2f center;
 
     public Gui() {
@@ -30,11 +26,6 @@ public class Gui {
         height = Core.getCore().getHeight();
         center.x = width / 2.0f;
         center.y = height / 2.0f;
-    }
-
-    protected void createString(FontType font, String text, int x, int y, int fontSize, float r, float g, float b, float a) {
-        GLString glString = FontRenderer.getInstance().createString(font, text, x, y, fontSize, r, g, b, a);
-        staticStrings.add(glString);
     }
 
     public void textInput(int key) {
@@ -71,10 +62,6 @@ public class Gui {
         }
     }
 
-    protected void drawStaticStrings() {
-        FontRenderer.getInstance().render(staticStrings);
-    }
-
     public void render(BaseShader shader) {
         int size = buttons.size();
         for (int i = 0; i < size; i++) {
@@ -101,20 +88,11 @@ public class Gui {
         }
     }
 
-    protected void onButtonLeftClick(Button b) {
-
-    }
-
-    protected void onButtonRightClick(Button b) {
-
-    }
-
     public void onMouseLeftClicked() {
         for (int i = 0; i < buttons.size(); i++) {
             Button b = buttons.get(i);
             if (b.isIntersects()) {
                 b.leftClick();
-                onButtonLeftClick(b);
             }
         }
 
@@ -157,7 +135,6 @@ public class Gui {
             Button b = buttons.get(i);
             if (b.isIntersects()) {
                 b.rightClick();
-                onButtonRightClick(b);
             }
         }
     }
@@ -175,6 +152,7 @@ public class Gui {
     }
 
     public void resize(int width, int height) {
+        clear();
         init();
     }
 
@@ -187,9 +165,6 @@ public class Gui {
     }
 
     public void clear() {
-        while (staticStrings.size() > 0) {
-            staticStrings.remove(0).clear();
-        }
         int size = buttons.size();
         for (int i = 0; i < size; i++) {
             Button b = buttons.get(i);

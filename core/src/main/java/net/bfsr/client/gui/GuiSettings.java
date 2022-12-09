@@ -102,6 +102,7 @@ public class GuiSettings extends Gui {
         x = center.x;
         y = center.y + 310;
         Button button = new ButtonBase(0, new Vector2f(x, y), "gui.settings.save");
+        button.setOnMouseClickedRunnable(() -> Core.getCore().setCurrentGui(prevGui));
         buttons.add(button);
         firstInit = true;
     }
@@ -111,13 +112,6 @@ public class GuiSettings extends Gui {
         super.textInput(key);
 
         if (key == GLFW.GLFW_KEY_ESCAPE) {
-            Core.getCore().setCurrentGui(prevGui);
-        }
-    }
-
-    @Override
-    protected void onButtonLeftClick(Button b) {
-        if (b.getId() == 0) {
             Core.getCore().setCurrentGui(prevGui);
         }
     }
@@ -151,11 +145,12 @@ public class GuiSettings extends Gui {
     @Override
     public void clear() {
         super.clear();
-        for (GUIText text : sections) {
+        int size = sections.size();
+        for (int i = 0; i < size; i++) {
+            GUIText text = sections.get(i);
             text.clear();
         }
         sections.clear();
         mainText.clear();
     }
-
 }

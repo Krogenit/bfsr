@@ -184,20 +184,7 @@ public class GuiInGame extends Gui {
                 new Vector2f(scaleX, scaleY));
         buttonControl.setCollideSound(SoundRegistry.buttonCollide);
         buttonControl.setClickSound(SoundRegistry.buttonClick);
-        buttons.add(buttonControl);
-        chatInput.addEmptyText();
-        if (core.getWorld() != null && core.getWorld().getPlayerShip() == null)
-            controlText.updateText(Lang.getString("gui.control"));
-        else
-            controlText.updateText(Lang.getString("gui.cancelControl"));
-        chatScroll.setScale(Transformation.getScale(12, 99));
-        chatScroll.setPosition(Transformation.getOffsetByScale(new Vector2f(center.x - 400, center.y + 284)));
-        controlButtonCreated = true;
-    }
-
-    @Override
-    protected void onButtonLeftClick(Button b) {
-        if (b.getId() == 0) {
+        buttonControl.setOnMouseClickedRunnable(() -> {
             WorldClient w = core.getWorld();
             controlWasPressed = true;
             Ship playerControlledShip = w.getPlayerShip();
@@ -210,7 +197,16 @@ public class GuiInGame extends Gui {
                 core.getWorld().setPlayerShip(currentShip);
                 core.sendPacket(new PacketShipControl(currentShip.getId(), true));
             }
-        }
+        });
+        buttons.add(buttonControl);
+        chatInput.addEmptyText();
+        if (core.getWorld() != null && core.getWorld().getPlayerShip() == null)
+            controlText.updateText(Lang.getString("gui.control"));
+        else
+            controlText.updateText(Lang.getString("gui.cancelControl"));
+        chatScroll.setScale(Transformation.getScale(12, 99));
+        chatScroll.setPosition(Transformation.getOffsetByScale(new Vector2f(center.x - 400, center.y + 284)));
+        controlButtonCreated = true;
     }
 
     public void addChatMessage(String message) {
@@ -224,7 +220,6 @@ public class GuiInGame extends Gui {
             Button b = buttons.get(i);
             if (b.isIntersects()) {
                 b.leftClick();
-                onButtonLeftClick(b);
             } else controlWasPressed = false;
         }
 

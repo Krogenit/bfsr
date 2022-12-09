@@ -46,6 +46,7 @@ public class GuiDisconnected extends Gui {
 
         Button button = new Button(0, TextureRegister.guiButtonBase, new Vector2f(center.x, center.y + 140 * scale.y),
                 new Vector2f(300 * scale.x, 50 * scale.y), "gui.ok", new Vector2f(1f * scale.x, 0.9f * scale.y));
+        button.setOnMouseClickedRunnable(() -> Core.getCore().setCurrentGui(prevGui));
         buttons.add(button);
 
         text.setFontSize(Transformation.getScale(new Vector2f(1f * scale.x, 0.9f * scale.y)));
@@ -55,11 +56,6 @@ public class GuiDisconnected extends Gui {
         textDescription.setFontSize(Transformation.getScale(new Vector2f(1f * scale.x, 0.9f * scale.y)));
         textDescription.setPosition(Transformation.getOffsetByScale(new Vector2f(center.x - 286 * scale.x, center.y - 74 * scale.y)));
         textDescription.updateText(description);
-    }
-
-    @Override
-    protected void onButtonLeftClick(Button b) {
-        Core.getCore().setCurrentGui(prevGui);
     }
 
     @Override

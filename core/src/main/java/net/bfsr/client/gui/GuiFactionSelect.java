@@ -50,10 +50,22 @@ public class GuiFactionSelect extends Gui {
         super.init();
 
         Button b = new ButtonBase(0, new Vector2f(center.x - 309, center.y + 230), "gui.selectFaction.human");
+        b.setOnMouseClickedRunnable(() -> {
+            Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketFactionSelect(Faction.Human));
+            Core.getCore().setCurrentGui(null);
+        });
         buttons.add(b);
         b = new ButtonBase(1, new Vector2f(center.x - 1, center.y + 230), "gui.selectFaction.saimon");
+        b.setOnMouseClickedRunnable(() -> {
+            Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketFactionSelect(Faction.Saimon));
+            Core.getCore().setCurrentGui(null);
+        });
         buttons.add(b);
         b = new ButtonBase(2, new Vector2f(center.x + 309, center.y + 230), "gui.selectFaction.engi");
+        b.setOnMouseClickedRunnable(() -> {
+            Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketFactionSelect(Faction.Engi));
+            Core.getCore().setCurrentGui(null);
+        });
         buttons.add(b);
 
         fon.setPosition(new Vector2f(center.x, center.y));
@@ -95,20 +107,6 @@ public class GuiFactionSelect extends Gui {
         engiDisc = new GUIText(Lang.getString("gui.selectFaction.engiDisc"), new Vector3f(discFontSize, discFontSize, 1.1f), FontRegistry.XOLONIUM,
                 Transformation.getOffsetByScale(new Vector2f(center.x + 166, center.y - 80)), new Vector4f(1, 1, 1, 1),
                 0.21f, false, EnumParticlePositionType.Gui);
-    }
-
-    @Override
-    protected void onButtonLeftClick(Button b) {
-        if (b.getId() == 0) {
-            Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketFactionSelect(Faction.Human));
-            Core.getCore().setCurrentGui(null);
-        } else if (b.getId() == 1) {
-            Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketFactionSelect(Faction.Saimon));
-            Core.getCore().setCurrentGui(null);
-        } else if (b.getId() == 2) {
-            Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketFactionSelect(Faction.Engi));
-            Core.getCore().setCurrentGui(null);
-        }
     }
 
     private void updateRot(TextureObject ship, AxisAlignedBoundingBox aabb) {
