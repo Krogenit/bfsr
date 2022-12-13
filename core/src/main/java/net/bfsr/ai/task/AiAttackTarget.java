@@ -9,6 +9,7 @@ import net.bfsr.util.TimeUtils;
 import org.joml.Vector2f;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 public class AiAttackTarget extends AiTask {
@@ -35,13 +36,13 @@ public class AiAttackTarget extends AiTask {
         float distanceToTarget = targetPos.distance(pos);
 
         Vector2f shipSize = ship.getScale();
-        float shipSizeAverage = (shipSize.x + shipSize.y) / 2f;
+        float shipSizeAverage = (shipSize.x + shipSize.y) / 2.0f;
         float minTargetToShip = Float.MAX_VALUE;
 
         float maxDistance = 0;
         Vector2f pointToRotate = null;
         Vector2f targetSize = target.getScale();
-        float targetSizeAverage = (targetSize.x + targetSize.y) / 2f;
+        float targetSizeAverage = (targetSize.x + targetSize.y) / 2.0f;
 
         Vector2f targetVelocity = target.getVelocity();
 
@@ -69,7 +70,7 @@ public class AiAttackTarget extends AiTask {
                     Vector2f totalVelocity = new Vector2f(-x1, -y1).mul(bulletSpeed * TimeUtils.UPDATE_DELTA_TIME).mul(totalIterations);
                     Vector2f bulletFinalPos = new Vector2f(pos.x + xPos + totalVelocity.x, pos.y + yPos + totalVelocity.y);
 
-                    bulletToShip = bulletFinalPos.distance(pos) - 10.0f;
+                    bulletToShip = bulletFinalPos.distance(pos) - 2.0f;
 
                     if (distanceToTarget < bulletToShip) {
                         totalIterations *= distanceToTarget / bulletToShip;
@@ -82,7 +83,7 @@ public class AiAttackTarget extends AiTask {
                 float targetToShip = targetFinalPos.distance(pos);
 
                 if (targetToShip <= bulletToShip) {
-                    if (Math.abs(ship.getRotationDifference(targetFinalPos)) <= 0.1f + shipSizeAverage / 250f) {
+                    if (Math.abs(ship.getRotationDifference(targetFinalPos)) <= 0.1f + shipSizeAverage / 25.0f) {
                         slot.shoot();
                     }
                 }
@@ -97,11 +98,7 @@ public class AiAttackTarget extends AiTask {
             }
         }
 
-        if (pointToRotate != null) {
-            ship.rotateToVector(pointToRotate, ship.getEngine().getRotationSpeed());
-        } else {
-            ship.rotateToVector(targetPos, ship.getEngine().getRotationSpeed());
-        }
+        ship.rotateToVector(Objects.requireNonNullElse(pointToRotate, targetPos), ship.getEngine().getRotationSpeed());
 
         Direction[] dirs = ship.calculateDirectionsToOtherObject(targetPos.x, targetPos.y);
         if (minTargetToShip >= maxDistance) {
