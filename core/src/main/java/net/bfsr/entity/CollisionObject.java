@@ -250,10 +250,12 @@ public class CollisionObject extends TextureObject {
         Vector2f center = getPosition();
         double rot = Math.toDegrees(body.getTransform().getRotationAngle());
 
+        GL11.glBegin(GL11.GL_LINE_LOOP);
         GL11.glVertex2d(aabb.getMinX(), aabb.getMinY());
         GL11.glVertex2d(aabb.getMinX(), aabb.getMaxY());
         GL11.glVertex2d(aabb.getMaxX(), aabb.getMaxY());
         GL11.glVertex2d(aabb.getMaxX(), aabb.getMinY());
+        GL11.glEnd();
 
         GL11.glBegin(GL11.GL_LINE_LOOP);
         float x = (float) body.getLinearVelocity().x;
