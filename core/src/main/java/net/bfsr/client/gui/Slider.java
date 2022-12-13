@@ -18,6 +18,7 @@ import net.bfsr.math.Transformation;
 import net.bfsr.settings.EnumOption;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
+import org.lwjgl.opengl.GL11;
 
 import java.text.DecimalFormat;
 
@@ -53,10 +54,6 @@ public class Slider extends TextureObject {
         this.aabb = new AxisAlignedBoundingBox(new Vector2f(position.x + origin.x, position.y + origin.y), new Vector2f(position.x - origin.x, position.y - origin.y));
         setColor(color);
         setZoomFactor(EnumZoomFactor.Gui);
-    }
-
-    public void setOption(EnumOption option) {
-        this.option = option;
     }
 
     @Override
@@ -104,21 +101,30 @@ public class Slider extends TextureObject {
     public void render(BaseShader shader) {
         button.render(shader);
         super.render(shader);
+        shader.disable();
+        GL11.glBegin(GL11.GL_LINE_LOOP);
+        GL11.glVertex2f(aabb.getMin().x, aabb.getMin().y);
+        GL11.glVertex2f(aabb.getMax().x, aabb.getMin().y);
+        GL11.glVertex2f(aabb.getMax().x, aabb.getMax().y);
+        GL11.glVertex2f(aabb.getMin().x, aabb.getMax().y);
+        GL11.glEnd();
+        shader.enable();
     }
 
     @Override
     public void setPosition(float x, float y) {
         super.setPosition(x, y);
         button.setPosition(x, y);
-        aabb.setMinX(x + origin.x);
-        aabb.setMaxX(x - origin.x);
-        aabb.setMinY(y + origin.y);
-        aabb.setMaxY(y - origin.y);
 
         float maxXpos = button.getPosition().x + button.getScale().x / 2.0f - this.getScale().x / 2.0f - sideOut;
         float minXpos = button.getPosition().x - button.getScale().x / 2.0f + this.getScale().x / 2.0f + sideOut;
 
         this.position.x = value * (maxXpos - minXpos) + minXpos;
+
+        aabb.setMinX(position.x + origin.x);
+        aabb.setMaxX(position.x - origin.x);
+        aabb.setMinY(position.y + origin.y);
+        aabb.setMaxY(position.y - origin.y);
     }
 
     @Override
@@ -140,18 +146,6 @@ public class Slider extends TextureObject {
         if (moving) {
             Core.getCore().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
         }
-    }
-
-    public boolean isMoving() {
-        return isMoving;
-    }
-
-    public void setTextColor(int r, int g, int b, int a) {
-        button.setTextColor(r, g, b, a);
-    }
-
-    public Vector2f getPositionOnScreen() {
-        return position;
     }
 
     public void onMouseLeftClicked() {
