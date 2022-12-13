@@ -14,9 +14,7 @@ import net.bfsr.world.World;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL44;
-import org.lwjgl.opengl.GL45;
+import org.lwjgl.opengl.*;
 
 import java.nio.FloatBuffer;
 
@@ -271,6 +269,10 @@ public class Camera {
                 lastSendTime = time;
             }
         }
+    }
+
+    public void bind() {
+        GL30.glBindBufferBase(GL31.GL_UNIFORM_BUFFER, PROJECTION_MATRIX_UBO, projectionMatrixUBO);
     }
 
     public void resize(int width, int height) {

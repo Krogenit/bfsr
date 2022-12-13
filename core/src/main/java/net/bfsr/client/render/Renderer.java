@@ -108,6 +108,7 @@ public class Renderer {
 
     public void render(float interpolation) {
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+        camera.bind();
         fontRenderer.updateOrthographicMatrix(camera.getOrthographicMatrix());
         shader.enable();
         shader.enableTexture();

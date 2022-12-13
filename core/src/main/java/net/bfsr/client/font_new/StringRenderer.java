@@ -146,7 +146,6 @@ public class StringRenderer {
 
     public void render(String string, StringCache stringCache, int fontSize, float x, float y, float r, float g, float b, float a) {
         createString(glString, stringCache, string, x, y, fontSize, r, g, b, a);
-        GL30.glBindBufferBase(GL31.GL_UNIFORM_BUFFER, Camera.PROJECTION_MATRIX_UBO, Core.getCore().getRenderer().getCamera().getProjectionMatrixUBO());
         GL30.glBindBufferBase(GL31.GL_UNIFORM_BUFFER, Camera.VIEW_MATRIX_UBO, Core.getCore().getRenderer().getCamera().getGUIViewMatrixUBO());
         render(glString);
     }
