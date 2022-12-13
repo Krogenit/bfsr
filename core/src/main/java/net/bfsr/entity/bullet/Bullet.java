@@ -64,9 +64,9 @@ public class Bullet extends CollisionObject {
         double x1 = Math.cos(radRot);
         double y1 = Math.sin(radRot);
         Vector2 velocity = new Vector2(x1 * bulletSpeed, y1 * bulletSpeed);
-        body.setLinearVelocity(velocity.x * 50.0f, velocity.y * 50.0f);
+        body.setLinearVelocity(velocity.x, velocity.y);
         body.getTransform().setRotation(radRot);
-        body.getTransform().setTranslation(pos.x + velocity.x / 10.0f, pos.y + velocity.y / 10.0f);
+        body.getTransform().setTranslation(pos.x + velocity.x / 500.0f, pos.y + velocity.y / 500.0f);//TODO: посчитать точку появления пули правильно
     }
 
     @Override

@@ -66,7 +66,7 @@ public class AiAttackTarget extends AiTask {
                     float bulletSpeed = slot.getBulletSpeed();
                     int totalIterations = (int) (1.5f / (slot.getAlphaReducer() * TimeUtils.UPDATE_DELTA_TIME));
 
-                    Vector2f totalVelocity = new Vector2f(-x1, -y1).mul(bulletSpeed * 50.0f * TimeUtils.UPDATE_DELTA_TIME).mul(totalIterations);
+                    Vector2f totalVelocity = new Vector2f(-x1, -y1).mul(bulletSpeed * TimeUtils.UPDATE_DELTA_TIME).mul(totalIterations);
                     Vector2f bulletFinalPos = new Vector2f(pos.x + xPos + totalVelocity.x, pos.y + yPos + totalVelocity.y);
 
                     bulletToShip = bulletFinalPos.distance(pos) - 10.0f;
@@ -75,7 +75,7 @@ public class AiAttackTarget extends AiTask {
                         totalIterations *= distanceToTarget / bulletToShip;
                     }
 
-                    Vector2f totalTargetVelocity = new Vector2f(targetVelocity.x * (TimeUtils.UPDATE_DELTA_TIME), targetVelocity.y * TimeUtils.UPDATE_DELTA_TIME).mul(totalIterations);
+                    Vector2f totalTargetVelocity = new Vector2f(targetVelocity.x * TimeUtils.UPDATE_DELTA_TIME, targetVelocity.y * TimeUtils.UPDATE_DELTA_TIME).mul(totalIterations);
                     targetFinalPos = new Vector2f(targetPos.x + totalTargetVelocity.x, targetPos.y + totalTargetVelocity.y);
                 }
 

@@ -17,13 +17,12 @@ import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 public class BulletPlasmSmall extends Bullet {
-
     public BulletPlasmSmall(WorldServer world, int id, float radRot, Vector2f pos, Ship ship) {
-        super(world, id, 1.5f, radRot, pos, new Vector2f(2.4f, 2.4f), ship, new Vector4f(0.5f, 0.5f, 1.0f, 1.5f), 1.68f, new BulletDamage(5.0f, 2.5f, 2.5f));
+        super(world, id, 75.0f, radRot, pos, new Vector2f(2.4f, 2.4f), ship, new Vector4f(0.5f, 0.5f, 1.0f, 1.5f), 1.68f, new BulletDamage(5.0f, 2.5f, 2.5f));
     }
 
     public BulletPlasmSmall(WorldClient world, int id, float radRot, Vector2f pos, Ship ship) {
-        super(world, id, 1.5f, radRot, pos, new Vector2f(2.4f, 2.4f), ship, TextureRegister.smallPlasm, new Vector4f(0.5f, 0.5f, 1.0f, 1.5f), 1.68f, new BulletDamage(5.0f, 2.5f, 2.5f));
+        super(world, id, 75.0f, radRot, pos, new Vector2f(2.4f, 2.4f), ship, TextureRegister.smallPlasm, new Vector4f(0.5f, 0.5f, 1.0f, 1.5f), 1.68f, new BulletDamage(5.0f, 2.5f, 2.5f));
     }
 
     @Override
@@ -57,5 +56,4 @@ public class BulletPlasmSmall extends Bullet {
             ParticleSpawner.spawnLight(pos, size, new Vector4f(color.x, color.y, color.z, color.w / 2.0f), 30.0f, false, EnumParticlePositionType.Background);
         }
     }
-
 }

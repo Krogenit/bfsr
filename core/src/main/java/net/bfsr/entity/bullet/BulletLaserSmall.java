@@ -17,13 +17,12 @@ import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 public class BulletLaserSmall extends Bullet {
-
     public BulletLaserSmall(WorldServer world, int id, float radRot, Vector2f pos, Ship ship) {
-        super(world, id, 1.5f, radRot, pos, new Vector2f(2.4f, 2.4f), ship, new Vector4f(1.0f, 0.5f, 0.5f, 1.5f), 1.68f, new BulletDamage(2.5f, 2.5f, 5.0f));
+        super(world, id, 75.0f, radRot, pos, new Vector2f(2.4f, 2.4f), ship, new Vector4f(1.0f, 0.5f, 0.5f, 1.5f), 1.68f, new BulletDamage(2.5f, 2.5f, 5.0f));
     }
 
     public BulletLaserSmall(WorldClient world, int id, float radRot, Vector2f pos, Ship ship) {
-        super(world, id, 1.5f, radRot, pos, new Vector2f(2.4f, 2.4f), ship, TextureRegister.smallLaser, new Vector4f(1.0f, 0.5f, 0.5f, 1.5f), 1.68f, new BulletDamage(2.5f, 2.5f, 5.0f));
+        super(world, id, 75.0f, radRot, pos, new Vector2f(2.4f, 2.4f), ship, TextureRegister.smallLaser, new Vector4f(1.0f, 0.5f, 0.5f, 1.5f), 1.68f, new BulletDamage(2.5f, 2.5f, 5.0f));
     }
 
     @Override
