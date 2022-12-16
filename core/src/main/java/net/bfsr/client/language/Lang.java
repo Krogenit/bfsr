@@ -1,6 +1,7 @@
 package net.bfsr.client.language;
 
 import net.bfsr.core.Core;
+import net.bfsr.util.PathHelper;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -15,7 +16,7 @@ public class Lang {
     private static final List<String> LANGUAGES = new ArrayList<>();
 
     public static void load() {
-        File folder = new File("content", "lang");
+        File folder = new File(PathHelper.content, "lang");
         if (folder.exists()) {
             try {
                 for (final File file : folder.listFiles()) {
