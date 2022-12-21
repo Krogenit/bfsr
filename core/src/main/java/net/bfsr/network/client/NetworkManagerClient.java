@@ -1,10 +1,7 @@
 package net.bfsr.network.client;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelException;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
+import io.netty.channel.*;
 import io.netty.channel.local.LocalChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
@@ -21,8 +18,6 @@ import java.net.InetAddress;
 import java.net.SocketAddress;
 
 public class NetworkManagerClient extends NetworkManager {
-
-    private final Core core = Core.getCore();
     @Setter
     private Gui currentGui;
     private long lastPingCheck;
@@ -65,17 +60,17 @@ public class NetworkManagerClient extends NetworkManager {
     public void onDisconnect(String reason) {
         switch (connectionState) {
             case PLAY:
-                this.core.setCurrentGui(new GuiDisconnected(new GuiMainMenu(), "disconnect.lost", reason));
+                Core.getCore().setCurrentGui(new GuiDisconnected(new GuiMainMenu(), "disconnect.lost", reason));
                 break;
             case LOGIN:
-                this.core.setCurrentGui(new GuiDisconnected(currentGui, "connect.failed", reason));
+                Core.getCore().setCurrentGui(new GuiDisconnected(currentGui, "connect.failed", reason));
                 break;
         }
     }
 
     public static NetworkManagerClient provideLanClient(InetAddress netAdress, int port, Gui currentGui) {
         final NetworkManagerClient networkmanager = new NetworkManagerClient(currentGui);
-        (new Bootstrap()).group(networkmanager.getEventLoops()).handler(new ChannelInitializer<Channel>() {
+        ChannelFuture channelFuture = (new Bootstrap()).group(networkmanager.getEventLoops()).handler(new ChannelInitializer<>() {
 
             protected void initChannel(Channel channel) {
                 try {
@@ -96,18 +91,34 @@ public class NetworkManagerClient extends NetworkManager {
                         .addLast("encoder", new PacketEncoder(NetworkManager.statistics))
                         .addLast("packet_handler", networkmanager);
             }
-        }).channel(NioSocketChannel.class).connect(netAdress, port).syncUninterruptibly();
+        }).channel(NioSocketChannel.class).connect(netAdress, port);
+
+        try {
+            channelFuture.syncUninterruptibly();
+        } catch (Exception e) {
+            networkmanager.getEventLoops().shutdownGracefully();
+            throw e;
+        }
+
         return networkmanager;
     }
 
     public static NetworkManagerClient provideLocalClient(SocketAddress socketAddress, Gui currentGui) {
         final NetworkManagerClient networkmanager = new NetworkManagerClient(currentGui);
-        (new Bootstrap()).group(networkmanager.getEventLoops()).handler(new ChannelInitializer<Channel>() {
+        ChannelFuture channelFuture = (new Bootstrap()).group(networkmanager.getEventLoops()).handler(new ChannelInitializer<Channel>() {
 
             protected void initChannel(Channel channel) {
                 channel.pipeline().addLast("packet_handler", networkmanager);
             }
-        }).channel(LocalChannel.class).connect(socketAddress).syncUninterruptibly();
+        }).channel(LocalChannel.class).connect(socketAddress);
+
+        try {
+            channelFuture.syncUninterruptibly();
+        } catch (Exception e) {
+            networkmanager.getEventLoops().shutdownGracefully();
+            throw e;
+        }
+
         return networkmanager;
     }
 }
