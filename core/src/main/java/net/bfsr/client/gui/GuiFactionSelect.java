@@ -1,14 +1,13 @@
 package net.bfsr.client.gui;
 
-import net.bfsr.client.font.FontRegistry;
-import net.bfsr.client.font.GUIText;
 import net.bfsr.client.gui.button.Button;
-import net.bfsr.client.gui.button.ButtonBase;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.particle.EnumParticlePositionType;
+import net.bfsr.client.render.font.FontType;
+import net.bfsr.client.render.font.string.StaticString;
+import net.bfsr.client.render.font.string.StringObject;
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.texture.TextureRegister;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
@@ -17,11 +16,8 @@ import net.bfsr.math.RotationHelper;
 import net.bfsr.math.Transformation;
 import net.bfsr.network.packet.client.PacketFactionSelect;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 public class GuiFactionSelect extends Gui {
-
     private final TextureObject fon;
     private final TextureObject logo;
     private final TextureObject logoText;
@@ -31,8 +27,8 @@ public class GuiFactionSelect extends Gui {
     private final TextureObject shipEngi;
     private AxisAlignedBoundingBox aabbHuman, aabbSaimon, aabbEngi;
 
-    private GUIText mainText;
-    private GUIText humanDisc, saimonDisc, engiDisc;
+    private StringObject mainText;
+    private StringObject humanDisc, saimonDisc, engiDisc;
 
     public GuiFactionSelect() {
         fon = new GuiTextureObject(TextureRegister.guiFactionSelect);
@@ -46,27 +42,22 @@ public class GuiFactionSelect extends Gui {
     }
 
     @Override
-    public void init() {
-        super.init();
-
-        Button b = new ButtonBase(0, new Vector2f(center.x - 309, center.y + 230), "gui.selectFaction.human");
-        b.setOnMouseClickedRunnable(() -> {
+    protected void initElements() {
+        Button b = new Button(center.x - 309, center.y + 230, "gui.selectFaction.human", () -> {
             Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketFactionSelect(Faction.Human));
             Core.getCore().setCurrentGui(null);
         });
-        buttons.add(b);
-        b = new ButtonBase(1, new Vector2f(center.x - 1, center.y + 230), "gui.selectFaction.saimon");
-        b.setOnMouseClickedRunnable(() -> {
+        registerGuiObject(b);
+        b = new Button(center.x - 1, center.y + 230, "gui.selectFaction.saimon", () -> {
             Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketFactionSelect(Faction.Saimon));
             Core.getCore().setCurrentGui(null);
         });
-        buttons.add(b);
-        b = new ButtonBase(2, new Vector2f(center.x + 309, center.y + 230), "gui.selectFaction.engi");
-        b.setOnMouseClickedRunnable(() -> {
+        registerGuiObject(b);
+        b = new Button(center.x + 309, center.y + 230, "gui.selectFaction.engi", () -> {
             Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketFactionSelect(Faction.Engi));
             Core.getCore().setCurrentGui(null);
         });
-        buttons.add(b);
+        registerGuiObject(b);
 
         fon.setPosition(new Vector2f(center.x, center.y));
         fon.setScale(1024, 600);
@@ -93,20 +84,12 @@ public class GuiFactionSelect extends Gui {
         aabbEngi = new AxisAlignedBoundingBox(Transformation.getOffsetByScale(new Vector2f(center.x + 160, center.y - 88)),
                 Transformation.getOffsetByScale(new Vector2f(center.x + 460, center.y + 260)));
 
-        mainText = new GUIText(Lang.getString("gui.selectFaction.maintext"), new Vector2f(1, 1),
-                Transformation.getOffsetByScale(new Vector2f(center.x, center.y - 110)),
-                new Vector4f(1, 1, 1, 1), true, EnumParticlePositionType.Gui);
+        mainText = new StaticString(FontType.XOLONIUM, Lang.getString("gui.selectFaction.maintext"), center.x, center.y - 110, 16).compile();
 
-        float discFontSize = 0.7f;
-        humanDisc = new GUIText(Lang.getString("gui.selectFaction.humanDisc"), new Vector3f(discFontSize, discFontSize, 1.1f), FontRegistry.XOLONIUM,
-                Transformation.getOffsetByScale(new Vector2f(center.x - 450, center.y - 80)), new Vector4f(1, 1, 1, 1),
-                0.21f, false, EnumParticlePositionType.Gui);
-        saimonDisc = new GUIText(Lang.getString("gui.selectFaction.saimonDisc"), new Vector3f(discFontSize, discFontSize, 1.1f), FontRegistry.XOLONIUM,
-                Transformation.getOffsetByScale(new Vector2f(center.x - 142, center.y - 80)), new Vector4f(1, 1, 1, 1),
-                0.21f, false, EnumParticlePositionType.Gui);
-        engiDisc = new GUIText(Lang.getString("gui.selectFaction.engiDisc"), new Vector3f(discFontSize, discFontSize, 1.1f), FontRegistry.XOLONIUM,
-                Transformation.getOffsetByScale(new Vector2f(center.x + 166, center.y - 80)), new Vector4f(1, 1, 1, 1),
-                0.21f, false, EnumParticlePositionType.Gui);
+        int discFontSize = 14;
+        humanDisc = new StaticString(FontType.XOLONIUM, Lang.getString("gui.selectFaction.humanDisc"), center.x - 450, center.y - 80, discFontSize).compile();
+        saimonDisc = new StaticString(FontType.XOLONIUM, Lang.getString("gui.selectFaction.saimonDisc"), center.x - 142, center.y - 80, discFontSize).compile();
+        engiDisc = new StaticString(FontType.XOLONIUM, Lang.getString("gui.selectFaction.engiDisc"), center.x + 166, center.y - 80, discFontSize).compile();
     }
 
     private void updateRot(TextureObject ship, AxisAlignedBoundingBox aabb) {

@@ -1,141 +1,78 @@
 package net.bfsr.client.gui;
 
-import net.bfsr.client.gui.button.Button;
-import net.bfsr.client.gui.input.InputBox;
+import lombok.NoArgsConstructor;
 import net.bfsr.client.shader.BaseShader;
 import net.bfsr.core.Core;
-import org.joml.Vector2f;
+import org.joml.Vector2i;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Gui {
+@NoArgsConstructor
+public abstract class Gui {
+    protected Gui parentGui;
     protected int width, height;
-    protected List<Button> buttons = new ArrayList<>();
-    protected List<Slider> sliders = new ArrayList<>();
-    protected List<InputBox> inputBoxes = new ArrayList<>();
-    protected List<Scroll> scrolls = new ArrayList<>();
-    protected Vector2f center;
+    protected final Vector2i center = new Vector2i();
+    protected final List<IGuiObject> guiObjects = new ArrayList<>();
 
-    public Gui() {
-        center = new Vector2f();
+    protected Gui(Gui parentGui) {
+        this.parentGui = parentGui;
     }
 
     public void init() {
         width = Core.getCore().getWidth();
         height = Core.getCore().getHeight();
-        center.x = width / 2.0f;
-        center.y = height / 2.0f;
+        updateCenter();
+        initElements();
+        resize(width, height);
     }
 
-    public void textInput(int key) {
-        int size = inputBoxes.size();
-        for (int i = 0; i < size; i++) {
-            InputBox inputBox = inputBoxes.get(i);
-            inputBox.textInput(key);
-        }
+    private void updateCenter() {
+        center.x = width / 2;
+        center.y = height / 2;
+    }
+
+    protected abstract void initElements();
+
+    public void registerGuiObject(IGuiObject guiObject) {
+        guiObjects.add(guiObject);
+    }
+
+    public void unregisterGuiObject(IGuiObject guiObject) {
+        guiObjects.remove(guiObject);
     }
 
     public void update() {
-        int size = buttons.size();
+        int size = guiObjects.size();
         for (int i = 0; i < size; i++) {
-            Button button = buttons.get(i);
-            button.update();
-        }
-
-        size = sliders.size();
-        for (int i = 0; i < size; i++) {
-            Slider slider = sliders.get(i);
-            slider.update();
-        }
-
-        size = inputBoxes.size();
-        for (int i = 0; i < size; i++) {
-            InputBox boxes = inputBoxes.get(i);
-            boxes.update();
-        }
-
-        size = scrolls.size();
-        for (int i = 0; i < size; i++) {
-            Scroll scroll = scrolls.get(i);
-            scroll.update();
+            guiObjects.get(i).update();
         }
     }
 
     public void render(BaseShader shader) {
-        int size = buttons.size();
+        int size = guiObjects.size();
         for (int i = 0; i < size; i++) {
-            Button button = buttons.get(i);
-            button.render(shader);
-        }
-
-        size = sliders.size();
-        for (int i = 0; i < size; i++) {
-            Slider slider = sliders.get(i);
-            slider.render(shader);
-        }
-
-        size = inputBoxes.size();
-        for (int i = 0; i < size; i++) {
-            InputBox inputBox = inputBoxes.get(i);
-            inputBox.render(shader);
-        }
-
-        size = scrolls.size();
-        for (int i = 0; i < size; i++) {
-            Scroll scroll = scrolls.get(i);
-            scroll.render(shader);
+            guiObjects.get(i).render(shader);
         }
     }
 
     public void onMouseLeftClicked() {
-        for (int i = 0; i < buttons.size(); i++) {
-            Button b = buttons.get(i);
-            if (b.isIntersects()) {
-                b.leftClick();
-            }
-        }
-
-        int size = sliders.size();
-        for (int i = 0; i < size; i++) {
-            Slider slider = sliders.get(i);
-            slider.onMouseLeftClicked();
-        }
-
-        size = scrolls.size();
-        for (int i = 0; i < size; i++) {
-            Scroll scroll = scrolls.get(i);
-            scroll.onMouseLeftClicked();
-        }
-
-        size = inputBoxes.size();
-        for (int i = 0; i < size; i++) {
-            InputBox inputBox = inputBoxes.get(i);
-            inputBox.onMouseLeftClicked();
+        for (int i = 0; i < guiObjects.size(); i++) {
+            guiObjects.get(i).onMouseLeftClick();
         }
     }
 
     public void onMouseLeftRelease() {
-        int size = scrolls.size();
+        int size = guiObjects.size();
         for (int i = 0; i < size; i++) {
-            Scroll scroll = scrolls.get(i);
-            scroll.onMouseLeftRelease();
-        }
-
-        size = sliders.size();
-        for (int i = 0; i < size; i++) {
-            Slider slider = sliders.get(i);
-            slider.onMouseLeftRelease();
+            guiObjects.get(i).onMouseLeftRelease();
         }
     }
 
     public void onMouseRightClicked() {
-        int size = buttons.size();
+        int size = guiObjects.size();
         for (int i = 0; i < size; i++) {
-            Button b = buttons.get(i);
-            if (b.isIntersects()) {
-                b.rightClick();
-            }
+            guiObjects.get(i).onMouseRightClick();
         }
     }
 
@@ -144,45 +81,41 @@ public class Gui {
     }
 
     public void onMouseScroll(float y) {
-        int size = scrolls.size();
+        int size = guiObjects.size();
         for (int i = 0; i < size; i++) {
-            Scroll scroll = scrolls.get(i);
-            scroll.scroll(y);
+            guiObjects.get(i).scroll(y);
         }
     }
 
     public void resize(int width, int height) {
-        clear();
-        init();
+        this.width = width;
+        this.height = height;
+        updateCenter();
+        int size = guiObjects.size();
+        for (int i = 0; i < size; i++) {
+            guiObjects.get(i).resize(width, height);
+        }
     }
 
     public void input(int key) {
-        int size = inputBoxes.size();
+        int size = guiObjects.size();
         for (int i = 0; i < size; i++) {
-            InputBox in = inputBoxes.get(i);
-            in.input(key);
+            guiObjects.get(i).input(key);
+        }
+    }
+
+    public void textInput(int key) {
+        int size = guiObjects.size();
+        for (int i = 0; i < size; i++) {
+            guiObjects.get(i).textInput(key);
         }
     }
 
     public void clear() {
-        int size = buttons.size();
+        int size = guiObjects.size();
         for (int i = 0; i < size; i++) {
-            Button b = buttons.get(i);
-            b.clear();
+            guiObjects.get(i).clear();
         }
-        size = sliders.size();
-        for (int i = 0; i < size; i++) {
-            Slider b = sliders.get(i);
-            b.clear();
-        }
-        size = inputBoxes.size();
-        for (int i = 0; i < size; i++) {
-            InputBox b = inputBoxes.get(i);
-            b.clear();
-        }
-        buttons.clear();
-        sliders.clear();
-        inputBoxes.clear();
-        scrolls.clear();
+        guiObjects.clear();
     }
 }

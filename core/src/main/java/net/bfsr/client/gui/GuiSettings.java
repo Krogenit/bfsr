@@ -1,110 +1,132 @@
 package net.bfsr.client.gui;
 
-import net.bfsr.client.font.GUIText;
 import net.bfsr.client.gui.button.Button;
-import net.bfsr.client.gui.button.ButtonBase;
+import net.bfsr.client.gui.scroll.Scroll;
+import net.bfsr.client.input.Mouse;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.render.Renderer;
+import net.bfsr.client.render.font.FontType;
+import net.bfsr.client.render.font.StringOffsetType;
+import net.bfsr.client.render.font.string.StaticString;
+import net.bfsr.client.render.font.string.StringObject;
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.texture.TextureRegister;
+import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.core.Core;
 import net.bfsr.math.Transformation;
-import net.bfsr.settings.ClientSettings;
 import net.bfsr.settings.EnumOption;
-import org.joml.Vector2f;
-import org.joml.Vector4f;
+import net.bfsr.settings.SettingsCategory;
+import net.bfsr.settings.option.SettingsOption;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11C;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 public class GuiSettings extends Gui {
-    private final Gui prevGui;
-    private boolean isInGame;
-    private final List<GUIText> sections;
-    private final Scroll scroll;
-    private final GUIText mainText;
-    private boolean firstInit;
+    private final boolean isInGame;
+    private final List<StringObject> sections = new ArrayList<>();
+    private final Scroll scroll = new Scroll();
+    private final StringObject mainText = new StaticString(FontType.XOLONIUM, Lang.getString("gui.settings.mainText"));
+    private final SimpleGuiObject backgroundTop = new SimpleGuiObject();
+    private final SimpleGuiObject backgroundDown = new SimpleGuiObject();
+    private final List<SimpleGuiObject> scissorAffected = new ArrayList<>();
+    private Button saveButton;
+    private final EnumOption[] options = EnumOption.values();
+    private final SettingsOption<?>[] lastOptions = new SettingsOption[options.length];
 
-    public GuiSettings(Gui prevGui) {
-        this.prevGui = prevGui;
-        this.scroll = new Scroll(new Vector2f(), new Vector2f());
-        this.mainText = new GUIText(Lang.getString("gui.settings.mainText"), new Vector2f(), new Vector4f(1, 1, 1, 1), EnumParticlePositionType.Gui);
-
-        this.sections = new ArrayList<>();
+    public GuiSettings(Gui parentGui) {
+        super(parentGui);
+        isInGame = Core.getCore().getWorld() != null;
+        mainText.setStringOffsetType(StringOffsetType.CENTERED);
+        for (int i = 0; i < lastOptions.length; i++) {
+            lastOptions[i] = new SettingsOption<>(options[i].getValue());
+        }
     }
 
     @Override
-    public void init() {
-        super.init();
-        isInGame = Core.getCore().getWorld() != null;
+    protected void initElements() {
+        int backgroundHeight = 60;
+        registerGuiObject(backgroundTop.setColor(0.1f, 0.2f, 0.4f, 1.0f).atUpperLeftCorner(0, 0).setFullScreenWidth().setHeight(backgroundHeight));
+        registerGuiObject(backgroundDown.setColor(0.1f, 0.2f, 0.4f, 1.0f).atBottomLeftCorner(0, -backgroundHeight).setFullScreenWidth().setHeight(backgroundHeight));
+        registerGuiObject(mainText.setFontSize(24).atTop(0, 40));
+        mainText.compile();
 
-        mainText.setPosition(center.x, 50 * Transformation.guiScale.y);
-        mainText.setFontSize(Transformation.getScale(1.25f, 1.25f));
-        mainText.updateText(Lang.getString("gui.settings.mainText"));
-
-        float buttonXOffset = 250;
-        float baseYOffset = 60;
-        float baseY = 100 - (scroll.getMaxValue() - scroll.getValue()) * baseYOffset;
-        float x;
-        float y = baseY * Transformation.guiScale.y;
-        float visible = 9f;
+        int buttonXOffset = 250;
+        int baseYOffset = 60;
+        int baseY = 90;
+        int x;
+        int y = baseY;
+        int halfBackgroundHeight = backgroundHeight << 1;
         float minY = 100;
-        float maxY = minY + baseYOffset * Transformation.guiScale.y * visible;
-        Vector2f fontSectionSize = Transformation.getScale(1f, 1f);
+        float maxY = height - backgroundHeight;
+        int fontSectionSize = 20;
+        int buttonWidth = 450;
+        int buttonHeight = 50;
 
-        int countItems = 0;
-        for (String section : ClientSettings.optionsByCategory.keySet()) {
-            List<EnumOption> options = ClientSettings.optionsByCategory.get(section);
+        EnumMap<SettingsCategory, List<EnumOption>> optionsByCategory = new EnumMap<>(SettingsCategory.class);
+        EnumOption[] enumOptions = EnumOption.values();
+        for (int i = 0; i < enumOptions.length; i++) {
+            EnumOption option = enumOptions[i];
+            List<EnumOption> options = optionsByCategory.computeIfAbsent(option.getCategory(), settingsCategory -> new ArrayList<>(1));
+            options.add(option);
+            optionsByCategory.put(option.getCategory(), options);
+        }
 
-            x = center.x;
+        for (Map.Entry<SettingsCategory, List<EnumOption>> entry : optionsByCategory.entrySet()) {
+            List<EnumOption> options = entry.getValue();
 
-            if (y >= minY && y < maxY) {
-                GUIText sectionText = new GUIText(Lang.getString("settings.section." + section), fontSectionSize, new Vector2f(x, y), new Vector4f(1, 1, 1, 1), true, EnumParticlePositionType.Gui);
-                this.sections.add(sectionText);
-            }
-
-//			y += baseYOffset * Transformation.guiScale.y;
-            countItems++;
+            StringObject sectionText = new StaticString(FontType.XOLONIUM, Lang.getString("settings.section." + entry.getKey().getCategoryName()), fontSectionSize, StringOffsetType.CENTERED);
+            sections.add(sectionText);
+            scroll.registerGuiObject(sectionText);
+            registerGuiObject(sectionText);
+            sectionText.atTop(0, y);
+            sectionText.compile();
 
             for (int i = 0; i < options.size(); i++) {
                 EnumOption option = options.get(i);
 
                 if (i % 2 == 0) {
-                    countItems++;
-                    x = center.x - buttonXOffset * Transformation.guiScale.x;
-                    y += baseYOffset * Transformation.guiScale.y;
-                } else x = center.x + buttonXOffset * Transformation.guiScale.x;
+                    x = -buttonXOffset - buttonWidth / 2;
+                    y += baseYOffset;
+                } else {
+                    x = buttonXOffset - buttonWidth / 2;
+                }
 
-                if (y >= minY && y < maxY) {
-                    if (option.getType() == float.class || option.getType() == int.class) {
-                        Slider slider = new Slider(new Vector2f(x, y), new Vector2f(450, 50), new Vector4f(1, 1, 1, 1), option);
-                        slider.setPosition(x, y);
-                        sliders.add(slider);
-                    } else {
-                        Button button = new Button(1, TextureRegister.guiButtonBase, new Vector2f(x, y), new Vector2f(450, 50), option);
-                        buttons.add(button);
-                    }
+                if (option.useSlider()) {
+                    Slider slider = new Slider(x, y - 35, buttonWidth, buttonHeight, option);
+                    slider.atTop(x, y - 35);
+                    registerGuiObject(slider);
+                    scroll.registerGuiObject(slider);
+                    scissorAffected.add(slider);
+                } else {
+                    Button button = new Button(TextureRegister.guiButtonBase, x, y - 35, buttonWidth, buttonHeight, Lang.getString("settings." + option.getOptionName()) + ": " + option.getValue(), 20);
+                    button.atTop(x, y - 35);
+                    button.setOnMouseClickedRunnable(() -> {
+                        option.changeValue();
+                        button.setString(Lang.getString("settings." + option.getOptionName()) + ": " + option.getValue());
+                    });
+                    button.setIntersectsCheckMethod(() -> Mouse.getPosition().y > minY && Mouse.getPosition().y < maxY && button.isIntersects(Mouse.getPosition().x, Mouse.getPosition().y));
+                    registerGuiObject(button);
+                    scroll.registerGuiObject(button);
+                    scissorAffected.add(button);
                 }
             }
 
-            y += baseYOffset * Transformation.guiScale.y;
+            y += baseYOffset;
         }
 
-        if (!firstInit) scroll.setValue(countItems - visible);
-        scroll.setVisible(visible);
-        scroll.setMaxValue(countItems);
-        scroll.setPosition(width - 25, center.y);
-        scroll.setScale(25f, 750f);
-        scrolls.add(scroll);
-
-        x = center.x;
-        y = center.y + 310;
-        Button button = new ButtonBase(0, new Vector2f(x, y), "gui.settings.save");
-        button.setOnMouseClickedRunnable(() -> Core.getCore().setCurrentGui(prevGui));
-        buttons.add(button);
-        firstInit = true;
+        scroll.setTotalHeight(y - baseY).setViewHeightResizeFunction((width, height) -> height - halfBackgroundHeight)
+                .setRepositionConsumer((width, height) -> scroll.setPosition(width - 25, height / 2 - (height - halfBackgroundHeight) / 2))
+                .setWidth(25).setHeightResizeConsumer((width, height) -> height - halfBackgroundHeight);
+        registerGuiObject(scroll);
+        saveButton = new Button(Lang.getString("gui.settings.save"), 20, () -> {
+            Core.getCore().getSettings().saveSettings();
+            Core.getCore().setCurrentGui(parentGui);
+        });
+        registerGuiObject(saveButton.atBottom(-150, -55));
     }
 
     @Override
@@ -112,45 +134,47 @@ public class GuiSettings extends Gui {
         super.input(key);
 
         if (key == GLFW.GLFW_KEY_ESCAPE) {
-            Core.getCore().setCurrentGui(prevGui);
+            restoreSettings();
+            Core.getCore().setCurrentGui(parentGui);
         }
     }
 
-    @Override
-    public void onMouseScroll(float y) {
-        super.onMouseScroll(y);
-        if (y != 0) {
-            clear();
-            init();
+    private void restoreSettings() {
+        for (int i = 0; i < options.length; i++) {
+            options[i].setValue(lastOptions[i].getValue());
         }
     }
 
     @Override
     public void render(BaseShader shader) {
         if (isInGame) {
-            shader.setColor(new Vector4f(0, 0, 0, 0.5f));
-            shader.setModelViewMatrix(Transformation.getModelViewMatrixGui(width / 2.0F, height / 2.0f, 0, width, height));
+            shader.setColor(0.0f, 0.0f, 0.0f, 0.5f);
+            shader.setModelMatrix(Transformation.getModelViewMatrixGui(width / 2.0F, height / 2.0f, 0, width, height).get(ShaderProgram.MATRIX_BUFFER));
             shader.disableTexture();
-            Renderer.quad.render();
+            Renderer.centeredQuad.renderIndexed();
         }
 
-        if (scroll.isMoving()) {
-            clear();
-            init();
+        backgroundTop.render(shader);
+        backgroundDown.render(shader);
+        mainText.render();
+
+        GL11C.glEnable(GL11C.GL_SCISSOR_TEST);
+        GL11C.glScissor(0, 60, width, Math.max(height - 120, 0));
+
+        for (int i = 0; i < sections.size(); i++) {
+            sections.get(i).render();
         }
 
-        super.render(shader);
-    }
+        shader.enable();
 
-    @Override
-    public void clear() {
-        super.clear();
-        int size = sections.size();
+        int size = scissorAffected.size();
         for (int i = 0; i < size; i++) {
-            GUIText text = sections.get(i);
-            text.clear();
+            scissorAffected.get(i).render(shader);
         }
-        sections.clear();
-        mainText.clear();
+
+        GL11C.glDisable(GL11C.GL_SCISSOR_TEST);
+
+        saveButton.render(shader);
+        scroll.render(shader);
     }
 }

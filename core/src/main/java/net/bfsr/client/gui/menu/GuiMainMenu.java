@@ -2,56 +2,25 @@ package net.bfsr.client.gui.menu;
 
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.GuiSettings;
-import net.bfsr.client.gui.GuiTextureObject;
-import net.bfsr.client.gui.button.ButtonBase;
+import net.bfsr.client.gui.TexturedGuiObject;
+import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.multiplayer.GuiConnect;
-import net.bfsr.client.loader.TextureLoader;
-import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.texture.TextureRegister;
+import net.bfsr.client.language.Lang;
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.core.Core;
-import net.bfsr.entity.TextureObject;
-import org.joml.Vector2f;
 
 public class GuiMainMenu extends Gui {
-    private final TextureObject logoText, logo;
-
-    public GuiMainMenu() {
-        logoText = new GuiTextureObject(TextureLoader.getTexture(TextureRegister.guiBfsrText2));
-        logo = new GuiTextureObject(TextureLoader.getTexture(TextureRegister.guiLogoBFSR));
-    }
-
     @Override
-    public void init() {
-        super.init();
+    protected void initElements() {
+        registerGuiObject(new TexturedGuiObject(TextureRegister.guiLogoBFSR).atCenter(-90, -240).setSize(180, 180));
+        registerGuiObject(new TexturedGuiObject(TextureRegister.guiBfsrText2).atCenter(-345, -189).setSize(690, 79));
 
-        logo.setPosition(center.x, center.y - 150);
-        logo.setScale(180.0f, 180.0f);
-
-        logoText.setPosition(center.x, center.y - 150);
-        logoText.setScale(1553.0f / 2.25f, 158.0f / 2.0f);
-
-        ButtonBase button = new ButtonBase(0, new Vector2f(center.x, center.y - 45), new Vector2f(260, 40), "gui.mainmenu.singleplayer", new Vector2f(0.9f, 0.8f));
-        button.setOnMouseClickedRunnable(() -> {
-            Core.getCore().startSingleplayer();
-            Core.getCore().setCurrentGui(null);
-        });
-        buttons.add(button);
-        button = new ButtonBase(1, new Vector2f(center.x, center.y), new Vector2f(260, 40), "gui.mainmenu.multiplayer", new Vector2f(0.9f, 0.8f));
-        button.setOnMouseClickedRunnable(() -> Core.getCore().setCurrentGui(new GuiConnect(this)));
-        buttons.add(button);
-        button = new ButtonBase(2, new Vector2f(center.x, center.y + 45), new Vector2f(260, 40), "gui.mainmenu.options", new Vector2f(0.9f, 0.8f));
-        button.setOnMouseClickedRunnable(() -> Core.getCore().setCurrentGui(new GuiSettings(this)));
-        buttons.add(button);
-        button = new ButtonBase(3, new Vector2f(center.x, center.y + 90), new Vector2f(260, 40), "gui.mainmenu.quit", new Vector2f(0.9f, 0.8f));
-        button.setOnMouseClickedRunnable(() -> Core.getCore().stop());
-        buttons.add(button);
-    }
-
-    @Override
-    public void render(BaseShader shader) {
-        shader.enable();
-        logo.render(shader);
-        logoText.render(shader);
-        super.render(shader);
+        int buttonWidth = 260;
+        int buttonHeight = 40;
+        int x = -buttonWidth / 2;
+        registerGuiObject(new Button(Lang.getString("gui.mainmenu.singleplayer"), () -> Core.getCore().startSinglePlayer()).atCenter(x, -45).setSize(buttonWidth, buttonHeight));
+        registerGuiObject(new Button(Lang.getString("gui.mainmenu.multiplayer"), () -> Core.getCore().setCurrentGui(new GuiConnect(this))).atCenter(x, 0).setSize(260, 40));
+        registerGuiObject(new Button(Lang.getString("gui.mainmenu.options"), () -> Core.getCore().setCurrentGui(new GuiSettings(this))).atCenter(x, 45).setSize(260, 40));
+        registerGuiObject(new Button(Lang.getString("gui.mainmenu.quit"), () -> Core.getCore().stop()).atCenter(x, 90).setSize(260, 40));
     }
 }

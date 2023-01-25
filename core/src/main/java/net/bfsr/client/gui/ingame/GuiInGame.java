@@ -2,22 +2,21 @@ package net.bfsr.client.gui.ingame;
 
 import lombok.Setter;
 import net.bfsr.client.camera.Camera;
-import net.bfsr.client.font.FontRegistry;
-import net.bfsr.client.font.GUIText;
 import net.bfsr.client.gui.Gui;
-import net.bfsr.client.gui.GuiTextureObject;
-import net.bfsr.client.gui.Scroll;
+import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.input.InputChat;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.loader.TextureLoader;
-import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.render.Renderer;
+import net.bfsr.client.render.font.FontType;
+import net.bfsr.client.render.font.string.DynamicString;
+import net.bfsr.client.render.font.string.StringObject;
+import net.bfsr.client.render.texture.Texture;
+import net.bfsr.client.render.texture.TextureLoader;
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.sound.SoundRegistry;
-import net.bfsr.client.texture.Texture;
-import net.bfsr.client.texture.TextureRegister;
+import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.component.Armor;
 import net.bfsr.component.ArmorPlate;
@@ -26,7 +25,6 @@ import net.bfsr.component.reactor.Reactor;
 import net.bfsr.component.shield.Shield;
 import net.bfsr.component.weapon.WeaponSlot;
 import net.bfsr.core.Core;
-import net.bfsr.entity.TextureObject;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.RotationHelper;
@@ -38,6 +36,7 @@ import net.bfsr.world.World;
 import net.bfsr.world.WorldClient;
 import net.bfsr.world.WorldServer;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
@@ -48,42 +47,33 @@ import java.util.HashMap;
 import java.util.List;
 
 public class GuiInGame extends Gui {
-
-    private final Vector4f white = new Vector4f(1, 1, 1, 1);
-
     private final Core core = Core.getCore();
 
-    private final List<GUIText> texts = new ArrayList<>();
     private final DecimalFormat formatter = new DecimalFormat("0.00");
 
-    private final TextureObject armorPlate;
-    private TextureObject buttonControl;
-    private final TextureObject energy;
-    private final TextureObject hudShip;
-    private final TextureObject hudShipSecondary;
-    private final TextureObject hudShipAdd0;
-    private final TextureObject map;
-    private final TextureObject shield;
-    private final TextureObject chat;
+    private final TexturedGuiObject armorPlate = new TexturedGuiObject(TextureRegister.guiArmorPlate);
+    private final TexturedGuiObject energy = new TexturedGuiObject(TextureRegister.guiEnergy);
+    private final TexturedGuiObject hudShip = new TexturedGuiObject(TextureRegister.guiHudShip);
+    private final TexturedGuiObject hudShipSecondary = new TexturedGuiObject(TextureRegister.guiHudShip);
+    private final TexturedGuiObject hudShipAdd0 = new TexturedGuiObject(TextureRegister.guiHudShipAdd);
+    private final TexturedGuiObject map = new TexturedGuiObject(TextureRegister.guiHudShip);
+    private final TexturedGuiObject shield = new TexturedGuiObject(TextureRegister.guiShield);
+    private final TexturedGuiObject chat = new TexturedGuiObject(TextureRegister.guiChat);
 
-    private Vector2f debugFontSize = new Vector2f(1f, 0.4f);
-    private float yOffset = 12f;
+    private final float yOffset = 12.0f;
     @Setter
     private long ping;
 
-    private final GUIText controlText;
-    private final GUIText upperText;
-    private final GUIText worldText;
-    private final GUIText shipText;
-    private final GUIText shipCargo;
-    private final GUIText shipCrew;
-    private GUIText shipHull;
-    private GUIText shipShield;
-    private final GUIText textHull;
-    private final GUIText textShield;
+    private final StringObject controlText = new DynamicString(FontType.XOLONIUM, Lang.getString("gui.control"), center.x + 490, center.y + 130, 16);
+    private final StringObject upperText = new DynamicString(FontType.CONSOLA);
+    private final StringObject worldText = new DynamicString(FontType.CONSOLA);
+    private final StringObject shipText = new DynamicString(FontType.CONSOLA);
+    private final StringObject shipCargo = new DynamicString(FontType.CONSOLA);
+    private final StringObject shipCrew = new DynamicString(FontType.CONSOLA);
+    private final StringObject textHull = new DynamicString(FontType.CONSOLA);
+    private final StringObject textShield = new DynamicString(FontType.CONSOLA);
 
-    private final InputChat chatInput;
-    private final Scroll chatScroll;
+    private final InputChat chatInput = new InputChat();
 
     private boolean controlWasPressed;
     private boolean controlButtonCreated;
@@ -102,89 +92,59 @@ public class GuiInGame extends Gui {
     private static final Vector2f weaponPos = new Vector2f();
     private static final Vector2f rotationVector = new Vector2f();
 
-    public GuiInGame() {
-        armorPlate = new GuiTextureObject(TextureRegister.guiArmorPlate);
-        buttonControl = new GuiTextureObject(TextureRegister.guiButtonControl);
-        energy = new GuiTextureObject(TextureRegister.guiEnergy);
-        hudShip = new GuiTextureObject(TextureRegister.guiHudShip);
-        hudShipSecondary = new GuiTextureObject(TextureRegister.guiHudShip);
-        hudShipAdd0 = new GuiTextureObject(TextureRegister.guiHudShipAdd);
-        map = new GuiTextureObject(TextureRegister.guiHudShip);
-        shield = new GuiTextureObject(TextureRegister.guiShield);
-        chat = new GuiTextureObject(TextureRegister.guiChat);
+    private Button buttonControl;
 
-        chatScroll = new Scroll(new Vector2f(center.x + 490, center.y + 130), Transformation.getScale(18, 130));
-        chatScroll.setVisible(8);
-
-        chatInput = new InputChat(new Vector2f(center.x + 460, center.y - 216), chatScroll);
-        chatInput.setMaxLineSize(0.4f);
-
-        controlText = new GUIText(Lang.getString("gui.control"), new Vector2f(0.9f * Transformation.guiScale.x, 0.48f * Transformation.guiScale.y),
-                FontRegistry.XOLONIUM, Transformation.getOffsetByScale(new Vector2f(center.x + 490, center.y + 130)),
-                new Vector4f(1, 1, 1, 1), 1f, false, EnumParticlePositionType.GuiInGame);
-
-        upperText = new GUIText("", debugFontSize, FontRegistry.CONSOLA, new Vector2f(0, 0), white, false, EnumParticlePositionType.Last);
-        worldText = new GUIText("", debugFontSize, FontRegistry.CONSOLA, new Vector2f(0, 0), white, false, EnumParticlePositionType.Last);
-        shipText = new GUIText("", debugFontSize, FontRegistry.CONSOLA, new Vector2f(0, 0), white, false, EnumParticlePositionType.Last);
-
-        shipCargo = new GUIText("", new Vector2f(1, 1), FontRegistry.CONSOLA, new Vector2f(0, 0), white, false, EnumParticlePositionType.GuiInGame);
-        shipCrew = new GUIText("", new Vector2f(1, 1), FontRegistry.CONSOLA, new Vector2f(0, 0), white, false, EnumParticlePositionType.GuiInGame);
-
-        textHull = new GUIText("", new Vector2f(1, 1), FontRegistry.CONSOLA, new Vector2f(0, 0), white, true, EnumParticlePositionType.GuiInGame);
-        textShield = new GUIText("", new Vector2f(1, 1), FontRegistry.CONSOLA, new Vector2f(0, 0), white, true, EnumParticlePositionType.GuiInGame);
-    }
+    private final String openGlVersion = GL11.glGetString(GL11.GL_VERSION);
+    private final String openGlRenderer = GL11.glGetString(GL11.GL_RENDERER);
 
     @Override
-    public void init() {
-        super.init();
+    protected void initElements() {
+        int scaleX = 200;
+        int scaleY = 157;
+        hudShip.setSize(scaleX, scaleY);
+        hudShip.atBottomRightCorner(-scaleX, -scaleY);
+        registerGuiObject(hudShip);
 
-        float scaleX = 700 / 3.5f;
-        float scaleY = 550 / 3.5f;
-        hudShip.setScale(scaleX, scaleY);
-        hudShip.setPosition(center.x + 550, center.y + 286);
+        hudShipSecondary.setSize(scaleX, scaleY);
+        hudShipSecondary.atTopRightCorner(-scaleX, 0);
+        registerGuiObject(hudShipSecondary);
 
-        hudShipSecondary.setScale(scaleX, scaleY);
-        hudShipSecondary.setPosition(center.x + 550, center.y - 286);
+        map.setSize(scaleX, scaleY).atUpperLeftCorner(0, 0);
+        registerGuiObject(map);
 
-        map.setScale(scaleX, scaleY);
-        map.setPosition(center.x - 550, center.y - 286);
+        scaleX = 100;
+        scaleY = 51;
+        hudShipAdd0.setSize(scaleX, scaleY);
+        hudShipAdd0.atBottomRightCorner(-hudShip.getWidth() - scaleX, -scaleY);
+        registerGuiObject(hudShipAdd0);
 
-        scaleX = 350 / 3.5f;
-        scaleY = 180 / 3.5f;
-        hudShipAdd0.setScale(scaleX, scaleY);
-        hudShipAdd0.setPosition(center.x + scaleX * 4.2f, center.y + scaleY * 6.5f);
+        scaleX = 256;
+        scaleY = 136;
+        chat.setSize(scaleX, scaleY);
+        chat.atBottomLeftCorner(0, -scaleY);
+        registerGuiObject(chat);
 
-        scaleX = 640 / 2.5f;
-        scaleY = 340 / 2.5f;
-        chat.setScale(scaleX, scaleY);
-        chat.setPosition(center.x - 515, center.y + 294);
-
-        chatInput.setScale(scaleX / 1.05f, scaleY / 1.12f);
-        chatInput.setEmptyOffset(new Vector2f(-66, 49));
-        chatInput.setTextOffset(new Vector2f(-114, 43));
+        chatInput.setSize((int) (scaleX / 1.05f), (int) (scaleY / 1.12f));
+        chatInput.setStringOffset(new Vector2i(-66, 49));
         chatInput.setPosition(center.x - 516, center.y + 294);
-        chatInput.init();
+        chatInput.setMaxLineSize(200);
+        registerGuiObject(chatInput);
 
-        scaleX = 257 / 2f;
-        scaleY = 40 / 2f;
-        controlText.setPosition(Transformation.getOffsetByScale(new Vector2f(center.x + scaleX * 4.1f, center.y + scaleY * 9.68f)));
-        controlText.setFontSize(0.55f * Transformation.guiScale.x, 0.32f * Transformation.guiScale.y);
-        if (core.getWorld() != null && core.getWorld().getPlayerShip() == null)
-            controlText.updateText(Lang.getString("gui.control"));
-        else
-            controlText.updateText(Lang.getString("gui.cancelControl"));
+        controlText.setPosition(center.x + 525, center.y + 194);
+        if (core.getWorld() != null && core.getWorld().getPlayerShip() == null) {
+            controlText.update(Lang.getString("gui.control"));
+        } else {
+            controlText.update(Lang.getString("gui.cancelControl"));
+        }
+        registerGuiObject(controlText);
 
         createButton();
     }
 
     private void createButton() {
-        float scaleX = 257 / 2f;
-        float scaleY = 40 / 2f;
-        Button buttonControl = new Button(0, TextureRegister.guiButtonControl,
-                Transformation.getOffsetByScale(new Vector2f(center.x + scaleX * 4.4f, center.y + scaleY * 10.f)),
-                new Vector2f(scaleX, scaleY));
-        buttonControl.setCollideSound(SoundRegistry.buttonCollide);
-        buttonControl.setClickSound(SoundRegistry.buttonClick);
+        int scaleX = 128;
+        int scaleY = 20;
+        buttonControl = new Button(TextureRegister.guiButtonControl, (int) (center.x + scaleX * 4.4f), (int) (center.y + scaleY * 10.0f), scaleX, scaleY);
         buttonControl.setOnMouseClickedRunnable(() -> {
             WorldClient w = core.getWorld();
             controlWasPressed = true;
@@ -199,14 +159,14 @@ public class GuiInGame extends Gui {
                 core.sendPacket(new PacketShipControl(currentShip.getId(), true));
             }
         });
-        buttons.add(buttonControl);
+        registerGuiObject(buttonControl);
         chatInput.addEmptyText();
-        if (core.getWorld() != null && core.getWorld().getPlayerShip() == null)
-            controlText.updateText(Lang.getString("gui.control"));
-        else
-            controlText.updateText(Lang.getString("gui.cancelControl"));
-        chatScroll.setScale(Transformation.getScale(12, 99));
-        chatScroll.setPosition(Transformation.getOffsetByScale(new Vector2f(center.x - 400, center.y + 284)));
+        if (core.getWorld() != null && core.getWorld().getPlayerShip() == null) {
+            controlText.update(Lang.getString("gui.control"));
+        } else {
+            controlText.update(Lang.getString("gui.cancelControl"));
+        }
+
         controlButtonCreated = true;
     }
 
@@ -216,21 +176,11 @@ public class GuiInGame extends Gui {
 
     @Override
     public void onMouseLeftClicked() {
-        int size = buttons.size();
-        for (int i = 0; i < size; i++) {
-            Button b = buttons.get(i);
-            if (b.isIntersects()) {
-                b.leftClick();
-            } else controlWasPressed = false;
-        }
-
-        chatScroll.onMouseLeftClicked();
-        chatInput.onMouseLeftClicked();
+        chatInput.onMouseLeftClick();
     }
 
     public boolean isActive() {
-        if (controlWasPressed) return true;
-        return chatInput.isTyping() || chatScroll.isMoving();
+        return chatInput.isActive();
     }
 
     @Override
@@ -254,28 +204,19 @@ public class GuiInGame extends Gui {
     public void onMouseLeftRelease() {
         super.onMouseLeftRelease();
         controlWasPressed = false;
-        chatScroll.onMouseLeftRelease();
+        chatInput.onMouseLeftRelease();
     }
 
     @Override
     public void onMouseScroll(float y) {
         super.onMouseScroll(y);
-        if (chatInput.isTyping()) {
-            chatScroll.scroll(y);
-            chatInput.setOffsetByScroll(chatScroll.getValue());
-            chatScroll.setScale(Transformation.getScale(12, 99));
-            chatScroll.setPosition(Transformation.getOffsetByScale(new Vector2f(center.x - 400, center.y + 284)));
-        }
+        chatInput.scroll(y);
     }
 
     @Override
     public void update() {
-        if (chatInput.isTyping()) {
-            chatScroll.setMaxValue(chatInput.getLines().size());
-        }
-
-        float yPos = 6 + map.getScale().y * 0.93f;
-        float xPos = 6;
+        int yPos = (int) (6 + map.getHeight() * 0.93f);
+        int xPos = 6;
 
         Profiler profiler = core.getProfiler();
         Profiler sProfiler = MainServer.getInstance() != null ? MainServer.getInstance().getProfiler() : null;
@@ -295,12 +236,10 @@ public class GuiInGame extends Gui {
         long maxMemoryMB = maxMemory / 1024L / 1024L;
         long totalMemoryMB = totalMemory / 1024L / 1024L;
         long freeMemoryMB = freeMemory / 1024L / 1024L;
-        String openGlVersion = GL11.glGetString(GL11.GL_VERSION);
-        String openGlRenderer = GL11.glGetString(GL11.GL_RENDERER);
-        int tps = MainServer.getInstance() != null ? MainServer.getInstance().getUps() : 0;
-//        String openGlVendor = GL11.glGetString(GL11.GL_VENDOR);
 
-        upperText.updateText("BFSR Client Dev 0.0.4 \n" +
+        int tps = MainServer.getInstance() != null ? MainServer.getInstance().getUps() : 0;
+
+        upperText.update("BFSR Client Dev 0.0.4 \n" +
                 "FPS " + Core.getCore().getRenderer().getFps() + "/" + tps + " \n" +
                 //"System: " + System.getProperty("os.name") + " (" + System.getProperty("os.arch") + ") v." + System.getProperty("os.version") + " \n" +
                 //"Java: " + System.getProperty("java.version") + ", " + System.getProperty("java.vendor") + " \n" +
@@ -318,8 +257,6 @@ public class GuiInGame extends Gui {
         yPos += yOffset * 11;
         World world = core.getWorld();
         if (world != null) {
-            chatInput.update();
-            chatScroll.update();
             Camera cam = core.getRenderer().getCamera();
             Vector2f camPos = cam.getPosition();
             int bulletsCount = world.getBullets().size();
@@ -331,7 +268,7 @@ public class GuiInGame extends Gui {
             int sBulletsCount = sWorld != null ? sWorld.getBullets().size() : 0;
             int sShipsCount = sWorld != null ? sWorld.getShips().size() : 0;
             int sParticlesCount = sWorld != null ? sWorld.getParticles().size() : 0;
-            worldText.updateText("---World--- " +
+            worldText.update("---World--- " +
                     "\nCamera pos: " + formatter.format(camPos.x) + ", " + formatter.format(camPos.y) + " " +
                     "\nShips count: " + shipsCount + "/" + sShipsCount +
                     " \nBullets count: " + bulletsCount + "/" + sBulletsCount +
@@ -347,7 +284,7 @@ public class GuiInGame extends Gui {
                 Hull hull = playerShip.getHull();
                 Shield shield = playerShip.getShield();
                 Reactor reactor = playerShip.getReactor();
-                shipText.updateText("---Player Ship--- "
+                shipText.update("---Player Ship--- "
                         + "\nShip = " + playerShip.getClass().getSimpleName() + " \n" +
                         "Pos: " + formatter.format(pos.x) + ", " + formatter.format(pos.y) + " \n" +
                         "Velocity: " + formatter.format(velocity.x) + ", " + formatter.format(velocity.y) + " \n" +
@@ -357,8 +294,6 @@ public class GuiInGame extends Gui {
                         "Shield: " + formatter.format(shield.getShield()) + "/" + formatter.format(shield.getMaxShield()) + " \n" +
                         "Reactor: " + formatter.format(reactor.getEnergy()) + "/" + formatter.format(reactor.getMaxEnergy()));
                 shipText.setPosition(xPos, yPos);
-            } else {
-                shipText.updateText("");
             }
 
             if (currentShip != null) {
@@ -370,7 +305,7 @@ public class GuiInGame extends Gui {
                 if (currentShip.isDead()) currentShip = null;
             } else {
                 if (controlButtonCreated) {
-                    buttons.remove(0);
+                    unregisterGuiObject(buttonControl);
                     controlButtonCreated = false;
                 }
                 controlText.clear();
@@ -388,18 +323,16 @@ public class GuiInGame extends Gui {
         }
     }
 
-    public boolean canControlShip(Ship s) {
+    private boolean canControlShip(Ship s) {
         return s.getName().equals(core.getPlayerName());
     }
 
     public void setShipControl() {
-        controlText.clear();
-        controlText.updateText(Lang.getString("gui.cancelControl"));
+        controlText.update(Lang.getString("gui.cancelControl"));
     }
 
-    public void cancelShipControl() {
-        controlText.clear();
-        controlText.updateText(Lang.getString("gui.control"));
+    private void cancelShipControl() {
+        controlText.update(Lang.getString("gui.control"));
     }
 
     public void selectShipSecondary(Ship ship) {
@@ -417,7 +350,7 @@ public class GuiInGame extends Gui {
         currentShip = ship;
     }
 
-    void renderMap(BaseShader shader, World world) {
+    private void renderMap(BaseShader shader, World world) {
         map.render(shader);
         List<Ship> ships = world.getShips();
         Vector2f camPos = core.getRenderer().getCamera().getPosition();
@@ -428,35 +361,35 @@ public class GuiInGame extends Gui {
         mapBoundingBox.getMax().x = camPos.x + mapOffsetX;
         mapBoundingBox.getMax().y = camPos.y + mapOffsetY;
         mapPos.x = center.x - 550;
-        mapPos.y = center.y - 286f;
-        float mapScaleX = 5f;
-        float mapScaleY = 7f;
+        mapPos.y = center.y - 286.0f;
+        float mapScaleX = 5.0f;
+        float mapScaleY = 7.0f;
         float shipSize = 1.0f;
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        Vector2f mappos1 = this.map.getPosition();
-        mapScale.x = this.map.getScale().x;
-        mapScale.y = this.map.getScale().y;
+        mapScale.x = this.map.getWidth();
+        mapScale.y = this.map.getHeight();
         int sizeX = (int) (mapScale.x);
         int sizeY = (int) (mapScale.y);
-        mapScale.x /= 2f;
-        mapScale.y /= 2f;
-        int x = (int) (mappos1.x - mapScale.x);
-        int y = (int) (mappos1.y + mapScale.y);
+        mapScale.x /= 2.0f;
+        mapScale.y /= 2.0f;
+        int x = (int) (map.getX() - mapScale.x);
+        int y = (int) (map.getY() + mapScale.y);
         int offsetY = (int) (17 * Transformation.guiScale.y);
         int offsetX = (int) (19 * Transformation.guiScale.x);
         GL11.glScissor(x + offsetX, height - y + offsetY, sizeX - offsetX * 2, sizeY - offsetY * 2);
         color.x = color.y = color.z = color.w = 1;
         shipsByMap.clear();
 
-        for (Ship s : ships) {
+        for (int i = 0; i < ships.size(); i++) {
+            Ship s = ships.get(i);
             Vector2f pos = s.getPosition();
             Vector2f scale = s.getScale();
             shipScale.x = scale.x;
             shipScale.y = scale.y;
             shipScale.x /= shipSize;
             shipScale.y /= shipSize;
-            float sX = shipScale.x / 2f;
-            float sY = shipScale.y / 2f;
+            float sX = shipScale.x / 2.0f;
+            float sY = shipScale.y / 2.0f;
             shipAABB.setMinX(pos.x - sX);
             shipAABB.setMaxX(pos.x + sX);
             shipAABB.setMinY(pos.y - sY);
@@ -470,8 +403,7 @@ public class GuiInGame extends Gui {
             }
         }
 
-        for (Texture key : shipsByMap.keySet()) {
-            List<Ship> ss = shipsByMap.get(key);
+        for (List<Ship> ss : shipsByMap.values()) {
             for (Ship s : ss) {
                 Vector2f pos = s.getPosition();
                 Vector2f scale = s.getScale();
@@ -503,7 +435,7 @@ public class GuiInGame extends Gui {
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 
-    void renderShipHud(BaseShader shader, World world, Ship ship, boolean isSecondary) {
+    private void renderShipHud(BaseShader shader, World world, Ship ship, boolean isSecondary) {
         if (ship != null) {
             OpenGLHelper.alphaGreater(0.01f);
             if (!isSecondary) hudShip.render(shader);
@@ -524,44 +456,44 @@ public class GuiInGame extends Gui {
             shipScale.mul(shipSize);
 
             color.y = ship.getHull().getHull() / ship.getHull().getMaxHull();
-            color.x = 1f - color.y;
-            color.z = 0f;
-            renderQuad(shader, color, ship.getTexture(), shipPos, (float) (-Math.PI / 2f), shipScale);
+            color.x = 1.0f - color.y;
+            color.z = 0.0f;
+            renderQuad(shader, color, ship.getTexture(), shipPos, (float) (-Math.PI / 2.0f), shipScale);
             Texture tShield = TextureLoader.getTexture(TextureRegister.shieldSmall0);
             if (!isSecondary) {
-                textHull.setFontSize(0.47f * Transformation.guiScale.x, 0.28f * Transformation.guiScale.y);
-                textHull.updateText(Math.round(ship.getHull().getHull()) + "");
-                textHull.setPosition(Transformation.getOffsetByScale(shipPos.x, shipPos.y + 16));
+                String string = String.valueOf(Math.round(ship.getHull().getHull()));
+                textHull.update(string);
+                textHull.setPosition((int) shipPos.x, (int) (shipPos.y + 16));
                 color.x = 0;
                 color.y = 0;
                 color.z = 0;
                 shipScale.x = 12;
-                shipScale.y = 6 * textHull.getTextString().length() + 6;
+                shipScale.y = 6 * string.length() + 6;
                 OpenGLHelper.alphaGreater(0.01f);
                 shipPos.y += 15;
-                renderQuad(shader, color, tShield, shipPos, (float) (-Math.PI / 2f), shipScale);
+                renderQuad(shader, color, tShield, shipPos, (float) (-Math.PI / 2.0f), shipScale);
                 shipPos.y -= 15;
             }
 
             Shield shield = ship.getShield();
             if (shield != null && shield.shieldAlive()) {
                 color.y = shield.getShield() / shield.getMaxShield();
-                color.x = 1f - color.y;
+                color.x = 1.0f - color.y;
                 color.z = 0;
-                shipScale.x = 140f * shield.getSize();
-                shipScale.y = 140f * shield.getSize();
+                shipScale.x = 140.0f * shield.getSize();
+                shipScale.y = 140.0f * shield.getSize();
                 renderQuad(shader, color, this.shield.getTexture(), shipPos, (float) (-Math.PI), shipScale);
                 if (!isSecondary) {
-                    textShield.setFontSize(0.47f * Transformation.guiScale.x, 0.28f * Transformation.guiScale.y);
-                    textShield.updateText(Math.round(shield.getShield()) + "");
-                    textShield.setPosition(Transformation.getOffsetByScale(shipPos.x, shipPos.y + 48));
+                    String string = String.valueOf(Math.round(shield.getShield()));
+                    textShield.update(string);
+                    textShield.setPosition((int) shipPos.x, (int) (shipPos.y + 48));
                     color.x = 0;
                     color.y = 0;
                     color.z = 0;
                     shipScale.x = 12;
-                    shipScale.y = 6 * textShield.getTextString().length() + 6;
+                    shipScale.y = 6 * string.length() + 6;
                     shipPos.y += 47;
-                    renderQuad(shader, color, tShield, shipPos, (float) (-Math.PI / 2f), shipScale);
+                    renderQuad(shader, color, tShield, shipPos, (float) (-Math.PI / 2.0f), shipScale);
                     shipPos.y -= 47;
                 }
             } else {
@@ -571,10 +503,10 @@ public class GuiInGame extends Gui {
             Armor armor = ship.getArmor();
             ArmorPlate[] plates = armor.getArmorPlates();
             float rot = (float) Math.PI;
-            shipScale.x = this.armorPlate.getScale().x / 1.8f;
-            shipScale.y = this.armorPlate.getScale().y / 1.8f;
-            color.x = 1f;
-            color.z = 0f;
+            shipScale.x = this.armorPlate.getWidth() / 1.8f;
+            shipScale.y = this.armorPlate.getHeight() / 1.8f;
+            color.x = 1.0f;
+            color.z = 0.0f;
             for (int i = 0; i < 4; i++) {
                 ArmorPlate plate = plates[i];
                 rot -= Math.PI / 2.0;
@@ -590,12 +522,12 @@ public class GuiInGame extends Gui {
 
             if (!isSecondary && canControlShip(ship)) {
                 Texture energyText = energy.getTexture();
-                shipScale.x = energy.getScale().x * 0.6f;
-                shipScale.y = energy.getScale().y * 0.6f;
+                shipScale.x = energy.getWidth() * 0.6f;
+                shipScale.y = energy.getHeight() * 0.6f;
                 Reactor reactor = ship.getReactor();
-                float energy = reactor.getEnergy() / reactor.getMaxEnergy() * 20f;
+                float energy = reactor.getEnergy() / reactor.getMaxEnergy() * 20.0f;
                 for (int i = 0; i < 20; i++) {
-                    rot = (float) (i * 0.08f - Math.PI / 4f);
+                    rot = (float) (i * 0.08f - Math.PI / 4.0f);
                     RotationHelper.rotate(rot, -70, 0, rotationVector);
                     rotationVector.x += shipPos.x;
                     rotationVector.y += shipPos.y;
@@ -606,20 +538,18 @@ public class GuiInGame extends Gui {
                     if (energy >= i) {
                         color.x = 0.25f;
                         color.y = 0.5f;
-                        color.z = 1f;
+                        color.z = 1.0f;
                         renderQuad(shader, color, energyText, rotationVector, (float) (-Math.PI + rot), shipScale);
                     }
                 }
                 OpenGLHelper.alphaGreater(0.01f);
                 hudShipAdd0.render(shader);
 
-                shipCargo.setPosition(Transformation.getOffsetByScale(center.x + 380, center.y + 320));
-                shipCargo.setFontSize(0.47f * Transformation.guiScale.x, 0.28f * Transformation.guiScale.y);
-                shipCargo.updateText(Lang.getString(Lang.getString("gui.shipCargo") + ": " + ship.getCargo().getCapacity() + "/" + ship.getCargo().getMaxCapacity()));
+                shipCargo.setPosition(center.x + 380, center.y + 320);
+                shipCargo.update(Lang.getString(Lang.getString("gui.shipCargo") + ": " + ship.getCargo().getCapacity() + "/" + ship.getCargo().getMaxCapacity()));
 
-                shipCrew.setPosition(Transformation.getOffsetByScale(center.x + 380, center.y + 330));
-                shipCrew.setFontSize(0.47f * Transformation.guiScale.x, 0.28f * Transformation.guiScale.y);
-                shipCrew.updateText(Lang.getString(Lang.getString("gui.shipCrew") + ": " + ship.getCrew().getCrewSize() + "/" + ship.getCrew().getMaxCrewSize()));
+                shipCrew.setPosition(center.x + 380, center.y + 330);
+                shipCrew.update(Lang.getString(Lang.getString("gui.shipCrew") + ": " + ship.getCrew().getCrewSize() + "/" + ship.getCrew().getMaxCrewSize()));
             }
 
             OpenGLHelper.alphaGreater(0.75f);
@@ -628,26 +558,25 @@ public class GuiInGame extends Gui {
                     float reload = slot.getShootTimer() / slot.getShootTimerMax();
                     color.x = reload;
                     color.y = reload;
-                    color.z = 1f;
+                    color.z = 1.0f;
                     Vector2f pos = slot.getAddPosition();
-                    RotationHelper.rotate((float) (-Math.PI / 2f), pos.x, pos.y, rotationVector);
+                    RotationHelper.rotate((float) (-Math.PI / 2.0f), pos.x, pos.y, rotationVector);
                     weaponPos.x = shipPos.x + rotationVector.x * shipSize;
                     weaponPos.y = shipPos.y + rotationVector.y * shipSize;
                     shipScale.x = slot.getScale().x;
                     shipScale.y = slot.getScale().y;
                     shipScale.mul(shipSize);
-                    renderQuad(shader, color, slot.getTexture(), weaponPos, (float) (-Math.PI / 2f), shipScale);
+                    renderQuad(shader, color, slot.getTexture(), weaponPos, (float) (-Math.PI / 2.0f), shipScale);
                 }
             }
 
         }
     }
 
-    void renderChat(BaseShader shader, World world) {
+    void renderChat(BaseShader shader) {
         OpenGLHelper.alphaGreater(0.01f);
         chat.render(shader);
         chatInput.render(shader);
-        chatScroll.render(shader);
     }
 
     @Override
@@ -660,56 +589,29 @@ public class GuiInGame extends Gui {
         World world = core.getWorld();
 
         if (world != null) {
-            textShield.clear();
-            textHull.clear();
             OpenGLHelper.alphaGreater(0.01f);
             renderMap(shader, world);
             renderShipHud(shader, world, currentShip, false);
             renderShipHud(shader, world, otherShip, true);
-            renderChat(shader, world);
+            renderChat(shader);
         }
     }
 
     private void renderQuad(BaseShader shader, Vector4f color, Texture texture, Vector2f pos, float rot, Vector2f scale) {
         Vector2f pos1 = Transformation.getOffsetByScale(pos);
-        shader.setColor(color);
-        shader.setModelViewMatrix(Transformation.getModelViewMatrixGui(
-                pos1.x, pos1.y,
-                rot, scale.x * Transformation.guiScale.x, scale.y * Transformation.guiScale.y));
+        shader.setColor(color.x, color.y, color.z, color.w);
+        shader.setModelMatrix(Transformation.getModelViewMatrixGui(pos1.x, pos1.y, rot, scale.x * Transformation.guiScale.x, scale.y * Transformation.guiScale.y).get(ShaderProgram.MATRIX_BUFFER));
         if (texture != null) texture.bind();
-        Renderer.quad.render();
+        Renderer.centeredQuad.renderIndexed();
     }
 
     public void clearByExit() {
         super.clear();
         controlButtonCreated = false;
-        controlText.clear();
-        upperText.clear();
-        worldText.clear();
-        shipText.clear();
-        chatInput.clear();
-        shipCargo.clear();
-        shipCrew.clear();
-        textHull.clear();
-        textShield.clear();
     }
 
     @Override
     public void clear() {
         super.clear();
-        controlText.clear();
-        upperText.clear();
-        worldText.clear();
-        shipText.clear();
-        shipCargo.clear();
-        shipCrew.clear();
-    }
-
-    public Ship getCurrentShip() {
-        return currentShip;
-    }
-
-    public Ship getOtherShip() {
-        return otherShip;
     }
 }

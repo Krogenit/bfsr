@@ -3,16 +3,15 @@ package net.bfsr.client.gui.ingame;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.GuiSettings;
 import net.bfsr.client.gui.GuiTextureObject;
-import net.bfsr.client.gui.button.ButtonBase;
-import net.bfsr.client.loader.TextureLoader;
+import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.render.Renderer;
+import net.bfsr.client.render.texture.TextureLoader;
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.texture.TextureRegister;
+import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.math.Transformation;
-import org.joml.Vector2f;
-import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
 
 public class GuiInGameMenu extends Gui {
@@ -24,21 +23,16 @@ public class GuiInGameMenu extends Gui {
     }
 
     @Override
-    public void init() {
-        super.init();
-
-        ButtonBase button = new ButtonBase(0, new Vector2f(center.x, center.y - 30), "gui.ingamemenu.backtogame");
+    protected void initElements() {
+        Button button = new Button(center.x, center.y - 30, "gui.ingamemenu.backtogame", () -> Core.getCore().setCurrentGui(null));
         button.setTextColor(1, 1, 1, 1);
-        button.setOnMouseClickedRunnable(() -> Core.getCore().setCurrentGui(null));
-        buttons.add(button);
-        button = new ButtonBase(1, new Vector2f(center.x, center.y + 30), "gui.ingamemenu.settings");
-        button.setOnMouseClickedRunnable(() -> Core.getCore().setCurrentGui(new GuiSettings(this)));
+        registerGuiObject(button);
+        button = new Button(center.x, center.y + 30, "gui.ingamemenu.settings", () -> Core.getCore().setCurrentGui(new GuiSettings(this)));
         button.setTextColor(1, 1, 1, 1);
-        buttons.add(button);
-        button = new ButtonBase(2, new Vector2f(center.x, center.y + 180), "gui.ingamemenu.tomainmenu");
-        button.setOnMouseClickedRunnable(() -> Core.getCore().quitToMainMenu());
+        registerGuiObject(button);
+        button = new Button(center.x, center.y + 180, "gui.ingamemenu.tomainmenu", () -> Core.getCore().quitToMainMenu());
         button.setTextColor(1, 1, 1, 1);
-        buttons.add(button);
+        registerGuiObject(button);
         logoBFSR.setPosition(center.x, center.y - 200);
         logoBFSR.setScale(256, 256);
     }
@@ -46,7 +40,7 @@ public class GuiInGameMenu extends Gui {
     @Override
     public void update() {
         super.update();
-        
+
         if (wantCloseGui) {
             Core.getCore().setCurrentGui(null);
             wantCloseGui = false;
@@ -64,10 +58,10 @@ public class GuiInGameMenu extends Gui {
 
     @Override
     public void render(BaseShader shader) {
-        shader.setColor(new Vector4f(0, 0, 0, 0.5f));
-        shader.setModelViewMatrix(Transformation.getModelViewMatrixGui(width / 2.0F, height / 2.0f, 0, width, height));
+        shader.setColor(0.0f, 0.0f, 0.0f, 0.5f);
+        shader.setModelMatrix(Transformation.getModelViewMatrixGui(width / 2.0F, height / 2.0f, 0, width, height).get(ShaderProgram.MATRIX_BUFFER));
         shader.disableTexture();
-        Renderer.quad.render();
+        Renderer.centeredQuad.renderIndexed();
 
         logoBFSR.render(shader);
         super.render(shader);
