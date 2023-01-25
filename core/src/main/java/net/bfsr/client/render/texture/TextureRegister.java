@@ -1,4 +1,4 @@
-package net.bfsr.client.texture;
+package net.bfsr.client.render.texture;
 
 public enum TextureRegister {
 
