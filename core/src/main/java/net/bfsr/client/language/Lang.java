@@ -1,7 +1,7 @@
 package net.bfsr.client.language;
 
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.core.Core;
+import net.bfsr.settings.EnumOption;
 import net.bfsr.util.PathHelper;
 
 import java.io.BufferedReader;
@@ -45,7 +45,7 @@ public final class Lang {
     }
 
     public static String getString(String value) {
-        String lang = Core.getCore().getSettings().getLanguage();
+        String lang = EnumOption.LANGUAGE.getString();
         if (TRANSLATIONS.containsKey(lang)) {
             HashMap<String, String> langData = TRANSLATIONS.get(lang);
             if (langData.containsKey(value)) {
@@ -56,14 +56,13 @@ public final class Lang {
         return value;
     }
 
-    public static void setNextLang() {
-        String curLang = Core.getCore().getSettings().getLanguage();
+    public static String getNextLang(String currentLang) {
         int newLangId = 0;
         for (int i = 0; i < LANGUAGES.size() - 1; i++) {
-            if (LANGUAGES.get(i).equals(curLang)) {
+            if (LANGUAGES.get(i).equals(currentLang)) {
                 newLangId = i + 1;
             }
         }
-        Core.getCore().getSettings().setLanguage(LANGUAGES.get(newLangId));
+        return LANGUAGES.get(newLangId);
     }
 }

@@ -1,103 +1,38 @@
 package net.bfsr.settings;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonReader;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.JsonDataException;
+import com.squareup.moshi.Moshi;
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.language.Lang;
-import net.bfsr.core.Core;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
+@Log4j2
 public class ClientSettings implements IConfig {
+    private final transient JsonAdapter<ClientSettings> adapter = new Moshi.Builder().build().adapter(ClientSettings.class).indent("    ");
 
-    private final transient Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-    private float soundVolume = 1.0f;
-
-    private boolean cameraMoveByScreenBorders = false;
-    private boolean vSync = true;
-    private int maxFps = 60;
-    private boolean isDebug = false;
-    private boolean isProfiling = false;
-    private float cameraMoveByScreenBordersSpeed = 6f;
-    private float cameraMoveByScreenBordersOffset = 15f;
-    private float cameraMoveByKeySpeed = 10f;
-
-    private float cameraZoomSpeed = 0.2f;
-
-    private boolean cameraFollowPlayer = true;
-
-    private String language = "eng";
-
-    public static transient HashMap<String, List<EnumOption>> optionsByCategory = new HashMap<>();
-
-    private int getInt(EnumOption option, float value) {
-        return (int) (option.getMinValue() + value * (option.getMaxValue() - option.getMinValue()));
-    }
-
-    private float getFloat(EnumOption option, float value) {
-        return option.getMinValue() + value * (option.getMaxValue() - option.getMinValue());
-    }
-
-    public void setOptionValue(EnumOption option, Object value) {
-        Class<?> type = option.getType();
-        if (type == int.class) {
-            value = getInt(option, (float) value);
-        } else if (type == float.class) {
-            value = getFloat(option, (float) value);
-        } else if (type == boolean.class) {
-            if (option == EnumOption.vSync) {
-                Core.getCore().getRenderer().setVSync((boolean) value);
-            } else if (option == EnumOption.isProfiling) {
-                Core.getCore().getProfiler().setEnable((boolean) value);
-            }
-        } else {
-            if (option == EnumOption.language) {
-                Lang.setNextLang();
-                value = getLanguage();
-            }
-        }
-
-        try {
-            Field field = this.getClass().getDeclaredField(option.toString());
-            field.set(this, value);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        saveSettings();
-    }
-
-    public Object getOptionValue(EnumOption option) {
-        try {
-            Field field = this.getClass().getDeclaredField(option.toString());
-            return field.get(this);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
+    private Map<EnumOption, Object> options = new HashMap<>();
 
     public void saveSettings() {
-        String json = gson.toJson(this);
+        EnumOption[] values = EnumOption.values();
+        for (int i = 0; i < values.length; i++) {
+            EnumOption option = values[i];
+            options.put(option, option.getValue());
+        }
 
+        String json = adapter.toJson(this);
         try {
-            FileWriter fileWriter = new FileWriter(getFile());
-            fileWriter.write(json);
-            fileWriter.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+            Files.writeString(getFile().toPath(), json);
+        } catch (IOException e) {
+            log.error("Can't save settings", e);
         }
     }
 
@@ -105,21 +40,14 @@ public class ClientSettings implements IConfig {
         File file = getFile();
         if (file.exists()) {
             try {
-                JsonReader reader = new JsonReader(new FileReader(file));
-                IConfig config = gson.fromJson(reader, this.getClass());
-                for (Field field : this.getClass().getDeclaredFields()) {
-                    if (!Modifier.isTransient(field.getModifiers())) {
-                        Field field1 = config.getClass().getDeclaredField(field.getName());
-                        field.setAccessible(true);
-                        field1.setAccessible(true);
-                        field.set(this, field1.get(config));
-                    }
+                String string = Files.readString(file.toPath());
+                ClientSettings settings = adapter.fromJson(string);
+                for (Map.Entry<EnumOption, Object> entry : settings.options.entrySet()) {
+                    entry.getKey().setValue(entry.getValue());
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (IOException | JsonDataException e) {
+                log.error("Can't load settings", e);
             }
-        } else {
-            saveSettings();
         }
     }
 
