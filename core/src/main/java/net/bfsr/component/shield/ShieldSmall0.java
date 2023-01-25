@@ -1,7 +1,7 @@
 package net.bfsr.component.shield;
 
-import net.bfsr.client.loader.TextureLoader;
-import net.bfsr.client.texture.TextureRegister;
+import net.bfsr.client.render.texture.TextureLoader;
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
 import org.joml.Vector2f;
 import org.joml.Vector4f;

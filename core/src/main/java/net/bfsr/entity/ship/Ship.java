@@ -4,20 +4,24 @@ import net.bfsr.ai.Ai;
 import net.bfsr.ai.AiAggressiveType;
 import net.bfsr.ai.task.AiAttackTarget;
 import net.bfsr.ai.task.AiSearchTarget;
-import net.bfsr.client.font.GUIText;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
-import net.bfsr.client.loader.TextureLoader;
 import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.ParticleWreck;
 import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.render.Renderer;
+import net.bfsr.client.render.font.FontType;
+import net.bfsr.client.render.font.StringOffsetType;
+import net.bfsr.client.render.font.string.StaticString;
+import net.bfsr.client.render.font.string.StringObject;
+import net.bfsr.client.render.texture.Texture;
+import net.bfsr.client.render.texture.TextureLoader;
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.shader.BaseShader;
+import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
-import net.bfsr.client.texture.Texture;
-import net.bfsr.client.texture.TextureRegister;
 import net.bfsr.component.Armor;
 import net.bfsr.component.Engine;
 import net.bfsr.component.cargo.Cargo;
@@ -39,6 +43,7 @@ import net.bfsr.math.Transformation;
 import net.bfsr.network.packet.common.PacketObjectPosition;
 import net.bfsr.network.packet.server.*;
 import net.bfsr.server.MainServer;
+import net.bfsr.settings.EnumOption;
 import net.bfsr.util.TimeUtils;
 import net.bfsr.world.WorldClient;
 import net.bfsr.world.WorldServer;
@@ -68,7 +73,7 @@ public abstract class Ship extends CollisionObject {
     private Cargo cargo;
 
     private String name;
-    private GUIText textName;
+    private StringObject stringObject;
 
     private final List<Vector2f> weaponPositions = new ArrayList<>();
     private List<WeaponSlot> weaponSlots;
@@ -157,7 +162,7 @@ public abstract class Ship extends CollisionObject {
                 shoot();
             }
 
-            if (Core.getCore().getSettings().isDebug() && Keyboard.isKeyDown(GLFW.GLFW_KEY_R)) {
+            if (EnumOption.IS_DEBUG.getBoolean() && Keyboard.isKeyDown(GLFW.GLFW_KEY_R)) {
                 float baseSize = 4.0f + scale.x * 0.25f;
                 Random rand = world.getRand();
                 Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion1, getPosition()));
@@ -293,9 +298,9 @@ public abstract class Ship extends CollisionObject {
 
         updateComponents();
 
-        if (textName != null) {
+        if (stringObject != null) {
             Transform transform = body.getTransform();
-            textName.setPosition((float) transform.getTranslationX(), (float) transform.getTranslationY() + 3.2f + scale.y / 4.0f);
+            stringObject.setPosition((int) transform.getTranslationX(), (int) (transform.getTranslationY() + 3.2f + scale.y / 4.0f));
         }
     }
 
@@ -425,26 +430,33 @@ public abstract class Ship extends CollisionObject {
             OpenGLHelper.alphaGreater(0.75f);
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
             super.render(shader, interpolation);
-            shader.setColor(new Vector4f(effectsColor, 1.0f));
+            shader.setColor(effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
             OpenGLHelper.bindTexture(textureDamage.getId());
-            Vector2f pos = getPosition();
-            float hp = hull.getHull() / hull.getMaxHull();
-            OpenGLHelper.alphaGreater(0.001f);
-            shader.setColor(new Vector4f(1.0f, 1.0f, 1.0f, 1.0f - hp));
-            shader.setModelViewMatrix(Transformation.getModelViewMatrix(pos.x, pos.y, getRotation(),
-                    scale.x, scale.y, EnumZoomFactor.Default));
-            Renderer.quad.render();
+
+            if (hull.getHull() < hull.getMaxHull()) {
+                Vector2f pos = getPosition();
+                float hp = hull.getHull() / hull.getMaxHull();
+                OpenGLHelper.alphaGreater(0.001f);
+                shader.setColor(1.0f, 1.0f, 1.0f, 1.0f - hp);
+                shader.setModelMatrix(Transformation.getModelViewMatrix(pos.x, pos.y, getRotation(),
+                        scale.x, scale.y, EnumZoomFactor.Default).get(ShaderProgram.MATRIX_BUFFER));
+                Renderer.centeredQuad.renderIndexed();
+            }
+
             int size = damages.size();
             for (int i = 0; i < size; i++) {
                 Damage damage = damages.get(i);
                 damage.render(shader);
             }
+
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
+
             size = damages.size();
             for (int i = 0; i < size; i++) {
                 Damage damage = damages.get(i);
                 damage.renderEffects(shader);
             }
+
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
             OpenGLHelper.alphaGreater(0.75f);
             renderGunSlots(shader);
@@ -453,12 +465,12 @@ public abstract class Ship extends CollisionObject {
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         } else {
             OpenGLHelper.alphaGreater(0.01f);
-            shader.setColor(new Vector4f(effectsColor, 1.0f));
+            shader.setColor(effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
             shader.enableTexture();
             OpenGLHelper.bindTexture(TextureLoader.getTexture(TextureRegister.particleJump).getId());
-            shader.setModelViewMatrix(Transformation.getModelViewMatrix(jumpPosition.x, jumpPosition.y, rotate, 40.0f * color.w, 40.0f * color.w, EnumZoomFactor.Default));
-            Renderer.quad.render();
+            shader.setModelMatrix(Transformation.getModelViewMatrix(jumpPosition.x, jumpPosition.y, rotate, 40.0f * color.w, 40.0f * color.w, EnumZoomFactor.Default).get(ShaderProgram.MATRIX_BUFFER));
+            Renderer.centeredQuad.renderIndexed();
         }
     }
 
@@ -609,16 +621,8 @@ public abstract class Ship extends CollisionObject {
         body.getTransform().setRotation(rotate);
     }
 
-    public float getSpawnRotation() {
-        return rotate;
-    }
-
     public Vector3f getEffectsColor() {
         return effectsColor;
-    }
-
-    public GUIText getTextName() {
-        return textName;
     }
 
     public String getName() {
@@ -626,8 +630,8 @@ public abstract class Ship extends CollisionObject {
     }
 
     public void clear() {
-        if (textName != null) {
-            textName.clear();
+        if (stringObject != null) {
+            stringObject.clear();
         }
 
         int size = weaponSlots.size();
@@ -640,11 +644,10 @@ public abstract class Ship extends CollisionObject {
     private void createName() {
         if (world.isRemote() && name != null) {
             clear();
-            textName = new GUIText(name, new Vector2f(0.045f + scale.x / 400.0f, 0.045f + scale.x / 400.0f), new Vector2f(getPosition()), new Vector4f(1.0f, 1.0f, 1.0f, 1.0f), true, EnumParticlePositionType.Default);
-            textName.setZoomFactor(EnumZoomFactor.Default);
+            stringObject = new StaticString(FontType.XOLONIUM, name, 20, StringOffsetType.CENTERED);
+            stringObject.compile();
             Transform transform = body.getTransform();
-            textName.setPosition((float) transform.getTranslationX(), (float) transform.getTranslationY() + 3.2f + scale.y / 4.0f);
-            textName.setShadowOffset(-0.9f, -0.9f);
+            stringObject.setPosition((int) transform.getTranslationX(), (int) (transform.getTranslationY() + 3.2f + scale.y / 4.0f));
         }
     }
 
@@ -754,9 +757,9 @@ public abstract class Ship extends CollisionObject {
             damage.updatePos();
         }
 
-        if (textName != null) {
+        if (stringObject != null) {
             Transform transform = body.getTransform();
-            textName.setPosition((float) transform.getTranslationX(), (float) transform.getTranslationY() + 32.0f + scale.y / 4.0f);
+            stringObject.setPosition((int) transform.getTranslationX(), (int) (transform.getTranslationY() + 32.0f + scale.y / 4.0f));
         }
     }
 

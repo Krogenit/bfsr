@@ -1,11 +1,11 @@
 package net.bfsr.component.damage;
 
-import net.bfsr.client.loader.TextureLoader;
 import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleSpawner;
+import net.bfsr.client.render.texture.Texture;
+import net.bfsr.client.render.texture.TextureLoader;
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.texture.Texture;
-import net.bfsr.client.texture.TextureRegister;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.entity.ship.Ship;

@@ -4,10 +4,10 @@ import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.ParticleWreck;
 import net.bfsr.client.render.OpenGLHelper;
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
-import net.bfsr.client.texture.TextureRegister;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.component.shield.Shield;
 import net.bfsr.core.Core;
@@ -215,7 +215,7 @@ public class Bullet extends CollisionObject {
         }
     }
 
-    private boolean canDamageShip(Ship ship) {
+    public boolean canDamageShip(Ship ship) {
         return this.ship != ship && previousAObject != ship;
     }
 

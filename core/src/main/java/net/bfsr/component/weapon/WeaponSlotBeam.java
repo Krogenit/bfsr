@@ -1,8 +1,8 @@
 package net.bfsr.component.weapon;
 
 import net.bfsr.client.particle.*;
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
-import net.bfsr.client.texture.TextureRegister;
 import net.bfsr.collision.filter.BeamFilter;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.component.shield.Shield;

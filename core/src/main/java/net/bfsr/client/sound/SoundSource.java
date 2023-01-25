@@ -1,6 +1,5 @@
 package net.bfsr.client.sound;
 
-import net.bfsr.client.loader.SoundLoader;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.joml.Vector3f;

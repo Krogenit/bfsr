@@ -1,9 +1,6 @@
 package net.bfsr.client.sound;
 
 import net.bfsr.client.camera.Camera;
-import net.bfsr.core.Core;
-import net.bfsr.math.Transformation;
-import net.bfsr.settings.ClientSettings;
 import net.bfsr.settings.EnumOption;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -16,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SoundManager {
-
     private static SoundManager instance;
 
     private long device;
@@ -28,7 +24,6 @@ public class SoundManager {
     private final List<SoundSource> playingSounds = new ArrayList<>();
 
     private float lastSoundVolume;
-    private final ClientSettings settings = Core.getCore().getSettings();
 
     public SoundManager() {
         instance = this;
@@ -58,17 +53,13 @@ public class SoundManager {
         this.playingSounds.add(source);
     }
 
-    public void addSoundBuffer(SoundBuffer soundBuffer) {
+    void addSoundBuffer(SoundBuffer soundBuffer) {
         this.soundBufferList.add(soundBuffer);
-    }
-
-    public SoundListener getListener() {
-        return this.listener;
     }
 
     public void setListener(SoundListener listener) {
         this.listener = listener;
-        this.listener.setGain((float) settings.getOptionValue(EnumOption.soundVolume));
+        this.listener.setGain(EnumOption.SOUND_VOLUME.getFloat());
         this.listener.setExponentClampedDistanceModel();
     }
 
@@ -86,7 +77,7 @@ public class SoundManager {
     public void updateListenerPosition(Camera camera) {
         checkSoundsToClear();
         // Update camera matrix with camera data
-        Transformation.updateGenericViewMatrix(camera.getPosition(), camera.getRotation(), cameraMatrix);
+        cameraMatrix.translate(-camera.getPosition().x, -camera.getPosition().y, -0);
 
         listener.setPosition(camera.getPosition());
         Vector3f at = new Vector3f();
@@ -95,10 +86,10 @@ public class SoundManager {
         cameraMatrix.positiveY(up);
         listener.setOrientation(at, up);
 
-        float soundVolume = (float) settings.getOptionValue(EnumOption.soundVolume);
-        if (lastSoundVolume != soundVolume) {
-            listener.setGain(soundVolume);
-            lastSoundVolume = soundVolume;
+        float newSoundVolume = EnumOption.SOUND_VOLUME.getFloat();
+        if (lastSoundVolume != newSoundVolume) {
+            listener.setGain(newSoundVolume);
+            lastSoundVolume = newSoundVolume;
         }
     }
 
@@ -107,11 +98,15 @@ public class SoundManager {
     }
 
     public void cleanup() {
-        for (SoundSource soundSource : playingSounds) {
+        int size = playingSounds.size();
+        for (int i = 0; i < size; i++) {
+            SoundSource soundSource = playingSounds.get(i);
             soundSource.clear();
         }
         playingSounds.clear();
-        for (SoundBuffer soundBuffer : soundBufferList) {
+        size = soundBufferList.size();
+        for (int i = 0; i < size; i++) {
+            SoundBuffer soundBuffer = soundBufferList.get(i);
             soundBuffer.cleanup();
         }
         soundBufferList.clear();

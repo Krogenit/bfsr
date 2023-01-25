@@ -1,9 +1,9 @@
 package net.bfsr.component.weapon;
 
-import net.bfsr.client.loader.TextureLoader;
+import net.bfsr.client.render.texture.TextureLoader;
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
-import net.bfsr.client.texture.TextureRegister;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.entity.ship.Ship;

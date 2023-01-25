@@ -1,6 +1,6 @@
 package net.bfsr.component;
 
-import net.bfsr.client.texture.TextureRegister;
+import net.bfsr.client.render.texture.TextureRegister;
 
 public enum EnumWeapon {
 

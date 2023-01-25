@@ -4,17 +4,18 @@ import net.bfsr.client.input.Mouse;
 import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleRenderer;
 import net.bfsr.client.render.OpenGLHelper;
+import net.bfsr.client.render.texture.Texture;
+import net.bfsr.client.render.texture.TextureGenerator;
+import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.shader.ShaderProgram;
-import net.bfsr.client.texture.Texture;
-import net.bfsr.client.texture.TextureGenerator;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
-import net.bfsr.math.EnumZoomFactor;
+import net.bfsr.math.ModelMatrixType;
 import net.bfsr.network.packet.client.PacketCommand;
 import net.bfsr.server.EnumCommand;
 import org.joml.Vector2f;
@@ -25,14 +26,15 @@ import java.text.DecimalFormat;
 import java.util.*;
 
 public class WorldClient extends World {
-
     private final Core core;
-    private TextureObject background;
+    private final TextureObject background = new TextureObject(TextureLoader.dummyTexture, new Vector2f(0, 0), new Vector2f(2560 << 1, 2560 << 1))
+            .setModelMatrixType(ModelMatrixType.BACKGROUND);
     private final ParticleRenderer particleRenderer;
     private Ship playerShip;
     private int spawnTimer;
     private final HashMap<Texture, List<Ship>> shipsByMapForRender = new HashMap<>();
     private final HashMap<Texture, List<Bullet>> bulletByMapForRender = new HashMap<>();
+    private Texture backgroundTexture;
 
     public WorldClient() {
         super(true, Core.getCore().getProfiler());
@@ -42,15 +44,13 @@ public class WorldClient extends World {
     }
 
     public void setSeed(long seed) {
-        if (background != null) background.clear();
+        if (backgroundTexture != null) backgroundTexture.delete();
         createBackground(seed);
     }
 
     private void createBackground(long seed) {
-        int width = 2560 * 2;
-        int height = 2560 * 2;
-        this.background = new TextureObject(TextureGenerator.generateNebulaTexture(width, height, new Random(seed)), new Vector2f(0, 0), new Vector2f(width, height));
-        this.background.setZoomFactor(EnumZoomFactor.Background);
+        backgroundTexture = TextureGenerator.generateNebulaTexture((int) background.getScale().x, (int) background.getScale().y, new Random(seed));
+        background.setTexture(backgroundTexture);
     }
 
     public void onMouseLeftClicked() {
@@ -176,10 +176,8 @@ public class WorldClient extends World {
             playerShip = null;
     }
 
-    public void renderAmbient(BaseShader shader) {
-        if (background != null) {
-            background.render(shader);
-        }
+    public void renderAmbient(BaseShader shader, float interpolation) {
+        background.render(shader, interpolation);
     }
 
     public void renderEntities(BaseShader shader, float interpolation) {
@@ -284,10 +282,5 @@ public class WorldClient extends World {
 
     public Ship getPlayerShip() {
         return playerShip;
-    }
-
-    @Override
-    public void clear() {
-        super.clear();
     }
 }

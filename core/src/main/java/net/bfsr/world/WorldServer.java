@@ -140,7 +140,7 @@ public class WorldServer extends World {
             }
         }
 
-        spawnShips();
+//        spawnShips();
 
         updateTime = profiler.getResult("update");
         physicsTime = profiler.getResult("physics");

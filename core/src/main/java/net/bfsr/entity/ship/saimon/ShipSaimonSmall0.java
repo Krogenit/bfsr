@@ -1,9 +1,9 @@
 package net.bfsr.entity.ship.saimon;
 
-import net.bfsr.client.loader.TextureLoader;
 import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleSpawner;
-import net.bfsr.client.texture.TextureRegister;
+import net.bfsr.client.render.texture.TextureLoader;
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.collision.filter.ShipFilter;
 import net.bfsr.component.Armor;
 import net.bfsr.component.ArmorPlate;

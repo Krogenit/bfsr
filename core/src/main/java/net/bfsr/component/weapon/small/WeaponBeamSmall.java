@@ -1,7 +1,7 @@
 package net.bfsr.component.weapon.small;
 
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
-import net.bfsr.client.texture.TextureRegister;
 import net.bfsr.collision.filter.ShipFilter;
 import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.entity.bullet.BulletDamage;

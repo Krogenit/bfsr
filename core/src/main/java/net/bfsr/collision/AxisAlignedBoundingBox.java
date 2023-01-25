@@ -19,30 +19,30 @@ public class AxisAlignedBoundingBox {
     }
 
     public void set(float minX, float minY, float maxX, float maxY) {
-        this.min.x = minX;
-        this.min.y = minY;
-        this.max.x = maxX;
-        this.max.y = maxY;
+        min.x = minX;
+        min.y = minY;
+        max.x = maxX;
+        max.y = maxY;
     }
 
     public void setMinX(float x) {
-        this.min.x = x;
+        min.x = x;
     }
 
     public void setMinY(float y) {
-        this.min.y = y;
+        min.y = y;
     }
 
     public void setMaxX(float x) {
-        this.max.x = x;
+        max.x = x;
     }
 
     public void setMaxY(float y) {
-        this.max.y = y;
+        max.y = y;
     }
 
-    public boolean isIntersects(Vector2f vect) {
-        return vect.x >= min.x && vect.x < max.x && vect.y >= min.y && vect.y < max.y;
+    public boolean isIntersects(Vector2f vector) {
+        return vector.x >= min.x && vector.x < max.x && vector.y >= min.y && vector.y < max.y;
     }
 
     public boolean isIntersects(Vector2d vect) {

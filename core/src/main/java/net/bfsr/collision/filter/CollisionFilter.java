@@ -2,11 +2,10 @@ package net.bfsr.collision.filter;
 
 import org.dyn4j.collision.Filter;
 
-public class CollisionFilter implements Filter {
+public class CollisionFilter<T> implements Filter {
+    protected T userData;
 
-    protected Object userData;
-
-    public CollisionFilter(Object userData) {
+    CollisionFilter(T userData) {
         this.userData = userData;
     }
 
@@ -15,11 +14,11 @@ public class CollisionFilter implements Filter {
         return false;
     }
 
-    public Object getUserData() {
+    public T getUserData() {
         return userData;
     }
 
-    public void setUserData(Object userData) {
+    public void setUserData(T userData) {
         this.userData = userData;
     }
 }

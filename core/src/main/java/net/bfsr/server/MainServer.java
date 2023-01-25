@@ -63,7 +63,8 @@ public class MainServer extends Loop {
 
     private void init() {
         networkSystem = new NetworkSystem(this);
-        profiler = new Profiler(true);
+        profiler = new Profiler();
+        profiler.setEnable(true);
         dataBase = new SimpleDataBase(this);
         world = new WorldServer(profiler);
         playerManager = new PlayerManager(this, world);

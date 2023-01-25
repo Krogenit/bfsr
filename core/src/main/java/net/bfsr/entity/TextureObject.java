@@ -3,9 +3,10 @@ package net.bfsr.entity;
 import lombok.Getter;
 import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.render.Renderer;
+import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.texture.Texture;
 import net.bfsr.math.EnumZoomFactor;
+import net.bfsr.math.ModelMatrixType;
 import net.bfsr.math.Transformation;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -18,6 +19,8 @@ public class TextureObject {
     protected Vector4f color;
     protected float rotate;
     protected EnumZoomFactor zoomFactor = EnumZoomFactor.Default;
+    @Getter
+    private ModelMatrixType modelMatrixType = ModelMatrixType.DEFAULT;
 
     public TextureObject(Texture texture, Vector2f pos, float rotate, Vector2f scale, Vector4f color) {
         this.texture = texture;
@@ -61,11 +64,11 @@ public class TextureObject {
     }
 
     public void render(BaseShader shader, float interpolation) {
-        shader.setColor(getColor());
+        shader.setColor(color.x, color.y, color.y, color.w);
         shader.enableTexture();
         OpenGLHelper.bindTexture(texture.getId());
-        shader.setModelViewMatrix(Transformation.getModelViewMatrix(this, interpolation));
-        Renderer.quad.render();
+        shader.setModelMatrix(Transformation.getModelMatrix(this, interpolation));
+        Renderer.centeredQuad.renderIndexed();
     }
 
     public void setPosition(float x, float y) {
@@ -86,15 +89,6 @@ public class TextureObject {
         this.scale = scale;
     }
 
-    public void setOrigin(float x, float y) {
-        this.origin.x = x;
-        this.origin.y = y;
-    }
-
-    public void setOrigin(Vector2f origin) {
-        this.origin = origin;
-    }
-
     public void setColor(float r, float g, float b, float a) {
         this.color.x = r;
         this.color.y = g;
@@ -104,6 +98,11 @@ public class TextureObject {
 
     public void setColor(Vector4f color) {
         this.color = color;
+    }
+
+    public TextureObject setModelMatrixType(ModelMatrixType modelMatrixType) {
+        this.modelMatrixType = modelMatrixType;
+        return this;
     }
 
     public Vector2f getPosition() {

@@ -2,8 +2,8 @@ package net.bfsr.entity;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.loader.TextureLoader;
-import net.bfsr.client.texture.TextureRegister;
+import net.bfsr.client.render.texture.TextureLoader;
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.component.Engine;
 import net.bfsr.core.Core;

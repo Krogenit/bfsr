@@ -16,10 +16,10 @@ import net.bfsr.network.client.NetworkManagerClient;
 import net.bfsr.profiler.Profiler;
 import net.bfsr.server.ThreadLocalServer;
 import net.bfsr.settings.ClientSettings;
+import net.bfsr.settings.EnumOption;
 import net.bfsr.world.WorldClient;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.openal.AL11;
 
 import java.util.Queue;
@@ -43,9 +43,6 @@ public class Core {
     private ThreadLocalServer localServer;
     private NetworkManagerClient networkManager;
 
-    @Setter
-    private boolean focused = true;
-
     private String playerName;
 
     private final Queue<ListenableFutureTask<?>> futureTasks = Queues.newArrayDeque();
@@ -53,24 +50,26 @@ public class Core {
     public Core() {
         instance = this;
 
-        Lang.load();
         this.settings = new ClientSettings();
-        this.settings.readSettings();
         this.soundManager = new SoundManager();
-        this.soundManager.init();
         this.renderer = new Renderer(this);
-        this.profiler = new Profiler(settings.isProfiling());
+        this.profiler = new Profiler();
     }
 
-    public void init(long window, GLFWVidMode vidMode) {
+    public void init(long window, int width, int height) {
         this.window = window;
-        this.screenWidth = vidMode.width();
-        this.screenHeight = vidMode.height();
-        soundManager.setAttenuationModel(AL11.AL_EXPONENT_DISTANCE);
-        soundManager.setListener(new SoundListener(new Vector3f(0, 0, 0)));
-        renderer.init(window, vidMode);
+        this.screenWidth = width;
+        this.screenHeight = height;
+
+        Lang.load();
+        this.settings.readSettings();
+        this.soundManager.init();
+        this.soundManager.setAttenuationModel(AL11.AL_EXPONENT_DISTANCE);
+        this.soundManager.setListener(new SoundListener(new Vector3f(0, 0, 0)));
+        this.renderer.init(window, width, height);
         this.currentGui = new GuiMainMenu();
         this.currentGui.init();
+        profiler.setEnable(EnumOption.IS_PROFILING.getBoolean());
     }
 
     public void update() {
@@ -110,9 +109,10 @@ public class Core {
         profiler.endSection();
     }
 
-    public void startSingleplayer() {
+    public void startSinglePlayer() {
         startLocalServer();
         localServer.connectToLocalServer();
+        setCurrentGui(null);
     }
 
     private void startLocalServer() {
@@ -122,7 +122,7 @@ public class Core {
         localServer.start();
     }
 
-    public void stopServer() {
+    private void stopServer() {
         if (localServer != null) {
             localServer.stopServer();
             localServer = null;
@@ -149,7 +149,7 @@ public class Core {
         }
     }
 
-    public void resize(int width, int height) {
+    void resize(int width, int height) {
         this.screenWidth = width;
         this.screenHeight = height;
         this.renderer.resize(width, height);
@@ -171,7 +171,7 @@ public class Core {
         addFutureTask(Executors.callable(runnable));
     }
 
-    public void addFutureTask(Callable<?> callable) {
+    private void addFutureTask(Callable<?> callable) {
         ListenableFutureTask<?> futureTask = ListenableFutureTask.create(callable);
 
         synchronized (futureTasks) {
@@ -205,10 +205,6 @@ public class Core {
 
     public static Core getCore() {
         return instance;
-    }
-
-    public boolean isFocused() {
-        return focused;
     }
 
     public ClientSettings getSettings() {

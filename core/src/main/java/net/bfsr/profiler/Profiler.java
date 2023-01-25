@@ -1,17 +1,15 @@
 package net.bfsr.profiler;
 
+import lombok.Setter;
+
 import java.util.HashMap;
 
 public class Profiler {
-
     private final HashMap<String, Long> prevResults = new HashMap<>();
     private final HashMap<String, Float> results = new HashMap<>();
     private String currentSectionName;
+    @Setter
     private boolean enable;
-
-    public Profiler(boolean isEnable) {
-        this.enable = isEnable;
-    }
 
     public void startSection(String name) {
         if (enable) {
@@ -47,9 +45,5 @@ public class Profiler {
     public float getResult(String name) {
         if (results.containsKey(name)) return results.get(name);
         else return 0;
-    }
-
-    public void setEnable(boolean value) {
-        this.enable = value;
     }
 }
