@@ -16,11 +16,13 @@ settings.soundVolume=Громкость Звуков
 
 settings.section.graphics=Графика
 settings.vSync=Вертикальная Синхронизация
+settings.maxFps=Ограничение ФПС
 
 settings.section.camera=Камера
-settings.cameraMoveByScreenBorders=Перемещение Камеры Границами Экрана
+settings.cameraMoveByScreenBorders=Перемещение Границами Экрана
 settings.cameraMoveByScreenBordersSpeed=Скорость Перемещения Границами Экрана
 settings.cameraMoveByScreenBordersOffset=Отступ От Границ Экрана
+settings.cameraMoveByKeySpeed=Скорость Перемещения Клавишами
 settings.cameraZoomSpeed=Скорость Зума
 settings.cameraFollowPlayer=Следование Камеры За Кораблем
 
@@ -29,6 +31,7 @@ settings.language=Язык
 
 settings.section.debug=Отладка
 settings.isDebug=Отладка
+settings.isProfiling=Профайлинг
 
 gui.settings.save=Сохранить
 

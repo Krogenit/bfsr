@@ -16,11 +16,13 @@ settings.soundVolume=Sound Volume
 
 settings.section.graphics=Graphics
 settings.vSync=VSync
+settings.maxFps=Limit FPS
 
 settings.section.camera=Camera
-settings.cameraMoveByScreenBorders=Move Camera By Screen Borders
+settings.cameraMoveByScreenBorders=Move By Screen Borders
 settings.cameraMoveByScreenBordersSpeed=Move Speed By Screen Borders
 settings.cameraMoveByScreenBordersOffset=Borders Offset
+settings.cameraMoveByKeySpeed=Move Speed By Key
 settings.cameraZoomSpeed=Zoom Speed
 settings.cameraFollowPlayer=Follow Ship
 
@@ -29,6 +31,7 @@ settings.language=Language
 
 settings.section.debug=Debug
 settings.isDebug=Debug
+settings.isProfiling=Profiling
 
 gui.settings.save=Save Settings
 
