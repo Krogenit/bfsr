@@ -1,20 +1,18 @@
-package net.bfsr.client.font_new;
+package net.bfsr.client.render.font;
 
-import net.bfsr.client.camera.Camera;
+import net.bfsr.client.render.font.string.DynamicGLString;
+import net.bfsr.client.render.font.string.GLString;
 import net.bfsr.client.shader.font.FontShader;
-import net.bfsr.core.Core;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL31;
 
 import java.nio.FloatBuffer;
 import java.nio.LongBuffer;
 
 public class StringRenderer {
-    public static final int VERTEX_DATA_SIZE = 8 * 4;
+    public static final int VERTEX_DATA_SIZE = 8 << 2;
 
     private final String newLineString = "\n";
     private final char newLineChar = '\n';
@@ -23,7 +21,7 @@ public class StringRenderer {
 
     private final ISortedStringCreated defaultSortedStringCompleteFunction = (glString1, r, g, b, a) -> {};
     private final ISortedStringCreated widthRestrictedSortedStringCreationFunction = (glString1, r, g, b, a) -> stringParams.getColor().set(r, g, b, a);
-    private final float defaultIndent = 1.25f;
+    private final int defaultIndent = 1;
 
     private FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(256);
     private LongBuffer textureBuffer = BufferUtils.createLongBuffer(128);
@@ -55,21 +53,25 @@ public class StringRenderer {
         glString.fillBuffer(vertexBuffer, textureBuffer);
     }
 
+    public void createString(GLString glString, StringCache stringCache, String string, float x, float y, int fontSize) {
+        createString(glString, stringCache, string, x, y, fontSize, 1.0f, 1.0f, 1.0f, 1.0f, StringOffsetType.DEFAULT);
+    }
+
     public void createString(GLString glString, StringCache stringCache, String string, float x, float y, int fontSize, float r, float g, float b, float a) {
         createString(glString, stringCache, string, x, y, fontSize, r, g, b, a, StringOffsetType.DEFAULT);
     }
 
-    private void createString(GLString glString, StringCache stringCache, String text, float x, float y, float r, float g, float b, float a, int maxWidth) {
-        createString(glString, stringCache, text, x, y, r, g, b, a, maxWidth, StringOffsetType.DEFAULT);
+    private void createString(GLString glString, StringCache stringCache, String text, float x, float y, int fontSize, float r, float g, float b, float a, int maxWidth) {
+        createString(glString, stringCache, text, x, y, fontSize, r, g, b, a, maxWidth, StringOffsetType.DEFAULT);
     }
 
-    private void createString(GLString glString, StringCache stringCache, String text, float x, float y, float r, float g, float b, float a, int maxWidth,
+    private void createString(GLString glString, StringCache stringCache, String text, float x, float y, int fontSize, float r, float g, float b, float a, int maxWidth,
                               StringOffsetType offsetType) {
-        createString(glString, stringCache, text, x, y, r, g, b, a, maxWidth, offsetType, defaultIndent);
+        createString(glString, stringCache, text, x, y, fontSize, r, g, b, a, maxWidth, offsetType, defaultIndent);
     }
 
-    private void createString(GLString glString, StringCache stringCache, String text, float x, float y, float r, float g, float b, float a, int maxWidth,
-                              StringOffsetType offsetType, float indent) {
+    private void createString(GLString glString, StringCache stringCache, String text, float x, float y, int fontSize, float r, float g, float b, float a, int maxWidth,
+                              StringOffsetType offsetType, int indent) {
         stringParams.getColor().set(r, g, b, a);
         stringParams.setX(x);
         stringParams.setY(y);
@@ -80,7 +82,7 @@ public class StringRenderer {
             if (chars[i] == newLineChar) {
                 String string = text.substring(offset, i);
                 if (string.isEmpty()) {
-                    float height = stringCache.getHeight(newLineString) * indent;
+                    float height = stringCache.getHeight(newLineString, fontSize) * indent;
                     stringParams.setY(stringParams.getY() + height);
                     stringParams.addHeight((int) height);
                 } else {
@@ -95,20 +97,20 @@ public class StringRenderer {
     }
 
     private void trimAndCreateString(GLString glString, StringCache stringCache, String string, StringParams stringParams, ISortedStringCreated completeFunction, int maxWidth,
-                                     StringOffsetType offsetType, float indent) {
+                                     StringOffsetType offsetType, int indent) {
         do {
             String temp = stringCache.trimStringToWidthSaveWords(string, maxWidth);
             Vector4f color1 = stringParams.getColor();
             createString(glString, stringCache, temp, stringParams.getX() + offsetFunctions[offsetType.ordinal()].get(temp, stringCache), stringParams.getY(),
                     color1.x, color1.y, color1.z, color1.w, completeFunction);
             string = string.replace(temp, "").trim();
-            float height = stringCache.getHeight(temp) * indent * stringParams.getScale();
+            float height = stringCache.getHeight(temp, stringParams.getFontSize()) + indent;
             stringParams.addHeight((int) height);
             stringParams.setY(stringParams.getY() + height);
         } while (!string.isEmpty());
     }
 
-    private void createString(GLString glString, StringCache stringCache, String string, float x, float y, int fontSize, float r, float g, float b, float a, StringOffsetType offsetType) {
+    public void createString(GLString glString, StringCache stringCache, String string, float x, float y, int fontSize, float r, float g, float b, float a, StringOffsetType offsetType) {
         begin(stringCache, fontSize);
         createString(glString, stringCache, string, x + offsetFunctions[offsetType.ordinal()].get(string, stringCache), y, r, g, b, a, defaultSortedStringCompleteFunction);
         end(glString);
@@ -136,6 +138,8 @@ public class StringRenderer {
     }
 
     public void render(GLString string) {
+        fontShader.enable();
+        fontShader.setModelMatrix(string.getMatrixBuffer());
         string.bind();
         GL11.glDrawArrays(GL11.GL_QUADS, 0, string.getVertexCount());
     }
@@ -146,7 +150,6 @@ public class StringRenderer {
 
     public void render(String string, StringCache stringCache, int fontSize, float x, float y, float r, float g, float b, float a) {
         createString(glString, stringCache, string, x, y, fontSize, r, g, b, a);
-        GL30.glBindBufferBase(GL31.GL_UNIFORM_BUFFER, Camera.VIEW_MATRIX_UBO, Core.getCore().getRenderer().getCamera().getGUIViewMatrixUBO());
         render(glString);
     }
 

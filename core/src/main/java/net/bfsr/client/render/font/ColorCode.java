@@ -1,4 +1,4 @@
-package net.bfsr.client.font_new;
+package net.bfsr.client.render.font;
 
 /** Identifies the location and value of a single color code in the original string */
 class ColorCode implements Comparable<Integer> {

@@ -1,4 +1,4 @@
-package net.bfsr.client.font_new;
+package net.bfsr.client.render.font;
 
 import java.lang.ref.WeakReference;
 

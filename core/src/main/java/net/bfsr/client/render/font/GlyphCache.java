@@ -1,10 +1,7 @@
-package net.bfsr.client.font_new;
+package net.bfsr.client.render.font;
 
 import net.bfsr.util.PathHelper;
-import org.lwjgl.opengl.ARBBindlessTexture;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL11C;
-import org.lwjgl.opengl.GL13C;
+import org.lwjgl.opengl.*;
 
 import java.awt.*;
 import java.awt.font.FontRenderContext;
@@ -232,22 +229,6 @@ public class GlyphCache {
     }
 
     /**
-     * Change the default font used to pre-render glyph images. If this method is called at runtime, the existing glyph images will remain cached
-     * in their respective textures and will remain accessible to StringCache. This method is normally called by StringCache.setDefaultFont() since
-     * the StringCache must also invalidate itself so it can re-layout and re-cache the glyphs for all strings using the new font.
-     *
-     * @param name the new font name
-     * @param size the new point size
-     */
-    void setDefaultFont(String name, int size, boolean antiAlias) {
-        usedFonts.clear();
-        usedFonts.add(new Font(name, Font.PLAIN, 72));
-
-        antiAliasEnabled = antiAlias;
-        setRenderingHints();
-    }
-
-    /**
      * Load font from file
      *
      * @param fontFileName font file name
@@ -272,16 +253,16 @@ public class GlyphCache {
         }
     }
 
-    int getHeight(String s, int fontSize) {
+    float getHeight(String s, int fontSize) {
         Font font = lookupFont(s.toCharArray(), 0, s.length(), Font.PLAIN, fontSize);
         LineMetrics lineMetrics = font.getLineMetrics(s, fontRenderContext);
-        return (int) lineMetrics.getHeight() / 2;
+        return lineMetrics.getHeight();
     }
 
     public int getAscent(String s, int fontSize) {
         Font font = lookupFont(s.toCharArray(), 0, s.length(), Font.PLAIN, fontSize);
         LineMetrics lineMetrics = font.getLineMetrics(s, fontRenderContext);
-        return (int) lineMetrics.getAscent() / 2;
+        return (int) (lineMetrics.getAscent());
     }
 
     /**
@@ -539,8 +520,7 @@ public class GlyphCache {
         if (dirty != null) {
             /* Load imageBuffer with pixel data ready for transfer to OpenGL texture */
             updateImageBuffer(dirty.x, dirty.y, dirty.width, dirty.height);
-            GL11C.glBindTexture(GL11C.GL_TEXTURE_2D, textureName);
-            GL11C.glTexSubImage2D(GL11C.GL_TEXTURE_2D, 0, dirty.x, dirty.y, dirty.width, dirty.height, GL11C.GL_RGBA, GL11C.GL_UNSIGNED_BYTE, imageBuffer);
+            GL45C.glTextureSubImage2D(textureName, 0, dirty.x, dirty.y, dirty.width, dirty.height, GL11C.GL_RGBA, GL11C.GL_UNSIGNED_BYTE, imageBuffer);
         }
     }
 
@@ -586,7 +566,7 @@ public class GlyphCache {
         /* Initialize the background to all white but fully transparent. */
         glyphCacheGraphics.clearRect(0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT);
 
-        textureName = GL11C.glGenTextures();
+        textureName = GL45.glCreateTextures(GL11.GL_TEXTURE_2D);
 
         /* Load imageBuffer with pixel data ready for transfer to OpenGL texture */
         updateImageBuffer(0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT);
@@ -595,14 +575,14 @@ public class GlyphCache {
          * Initialize texture with the now cleared BufferedImage. Using a texture with GL_ALPHA8 internal format may result in
          * faster rendering since the GPU has to only fetch 1 byte per texel instead of 4 with a regular RGBA texture.
          */
-        GL11C.glBindTexture(GL11C.GL_TEXTURE_2D, textureName);
-        GL11C.glTexImage2D(GL11C.GL_TEXTURE_2D, 0, antiAliasEnabled ? GL11.GL_ALPHA8 : GL11.GL_ALPHA4, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, GL11C.GL_RGBA, GL11C.GL_UNSIGNED_BYTE, imageBuffer);
+        GL45C.glTextureStorage2D(textureName, 1, antiAliasEnabled ? GL11.GL_ALPHA8 : GL11.GL_ALPHA4, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+        GL45C.glTextureSubImage2D(textureName, 0, 0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT, GL11C.GL_RGBA, GL11C.GL_UNSIGNED_BYTE, imageBuffer);
 
-        GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_WRAP_S, GL13C.GL_CLAMP_TO_BORDER);
-        GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_WRAP_T, GL13C.GL_CLAMP_TO_BORDER);
+        GL45C.glTextureParameteri(textureName, GL11C.GL_TEXTURE_WRAP_S, GL13C.GL_CLAMP_TO_BORDER);
+        GL45C.glTextureParameteri(textureName, GL11C.GL_TEXTURE_WRAP_T, GL13C.GL_CLAMP_TO_BORDER);
         /* Explicitely disable mipmap support becuase updateTexture() will only update the base level 0 */
-        GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MIN_FILTER, GL11C.GL_LINEAR);
-        GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MAG_FILTER, GL11C.GL_LINEAR);
+        GL45C.glTextureParameteri(textureName, GL11C.GL_TEXTURE_MIN_FILTER, GL11C.GL_LINEAR);
+        GL45C.glTextureParameteri(textureName, GL11C.GL_TEXTURE_MAG_FILTER, GL11C.GL_LINEAR);
 
         textureHandle = ARBBindlessTexture.glGetTextureHandleARB(textureName);
         ARBBindlessTexture.glMakeTextureHandleResidentARB(textureHandle);

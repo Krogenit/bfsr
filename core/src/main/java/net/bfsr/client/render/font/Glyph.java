@@ -1,4 +1,4 @@
-package net.bfsr.client.font_new;
+package net.bfsr.client.render.font;
 
 /**
  * Identifies a single glyph in the layed-out string. Includes a reference to a GlyphCache.Entry with the OpenGL texture ID

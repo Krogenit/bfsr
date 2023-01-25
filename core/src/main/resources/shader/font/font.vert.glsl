@@ -22,8 +22,10 @@ layout(std140, binding = UBO_VIEW_MATRIX) uniform ViewMatrix {
     mat4 matrix;
 } ub_ViewMatrix;
 
+uniform mat4 modelMatrix;
+
 void main() {
-    gl_Position = ub_PrjectionMatrix.matrix * ub_ViewMatrix.matrix * vec4(in_PositionUV.xy, 0.0, 1.0);
+    gl_Position = ub_PrjectionMatrix.matrix * ub_ViewMatrix.matrix * modelMatrix * vec4(in_PositionUV.xy, 0.0, 1.0);
     out_Data.textureCoord = in_PositionUV.zw;
     out_Data.color = in_Color;
     out_Data.textureHandle = sb_Texture.textureHandles[gl_VertexID / 4];

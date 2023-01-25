@@ -1,4 +1,4 @@
-package net.bfsr.client.font_new;
+package net.bfsr.client.render.font;
 
 import org.joml.Vector3f;
 
@@ -19,7 +19,6 @@ import java.util.WeakHashMap;
  * Strings are cached using weak references through a two layer string cache. Strings that are no longer in use by Minecraft will
  * be evicted from the cache, while the pre-rendered images of individual glyphs remains cached forever. The following diagram
  * illustrates how this works:
- * <p>
  * <pre>
  * String passed to Key object considers Entry object holds Each Glyph object GlyphCache.Entry stores
  * renderString(); all ASCII digits equal an array of Glyph belongs to only one the texture ID, image
@@ -42,6 +41,9 @@ import java.util.WeakHashMap;
  */
 public class StringCache {
     private static final Vector3f[] COLOR_TABLE = new Vector3f[32];
+    private static final char SPACE = ' ';
+    private static final char NEW_LINE = '\n';
+    private static final char COLOR_CODE = '\u00A7';
 
     static {
         for (int i = 0; i < 32; ++i) {
@@ -75,14 +77,6 @@ public class StringCache {
     private final WeakHashMap<Key, Entry> stringCache = new WeakHashMap<>();
 
     /**
-     * Every String passed to the public renderString() function is added to this WeakHashMap. As long as As long as Minecraft
-     * continues to hold a strong reference to the String object (i.e. from TileEntitySign and ChatLine) passed here, the
-     * weakRefCache map will continue to hold a strong reference to the Key object that said strings all map to (multiple strings
-     * in weakRefCache can map to a single Key if those strings only differ by their ASCII digits).
-     */
-    private final WeakHashMap<String, Key> weakRefCache = new WeakHashMap<>();
-
-    /**
      * Temporary Key object re-used for lookups with stringCache.get(). Using a temporary object like this avoids the overhead
      * of allocating new objects in the critical rendering path. Of course, new Key objects are always created when adding
      * a mapping to stringCache.
@@ -108,31 +102,20 @@ public class StringCache {
         setFontFromFile(fontFileName, antiAlias);
     }
 
-    /**
-     * Change the default font used to pre-render glyph images. If this method is called at runtime, the string cache is flushed so that
-     * all visible strings will be immediately re-layed out using the new font selection.
-     *
-     * @param fontName  the new font name
-     * @param fontSize  the new point size
-     * @param antiAlias turn on anti aliasing
-     */
-    public void setDefaultFont(String fontName, int fontSize, boolean antiAlias) {
-        /* Change the font in the glyph cache and clear the string cache so all strings have to be re-layed out and re-rendered */
-        glyphCache.setDefaultFont(fontName, fontSize, antiAlias);
-        weakRefCache.clear();
-        stringCache.clear();
-    }
-
-    public void setFontFromFile(String fontFileName, boolean antiAlias) {
+    private void setFontFromFile(String fontFileName, boolean antiAlias) {
         /* Change the font in the glyph cache and clear the string cache so all strings have to be re-layed out and re-rendered */
         glyphCache.setFontFromFile(fontFileName, antiAlias);
-        weakRefCache.clear();
         stringCache.clear();
     }
 
     public void setFontSize(int fontSize) {
         fontSize <<= 1;
         this.fontSize = fontSize;
+    }
+
+    public int getStringWidth(String str, int fontSize) {
+        setFontSize(fontSize);
+        return getStringWidth(str);
     }
 
     /**
@@ -142,7 +125,7 @@ public class StringCache {
      * @return the width in pixels (divided by 2; this matches the scaled coordinate system used by GUIs in Minecraft)
      */
     @SuppressWarnings("unused")
-    public int getStringWidth(String str) {
+    int getStringWidth(String str) {
         /* Check for invalid arguments */
         if (str == null || str.isEmpty()) {
             return 0;
@@ -153,6 +136,75 @@ public class StringCache {
 
         /* Return total horizontal advance (slightly wider than the bounding box, but close enough for centering strings) */
         return entry.advance / 2;
+    }
+
+    public int getCursorPositionInLine(String str, float mouseX) {
+        return getCursorPositionInLine(str, mouseX, true);
+    }
+
+    private int getCursorPositionInLine(String str, float mouseX, boolean breakAtSpaces) {
+        /* Check for invalid arguments */
+        if (str.isEmpty()) {
+            return 0;
+        }
+
+        mouseX += mouseX;
+
+        /* The glyph array for a string is sorted by the string's logical character position */
+        Glyph[] glyphs = cacheString(str).glyphs;
+
+        /* Index of the last whitespace found in the string; used if breakAtSpaces is true */
+        int wsIndex = -1;
+
+        /* Add up the individual advance of each glyph until it exceeds the specified width */
+        float advance = 0.0f;
+        int index = 0;
+        while (index < glyphs.length && advance <= mouseX) {
+            /* Keep track of spaces if breakAtSpaces it set */
+            if (breakAtSpaces) {
+                char c = str.charAt(glyphs[index].stringIndex);
+                if (c == SPACE) {
+                    wsIndex = index;
+                } else if (c == NEW_LINE) {
+                    wsIndex = index;
+                    break;
+                }
+            }
+
+            float halfAdvance = glyphs[index].advance / 2.0f;
+            float nextAdvance = advance + halfAdvance;
+            if (nextAdvance <= mouseX) {
+                advance = nextAdvance + halfAdvance;
+                index++;
+            } else {
+                break;
+            }
+        }
+
+        /* Avoid splitting individual words if breakAtSpaces set; same test condition as in Minecraft's FontRenderer */
+        if (index < glyphs.length && wsIndex != -1 && wsIndex < index) {
+            index = wsIndex;
+        }
+
+        /* The string index of the last glyph that wouldn't fit gives the total desired length of the string in characters */
+        return index < glyphs.length ? glyphs[index].stringIndex : str.length();
+    }
+
+    private int sizeString(String str, int fontSize, int width, boolean breakAtSpaces) {
+        setFontSize(fontSize);
+        return sizeString(str, width, breakAtSpaces);
+    }
+
+    /**
+     * Return the number of characters in a string that will completly fit inside the specified width when rendered.
+     *
+     * @param str   the String to analyze
+     * @param width the desired string width (in GUI coordinate system)
+     * @return the number of characters from str that will fit inside width
+     */
+    @SuppressWarnings("unused")
+    public int sizeStringToWidth(String str, int width) {
+        return sizeString(str, width, true);
     }
 
     /**
@@ -171,11 +223,7 @@ public class StringCache {
             return 0;
         }
 
-        /* Convert the width from GUI coordinate system to pixels */
-        if (width >= Integer.MAX_VALUE / 2)
-            width = Integer.MAX_VALUE;
-        else
-            width += width;
+        width += width;
 
         /* The glyph array for a string is sorted by the string's logical character position */
         Glyph[] glyphs = cacheString(str).glyphs;
@@ -189,9 +237,9 @@ public class StringCache {
             /* Keep track of spaces if breakAtSpaces it set */
             if (breakAtSpaces) {
                 char c = str.charAt(glyphs[index].stringIndex);
-                if (c == ' ') {
+                if (c == SPACE) {
                     wsIndex = index;
-                } else if (c == '\n') {
+                } else if (c == NEW_LINE) {
                     wsIndex = index;
                     break;
                 }
@@ -215,16 +263,12 @@ public class StringCache {
         return index < glyphs.length ? glyphs[index].stringIndex : str.length();
     }
 
-    /**
-     * Return the number of characters in a string that will completly fit inside the specified width when rendered.
-     *
-     * @param str   the String to analyze
-     * @param width the desired string width (in GUI coordinate system)
-     * @return the number of characters from str that will fit inside width
-     */
-    @SuppressWarnings("unused")
-    public int sizeStringToWidth(String str, int width) {
-        return sizeString(str, width, true);
+    public int sizeStringToWidth(String str, int fontSize, int width) {
+        return sizeString(str, fontSize, width, true);
+    }
+
+    public String trimStringToWidth(String str, int width) {
+        return trimStringToWidth(str, width, false);
     }
 
     /**
@@ -250,11 +294,11 @@ public class StringCache {
         return str;
     }
 
-    public String trimStringToWidthSaveWords(String string, int width) {
+    String trimStringToWidthSaveWords(String string, int width) {
         return string.substring(0, sizeString(string, width, true));
     }
 
-    public Vector3f getColor(int colorCode) {
+    Vector3f getColor(int colorCode) {
         return COLOR_TABLE[colorCode];
     }
 
@@ -334,16 +378,6 @@ public class StringCache {
             stringCache.put(key, entry);
         }
 
-        /*
-         * Add the String passed into this method to the stringWeakMap so it keeps the Key reference live as long as the String is in use.
-         * If an existing Entry was already found in the stringCache, it's possible that its Key has already been garbage collected. The
-         * code below checks for this to avoid adding (str, null) entries into weakRefCache. Note that if a new Key object was created, it
-         * will still be live because of the strong reference created by the "key" variable.
-         */
-        Key oldKey = entry.keyRef.get();
-        if (oldKey != null) {
-            weakRefCache.put(str, oldKey);
-        }
         lookupKey.str = null;
         lookupKey.fontSize = 0;
 
@@ -370,7 +404,7 @@ public class StringCache {
         byte colorCode = -1;
 
         /* Search for section mark characters indicating the start of a color code (but only if followed by at least one character) */
-        while ((next = str.indexOf('\u00A7', start)) != -1 && next + 1 < str.length()) {
+        while ((next = str.indexOf(COLOR_CODE, start)) != -1 && next + 1 < str.length()) {
             /*
              * Remove the two char color code from text[] by shifting the remaining data in the array over on top of it.
              * The "start" and "next" variables all contain offsets into the original unmodified "str" string. The "shift"
@@ -382,10 +416,6 @@ public class StringCache {
             /* Decode escape code used in the string and change current font style / color based on it */
             int code = "0123456789abcdefklmnor".indexOf(Character.toLowerCase(str.charAt(next + 1)));
             switch (code) {
-                /* Random style; TODO: NOT IMPLEMENTED YET */
-                case 16:
-                    break;
-
                 /* Bold style */
                 case 17:
                     fontStyle |= Font.BOLD;
@@ -417,7 +447,7 @@ public class StringCache {
 
                 /* Otherwise, must be a color code or some other unsupported code */
                 default:
-                    if (code >= 0 && code <= 15) {
+                    if (code >= 0) {
                         colorCode = (byte) code;
                         fontStyle = Font.PLAIN; // This may be a bug in Minecraft's original FontRenderer
                         renderStyle = 0; // This may be a bug in Minecraft's original FontRenderer
@@ -568,8 +598,8 @@ public class StringCache {
      * @param advance     the horizontal advance (i.e. X position) returned by previous call to layoutString()
      * @param style       combination of Font.PLAIN, Font.BOLD, and Font.ITALIC to select a fonts with some specific style
      * @return the advance (horizontal distance) of this string plus the advance passed in as an argument
-     * @todo Correctly handling RTL font selection requires scanning the sctring from RTL as well.
-     * @todo Use bitmap fonts as a fallback if no OpenType font could be found
+     * todo Correctly handling RTL font selection requires scanning the sctring from RTL as well.
+     * todo Use bitmap fonts as a fallback if no OpenType font could be found
      */
     private int layoutString(List<Glyph> glyphList, char[] text, int start, int limit, int layoutFlags, int advance, int style) {
         /* Break the string up into segments, where each segment can be displayed using a single font */
@@ -610,7 +640,7 @@ public class StringCache {
      * @param advance     the horizontal advance (i.e. X position) returned by previous call to layoutString()
      * @param font        the Font used to layout a GlyphVector for the string
      * @return the advance (horizontal distance) of this string plus the advance passed in as an argument
-     * @todo need to ajust position of all glyphs if digits are present, by assuming every digit should be 0 in length
+     * todo need to ajust position of all glyphs if digits are present, by assuming every digit should be 0 in length
      */
     private int layoutFont(List<Glyph> glyphList, char[] text, int start, int limit, int layoutFlags, int advance, Font font) {
         /*
@@ -662,11 +692,11 @@ public class StringCache {
         return advance;
     }
 
-    public int getHeight(String s) {
+    public float getHeight(String s, int fontSize) {
         return glyphCache.getHeight(s, fontSize);
     }
 
-    public int getAscent(String s) {
+    public int getAscent(String s, int fontSize) {
         return glyphCache.getAscent(s, fontSize);
     }
 }

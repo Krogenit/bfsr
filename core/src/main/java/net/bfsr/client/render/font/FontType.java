@@ -1,8 +1,9 @@
-package net.bfsr.client.font_new;
+package net.bfsr.client.render.font;
 
 public enum FontType {
-    Default(new StringCache()),
-    Xolonium(new StringCache("Xolonium-Regular.ttf", true));
+    DEFAULT(new StringCache()),
+    XOLONIUM(new StringCache("Xolonium-Regular.ttf", true)),
+    CONSOLA(new StringCache("consola.ttf", true));
 
     private final StringCache stringCache;
 
