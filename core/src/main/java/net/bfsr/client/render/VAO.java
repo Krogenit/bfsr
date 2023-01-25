@@ -1,14 +1,14 @@
 package net.bfsr.client.render;
 
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL30C;
-import org.lwjgl.opengl.GL45;
+import lombok.Getter;
+import org.lwjgl.opengl.*;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
 public class VAO {
+    @Getter
     private final int id;
     private final VBO[] VBOs;
 
@@ -22,41 +22,48 @@ public class VAO {
         return new VAO(id, vboCount);
     }
 
+    public void createVertexBuffers() {
+        for (int i = 0; i < VBOs.length; i++) {
+            VBOs[i] = VBO.create();
+        }
+    }
+
     public void createVertexBuffer(int index) {
         VBO vbo = VBO.create();
         VBOs[index] = vbo;
     }
 
     public void vertexArrayVertexBuffer(int index, int stride) {
-        GL45.glVertexArrayVertexBuffer(id, index, VBOs[index].getId(), 0, stride);
+        GL45C.glVertexArrayVertexBuffer(id, index, VBOs[index].getId(), 0, stride);
+    }
+
+    public void vertexArrayElementBuffer(int index) {
+        GL45C.glVertexArrayElementBuffer(id, VBOs[index].getId());
     }
 
     public void attributeBindingAndFormat(int attribute, int attributeSize, int bufferIndex, int relativeOffset) {
-        GL45.glVertexArrayAttribBinding(id, attribute, bufferIndex);
-        GL45.glVertexArrayAttribFormat(id, attribute, attributeSize, GL11.GL_FLOAT, false, relativeOffset);
+        GL45C.glVertexArrayAttribBinding(id, attribute, bufferIndex);
+        GL45C.glVertexArrayAttribFormat(id, attribute, attributeSize, GL11.GL_FLOAT, false, relativeOffset);
     }
 
-    private void createAttribute(int attribute, FloatBuffer data, int attrSize, int drawType) {
-        VBO vbo = VBO.create();
-        vbo.storeData(data, drawType);
-        GL45.glVertexArrayAttribFormat(id, attribute, attrSize, GL11.GL_FLOAT, false, attrSize << 2);
-        VBOs[attribute] = vbo;
+    public void attributeDivisor(int attribute, int divisor) {
+        GL45C.glVertexArrayBindingDivisor(id, attribute, divisor);
     }
 
-    public void createAttribute(int attribute, FloatBuffer data, int attrSize) {
-        createAttribute(attribute, data, attrSize, 0);
+    public void updateVertexBuffer(int index, FloatBuffer data, int flags, int stride) {
+        VBOs[index].storeData(data, flags, () -> vertexArrayVertexBuffer(index, stride));
     }
 
-    public void updateVertexBuffer(int index, FloatBuffer data, int drawType, int stride) {
-        VBOs[index].storeData(data, drawType, () -> vertexArrayVertexBuffer(index, stride));
+    public void updateIndexBuffer(int index, IntBuffer data, int flags) {
+        VBOs[index].storeData(data, flags, () -> vertexArrayElementBuffer(index));
     }
 
-    public void updateBuffer(int index, FloatBuffer data, int drawType) {
-        VBOs[index].storeData(data, drawType);
+    public void updateBuffer(int index, FloatBuffer data, int flags) {
+        VBOs[index].storeData(data, flags);
     }
 
-    public void updateBuffer(int index, LongBuffer data, int drawType) {
-        VBOs[index].storeData(data, drawType);
+    public void updateBuffer(int index, LongBuffer data, int flags) {
+        VBOs[index].storeData(data, flags);
     }
 
     public void bindBufferBase(int target, int index, int bufferIndex) {
@@ -69,12 +76,12 @@ public class VAO {
 
     public void enableAttributes(int count) {
         for (int i = 0; i < count; i++) {
-            GL45.glEnableVertexArrayAttrib(id, i);
+            GL45C.glEnableVertexArrayAttrib(id, i);
         }
     }
 
     public void clear() {
-        GL30.glDeleteVertexArrays(id);
+        GL30C.glDeleteVertexArrays(id);
         for (int i = 0; i < VBOs.length; i++) {
             VBOs[i].clear();
         }

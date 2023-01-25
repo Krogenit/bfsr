@@ -1,11 +1,13 @@
 package net.bfsr.math;
 
 import net.bfsr.client.camera.Camera;
-import net.bfsr.client.font.GUIText;
+import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
+
+import java.nio.FloatBuffer;
 
 public class Transformation {
     private static final Matrix4f viewMatrix = new Matrix4f();
@@ -13,6 +15,7 @@ public class Transformation {
     private static final Matrix4f viewMatrixGui = new Matrix4f();
     private static final Matrix4f modelViewMatrix = new Matrix4f();
     private static final Matrix4f finalModelViewMatrix = new Matrix4f();
+    private static final Matrix4f matrix = new Matrix4f();
 
     public static final Vector2f guiScale = new Vector2f(Core.getCore().getWidth() / 1280.0f, Core.getCore().getHeight() / 720.0f);
 
@@ -28,7 +31,7 @@ public class Transformation {
     public static Matrix4f getModelViewMatrixGui(float x, float y, float rotation, float scaleX, float scaleY) {
         modelViewMatrix.identity().translate(x, y, 0);
         if (rotation != 0) modelViewMatrix.rotateZ(rotation);
-        modelViewMatrix.scale(scaleX, -scaleY, 1);
+        modelViewMatrix.scale(scaleX, scaleY, 1);
         return viewMatrixGui.mul(modelViewMatrix, finalModelViewMatrix);
     }
 
@@ -45,84 +48,68 @@ public class Transformation {
 
         modelViewMatrix.identity().translate(lastPosition.x + (position.x - lastPosition.x) * interpolation, lastPosition.y + (position.y - lastPosition.y) * interpolation, 0);
         if (rotation != 0) modelViewMatrix.rotateZ(rotation);
-        modelViewMatrix.scale(scale.x, -scale.y, 1);
+        modelViewMatrix.scale(scale.x, scale.y, 1);
 
         Matrix4f viewMatrixByType = getViewMatrixByType(zoomFactor);
         return viewMatrixByType.mul(modelViewMatrix, finalModelViewMatrix);
-    }
-
-    public static Matrix4f getMatrixForFontRendering(EnumZoomFactor factor) {
-        return getViewMatrixByType(factor);
-    }
-
-    public static Matrix4f getMatrixForFontRendering(float x, float y, EnumZoomFactor factor) {
-        modelViewMatrix.identity().translate(x, y, 0).scale(2.0f, 2.0f, 1.0f);
-        Matrix4f viewMatrixByType = getViewMatrixByType(factor);
-        return viewMatrixByType.mul(modelViewMatrix, finalModelViewMatrix);
-    }
-
-    public static Matrix4f getModelViewMatrixForTextRendering(Vector2f pos, EnumZoomFactor factor) {
-        modelViewMatrix.identity().translate(pos.x, pos.y, 0).scale(700, -700, 1).translate(0, -1f, 0);
-        Matrix4f viewMatrixByType = getViewMatrixByType(factor);
-        return viewMatrixByType.mul(modelViewMatrix, finalModelViewMatrix);
-    }
-
-    public static Matrix4f getModelViewMatrixForTextRendering(Vector2f pos, EnumZoomFactor factor, Vector2f offset) {
-        modelViewMatrix.identity().translate(pos.x + offset.x, pos.y + offset.y, 0).scale(700, -700, 1).translate(0, -1f, 0);
-        Matrix4f viewMatrixByType = getViewMatrixByType(factor);
-        return viewMatrixByType.mul(modelViewMatrix, finalModelViewMatrix);
-    }
-
-    public static Matrix4f getModelViewMatrix(GUIText text) {
-        EnumZoomFactor zoomFactor = text.getZoomFactor();
-
-        modelViewMatrix.identity().translate(text.getPosition().x, text.getPosition().y + 700, 0).scale(700, -700, 1);
-        Matrix4f viewMatrixByType = getViewMatrixByType(zoomFactor);
-        return viewMatrixByType.mul(modelViewMatrix, finalModelViewMatrix);
-    }
-
-    public static Matrix4f getModelViewMatrix(GUIText text, Vector2f offset) {
-        EnumZoomFactor zoomFactor = text.getZoomFactor();
-
-        modelViewMatrix.identity().translate(text.getPosition().x + offset.x, text.getPosition().y + offset.y + 700, 0).scale(700, -700, 1);
-        Matrix4f viewMatrixByType = getViewMatrixByType(zoomFactor);
-        return viewMatrixByType.mul(modelViewMatrix, finalModelViewMatrix);
-    }
-
-    public static Matrix4f getViewMatrix(Camera camera) {
-        Vector2f cameraPos = camera.getPositionAndOrigin();
-        float rotation = camera.getRotation();
-
-        viewMatrix.identity();
-        if (rotation != 0) viewMatrix.rotateZ(rotation);
-        viewMatrix.translate(-cameraPos.x, -cameraPos.y, 0);
-        return viewMatrix;
     }
 
     public static void updateViewMatrix(Camera camera, float interpolation) {
         Vector2f camPos = camera.getPosition();
         Vector2f lastPosition = camera.getLastPosition();
         Vector2f camOrigin = camera.getOrigin();
-        float rotation = camera.getRotation();
         float zoom = camera.getZoom();
 
         viewMatrix.identity();
-        viewMatrix.rotateZ(rotation);
         viewMatrix.translate(-camOrigin.x, -camOrigin.y, 0);
         viewMatrix.scale(zoom, zoom, 1);
         float x = lastPosition.x + (camPos.x - lastPosition.x) * interpolation;
         float y = lastPosition.y + (camPos.y - lastPosition.y) * interpolation;
         viewMatrix.translate(-x, -y, 0);
+    }
 
-        zoom = camera.getZoomBackground();
+    public static FloatBuffer getModelMatrix(TextureObject textureObject, float interpolation) {
+        return textureObject.getModelMatrixType().get(textureObject, interpolation);
+    }
+
+    public static FloatBuffer getDefaultModelMatrix(TextureObject textureObject, float interpolation) {
+        Camera camera = Core.getCore().getRenderer().getCamera();
+
+        Vector2f lastPosition = textureObject.getLastPosition();
+        Vector2f position = textureObject.getPosition();
+        float rotation = textureObject.getRotation();
+        Vector2f scale = textureObject.getScale();
+
+        float cameraX = camera.getLastPosition().x + (camera.getPosition().x - camera.getLastPosition().x) * interpolation;
+        float cameraY = camera.getLastPosition().y + (camera.getPosition().y - camera.getLastPosition().y) * interpolation;
+
+        matrix.identity().translate(-camera.getOrigin().x, -camera.getOrigin().y, 0).scale(camera.getZoom(), camera.getZoom(), 1.0f)
+                .translate(-cameraX + lastPosition.x + (position.x - lastPosition.x) * interpolation, -cameraY + lastPosition.y + (position.y - lastPosition.y) * interpolation, 0);
+        if (rotation != 0) matrix.rotateZ(rotation);
+        matrix.scale(scale.x, scale.y, 1);
+        return matrix.get(ShaderProgram.MATRIX_BUFFER);
+    }
+
+    public static FloatBuffer getBackgroundModelMatrix(TextureObject textureObject, float interpolation) {
+        Camera camera = Core.getCore().getRenderer().getCamera();
+
+        Vector2f camPos = camera.getPosition();
+        Vector2f lastPosition = camera.getLastPosition();
+        Vector2f camOrigin = camera.getOrigin();
+
+        float x = lastPosition.x + (camPos.x - lastPosition.x) * interpolation;
+        float y = lastPosition.y + (camPos.y - lastPosition.y) * interpolation;
         float moveFactor = 0.005f;
+        float zoom = 0.5f + camera.getZoom() * 0.001f;
 
-        viewMatrixBackground.identity();
-        viewMatrixBackground.rotateZ(rotation);
-        viewMatrixBackground.translate(-camOrigin.x, -camOrigin.y, 0);
-        viewMatrixBackground.scale(zoom, zoom, 1);
+        matrix.identity().translate(-camOrigin.x, -camOrigin.y, 0).scale(zoom, zoom, 1.0f)
+                .translate(-x * moveFactor + textureObject.getPosition().x, -y * moveFactor + textureObject.getPosition().y, 0.0f).scale(textureObject.getScale().x, textureObject.getScale().y, 1.0f);
+        return matrix.get(ShaderProgram.MATRIX_BUFFER);
+    }
 
-        viewMatrixBackground.translate(-x * moveFactor, -y * moveFactor, 0);
+    public static FloatBuffer getGUIModelMatrix(TextureObject textureObject) {
+        return matrix.identity().translate(textureObject.getPosition().x, textureObject.getPosition().y, 0.0f).scale(textureObject.getScale().x, textureObject.getScale().y, 1.0f)
+                .get(ShaderProgram.MATRIX_BUFFER);
     }
 
     public static Matrix4f getViewMatrixByType(EnumZoomFactor zoomFactor) {
@@ -139,11 +126,6 @@ public class Transformation {
 
     public static Matrix4f getGuiViewMatrix() {
         return viewMatrixGui;
-    }
-
-    public static void updateGenericViewMatrix(Vector2f position, float rotation, Matrix4f matrix) {
-        if (rotation != 0) matrix.rotationZ(rotation);
-        matrix.translate(-position.x, -position.y, -0);
     }
 
     public static void resize(int width, int height) {

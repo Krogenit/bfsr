@@ -12,17 +12,16 @@ uniform sampler2D textureOpaque;
 uniform bool useTexture;
 uniform bool animatedTexture;
 
-void main()
-{
-	if(useTexture) {
-		if(animatedTexture) {
-			vec4 color1 = texture(textureOpaque, textureCoords0);
-			vec4 color2 = texture(textureOpaque, textureCoords1);
-			
-			fragColor = mix(color1, color2, blend) * particleColor; 
-		} else {
-		   	fragColor = texture(textureOpaque, textureCoords0) * particleColor;
-		}
+void main() {
+    if (useTexture) {
+        if (animatedTexture) {
+            vec4 color1 = texture(textureOpaque, textureCoords0);
+            vec4 color2 = texture(textureOpaque, textureCoords1);
+
+            fragColor = mix(color1, color2, blend) * particleColor;
+        } else {
+            fragColor = texture(textureOpaque, textureCoords0) * particleColor;
+        }
     } else {
         fragColor = particleColor;
     }

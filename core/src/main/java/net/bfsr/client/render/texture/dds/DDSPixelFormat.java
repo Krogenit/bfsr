@@ -17,7 +17,7 @@
  *  along with dds-lwjgl.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.bfsr.client.loader;
+package net.bfsr.client.render.texture.dds;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

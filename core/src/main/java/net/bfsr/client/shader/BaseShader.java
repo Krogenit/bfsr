@@ -1,16 +1,15 @@
 package net.bfsr.client.shader;
 
 import net.bfsr.client.shader.loader.Definition;
-import org.joml.Matrix4f;
-import org.joml.Vector4f;
 import org.lwjgl.opengl.GL20;
+
+import java.nio.FloatBuffer;
 
 public class BaseShader extends ShaderProgram {
     protected int loc_useTexture;
     protected int loc_textureOpaque;
     protected int loc_color;
-    protected int loc_orthoMat;
-    protected int loc_modelViewMat;
+    protected int loc_modelMatrix;
     private int loc_uv_scale;
     private int loc_uv_offset;
     protected boolean useTexture;
@@ -29,8 +28,7 @@ public class BaseShader extends ShaderProgram {
         loc_useTexture = getUniformLocation("useTexture");
         loc_textureOpaque = getUniformLocation("textureOpaque");
 
-        loc_orthoMat = getUniformLocation("orthoMat");
-        loc_modelViewMat = getUniformLocation("modelViewMat");
+        loc_modelMatrix = getUniformLocation("modelMatrix");
 
         loc_uv_scale = getUniformLocation("uv_scale");
         loc_uv_offset = getUniformLocation("uv_offset");
@@ -39,16 +37,12 @@ public class BaseShader extends ShaderProgram {
     @Override
     protected void initUniforms() {
         setTextureOpaqueId(0);
-        setColor(new Vector4f(1, 1, 1, 1));
+        setColor(1.0f, 1.0f, 1.0f, 1.0f);
         setUVScale(1.0f, 1.0f);
     }
 
-    public void setOrthoMatrix(Matrix4f matrix) {
-        setMat4(loc_orthoMat, matrix);
-    }
-
-    public void setModelViewMatrix(Matrix4f matrix) {
-        setMat4(loc_modelViewMat, matrix);
+    public void setModelMatrix(FloatBuffer matrixBuffer) {
+        setMat4(loc_modelMatrix, matrixBuffer);
     }
 
     public void setTextureOpaqueId(int id) {
@@ -69,15 +63,11 @@ public class BaseShader extends ShaderProgram {
         }
     }
 
-    public void setColor(Vector4f color) {
-        setVector(loc_color, color);
+    public void setColor(float r, float g, float b, float a) {
+        setVector(loc_color, r, g, b, a);
     }
 
     public void setUVScale(float x, float y) {
         setVector(loc_uv_scale, x, y);
-    }
-
-    public void setUVOffset(float x, float y) {
-        setVector(loc_uv_offset, x, y);
     }
 }

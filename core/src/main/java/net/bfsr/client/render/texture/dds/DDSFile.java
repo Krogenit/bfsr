@@ -17,9 +17,8 @@
  *  along with dds-lwjgl.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.bfsr.client.loader;
+package net.bfsr.client.render.texture.dds;
 
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.EXTTextureCompressionS3TC;
 
 import java.io.FileNotFoundException;
@@ -44,8 +43,7 @@ import java.util.List;
  * @author Magnus Bull
  */
 public class DDSFile {
-
-    public boolean printDebug = false;
+    private boolean printDebug;
 
     /** A 32-bit representation of the character sequence "DDS " which is the magic word for DDS files. */
     private static final int DDS_MAGIC = 0x20534444;
@@ -68,23 +66,6 @@ public class DDSFile {
     /** The compression format for the current DDS document */
     private int dxtFormat;
 
-    /** Whether this DDS file is a cubemap or not */
-    private boolean isCubeMap;
-
-    /** Empty constructor */
-    public DDSFile() {}
-
-    /**
-     * Loads a DDS file from the given file path.
-     *
-     * @param filePath
-     * @throws IOException
-     * @throws FileNotFoundException
-     */
-    public DDSFile(String filePath) {
-//		this.loadFile(new File(filePath));
-    }
-
     /**
      * Loads a DDS file from the given file.
      *
@@ -96,19 +77,11 @@ public class DDSFile {
         this.loadFile(in);
     }
 
-    /**
-     * Loads a DDS file from the given file path.
-     *
-     * @param file
-     * @throws IOException
-     */
-    public void loadFile(String file) {
-//		this.loadFile(new FileInputStream(new File(file)));
-    }
-
     public void clear() {
         if (bdata != null) {
-            for (ByteBuffer buffer : bdata) {
+            int size = bdata.size();
+            for (int i = 0; i < size; i++) {
+                ByteBuffer buffer = bdata.get(i);
                 buffer.clear();
             }
 
@@ -117,7 +90,9 @@ public class DDSFile {
         }
 
         if (bdata2 != null) {
-            for (ByteBuffer buffer : bdata2) {
+            int size = bdata2.size();
+            for (int i = 0; i < size; i++) {
+                ByteBuffer buffer = bdata2.get(i);
                 buffer.clear();
             }
 
@@ -132,27 +107,11 @@ public class DDSFile {
      * @param fis
      * @throws IOException
      */
-    public void loadFile(InputStream fis) {
-//		if(file.isFile() == false)
-//		{
-//			System.err.printf("DDS: File not found: '%s'%n",file.getAbsolutePath());
-//			return;
-//		}
-
-//		if(file.getAbsolutePath().contains("")) {
-//			System.out.println("wood_kust");
-//		} else {
-//			
-//		}
-
-//		if(printDebug) System.out.printf("Loading DDS file: '%s'%n", file.getAbsolutePath());
-
-        bdata = new ArrayList<ByteBuffer>();
-        bdata2 = new ArrayList<ByteBuffer>(); //TODO: Not properly implemented yet.
+    private void loadFile(InputStream fis) {
+        bdata = new ArrayList<>();
+        bdata2 = new ArrayList<>(); //TODO: Not properly implemented yet.
 
         try {
-//			FileInputStream fis = new FileInputStream(file);
-
             int totalByteCount = fis.available();
             if (printDebug) System.out.println("Total bytes: " + totalByteCount);
 
@@ -171,14 +130,14 @@ public class DDSFile {
             header = new DDSHeader(newByteBuffer(bHeader), printDebug);
 
             int blockSize = 16;
-            if (header.ddspf.sFourCC.equalsIgnoreCase("DXT1")) {
+            if ("DXT1".equalsIgnoreCase(header.ddspf.sFourCC)) {
                 dxtFormat = EXTTextureCompressionS3TC.GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
                 blockSize = 8;
-            } else if (header.ddspf.sFourCC.equalsIgnoreCase("DXT3")) {
+            } else if ("DXT3".equalsIgnoreCase(header.ddspf.sFourCC)) {
                 dxtFormat = EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-            } else if (header.ddspf.sFourCC.equalsIgnoreCase("DXT5")) {
+            } else if ("DXT5".equalsIgnoreCase(header.ddspf.sFourCC)) {
                 dxtFormat = EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-            } else if (header.ddspf.sFourCC.equalsIgnoreCase("DX10")) {
+            } else if ("DX10".equalsIgnoreCase(header.ddspf.sFourCC)) {
                 System.err.println("Uses DX10 extended header, which is not supported!");
                 fis.close();
                 return;
@@ -191,10 +150,8 @@ public class DDSFile {
 
             if (header.hasCaps2CubeMap) {
                 surfaceCount = 6;
-                isCubeMap = true;
             } else {
                 surfaceCount = 1;
-                isCubeMap = false;
             }
 
             imageSize = calculatePitch(blockSize);
@@ -232,7 +189,7 @@ public class DDSFile {
 
             if (printDebug) System.out.printf("Remaining bytes: %d (%d)%n", fis.available(), totalByteCount);
             fis.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -241,16 +198,8 @@ public class DDSFile {
         return Math.max(1, ((header.dwWidth + 3) / 4)) * blockSize;
     }
 
-    public static ByteBuffer newByteBuffer1(byte[] data) {
-        ByteBuffer buffer = BufferUtils.createByteBuffer(data.length);
-        buffer.put(data);
-        buffer.flip();
-        return buffer;
-    }
-
-
     /** Creates a new ByteBuffer and stores the data within it before returning it. */
-    public static ByteBuffer newByteBuffer(byte[] data) {
+    private static ByteBuffer newByteBuffer(byte[] data) {
         ByteBuffer buffer = ByteBuffer.allocateDirect(data.length).order(ByteOrder.nativeOrder());
         buffer.put(data);
         buffer.flip();
@@ -267,8 +216,6 @@ public class DDSFile {
 
     /**
      * Gets the main surface data buffer.
-     *
-     * @return
      */
     public ByteBuffer getBuffer() {
         return getMainBuffer();
@@ -276,15 +223,13 @@ public class DDSFile {
 
     /**
      * Gets the main surface data buffer - usually the first full-sized image.
-     *
-     * @return
      */
-    public ByteBuffer getMainBuffer() {
+    private ByteBuffer getMainBuffer() {
         return bdata.get(0);
     }
 
     public int getMipMapCount() {
-        return this.header.dwMipMapCount;
+        return Math.min(this.header.dwMipMapCount - 1, this.bdata2.size());
     }
 
     /**
@@ -295,79 +240,7 @@ public class DDSFile {
         return this.bdata2.get(level);
     }
 
-    public ByteBuffer getCubeMapPositiveX() {
-        if (!header.hasCaps2CubeMap) return null;
-        return bdata.get(0);
-    }
-
-    public ByteBuffer getCubeMapNegativeX() {
-        if (!header.hasCaps2CubeMap) return null;
-        return bdata.get(1);
-    }
-
-    public ByteBuffer getCubeMapPositiveY() {
-        if (!header.hasCaps2CubeMap) return null;
-        return bdata.get(2);
-    }
-
-    public ByteBuffer getCubeMapNegativeY() {
-        if (!header.hasCaps2CubeMap) return null;
-        return bdata.get(3);
-    }
-
-    public ByteBuffer getCubeMapPositiveZ() {
-        if (!header.hasCaps2CubeMap) return null;
-        return bdata.get(4);
-    }
-
-    public ByteBuffer getCubeMapNegativeZ() {
-        if (!header.hasCaps2CubeMap) return null;
-        return bdata.get(5);
-    }
-
-    public ByteBuffer getCubeMapMipPXLevel(int level) {
-        level = Math.min(Math.min(header.dwMipMapCount, level), Math.max(level, 0));
-        return this.bdata2.get((level * 1) - 1);
-    }
-
-    public ByteBuffer getCubeMapMipNXLevel(int level) {
-        level = Math.min(Math.min(header.dwMipMapCount, level), Math.max(level, 0));
-        return this.bdata2.get((level * 2) - 1);
-    }
-
-    public ByteBuffer getCubeMapMipPYLevel(int level) {
-        level = Math.min(Math.min(header.dwMipMapCount, level), Math.max(level, 0));
-        if (printDebug) System.out.println((level * 3) - 1);
-        return this.bdata2.get((level * 3) - 1);
-    }
-
-    public ByteBuffer getCubeMapMipNYLevel(int level) {
-        level = Math.min(Math.min(header.dwMipMapCount, level), Math.max(level, 0));
-        if (printDebug) System.out.println((level * 4) - 1);
-        return this.bdata2.get((level * 4) - 1);
-    }
-
-    public ByteBuffer getCubeMapMipPZLevel(int level) {
-        level = Math.min(Math.min(header.dwMipMapCount, level), Math.max(level, 0));
-        if (printDebug) System.out.println((level * 5) - 1);
-        return this.bdata2.get((level * 5) - 1);
-    }
-
-    public ByteBuffer getCubeMapMipNZLevel(int level) {
-        level = Math.min(Math.min(header.dwMipMapCount, level), Math.max(level, 0));
-        if (printDebug) System.out.println((level * 6) - 1);
-        return this.bdata2.get((level * 6) - 1);
-    }
-
     public int getDXTFormat() {
         return dxtFormat;
-    }
-
-    public int getPitchOrLinearSize() {
-        return imageSize;
-    }
-
-    public boolean isCubeMap() {
-        return isCubeMap;
     }
 }

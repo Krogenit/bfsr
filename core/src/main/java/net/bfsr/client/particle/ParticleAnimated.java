@@ -1,7 +1,7 @@
 package net.bfsr.client.particle;
 
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.shader.ParticleShader;
-import net.bfsr.client.texture.TextureRegister;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 

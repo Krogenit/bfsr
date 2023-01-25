@@ -1,6 +1,6 @@
 package net.bfsr.client.particle;
 
-import net.bfsr.client.texture.TextureRegister;
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.entity.ship.Ship;
 import org.joml.Vector2f;

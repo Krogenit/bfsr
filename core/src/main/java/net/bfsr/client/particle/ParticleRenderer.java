@@ -2,23 +2,23 @@ package net.bfsr.client.particle;
 
 import lombok.Getter;
 import net.bfsr.client.camera.Camera;
-import net.bfsr.client.loader.MeshLoader;
-import net.bfsr.client.model.Mesh;
+import net.bfsr.client.model.MeshLoader;
+import net.bfsr.client.model.TexturedQuad;
 import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.render.Renderer;
+import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.shader.ParticleInstancedShader;
-import net.bfsr.client.texture.Texture;
 import net.bfsr.core.Core;
 import net.bfsr.math.Transformation;
+import net.bfsr.settings.EnumOption;
 import net.bfsr.world.WorldClient;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL31;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.*;
 
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +26,7 @@ import java.util.List;
 public class ParticleRenderer {
     @Getter
     private static ParticleRenderer instance;
+    private static final int INSTANCE_DATA_LENGTH = 25;
 
     private final Core core = Core.getCore();
     private final WorldClient world;
@@ -40,14 +41,8 @@ public class ParticleRenderer {
     private final HashMap<Texture, List<ParticleWreck>> particlesWrecksHashMap = new HashMap<>();
     private final List<ParticleWreck> particlesWrecks = new ArrayList<>();
 
-    private static final float[] VERTICES = {-0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f, -0.5f};
-    private static final int MAX_INSTANCES = 10000;
-    private static final int INSTANCE_DATA_LENGTH = 25;
-
-    private final MeshLoader meshLoader;
-    private final Mesh quad;
-    private final int vbo;
-    private int pointer;
+    private final TexturedQuad quad;
+    private FloatBuffer buffer = BufferUtils.createFloatBuffer(INSTANCE_DATA_LENGTH * 1000);
 
     public ParticleRenderer(WorldClient w) {
         this.world = w;
@@ -56,17 +51,14 @@ public class ParticleRenderer {
         this.particleShader = new ParticleInstancedShader();
         this.particleShader.load();
         this.particleShader.init();
-        this.meshLoader = new MeshLoader();
-        this.quad = new Mesh(VERTICES);
-        this.vbo = meshLoader.createEmptyVbo(INSTANCE_DATA_LENGTH * MAX_INSTANCES);
-
-        this.meshLoader.addInstancedAttribute(quad.getVaoId(), vbo, 1, 4, INSTANCE_DATA_LENGTH, 0);
-        this.meshLoader.addInstancedAttribute(quad.getVaoId(), vbo, 2, 4, INSTANCE_DATA_LENGTH, 4);
-        this.meshLoader.addInstancedAttribute(quad.getVaoId(), vbo, 3, 4, INSTANCE_DATA_LENGTH, 8);
-        this.meshLoader.addInstancedAttribute(quad.getVaoId(), vbo, 4, 4, INSTANCE_DATA_LENGTH, 12);
-        this.meshLoader.addInstancedAttribute(quad.getVaoId(), vbo, 5, 4, INSTANCE_DATA_LENGTH, 16);
-        this.meshLoader.addInstancedAttribute(quad.getVaoId(), vbo, 6, 1, INSTANCE_DATA_LENGTH, 20);
-        this.meshLoader.addInstancedAttribute(quad.getVaoId(), vbo, 7, 4, INSTANCE_DATA_LENGTH, 21);
+        quad = MeshLoader.createParticleCenteredQuad();
+        quad.addInstancedAttribute(2, 1, 4, INSTANCE_DATA_LENGTH, 0);
+        quad.addInstancedAttribute(2, 2, 4, INSTANCE_DATA_LENGTH, 4);
+        quad.addInstancedAttribute(2, 3, 4, INSTANCE_DATA_LENGTH, 8);
+        quad.addInstancedAttribute(2, 4, 4, INSTANCE_DATA_LENGTH, 12);
+        quad.addInstancedAttribute(2, 5, 4, INSTANCE_DATA_LENGTH, 16);
+        quad.addInstancedAttribute(2, 6, 1, INSTANCE_DATA_LENGTH, 20);
+        quad.addInstancedAttribute(2, 7, 4, INSTANCE_DATA_LENGTH, 21);
         instance = this;
     }
 
@@ -108,30 +100,36 @@ public class ParticleRenderer {
         particlesByTexture.remove(particle);
     }
 
-    private void renderParticlesWrecks(List<ParticleWreck> particles, Texture texture) {
+    private void renderParticlesWrecks(List<ParticleWreck> particles) {
         if (particles.size() > 0) {
             Particle p = particles.get(0);
             OpenGLHelper.alphaGreater(p.getGreater());
         }
 
-        for (ParticleWreck p : particles) {
+        int size = particles.size();
+        for (int i = 0; i < size; i++) {
+            ParticleWreck p = particles.get(i);
             if (p.getAABB().isIntersects(cam.getBoundingBox()))
                 p.render(defaultShader);
         }
 
-        if (core.getSettings().isDebug()) {
+        if (EnumOption.IS_DEBUG.getBoolean()) {
             core.getRenderer().getCamera().setupOpenGLMatrix();
 
             GL20.glUseProgram(0);
-            for (ParticleWreck particle : particles) {
+            size = particles.size();
+            for (int i = 0; i < size; i++) {
+                ParticleWreck particle = particles.get(i);
                 particle.renderDebug();
             }
             defaultShader.enable();
         }
     }
 
-    private void renderParticlesWrecksEffects(List<ParticleWreck> paritcles, Texture texture) {
-        for (ParticleWreck paritcle : paritcles) {
+    private void renderParticlesWrecksEffects(List<ParticleWreck> paritcles) {
+        int size = paritcles.size();
+        for (int i = 0; i < size; i++) {
+            ParticleWreck paritcle = paritcles.get(i);
             paritcle.renderEffects(defaultShader);
         }
     }
@@ -148,69 +146,74 @@ public class ParticleRenderer {
         if (numberOfRows > 0) {
             particleShader.setAnimatedTexture(true);
             particleShader.setNumberOfRows(numberOfRows);
-        } else particleShader.setAnimatedTexture(false);
+        } else {
+            particleShader.setAnimatedTexture(false);
+        }
+
         particleShader.enableTexture();
 
-        this.pointer = 0;
-        float[] vboData = new float[particles.size() * INSTANCE_DATA_LENGTH];
-        GL30.glBindVertexArray(quad.getVaoId());
-        int attributesCount = 8;
-        for (int i = 0; i < attributesCount; i++)
-            GL20.glEnableVertexAttribArray(i);
+        int size = particles.size() * INSTANCE_DATA_LENGTH;
 
-        for (Particle particle : particles) {
-            storeMatrixData(Transformation.getModelViewMatrix(particle), vboData);
-            storeParticleData(particle, vboData);
+        buffer.clear();
+
+        while (buffer.capacity() < size) {
+            FloatBuffer newBuffer = BufferUtils.createFloatBuffer(buffer.capacity() << 1);
+            newBuffer.put(buffer);
+            buffer = newBuffer;
         }
-        meshLoader.updateVbo(vbo, vboData);
-        GL31.glDrawArraysInstanced(GL11.GL_TRIANGLE_STRIP, 0, quad.getVertexCount(), particles.size());
+
+        for (int i = 0; i < particles.size(); i++) {
+            Particle particle = particles.get(i);
+            storeMatrixData(Transformation.getModelViewMatrix(particle));
+            storeParticleData(particle);
+        }
+
+        quad.updateVertexBuffer(2, buffer.flip(), INSTANCE_DATA_LENGTH);
+        GL30C.glBindVertexArray(quad.getVaoId());
+        GL31C.glDrawElementsInstanced(GL11C.GL_TRIANGLES, quad.getIndexCount(), GL11C.GL_UNSIGNED_INT, 0, particles.size());
         Renderer renderer = core.getRenderer();
-        renderer.setDrawCalls(renderer.getDrawCalls() + 1);
-        for (int i = 0; i < attributesCount; i++)
-            GL20.glDisableVertexAttribArray(i);
-        GL30.glBindVertexArray(0);
+        renderer.increaseDrawCalls();
     }
 
-    private void storeParticleData(Particle particle, float[] data) {
-        if (particle instanceof ParticleAnimated) {
-            ParticleAnimated animatedP = (ParticleAnimated) particle;
-            data[pointer++] = animatedP.getTextureOffset1().x;
-            data[pointer++] = animatedP.getTextureOffset1().y;
-            data[pointer++] = animatedP.getTextureOffset2().x;
-            data[pointer++] = animatedP.getTextureOffset2().y;
-            data[pointer++] = animatedP.getBlend();
+    private void storeParticleData(Particle particle) {
+        if (particle instanceof ParticleAnimated animatedP) {
+            buffer.put(animatedP.getTextureOffset1().x);
+            buffer.put(animatedP.getTextureOffset1().y);
+            buffer.put(animatedP.getTextureOffset2().x);
+            buffer.put(animatedP.getTextureOffset2().y);
+            buffer.put(animatedP.getBlend());
         } else {
-            data[pointer++] = 0.1f;
-            data[pointer++] = 0.1f;
-            data[pointer++] = 0.1f;
-            data[pointer++] = 0.1f;
-            data[pointer++] = 0.1f;
+            buffer.put(0.1f);
+            buffer.put(0.1f);
+            buffer.put(0.1f);
+            buffer.put(0.1f);
+            buffer.put(0.1f);
         }
 
         Vector4f color = particle.getColor();
-        data[pointer++] = color.x;
-        data[pointer++] = color.y;
-        data[pointer++] = color.z;
-        data[pointer++] = color.w;
+        buffer.put(color.x);
+        buffer.put(color.y);
+        buffer.put(color.z);
+        buffer.put(color.w);
     }
 
-    private void storeMatrixData(Matrix4f matrix, float[] vboData) {
-        vboData[pointer++] = matrix.m00();
-        vboData[pointer++] = matrix.m01();
-        vboData[pointer++] = matrix.m02();
-        vboData[pointer++] = matrix.m03();
-        vboData[pointer++] = matrix.m10();
-        vboData[pointer++] = matrix.m11();
-        vboData[pointer++] = matrix.m12();
-        vboData[pointer++] = matrix.m13();
-        vboData[pointer++] = matrix.m20();
-        vboData[pointer++] = matrix.m21();
-        vboData[pointer++] = matrix.m22();
-        vboData[pointer++] = matrix.m23();
-        vboData[pointer++] = matrix.m30();
-        vboData[pointer++] = matrix.m31();
-        vboData[pointer++] = matrix.m32();
-        vboData[pointer++] = matrix.m33();
+    private void storeMatrixData(Matrix4f matrix) {
+        buffer.put(matrix.m00());
+        buffer.put(matrix.m01());
+        buffer.put(matrix.m02());
+        buffer.put(matrix.m03());
+        buffer.put(matrix.m10());
+        buffer.put(matrix.m11());
+        buffer.put(matrix.m12());
+        buffer.put(matrix.m13());
+        buffer.put(matrix.m20());
+        buffer.put(matrix.m21());
+        buffer.put(matrix.m22());
+        buffer.put(matrix.m23());
+        buffer.put(matrix.m30());
+        buffer.put(matrix.m31());
+        buffer.put(matrix.m32());
+        buffer.put(matrix.m33());
     }
 
     public void render(EnumParticlePositionType positionType) {
@@ -220,7 +223,7 @@ public class ParticleRenderer {
         if (positionType == EnumParticlePositionType.Default) {
             defaultShader.enable();
             for (Texture texture : particlesWrecksHashMap.keySet()) {
-                renderParticlesWrecks(particlesWrecksHashMap.get(texture), texture);
+                renderParticlesWrecks(particlesWrecksHashMap.get(texture));
             }
         }
 
@@ -228,7 +231,7 @@ public class ParticleRenderer {
 
         if (positionType == EnumParticlePositionType.Background) particleShader.setOrthoMatrix(core.getRenderer().getCamera().getOrthographicMatrix());
 
-        String renderType = EnumParticleRenderType.AlphaBlended.toString() + " " + positionType.toString();
+        String renderType = EnumParticleRenderType.AlphaBlended + " " + positionType.toString();
         HashMap<Texture, List<Particle>> hashMapByTexture = particlesHashMap.get(renderType);
         if (hashMapByTexture != null) {
             for (Texture texture : hashMapByTexture.keySet()) {
@@ -244,13 +247,13 @@ public class ParticleRenderer {
         if (positionType == EnumParticlePositionType.Default) {
             OpenGLHelper.alphaGreater(0.001f);
             for (Texture texture : particlesWrecksHashMap.keySet()) {
-                renderParticlesWrecksEffects(particlesWrecksHashMap.get(texture), texture);
+                renderParticlesWrecksEffects(particlesWrecksHashMap.get(texture));
             }
         }
 
         particleShader.enable();
 
-        renderType = EnumParticleRenderType.Additive.toString() + " " + positionType.toString();
+        renderType = EnumParticleRenderType.Additive + " " + positionType;
         hashMapByTexture = particlesHashMap.get(renderType);
         if (hashMapByTexture != null) {
             for (Texture texture : hashMapByTexture.keySet()) {
@@ -261,7 +264,7 @@ public class ParticleRenderer {
         OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    public void addParticle(ParticleWreck particle) {
+    void addParticle(ParticleWreck particle) {
         Texture texture = particle.getTexture();
         List<ParticleWreck> particles = particlesWrecksHashMap.get(texture);
 
@@ -274,7 +277,7 @@ public class ParticleRenderer {
         particlesWrecks.add(particle);
     }
 
-    public void addParticle(Particle particle) {
+    void addParticle(Particle particle) {
         EnumParticlePositionType positionType = particle.getPositionType();
         EnumParticleRenderType renderType = particle.getRenderType();
         Texture texture = particle.getTexture();

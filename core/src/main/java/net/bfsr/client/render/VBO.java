@@ -35,6 +35,10 @@ public final class VBO {
         storeData(Integer.toUnsignedLong(data.remaining()) << 2, flags, MemoryUtil.memAddress(data), onResizeRunnable);
     }
 
+    void storeData(IntBuffer data, int flags, Runnable onResizeRunnable) {
+        storeData(Integer.toUnsignedLong(data.remaining()) << 2, flags, MemoryUtil.memAddress(data), onResizeRunnable);
+    }
+
     void storeData(IntBuffer data, int flags) {
         storeData(Integer.toUnsignedLong(data.remaining()) << 2, flags, MemoryUtil.memAddress(data));
     }
@@ -46,8 +50,8 @@ public final class VBO {
             if (maxDataSize > 0) {
                 GL15C.glDeleteBuffers(id);
                 id = GL45C.glCreateBuffers();
-                onResizeRunnable.run();
             }
+            onResizeRunnable.run();
             GL45C.nglNamedBufferStorage(id, newDataSize, dataAddress, flags);
             maxDataSize = newDataSize;
         }

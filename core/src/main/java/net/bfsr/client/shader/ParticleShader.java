@@ -1,13 +1,11 @@
 package net.bfsr.client.shader;
 
 import net.bfsr.client.shader.loader.Definition;
-import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL20;
 
 public class ParticleShader extends BaseShader {
-    private int loc_animatedTexture;
     private int loc_texCoordInfo;
     private int loc_texOffset;
 
@@ -20,7 +18,6 @@ public class ParticleShader extends BaseShader {
     protected void getAllUniformLocations() {
         super.getAllUniformLocations();
 
-        loc_animatedTexture = getUniformLocation("animatedTexture");
         loc_texCoordInfo = getUniformLocation("texCoordInfo");
         loc_texOffset = getUniformLocation("texOffset");
     }
@@ -35,27 +32,6 @@ public class ParticleShader extends BaseShader {
         setVector(loc_texOffset, offset1.x, offset1.y, offset2.x, offset2.y);
         setVector(loc_texCoordInfo, new Vector2f(numRows, blend));
 
-    }
-
-    private boolean prevAnimatedTexture;
-
-    public void setAnimatedTexture(boolean value) {
-        if (prevAnimatedTexture != value) {
-            setBoolean(loc_animatedTexture, value);
-            prevAnimatedTexture = value;
-        }
-    }
-
-    public void setTexCoordInfo(Vector2f value) {
-        setVector(loc_texCoordInfo, value);
-    }
-
-    public void setOrthoMatrix(Matrix4f matrix) {
-        setMat4(loc_orthoMat, matrix);
-    }
-
-    public void setModelViewMatrix(Matrix4f matrix) {
-        setMat4(loc_modelViewMat, matrix);
     }
 
     public void setTextureOpaqueId(int id) {

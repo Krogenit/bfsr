@@ -8,7 +8,6 @@ public class ParticleInstancedShader extends ShaderProgram {
     private int loc_useTexture;
     private int loc_textureOpaque;
     private int loc_orthoMat;
-    private int loc_modelViewMat;
 
     private boolean useTexture;
 
@@ -26,7 +25,6 @@ public class ParticleInstancedShader extends ShaderProgram {
         loc_textureOpaque = getUniformLocation("textureOpaque");
 
         loc_orthoMat = getUniformLocation("orthoMat");
-        loc_modelViewMat = getUniformLocation("modelViewMat");
 
         loc_animatedTexture = getUniformLocation("animatedTexture");
         loc_numberOfRows = getUniformLocation("numberOfRows");
@@ -52,10 +50,6 @@ public class ParticleInstancedShader extends ShaderProgram {
 
     public void setOrthoMatrix(Matrix4f matrix) {
         setMat4(loc_orthoMat, matrix);
-    }
-
-    public void setModelViewMatrix(Matrix4f matrix) {
-        setMat4(loc_modelViewMat, matrix);
     }
 
     public void setTextureOpaqueId(int id) {

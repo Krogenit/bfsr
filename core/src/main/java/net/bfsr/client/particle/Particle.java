@@ -1,7 +1,7 @@
 package net.bfsr.client.particle;
 
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.shader.ParticleShader;
-import net.bfsr.client.texture.TextureRegister;
 import net.bfsr.core.Core;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.server.MainServer;

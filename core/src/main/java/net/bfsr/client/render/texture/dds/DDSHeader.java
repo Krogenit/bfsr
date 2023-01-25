@@ -17,120 +17,101 @@
  *  along with dds-lwjgl.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.bfsr.client.loader;
+package net.bfsr.client.render.texture.dds;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class DDSHeader {
+class DDSHeader {
 
     /* Flags */
-    protected static final int DDSD_CAPS = 0x000001;
-    protected static final int DDSD_HEIGHT = 0x000002;
-    protected static final int DDSD_WIDTH = 0x000004;
-    protected static final int DDSD_PITCH = 0x000008;
-    protected static final int DDSD_PIXELFORMAT = 0x001000;
-    protected static final int DDSD_MIPMAPCOUNT = 0x020000;
-    protected static final int DDSD_LINEARSIZE = 0x080000;
-    protected static final int DDSD_DEPTH = 0x800000;
+    private static final int DDSD_CAPS = 0x000001;
+    private static final int DDSD_HEIGHT = 0x000002;
+    private static final int DDSD_WIDTH = 0x000004;
+    private static final int DDSD_PITCH = 0x000008;
+    private static final int DDSD_PIXELFORMAT = 0x001000;
+    private static final int DDSD_MIPMAPCOUNT = 0x020000;
+    private static final int DDSD_LINEARSIZE = 0x080000;
+    private static final int DDSD_DEPTH = 0x800000;
 
-//	public static final int		DDS_HEADER_FLAGS_TEXTURE	= DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
-//	public static final int		DDS_HEADER_FLAGS_MIPMAP		= DDSD_MIPMAPCOUNT;
-//	public static final int		DDS_HEADER_FLAGS_VOLUME		= DDSD_DEPTH;
-//	public static final int		DDS_HEADER_FLAGS_PITCH		= DDSD_PITCH;
-//	public static final int		DDS_HEADER_FLAGS_LINEARSIZE	= DDSD_LINEARSIZE;
+    private static final int DDSCAPS_COMPLEX = 0x8;
+    private static final int DDSCAPS_MIPMAP = 0x400000;
+    private static final int DDSCAPS_TEXTURE = 0x1000;
 
-    protected static final int DDSCAPS_COMPLEX = 0x8;
-    protected static final int DDSCAPS_MIPMAP = 0x400000;
-    protected static final int DDSCAPS_TEXTURE = 0x1000;
-
-//	public static final int		DDS_SURFACE_FLAGS_MIPMAP	= DDSCAPS_COMPLEX | DDSCAPS_MIPMAP;
-//	public static final int		DDS_SURFACE_FLAGS_TEXTURE	= DDSCAPS_TEXTURE;
-//	public static final int		DDS_SURFACE_FLAGS_CUBEMAP	= DDSCAPS_COMPLEX;
-
-    protected static final int DDSCAPS2_CUBEMAP = 0x200;
-    protected static final int DDSCAPS2_CUBEMAP_POSITIVEX = 0x400;
-    protected static final int DDSCAPS2_CUBEMAP_NEGATIVEX = 0x800;
-    protected static final int DDSCAPS2_CUBEMAP_POSITIVEY = 0x1000;
-    protected static final int DDSCAPS2_CUBEMAP_NEGATIVEY = 0x2000;
-    protected static final int DDSCAPS2_CUBEMAP_POSITIVEZ = 0x4000;
-    protected static final int DDSCAPS2_CUBEMAP_NEGATIVEZ = 0x8000;
-    protected static final int DDSCAPS2_VOLUME = 0x200000;
-
-//	public static final int		DDS_CUBEMAP_POSITIVEX		= DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEX;
-//	public static final int		DDS_CUBEMAP_NEGATIVEX		= DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEX;
-//	public static final int		DDS_CUBEMAP_POSITIVEY		= DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEY;
-//	public static final int		DDS_CUBEMAP_NEGATIVEY		= DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEY;
-//	public static final int		DDS_CUBEMAP_POSITIVEZ		= DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEZ;
-//	public static final int		DDS_CUBEMAP_NEGATIVEZ		= DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEZ;
-//	public static final int		DDS_CUBEMAP_ALLFACES		= DDSCAPS2_CUBEMAP_POSITIVEX | DDSCAPS2_CUBEMAP_NEGATIVEX | DDSCAPS2_CUBEMAP_POSITIVEY | DDSCAPS2_CUBEMAP_NEGATIVEY | DDSCAPS2_CUBEMAP_POSITIVEZ | DDSCAPS2_CUBEMAP_NEGATIVEZ;
-//	public static final int		DDS_FLAGS_VOLUME		= DDSCAPS2_VOLUME;
+    private static final int DDSCAPS2_CUBEMAP = 0x200;
+    private static final int DDSCAPS2_CUBEMAP_POSITIVEX = 0x400;
+    private static final int DDSCAPS2_CUBEMAP_NEGATIVEX = 0x800;
+    private static final int DDSCAPS2_CUBEMAP_POSITIVEY = 0x1000;
+    private static final int DDSCAPS2_CUBEMAP_NEGATIVEY = 0x2000;
+    private static final int DDSCAPS2_CUBEMAP_POSITIVEZ = 0x4000;
+    private static final int DDSCAPS2_CUBEMAP_NEGATIVEZ = 0x8000;
+    private static final int DDSCAPS2_VOLUME = 0x200000;
 
     /** Size of header in bytes */
-    protected int dwSize;
+    private int dwSize;
 
     /** hasFlags to indicate which members contain valid data */
-    protected int dwFlags;
+    private int dwFlags;
 
     /** Height in pixels of surface */
-    protected int dwHeight;
+    int dwHeight;
 
     /** Width in pixels of surface */
-    protected int dwWidth;
+    int dwWidth;
 
     /** The pitch or number of bytes per scan line in an uncompressed texture */
-    protected int dwPitchOrLinearSize;
+    int dwPitchOrLinearSize;
 
     /** Depth of a volume texture in pixels, otherwise unused */
-    protected int dwDepth;
+    private int dwDepth;
 
     /** Number of mipmap levels, otherwise unused */
-    protected int dwMipMapCount;
+    int dwMipMapCount;
 
     /** Unused */
-    protected int[] dwReserved = new int[11];
+    private final int[] dwReserved = new int[11];
 
     /** The pixel format */
-    protected DDSPixelFormat ddspf;
+    DDSPixelFormat ddspf;
 
     /** Specifies the complexity of the surfaces stored */
-    protected int dwCaps;
+    private int dwCaps;
 
     /** Additional details about the surfaces stored */
-    protected int dwCaps2;
+    private int dwCaps2;
 
     /** Unused */
-    protected int dwCaps3;
+    private int dwCaps3;
 
     /** Unused */
-    protected int dwCaps4;
+    private int dwCaps4;
 
     /** Unused */
-    protected int dwReserved2;
+    private int dwReserved2;
 
-    protected boolean hasFlagMipMapCount;
-    protected boolean hasFlagCaps;
-    protected boolean hasFlagHeight;
-    protected boolean hasFlagWidth;
-    protected boolean hasFlagPitch;
-    protected boolean hasFlagPixelFormat;
-    protected boolean hasFlagLinearSize;
-    protected boolean hasFlagDepth;
+    boolean hasFlagMipMapCount;
+    private boolean hasFlagCaps;
+    private boolean hasFlagHeight;
+    private boolean hasFlagWidth;
+    private boolean hasFlagPitch;
+    private boolean hasFlagPixelFormat;
+    private boolean hasFlagLinearSize;
+    private boolean hasFlagDepth;
 
-    protected boolean hasCapsComplex;
-    protected boolean hasCapsMipMap;
-    protected boolean hasCapsTexture;
+    private boolean hasCapsComplex;
+    private boolean hasCapsMipMap;
+    private boolean hasCapsTexture;
 
-    protected boolean hasCaps2CubeMap;
-    protected boolean hasCaps2CubeMapPX;
-    protected boolean hasCaps2CubeMapNX;
-    protected boolean hasCaps2CubeMapPY;
-    protected boolean hasCaps2CubeMapNY;
-    protected boolean hasCaps2CubeMapPZ;
-    protected boolean hasCaps2CubeMapNZ;
-    protected boolean hasCaps2Volume;
+    boolean hasCaps2CubeMap;
+    private boolean hasCaps2CubeMapPX;
+    private boolean hasCaps2CubeMapNX;
+    private boolean hasCaps2CubeMapPY;
+    private boolean hasCaps2CubeMapNY;
+    private boolean hasCaps2CubeMapPZ;
+    private boolean hasCaps2CubeMapNZ;
+    private boolean hasCaps2Volume;
 
-    protected DDSHeader(ByteBuffer header, boolean printDebug) throws IOException {
+    DDSHeader(ByteBuffer header, boolean printDebug) throws IOException {
         if (header.capacity() != 124) {
             if (printDebug) System.err.println("Header is not 124 bytes!");
             return;

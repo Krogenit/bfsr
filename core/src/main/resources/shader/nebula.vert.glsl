@@ -1,12 +1,10 @@
 #version 330
 
-layout (location = 0) in vec2 position;
-layout (location = 1) in vec2 textureCoords;
+layout (location = 0) in vec4 positionsUVs;
 
 out vec2 textureCoords0;
 
-void main()
-{
-    gl_Position = vec4(position, 0.0, 0.5);
-	textureCoords0 = textureCoords;
+void main() {
+    gl_Position = vec4(positionsUVs.xy, 0.0, 0.5);
+    textureCoords0 = positionsUVs.zw;
 }

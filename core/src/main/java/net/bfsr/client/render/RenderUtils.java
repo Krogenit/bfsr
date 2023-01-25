@@ -9,8 +9,7 @@ public class RenderUtils {
     private static final VAO VERTEX_COLOR_VAO = VAO.create(2);
 
     static {
-        VERTEX_COLOR_VAO.createVertexBuffer(0);
-        VERTEX_COLOR_VAO.createVertexBuffer(1);
+        VERTEX_COLOR_VAO.createVertexBuffers();
         VERTEX_COLOR_VAO.enableAttributes(2);
     }
 

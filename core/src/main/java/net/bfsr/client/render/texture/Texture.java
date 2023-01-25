@@ -1,7 +1,9 @@
-package net.bfsr.client.texture;
+package net.bfsr.client.render.texture;
 
 import net.bfsr.client.render.OpenGLHelper;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL11C;
+import org.lwjgl.opengl.GL45C;
 
 public class Texture {
     private final int width;
@@ -23,7 +25,7 @@ public class Texture {
     }
 
     public Texture(int width, int height) {
-        this.id = GL11.glGenTextures();
+        this.id = GL45C.glCreateTextures(GL11C.GL_TEXTURE_2D);
         this.width = width;
         this.height = height;
     }

@@ -14,7 +14,7 @@ import java.nio.FloatBuffer;
 
 @Getter
 public abstract class ShaderProgram {
-    private static final FloatBuffer MATRIX_BUFFER = BufferUtils.createFloatBuffer(16);
+    public static final FloatBuffer MATRIX_BUFFER = BufferUtils.createFloatBuffer(16);
 
     @Setter
     private int program;
@@ -40,10 +40,6 @@ public abstract class ShaderProgram {
     protected abstract void getAllUniformLocations();
     @Deprecated
     protected abstract void initUniforms();
-
-    public void setModelMatrix(Matrix4f matrix) {
-
-    }
 
     protected int getUniformLocation(String uniformName) {
         return GL20.glGetUniformLocation(program, uniformName);
@@ -102,12 +98,10 @@ public abstract class ShaderProgram {
     }
 
     public void delete() {
-        disable();
         int length = definitions.length;
         for (int i = 0; i < length; i++) {
             Definition definition = definitions[i];
             GL20.glDetachShader(program, definition.getShader());
-            GL20.glDeleteShader(definition.getShader());
         }
         GL20.glDeleteProgram(program);
     }

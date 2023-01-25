@@ -1,18 +1,19 @@
-#version 330
+#version 450
 
-in vec2 textureCoords0;
-out vec4 fragColor;
+layout(location = 0) out vec4 out_Color;
+
+in Data {
+    vec2 textureCoord;
+} in_Data;
 
 uniform sampler2D textureOpaque;
-
 uniform vec4 color;
 uniform bool useTexture;
 
-void main()
-{
-	if(useTexture) {
-   		fragColor = texture(textureOpaque, textureCoords0) * color;
+void main() {
+    if (useTexture) {
+        out_Color = texture(textureOpaque, in_Data.textureCoord) * color;
     } else {
-        fragColor = color;
+        out_Color = color;
     }
 }

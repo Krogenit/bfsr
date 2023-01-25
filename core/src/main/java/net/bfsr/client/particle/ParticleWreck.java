@@ -1,13 +1,14 @@
 package net.bfsr.client.particle;
 
-import net.bfsr.client.loader.TextureLoader;
 import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.render.Renderer;
+import net.bfsr.client.render.texture.Texture;
+import net.bfsr.client.render.texture.TextureLoader;
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.shader.BaseShader;
+import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
-import net.bfsr.client.texture.Texture;
-import net.bfsr.client.texture.TextureRegister;
 import net.bfsr.collision.filter.WreckFilter;
 import net.bfsr.core.Core;
 import net.bfsr.entity.ship.Ship;
@@ -567,17 +568,17 @@ public class ParticleWreck extends Particle {
 
     void renderEffects(BaseShader shader) {
         if (colorFire != null && colorFire.w > 0) {
-            shader.setColor(colorFire);
+            shader.setColor(colorFire.x, colorFire.y, colorFire.z, colorFire.w);
             OpenGLHelper.bindTexture(textureFire.getId());
-            shader.setModelViewMatrix(Transformation.getModelViewMatrix(this));
-            Renderer.quad.render();
+            shader.setModelMatrix(Transformation.getModelViewMatrix(this).get(ShaderProgram.MATRIX_BUFFER));
+            Renderer.centeredQuad.renderIndexed();
         }
 
         if (colorLight != null && colorLight.w > 0) {
-            shader.setColor(colorLight);
+            shader.setColor(colorLight.x, colorLight.y, colorLight.z, colorLight.w);
             OpenGLHelper.bindTexture(textureLight.getId());
-            shader.setModelViewMatrix(Transformation.getModelViewMatrix(this));
-            Renderer.quad.render();
+            shader.setModelMatrix(Transformation.getModelViewMatrix(this).get(ShaderProgram.MATRIX_BUFFER));
+            Renderer.centeredQuad.renderIndexed();
         }
     }
 
