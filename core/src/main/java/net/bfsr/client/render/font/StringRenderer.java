@@ -76,10 +76,10 @@ public class StringRenderer {
         stringParams.setX(x);
         stringParams.setY(y);
         stringParams.setHeight(0);
+        stringParams.setFontSize(fontSize);
         int offset = 0;
-        char[] chars = text.toCharArray();
-        for (int i = 0; i < chars.length; i++) {
-            if (chars[i] == newLineChar) {
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == newLineChar) {
                 String string = text.substring(offset, i);
                 if (string.isEmpty()) {
                     float height = stringCache.getHeight(newLineString, fontSize) * indent;
@@ -111,9 +111,44 @@ public class StringRenderer {
     }
 
     public void createString(GLString glString, StringCache stringCache, String string, float x, float y, int fontSize, float r, float g, float b, float a, StringOffsetType offsetType) {
+        createString(glString, stringCache, string, x, y, fontSize, r, g, b, a, offsetType, defaultIndent);
+    }
+
+    public void createString(GLString glString, StringCache stringCache, String string, float x, float y, int fontSize, float r, float g, float b, float a, StringOffsetType offsetType, float indent) {
+        stringParams.getColor().set(r, g, b, a);
+        stringParams.setX(x);
+        stringParams.setY(y);
+        stringParams.setHeight(0);
+        stringParams.setFontSize(fontSize);
+
         begin(stringCache, fontSize);
-        createString(glString, stringCache, string, x + offsetFunctions[offsetType.ordinal()].get(string, stringCache), y, r, g, b, a, defaultSortedStringCompleteFunction);
+
+        int offset = 0;
+        for (int i = 0; i < string.length(); i++) {
+            if (string.charAt(i) == newLineChar) {
+                String substring = string.substring(offset, i);
+                createString(glString, stringCache, substring, stringParams, offsetType);
+                float height = stringCache.getHeight(newLineString, fontSize) * indent;
+                stringParams.setY(stringParams.getY() + height);
+                stringParams.addHeight((int) height);
+                offset = i + 1;
+            }
+        }
+
+        if (offset > 0) {
+            string = string.substring(offset).trim();
+        }
+
+        createString(glString, stringCache, string, stringParams, offsetType);
+
         end(glString);
+
+        glString.setHeight(stringParams.getHeight());
+    }
+
+    private void createString(GLString glString, StringCache stringCache, String string, StringParams stringParams, StringOffsetType offsetType) {
+        createString(glString, stringCache, string, stringParams.getX() + offsetFunctions[offsetType.ordinal()].get(string, stringCache), stringParams.getY(), stringParams.getColor().x,
+                stringParams.getColor().y, stringParams.getColor().z, stringParams.getColor().w, defaultSortedStringCompleteFunction);
     }
 
     private void createString(GLString glString, StringCache stringCache, String string, float x, float y, float r, float g, float b, float a,
