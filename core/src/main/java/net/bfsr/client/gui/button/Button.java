@@ -58,6 +58,10 @@ public class Button extends TexturedGuiObject {
         this(TextureRegister.guiButtonBase, 0, 0, 300, 50, string, 20, onMouseClickedRunnable);
     }
 
+    public Button(TextureRegister texture, Runnable onMouseClickedRunnable) {
+        this(texture, 0, 0, 300, 50, "", 20, onMouseClickedRunnable);
+    }
+
     @Override
     public void update() {
         if (collideSound != null) {
