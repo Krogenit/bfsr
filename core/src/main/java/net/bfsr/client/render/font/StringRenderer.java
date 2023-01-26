@@ -4,7 +4,6 @@ import net.bfsr.client.render.font.string.DynamicGLString;
 import net.bfsr.client.render.font.string.GLString;
 import net.bfsr.client.shader.font.FontShader;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -19,9 +18,7 @@ public class StringRenderer {
     private final IStringXOffsetSupplier[] offsetFunctions = new IStringXOffsetSupplier[3];
     private final StringParams stringParams = new StringParams();
 
-    private final ISortedStringCreated defaultSortedStringCompleteFunction = (glString1, r, g, b, a) -> {};
-    private final ISortedStringCreated widthRestrictedSortedStringCreationFunction = (glString1, r, g, b, a) -> stringParams.getColor().set(r, g, b, a);
-    private final int defaultIndent = 1;
+    private final int defaultIndent = 0;
 
     private FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(256);
     private LongBuffer textureBuffer = BufferUtils.createLongBuffer(128);
@@ -70,42 +67,30 @@ public class StringRenderer {
         createString(glString, stringCache, text, x, y, fontSize, r, g, b, a, maxWidth, offsetType, defaultIndent);
     }
 
+    private void createString(GLString glString, StringCache stringCache, String text, float x, float y, int fontSize, float r, float g, float b, float a, int maxWidth, int indent) {
+        createString(glString, stringCache, text, x, y, fontSize, r, g, b, a, maxWidth, StringOffsetType.DEFAULT, indent);
+    }
+
     private void createString(GLString glString, StringCache stringCache, String text, float x, float y, int fontSize, float r, float g, float b, float a, int maxWidth,
                               StringOffsetType offsetType, int indent) {
         stringParams.getColor().set(r, g, b, a);
-        stringParams.setX(x);
         stringParams.setY(y);
         stringParams.setHeight(0);
         stringParams.setFontSize(fontSize);
-        int offset = 0;
-        for (int i = 0; i < text.length(); i++) {
-            if (text.charAt(i) == newLineChar) {
-                String string = text.substring(offset, i);
-                if (string.isEmpty()) {
-                    float height = stringCache.getHeight(newLineString, fontSize) * indent;
-                    stringParams.setY(stringParams.getY() + height);
-                    stringParams.addHeight((int) height);
-                } else {
-                    trimAndCreateString(glString, stringCache, string, stringParams, widthRestrictedSortedStringCreationFunction, maxWidth, offsetType, indent);
-                }
-                offset = i + 1;
-            }
-        }
-        String string = text.substring(offset).trim();
-        trimAndCreateString(glString, stringCache, string, stringParams, widthRestrictedSortedStringCreationFunction, maxWidth, offsetType, indent);
+        begin(stringCache, fontSize);
+        trimAndCreateString(glString, stringCache, text, x, stringParams, maxWidth, offsetType, indent);
+        end(glString);
         glString.setHeight(stringParams.getHeight());
     }
 
-    private void trimAndCreateString(GLString glString, StringCache stringCache, String string, StringParams stringParams, ISortedStringCreated completeFunction, int maxWidth,
+    private void trimAndCreateString(GLString glString, StringCache stringCache, String string, float startX, StringParams stringParams, int maxWidth,
                                      StringOffsetType offsetType, int indent) {
         do {
             String temp = stringCache.trimStringToWidthSaveWords(string, maxWidth);
-            Vector4f color1 = stringParams.getColor();
-            createString(glString, stringCache, temp, stringParams.getX() + offsetFunctions[offsetType.ordinal()].get(temp, stringCache), stringParams.getY(),
-                    color1.x, color1.y, color1.z, color1.w, completeFunction);
+            stringParams.setX(startX + offsetFunctions[offsetType.ordinal()].get(temp, stringCache));
+            createString(glString, stringCache, temp, stringParams, indent);
             string = string.replace(temp, "").trim();
             float height = stringCache.getHeight(temp, stringParams.getFontSize()) + indent;
-            stringParams.addHeight((int) height);
             stringParams.setY(stringParams.getY() + height);
         } while (!string.isEmpty());
     }
@@ -114,64 +99,45 @@ public class StringRenderer {
         createString(glString, stringCache, string, x, y, fontSize, r, g, b, a, offsetType, defaultIndent);
     }
 
-    public void createString(GLString glString, StringCache stringCache, String string, float x, float y, int fontSize, float r, float g, float b, float a, StringOffsetType offsetType, float indent) {
+    private void createString(GLString glString, StringCache stringCache, String string, float x, float y, int fontSize, float r, float g, float b, float a, StringOffsetType offsetType, int indent) {
         stringParams.getColor().set(r, g, b, a);
-        stringParams.setX(x);
+        stringParams.setX(x + offsetFunctions[offsetType.ordinal()].get(string, stringCache));
         stringParams.setY(y);
         stringParams.setHeight(0);
         stringParams.setFontSize(fontSize);
 
         begin(stringCache, fontSize);
-
-        float height = stringCache.getHeight(newLineString, fontSize) * indent;
-
-        int offset = 0;
-        for (int i = 0; i < string.length(); i++) {
-            if (string.charAt(i) == newLineChar) {
-                String substring = string.substring(offset, i);
-                createString(glString, stringCache, substring, stringParams, offsetType);
-                stringParams.setY(stringParams.getY() + height);
-                stringParams.addHeight((int) height);
-                offset = i + 1;
-            }
-        }
-
-        if (offset > 0) {
-            string = string.substring(offset).trim();
-        }
-
-        createString(glString, stringCache, string, stringParams, offsetType);
-
+        createString(glString, stringCache, string, stringParams, indent);
         end(glString);
-
-        stringParams.addHeight((int) height);
         glString.setHeight(stringParams.getHeight());
     }
 
-    private void createString(GLString glString, StringCache stringCache, String string, StringParams stringParams, StringOffsetType offsetType) {
-        createString(glString, stringCache, string, stringParams.getX() + offsetFunctions[offsetType.ordinal()].get(string, stringCache), stringParams.getY(), stringParams.getColor().x,
-                stringParams.getColor().y, stringParams.getColor().z, stringParams.getColor().w, defaultSortedStringCompleteFunction);
-    }
-
-    private void createString(GLString glString, StringCache stringCache, String string, float x, float y, float r, float g, float b, float a,
-                              ISortedStringCreated completeFunction) {
+    private void createString(GLString glString, StringCache stringCache, String string, StringParams stringParams, int indent) {
         Entry entry = stringCache.cacheString(string);
+        float height = stringCache.getHeight(newLineString, stringParams.getFontSize()) + indent;
+        int stringAdvance = 0;
+        int offsetX = 0;
 
         for (int glyphIndex = 0, colorIndex = 0; glyphIndex < entry.glyphs.length; glyphIndex++) {
             Glyph glyph = entry.glyphs[glyphIndex];
 
-            while (colorIndex < entry.colors.length && glyph.stringIndex >= entry.colors[colorIndex++].stringIndex) {
-                Vector3f color = stringCache.getColor(entry.colors[colorIndex].colorCode);
-                r = color.x;
-                g = color.y;
-                b = color.z;
+            if (string.charAt(glyph.stringIndex) == newLineChar) {
+                stringParams.setY(stringParams.getY() + height);
+                stringParams.addHeight((int) height);
+                offsetX = -stringAdvance / 2;
             }
 
-            addGlyph(glyph, x, y, r, g, b, a);
+            while (colorIndex < entry.colors.length && glyph.stringIndex >= entry.colors[colorIndex++].stringIndex) {
+                Vector3f color = stringCache.getColor(entry.colors[colorIndex].colorCode);
+                stringParams.setColor(color.x, color.y, color.z);
+            }
+
+            addGlyph(glyph, stringParams.getX() + offsetX, stringParams.getY(), stringParams.getColor().x, stringParams.getColor().y, stringParams.getColor().z, stringParams.getColor().w);
+            stringAdvance += glyph.advance;
         }
 
         glString.setWidth(entry.advance / 2);
-        completeFunction.complete(glString, r, g, b, a);
+        stringParams.addHeight((int) height);
     }
 
     public void render(GLString string) {
@@ -188,6 +154,18 @@ public class StringRenderer {
     public void render(String string, StringCache stringCache, int fontSize, float x, float y, float r, float g, float b, float a) {
         createString(glString, stringCache, string, x, y, fontSize, r, g, b, a);
         render(glString);
+    }
+
+    public int render(String string, StringCache stringCache, int fontSize, float x, float y, float r, float g, float b, float a, int maxWidth) {
+        createString(glString, stringCache, string, x, y, fontSize, r, g, b, a, maxWidth);
+        render(glString);
+        return glString.getHeight();
+    }
+
+    public int render(String string, StringCache stringCache, int fontSize, float x, float y, float r, float g, float b, float a, int maxWidth, int indent) {
+        createString(glString, stringCache, string, x, y, fontSize, r, g, b, a, maxWidth, indent);
+        render(glString);
+        return glString.getHeight();
     }
 
     private void addGlyph(Glyph glyph, float startX, float startY, float r, float g, float b, float a) {
