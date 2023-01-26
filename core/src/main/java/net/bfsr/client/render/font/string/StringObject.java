@@ -40,6 +40,10 @@ public abstract class StringObject extends AbstractGuiObject {
         this(font, "", 0, 0, fontSize, stringOffsetType);
     }
 
+    protected StringObject(FontType font, String string, int fontSize) {
+        this(font, string, fontSize, StringOffsetType.DEFAULT);
+    }
+
     protected StringObject(FontType font, String string, int fontSize, StringOffsetType stringOffsetType) {
         this(font, string, 0, 0, fontSize, stringOffsetType);
     }

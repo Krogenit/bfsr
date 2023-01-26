@@ -16,6 +16,10 @@ public class DynamicString extends StringObject {
         super(font, fontSize, stringOffsetType);
     }
 
+    public DynamicString(FontType font, String string, int fontSize) {
+        super(font, string, fontSize);
+    }
+
     public DynamicString(FontType font, String string, int fontSize, StringOffsetType stringOffsetType) {
         super(font, string, fontSize, stringOffsetType);
     }
