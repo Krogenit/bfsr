@@ -140,6 +140,11 @@ public abstract class StringObject extends AbstractGuiObject {
     }
 
     @Override
+    public int getHeight() {
+        return glString.getHeight();
+    }
+
+    @Override
     public void clear() {
         glString.clear();
     }
