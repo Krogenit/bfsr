@@ -35,6 +35,7 @@ public class WorldClient extends World {
     private final HashMap<Texture, List<Ship>> shipsByMapForRender = new HashMap<>();
     private final HashMap<Texture, List<Bullet>> bulletByMapForRender = new HashMap<>();
     private Texture backgroundTexture;
+    private boolean disableLeftClickShipSelection;
 
     public WorldClient() {
         super(true, Core.getCore().getProfiler());
@@ -55,12 +56,16 @@ public class WorldClient extends World {
 
     public void onMouseLeftClicked() {
         if (playerShip == null && core.canControlShip()) {
-            core.getGuiInGame().selectShip(null);
-            int size = ships.size();
-            for (int i = 0; i < size; i++) {
-                Ship ship = ships.get(i);
-                if (ship.getAABB().isIntersects(Mouse.getWorldPosition(core.getRenderer().getCamera()))) {
-                    core.getGuiInGame().selectShip(ship);
+            if (disableLeftClickShipSelection) {
+                disableLeftClickShipSelection = false;
+            } else {
+                core.getGuiInGame().selectShip(null);
+                int size = ships.size();
+                for (int i = 0; i < size; i++) {
+                    Ship ship = ships.get(i);
+                    if (ship.getAABB().isIntersects(Mouse.getWorldPosition(core.getRenderer().getCamera()))) {
+                        core.getGuiInGame().selectShip(ship);
+                    }
                 }
             }
         }
@@ -282,5 +287,9 @@ public class WorldClient extends World {
 
     public Ship getPlayerShip() {
         return playerShip;
+    }
+
+    public void disableShipDeselection() {
+        disableLeftClickShipSelection = true;
     }
 }
