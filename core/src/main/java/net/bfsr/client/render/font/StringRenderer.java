@@ -123,12 +123,13 @@ public class StringRenderer {
 
         begin(stringCache, fontSize);
 
+        float height = stringCache.getHeight(newLineString, fontSize) * indent;
+
         int offset = 0;
         for (int i = 0; i < string.length(); i++) {
             if (string.charAt(i) == newLineChar) {
                 String substring = string.substring(offset, i);
                 createString(glString, stringCache, substring, stringParams, offsetType);
-                float height = stringCache.getHeight(newLineString, fontSize) * indent;
                 stringParams.setY(stringParams.getY() + height);
                 stringParams.addHeight((int) height);
                 offset = i + 1;
@@ -143,6 +144,7 @@ public class StringRenderer {
 
         end(glString);
 
+        stringParams.addHeight((int) height);
         glString.setHeight(stringParams.getHeight());
     }
 
