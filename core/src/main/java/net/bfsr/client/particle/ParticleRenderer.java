@@ -157,9 +157,7 @@ public class ParticleRenderer {
         buffer.clear();
 
         while (buffer.capacity() < size) {
-            FloatBuffer newBuffer = BufferUtils.createFloatBuffer(buffer.capacity() << 1);
-            newBuffer.put(buffer);
-            buffer = newBuffer;
+            buffer = BufferUtils.createFloatBuffer(buffer.capacity() << 1);
         }
 
         for (int i = 0; i < particles.size(); i++) {
