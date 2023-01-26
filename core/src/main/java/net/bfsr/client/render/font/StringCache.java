@@ -699,6 +699,28 @@ public class StringCache {
     public int getAscent(String s, int fontSize) {
         return glyphCache.getAscent(s, fontSize);
     }
+
+    public int getStringHeight(String text, int fontSize, int maxWidth, int indent) {
+        int offset = 0;
+        int height = 0;
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == NEW_LINE) {
+                height += getHeight("\n", fontSize) * indent;
+            }
+        }
+        return height + getTrimmedStringHeight(text.substring(offset).trim(), fontSize, maxWidth, indent);
+    }
+
+    private int getTrimmedStringHeight(String string, int fontSize, int maxWidth, int indent) {
+        int height = 0;
+        do {
+            String temp = trimStringToWidthSaveWords(string, maxWidth);
+            string = string.replace(temp, "").trim();
+            height += getHeight(temp, fontSize) + indent;
+        } while (!string.isEmpty());
+
+        return height;
+    }
 }
 
 
