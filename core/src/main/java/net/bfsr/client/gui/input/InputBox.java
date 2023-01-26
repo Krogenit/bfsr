@@ -1,6 +1,7 @@
 package net.bfsr.client.gui.input;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
@@ -26,18 +27,21 @@ public class InputBox extends TexturedGuiObject {
     private final StringObject emptyStringObject;
     @Getter
     protected boolean typing;
-    protected boolean collided, renderCursor;
-    private int cursorTimer, cursorMaxTimer = 25;
-    protected int cursorPosition, cursorPositionEnd, startSelectionCursor;
-    protected boolean leftToRightSelection;
+    private boolean collided, renderCursor;
+    private int cursorTimer;
+    private final int cursorMaxTimer = 25;
+    private int cursorPosition, cursorPositionEnd, startSelectionCursor;
+    private boolean leftToRightSelection;
     protected final FontType font = FontType.XOLONIUM;
     protected int fontSize;
     private float maxLineSize;
     protected final Vector2i stringOffset;
     protected final Vector4f textColor = new Vector4f(1.0f);
-    protected final Vector4f selectionColor = new Vector4f(0.7f, 0.8f, 1.0f, 0.5f);
+    private final Vector4f selectionColor = new Vector4f(0.7f, 0.8f, 1.0f, 0.5f);
+    @Setter
+    private int cursorHeight;
 
-    public InputBox(TextureRegister texture, int x, int y, int width, int height, String string, int fontSize, int stringOffsetX, int stringOffsetY) {
+    InputBox(TextureRegister texture, int x, int y, int width, int height, String string, int fontSize, int stringOffsetX, int stringOffsetY) {
         super(texture, x, y, width, height);
         this.fontSize = fontSize;
         this.stringOffset = new Vector2i(stringOffsetX, stringOffsetY);
@@ -52,14 +56,11 @@ public class InputBox extends TexturedGuiObject {
         this.emptyStringObject.compile();
 
         maxLineSize = width / 1.2f;
+        cursorHeight = (int) (height / 1.7f);
     }
 
     public InputBox(TextureRegister texture, String string, int fontSize, int stringOffsetX, int stringOffsetY) {
         this(texture, 0, 0, 300, 50, string, fontSize, stringOffsetX, stringOffsetY);
-    }
-
-    public void setStringOffset(Vector2i stringOffset) {
-        this.stringOffset.set(stringOffset);
     }
 
     @Override
@@ -226,15 +227,22 @@ public class InputBox extends TexturedGuiObject {
     public void render(BaseShader shader) {
         super.render(shader);
 
+        renderString();
+        shader.enable();
+        renderSelectionAndCursor(shader);
+        shader.enableTexture();
+    }
+
+    void renderString() {
         if (stringObject.getString().isEmpty()) {
             emptyStringObject.render();
         } else {
             stringObject.render();
         }
-        shader.enable();
+    }
 
+    void renderSelectionAndCursor(BaseShader shader) {
         float lineWidth;
-        int cursorHeight = (int) (height / 1.7f);
         int cursorY = y + stringOffset.y + height / 2 - cursorHeight / 2;
         if (stringObject.getString().length() > 0) {
             if (cursorPositionEnd != cursorPosition) {
@@ -262,8 +270,6 @@ public class InputBox extends TexturedGuiObject {
             shader.setModelMatrix(Transformation.getModelViewMatrixGui(x + stringOffset.x + lineWidth, cursorY, 0, 1, cursorHeight).get(ShaderProgram.MATRIX_BUFFER));
             Renderer.quad.renderIndexed();
         }
-
-        shader.enableTexture();
     }
 
     public InputBox setStringObject(String stringObject) {
@@ -271,7 +277,7 @@ public class InputBox extends TexturedGuiObject {
         return this;
     }
 
-    public void setTyping(boolean value) {
+    private void setTyping(boolean value) {
         if (value) {
             setCursorPositionByMouse();
             Core.getCore().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
@@ -290,7 +296,7 @@ public class InputBox extends TexturedGuiObject {
         resetCursorPosition();
     }
 
-    public void resetCursorPosition() {
+    void resetCursorPosition() {
         cursorPosition = cursorPositionEnd = startSelectionCursor = 0;
     }
 
@@ -298,7 +304,7 @@ public class InputBox extends TexturedGuiObject {
         return stringObject.getString();
     }
 
-    public void setMaxLineSize(float maxLineSize) {
+    void setMaxLineSize(float maxLineSize) {
         this.maxLineSize = maxLineSize;
     }
 }
