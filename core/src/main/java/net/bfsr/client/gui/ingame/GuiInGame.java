@@ -32,11 +32,11 @@ import net.bfsr.math.Transformation;
 import net.bfsr.network.packet.client.PacketShipControl;
 import net.bfsr.profiler.Profiler;
 import net.bfsr.server.MainServer;
+import net.bfsr.settings.EnumOption;
 import net.bfsr.world.World;
 import net.bfsr.world.WorldClient;
 import net.bfsr.world.WorldServer;
 import org.joml.Vector2f;
-import org.joml.Vector2i;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
@@ -45,6 +45,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GuiInGame extends Gui {
     private final Core core = Core.getCore();
@@ -60,11 +61,10 @@ public class GuiInGame extends Gui {
     private final TexturedGuiObject shield = new TexturedGuiObject(TextureRegister.guiShield);
     private final TexturedGuiObject chat = new TexturedGuiObject(TextureRegister.guiChat);
 
-    private final float yOffset = 12.0f;
     @Setter
     private long ping;
 
-    private final StringObject controlText = new DynamicString(FontType.XOLONIUM, Lang.getString("gui.control"), center.x + 490, center.y + 130, 16);
+    private final StringObject controlText = new DynamicString(FontType.XOLONIUM, Lang.getString("gui.control"), 16);
     private final StringObject upperText = new DynamicString(FontType.CONSOLA);
     private final StringObject worldText = new DynamicString(FontType.CONSOLA);
     private final StringObject shipText = new DynamicString(FontType.CONSOLA);
@@ -75,32 +75,25 @@ public class GuiInGame extends Gui {
 
     private final InputChat chatInput = new InputChat();
 
-    private boolean controlWasPressed;
-    private boolean controlButtonCreated;
-
     private Ship currentShip;
     private Ship otherShip;
 
-    private static final HashMap<Texture, List<Ship>> shipsByMap = new HashMap<>();
-    private static final AxisAlignedBoundingBox shipAABB = new AxisAlignedBoundingBox(new Vector2f(), new Vector2f());
-    private static final AxisAlignedBoundingBox mapBoundingBox = new AxisAlignedBoundingBox(new Vector2f(), new Vector2f());
-    private static final Vector2f shipPos = new Vector2f();
-    private static final Vector2f shipScale = new Vector2f();
-    private static final Vector2f mapPos = new Vector2f();
-    private static final Vector2f mapScale = new Vector2f();
-    private static final Vector4f color = new Vector4f();
-    private static final Vector2f weaponPos = new Vector2f();
-    private static final Vector2f rotationVector = new Vector2f();
+    private final Map<Texture, List<Ship>> shipsByMap = new HashMap<>();
+    private final AxisAlignedBoundingBox shipAABB = new AxisAlignedBoundingBox(new Vector2f(), new Vector2f());
+    private final AxisAlignedBoundingBox mapBoundingBox = new AxisAlignedBoundingBox(new Vector2f(), new Vector2f());
+    private final Vector4f color = new Vector4f();
+    private final Vector2f rotationVector = new Vector2f();
 
     private Button buttonControl;
 
     private final String openGlVersion = GL11.glGetString(GL11.GL_VERSION);
     private final String openGlRenderer = GL11.glGetString(GL11.GL_RENDERER);
+    private final Texture shieldTexture = TextureLoader.getTexture(TextureRegister.shieldSmall0);
 
     @Override
     protected void initElements() {
-        int scaleX = 200;
-        int scaleY = 157;
+        int scaleX = 280;
+        int scaleY = 220;
         hudShip.setSize(scaleX, scaleY);
         hudShip.atBottomRightCorner(-scaleX, -scaleY);
         registerGuiObject(hudShip);
@@ -112,62 +105,48 @@ public class GuiInGame extends Gui {
         map.setSize(scaleX, scaleY).atUpperLeftCorner(0, 0);
         registerGuiObject(map);
 
-        scaleX = 100;
-        scaleY = 51;
+        scaleX = 140;
+        scaleY = 72;
         hudShipAdd0.setSize(scaleX, scaleY);
-        hudShipAdd0.atBottomRightCorner(-hudShip.getWidth() - scaleX, -scaleY);
+        hudShipAdd0.atBottomRightCorner(-hudShip.getWidth() - scaleX + 20, -scaleY);
         registerGuiObject(hudShipAdd0);
 
-        scaleX = 256;
-        scaleY = 136;
+        scaleX = 320;
+        scaleY = 170;
         chat.setSize(scaleX, scaleY);
         chat.atBottomLeftCorner(0, -scaleY);
         registerGuiObject(chat);
 
-        chatInput.setSize((int) (scaleX / 1.05f), (int) (scaleY / 1.12f));
-        chatInput.setStringOffset(new Vector2i(-66, 49));
-        chatInput.setPosition(center.x - 516, center.y + 294);
-        chatInput.setMaxLineSize(200);
+        int chatWidth = 320;
+        int chatHeight = 170;
+        chatInput.setSize(chatWidth, chatHeight);
+        chatInput.atBottomLeftCorner(0, -chatHeight);
         registerGuiObject(chatInput);
 
-        controlText.setPosition(center.x + 525, center.y + 194);
-        if (core.getWorld() != null && core.getWorld().getPlayerShip() == null) {
-            controlText.update(Lang.getString("gui.control"));
-        } else {
-            controlText.update(Lang.getString("gui.cancelControl"));
-        }
-        registerGuiObject(controlText);
-
-        createButton();
-    }
-
-    private void createButton() {
-        int scaleX = 128;
-        int scaleY = 20;
-        buttonControl = new Button(TextureRegister.guiButtonControl, (int) (center.x + scaleX * 4.4f), (int) (center.y + scaleY * 10.0f), scaleX, scaleY);
-        buttonControl.setOnMouseClickedRunnable(() -> {
+        buttonControl = new Button(TextureRegister.guiButtonControl, () -> {
             WorldClient w = core.getWorld();
-            controlWasPressed = true;
             Ship playerControlledShip = w.getPlayerShip();
             if (playerControlledShip != null) {
                 core.sendPacket(new PacketShipControl(playerControlledShip.getId(), false));
                 core.getWorld().setPlayerShip(null);
+                core.getWorld().disableShipDeselection();
                 selectShip(playerControlledShip);
                 cancelShipControl();
-            } else if (canControlShip(currentShip)) {
+            } else if (currentShip != null && canControlShip(currentShip)) {
                 core.getWorld().setPlayerShip(currentShip);
                 core.sendPacket(new PacketShipControl(currentShip.getId(), true));
             }
         });
-        registerGuiObject(buttonControl);
-        chatInput.addEmptyText();
+        buttonControl.setSize(256, 40);
+        buttonControl.atBottomRightCorner(-128 - hudShip.getWidth() / 2, -hudShip.getHeight() - 26);
+
         if (core.getWorld() != null && core.getWorld().getPlayerShip() == null) {
             controlText.update(Lang.getString("gui.control"));
         } else {
             controlText.update(Lang.getString("gui.cancelControl"));
         }
-
-        controlButtonCreated = true;
+        registerGuiObject(controlText.atBottomRightCorner(-hudShip.getWidth() / 2 - controlText.getStringWidth() / 2, -hudShip.getHeight() - 1));
+        registerGuiObject(buttonControl);
     }
 
     public void addChatMessage(String message) {
@@ -176,6 +155,7 @@ public class GuiInGame extends Gui {
 
     @Override
     public void onMouseLeftClicked() {
+        super.onMouseLeftClicked();
         chatInput.onMouseLeftClick();
     }
 
@@ -186,7 +166,6 @@ public class GuiInGame extends Gui {
     @Override
     public void input(int key) {
         super.input(key);
-        chatInput.input(key);
 
         if (key == GLFW.GLFW_KEY_ESCAPE && Core.getCore().canControlShip()) {
             Core.getCore().setCurrentGui(new GuiInGameMenu());
@@ -195,15 +174,12 @@ public class GuiInGame extends Gui {
 
     @Override
     public void textInput(int key) {
-        if (chatInput.isTyping()) {
-            chatInput.textInput(key);
-        }
+        super.textInput(key);
     }
 
     @Override
     public void onMouseLeftRelease() {
         super.onMouseLeftRelease();
-        controlWasPressed = false;
         chatInput.onMouseLeftRelease();
     }
 
@@ -215,7 +191,21 @@ public class GuiInGame extends Gui {
 
     @Override
     public void update() {
-        int yPos = (int) (6 + map.getHeight() * 0.93f);
+        if (EnumOption.IS_DEBUG.getBoolean()) updateDebugInfo();
+
+        if (currentShip != null && currentShip.isDead()) {
+            currentShip = null;
+        }
+
+        if (otherShip != null && otherShip.isDead()) {
+            otherShip = null;
+        }
+
+        super.update();
+    }
+
+    private void updateDebugInfo() {
+        int yPos = map.getHeight() + 6;
         int xPos = 6;
 
         Profiler profiler = core.getProfiler();
@@ -229,32 +219,32 @@ public class GuiInGame extends Gui {
         float sUpdateTime = sProfiler != null ? sProfiler.getResult("update") : 0;
         float sPhysicsTime = sProfiler != null ? sProfiler.getResult("physics") : 0;
         float sNetworkTime = sProfiler != null ? sProfiler.getResult("network") : 0;
-        Runtime var1 = Runtime.getRuntime();
-        long maxMemory = var1.maxMemory();
-        long totalMemory = var1.totalMemory();
-        long freeMemory = var1.freeMemory();
+        Runtime runtime = Runtime.getRuntime();
+        long maxMemory = runtime.maxMemory();
+        long totalMemory = runtime.totalMemory();
+        long freeMemory = runtime.freeMemory();
         long maxMemoryMB = maxMemory / 1024L / 1024L;
         long totalMemoryMB = totalMemory / 1024L / 1024L;
         long freeMemoryMB = freeMemory / 1024L / 1024L;
 
-        int tps = MainServer.getInstance() != null ? MainServer.getInstance().getUps() : 0;
+        int ups = MainServer.getInstance() != null ? MainServer.getInstance().getUps() : 0;
+        int sectionOffset = 20;
 
         upperText.update("BFSR Client Dev 0.0.4 \n" +
-                "FPS " + Core.getCore().getRenderer().getFps() + "/" + tps + " \n" +
-                //"System: " + System.getProperty("os.name") + " (" + System.getProperty("os.arch") + ") v." + System.getProperty("os.version") + " \n" +
-                //"Java: " + System.getProperty("java.version") + ", " + System.getProperty("java.vendor") + " \n" +
-                //System.getProperty("java.vm.name") + " (" + System.getProperty("java.vm.info") + "), " + System.getProperty("java.vm.vendor") + " \n" +
+                "FPS " + Core.getCore().getRenderer().getFps() + ", Local Server UPS " + ups + " \n" +
                 "Memory: " + (totalMemoryMB - freeMemoryMB) + "MB / " + totalMemoryMB + "MB up to " + maxMemoryMB + "MB \n" +
-                "OpenGL: " + openGlRenderer + " \nversion " + openGlVersion + " \n" +
+                "OpenGL: " + openGlRenderer + " \nVersion " + openGlVersion + " \n" +
 
                 " \n" +
                 "Update: " + formatter.format(updateTime) + "ms / " + formatter.format(sUpdateTime) + "ms " +
                 "\nPhysics: " + formatter.format(physicsTime) + "ms / " + formatter.format(sPhysicsTime) + "ms " +
                 "\nRender: " + formatter.format(renderTime) + "ms " + drawCalls + " draw calls " +
                 "\nNetwork: " + formatter.format(netTime) + "ms / " + formatter.format(sNetworkTime) + "ms " +
-                "\nPing: " + ping);
+                "\nPing: " + ping + "ms");
         upperText.setPosition(xPos, yPos);
-        yPos += yOffset * 11;
+
+        yPos += upperText.getHeight() + sectionOffset;
+
         World world = core.getWorld();
         if (world != null) {
             Camera cam = core.getRenderer().getCamera();
@@ -276,7 +266,7 @@ public class GuiInGame extends Gui {
                     " \nPhysic particles count: " + physicParticles + "/" + sParticlesCount);
             worldText.setPosition(xPos, yPos);
 
-            yPos += yOffset * 7;
+            yPos += worldText.getHeight() + sectionOffset;
             Ship playerShip = world.getPlayerShip();
             if (playerShip != null) {
                 Vector2f pos = playerShip.getPosition();
@@ -295,31 +285,6 @@ public class GuiInGame extends Gui {
                         "Reactor: " + formatter.format(reactor.getEnergy()) + "/" + formatter.format(reactor.getMaxEnergy()));
                 shipText.setPosition(xPos, yPos);
             }
-
-            if (currentShip != null) {
-                if (canControlShip(currentShip)) {
-                    if (!controlButtonCreated)
-                        createButton();
-                }
-
-                if (currentShip.isDead()) currentShip = null;
-            } else {
-                if (controlButtonCreated) {
-                    unregisterGuiObject(buttonControl);
-                    controlButtonCreated = false;
-                }
-                controlText.clear();
-                shipCrew.clear();
-                shipCargo.clear();
-            }
-
-            if (otherShip != null) {
-                if (otherShip.isDead()) otherShip = null;
-            }
-        }
-
-        if (world != null) {
-            super.update();
         }
     }
 
@@ -345,73 +310,47 @@ public class GuiInGame extends Gui {
         }
     }
 
-
     public void selectShip(Ship ship) {
         currentShip = ship;
     }
 
     private void renderMap(BaseShader shader, World world) {
-        map.render(shader);
         List<Ship> ships = world.getShips();
         Vector2f camPos = core.getRenderer().getCamera().getPosition();
         float mapOffsetX = 600;
         float mapOffsetY = 600;
-        mapBoundingBox.getMin().x = camPos.x - mapOffsetX;
-        mapBoundingBox.getMin().y = camPos.y - mapOffsetY;
-        mapBoundingBox.getMax().x = camPos.x + mapOffsetX;
-        mapBoundingBox.getMax().y = camPos.y + mapOffsetY;
-        mapPos.x = center.x - 550;
-        mapPos.y = center.y - 286.0f;
+        mapBoundingBox.set(camPos.x - mapOffsetX, camPos.y - mapOffsetY, camPos.x + mapOffsetX, camPos.y + mapOffsetY);
         float mapScaleX = 5.0f;
         float mapScaleY = 7.0f;
         float shipSize = 1.0f;
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        mapScale.x = this.map.getWidth();
-        mapScale.y = this.map.getHeight();
-        int sizeX = (int) (mapScale.x);
-        int sizeY = (int) (mapScale.y);
-        mapScale.x /= 2.0f;
-        mapScale.y /= 2.0f;
-        int x = (int) (map.getX() - mapScale.x);
-        int y = (int) (map.getY() + mapScale.y);
-        int offsetY = (int) (17 * Transformation.guiScale.y);
-        int offsetX = (int) (19 * Transformation.guiScale.x);
-        GL11.glScissor(x + offsetX, height - y + offsetY, sizeX - offsetX * 2, sizeY - offsetY * 2);
-        color.x = color.y = color.z = color.w = 1;
+        int offsetY = 17;
+        int offsetX = 22;
+        GL11.glScissor(map.getX() + offsetX, height - map.getHeight() + offsetY, map.getWidth() - offsetX * 2, map.getHeight() - offsetY * 2);
         shipsByMap.clear();
 
         for (int i = 0; i < ships.size(); i++) {
             Ship s = ships.get(i);
             Vector2f pos = s.getPosition();
             Vector2f scale = s.getScale();
-            shipScale.x = scale.x;
-            shipScale.y = scale.y;
-            shipScale.x /= shipSize;
-            shipScale.y /= shipSize;
-            float sX = shipScale.x / 2.0f;
-            float sY = shipScale.y / 2.0f;
-            shipAABB.setMinX(pos.x - sX);
-            shipAABB.setMaxX(pos.x + sX);
-            shipAABB.setMinY(pos.y - sY);
-            shipAABB.setMaxY(pos.y + sY);
+            float sX = scale.x * shipSize / 2.0f;
+            float sY = scale.y * shipSize / 2.0f;
+            shipAABB.set(pos.x - sX, pos.y - sY, pos.x + sX, pos.y + sY);
             if (mapBoundingBox.isIntersects(shipAABB)) {
                 Texture t = s.getTexture();
-                List<Ship> ss = shipsByMap.get(t);
-                if (ss == null) ss = new ArrayList<>();
+                List<Ship> ss = shipsByMap.computeIfAbsent(t, texture -> new ArrayList<>(1));
                 ss.add(s);
-                shipsByMap.put(t, ss);
             }
         }
 
+        int miniMapX = map.getX() + map.getWidth() / 2;
+        int miniMapY = map.getY() + map.getHeight() / 2;
         for (List<Ship> ss : shipsByMap.values()) {
-            for (Ship s : ss) {
-                Vector2f pos = s.getPosition();
-                Vector2f scale = s.getScale();
-                shipScale.x = scale.x;
-                shipScale.y = scale.y;
-                shipScale.x /= shipSize;
-                shipScale.y /= shipSize;
-                Faction faction = s.getFaction();
+            for (int i = 0; i < ss.size(); i++) {
+                Ship ship = ss.get(i);
+                Vector2f pos = ship.getPosition();
+                Vector2f scale = ship.getScale();
+                Faction faction = ship.getFaction();
                 if (faction == Faction.Engi) {
                     color.x = 0.5f;
                     color.y = 1.0f;
@@ -426,192 +365,166 @@ public class GuiInGame extends Gui {
                     color.z = 0.5f;
                 }
 
-                shipPos.x = mapPos.x + (pos.x - camPos.x) / mapScaleX;
-                shipPos.y = mapPos.y + (pos.y - camPos.y) / mapScaleY;
-                renderQuad(shader, color, s.getTexture(), shipPos, s.getRotation(), shipScale);
+                renderQuad(shader, color.x, color.y, color.z, 1.0f, ship.getTexture(), (int) (miniMapX + (pos.x - camPos.x) / mapScaleX), (int) (miniMapY + (pos.y - camPos.y) / mapScaleY),
+                        ship.getRotation(), (int) (scale.x * shipSize), (int) (scale.y * shipSize));
             }
         }
 
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 
-    private void renderShipHud(BaseShader shader, World world, Ship ship, boolean isSecondary) {
-        if (ship != null) {
-            OpenGLHelper.alphaGreater(0.01f);
-            if (!isSecondary) hudShip.render(shader);
-            else hudShipSecondary.render(shader);
-            color.x = color.y = color.z = 0;
-            color.w = 1;
-            OpenGLHelper.alphaGreater(0.75f);
-            if (!isSecondary) {
-                shipPos.x = center.x + 550;
-                shipPos.y = center.y + 286;
-            } else {
-                shipPos.x = center.x + 550;
-                shipPos.y = center.y - 286;
+    private void renderShipInHUD(BaseShader shader, Ship ship, int x, int y, float shipSize) {
+        float hull = ship.getHull().getHull() / ship.getHull().getMaxHull();
+        renderQuad(shader, 1.0f - hull, hull, 0.0f, 1.0f, ship.getTexture(), x, y, (float) (-Math.PI / 2.0f), (int) (ship.getScale().x * shipSize), (int) (ship.getScale().y * shipSize));
+    }
+
+    private void renderHullValue(BaseShader shader, Ship ship, int x, int y) {
+        textHull.update(Math.round(ship.getHull().getHull()) + "");
+        textHull.setPosition(x - textHull.getStringWidth() / 2, y + 16);
+        OpenGLHelper.alphaGreater(0.01f);
+        renderQuad(shader, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, x, y + 12, 0, textHull.getStringWidth() + 8, 18);
+        textHull.render();
+    }
+
+    private void renderShield(BaseShader shader, Shield shield, int x, int y) {
+        float shieldValue = shield.getShield() / shield.getMaxShield();
+        int shieldSize = (int) (220 * shield.getSize());
+        renderQuad(shader, 1.0f - shieldValue, shieldValue, 0.0f, 1.0f, this.shield.getTexture(), x, y, 0, shieldSize, shieldSize);
+    }
+
+    private void renderShieldValue(BaseShader shader, Shield shield, int x, int y) {
+        textShield.update(Math.round(shield.getShield()) + "");
+        textShield.setPosition(x - textShield.getStringWidth() / 2, y + 74);
+        renderQuad(shader, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, x, y + 70, 0, textShield.getStringWidth() + 8, 18);
+        textShield.render();
+    }
+
+    private void renderArmorPlates(BaseShader shader, Ship ship, int x, int y) {
+        Armor armor = ship.getArmor();
+        ArmorPlate[] plates = armor.getArmorPlates();
+        float rot = (float) Math.PI;
+        for (int i = 0; i < 4; i++) {
+            ArmorPlate plate = plates[i];
+            rot -= Math.PI / 2.0;
+            if (plate != null) {
+                RotationHelper.rotate(rot, -56, 0, rotationVector);
+                rotationVector.x += x;
+                rotationVector.y += y;
+                float armorPlateValue = plate.getArmor() / plate.getArmorMax();
+                renderQuad(shader, 1.0f - armorPlateValue, armorPlateValue, 0.0f, 1.0f, armorPlate.getTexture(), (int) rotationVector.x, (int) rotationVector.y, (float) (rot + Math.PI), 64, 64);
             }
-            float shipSize = 0.5f;
-            shipScale.x = ship.getScale().x;
-            shipScale.y = ship.getScale().y;
-            shipScale.mul(shipSize);
-
-            color.y = ship.getHull().getHull() / ship.getHull().getMaxHull();
-            color.x = 1.0f - color.y;
-            color.z = 0.0f;
-            renderQuad(shader, color, ship.getTexture(), shipPos, (float) (-Math.PI / 2.0f), shipScale);
-            Texture tShield = TextureLoader.getTexture(TextureRegister.shieldSmall0);
-            if (!isSecondary) {
-                String string = String.valueOf(Math.round(ship.getHull().getHull()));
-                textHull.update(string);
-                textHull.setPosition((int) shipPos.x, (int) (shipPos.y + 16));
-                color.x = 0;
-                color.y = 0;
-                color.z = 0;
-                shipScale.x = 12;
-                shipScale.y = 6 * string.length() + 6;
-                OpenGLHelper.alphaGreater(0.01f);
-                shipPos.y += 15;
-                renderQuad(shader, color, tShield, shipPos, (float) (-Math.PI / 2.0f), shipScale);
-                shipPos.y -= 15;
-            }
-
-            Shield shield = ship.getShield();
-            if (shield != null && shield.shieldAlive()) {
-                color.y = shield.getShield() / shield.getMaxShield();
-                color.x = 1.0f - color.y;
-                color.z = 0;
-                shipScale.x = 140.0f * shield.getSize();
-                shipScale.y = 140.0f * shield.getSize();
-                renderQuad(shader, color, this.shield.getTexture(), shipPos, (float) (-Math.PI), shipScale);
-                if (!isSecondary) {
-                    String string = String.valueOf(Math.round(shield.getShield()));
-                    textShield.update(string);
-                    textShield.setPosition((int) shipPos.x, (int) (shipPos.y + 48));
-                    color.x = 0;
-                    color.y = 0;
-                    color.z = 0;
-                    shipScale.x = 12;
-                    shipScale.y = 6 * string.length() + 6;
-                    shipPos.y += 47;
-                    renderQuad(shader, color, tShield, shipPos, (float) (-Math.PI / 2.0f), shipScale);
-                    shipPos.y -= 47;
-                }
-            } else {
-                textShield.clear();
-            }
-
-            Armor armor = ship.getArmor();
-            ArmorPlate[] plates = armor.getArmorPlates();
-            float rot = (float) Math.PI;
-            shipScale.x = this.armorPlate.getWidth() / 1.8f;
-            shipScale.y = this.armorPlate.getHeight() / 1.8f;
-            color.x = 1.0f;
-            color.z = 0.0f;
-            for (int i = 0; i < 4; i++) {
-                ArmorPlate plate = plates[i];
-                rot -= Math.PI / 2.0;
-                if (plate != null) {
-                    RotationHelper.rotate(rot, -35, 0, rotationVector);
-                    rotationVector.x += shipPos.x;
-                    rotationVector.y += shipPos.y;
-                    color.y = plate.getArmor() / plate.getArmorMax();
-                    color.x = 1.0f - color.y;
-                    renderQuad(shader, color, this.armorPlate.getTexture(), rotationVector, (float) (rot + Math.PI), shipScale);
-                }
-            }
-
-            if (!isSecondary && canControlShip(ship)) {
-                Texture energyText = energy.getTexture();
-                shipScale.x = energy.getWidth() * 0.6f;
-                shipScale.y = energy.getHeight() * 0.6f;
-                Reactor reactor = ship.getReactor();
-                float energy = reactor.getEnergy() / reactor.getMaxEnergy() * 20.0f;
-                for (int i = 0; i < 20; i++) {
-                    rot = (float) (i * 0.08f - Math.PI / 4.0f);
-                    RotationHelper.rotate(rot, -70, 0, rotationVector);
-                    rotationVector.x += shipPos.x;
-                    rotationVector.y += shipPos.y;
-                    color.x = 0;
-                    color.y = 0;
-                    color.z = 0;
-                    renderQuad(shader, color, energyText, rotationVector, (float) (-Math.PI + rot), shipScale);
-                    if (energy >= i) {
-                        color.x = 0.25f;
-                        color.y = 0.5f;
-                        color.z = 1.0f;
-                        renderQuad(shader, color, energyText, rotationVector, (float) (-Math.PI + rot), shipScale);
-                    }
-                }
-                OpenGLHelper.alphaGreater(0.01f);
-                hudShipAdd0.render(shader);
-
-                shipCargo.setPosition(center.x + 380, center.y + 320);
-                shipCargo.update(Lang.getString(Lang.getString("gui.shipCargo") + ": " + ship.getCargo().getCapacity() + "/" + ship.getCargo().getMaxCapacity()));
-
-                shipCrew.setPosition(center.x + 380, center.y + 330);
-                shipCrew.update(Lang.getString(Lang.getString("gui.shipCrew") + ": " + ship.getCrew().getCrewSize() + "/" + ship.getCrew().getMaxCrewSize()));
-            }
-
-            OpenGLHelper.alphaGreater(0.75f);
-            for (WeaponSlot slot : ship.getWeaponSlots()) {
-                if (slot != null) {
-                    float reload = slot.getShootTimer() / slot.getShootTimerMax();
-                    color.x = reload;
-                    color.y = reload;
-                    color.z = 1.0f;
-                    Vector2f pos = slot.getAddPosition();
-                    RotationHelper.rotate((float) (-Math.PI / 2.0f), pos.x, pos.y, rotationVector);
-                    weaponPos.x = shipPos.x + rotationVector.x * shipSize;
-                    weaponPos.y = shipPos.y + rotationVector.y * shipSize;
-                    shipScale.x = slot.getScale().x;
-                    shipScale.y = slot.getScale().y;
-                    shipScale.mul(shipSize);
-                    renderQuad(shader, color, slot.getTexture(), weaponPos, (float) (-Math.PI / 2.0f), shipScale);
-                }
-            }
-
         }
     }
 
-    void renderChat(BaseShader shader) {
-        OpenGLHelper.alphaGreater(0.01f);
-        chat.render(shader);
-        chatInput.render(shader);
+    private void renderWeaponSlots(BaseShader shader, Ship ship, int x, int y, float shipSize) {
+        OpenGLHelper.alphaGreater(0.75f);
+        int size = ship.getWeaponSlots().size();
+        for (int i = 0; i < size; i++) {
+            WeaponSlot slot = ship.getWeaponSlots().get(i);
+            if (slot != null) {
+                float reload = slot.getShootTimer() / slot.getShootTimerMax();
+                Vector2f pos = slot.getAddPosition();
+                RotationHelper.rotate((float) (-Math.PI / 2.0f), pos.x, pos.y, rotationVector);
+                int slotWidth = (int) (slot.getScale().x * shipSize);
+                int slothHeight = (int) (slot.getScale().y * shipSize);
+                renderQuad(shader, reload, 0.0f, 1.0f - reload, 1.0f, slot.getTexture(), (int) (x + rotationVector.x * shipSize), (int) (y + rotationVector.y * shipSize),
+                        (float) (-Math.PI / 2.0f), slotWidth, slothHeight);
+            }
+        }
+    }
+
+    private void renderCurrentShipInfo(BaseShader shader) {
+        int x = hudShip.getX() + hudShip.getWidth() / 2;
+        int y = hudShip.getY() + hudShip.getHeight() / 2;
+        OpenGLHelper.alphaGreater(0.75f);
+        float shipSize = 10.0f;
+
+        renderShipInHUD(shader, currentShip, x, y, shipSize);
+        renderHullValue(shader, currentShip, x, y);
+        shader.enable();
+
+        Shield shield = currentShip.getShield();
+        if (shield != null && shield.shieldAlive()) {
+            renderShield(shader, shield, x, y);
+            renderShieldValue(shader, shield, x, y);
+            shader.enable();
+        }
+
+        renderArmorPlates(shader, currentShip, x, y);
+
+        Texture energyText = energy.getTexture();
+        int energyWidth = 16;
+        int energyHeight = 8;
+        Reactor reactor = currentShip.getReactor();
+        float energy = reactor.getEnergy() / reactor.getMaxEnergy() * 20.0f;
+        for (int i = 0; i < 20; i++) {
+            float rot = (float) (i * 0.08f - Math.PI / 4.0f);
+            RotationHelper.rotate(rot, -100, 0, rotationVector);
+            rotationVector.x += x;
+            rotationVector.y += y;
+            renderQuad(shader, 0.0f, 0.0f, 0.0f, 1.0f, energyText, (int) rotationVector.x, (int) rotationVector.y, (float) (-Math.PI + rot), energyWidth, energyHeight);
+            if (energy >= i) {
+                renderQuad(shader, 0.25f, 0.5f, 1.0f, 1.0f, energyText, (int) rotationVector.x, (int) rotationVector.y, (float) (-Math.PI + rot), energyWidth, energyHeight);
+            }
+        }
+
+        shipCargo.setPosition(hudShipAdd0.getX() + 16, hudShipAdd0.getY() + 26);
+        shipCargo.update(Lang.getString(Lang.getString("gui.shipCargo") + ": " + currentShip.getCargo().getCapacity() + "/" + currentShip.getCargo().getMaxCapacity()));
+        shipCargo.render();
+
+        shipCrew.setPosition(hudShipAdd0.getX() + 16, hudShipAdd0.getY() + 40);
+        shipCrew.update(Lang.getString(Lang.getString("gui.shipCrew") + ": " + currentShip.getCrew().getCrewSize() + "/" + currentShip.getCrew().getMaxCrewSize()));
+        shipCrew.render();
+        shader.enable();
+
+        renderWeaponSlots(shader, currentShip, x, y, shipSize);
+    }
+
+    private void renderOtherShipInfo(BaseShader shader) {
+        int x = hudShipSecondary.getX() + hudShipSecondary.getWidth() / 2;
+        int y = hudShipSecondary.getY() + hudShipSecondary.getHeight() / 2;
+
+        OpenGLHelper.alphaGreater(0.75f);
+        float shipSize = 10.0f;
+
+        renderShipInHUD(shader, otherShip, x, y, shipSize);
+
+        Shield shield = otherShip.getShield();
+        if (shield != null && shield.shieldAlive()) {
+            renderShield(shader, shield, x, y);
+        }
+
+        renderArmorPlates(shader, otherShip, x, y);
+        renderWeaponSlots(shader, otherShip, x, y, shipSize);
     }
 
     @Override
     public void render(BaseShader shader) {
-        if (core.getWorld() != null) {
-            OpenGLHelper.alphaGreater(0.01f);
-            super.render(shader);
-        }
+        OpenGLHelper.alphaGreater(0.01f);
+        super.render(shader);
 
-        World world = core.getWorld();
+        OpenGLHelper.alphaGreater(0.01f);
+        renderMap(shader, Core.getCore().getWorld());
+        if (currentShip != null) renderCurrentShipInfo(shader);
+        if (otherShip != null) renderOtherShipInfo(shader);
+        OpenGLHelper.alphaGreater(0.01f);
 
-        if (world != null) {
-            OpenGLHelper.alphaGreater(0.01f);
-            renderMap(shader, world);
-            renderShipHud(shader, world, currentShip, false);
-            renderShipHud(shader, world, otherShip, true);
-            renderChat(shader);
+        if (EnumOption.IS_DEBUG.getBoolean()) {
+            upperText.render();
+            worldText.render();
+
+            if (Core.getCore().getWorld().getPlayerShip() != null) {
+                shipText.render();
+            }
         }
     }
 
-    private void renderQuad(BaseShader shader, Vector4f color, Texture texture, Vector2f pos, float rot, Vector2f scale) {
-        Vector2f pos1 = Transformation.getOffsetByScale(pos);
-        shader.setColor(color.x, color.y, color.z, color.w);
-        shader.setModelMatrix(Transformation.getModelViewMatrixGui(pos1.x, pos1.y, rot, scale.x * Transformation.guiScale.x, scale.y * Transformation.guiScale.y).get(ShaderProgram.MATRIX_BUFFER));
-        if (texture != null) texture.bind();
+    private void renderQuad(BaseShader shader, float r, float g, float b, float a, Texture texture, int x, int y, float rot, int width, int height) {
+        shader.setColor(r, g, b, a);
+        shader.setModelMatrix(Transformation.getModelViewMatrixGui(x, y, rot, width, height).get(ShaderProgram.MATRIX_BUFFER));
+        texture.bind();
         Renderer.centeredQuad.renderIndexed();
     }
 
-    public void clearByExit() {
-        super.clear();
-        controlButtonCreated = false;
-    }
-
-    @Override
-    public void clear() {
-        super.clear();
-    }
+    public void clearByExit() {}
 }
