@@ -19,6 +19,7 @@ public class Scroll extends SimpleGuiObject {
     private int scroll;
     private int clickStartScroll;
     private int mouseStartClickY;
+    @Getter
     private int totalHeight;
     private int viewHeight;
     private boolean collided;
@@ -39,13 +40,17 @@ public class Scroll extends SimpleGuiObject {
 
     @Override
     public void scroll(float y) {
-        updateScroll((int) (scroll - y * 10.0f));
+        updatePositionAndSize((int) (scroll - y * 10.0f));
+    }
+
+    public void scrollBottom() {
+        updatePositionAndSize(Integer.MAX_VALUE);
     }
 
     @Override
     public void update() {
         if (movingByMouse) {
-            updateScroll((int) (clickStartScroll + (Mouse.getPosition().y - mouseStartClickY) / (scrollHeight / (float) totalHeight)));
+            updatePositionAndSize((int) (clickStartScroll + (Mouse.getPosition().y - mouseStartClickY) / (scrollHeight / (float) totalHeight)));
         }
 
         if (isIntersects()) {
@@ -58,7 +63,7 @@ public class Scroll extends SimpleGuiObject {
         }
     }
 
-    private void updateScroll(int newValue) {
+    private void updatePositionAndSize(int newValue) {
         int heightDiff = totalHeight - viewHeight;
         if (heightDiff < 0) heightDiff = 0;
 
@@ -92,7 +97,7 @@ public class Scroll extends SimpleGuiObject {
 
         super.resize(width, height);
         viewHeight = viewHeightResizeFunction.apply(width, height);
-        updateScroll(scroll);
+        updatePositionAndSize(scroll);
     }
 
     @Override
