@@ -30,6 +30,17 @@ public final class TexturedQuad extends Quad {
         });
     }
 
+    public static TexturedQuad createParticleCenteredQuad() {
+        TexturedQuad texturedQuad = new TexturedQuad(new float[]{
+                -0.5f, 0.5f, 0.0f, 1.0f,
+                0.5f, 0.5f, 1.0f, 1.0f,
+                0.5f, -0.5f, 1.0f, 0.0f,
+                -0.5f, -0.5f, 0.0f, 0.0f
+        }, 3);
+        texturedQuad.vao.enableAttributes(6);
+        return texturedQuad;
+    }
+
     private TexturedQuad(float[] positionsUvs) {
         this(positionsUvs, 2);
     }

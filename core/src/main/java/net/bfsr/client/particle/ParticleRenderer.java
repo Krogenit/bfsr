@@ -2,7 +2,6 @@ package net.bfsr.client.particle;
 
 import lombok.Getter;
 import net.bfsr.client.camera.Camera;
-import net.bfsr.client.model.MeshLoader;
 import net.bfsr.client.model.TexturedQuad;
 import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.render.Renderer;
@@ -51,13 +50,12 @@ public class ParticleRenderer {
         this.particleShader = new ParticleInstancedShader();
         this.particleShader.load();
         this.particleShader.init();
-        quad = MeshLoader.createParticleCenteredQuad();
+        quad = TexturedQuad.createParticleCenteredQuad();
         quad.addInstancedAttribute(2, 1, 4, INSTANCE_DATA_LENGTH, 0);
         quad.addInstancedAttribute(2, 2, 4, INSTANCE_DATA_LENGTH, 4);
         quad.addInstancedAttribute(2, 3, 4, INSTANCE_DATA_LENGTH, 8);
         quad.addInstancedAttribute(2, 4, 4, INSTANCE_DATA_LENGTH, 12);
         quad.addInstancedAttribute(2, 5, 4, INSTANCE_DATA_LENGTH, 16);
-        quad.addInstancedAttribute(2, 6, 4, INSTANCE_DATA_LENGTH, 20);
         instance = this;
     }
 
