@@ -112,7 +112,7 @@ public class ParticleRenderer {
                 p.render(defaultShader);
         }
 
-        if (EnumOption.IS_DEBUG.getBoolean()) {
+        if (EnumOption.SHOW_DEBUG_BOXES.getBoolean()) {
             core.getRenderer().getCamera().setupOpenGLMatrix();
 
             GL20.glUseProgram(0);

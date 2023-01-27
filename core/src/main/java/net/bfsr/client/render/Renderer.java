@@ -120,7 +120,7 @@ public class Renderer {
             OpenGLHelper.alphaGreater(0.75f);
             world.renderEntities(shader, interpolation);
             world.renderParticles();
-            if (EnumOption.IS_DEBUG.getBoolean()) {
+            if (EnumOption.SHOW_DEBUG_BOXES.getBoolean()) {
                 GL20.glUseProgram(0);
                 world.renderDebug(null);
                 shader.enable();

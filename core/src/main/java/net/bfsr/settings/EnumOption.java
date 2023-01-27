@@ -32,7 +32,8 @@ public enum EnumOption {
     IS_PROFILING(SettingsCategory.DEBUG, new BooleanOption(false), (option, value) -> {
         option.option.setValue(!((Boolean) option.option.getValue()).booleanValue());
         Core.getCore().getProfiler().setEnable(option.getBoolean());
-    });
+    }),
+    SHOW_DEBUG_BOXES(SettingsCategory.DEBUG, new BooleanOption(false), ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER);
 
     @Getter
     private final SettingsCategory category;
