@@ -23,15 +23,14 @@ public class GuiDestroyed extends Gui {
         int buttonWidth = 220;
         int buttonHeight = 40;
         int buttonsOffset = 160;
-        registerGuiObject(new Button(TextureRegister.guiButtonBase, center.x + buttonsOffset - buttonWidth / 2, center.y + 72, buttonWidth, buttonHeight, Lang.getString("gui.destroyed.respawn"),
-                16, () -> {
+        registerGuiObject(new Button(TextureRegister.guiButtonBase, buttonWidth, buttonHeight, Lang.getString("gui.destroyed.respawn"), 16, () -> {
             Vector2f position = Core.getCore().getRenderer().getCamera().getPosition();
             Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketRespawn(position.x, position.y));
             Core.getCore().setCurrentGui(null);
-        }));
+        }).atCenter(buttonsOffset - buttonWidth / 2, 72));
 
-        registerGuiObject(new Button(TextureRegister.guiButtonBase, center.x - buttonsOffset - buttonWidth / 2, center.y + 72, buttonWidth, buttonHeight, Lang.getString("gui.ingamemenu.tomainmenu"),
-                16, () -> Core.getCore().quitToMainMenu()));
+        registerGuiObject(new Button(TextureRegister.guiButtonBase, buttonWidth, buttonHeight, Lang.getString("gui.ingamemenu.tomainmenu"),
+                16, () -> Core.getCore().quitToMainMenu()).atCenter(-buttonsOffset - buttonWidth / 2, 72));
         registerGuiObject(new StaticString(FontType.XOLONIUM, Lang.getString("gui.destroyed.shipWasDestroyed"), 20).compile().atCenter(-286, -104));
         registerGuiObject(new StaticString(FontType.CONSOLA, Lang.getString("gui.destroyed.destroyedBy") + ": " + destroyedBy, 16).compile().atCenter(-286, -64));
     }
