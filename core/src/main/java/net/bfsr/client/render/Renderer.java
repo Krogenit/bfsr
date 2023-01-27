@@ -36,9 +36,10 @@ public class Renderer {
     private final BaseShader shader = new BaseShader();
     @Getter
     private GuiInGame guiInGame;
-    @Setter
     @Getter
     private int drawCalls;
+    @Getter
+    private int lastFrameDrawCalls;
     @Setter
     @Getter
     private int fps;
@@ -103,6 +104,7 @@ public class Renderer {
     }
 
     public void render(float interpolation) {
+        resetDrawCalls();
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
         camera.bind();
         shader.enable();
@@ -138,6 +140,11 @@ public class Renderer {
             OpenGLHelper.alphaGreater(0.01f);
             gui.render(shader);
         }
+    }
+
+    private void resetDrawCalls() {
+        lastFrameDrawCalls = drawCalls;
+        drawCalls = 0;
     }
 
     public void resize(int width, int height) {

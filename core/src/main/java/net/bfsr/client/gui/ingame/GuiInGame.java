@@ -212,8 +212,7 @@ public class GuiInGame extends Gui {
         Profiler sProfiler = MainServer.getInstance() != null ? MainServer.getInstance().getProfiler() : null;
         float updateTime = profiler.getResult("update");
         float renderTime = profiler.getResult("render");
-        int drawCalls = core.getRenderer().getDrawCalls();
-        core.getRenderer().setDrawCalls(0);
+        int drawCalls = core.getRenderer().getLastFrameDrawCalls();
         float physicsTime = profiler.getResult("physics");
         float netTime = profiler.getResult("network");
         float sUpdateTime = sProfiler != null ? sProfiler.getResult("update") : 0;
