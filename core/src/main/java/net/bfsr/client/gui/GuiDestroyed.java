@@ -2,72 +2,37 @@ package net.bfsr.client.gui;
 
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.string.StaticString;
-import net.bfsr.client.render.font.string.StringObject;
-import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
-import net.bfsr.client.shader.BaseShader;
 import net.bfsr.core.Core;
-import net.bfsr.entity.TextureObject;
-import net.bfsr.math.Transformation;
 import net.bfsr.network.packet.client.PacketRespawn;
 import org.joml.Vector2f;
 
 public class GuiDestroyed extends Gui {
-    private final String errorMessage;
-    private final String description;
-    private final StringObject text;
-    private final StringObject textDescription;
-    private final TextureObject background;
+    private final String destroyedBy;
 
     public GuiDestroyed(String destroyedBy) {
-        this.errorMessage = "gui.destroyed.shipWasDestroyed";
-        this.description = destroyedBy;
-        this.background = new GuiTextureObject(TextureLoader.getTexture(TextureRegister.guiAdd));
-        this.text = new StaticString(FontType.XOLONIUM, Lang.getString(errorMessage));
-        this.textDescription = new StaticString(FontType.CONSOLA, Lang.getString("gui.destroyed.destroyedBy") + ": " + description);
+        this.destroyedBy = destroyedBy;
     }
 
     @Override
     protected void initElements() {
-        Vector2f scale = new Vector2f(0.6f, 0.6f);
+        registerGuiObject(new TexturedGuiObject(TextureRegister.guiAdd).atCenter(-300, -139).setSize(600, 278));
 
-        background.setPosition(Transformation.getOffsetByScale(new Vector2f(center.x, center.y)));
-        background.setScale(new Vector2f(600 * scale.x, 278 * scale.y));
-
-        Button button = new Button(TextureRegister.guiButtonBase, center.x + 96, center.y + 60, 150, 30, "gui.destroyed.respawn", 14);
-        button.setOnMouseClickedRunnable(() -> {
+        int buttonWidth = 220;
+        int buttonHeight = 40;
+        int buttonsOffset = 160;
+        registerGuiObject(new Button(TextureRegister.guiButtonBase, center.x + buttonsOffset - buttonWidth / 2, center.y + 72, buttonWidth, buttonHeight, Lang.getString("gui.destroyed.respawn"),
+                16, () -> {
             Vector2f position = Core.getCore().getRenderer().getCamera().getPosition();
             Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketRespawn(position.x, position.y));
             Core.getCore().setCurrentGui(null);
-        });
-        registerGuiObject(button);
+        }));
 
-        button = new Button(TextureRegister.guiButtonBase, center.x - 96, center.y + 60, 150, 30, "gui.ingamemenu.tomainmenu", 14);
-        button.setOnMouseClickedRunnable(() -> Core.getCore().quitToMainMenu());
-        registerGuiObject(button);
-
-        text.setFontSize(16);
-        text.setPosition((int) (center.x - 286 * scale.x), (int) (center.y - 128 * scale.y));
-        text.compile();
-        textDescription.setFontSize(14);
-        textDescription.setPosition((int) (center.x - 286 * scale.x), (int) (center.y - 74 * scale.y));
-        textDescription.compile();
-    }
-
-    @Override
-    public void render(BaseShader shader) {
-        OpenGLHelper.alphaGreater(0.01f);
-        background.render(shader);
-        super.render(shader);
-    }
-
-    @Override
-    public void clear() {
-        super.clear();
-        text.clear();
-        textDescription.clear();
+        registerGuiObject(new Button(TextureRegister.guiButtonBase, center.x - buttonsOffset - buttonWidth / 2, center.y + 72, buttonWidth, buttonHeight, Lang.getString("gui.ingamemenu.tomainmenu"),
+                16, () -> Core.getCore().quitToMainMenu()));
+        registerGuiObject(new StaticString(FontType.XOLONIUM, Lang.getString("gui.destroyed.shipWasDestroyed"), 20).compile().atCenter(-286, -104));
+        registerGuiObject(new StaticString(FontType.CONSOLA, Lang.getString("gui.destroyed.destroyedBy") + ": " + destroyedBy, 16).compile().atCenter(-286, -64));
     }
 }
