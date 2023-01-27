@@ -3,6 +3,7 @@ package net.bfsr.client.render.font;
 import net.bfsr.client.render.font.string.DynamicGLString;
 import net.bfsr.client.render.font.string.GLString;
 import net.bfsr.client.shader.font.FontShader;
+import net.bfsr.core.Core;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -145,6 +146,7 @@ public class StringRenderer {
         fontShader.setModelMatrix(string.getMatrixBuffer());
         string.bind();
         GL11.glDrawArrays(GL11.GL_QUADS, 0, string.getVertexCount());
+        Core.getCore().getRenderer().increaseDrawCalls();
     }
 
     public void render(String string, StringCache stringCache, int fontSize, float x, float y) {
