@@ -23,7 +23,7 @@ public enum EnumOption {
     }),
 
     V_SYNC(SettingsCategory.GRAPHICS, new BooleanOption(true), ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
-    MAX_FPS(SettingsCategory.GRAPHICS, 30, 240, new IntegerOption(60), ConsumerUtils.INTEGER_DEFAULT_CONSUMER),
+    MAX_FPS(SettingsCategory.GRAPHICS, 10, 240, new IntegerOption(60), ConsumerUtils.INTEGER_DEFAULT_CONSUMER),
 
     IS_DEBUG(SettingsCategory.DEBUG, new BooleanOption(false), (option, value) -> {
         option.option.setValue(!((Boolean) option.option.getValue()).booleanValue());
