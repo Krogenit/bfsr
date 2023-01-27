@@ -1,22 +1,18 @@
 package net.bfsr.client.render.texture;
 
+import lombok.Getter;
 import net.bfsr.client.render.OpenGLHelper;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL45C;
 
 public class Texture {
+    @Getter
     private final int width;
+    @Getter
     private final int height;
+    @Getter
     private final int id;
-    private int numberOfRows;
-
-    public Texture(int width, int height, int id, int numberOfRows) {
-        this.id = id;
-        this.width = width;
-        this.height = height;
-        this.numberOfRows = numberOfRows;
-    }
 
     public Texture(int width, int height, int id) {
         this.id = id;
@@ -30,28 +26,8 @@ public class Texture {
         this.height = height;
     }
 
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public int getId() {
-        return id;
-    }
-
     public void delete() {
         GL11.glDeleteTextures(id);
-    }
-
-    public void setNumberOfRows(int numberOfRows) {
-        this.numberOfRows = numberOfRows;
-    }
-
-    public int getNumberOfRows() {
-        return numberOfRows;
     }
 
     public void bind() {

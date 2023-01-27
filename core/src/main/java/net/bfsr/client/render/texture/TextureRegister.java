@@ -1,5 +1,7 @@
 package net.bfsr.client.render.texture;
 
+import lombok.Getter;
+
 public enum TextureRegister {
 
     shipHumanSmall0("entity/ship/human_small0"),
@@ -197,23 +199,10 @@ public enum TextureRegister {
     fontConsola("font/consola"),
     fontNasalization_rg("font/nasalization-rg");
 
-    String path;
-    int numberOfRows;
-
-    TextureRegister(String path, int numberOfRows) {
-        this.path = path;
-        this.numberOfRows = numberOfRows;
-    }
+    @Getter
+    private final String path;
 
     TextureRegister(String path) {
         this.path = path;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public int getNumberOfRows() {
-        return numberOfRows;
     }
 }

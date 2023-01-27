@@ -91,10 +91,7 @@ public final class TextureLoader {
             height = h.get();
         }
 
-        Texture texture = createTexture(width, height, image, channels, createMips);
-        if (name.getNumberOfRows() != 0) texture.setNumberOfRows(name.getNumberOfRows());
-
-        LOADED_TEXTURES.put(name, texture);
+        LOADED_TEXTURES.put(name, createTexture(width, height, image, channels, createMips));
     }
 
     private static Texture generateTexture(DDSFile dds) {

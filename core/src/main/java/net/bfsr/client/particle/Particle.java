@@ -1,7 +1,6 @@
 package net.bfsr.client.particle;
 
 import net.bfsr.client.render.texture.TextureRegister;
-import net.bfsr.client.shader.ParticleShader;
 import net.bfsr.core.Core;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.server.MainServer;
@@ -164,10 +163,6 @@ public class Particle extends CollisionObject {
     public void setVelocity(Vector2f velocity) {
         if (canCollide) body.setLinearVelocity(velocity.x, velocity.y);
         else this.velocity = velocity;
-    }
-
-    public void renderParticle(ParticleShader shader) {
-        render(shader);
     }
 
     public void setSizeVelocity(float sizeVelocity) {

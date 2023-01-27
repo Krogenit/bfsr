@@ -26,7 +26,7 @@ import java.util.List;
 public class ParticleRenderer {
     @Getter
     private static ParticleRenderer instance;
-    private static final int INSTANCE_DATA_LENGTH = 25;
+    private static final int INSTANCE_DATA_LENGTH = 20;
 
     private final Core core = Core.getCore();
     private final WorldClient world;
@@ -57,8 +57,7 @@ public class ParticleRenderer {
         quad.addInstancedAttribute(2, 3, 4, INSTANCE_DATA_LENGTH, 8);
         quad.addInstancedAttribute(2, 4, 4, INSTANCE_DATA_LENGTH, 12);
         quad.addInstancedAttribute(2, 5, 4, INSTANCE_DATA_LENGTH, 16);
-        quad.addInstancedAttribute(2, 6, 1, INSTANCE_DATA_LENGTH, 20);
-        quad.addInstancedAttribute(2, 7, 4, INSTANCE_DATA_LENGTH, 21);
+        quad.addInstancedAttribute(2, 6, 4, INSTANCE_DATA_LENGTH, 20);
         instance = this;
     }
 
@@ -135,22 +134,12 @@ public class ParticleRenderer {
     }
 
     private void renderParticles(List<Particle> particles, Texture texture) {
-        int numberOfRows = texture.getNumberOfRows();
         texture.bind();
 
         if (particles.size() > 0) {
             Particle p = particles.get(0);
             OpenGLHelper.alphaGreater(p.getGreater());
         }
-
-        if (numberOfRows > 0) {
-            particleShader.setAnimatedTexture(true);
-            particleShader.setNumberOfRows(numberOfRows);
-        } else {
-            particleShader.setAnimatedTexture(false);
-        }
-
-        particleShader.enableTexture();
 
         int size = particles.size() * INSTANCE_DATA_LENGTH;
 
@@ -174,20 +163,6 @@ public class ParticleRenderer {
     }
 
     private void storeParticleData(Particle particle) {
-        if (particle instanceof ParticleAnimated animatedP) {
-            buffer.put(animatedP.getTextureOffset1().x);
-            buffer.put(animatedP.getTextureOffset1().y);
-            buffer.put(animatedP.getTextureOffset2().x);
-            buffer.put(animatedP.getTextureOffset2().y);
-            buffer.put(animatedP.getBlend());
-        } else {
-            buffer.put(0.1f);
-            buffer.put(0.1f);
-            buffer.put(0.1f);
-            buffer.put(0.1f);
-            buffer.put(0.1f);
-        }
-
         Vector4f color = particle.getColor();
         buffer.put(color.x);
         buffer.put(color.y);
@@ -264,12 +239,7 @@ public class ParticleRenderer {
 
     void addParticle(ParticleWreck particle) {
         Texture texture = particle.getTexture();
-        List<ParticleWreck> particles = particlesWrecksHashMap.get(texture);
-
-        if (particles == null) {
-            particles = new ArrayList<>();
-        }
-
+        List<ParticleWreck> particles = particlesWrecksHashMap.computeIfAbsent(texture, texture1 -> new ArrayList<>(32));
         particles.add(particle);
         particlesWrecksHashMap.put(texture, particles);
         particlesWrecks.add(particle);
@@ -281,15 +251,8 @@ public class ParticleRenderer {
         Texture texture = particle.getTexture();
 
         String fullRenderType = renderType.toString() + " " + positionType.toString();
-        HashMap<Texture, List<Particle>> hashMapByTexture = particlesHashMap.get(fullRenderType);
-        if (hashMapByTexture == null) {
-            hashMapByTexture = new HashMap<>();
-        }
-
-        List<Particle> particles = hashMapByTexture.get(texture);
-        if (particles == null) {
-            particles = new ArrayList<>();
-        }
+        HashMap<Texture, List<Particle>> hashMapByTexture = particlesHashMap.computeIfAbsent(fullRenderType, s -> new HashMap<>());
+        List<Particle> particles = hashMapByTexture.computeIfAbsent(texture, texture1 -> new ArrayList<>(128));
 
         particles.add(particle);
         hashMapByTexture.put(texture, particles);
