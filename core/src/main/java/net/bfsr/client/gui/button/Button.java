@@ -22,7 +22,7 @@ public class Button extends TexturedGuiObject {
     @Setter
     private Runnable onMouseClickedRunnable;
 
-    private Button(TextureRegister texture, int x, int y, int width, int height, String string, int fontSize, Runnable onMouseClickedRunnable) {
+    public Button(TextureRegister texture, int x, int y, int width, int height, String string, int fontSize, Runnable onMouseClickedRunnable) {
         super(texture, x, y, width, height);
         FontType font = FontType.XOLONIUM;
         StringCache stringCache = font.getStringCache();
