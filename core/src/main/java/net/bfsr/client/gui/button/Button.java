@@ -34,6 +34,10 @@ public class Button extends TexturedGuiObject {
         this.onMouseClickedRunnable = onMouseClickedRunnable;
     }
 
+    public Button(TextureRegister texture, int width, int height, String string, int fontSize, Runnable onMouseClickedRunnable) {
+        this(texture, 0, 0, width, height, string, fontSize, onMouseClickedRunnable);
+    }
+
     public Button(String string, int fontSize, Runnable onMouseClickedRunnable) {
         this(TextureRegister.guiButtonBase, 0, 0, 300, 50, string, fontSize, onMouseClickedRunnable);
     }
