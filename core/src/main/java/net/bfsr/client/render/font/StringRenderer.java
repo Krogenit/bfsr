@@ -117,7 +117,7 @@ public class StringRenderer {
         Entry entry = stringCache.cacheString(string);
         float height = stringCache.getHeight(newLineString, stringParams.getFontSize()) + indent;
         int stringAdvance = 0;
-        int offsetX = 0;
+        float offsetX = 0;
 
         for (int glyphIndex = 0, colorIndex = 0; glyphIndex < entry.glyphs.length; glyphIndex++) {
             Glyph glyph = entry.glyphs[glyphIndex];
@@ -125,7 +125,7 @@ public class StringRenderer {
             if (string.charAt(glyph.stringIndex) == newLineChar) {
                 stringParams.setY(stringParams.getY() + height);
                 stringParams.addHeight((int) height);
-                offsetX = -stringAdvance / 2;
+                offsetX = -stringAdvance / 2.0f;
             }
 
             while (colorIndex < entry.colors.length && glyph.stringIndex >= entry.colors[colorIndex++].stringIndex) {
