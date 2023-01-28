@@ -101,7 +101,9 @@ public class Button extends TexturedGuiObject {
     @Override
     public void render(BaseShader shader) {
         super.render(shader);
-        stringObject.render();
+        if (stringObject.getString().length() > 0) {
+            stringObject.render();
+        }
         shader.enable();
     }
 
