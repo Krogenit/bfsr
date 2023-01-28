@@ -3,7 +3,8 @@ package net.bfsr.entity.bullet;
 import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.ParticleWreck;
-import net.bfsr.client.render.OpenGLHelper;
+import net.bfsr.client.render.InstancedRenderer;
+import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.sound.SoundRegistry;
@@ -14,6 +15,7 @@ import net.bfsr.core.Core;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.RotationHelper;
+import net.bfsr.math.Transformation;
 import net.bfsr.network.packet.server.PacketSpawnBullet;
 import net.bfsr.server.MainServer;
 import net.bfsr.util.TimeUtils;
@@ -224,9 +226,12 @@ public class Bullet extends CollisionObject {
     }
 
     @Override
-    public void render(BaseShader shader) {
-        OpenGLHelper.alphaGreater(0.01f);
-        super.render(shader);
+    public void render(BaseShader shader, float interpolation) {
+        float size = 6.0f;
+        Vector2f pos = getPosition();
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(Transformation.getDefaultModelMatrix(lastPosition.x, lastPosition.y, pos.x, pos.y, getRotation(), size, size, interpolation),
+                color.x, color.y, color.z, color.w / 2.0f, TextureLoader.getTexture(TextureRegister.particleLight));
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(this, interpolation);
     }
 
     public BulletDamage getDamage() {
@@ -235,18 +240,6 @@ public class Bullet extends CollisionObject {
 
     public void setDamage(BulletDamage damage) {
         this.damage = damage;
-    }
-
-    public void setAlphaReducer(float alphaReducer) {
-        this.alphaReducer = alphaReducer;
-    }
-
-    public float getEnergy() {
-        return energy;
-    }
-
-    public void setEnergy(float energy) {
-        this.energy = energy;
     }
 
     public Ship getOwnerShip() {

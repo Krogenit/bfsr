@@ -7,7 +7,7 @@ import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.input.InputChat;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.OpenGLHelper;
+import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.Renderer;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.string.DynamicString;
@@ -42,10 +42,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class GuiInGame extends Gui {
     private final Core core = Core.getCore();
@@ -78,7 +75,6 @@ public class GuiInGame extends Gui {
     private Ship currentShip;
     private Ship otherShip;
 
-    private final Map<Texture, List<Ship>> shipsByMap = new HashMap<>();
     private final AxisAlignedBoundingBox shipAABB = new AxisAlignedBoundingBox(new Vector2f(), new Vector2f());
     private final AxisAlignedBoundingBox mapBoundingBox = new AxisAlignedBoundingBox(new Vector2f(), new Vector2f());
     private final Vector4f color = new Vector4f();
@@ -250,8 +246,8 @@ public class GuiInGame extends Gui {
             Vector2f camPos = cam.getPosition();
             int bulletsCount = world.getBullets().size();
             int shipsCount = world.getShips().size();
-            int particlesCount = world.getParticleRenderer().getParticles().size();
-            int physicParticles = world.getParticleRenderer().getParticlesWrecks().size();
+            int particlesCount = core.getRenderer().getParticleRenderer().getParticles().size();
+            int physicParticles = core.getRenderer().getParticleRenderer().getParticlesWrecks().size();
 
             WorldServer sWorld = MainServer.getInstance() != null ? MainServer.getInstance().getWorld() : null;
             int sBulletsCount = sWorld != null ? sWorld.getBullets().size() : 0;
@@ -313,7 +309,7 @@ public class GuiInGame extends Gui {
         currentShip = ship;
     }
 
-    private void renderMap(BaseShader shader, World world) {
+    private void renderMap(World world) {
         List<Ship> ships = world.getShips();
         Vector2f camPos = core.getRenderer().getCamera().getPosition();
         float mapOffsetX = 600;
@@ -326,8 +322,9 @@ public class GuiInGame extends Gui {
         int offsetY = 17;
         int offsetX = 22;
         GL11.glScissor(map.getX() + offsetX, height - map.getHeight() + offsetY, map.getWidth() - offsetX * 2, map.getHeight() - offsetY * 2);
-        shipsByMap.clear();
 
+        int miniMapX = map.getX() + map.getWidth() / 2;
+        int miniMapY = map.getY() + map.getHeight() / 2;
         for (int i = 0; i < ships.size(); i++) {
             Ship s = ships.get(i);
             Vector2f pos = s.getPosition();
@@ -336,20 +333,7 @@ public class GuiInGame extends Gui {
             float sY = scale.y * shipSize / 2.0f;
             shipAABB.set(pos.x - sX, pos.y - sY, pos.x + sX, pos.y + sY);
             if (mapBoundingBox.isIntersects(shipAABB)) {
-                Texture t = s.getTexture();
-                List<Ship> ss = shipsByMap.computeIfAbsent(t, texture -> new ArrayList<>(1));
-                ss.add(s);
-            }
-        }
-
-        int miniMapX = map.getX() + map.getWidth() / 2;
-        int miniMapY = map.getY() + map.getHeight() / 2;
-        for (List<Ship> ss : shipsByMap.values()) {
-            for (int i = 0; i < ss.size(); i++) {
-                Ship ship = ss.get(i);
-                Vector2f pos = ship.getPosition();
-                Vector2f scale = ship.getScale();
-                Faction faction = ship.getFaction();
+                Faction faction = s.getFaction();
                 if (faction == Faction.Engi) {
                     color.x = 0.5f;
                     color.y = 1.0f;
@@ -364,10 +348,12 @@ public class GuiInGame extends Gui {
                     color.z = 0.5f;
                 }
 
-                renderQuad(shader, color.x, color.y, color.z, 1.0f, ship.getTexture(), (int) (miniMapX + (pos.x - camPos.x) / mapScaleX), (int) (miniMapY + (pos.y - camPos.y) / mapScaleY),
-                        ship.getRotation(), (int) (scale.x * shipSize), (int) (scale.y * shipSize));
+                InstancedRenderer.INSTANCE.addToRenderPipeLine(Transformation.getGUIModelMatrix((int) (miniMapX + (pos.x - camPos.x) / mapScaleX), (int) (miniMapY + (pos.y - camPos.y) / mapScaleY),
+                        s.getRotation(), (int) (scale.x * shipSize), (int) (scale.y * shipSize)), color.x, color.y, color.z, 1.0f, s.getTexture());
             }
         }
+
+        InstancedRenderer.INSTANCE.render();
 
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
@@ -380,7 +366,6 @@ public class GuiInGame extends Gui {
     private void renderHullValue(BaseShader shader, Ship ship, int x, int y) {
         textHull.update(Math.round(ship.getHull().getHull()) + "");
         textHull.setPosition(x - textHull.getStringWidth() / 2, y + 16);
-        OpenGLHelper.alphaGreater(0.01f);
         renderQuad(shader, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, x, y + 12, 0, textHull.getStringWidth() + 8, 18);
         textHull.render();
     }
@@ -416,7 +401,6 @@ public class GuiInGame extends Gui {
     }
 
     private void renderWeaponSlots(BaseShader shader, Ship ship, int x, int y, float shipSize) {
-        OpenGLHelper.alphaGreater(0.75f);
         int size = ship.getWeaponSlots().size();
         for (int i = 0; i < size; i++) {
             WeaponSlot slot = ship.getWeaponSlots().get(i);
@@ -435,7 +419,6 @@ public class GuiInGame extends Gui {
     private void renderCurrentShipInfo(BaseShader shader) {
         int x = hudShip.getX() + hudShip.getWidth() / 2;
         int y = hudShip.getY() + hudShip.getHeight() / 2;
-        OpenGLHelper.alphaGreater(0.75f);
         float shipSize = 10.0f;
 
         renderShipInHUD(shader, currentShip, x, y, shipSize);
@@ -483,7 +466,6 @@ public class GuiInGame extends Gui {
         int x = hudShipSecondary.getX() + hudShipSecondary.getWidth() / 2;
         int y = hudShipSecondary.getY() + hudShipSecondary.getHeight() / 2;
 
-        OpenGLHelper.alphaGreater(0.75f);
         float shipSize = 10.0f;
 
         renderShipInHUD(shader, otherShip, x, y, shipSize);
@@ -499,14 +481,11 @@ public class GuiInGame extends Gui {
 
     @Override
     public void render(BaseShader shader) {
-        OpenGLHelper.alphaGreater(0.01f);
         super.render(shader);
 
-        OpenGLHelper.alphaGreater(0.01f);
-        renderMap(shader, Core.getCore().getWorld());
+        renderMap(Core.getCore().getWorld());
         if (currentShip != null) renderCurrentShipInfo(shader);
         if (otherShip != null) renderOtherShipInfo(shader);
-        OpenGLHelper.alphaGreater(0.01f);
 
         if (EnumOption.IS_DEBUG.getBoolean()) {
             upperText.render();

@@ -9,8 +9,7 @@ import net.bfsr.client.input.Mouse;
 import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.ParticleWreck;
-import net.bfsr.client.render.OpenGLHelper;
-import net.bfsr.client.render.Renderer;
+import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.StringOffsetType;
 import net.bfsr.client.render.font.string.StaticString;
@@ -19,7 +18,6 @@ import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.component.Armor;
@@ -37,7 +35,6 @@ import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.Direction;
-import net.bfsr.math.EnumZoomFactor;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.math.Transformation;
 import net.bfsr.network.packet.common.PacketObjectPosition;
@@ -56,8 +53,8 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
 
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -81,6 +78,7 @@ public abstract class Ship extends CollisionObject {
     private boolean spawned;
     private final Vector2f jumpVelocity;
     private final Vector2f jumpPosition;
+    private final Vector2f lastJumpPosition = new Vector2f();
     private final float jumpSpeed = 25.0f;
     private final Vector3f effectsColor;
     private int collisionTimer;
@@ -277,6 +275,7 @@ public abstract class Ship extends CollisionObject {
                     Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.jump, position));
                 }
             } else {
+                lastJumpPosition.set(jumpPosition);
                 jumpPosition.add(jumpVelocity.x * TimeUtils.UPDATE_DELTA_TIME, jumpVelocity.y * TimeUtils.UPDATE_DELTA_TIME);
                 color.w += 1.5f * TimeUtils.UPDATE_DELTA_TIME;
             }
@@ -425,52 +424,38 @@ public abstract class Ship extends CollisionObject {
         }
     }
 
+    public void renderTransparent(BaseShader shader, float interpolation) {
+        if (spawned) {
+            int size = damages.size();
+            for (int i = 0; i < size; i++) {
+                Damage damage = damages.get(i);
+                damage.renderEffects(interpolation);
+            }
+
+            renderShield(shader, interpolation);
+        } else {
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(Transformation.getDefaultModelMatrix(lastJumpPosition.x, lastJumpPosition.y, jumpPosition.x, jumpPosition.y, rotate, 40.0f * color.w,
+                    40.0f * color.w, interpolation), effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, TextureLoader.getTexture(TextureRegister.particleJump));
+        }
+    }
+
     public void render(BaseShader shader, float interpolation) {
         if (spawned) {
-            OpenGLHelper.alphaGreater(0.75f);
-            OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-            super.render(shader, interpolation);
-            shader.setColor(effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
-            OpenGLHelper.bindTexture(textureDamage.getId());
+            FloatBuffer modelMatrix = Transformation.getModelMatrix(this, interpolation);
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(modelMatrix, color.x, color.y, color.z, color.w, texture);
 
             if (hull.getHull() < hull.getMaxHull()) {
-                Vector2f pos = getPosition();
                 float hp = hull.getHull() / hull.getMaxHull();
-                OpenGLHelper.alphaGreater(0.001f);
-                shader.setColor(1.0f, 1.0f, 1.0f, 1.0f - hp);
-                shader.setModelMatrix(Transformation.getModelViewMatrix(pos.x, pos.y, getRotation(),
-                        scale.x, scale.y, EnumZoomFactor.Default).get(ShaderProgram.MATRIX_BUFFER));
-                Renderer.centeredQuad.renderIndexed();
+                InstancedRenderer.INSTANCE.addToRenderPipeLine(modelMatrix, 1.0f, 1.0f, 1.0f, 1.0f - hp, textureDamage);
             }
 
             int size = damages.size();
             for (int i = 0; i < size; i++) {
                 Damage damage = damages.get(i);
-                damage.render(shader);
+                damage.render(shader, interpolation);
             }
 
-            OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
-
-            size = damages.size();
-            for (int i = 0; i < size; i++) {
-                Damage damage = damages.get(i);
-                damage.renderEffects(shader);
-            }
-
-            OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-            OpenGLHelper.alphaGreater(0.75f);
-            renderGunSlots(shader);
-            OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
-            renderShield(shader);
-            OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        } else {
-            OpenGLHelper.alphaGreater(0.01f);
-            shader.setColor(effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
-            OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
-            shader.enableTexture();
-            OpenGLHelper.bindTexture(TextureLoader.getTexture(TextureRegister.particleJump).getId());
-            shader.setModelMatrix(Transformation.getModelViewMatrix(jumpPosition.x, jumpPosition.y, rotate, 40.0f * color.w, 40.0f * color.w, EnumZoomFactor.Default).get(ShaderProgram.MATRIX_BUFFER));
-            Renderer.centeredQuad.renderIndexed();
+            renderGunSlots(interpolation);
         }
     }
 
@@ -479,17 +464,17 @@ public abstract class Ship extends CollisionObject {
         if (spawned) super.renderDebug();
     }
 
-    private void renderGunSlots(BaseShader shader) {
+    private void renderGunSlots(float interpolation) {
         int size = weaponSlots.size();
         for (int i = 0; i < size; i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
-            if (weaponSlot != null) weaponSlot.render(shader);
+            if (weaponSlot != null) InstancedRenderer.INSTANCE.addToRenderPipeLine(weaponSlot, interpolation);
         }
     }
 
-    private void renderShield(BaseShader shader) {
+    private void renderShield(BaseShader shader, float interpolation) {
         if (shield != null) {
-            shield.render(shader);
+            shield.render(shader, interpolation);
         }
     }
 

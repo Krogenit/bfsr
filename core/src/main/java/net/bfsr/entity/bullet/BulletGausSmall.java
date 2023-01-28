@@ -1,7 +1,5 @@
 package net.bfsr.entity.bullet;
 
-import net.bfsr.client.particle.EnumParticlePositionType;
-import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.collision.filter.BulletFilter;
 import net.bfsr.entity.ship.Ship;
@@ -45,15 +43,5 @@ public class BulletGausSmall extends Bullet {
         body.setUserData(this);
         body.setBullet(true);
         body.setAngularDamping(Double.MAX_VALUE);
-    }
-
-    @Override
-    public void postPhysicsUpdate() {
-        super.postPhysicsUpdate();
-        if (world.isRemote()) {
-            float size = 6.0f;
-            Vector2f pos = getPosition();
-            ParticleSpawner.spawnLight(pos, size, new Vector4f(color.x, color.y, color.z, color.w / 2.0f), 30.0f, false, EnumParticlePositionType.Background);
-        }
     }
 }

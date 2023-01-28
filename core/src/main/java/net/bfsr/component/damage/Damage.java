@@ -2,6 +2,7 @@ package net.bfsr.component.damage;
 
 import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleSpawner;
+import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
@@ -10,10 +11,12 @@ import net.bfsr.component.hull.Hull;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.RotationHelper;
+import net.bfsr.math.Transformation;
 import net.bfsr.util.TimeUtils;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
+import java.nio.FloatBuffer;
 import java.util.Random;
 
 public class Damage extends TextureObject {
@@ -27,7 +30,6 @@ public class Damage extends TextureObject {
     private float smokeTimer;
     private float lightingTimer;
     private float lightingTimer1;
-    private final Texture textureDamage;
     private Texture textureLight;
     private final Texture textureFire;
     private final Texture textureFix;
@@ -46,7 +48,6 @@ public class Damage extends TextureObject {
 
         textureFire = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipDamageFire0.ordinal() + type]);
         textureFix = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipFix0.ordinal() + type]);
-        textureDamage = texture;
 
         if (type > 1) {
             textureLight = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipDamageLight2.ordinal() + type - 2]);
@@ -67,6 +68,7 @@ public class Damage extends TextureObject {
         float sin = ship.getSin();
         float xPos = cos * addPos.x - sin * addPos.y;
         float yPos = sin * addPos.x + cos * addPos.y;
+        lastPosition.set(position);
         position.x = pos.x + xPos;
         position.y = pos.y + yPos;
     }
@@ -182,48 +184,27 @@ public class Damage extends TextureObject {
                 if (lightingTimer >= 100) {
                     lightingTimer1 = 60 + rand.nextInt(240);
                     lightingTimer = 0;
-
                 }
             }
-
         }
     }
 
     @Override
-    public void render(BaseShader shader) {
+    public void render(BaseShader shader, float interpolation) {
         if (damaged || repairTimer > 0) {
-            super.render(shader);
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(Transformation.getModelMatrix(this, interpolation), color.x, color.y, color.z, color.w, texture);
         } else if (repairTimer <= 0) {
-            texture = textureFix;
-            color.w = colorFix.w;
-            super.render(shader);
-            texture = textureDamage;
-            color.w = 1;
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(Transformation.getModelMatrix(this, interpolation), color.x, color.y, color.z, colorFix.w, textureFix);
         }
     }
 
-    public void renderEffects(BaseShader shader) {
+    public void renderEffects(float interpolation) {
         if (damaged || repairTimer > 0) {
-            texture = textureFire;
-            color.x = colorFire.x;
-            color.y = colorFire.y;
-            color.z = colorFire.z;
-            color.w = colorFire.w;
-            super.render(shader);
+            FloatBuffer modelMatrix = Transformation.getModelMatrix(this, interpolation);
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(modelMatrix, colorFire.x, colorFire.y, colorFire.z, colorFire.w, textureFire);
             if (textureLight != null) {
-                texture = textureLight;
-                color.x = colorLight.x;
-                color.y = colorLight.y;
-                color.z = colorLight.z;
-                color.w = colorLight.w;
-                super.render(shader);
+                InstancedRenderer.INSTANCE.addToRenderPipeLine(modelMatrix, colorLight.x, colorLight.y, colorLight.z, colorLight.w, textureLight);
             }
-
-            texture = textureDamage;
-            color.x = 1;
-            color.y = 1;
-            color.z = 1;
-            color.w = 1;
         }
     }
 }

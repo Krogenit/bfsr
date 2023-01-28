@@ -2,7 +2,7 @@ package net.bfsr.component.shield;
 
 import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleSpawner;
-import net.bfsr.client.render.OpenGLHelper;
+import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
@@ -10,6 +10,7 @@ import net.bfsr.collision.filter.ShipFilter;
 import net.bfsr.core.Core;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.math.Transformation;
 import net.bfsr.network.packet.server.PacketShieldRebuild;
 import net.bfsr.network.packet.server.PacketShieldRebuildingTime;
 import net.bfsr.network.packet.server.PacketShieldRemove;
@@ -183,10 +184,10 @@ public class Shield extends CollisionObject {
     }
 
     @Override
-    public void render(BaseShader shader) {
+    public void render(BaseShader shader, float interpolation) {
         if (shieldAlive()) {
-            OpenGLHelper.alphaGreater(0.01f);
-            super.render(shader);
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(Transformation.getDefaultModelMatrix(ship.getLastPosition().x, ship.getLastPosition().y, ship.getPosition().x, ship.getPosition().y,
+                    ship.getRotation(), diameter.x * size, diameter.y * size, interpolation), color.x, color.y, color.z, color.w, texture);
         }
     }
 

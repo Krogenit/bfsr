@@ -1,7 +1,6 @@
 package net.bfsr.client.gui;
 
 import net.bfsr.client.gui.button.Button;
-import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.string.StaticString;
 import net.bfsr.client.render.font.string.StringObject;
@@ -52,7 +51,6 @@ public class GuiDisconnected extends Gui {
 
     @Override
     public void render(BaseShader shader) {
-        OpenGLHelper.alphaGreater(0.01f);
         background.render(shader);
         super.render(shader);
     }

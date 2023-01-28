@@ -1,8 +1,7 @@
 package net.bfsr.world;
 
 import net.bfsr.client.input.Mouse;
-import net.bfsr.client.particle.EnumParticlePositionType;
-import net.bfsr.client.particle.ParticleRenderer;
+import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureGenerator;
@@ -23,17 +22,14 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.Random;
 
 public class WorldClient extends World {
     private final Core core;
     private final TextureObject background = new TextureObject(TextureLoader.dummyTexture, new Vector2f(0, 0), new Vector2f(2560 << 1, 2560 << 1))
             .setModelMatrixType(ModelMatrixType.BACKGROUND);
-    private final ParticleRenderer particleRenderer;
     private Ship playerShip;
     private int spawnTimer;
-    private final HashMap<Texture, List<Ship>> shipsByMapForRender = new HashMap<>();
-    private final HashMap<Texture, List<Bullet>> bulletByMapForRender = new HashMap<>();
     private Texture backgroundTexture;
     private boolean disableLeftClickShipSelection;
 
@@ -41,7 +37,6 @@ public class WorldClient extends World {
         super(true, Core.getCore().getProfiler());
 
         this.core = Core.getCore();
-        this.particleRenderer = new ParticleRenderer(this);
     }
 
     public void setSeed(long seed) {
@@ -154,12 +149,6 @@ public class WorldClient extends World {
     }
 
     @Override
-    public void update() {
-        super.update();
-        particleRenderer.update();
-    }
-
-    @Override
     protected void updateShips() {
         super.updateShips();
         if (playerShip != null) {
@@ -181,81 +170,42 @@ public class WorldClient extends World {
             playerShip = null;
     }
 
-    public void renderAmbient(BaseShader shader, float interpolation) {
-        background.render(shader, interpolation);
+    public void renderAmbient(float interpolation) {
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(background, interpolation);
+        InstancedRenderer.INSTANCE.render();
     }
 
     public void renderEntities(BaseShader shader, float interpolation) {
-        shader.enable();
         AxisAlignedBoundingBox cameraAABB = core.getRenderer().getCamera().getBoundingBox();
-
-        Iterator<Texture> it = shipsByMapForRender.keySet().iterator();
-        while (it.hasNext()) {
-            Texture key = it.next();
-            List<Ship> ss = shipsByMapForRender.get(key);
-            ss.clear();
-        }
 
         int size = ships.size();
         for (int i = 0; i < size; i++) {
             Ship s = ships.get(i);
             if (s.getAABB().isIntersects(cameraAABB)) {
-                Texture t = s.getTexture();
-                List<Ship> ss = shipsByMapForRender.computeIfAbsent(t, k -> new ArrayList<>());
-                ss.add(s);
-            }
-        }
-
-        it = shipsByMapForRender.keySet().iterator();
-        while (it.hasNext()) {
-            Texture key = it.next();
-            List<Ship> ss = shipsByMapForRender.get(key);
-            size = ss.size();
-            for (int i = 0; i < size; i++) {
-                Ship s = ss.get(i);
                 s.render(shader, interpolation);
             }
         }
 
+        InstancedRenderer.INSTANCE.render();
         OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
 
-        it = bulletByMapForRender.keySet().iterator();
-        while (it.hasNext()) {
-            Texture key = it.next();
-            List<Bullet> ss = bulletByMapForRender.get(key);
-            ss.clear();
+        for (int i = 0; i < size; i++) {
+            Ship s = ships.get(i);
+            if (s.getAABB().isIntersects(cameraAABB)) {
+                s.renderTransparent(shader, interpolation);
+            }
         }
 
         size = bullets.size();
         for (int i = 0; i < size; i++) {
             Bullet b = bullets.get(i);
             if (b.getAABB().isIntersects(cameraAABB)) {
-                Texture t = b.getTexture();
-                List<Bullet> ss = bulletByMapForRender.computeIfAbsent(t, k -> new ArrayList<>(1));
-                ss.add(b);
-            }
-        }
-
-        it = bulletByMapForRender.keySet().iterator();
-        while (it.hasNext()) {
-            Texture key = it.next();
-            List<Bullet> ss = bulletByMapForRender.get(key);
-            size = ss.size();
-            for (int i = 0; i < size; i++) {
-                Bullet b = ss.get(i);
                 b.render(shader);
             }
         }
 
+        InstancedRenderer.INSTANCE.render();
         OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-    }
-
-    public void renderBackParticles(float interpolation) {
-        particleRenderer.render(EnumParticlePositionType.Background, interpolation);
-    }
-
-    public void renderParticles(float interpolation) {
-        particleRenderer.render(EnumParticlePositionType.Default, interpolation);
     }
 
     public void renderDebug(ShaderProgram shaderProgram) {
@@ -272,11 +222,6 @@ public class WorldClient extends World {
             Bullet bullet = bullets.get(i);
             bullet.renderDebug();
         }
-    }
-
-    @Override
-    public ParticleRenderer getParticleRenderer() {
-        return particleRenderer;
     }
 
     public void setPlayerShip(Ship playerShip) {

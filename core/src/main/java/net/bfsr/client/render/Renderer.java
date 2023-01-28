@@ -7,6 +7,8 @@ import net.bfsr.client.camera.Camera;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.ingame.GuiInGame;
 import net.bfsr.client.model.TexturedQuad;
+import net.bfsr.client.particle.EnumParticlePositionType;
+import net.bfsr.client.particle.ParticleRenderer;
 import net.bfsr.client.render.debug.OpenGLDebugUtils;
 import net.bfsr.client.render.font.StringRenderer;
 import net.bfsr.client.render.texture.TextureLoader;
@@ -31,9 +33,12 @@ public class Renderer {
     @Getter
     private final Camera camera;
     @Getter
+    private final BaseShader shader = new BaseShader();
+    @Getter
     private final StringRenderer stringRenderer = new StringRenderer();
     @Getter
-    private final BaseShader shader = new BaseShader();
+    private final ParticleRenderer particleRenderer;
+    private final InstancedRenderer instancedRenderer = new InstancedRenderer();
     @Getter
     private GuiInGame guiInGame;
     @Getter
@@ -47,6 +52,7 @@ public class Renderer {
     public Renderer(Core core) {
         this.core = core;
         camera = new Camera();
+        particleRenderer = new ParticleRenderer(shader);
     }
 
     public void init(long window, int width, int height) {
@@ -61,6 +67,8 @@ public class Renderer {
 
         camera.init(core.getWidth(), core.getHeight());
         stringRenderer.init();
+        particleRenderer.init();
+        instancedRenderer.init();
         shader.load();
         shader.init();
 
@@ -89,11 +97,10 @@ public class Renderer {
         GL11.glViewport(0, 0, width, height);
 
         GL11.glEnable(GL11.GL_ALPHA_TEST);
-        GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
         GL11.glEnable(GL11.GL_BLEND);
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glEnable(GL11.GL_CULL_FACE);
         GL11.glCullFace(GL11.GL_BACK);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
         GL11.glClearColor(0.05F, 0.1F, 0.2F, 1.0F);
     }
@@ -101,25 +108,22 @@ public class Renderer {
     public void update() {
         camera.update();
         guiInGame.update();
+        particleRenderer.update();
     }
 
     public void render(float interpolation) {
         resetDrawCalls();
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
         camera.bind();
-        shader.enable();
-        shader.enableTexture();
-        shader.setColor(1.0f, 1.0f, 1.0f, 1.0f);
         Transformation.updateViewMatrix(camera, interpolation);
-        OpenGLHelper.alphaGreater(0.5f);
+        OpenGLHelper.alphaGreater(0.0001f);
 
         WorldClient world = core.getWorld();
         if (world != null) {
-            world.renderAmbient(shader, interpolation);
-            world.renderBackParticles(interpolation);
-            OpenGLHelper.alphaGreater(0.75f);
+            world.renderAmbient(interpolation);
+            particleRenderer.render(EnumParticlePositionType.Background, interpolation);
             world.renderEntities(shader, interpolation);
-            world.renderParticles(interpolation);
+            particleRenderer.render(EnumParticlePositionType.Default, interpolation);
             if (EnumOption.SHOW_DEBUG_BOXES.getBoolean()) {
                 GL20.glUseProgram(0);
                 world.renderDebug(null);
@@ -137,7 +141,6 @@ public class Renderer {
         shader.enable();
         Gui gui = core.getCurrentGui();
         if (gui != null) {
-            OpenGLHelper.alphaGreater(0.01f);
             gui.render(shader);
         }
     }

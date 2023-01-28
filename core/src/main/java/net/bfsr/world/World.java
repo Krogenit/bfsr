@@ -3,7 +3,6 @@ package net.bfsr.world;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import net.bfsr.client.particle.Particle;
-import net.bfsr.client.particle.ParticleRenderer;
 import net.bfsr.collision.ContactListener;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.bullet.Bullet;
@@ -170,10 +169,6 @@ public class World {
 
     public CollisionObject getEntityById(int id) {
         return entitiesById.get(id);
-    }
-
-    public ParticleRenderer getParticleRenderer() {
-        return null;
     }
 
     public Ship getPlayerShip() {

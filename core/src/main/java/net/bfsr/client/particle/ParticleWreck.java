@@ -1,18 +1,14 @@
 package net.bfsr.client.particle;
 
-import net.bfsr.client.render.OpenGLHelper;
-import net.bfsr.client.render.Renderer;
+import lombok.Getter;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
-import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.collision.filter.WreckFilter;
 import net.bfsr.core.Core;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.math.Transformation;
 import net.bfsr.network.packet.common.PacketObjectPosition;
 import net.bfsr.network.packet.server.PacketRemoveObject;
 import net.bfsr.physics.PhysicsUtils;
@@ -43,8 +39,10 @@ public class ParticleWreck extends Particle {
     private float explosionTimer, timerLight, timerLight1, wreckLifeTime, maxWreckLifeTime, hull;
 
     private TextureRegister textureWreck;
+    @Getter
     private Texture textureFire, textureLight;
 
+    @Getter
     private Vector4f colorFire, colorLight;
 
     private Random rand;
@@ -565,22 +563,6 @@ public class ParticleWreck extends Particle {
         if (!world.isRemote() && hull <= 0) {
             MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
             setDead(true);
-        }
-    }
-
-    void renderEffects(BaseShader shader) {
-        if (colorFire != null && colorFire.w > 0) {
-            shader.setColor(colorFire.x, colorFire.y, colorFire.z, colorFire.w);
-            OpenGLHelper.bindTexture(textureFire.getId());
-            shader.setModelMatrix(Transformation.getModelViewMatrix(this).get(ShaderProgram.MATRIX_BUFFER));
-            Renderer.centeredQuad.renderIndexed();
-        }
-
-        if (colorLight != null && colorLight.w > 0) {
-            shader.setColor(colorLight.x, colorLight.y, colorLight.z, colorLight.w);
-            OpenGLHelper.bindTexture(textureLight.getId());
-            shader.setModelMatrix(Transformation.getModelViewMatrix(this).get(ShaderProgram.MATRIX_BUFFER));
-            Renderer.centeredQuad.renderIndexed();
         }
     }
 
