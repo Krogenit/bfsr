@@ -1,12 +1,14 @@
-#version 330
+#version 450
+#extension GL_ARB_bindless_texture : enable
 
-out vec4 fragColor;
+layout(location = 0) out vec4 out_Color;
 
-in vec2 textureCoords;
-in vec4 particleColor;
-
-uniform sampler2D textureOpaque;
+in Data {
+    vec2 textureCoords;
+    vec4 color;
+    flat uvec2 textureHandle;
+} in_Data;
 
 void main() {
-    fragColor = texture(textureOpaque, textureCoords) * particleColor;
+    out_Color = texture(sampler2D(in_Data.textureHandle), in_Data.textureCoords) * in_Data.color;
 }

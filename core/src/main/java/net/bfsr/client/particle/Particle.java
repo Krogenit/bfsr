@@ -14,7 +14,6 @@ import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 public class Particle extends CollisionObject {
-
     protected float sizeVelocity, alphaVelocity, rotationSpeed, maxAlpha;
     protected boolean canCollide, isAlphaFromZero, zeroVelocity;
     protected Vector2f velocity;
@@ -118,6 +117,7 @@ public class Particle extends CollisionObject {
     @Override
     public void update() {
         if (!canCollide) {
+            lastPosition.set(position.x, position.y);
             position.x += velocity.x * TimeUtils.UPDATE_DELTA_TIME;
             position.y += velocity.y * TimeUtils.UPDATE_DELTA_TIME;
             rotate += rotationSpeed * TimeUtils.UPDATE_DELTA_TIME;

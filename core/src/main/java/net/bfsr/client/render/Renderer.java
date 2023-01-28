@@ -116,10 +116,10 @@ public class Renderer {
         WorldClient world = core.getWorld();
         if (world != null) {
             world.renderAmbient(shader, interpolation);
-            world.renderBackParticles();
+            world.renderBackParticles(interpolation);
             OpenGLHelper.alphaGreater(0.75f);
             world.renderEntities(shader, interpolation);
-            world.renderParticles();
+            world.renderParticles(interpolation);
             if (EnumOption.SHOW_DEBUG_BOXES.getBoolean()) {
                 GL20.glUseProgram(0);
                 world.renderDebug(null);

@@ -37,7 +37,7 @@ public final class TexturedQuad extends Quad {
                 0.5f, -0.5f, 1.0f, 0.0f,
                 -0.5f, -0.5f, 0.0f, 0.0f
         }, 3);
-        texturedQuad.vao.enableAttributes(6);
+        texturedQuad.vao.enableAttributes(7);
         return texturedQuad;
     }
 

@@ -250,12 +250,12 @@ public class WorldClient extends World {
         OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    public void renderBackParticles() {
-        particleRenderer.render(EnumParticlePositionType.Background);
+    public void renderBackParticles(float interpolation) {
+        particleRenderer.render(EnumParticlePositionType.Background, interpolation);
     }
 
-    public void renderParticles() {
-        particleRenderer.render(EnumParticlePositionType.Default);
+    public void renderParticles(float interpolation) {
+        particleRenderer.render(EnumParticlePositionType.Default, interpolation);
     }
 
     public void renderDebug(ShaderProgram shaderProgram) {

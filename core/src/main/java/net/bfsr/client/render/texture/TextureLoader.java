@@ -158,6 +158,9 @@ public final class TextureLoader {
         GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MIN_FILTER, createMips ? GL11.GL_LINEAR_MIPMAP_LINEAR : GL11.GL_LINEAR);
         GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         GL45C.glTextureParameterf(texture.getId(), EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
+        long textureHandle = ARBBindlessTexture.glGetTextureHandleARB(texture.getId());
+        ARBBindlessTexture.glMakeTextureHandleResidentARB(textureHandle);
+        texture.setTextureHandle(textureHandle);
 
         return texture;
     }
