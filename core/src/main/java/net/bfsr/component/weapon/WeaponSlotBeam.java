@@ -177,11 +177,10 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
         filter.setUserData(ship);
         Ray ray = new Ray(start, new Vector2(cos, sin));
         DetectFilter<Body, BodyFixture> detectFilter = new DetectFilter<>(true, true, filter);
-        List<RaycastResult<Body, BodyFixture>> list = physicWorld.raycast(ray, beamMaxRange, detectFilter);
-        if (list.size() > 0) {
-            RaycastResult<Body, BodyFixture> res = list.get(0);
-            Body body = res.getBody();
-            Raycast raycast = res.getRaycast();
+        RaycastResult<Body, BodyFixture> result = physicWorld.raycastClosest(ray, beamMaxRange, detectFilter);
+        if (result != null) {
+            Body body = result.getBody();
+            Raycast raycast = result.getRaycast();
             Vector2 point = raycast.getPoint();
             collisionPoint.x = (float) point.x;
             collisionPoint.y = (float) point.y;
@@ -212,7 +211,6 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                                 Vector2f angletovel = RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 1.5f);
                                 ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), pos.x, pos.y, velocity.x + angletovel.x, velocity.y + angletovel.y, 2.0f * rand.nextFloat());
                             }
-
                         }
                     }
                 } else if (userData instanceof ParticleWreck wreck) {
