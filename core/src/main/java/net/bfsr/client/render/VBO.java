@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL15C;
 import org.lwjgl.opengl.GL45C;
 import org.lwjgl.system.MemoryUtil;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
@@ -33,6 +34,10 @@ public final class VBO {
 
     void storeData(FloatBuffer data, int flags, Runnable onResizeRunnable) {
         storeData(Integer.toUnsignedLong(data.remaining()) << 2, flags, MemoryUtil.memAddress(data), onResizeRunnable);
+    }
+
+    void storeData(ByteBuffer data, int flags, Runnable onResizeRunnable) {
+        storeData(Integer.toUnsignedLong(data.remaining()), flags, MemoryUtil.memAddress(data), onResizeRunnable);
     }
 
     void storeData(IntBuffer data, int flags, Runnable onResizeRunnable) {

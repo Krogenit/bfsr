@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL44C;
 import org.lwjgl.system.MemoryStack;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 public class Primitive {
@@ -40,6 +41,10 @@ public class Primitive {
     }
 
     public void updateVertexBuffer(int index, FloatBuffer data, int instancedDataLength) {
+        vao.updateVertexBuffer(index, data, GL44C.GL_DYNAMIC_STORAGE_BIT, instancedDataLength << 2);
+    }
+
+    public void updateVertexBuffer(int index, ByteBuffer data, int instancedDataLength) {
         vao.updateVertexBuffer(index, data, GL44C.GL_DYNAMIC_STORAGE_BIT, instancedDataLength << 2);
     }
 

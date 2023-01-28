@@ -3,6 +3,7 @@ package net.bfsr.client.render;
 import lombok.Getter;
 import org.lwjgl.opengl.*;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
@@ -51,6 +52,10 @@ public class VAO {
     }
 
     public void updateVertexBuffer(int index, FloatBuffer data, int flags, int stride) {
+        VBOs[index].storeData(data, flags, () -> vertexArrayVertexBuffer(index, stride));
+    }
+
+    public void updateVertexBuffer(int index, ByteBuffer data, int flags, int stride) {
         VBOs[index].storeData(data, flags, () -> vertexArrayVertexBuffer(index, stride));
     }
 
