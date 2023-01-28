@@ -29,6 +29,7 @@ public class ParticleBeamEffect extends Particle {
 
     @Override
     public void update() {
+        lastPosition.set(position);
         float beamRange = slot.getCurrentBeamRange();
         Vector2f slotPos = slot.getPosition();
         Vector4f beamColor = slot.getBeamColor();
