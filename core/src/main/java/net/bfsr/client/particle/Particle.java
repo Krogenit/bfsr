@@ -116,8 +116,9 @@ public class Particle extends CollisionObject {
 
     @Override
     public void update() {
+        lastPosition.set(getPosition());
+
         if (!canCollide) {
-            lastPosition.set(position.x, position.y);
             position.x += velocity.x * TimeUtils.UPDATE_DELTA_TIME;
             position.y += velocity.y * TimeUtils.UPDATE_DELTA_TIME;
             rotate += rotationSpeed * TimeUtils.UPDATE_DELTA_TIME;

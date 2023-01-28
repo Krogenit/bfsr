@@ -378,6 +378,8 @@ public class ParticleWreck extends Particle {
 
     @Override
     public void update() {
+        lastPosition.set(getPosition());
+
         if (world.isRemote()) {
             aliveTimer += 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (aliveTimer > 120) {
