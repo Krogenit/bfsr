@@ -117,6 +117,7 @@ public abstract class WeaponSlot extends TextureObject {
         float xPos = cos * x - sin * y;
         float yPos = sin * x + cos * y;
 
+        lastPosition.set(position);
         position = new Vector2f(xPos + shipPos.x, yPos + shipPos.y);
     }
 
