@@ -25,6 +25,7 @@ public class TextureObject {
     public TextureObject(Texture texture, Vector2f pos, float rotate, Vector2f scale, Vector4f color) {
         this.texture = texture;
         this.position = pos;
+        this.lastPosition.set(pos);
         this.rotate = rotate;
         this.color = color;
         if (scale != null) this.origin = new Vector2f(-scale.x / 2.0f, -scale.y / 2.0f);
