@@ -101,7 +101,7 @@ public class AiAttackTarget extends AiTask {
         ship.rotateToVector(Objects.requireNonNullElse(pointToRotate, targetPos), ship.getEngine().getRotationSpeed());
 
         Direction[] dirs = ship.calculateDirectionsToOtherObject(targetPos.x, targetPos.y);
-        if (minTargetToShip >= maxDistance) {
+        if (minTargetToShip >= maxDistance - targetSizeAverage - shipSizeAverage) {
             if (dirs[0] != null) ship.move(ship, dirs[0]);
             if (dirs[1] != null) ship.move(ship, dirs[1]);
         } else if (distanceToTarget < maxDistance - targetSizeAverage - shipSizeAverage) {
