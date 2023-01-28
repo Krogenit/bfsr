@@ -72,6 +72,19 @@ public class Transformation {
         return textureObject.getModelMatrixType().get(textureObject, interpolation);
     }
 
+    public static FloatBuffer getDefaultModelMatrix(float prevX, float prevY, float x, float y, float rotation, float scaleX, float scaleY, float interpolation) {
+        Camera camera = Core.getCore().getRenderer().getCamera();
+
+        float cameraX = camera.getLastPosition().x + (camera.getPosition().x - camera.getLastPosition().x) * interpolation;
+        float cameraY = camera.getLastPosition().y + (camera.getPosition().y - camera.getLastPosition().y) * interpolation;
+
+        matrix.identity().translate(-camera.getOrigin().x, -camera.getOrigin().y, 0).scale(camera.getZoom(), camera.getZoom(), 1.0f)
+                .translate(-cameraX + prevX + (x - prevX) * interpolation, -cameraY + prevY + (y - prevY) * interpolation, 0);
+        if (rotation != 0) matrix.rotateZ(rotation);
+        matrix.scale(scaleX, scaleY, 1.0f);
+        return matrix.get(ShaderProgram.MATRIX_BUFFER);
+    }
+
     public static FloatBuffer getDefaultModelMatrix(TextureObject textureObject, float interpolation) {
         Camera camera = Core.getCore().getRenderer().getCamera();
 
@@ -110,6 +123,10 @@ public class Transformation {
     public static FloatBuffer getGUIModelMatrix(TextureObject textureObject) {
         return matrix.identity().translate(textureObject.getPosition().x, textureObject.getPosition().y, 0.0f).scale(textureObject.getScale().x, textureObject.getScale().y, 1.0f)
                 .get(ShaderProgram.MATRIX_BUFFER);
+    }
+
+    public static FloatBuffer getGUIModelMatrix(float x, float y, float rotation, float scaleX, float scaleY) {
+        return matrix.identity().translate(x, y, 0.0f).rotateZ(rotation).scale(scaleX, scaleY, 1.0f).get(ShaderProgram.MATRIX_BUFFER);
     }
 
     public static Matrix4f getViewMatrixByType(EnumZoomFactor zoomFactor) {
