@@ -10,10 +10,7 @@ import net.bfsr.util.RandomHelper;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL45C;
+import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
@@ -256,6 +253,9 @@ public final class TextureGenerator {
         GL45C.glTextureParameteri(nebulaTexture.getId(), GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         GL45C.glTextureParameteri(nebulaTexture.getId(), GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         GL45C.glTextureParameterf(nebulaTexture.getId(), EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
+        long textureHandle = ARBBindlessTexture.glGetTextureHandleARB(nebulaTexture.getId());
+        ARBBindlessTexture.glMakeTextureHandleResidentARB(textureHandle);
+        nebulaTexture.setTextureHandle(textureHandle);
 
         return nebulaTexture;
     }
