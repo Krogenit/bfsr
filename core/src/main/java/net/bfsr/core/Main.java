@@ -25,6 +25,7 @@ public class Main extends Loop {
     public void run() {
         super.run();
 
+        Thread.currentThread().setName("Client Thread");
         init();
         loop();
 
