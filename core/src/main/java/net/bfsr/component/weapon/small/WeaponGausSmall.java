@@ -15,11 +15,10 @@ import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
-import org.joml.Vector4f;
 
 public class WeaponGausSmall extends WeaponSlot {
     public WeaponGausSmall(Ship ship) {
-        super(ship, new SoundRegistry[]{SoundRegistry.weaponShootGaus0, SoundRegistry.weaponShootGaus1, SoundRegistry.weaponShootGaus2}, 30.0f, 5.0f, 70.0f, 1.56f, new Vector2f(2.6f, 1.4f),
+        super(ship, new SoundRegistry[]{SoundRegistry.weaponShootGaus0, SoundRegistry.weaponShootGaus1, SoundRegistry.weaponShootGaus2}, 30.0f, 5.0f, 70.0f, 1.56f, 2.6f, 1.4f,
                 TextureRegister.gaussSmall);
     }
 
@@ -48,12 +47,12 @@ public class WeaponGausSmall extends WeaponSlot {
 
     @Override
     protected void createBullet() {
-        new BulletGausSmall((WorldServer) world, world.getNextId(), rotate, position, ship);
+        new BulletGausSmall((WorldServer) world, world.getNextId(), rotation, position.x, position.y, ship);
     }
 
     @Override
     protected void spawnShootParticles() {
-        Vector2f pos = RotationHelper.rotate(rotate, 1.0f, 0).add(getPosition());
-        ParticleSpawner.spawnWeaponShoot(TextureRegister.particleBlue3, pos, getRotation(), 8.0f, new Vector4f(0.8f, 1.0f, 0.5f, 0.4f));
+        Vector2f pos = RotationHelper.rotate(rotation, 1.0f, 0).add(getPosition());
+        ParticleSpawner.spawnWeaponShoot(TextureRegister.particleBlue3, pos, getRotation(), 8.0f, 0.8f, 1.0f, 0.5f, 0.4f);
     }
 }

@@ -16,7 +16,8 @@ import org.joml.Vector4f;
 
 public class WeaponBeamSmall extends WeaponSlotBeam {
     public WeaponBeamSmall(Ship ship) {
-        super(ship, 40.0f, new BulletDamage(0.075f, 0.075f, 0.15f), new Vector4f(0.8f, 0.8f, 1.0f, 1.0f), 125.0f, 6.0f, new Vector2f(1.4f, 1.0f), TextureRegister.beamSmall, new SoundRegistry[]{SoundRegistry.weaponShootBeam0, SoundRegistry.weaponShootBeam1, SoundRegistry.weaponShootBeam2});
+        super(ship, 40.0f, new BulletDamage(0.075f, 0.075f, 0.15f), new Vector4f(0.8f, 0.8f, 1.0f, 1.0f), 125.0f, 6.0f, 1.4f, 1.0f, TextureRegister.beamSmall,
+                new SoundRegistry[]{SoundRegistry.weaponShootBeam0, SoundRegistry.weaponShootBeam1, SoundRegistry.weaponShootBeam2});
     }
 
     @Override

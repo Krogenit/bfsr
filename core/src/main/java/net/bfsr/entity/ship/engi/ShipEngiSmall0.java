@@ -24,17 +24,15 @@ import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 public class ShipEngiSmall0 extends Ship {
-    public ShipEngiSmall0(WorldServer w, Vector2f pos, float rot, boolean spawned) {
-        super(w, pos, rot, new Vector2f(7.5f, 7.5f), new Vector3f(0.8f, 1.0f, 0.5f), spawned);
+    public ShipEngiSmall0(WorldServer w, float x, float y, float rot, boolean spawned) {
+        super(w, x, y, rot, 7.5f, 7.5f, 0.8f, 1.0f, 0.5f, spawned);
     }
 
-    public ShipEngiSmall0(WorldClient w, int id, Vector2f pos, float rot) {
-        super(w, id, TextureRegister.shipEngiSmall0, pos, rot, new Vector2f(7.5f, 7.5f), new Vector3f(0.8f, 1.0f, 0.5f));
-        textureDamage = TextureLoader.getTexture(TextureRegister.shipEngiSmall0Damage);
+    public ShipEngiSmall0(WorldClient w, int id, float x, float y, float rot) {
+        super(w, id, TextureRegister.shipEngiSmall0, x, y, rot, 7.5f, 7.5f, 0.8f, 1.0f, 0.5f);
+        this.textureDamage = TextureLoader.getTexture(TextureRegister.shipEngiSmall0Damage);
         addDamage(new Damage(this, 0.8f, 0, new Vector2f(-1.0f, 1.5f), 0.08f));
         addDamage(new Damage(this, 0.6f, 0, new Vector2f(0.5f, -1.2f), 0.08f));
         addDamage(new Damage(this, 0.4f, 1, new Vector2f(-1.5f, -0), 0.055f));
@@ -42,7 +40,7 @@ public class ShipEngiSmall0 extends Ship {
     }
 
     @Override
-    protected void init() {
+    public void init() {
         setEngine(new Engine(1.2f, 1.0f, 1.0f, 30.0f, 0.99f, 2.5f));
         setReactor(new Reactor(30.0f, 9.0f));
         setHull(new Hull(22.5f, 0.0225f, this));
@@ -53,7 +51,7 @@ public class ShipEngiSmall0 extends Ship {
         armor.setArmorPlateByDir(Direction.LEFT, new ArmorPlate(17.5f, 0.25f, 1.05f));
         armor.setArmorPlateByDir(Direction.RIGHT, new ArmorPlate(17.5f, 0.25f, 1.05f));
         setArmor(armor);
-        setShield(new ShieldSmall0(this, new Vector4f(0.8f, 1.0f, 0.5f, 1.0f), 12.5f, 0.55f, 225.0f));
+        setShield(new ShieldSmall0(this, 0.8f, 1.0f, 0.5f, 1.0f, 12.5f, 0.55f, 225.0f));
         setWeaponsCount(2);
         setCrew(new Crew(2));
         setCargo(new Cargo(2));
@@ -65,8 +63,8 @@ public class ShipEngiSmall0 extends Ship {
     }
 
     @Override
-    protected void createBody(Vector2f pos) {
-        super.createBody(pos);
+    protected void createBody(float x, float y) {
+        super.createBody(x, y);
 
         Vector2[] vertices = new Vector2[7];
         vertices[0] = new Vector2(-3.6f, 0.0f);
@@ -81,7 +79,7 @@ public class ShipEngiSmall0 extends Ship {
         fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         body.addFixture(fixture);
         recalculateMass();
-        body.translate(pos.x, pos.y);
+        body.translate(x, y);
         body.setUserData(this);
         body.setLinearDamping(0.05f);
         body.setAngularDamping(0.005f);
@@ -93,38 +91,29 @@ public class ShipEngiSmall0 extends Ship {
 
         switch (dir) {
             case FORWARD:
-                Vector2f offset = RotationHelper.rotate(getRotation(), -3.7f, 0);
-                Vector2f pos = new Vector2f(shipPos.x + offset.x, shipPos.y + offset.y);
+                RotationHelper.rotate(getRotation(), -3.7f, 0, rotateToVector);
                 Vector2 shipVelocity = body.getLinearVelocity();
-                Vector2f velocity = new Vector2f((float) shipVelocity.x / 50.0f, (float) shipVelocity.y / 50.0f);
-                ParticleSpawner.spawnEngineBack(pos, velocity, getRotation(), 10.0f, 6.0F, new Vector4f(0.8f, 1.0f, 0.5f, 1.0f), true);
-                RotationHelper.rotate(getRotation(), -3.0f, 1.1f, offset);
-                pos.x = shipPos.x + offset.x;
-                pos.y = shipPos.y + offset.y;
-                ParticleSpawner.spawnEngineBack(pos, velocity, getRotation(), 10.0f, 6.0F, new Vector4f(0.8f, 1.0f, 0.5f, 1.0f), false);
-                RotationHelper.rotate(getRotation(), -3.0f, -1.1f, offset);
-                pos.x = shipPos.x + offset.x;
-                pos.y = shipPos.y + offset.y;
-                ParticleSpawner.spawnEngineBack(pos, velocity, getRotation(), 10.0f, 6.0F, new Vector4f(0.8f, 1.0f, 0.5f, 1.0f), false);
-                RotationHelper.rotate(getRotation(), -2.7f, 0, offset);
-                pos.x = shipPos.x + offset.x;
-                pos.y = shipPos.y + offset.y;
-                ParticleSpawner.spawnLight(pos, 6.0f, new Vector4f(0.8f, 1.0f, 0.5f, 1.0f), EnumParticlePositionType.Background);
+                float velocityX = (float) shipVelocity.x / 50.0f;
+                float velocityY = (float) shipVelocity.y / 50.0f;
+                ParticleSpawner.spawnEngineBack(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, velocityX, velocityY, getRotation(), 10.0f, 6.0F, 0.8f, 1.0f, 0.5f, 1.0f, true);
+                RotationHelper.rotate(getRotation(), -3.0f, 1.1f, rotateToVector);
+                ParticleSpawner.spawnEngineBack(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, velocityX, velocityY, getRotation(), 10.0f, 6.0F, 0.8f, 1.0f, 0.5f, 1.0f, false);
+                RotationHelper.rotate(getRotation(), -3.0f, -1.1f, rotateToVector);
+                ParticleSpawner.spawnEngineBack(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, velocityX, velocityY, getRotation(), 10.0f, 6.0F, 0.8f, 1.0f, 0.5f, 1.0f, false);
+                RotationHelper.rotate(getRotation(), -2.7f, 0, rotateToVector);
+                ParticleSpawner.spawnLight(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, 6.0f, 0.8f, 1.0f, 0.5f, 1.0f, EnumParticlePositionType.Background);
                 break;
             case LEFT:
-                offset = RotationHelper.rotate(getRotation(), 0, 2.1f);
-                pos = new Vector2f(shipPos.x + offset.x, shipPos.y + offset.y);
-                ParticleSpawner.spawnShipEngineSmoke(pos);
+                RotationHelper.rotate(getRotation(), 0, 2.1f, rotateToVector);
+                ParticleSpawner.spawnShipEngineSmoke(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y);
                 break;
             case RIGHT:
-                offset = RotationHelper.rotate(getRotation(), 0, -2.1f);
-                pos = new Vector2f(shipPos.x + offset.x, shipPos.y + offset.y);
-                ParticleSpawner.spawnShipEngineSmoke(pos);
+                RotationHelper.rotate(getRotation(), 0, -2.1f, rotateToVector);
+                ParticleSpawner.spawnShipEngineSmoke(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y);
                 break;
             case BACKWARD:
-                offset = RotationHelper.rotate(getRotation(), 3.7f, 0);
-                pos = new Vector2f(shipPos.x + offset.x, shipPos.y + offset.y);
-                ParticleSpawner.spawnShipEngineSmoke(pos);
+                RotationHelper.rotate(getRotation(), 3.7f, 0, rotateToVector);
+                ParticleSpawner.spawnShipEngineSmoke(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y);
                 break;
         }
     }

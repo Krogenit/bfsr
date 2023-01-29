@@ -4,40 +4,39 @@ import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
 import org.joml.Vector2f;
-import org.joml.Vector4f;
 
 public class ShieldSmall0 extends Shield {
-
-    public ShieldSmall0(Ship ship, Vector4f color, float maxShield, float shieldRegen, float rebuildTime) {
+    public ShieldSmall0(Ship ship, float r, float g, float b, float a, float maxShield, float shieldRegen, float rebuildTime) {
         super(ship);
         setMaxShield(maxShield);
         setShield(maxShield);
         setShieldRegen(shieldRegen);
         setTimeToRebuild(rebuildTime);
-        setScale(new Vector2f(1, 1));
+        setScale(1, 1);
 
         if (ship.getWorld().isRemote()) {
-            setColor(color);
+            setColor(r, g, b, a);
             setTexture(TextureLoader.getTexture(TextureRegister.shieldStation0));
         }
 
-        createBody(ship.getPosition());
+        Vector2f position = ship.getPosition();
+        createBody(position.x, position.y);
     }
 
-    public ShieldSmall0(Ship ship, Vector4f color) {
+    public ShieldSmall0(Ship ship, float r, float g, float b, float a) {
         super(ship);
         setMaxShield(15);
         setShield(15);
         setShieldRegen(0.6f);
         setTimeToRebuild(200);
-        setScale(new Vector2f(1, 1));
+        setScale(1, 1);
 
         if (ship.getWorld().isRemote()) {
-            setColor(color);
+            setColor(r, g, b, a);
             setTexture(TextureLoader.getTexture(TextureRegister.shieldStation0));
         }
 
-        createBody(ship.getPosition());
+        Vector2f position = ship.getPosition();
+        createBody(position.x, position.y);
     }
-
 }

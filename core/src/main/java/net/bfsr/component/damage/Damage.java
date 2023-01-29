@@ -40,7 +40,7 @@ public class Damage extends TextureObject {
     private final Random rand;
 
     public Damage(Ship ship, float damage, int type, Vector2f addPos, float size) {
-        super(TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipDamage0.ordinal() + type]), new Vector2f(ship.getPosition()));
+        super(TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipDamage0.ordinal() + type]), ship.getPosition().x, ship.getPosition().y);
         this.ship = ship;
         creationDamage = damage;
         this.type = type;
@@ -62,7 +62,7 @@ public class Damage extends TextureObject {
     }
 
     public void updatePos() {
-        rotate = ship.getRotation() + addRotation;
+        rotation = ship.getRotation() + addRotation;
         Vector2f pos = ship.getPosition();
         float cos = ship.getCos();
         float sin = ship.getSin();
@@ -85,16 +85,16 @@ public class Damage extends TextureObject {
         if (damaged) {
             if (!isCreated) {
                 addRotation = RotationHelper.TWOPI * rand.nextFloat();
-                ParticleSpawner.spawnExplosion(position, scale.x, 2.0f);
-                ParticleSpawner.spawnSpark(position, scale.x, 2.0f);
-                ParticleSpawner.spawnLight(position, (scale.x + scale.y), new Vector4f(1.0f, 0.5f, 0.5f, 0.7f), 2.0f, true, EnumParticlePositionType.Default);
+                ParticleSpawner.spawnExplosion(position.x, position.y, scale.x, 2.0f);
+                ParticleSpawner.spawnSpark(position.x, position.y, scale.x, 2.0f);
+                ParticleSpawner.spawnLight(position.x, position.y, (scale.x + scale.y), 1.0f, 0.5f, 0.5f, 0.7f, 2.0f, true, EnumParticlePositionType.Default);
                 isCreated = true;
             }
 
             smokeTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             ionTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (smokeTimer <= 0) {
-                ParticleSpawner.spawnDamageSmoke(position, 0.5F * rand.nextFloat() + scale.x / 4.0f, 1.0f, 0.4f);
+                ParticleSpawner.spawnDamageSmoke(position.x, position.y, 0.5F * rand.nextFloat() + scale.x / 4.0f, 1.0f, 0.4f);
                 if (rand.nextInt(4) == 0) ParticleSpawner.spawnSmallGarbage(1, position.x, position.y, 0.01f, 1.0f);
                 smokeTimer = 1 + rand.nextInt(2);//3 + rand.nextInt(10);
             }
@@ -118,7 +118,7 @@ public class Damage extends TextureObject {
             repairTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (repairTimer <= 0) {
                 if (isCreated) {
-                    ParticleSpawner.spawnLight(position, (scale.x + scale.y), new Vector4f(0.25f, 0.75f, 1.0f, 1.0f), 5.0f, true, EnumParticlePositionType.Default);
+                    ParticleSpawner.spawnLight(position.x, position.y, (scale.x + scale.y), 0.25f, 0.75f, 1.0f, 1.0f, 5.0f, true, EnumParticlePositionType.Default);
                     isCreated = false;
                 }
                 colorFix.w -= fixSpeed;

@@ -55,10 +55,10 @@ public class PacketSpawnBullet extends ServerPacket {
             try {
                 WorldClient world = Core.getCore().getWorld();
                 CollisionObject obj = world.getEntityById(shipId);
-                if (obj != null) {
+                if (obj instanceof Ship ship) {
                     Class<?> clazz = Class.forName(className);
-                    Constructor<?> ctr = clazz.getConstructor(WorldClient.class, int.class, float.class, Vector2f.class, Ship.class);
-                    ctr.newInstance(world, id, rot, pos, (Ship) obj);
+                    Constructor<?> ctr = clazz.getConstructor(WorldClient.class, int.class, float.class, float.class, float.class, Ship.class);
+                    ctr.newInstance(world, id, rot, pos.x, pos.y, ship);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

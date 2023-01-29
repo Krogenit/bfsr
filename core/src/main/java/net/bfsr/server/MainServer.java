@@ -67,7 +67,7 @@ public class MainServer extends Loop {
         profiler.setEnable(true);
         dataBase = new SimpleDataBase(this);
         world = new WorldServer(profiler);
-        playerManager = new PlayerManager(this, world);
+        playerManager = new PlayerManager(world);
 //		world.spawnShips();
 
         if (!singlePlayer) {

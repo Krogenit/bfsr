@@ -26,8 +26,7 @@ import java.util.Random;
 
 public class WorldClient extends World {
     private final Core core;
-    private final TextureObject background = new TextureObject(TextureLoader.dummyTexture, new Vector2f(0, 0), new Vector2f(2560 << 1, 2560 << 1))
-            .setModelMatrixType(ModelMatrixType.BACKGROUND);
+    private final TextureObject background = new TextureObject(TextureLoader.dummyTexture, 0, 0, 2560 << 1, 2560 << 1).setModelMatrixType(ModelMatrixType.BACKGROUND);
     private Ship playerShip;
     private int spawnTimer;
     private Texture backgroundTexture;
@@ -200,7 +199,7 @@ public class WorldClient extends World {
         for (int i = 0; i < size; i++) {
             Bullet b = bullets.get(i);
             if (b.getAABB().isIntersects(cameraAABB)) {
-                b.render(shader);
+                b.render(shader, interpolation);
             }
         }
 

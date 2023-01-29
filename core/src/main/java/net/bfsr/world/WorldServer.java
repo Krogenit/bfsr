@@ -69,7 +69,8 @@ public class WorldServer extends World {
                 pos.x = rand.nextInt(1) - 250;
                 pos.y = rand.nextInt(100) - 50;
 //				pos = RotationHelper.rotate(angle, pos.x, pos.y);
-                ship = new ShipHumanSmall0(this, pos, rand.nextFloat() * RotationHelper.TWOPI, false);
+                ship = new ShipHumanSmall0(this, pos.x, pos.y, rand.nextFloat() * RotationHelper.TWOPI, false);
+                ship.init();
                 ship.setFaction(Faction.Human);
                 if (rand.nextInt(2) == 0) {
                     ship.addWeaponToSlot(0, new WeaponBeamSmall(ship));
@@ -90,7 +91,8 @@ public class WorldServer extends World {
                 pos.y = rand.nextInt(1) - 350;
                 pos.x = rand.nextInt(100) - 50;
 //				pos = RotationHelper.rotate(angle, pos.x, pos.y);
-                ship = new ShipSaimonSmall0(this, pos, rand.nextFloat() * RotationHelper.TWOPI, false);
+                ship = new ShipSaimonSmall0(this, pos.x, pos.y, rand.nextFloat() * RotationHelper.TWOPI, false);
+                ship.init();
                 ship.setFaction(Faction.Saimon);
                 if (rand.nextInt(2) == 0) {
                     ship.addWeaponToSlot(0, new WeaponBeamSmall(ship));
@@ -111,7 +113,8 @@ public class WorldServer extends World {
                 pos.x = rand.nextInt(1) + 250;
                 pos.y = rand.nextInt(100) - 50;
 //				pos = RotationHelper.rotate(angle, pos.x, pos.y);
-                ship = new ShipEngiSmall0(this, pos, rand.nextFloat() * RotationHelper.TWOPI, false);
+                ship = new ShipEngiSmall0(this, pos.x, pos.y, rand.nextFloat() * RotationHelper.TWOPI, false);
+                ship.init();
                 ship.setFaction(Faction.Engi);
                 if (rand.nextInt(2) == 0) {
                     ship.addWeaponToSlot(0, new WeaponBeamSmall(ship));

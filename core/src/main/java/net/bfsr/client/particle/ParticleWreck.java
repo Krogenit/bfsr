@@ -27,11 +27,11 @@ import org.joml.Vector4f;
 import java.util.Random;
 
 public class ParticleWreck extends Particle {
-    private final int textureOffset;
+    private int textureOffset;
 
     private boolean fire;
     private boolean light;
-    private final boolean fireExplosion;
+    private boolean fireExplosion;
     private boolean changeFire;
     private boolean changeLight;
     private boolean shipWreck;
@@ -49,20 +49,25 @@ public class ParticleWreck extends Particle {
 
     private int destroyedShipId;
 
-    public ParticleWreck(int id, int textureOffset, boolean isWreck, boolean fire, boolean fireExplosion, Vector2f pos, Vector2f vel, float angle, float angleVel, Vector2f size, float sizeVel, Vector4f color, float alphaVel) {
-        super(id, pos, vel, angle, angleVel, size, sizeVel, color, alphaVel, 0.001f, false, true, EnumParticlePositionType.Default, EnumParticleRenderType.AlphaBlended);
+    public ParticleWreck init(int id, int textureOffset, boolean isWreck, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation,
+                              float angularVelocity, float scaleX, float scaleY, float sizeVelocity, float r, float g, float b, float a, float alphaSpeed) {
+        init(id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaSpeed, 0.001f, false, true, EnumParticlePositionType.Default,
+                EnumParticleRenderType.AlphaBlended);
         this.textureOffset = textureOffset;
         this.fireExplosion = fireExplosion;
         this.fire = fire;
         light = isWreck;
         shipWreck = false;
         hull = 10;
-        createBody1(pos);
+        createBody1(x, y);
         createAABB();
+        return this;
     }
 
-    public ParticleWreck(int id, int textureOffset, Ship ship, Vector2f pos, Vector2f vel, float angle, float angleVel, Vector2f size, float sizeVel, Vector4f color, float alphaVel, float wreckLifeTime) {
-        super(id, pos, vel, angle, angleVel, size, sizeVel, color, alphaVel, 0.25f, false, true, EnumParticlePositionType.Default, EnumParticleRenderType.AlphaBlended);
+    public ParticleWreck init(int id, int textureOffset, Ship ship, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
+                              float sizeVelocity, float r, float g, float b, float a, float alphaSpeed, float wreckLifeTime) {
+        init(id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaSpeed, 0.25f, false, true, EnumParticlePositionType.Default,
+                EnumParticleRenderType.AlphaBlended);
         textureWreck = ship.getWreckTexture(textureOffset);
         this.textureOffset = textureOffset;
         fireExplosion = true;
@@ -73,12 +78,15 @@ public class ParticleWreck extends Particle {
         destroyedShipId = ship.getId();
         hull = ship.getHull().getMaxHull() / 4.0f;
         rand = world.getRand();
-        createBody1(pos);
+        createBody1(x, y);
         createAABB();
+        return this;
     }
 
-    public ParticleWreck(int textureOffset, boolean isWreck, boolean fire, boolean fireExplosion, Vector2f pos, Vector2f vel, float angle, float angleVel, Vector2f size, float sizeVel, Vector4f color, float alphaVel, int id) {
-        super(id, getDebrisTexture(textureOffset, isWreck), pos, vel, angle, angleVel, size, sizeVel, color, alphaVel, 0.001f, false, true, EnumParticlePositionType.Default, EnumParticleRenderType.AlphaBlended);
+    public ParticleWreck init(int textureOffset, boolean isWreck, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity,
+                              float scaleX, float scaleY, float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, int id) {
+        init(id, getDebrisTexture(textureOffset, isWreck), x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, 0.001f, false, true,
+                EnumParticlePositionType.Default, EnumParticleRenderType.AlphaBlended);
 
         this.textureOffset = textureOffset;
         this.fireExplosion = fireExplosion;
@@ -90,7 +98,6 @@ public class ParticleWreck extends Particle {
         if (isWreck) {
             textureFire = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.particleWreckFire0.ordinal() + textureOffset]);
             textureLight = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.particleWreckLight0.ordinal() + textureOffset]);
-//			this.timerLight = timerLight;
             colorLight = new Vector4f();
             colorLight.w = 0.0f;
             timerLight1 = 200.0f + rand.nextInt(200);
@@ -100,15 +107,17 @@ public class ParticleWreck extends Particle {
 
         if (isWreck || fire) {
             colorFire = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
-//			this.timerFire = timerFire;
         }
 
-        createBody1(pos);
+        createBody1(x, y);
         createAABB();
+        return this;
     }
 
-    public ParticleWreck(int textureOffset, Ship ship, Vector2f pos, Vector2f vel, float angle, float angleVel, Vector2f size, float sizeVel, Vector4f color, float alphaVel, int id, float wreckLifeTime) {
-        super(id, ship.getWreckTexture(textureOffset), pos, vel, angle, angleVel, size, sizeVel, color, alphaVel, 0.25f, false, true, EnumParticlePositionType.Default, EnumParticleRenderType.AlphaBlended);
+    public ParticleWreck init(int textureOffset, Ship ship, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
+                              float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, int id, float wreckLifeTime) {
+        init(id, ship.getWreckTexture(textureOffset), x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, 0.25f, false, true,
+                EnumParticlePositionType.Default, EnumParticleRenderType.AlphaBlended);
 
         rand = world.getRand();
         textureWreck = ship.getWreckTexture(textureOffset);
@@ -123,14 +132,13 @@ public class ParticleWreck extends Particle {
         colorLight = new Vector4f();
         colorLight.w = 0.0f;
         shipWreck = true;
-//		this.timerFire = timerFire;
-//		this.timerLight = timerLight;
         rand = world.getRand();
         timerLight1 = 200.0f + rand.nextInt(200);
         this.wreckLifeTime = maxWreckLifeTime = wreckLifeTime;
         hull = ship.getHull().getMaxHull() / 4.0f;
-        createBody1(pos);
+        createBody1(x, y);
         createAABB();
+        return this;
     }
 
     @Override
@@ -138,15 +146,15 @@ public class ParticleWreck extends Particle {
         ParticleRenderer.getInstance().addParticle(this);
     }
 
-    private void createBody1(Vector2f pos) {
+    private void createBody1(float x, float y) {
         body = new Body();
         createFixtures();
-        body.translate(pos.x, pos.y);
+        body.translate(x, y);
         body.setMass(MassType.NORMAL);
         body.setUserData(this);
         body.setLinearVelocity(velocity.x, velocity.y);
-        body.getTransform().setRotation(rotate);
-        body.setAngularVelocity(rotationSpeed);
+        body.getTransform().setRotation(rotation);
+        body.setAngularVelocity(angularVelocity);
         if (shipWreck) {
             body.setLinearDamping(0.2f);
             body.setAngularDamping(0.025f);
@@ -159,75 +167,76 @@ public class ParticleWreck extends Particle {
     }
 
     @Override
-    protected void createBody(Vector2f pos) {
+    protected void createBody(float x, float y) {
 
     }
 
     @Override
     protected void createFixtures() {
+        if (body.getFixtures().size() > 0) body.removeFixture(0);
         if (shipWreck) {
-            Vector2[] vertecies;
+            Vector2[] vertices;
             switch (textureWreck) {
                 case particleWreckEngiSmall0Wreck0:
-                    vertecies = new Vector2[6];
-                    vertecies[0] = new Vector2(-16.80f, 20.20f);
-                    vertecies[1] = new Vector2(-32.80f, 4.60f);
-                    vertecies[2] = new Vector2(-32.00f, -11.40f);
-                    vertecies[3] = new Vector2(-15.60f, -20.20f);
-                    vertecies[4] = new Vector2(-0.40f, -19.00f);
-                    vertecies[5] = new Vector2(-4.00f, 16.60f);
+                    vertices = new Vector2[6];
+                    vertices[0] = new Vector2(-16.80f, 20.20f);
+                    vertices[1] = new Vector2(-32.80f, 4.60f);
+                    vertices[2] = new Vector2(-32.00f, -11.40f);
+                    vertices[3] = new Vector2(-15.60f, -20.20f);
+                    vertices[4] = new Vector2(-0.40f, -19.00f);
+                    vertices[5] = new Vector2(-4.00f, 16.60f);
                     break;
                 case particleWreckEngiSmall0Wreck1:
-                    vertecies = new Vector2[5];
-                    vertecies[0] = new Vector2(14.00f, 13.40f);
-                    vertecies[1] = new Vector2(-6.80f, -5.00f);
-                    vertecies[2] = new Vector2(7.60f, -21.00f);
-                    vertecies[3] = new Vector2(33.60f, -7.00f);
-                    vertecies[4] = new Vector2(34.40f, 2.60f);
+                    vertices = new Vector2[5];
+                    vertices[0] = new Vector2(14.00f, 13.40f);
+                    vertices[1] = new Vector2(-6.80f, -5.00f);
+                    vertices[2] = new Vector2(7.60f, -21.00f);
+                    vertices[3] = new Vector2(33.60f, -7.00f);
+                    vertices[4] = new Vector2(34.40f, 2.60f);
                     break;
                 case particleWreckHumanSmall0Wreck0:
-                    vertecies = new Vector2[5];
-                    vertecies[0] = new Vector2(-11.75f, 21.80f);
-                    vertecies[1] = new Vector2(-25.35f, 6.60f);
-                    vertecies[2] = new Vector2(-20.55f, -17.00f);
-                    vertecies[3] = new Vector2(-4.55f, -19.80f);
-                    vertecies[4] = new Vector2(1.45f, 11.40f);
+                    vertices = new Vector2[5];
+                    vertices[0] = new Vector2(-11.75f, 21.80f);
+                    vertices[1] = new Vector2(-25.35f, 6.60f);
+                    vertices[2] = new Vector2(-20.55f, -17.00f);
+                    vertices[3] = new Vector2(-4.55f, -19.80f);
+                    vertices[4] = new Vector2(1.45f, 11.40f);
                     break;
                 case particleWreckHumanSmall0Wreck1:
-                    vertecies = new Vector2[4];
-                    vertecies[0] = new Vector2(7.05f, 30.20f);
-                    vertecies[1] = new Vector2(-8.95f, 27.00f);
-                    vertecies[2] = new Vector2(0.65f, -21.00f);
-                    vertecies[3] = new Vector2(25.85f, -3.00f);
+                    vertices = new Vector2[4];
+                    vertices[0] = new Vector2(7.05f, 30.20f);
+                    vertices[1] = new Vector2(-8.95f, 27.00f);
+                    vertices[2] = new Vector2(0.65f, -21.00f);
+                    vertices[3] = new Vector2(25.85f, -3.00f);
                     break;
                 case particleWreckSaimonSmall0Wreck0:
-                    vertecies = new Vector2[4];
-                    vertecies[0] = new Vector2(-44.94f, 15.66f);
-                    vertecies[1] = new Vector2(-27.98f, -10.42f);
-                    vertecies[2] = new Vector2(11.13f, -30.42f);
-                    vertecies[3] = new Vector2(-7.56f, 6.96f);
+                    vertices = new Vector2[4];
+                    vertices[0] = new Vector2(-44.94f, 15.66f);
+                    vertices[1] = new Vector2(-27.98f, -10.42f);
+                    vertices[2] = new Vector2(11.13f, -30.42f);
+                    vertices[3] = new Vector2(-7.56f, 6.96f);
                     break;
                 case particleWreckSaimonSmall0Wreck1:
-                    vertecies = new Vector2[3];
-                    vertecies[0] = new Vector2(2.88f, 20.00f);
-                    vertecies[1] = new Vector2(-5.82f, -9.56f);
-                    vertecies[2] = new Vector2(45.47f, -0.86f);
+                    vertices = new Vector2[3];
+                    vertices[0] = new Vector2(2.88f, 20.00f);
+                    vertices[1] = new Vector2(-5.82f, -9.56f);
+                    vertices[2] = new Vector2(45.47f, -0.86f);
                     break;
                 default:
-                    vertecies = new Vector2[4];
-                    vertecies[0] = new Vector2(7.21f, 9.16f);
-                    vertecies[1] = new Vector2(-9.19f, 4.76f);
-                    vertecies[2] = new Vector2(-7.99f, -10.44f);
-                    vertecies[3] = new Vector2(8.81f, -7.24f);
+                    vertices = new Vector2[4];
+                    vertices[0] = new Vector2(7.21f, 9.16f);
+                    vertices[1] = new Vector2(-9.19f, 4.76f);
+                    vertices[2] = new Vector2(-7.99f, -10.44f);
+                    vertices[3] = new Vector2(8.81f, -7.24f);
                     break;
             }
 
-            for (int i = 0; i < vertecies.length; i++) {
-                Vector2 vertex = vertecies[i];
+            for (int i = 0; i < vertices.length; i++) {
+                Vector2 vertex = vertices[i];
                 vertex.divide(10.0f);
             }
 
-            Polygon p = Geometry.createPolygon(vertecies);
+            Polygon p = Geometry.createPolygon(vertices);
             BodyFixture bodyFixture = new BodyFixture(p);
             bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
             bodyFixture.setFilter(new WreckFilter(this));
@@ -345,28 +354,25 @@ public class ParticleWreck extends Particle {
                     pos = getPosition();
                 }
                 Vector2f scale = getScale();
-                ParticleSpawner.spawnLight(pos, getScale().x * 2.0f, new Vector4f(1.0f, 0.8f, 0.6f, 1.0f), EnumParticlePositionType.Default);
-                ParticleSpawner.spawnSpark(pos, getScale().x);
-                ParticleSpawner.spawnExplosion(pos, getScale().x);
-                Vector2f position = getPosition();
-                ParticleSpawner.spawnSmallGarbage(rand.nextInt(10), position.x, position.y, 2.0f, 5.0f + getScale().x);
-                ParticleSpawner.spawnShipOst(rand.nextInt(3), position, new Vector2f(velocity).mul(0.06f), 0.25f + 0.75f * rand.nextFloat());
+                ParticleSpawner.spawnLight(pos.x, pos.y, getScale().x * 2.0f, 1.0f, 0.8f, 0.6f, 1.0f, EnumParticlePositionType.Default);
+                ParticleSpawner.spawnSpark(pos.x, pos.y, getScale().x);
+                ParticleSpawner.spawnExplosion(pos.x, pos.y, getScale().x);
+                ParticleSpawner.spawnSmallGarbage(rand.nextInt(10), pos.x, pos.y, 2.0f, 5.0f + getScale().x);
+                ParticleSpawner.spawnShipOst(rand.nextInt(3), pos.x, pos.y, velocity.x * 0.06f, velocity.y * 0.06f, 0.25f + 0.75f * rand.nextFloat());
 
                 if (shipWreck) {
-                    ParticleSpawner.spawnMediumGarbage(3, pos, new Vector2f(velocity).mul(0.1f), scale.x / 2.0f);
-                    Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion0, pos));
+                    ParticleSpawner.spawnMediumGarbage(3, pos.x, pos.y, velocity.x * 0.1f, velocity.y * 0.1f, scale.x / 2.0f);
+                    Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion0, pos.x, pos.y));
                 }
             }
 
             super.setDead(isDead);
         } else {
             if (color.w > 0.01f) {
-                Vector2f pos;
                 if (shipWreck) {
                     Vector2 worldPos = body.getLocalCenter().add(position.x, position.y);
-                    pos = new Vector2f((float) worldPos.x, (float) worldPos.y);
-                    ParticleSpawner.spawnDamageDerbis(world, rand.nextInt(3), (float) worldPos.x, (float) worldPos.y, velocity.x, velocity.y, 1.0f);
-                    ParticleSpawner.spawnDamageWrecks(world, rand.nextInt(2), pos, velocity);
+                    ParticleSpawner.spawnDamageDebris(world, rand.nextInt(3), (float) worldPos.x, (float) worldPos.y, velocity.x, velocity.y, 1.0f);
+                    ParticleSpawner.spawnDamageWrecks(world, rand.nextInt(2), (float) worldPos.x, (float) worldPos.y, velocity.x, velocity.y);
                 }
             }
 
@@ -391,7 +397,7 @@ public class ParticleWreck extends Particle {
         if (!canCollide) {
             position.x += velocity.x * TimeUtils.UPDATE_DELTA_TIME;
             position.y += velocity.y * TimeUtils.UPDATE_DELTA_TIME;
-            rotate += rotationSpeed * TimeUtils.UPDATE_DELTA_TIME;
+            rotation += angularVelocity * TimeUtils.UPDATE_DELTA_TIME;
 
             if (!zeroVelocity) {
                 velocity.x *= 0.999f;
@@ -410,8 +416,9 @@ public class ParticleWreck extends Particle {
                 explosionTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
                 if (explosionTimer <= 0 && color.w > 0.6f) {
                     float size = scale.x / 4.0f;
-                    ParticleSpawner.spawnExplosion(new Vector2f(getPosition()), size / 10.0f);
-                    ParticleSpawner.spawnDamageSmoke(new Vector2f(getPosition()), size + 1.0f);
+                    Vector2f position = getPosition();
+                    ParticleSpawner.spawnExplosion(position.x, position.y, size / 10.0f);
+                    ParticleSpawner.spawnDamageSmoke(position.x, position.y, size + 1.0f);
                     explosionTimer = 8 + world.getRand().nextInt(8);
                 }
             }
@@ -502,20 +509,6 @@ public class ParticleWreck extends Particle {
                     colorLight.y -= lightSpeed;
                     colorLight.z -= lightSpeed;
                 }
-
-//				if(color.w < 0.2f) {
-//					color.w -= alphaVelocity * 3f * dt;
-//					if(color.w <= 0f) {
-//						color.w = 0f;
-//						if(!world.isRemote()) {
-//							MainServer.getServer().getNetworkSystem().sendPacketToAllNearby(new SRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
-//							setDead(true);
-//						}
-//					}
-//						
-//				} else {
-//					color.w -= alphaVelocity * dt;
-//				}
             } else if (wreckLifeTime <= 0) {
                 if (!world.isRemote()) {
                     MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);

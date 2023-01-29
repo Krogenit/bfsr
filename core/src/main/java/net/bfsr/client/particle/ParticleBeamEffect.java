@@ -9,22 +9,23 @@ import org.joml.Vector4f;
 import java.util.Random;
 
 public class ParticleBeamEffect extends Particle {
-    private final WeaponSlotBeam slot;
-    private final Ship ship;
-    private final Vector2f addPos;
-    private final Vector2f addScale;
-    private final Random rand;
+    private WeaponSlotBeam slot;
+    private Ship ship;
+    private final Vector2f addPos = new Vector2f();
+    private final Vector2f addScale = new Vector2f();
+    private Random rand;
     private boolean changeColor;
 
-    ParticleBeamEffect(WeaponSlotBeam slot, TextureRegister text) {
-        super(text, new Vector2f(), new Vector2f(), 0.0f, 0.0f, new Vector2f(), 0.0f, new Vector4f(), 0.0f, 0.001f, false, false, EnumParticlePositionType.Default, EnumParticleRenderType.Additive);
+    public ParticleBeamEffect init(WeaponSlotBeam slot, TextureRegister texture) {
+        init(texture, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.001f, false, false, EnumParticlePositionType.Default, EnumParticleRenderType.Additive);
         this.slot = slot;
         ship = slot.getShip();
         rand = ship.getWorld().getRand();
-        color = new Vector4f(slot.getBeamColor());
+        color.set(slot.getBeamColor());
         Vector2f slotScale = slot.getScale();
-        addPos = new Vector2f(rand.nextFloat(), (rand.nextFloat() * 2.0f - 1.0f) * slotScale.y / 2.0f);
-        addScale = new Vector2f(5.0f + 2.8f * rand.nextFloat(), slotScale.y / 2.0f + 0.4f * rand.nextFloat());
+        addPos.set(rand.nextFloat(), (rand.nextFloat() * 2.0f - 1.0f) * slotScale.y / 2.0f);
+        addScale.set(5.0f + 2.8f * rand.nextFloat(), slotScale.y / 2.0f + 0.4f * rand.nextFloat());
+        return this;
     }
 
     @Override
@@ -39,13 +40,10 @@ public class ParticleBeamEffect extends Particle {
 
         float l = beamRange * addPos.x + (rand.nextFloat() * 2.0f - 1.0f);
         float k = addPos.y;
-        Vector2f pos = new Vector2f(cos * l - sin * k, sin * l + cos * k);
-        pos.x += slotPos.x;
-        pos.y += slotPos.y;
 
-        rotate = slot.getRotation();
-        position.x = pos.x;
-        position.y = pos.y;
+        rotation = slot.getRotation();
+        position.x = cos * l - sin * k + slotPos.x;
+        position.y = sin * l + cos * k + slotPos.y;
         scale.x = addScale.x;
         scale.y = addScale.y;
 
@@ -68,5 +66,10 @@ public class ParticleBeamEffect extends Particle {
         if (ship.isDead() || color.w <= 0) {
             setDead(true);
         }
+    }
+
+    @Override
+    public void returnToPool() {
+        ParticleSpawner.PARTICLE_BEAM_EFFECT_POOL.returnBack(this);
     }
 }

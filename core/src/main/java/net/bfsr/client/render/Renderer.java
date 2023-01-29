@@ -15,7 +15,6 @@ import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.shader.primitive.PrimitiveShaders;
 import net.bfsr.core.Core;
-import net.bfsr.math.Transformation;
 import net.bfsr.settings.EnumOption;
 import net.bfsr.world.WorldClient;
 import org.lwjgl.glfw.GLFW;
@@ -115,7 +114,6 @@ public class Renderer {
         resetDrawCalls();
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
         camera.bind();
-        Transformation.updateViewMatrix(camera, interpolation);
         OpenGLHelper.alphaGreater(0.0001f);
 
         WorldClient world = core.getWorld();
@@ -153,7 +151,6 @@ public class Renderer {
     public void resize(int width, int height) {
         GL11.glViewport(0, 0, width, height);
         camera.resize(width, height);
-        Transformation.resize(width, height);
         guiInGame.resize(width, height);
     }
 

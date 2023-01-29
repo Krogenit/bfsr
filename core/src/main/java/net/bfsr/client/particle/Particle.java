@@ -1,89 +1,103 @@
 package net.bfsr.client.particle;
 
+import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.core.Core;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.server.MainServer;
 import net.bfsr.util.TimeUtils;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.Convex;
-import org.dyn4j.geometry.Geometry;
-import org.dyn4j.geometry.MassType;
+import org.dyn4j.geometry.*;
 import org.joml.Vector2f;
-import org.joml.Vector4f;
 
 public class Particle extends CollisionObject {
-    protected float sizeVelocity, alphaVelocity, rotationSpeed, maxAlpha;
+    protected float sizeVelocity, alphaVelocity, angularVelocity, maxAlpha;
     protected boolean canCollide, isAlphaFromZero, zeroVelocity;
-    protected Vector2f velocity;
     protected EnumParticlePositionType positionType;
     protected EnumParticleRenderType renderType;
     protected float greater;
 
-    public Particle(World world, int id, TextureRegister text, Vector2f pos, Vector2f velocity, float rot, float rotSpeed,
-                    Vector2f size, float sizeSpeed, Vector4f color, float alphaSpeed, float greater, boolean isAlphaFromZero, boolean canCollide, EnumParticlePositionType positionType, EnumParticleRenderType renderType) {
-        super(world, id, text, pos, size);
-        this.canCollide = canCollide;
+    public Particle init(World world, int id, TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
+                         float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, float greater, boolean isAlphaFromZero, boolean canCollide,
+                         EnumParticlePositionType positionType, EnumParticleRenderType renderType) {
+        this.world = world;
+        this.id = id;
+        this.texture = TextureLoader.getTexture(texture);
+        this.position.set(x, y);
+        this.lastPosition.set(position);
+        this.velocity.set(velocityX, velocityY);
+        this.rotation = rotation;
+        this.angularVelocity = angularVelocity;
+        this.scale.set(scaleX, scaleY);
+        this.sizeVelocity = sizeVelocity;
+        this.color.set(r, g, b, a);
+        this.alphaVelocity = alphaVelocity;
+        this.greater = greater;
         this.isAlphaFromZero = isAlphaFromZero;
+        this.canCollide = canCollide;
         this.positionType = positionType;
         this.renderType = renderType;
-
-        alphaVelocity = alphaSpeed;
-        sizeVelocity = sizeSpeed;
-        this.color = color;
-        this.greater = greater;
-        this.velocity = velocity;
-        rotate = rot;
-        rotationSpeed = rotSpeed;
-        zeroVelocity = velocity.length() != 0;
+        this.zeroVelocity = velocity.length() != 0;
+        this.isDead = false;
 
         if (isAlphaFromZero) {
-            maxAlpha = color.w;
+            this.maxAlpha = a;
             this.color.w = 0.0f;
         }
 
         if (canCollide) {
-            createBody(pos);
+            createBody(position.x, position.y);
         }
 
-        if (world.isRemote()) addParticle();
+        if (world.isRemote()) {
+            addParticle();
+        }
+
+        return this;
     }
 
-    public Particle(int id, Vector2f pos, Vector2f velocity, float rot, float rotSpeed,
-                    Vector2f size, float sizeSpeed, Vector4f color, float alphaSpeed, float greater, boolean isAlphaFromZero, boolean canCollide, EnumParticlePositionType positionType, EnumParticleRenderType renderType) {
-        this(MainServer.getInstance().getWorld(), id, null, pos, velocity, rot, rotSpeed, size, sizeSpeed, color, alphaSpeed, greater, isAlphaFromZero, canCollide, positionType, renderType);
+    public Particle init(int id, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY, float sizeVelocity,
+                         float r, float g, float b, float a, float alphaVelocity, float greater, boolean isAlphaFromZero, boolean canCollide, EnumParticlePositionType positionType,
+                         EnumParticleRenderType renderType) {
+        return init(MainServer.getInstance().getWorld(), id, null, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, greater,
+                isAlphaFromZero, canCollide, positionType, renderType);
     }
 
-    public Particle(int id, TextureRegister text, Vector2f pos, Vector2f velocity, float rot, float rotSpeed,
-                    Vector2f size, float sizeSpeed, Vector4f color, float alphaSpeed, float greater, boolean isAlphaFromZero, boolean canCollide, EnumParticlePositionType positionType, EnumParticleRenderType renderType) {
-        this(Core.getCore().getWorld(), id, text, pos, velocity, rot, rotSpeed, size, sizeSpeed, color, alphaSpeed, greater, isAlphaFromZero, canCollide, positionType, renderType);
+    public Particle init(int id, TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
+                         float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, float greater, boolean isAlphaFromZero, boolean canCollide,
+                         EnumParticlePositionType positionType, EnumParticleRenderType renderType) {
+        return init(Core.getCore().getWorld(), id, texture, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, greater,
+                isAlphaFromZero, canCollide, positionType, renderType);
     }
 
-    public Particle(TextureRegister text, Vector2f pos, Vector2f velocity, float rot, float rotSpeed,
-                    Vector2f size, float sizeSpeed, Vector4f color, float alphaSpeed, float greater, boolean isAlphaFromZero, boolean canCollide, EnumParticlePositionType positionType, EnumParticleRenderType renderType) {
-        this(Core.getCore().getWorld(), -1, text, pos, velocity, rot, rotSpeed, size, sizeSpeed, color, alphaSpeed, greater, isAlphaFromZero, canCollide, positionType, renderType);
+    public Particle init(TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY, float sizeVelocity,
+                         float r, float g, float b, float a, float alphaVelocity, float greater, boolean isAlphaFromZero, boolean canCollide, EnumParticlePositionType positionType,
+                         EnumParticleRenderType renderType) {
+        return init(Core.getCore().getWorld(), -1, texture, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, greater,
+                isAlphaFromZero, canCollide, positionType, renderType);
     }
 
     protected void addParticle() {
         ParticleRenderer.getInstance().addParticle(this);
     }
 
-    public void setCanCollide(boolean canCollide) {
-        this.canCollide = canCollide;
-        updateBody();
-    }
-
-    private void updateBody() {}
-
     @Override
     protected void createAABB() {
         if (canCollide) {
-            super.createAABB();
+            AABB aabb = body.createAABB(new Transform());
+
+            if (this.aabb != null) {
+                this.aabb.set((float) aabb.getMinX(), (float) aabb.getMinY(), (float) aabb.getMaxX(), (float) aabb.getMaxY());
+            } else {
+                this.aabb = new AxisAlignedBoundingBox(new Vector2f((float) aabb.getMinX(), (float) aabb.getMinY()), new Vector2f((float) aabb.getMaxX(), (float) aabb.getMaxY()));
+            }
         }
     }
 
     protected void createFixtures() {
+        body.removeFixture(0);
         Vector2f size = getScale();
         Convex convex;
         if (size.x == size.y) {
@@ -97,17 +111,17 @@ public class Particle extends CollisionObject {
     }
 
     @Override
-    protected void createBody(Vector2f pos) {
+    protected void createBody(float x, float y) {
         if (canCollide) {
-            super.createBody(pos);
+            if (body == null) super.createBody(x, y);
 
             createFixtures();
-            body.translate(pos.x, pos.y);
+            body.translate(x, y);
             body.setMass(MassType.NORMAL);
             body.setUserData(this);
             body.setLinearVelocity(velocity.x, velocity.y);
-            body.getTransform().setRotation(rotate);
-            body.setAngularVelocity(rotationSpeed);
+            body.getTransform().setRotation(rotation);
+            body.setAngularVelocity(angularVelocity);
             body.setLinearDamping(0.05f);
             body.setAngularDamping(0.005f);
             world.addDynamicParticle(this);
@@ -121,7 +135,7 @@ public class Particle extends CollisionObject {
         if (!canCollide) {
             position.x += velocity.x * TimeUtils.UPDATE_DELTA_TIME;
             position.y += velocity.y * TimeUtils.UPDATE_DELTA_TIME;
-            rotate += rotationSpeed * TimeUtils.UPDATE_DELTA_TIME;
+            rotation += angularVelocity * TimeUtils.UPDATE_DELTA_TIME;
 
             if (!zeroVelocity) {
                 velocity.x *= 0.99f * TimeUtils.UPDATE_DELTA_TIME;
@@ -166,14 +180,6 @@ public class Particle extends CollisionObject {
         else this.velocity = velocity;
     }
 
-    public void setSizeVelocity(float sizeVelocity) {
-        this.sizeVelocity = sizeVelocity;
-    }
-
-    public void setAlphaVelocity(float alphaVelocity) {
-        this.alphaVelocity = alphaVelocity;
-    }
-
     public EnumParticlePositionType getPositionType() {
         return positionType;
     }
@@ -191,22 +197,18 @@ public class Particle extends CollisionObject {
     @Override
     public float getRotation() {
         if (canCollide) return super.getRotation();
-        else return rotate;
-    }
-
-    public float getGreater() {
-        return greater;
+        else return rotation;
     }
 
     public float getAlphaVelocity() {
         return alphaVelocity;
     }
 
-    public float getSizeVelocity() {
-        return sizeVelocity;
+    public float getAngularVelocity() {
+        return angularVelocity;
     }
 
-    public float getRotationSpeed() {
-        return rotationSpeed;
+    public void returnToPool() {
+        ParticleSpawner.PARTICLE_POOL.returnBack(this);
     }
 }

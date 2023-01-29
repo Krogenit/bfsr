@@ -19,12 +19,14 @@ import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.*;
 import org.joml.Vector2f;
-import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 
 public class CollisionObject extends TextureObject {
+    protected static final Vector2f rotateToVector = new Vector2f();
+    protected static final Vector2f angleToVelocity = new Vector2f();
+
     protected World world;
     protected Body body;
     protected boolean isDead;
@@ -36,29 +38,45 @@ public class CollisionObject extends TextureObject {
     protected float aliveTimer;
     private Direction prevMoveDir;
 
-    public CollisionObject(World world, int id, TextureRegister texture, Vector2f pos, float rotate, Vector2f scale, Vector4f color) {
-        super(TextureLoader.getTexture(texture), pos, rotate, scale, color);
+    public CollisionObject(World world, int id, TextureRegister texture, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a) {
+        super(TextureLoader.getTexture(texture), x, y, rotation, scaleX, scaleY, r, g, b, a);
         this.world = world;
         this.id = id;
-        createBody(pos);
+        createBody(x, y);
         createAABB();
     }
 
-    public CollisionObject(World world, int id, TextureRegister texture, Vector2f pos, float rotate, Vector2f scale) {
-        this(world, id, texture, pos, rotate, scale, null);
+    public CollisionObject(World world, int id, TextureRegister texture, float x, float y, float rotation, float scaleX, float scaleY) {
+        this(world, id, texture, x, y, rotation, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public CollisionObject(World world, int id, TextureRegister texture, Vector2f pos, Vector2f scale) {
-        this(world, id, texture, pos, 0, scale, null);
+    public CollisionObject(World world, int id, TextureRegister texture, float x, float y, float scaleX, float scaleY, float r, float g, float b, float a) {
+        this(world, id, texture, x, y, 0, scaleX, scaleY, r, g, b, a);
     }
 
-    public CollisionObject(World world, int id, Vector2f pos, Vector2f scale) {
-        this(world, id, null, pos, 0, scale, null);
+    public CollisionObject(World world, int id, TextureRegister texture, float x, float y, float scaleX, float scaleY) {
+        this(world, id, texture, x, y, 0, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
+    public CollisionObject(World world, int id, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a) {
+        this(world, id, null, x, y, rotation, scaleX, scaleY, r, g, b, a);
+    }
+
+    public CollisionObject(World world, int id, float x, float y, float scaleX, float scaleY, float r, float g, float b, float a) {
+        this(world, id, null, x, y, 0, scaleX, scaleY, r, g, b, a);
+    }
+
+    public CollisionObject(World world, int id, float x, float y, float scaleX, float scaleY) {
+        this(world, id, null, x, y, 0, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
+    public CollisionObject(World world) {
+        this.world = world;
     }
 
     public CollisionObject() {}
 
-    protected void createBody(Vector2f pos) {
+    protected void createBody(float x, float y) {
         body = new Body();
     }
 
@@ -143,9 +161,6 @@ public class CollisionObject extends TextureObject {
             prevMoveDir = dir;
         }
     }
-
-    private static final Vector2f rotateToVector = new Vector2f();
-    private static final Vector2f angleToVelocity = new Vector2f();
 
     public float getRotationDifference(Vector2f vector) {
         Transform transform = body.getTransform();
@@ -273,8 +288,8 @@ public class CollisionObject extends TextureObject {
                 GL11.glRotated(rot, 0, 0, 1);
                 GL11.glBegin(GL11.GL_LINE_LOOP);
                 for (int i = 0; i < rect.getVertices().length; i++) {
-                    Vector2 vect1 = rect.getVertices()[i];
-                    GL11.glVertex2d(vect1.x, vect1.y);
+                    Vector2 vertex = rect.getVertices()[i];
+                    GL11.glVertex2d(vertex.x, vertex.y);
                 }
                 GL11.glEnd();
                 GL11.glPopMatrix();

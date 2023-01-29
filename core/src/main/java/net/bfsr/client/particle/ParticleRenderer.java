@@ -59,7 +59,7 @@ public class ParticleRenderer {
             Particle particle = particles.get(i);
             particle.update();
             if (particle.isDead()) {
-                removeParticle(particle);
+                removeParticle(particle, i);
                 i--;
             }
         }
@@ -79,8 +79,9 @@ public class ParticleRenderer {
         particlesWrecks.remove(particle);
     }
 
-    private void removeParticle(Particle particle) {
-        particles.remove(particle);
+    private void removeParticle(Particle particle, int index) {
+        particles.remove(index);
+        particle.returnToPool();
 
         String renderType = particle.getRenderType().toString() + " " + particle.getPositionType().toString();
 

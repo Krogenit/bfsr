@@ -12,7 +12,6 @@ import net.bfsr.world.WorldServer;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joml.Vector2f;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -91,8 +90,9 @@ public class SimpleDataBase {
                     JsonObject shipObject = array.get(i).getAsJsonObject();
                     String className = shipObject.get("className").getAsString();
                     Class<?> clazz = Class.forName(className);
-                    Constructor<?> constr = clazz.getConstructor(WorldServer.class, Vector2f.class, float.class, boolean.class);
-                    Ship ship = (Ship) constr.newInstance(server.getWorld(), new Vector2f(), 0f, false);
+                    Constructor<?> constr = clazz.getConstructor(WorldServer.class, float.class, float.class, float.class, boolean.class);
+                    Ship ship = (Ship) constr.newInstance(server.getWorld(), 0.0f, 0.0f, 0.0f, false);
+                    ship.init();
 
                     JsonArray weapons = shipObject.get("weapons").getAsJsonArray();
                     for (int i1 = 0; i1 < weapons.size(); i1++) {

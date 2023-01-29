@@ -7,16 +7,16 @@ import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 public class ParticleBeam extends Particle {
+    private WeaponSlotBeam slot;
+    private Ship ship;
+    private boolean isSmall;
 
-    private final WeaponSlotBeam slot;
-    private final Ship ship;
-    private final boolean isSmall;
-
-    public ParticleBeam(WeaponSlotBeam slot, boolean isSmall, TextureRegister text) {
-        super(text, new Vector2f(), new Vector2f(), 0f, 0f, new Vector2f(), 0f, new Vector4f(), 0f, 0.001f, false, false, EnumParticlePositionType.Default, EnumParticleRenderType.Additive);
+    public ParticleBeam init(WeaponSlotBeam slot, boolean isSmall, TextureRegister texture) {
+        init(texture, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.001f, false, false, EnumParticlePositionType.Default, EnumParticleRenderType.Additive);
         this.slot = slot;
         this.ship = slot.getShip();
         this.isSmall = isSmall;
+        return this;
     }
 
     @Override
@@ -30,7 +30,7 @@ public class ParticleBeam extends Particle {
         this.color.z = beamColor.z;
         this.color.w = beamColor.w;
 
-        this.rotate = slot.getRotation();
+        this.rotation = slot.getRotation();
 
         float cos = ship.getCos();
         float sin = ship.getSin();
@@ -73,5 +73,10 @@ public class ParticleBeam extends Particle {
         if (color.w <= 0 || ship.isDead()) {
             setDead(true);
         }
+    }
+
+    @Override
+    public void returnToPool() {
+        ParticleSpawner.PARTICLE_BEAM_POOL.returnBack(this);
     }
 }

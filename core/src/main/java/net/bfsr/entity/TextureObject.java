@@ -1,59 +1,73 @@
 package net.bfsr.entity;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.render.Renderer;
 import net.bfsr.client.render.texture.Texture;
+import net.bfsr.client.render.texture.TextureLoader;
+import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.shader.BaseShader;
-import net.bfsr.math.EnumZoomFactor;
 import net.bfsr.math.ModelMatrixType;
 import net.bfsr.math.Transformation;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 public class TextureObject {
+    @Getter
+    @Setter
     protected Texture texture;
-    protected Vector2f position, origin, scale;
+    @Getter
+    protected Vector2f position = new Vector2f();
+    protected Vector2f origin = new Vector2f();
+    @Getter
+    protected Vector2f scale = new Vector2f();
     @Getter
     protected Vector2f lastPosition = new Vector2f();
-    protected Vector4f color;
-    protected float rotate;
-    protected EnumZoomFactor zoomFactor = EnumZoomFactor.Default;
+    @Getter
+    protected Vector4f color = new Vector4f();
+    @Getter
+    @Setter
+    protected float rotation;
     @Getter
     private ModelMatrixType modelMatrixType = ModelMatrixType.DEFAULT;
 
-    public TextureObject(Texture texture, Vector2f pos, float rotate, Vector2f scale, Vector4f color) {
+    public TextureObject(Texture texture, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a) {
         this.texture = texture;
-        this.position = pos;
-        this.lastPosition.set(pos);
-        this.rotate = rotate;
-        this.color = color;
-        if (scale != null) this.origin = new Vector2f(-scale.x / 2.0f, -scale.y / 2.0f);
-        this.scale = scale;
+        this.position.set(x, y);
+        this.lastPosition.set(x, y);
+        this.rotation = rotation;
+        this.color.set(r, g, b, a);
+        this.scale.set(scaleX, scaleY);
+        this.origin.set(-scaleX / 2.0f, -scaleY / 2.0f);
     }
 
-    public TextureObject(Texture texture, Vector2f pos, float rotate, Vector2f scale) {
-        this(texture, pos, rotate, scale, new Vector4f(1, 1, 1, 1));
+    public TextureObject(Texture texture, float x, float y, float rotation, float scaleX, float scaleY) {
+        this(texture, x, y, rotation, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public TextureObject(Texture texture, Vector2f pos, Vector2f scale) {
-        this(texture, pos, 0, scale, new Vector4f(1, 1, 1, 1));
+    public TextureObject(Texture texture, float x, float y, float scaleX, float scaleY) {
+        this(texture, x, y, 0.0f, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public TextureObject(Texture texture, Vector2f pos) {
-        this(texture, pos, 0, new Vector2f(texture.getWidth(), texture.getHeight()), new Vector4f(1, 1, 1, 1));
+    public TextureObject(Texture texture, float x, float y) {
+        this(texture, x, y, 0.0f, texture.getWidth(), texture.getHeight(), 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public TextureObject(Vector2f pos, Vector2f scale) {
-        this(null, pos, 0, scale, new Vector4f(1, 1, 1, 1));
+    public TextureObject(float x, float y, float scaleX, float scaleY) {
+        this(null, x, y, 0.0f, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public TextureObject(Vector2f pos) {
-        this(null, pos, 0, null, new Vector4f(1, 1, 1, 1));
+    public TextureObject(float x, float y) {
+        this(null, x, y, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
+    public TextureObject(TextureRegister texture) {
+        this(TextureLoader.getTexture(texture), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     public TextureObject() {
-        this(null, new Vector2f(), 0, null, new Vector4f(1, 1, 1, 1));
+        this(null, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     public void update() {
@@ -73,32 +87,15 @@ public class TextureObject {
     }
 
     public void setPosition(float x, float y) {
-        this.position.x = x;
-        this.position.y = y;
-    }
-
-    public void setPosition(Vector2f position) {
-        this.position = position;
+        this.position.set(x, y);
     }
 
     public void setScale(float x, float y) {
-        this.scale.x = x;
-        this.scale.y = y;
-    }
-
-    public void setScale(Vector2f scale) {
-        this.scale = scale;
+        this.scale.set(x, y);
     }
 
     public void setColor(float r, float g, float b, float a) {
-        this.color.x = r;
-        this.color.y = g;
-        this.color.z = b;
-        this.color.w = a;
-    }
-
-    public void setColor(Vector4f color) {
-        this.color = color;
+        this.color.set(r, g, b, a);
     }
 
     public TextureObject setModelMatrixType(ModelMatrixType modelMatrixType) {
@@ -106,43 +103,7 @@ public class TextureObject {
         return this;
     }
 
-    public Vector2f getPosition() {
-        return position;
-    }
-
-    public float getRotation() {
-        return rotate;
-    }
-
-    public Vector2f getScale() {
-        return scale;
-    }
-
-    public void setTexture(Texture texture) {
-        this.texture = texture;
-    }
-
-    public Texture getTexture() {
-        return texture;
-    }
-
-    public Vector4f getColor() {
-        return color;
-    }
-
-    public void setZoomFactor(EnumZoomFactor zoomFactor) {
-        this.zoomFactor = zoomFactor;
-    }
-
-    public EnumZoomFactor getZoomFactor() {
-        return zoomFactor;
-    }
-
-    public void setRotate(float rotate) {
-        this.rotate = rotate;
-    }
-
     public void clear() {
-        if (texture != null) texture.delete();
+
     }
 }

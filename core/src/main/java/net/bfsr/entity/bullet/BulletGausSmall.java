@@ -11,21 +11,19 @@ import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
-import org.joml.Vector2f;
-import org.joml.Vector4f;
 
 public class BulletGausSmall extends Bullet {
-    public BulletGausSmall(WorldServer world, int id, float radRot, Vector2f pos, Ship ship) {
-        super(world, id, 70.0f, radRot, pos, new Vector2f(2.4f, 2.4f), ship, new Vector4f(1.0f, 1.0f, 0.5f, 1.5f), 1.56f, new BulletDamage(2.5f, 5.0f, 2.5f));
+    public BulletGausSmall(WorldServer world, int id, float radRot, float x, float y, Ship ship) {
+        super(world, id, 70.0f, radRot, x, y, 2.4f, 2.4f, ship, 1.0f, 1.0f, 0.5f, 1.5f, 1.56f, new BulletDamage(2.5f, 5.0f, 2.5f));
     }
 
-    public BulletGausSmall(WorldClient world, int id, float radRot, Vector2f pos, Ship ship) {
-        super(world, id, 70.0f, radRot, pos, new Vector2f(2.4f, 2.4f), ship, TextureRegister.smallGaus, new Vector4f(1.0f, 1.0f, 0.5f, 1.5f), 1.56f, new BulletDamage(2.5f, 5.0f, 2.5f));
+    public BulletGausSmall(WorldClient world, int id, float radRot, float x, float y, Ship ship) {
+        super(world, id, 70.0f, radRot, x, y, 2.4f, 2.4f, ship, TextureRegister.smallGaus, 1.0f, 1.0f, 0.5f, 1.5f, 1.56f, new BulletDamage(2.5f, 5.0f, 2.5f));
     }
 
     @Override
-    protected void createBody(Vector2f pos) {
-        super.createBody(pos);
+    protected void createBody(float x, float y) {
+        super.createBody(x, y);
         Vector2[] vertices = new Vector2[4];
         vertices[0] = new Vector2(-0.6f, -0.2f);
         vertices[1] = new Vector2(0.6f, -0.2f);
@@ -38,7 +36,7 @@ public class BulletGausSmall extends Bullet {
         bodyFixture.setRestitution(1.0f);
         bodyFixture.setFilter(new BulletFilter(this));
         body.addFixture(bodyFixture);
-        body.translate(pos.x, pos.y);
+        body.translate(x, y);
         body.setMass(MassType.FIXED_ANGULAR_VELOCITY);
         body.setUserData(this);
         body.setBullet(true);

@@ -18,6 +18,10 @@ public class AxisAlignedBoundingBox {
         this.min = min;
     }
 
+    public AxisAlignedBoundingBox(float minX, float minY, float maxX, float maxY) {
+        this(new Vector2f(minX, minY), new Vector2f(maxX, maxY));
+    }
+
     public void set(float minX, float minY, float maxX, float maxY) {
         min.x = minX;
         min.y = minY;
@@ -45,8 +49,8 @@ public class AxisAlignedBoundingBox {
         return vector.x >= min.x && vector.x < max.x && vector.y >= min.y && vector.y < max.y;
     }
 
-    public boolean isIntersects(Vector2d vect) {
-        return vect.x >= min.x && vect.x < max.x && vect.y >= min.y && vect.y < max.y;
+    public boolean isIntersects(Vector2d vector) {
+        return vector.x >= min.x && vector.x < max.x && vector.y >= min.y && vector.y < max.y;
     }
 
     public boolean isIntersects(AxisAlignedBoundingBox aabb) {
@@ -56,14 +60,6 @@ public class AxisAlignedBoundingBox {
     @Override
     public String toString() {
         return "AABB [min=" + min + ", max=" + max + "]";
-    }
-
-    public Vector2f getMax() {
-        return max;
-    }
-
-    public Vector2f getMin() {
-        return min;
     }
 
     public AxisAlignedBoundingBox translate(Vector2f pos) {

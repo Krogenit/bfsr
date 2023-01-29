@@ -1,12 +1,16 @@
 package net.bfsr.client.sound;
 
 import org.joml.Vector2d;
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.openal.AL10;
 
 public class SoundSource {
     private final int sourceId;
+
+    public SoundSource(SoundRegistry soundName, boolean loop, boolean relative, float x, float y) {
+        this(soundName, loop, relative);
+        setPosition(x, y);
+    }
 
     public SoundSource(SoundRegistry soundName, boolean loop, boolean relative) {
         this.sourceId = AL10.alGenSources();
@@ -31,8 +35,8 @@ public class SoundSource {
         AL10.alSource3f(sourceId, AL10.AL_POSITION, (float) position.x, (float) position.y, 0);
     }
 
-    public void setPosition(Vector2f position) {
-        AL10.alSource3f(sourceId, AL10.AL_POSITION, position.x, position.y, 0);
+    public void setPosition(float x, float y) {
+        AL10.alSource3f(sourceId, AL10.AL_POSITION, x, y, 0);
     }
 
     public void setPosition(Vector3f position) {

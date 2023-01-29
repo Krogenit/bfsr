@@ -25,7 +25,6 @@ import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 import java.util.List;
 
@@ -41,14 +40,14 @@ public class Shield extends CollisionObject {
     private BodyFixture shieldFixture;
 
     protected Shield(Ship ship) {
-        world = ship.getWorld();
+        super(ship.getWorld());
         this.ship = ship;
-        size = 1.0f;
+        this.size = 1.0f;
     }
 
     @Override
-    protected void createBody(Vector2f pos) {
-        super.createBody(pos);
+    protected void createBody(float x, float y) {
+        super.createBody(x, y);
 
         List<BodyFixture> fixtures = ship.getBody().getFixtures();
         if (shieldFixture != null) {
@@ -62,13 +61,13 @@ public class Shield extends CollisionObject {
             Convex convex = bodyFixture.getShape();
             if (convex instanceof Polygon polygon) {
                 for (Vector2 vertex : polygon.getVertices()) {
-                    float x = (float) Math.abs(vertex.x);
-                    if (x > radius.x) {
-                        radius.x = x;
+                    float x1 = (float) Math.abs(vertex.x);
+                    if (x1 > radius.x) {
+                        radius.x = x1;
                     }
-                    float y = (float) Math.abs(vertex.y);
-                    if (y > radius.y) {
-                        radius.y = y;
+                    float y1 = (float) Math.abs(vertex.y);
+                    if (y1 > radius.y) {
+                        radius.y = y1;
                     }
                 }
             }
@@ -130,18 +129,20 @@ public class Shield extends CollisionObject {
 
         if (world.isRemote()) {
             Vector3f shipEffectColor = ship.getEffectsColor();
-            Vector4f color = new Vector4f(shipEffectColor.x, shipEffectColor.y, shipEffectColor.z, 1.0f);
-            ParticleSpawner.spawnLight(getPosition(), ship.getScale().x * 2.0f, color, 0.04f * 60.0f, false, EnumParticlePositionType.Default);
+            Vector2f position = getPosition();
+            ParticleSpawner.spawnLight(position.x, position.y, ship.getScale().x * 2.0f, shipEffectColor.x, shipEffectColor.y, shipEffectColor.z, 1.0f, 0.04f * 60.0f, false,
+                    EnumParticlePositionType.Default);
             if (ship.getWorld().getRand().nextInt(2) == 0) {
-                Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldUp0, getPosition()));
+                Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldUp0, position.x, position.y));
             } else {
-                Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldUp1, getPosition()));
+                Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldUp1, position.x, position.y));
             }
         } else {
             MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRebuild(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         }
 
-        createBody(ship.getPosition());
+        Vector2f shipPosition = ship.getPosition();
+        createBody(shipPosition.x, shipPosition.y);
     }
 
     public boolean damage(float shieldDamage) {
@@ -167,14 +168,16 @@ public class Shield extends CollisionObject {
         shieldFixture = null;
         ship.recalculateMass();
 
+        Vector2f shipPosition = ship.getPosition();
         if (world.isRemote()) {
             Vector3f shipEffectColor = ship.getEffectsColor();
-            Vector4f color = new Vector4f(shipEffectColor.x, shipEffectColor.y, shipEffectColor.z, 1.0f);
-            ParticleSpawner.spawnLight(getPosition(), ship.getScale().x * 2.0f, 5.0f * 6.0f, color, 0.04f * 60.0f, false, EnumParticlePositionType.Default);
-            ParticleSpawner.spawnDisableShield(getPosition(), ship.getScale().x * 4.0f, -24.0f, new Vector4f(color));
-            Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldDown, ship.getPosition()));
+            Vector2f position = getPosition();
+            ParticleSpawner.spawnLight(position.x, position.y, ship.getScale().x * 2.0f, 5.0f * 6.0f, shipEffectColor.x, shipEffectColor.y, shipEffectColor.z, 1.0f, 0.04f * 60.0f, false,
+                    EnumParticlePositionType.Default);
+            ParticleSpawner.spawnDisableShield(position.x, position.y, ship.getScale().x * 4.0f, -24.0f, color.x, color.y, color.z, color.w);
+            Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldDown, shipPosition.x, shipPosition.y));
         } else {
-            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRemove(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRemove(ship.getId()), shipPosition.x, shipPosition.y, WorldServer.PACKET_SPAWN_DISTANCE);
         }
 
         rebuildingTime = 0;

@@ -14,7 +14,6 @@ import java.lang.reflect.Constructor;
 
 @NoArgsConstructor
 public class PacketShipSetWeaponSlot extends ServerPacket {
-
     private int id;
     private String slot;
     private int slotId;
@@ -42,8 +41,7 @@ public class PacketShipSetWeaponSlot extends ServerPacket {
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
         CollisionObject obj = Core.getCore().getWorld().getEntityById(id);
-        if (obj instanceof Ship) {
-            Ship ship = (Ship) obj;
+        if (obj instanceof Ship ship) {
             try {
                 Class<?> clazz = Class.forName(slot);
                 Constructor<?> ctr = clazz.getConstructor(Ship.class);

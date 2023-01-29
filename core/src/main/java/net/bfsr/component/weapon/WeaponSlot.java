@@ -15,7 +15,6 @@ import net.bfsr.world.WorldServer;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.joml.Vector2f;
-import org.joml.Vector4f;
 
 import java.util.List;
 import java.util.Random;
@@ -31,30 +30,30 @@ public abstract class WeaponSlot extends TextureObject {
     protected Vector2f addPosition;
     private SoundRegistry[] shootSounds;
 
-    protected WeaponSlot(Ship ship, float shootTimerMax, float energyCost, float bulletSpeed, float alphaReducer, Vector2f scale) {
+    protected WeaponSlot(Ship ship, float shootTimerMax, float energyCost, float bulletSpeed, float alphaReducer, float scaleX, float scaleY) {
         this.ship = ship;
         world = ship.getWorld();
-        color = new Vector4f(1, 1, 1, 1);
+        color.set(1.0f, 1.0f, 1.0f, 1.0f);
 
         this.shootTimerMax = shootTimerMax;
         this.energyCost = energyCost;
         this.bulletSpeed = bulletSpeed;
-        this.scale = scale;
+        this.scale.set(scaleX, scaleY);
         this.alphaReducer = alphaReducer;
     }
 
     public abstract void createBody();
 
-    protected WeaponSlot(Ship ship, SoundRegistry[] shootSounds, float shootTimerMax, float energyCost, float bulletSpeed, float alphaReducer, Vector2f scale, TextureRegister texture) {
+    protected WeaponSlot(Ship ship, SoundRegistry[] shootSounds, float shootTimerMax, float energyCost, float bulletSpeed, float alphaReducer, float scaleX, float scaleY, TextureRegister texture) {
         this.shootSounds = shootSounds;
         this.ship = ship;
         world = ship.getWorld();
-        color = new Vector4f(1, 1, 1, 1);
+        color.set(1.0f, 1.0f, 1.0f, 1.0f);
 
         this.shootTimerMax = shootTimerMax;
         this.energyCost = energyCost;
         this.bulletSpeed = bulletSpeed;
-        this.scale = scale;
+        this.scale.set(scaleX, scaleY);
         this.alphaReducer = alphaReducer;
 
         if (ship.getWorld().isRemote()) {
@@ -91,7 +90,7 @@ public abstract class WeaponSlot extends TextureObject {
             int size = shootSounds.length;
             Random rand = world.getRand();
             SoundRegistry sound = shootSounds[rand.nextInt(size)];
-            SoundSourceEffect source = new SoundSourceEffect(sound, position);
+            SoundSourceEffect source = new SoundSourceEffect(sound, position.x, position.y);
             Core.getCore().getSoundManager().play(source);
         }
     }
@@ -108,7 +107,7 @@ public abstract class WeaponSlot extends TextureObject {
     }
 
     public void updatePos() {
-        rotate = ship.getRotation();
+        rotation = ship.getRotation();
         Vector2f shipPos = ship.getPosition();
         float x = addPosition.x;
         float y = addPosition.y;

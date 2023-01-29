@@ -26,7 +26,6 @@ import java.util.Random;
 
 @NoArgsConstructor
 public class PacketCommand extends ClientPacket {
-
     private int command;
     private String[] args;
 
@@ -66,19 +65,22 @@ public class PacketCommand extends ClientPacket {
                 Ship ship = null;
                 switch (fact) {
                     case Human:
-                        ship = new ShipHumanSmall0(world, pos, rand.nextFloat() * RotationHelper.TWOPI, true);
+                        ship = new ShipHumanSmall0(world, pos.x, pos.y, rand.nextFloat() * RotationHelper.TWOPI, true);
+                        ship.init();
                         ship.addWeaponToSlot(0, new WeaponPlasmSmall(ship));
                         ship.addWeaponToSlot(1, new WeaponPlasmSmall(ship));
 
                         break;
                     case Saimon:
-                        ship = new ShipSaimonSmall0(world, pos, rand.nextFloat() * RotationHelper.TWOPI, true);
+                        ship = new ShipSaimonSmall0(world, pos.x, pos.y, rand.nextFloat() * RotationHelper.TWOPI, true);
+                        ship.init();
                         ship.addWeaponToSlot(0, new WeaponLaserSmall(ship));
                         ship.addWeaponToSlot(1, new WeaponLaserSmall(ship));
 
                         break;
                     case Engi:
-                        ship = new ShipEngiSmall0(world, pos, rand.nextFloat() * RotationHelper.TWOPI, true);
+                        ship = new ShipEngiSmall0(world, pos.x, pos.y, rand.nextFloat() * RotationHelper.TWOPI, true);
+                        ship.init();
                         ship.addWeaponToSlot(0, new WeaponGausSmall(ship));
                         ship.addWeaponToSlot(1, new WeaponGausSmall(ship));
 
@@ -90,16 +92,10 @@ public class PacketCommand extends ClientPacket {
                 return;
             case SpawnParticle:
                 pos = new Vector2f(Float.parseFloat(args[0]), Float.parseFloat(args[1]));
-                Vector2 bodyVelocity = new Vector2(player.getPlayerShip().getBody().getLinearVelocity());
+                Vector2 linearVelocity = player.getPlayerShip().getBody().getLinearVelocity();
                 float rot = player.getPlayerShip().getRotation();
-
-                Vector2 velocity = new Vector2(rot).negate().multiply(30f).add(new Vector2(bodyVelocity).multiply(0.8f));
-                ParticleSpawner.spawnShipWreck(player.getPlayerShip(), 0, pos, rot, velocity, 0.02f, 2000f);
-//			bodyVelocity.negate();
-//			velocity = new Vector2(rot).multiply(30f).add(new Vector2(bodyVelocity).multiply(0.8f));
-//			ParticleSystem.spawnShipWreck(playerMP.getPlayerShip(), 1, pos, rot, velocity, 0.002f, 3000f);
-//			ParticleSystem.spawnDamageDerbis(1, pos,
-//					RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 500f * rand.nextFloat() + 250f), 1f);
+                ParticleSpawner.spawnShipWreck(player.getPlayerShip(), 0, pos.x, pos.y, rot, -rot * 30.0f + (float) linearVelocity.x * 0.8f,
+                        -rot * 30.0f + (float) linearVelocity.y * 0.8f, 0.02f, 2000f);
         }
     }
 }

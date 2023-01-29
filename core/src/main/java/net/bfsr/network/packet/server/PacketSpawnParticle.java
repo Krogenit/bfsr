@@ -1,6 +1,7 @@
 package net.bfsr.network.packet.server;
 
 import lombok.NoArgsConstructor;
+import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.ParticleWreck;
 import net.bfsr.core.Core;
 import net.bfsr.entity.CollisionObject;
@@ -16,7 +17,6 @@ import java.io.IOException;
 
 @NoArgsConstructor
 public class PacketSpawnParticle extends ServerPacket {
-
     private int id, destroyedShipId;
     private int textureOffset;
     private boolean isFire, isLight, isFireExplosion, isShipWreck;
@@ -34,10 +34,8 @@ public class PacketSpawnParticle extends ServerPacket {
         this.isFire = p.isFire();
         this.isLight = p.isLight();
         this.isFireExplosion = p.isFireExplosion();
-//		this.sizeVelocity = p.getSizeVelocity();
         this.alphaVelocity = p.getAlphaVelocity();
-        this.rotationSpeed = p.getRotationSpeed();
-//		this.maxAlpha = p.getMaxAlpha();
+        this.rotationSpeed = p.getAngularVelocity();
         this.velocity = p.getVelocity();
         this.size = p.getScale();
         this.pos = p.getPosition();
@@ -106,14 +104,13 @@ public class PacketSpawnParticle extends ServerPacket {
             if (isShipWreck) {
                 CollisionObject obj = world.getEntityById(destroyedShipId);
                 if (obj instanceof Ship) {
-                    new ParticleWreck(textureOffset, (Ship) obj, pos, velocity,
-                            rot, rotationSpeed, size, sizeVelocity,
-                            color, alphaVelocity, id, wreckMaxLifeTime);
+                    ParticleSpawner.PARTICLE_WREAK_POOL.getOrCreate(ParticleWreck::new).init(textureOffset, (Ship) obj, pos.x, pos.y, velocity.x, velocity.y,
+                            rot, rotationSpeed, size.x, size.y, sizeVelocity, color.x, color.y, color.z, color.w, alphaVelocity, id, wreckMaxLifeTime);
                 }
             } else {
-                new ParticleWreck(textureOffset, isLight, isFire, isFireExplosion,
-                        pos, velocity, rot, rotationSpeed,
-                        size, sizeVelocity, color, alphaVelocity, id);
+                ParticleSpawner.PARTICLE_WREAK_POOL.getOrCreate(ParticleWreck::new).init(textureOffset, isLight, isFire, isFireExplosion,
+                        pos.x, pos.y, velocity.x, velocity.y, rot, rotationSpeed,
+                        size.x, size.y, sizeVelocity, color.x, color.y, color.z, color.w, alphaVelocity, id);
             }
         }
     }
