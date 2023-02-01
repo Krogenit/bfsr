@@ -1,6 +1,7 @@
 package net.bfsr.client.particle;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.model.TexturedQuad;
 import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.shader.BaseShader;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
+@Log4j2
 public class ParticleRenderer {
     @Getter
     private static ParticleRenderer instance;
@@ -225,7 +227,7 @@ public class ParticleRenderer {
                     taskFutures[i].get();
                 }
             } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+                log.error("Error occurred during particle tasks sync", e);
             }
         }
     }
