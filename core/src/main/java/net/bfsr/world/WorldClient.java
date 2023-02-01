@@ -1,5 +1,6 @@
 package net.bfsr.world;
 
+import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.OpenGLHelper;
@@ -144,6 +145,10 @@ public class WorldClient extends World {
 //				playerShip.addDamage(new Damage(playerShip, 0.8f, 2, new Vector2f(8, -2), 0.5f));
             }
 
+        } else if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_P) {
+            Core.getCore().setPaused(!Core.getCore().isPaused());
+        } else if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_C) {
+            Core.getCore().setCurrentGui(null);
         }
     }
 

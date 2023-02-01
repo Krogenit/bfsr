@@ -2,6 +2,7 @@ package net.bfsr.server;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.core.Core;
 import net.bfsr.core.Loop;
 import net.bfsr.entity.ship.PlayerServer;
 import net.bfsr.network.EnumGui;
@@ -118,7 +119,7 @@ public class MainServer extends Loop {
     @Override
     protected void update() {
         profiler.startSection("update");
-        world.update();
+        if (!singlePlayer || !Core.getCore().isPaused()) world.update();
         profiler.endStartSection("network");
         networkSystem.networkTick();
         profiler.endSection();

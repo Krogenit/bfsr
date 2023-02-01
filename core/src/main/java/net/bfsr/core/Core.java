@@ -2,6 +2,7 @@ package net.bfsr.core;
 
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.ingame.GuiInGame;
@@ -32,6 +33,9 @@ public class Core {
     @Setter
     private int screenWidth, screenHeight;
     private long window;
+    @Setter
+    @Getter
+    private boolean paused;
 
     private final SoundManager soundManager;
     private WorldClient world;
@@ -97,7 +101,7 @@ public class Core {
         if (world != null) {
             renderer.update();
             soundManager.updateListenerPosition(renderer.getCamera());
-            world.update();
+            if (!paused) world.update();
         }
 
         if (currentGui != null) currentGui.update();

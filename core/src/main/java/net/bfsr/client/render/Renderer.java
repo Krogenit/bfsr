@@ -107,7 +107,7 @@ public class Renderer {
     public void update() {
         camera.update();
         guiInGame.update();
-        particleRenderer.update();
+        if (!Core.getCore().isPaused()) particleRenderer.update();
     }
 
     public void render(float interpolation) {
