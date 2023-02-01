@@ -10,7 +10,7 @@ import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.core.Core;
-import net.bfsr.math.Transformation;
+import net.bfsr.math.ModelMatrixUtils;
 import org.lwjgl.glfw.GLFW;
 
 public class GuiInGameMenu extends Gui {
@@ -47,7 +47,7 @@ public class GuiInGameMenu extends Gui {
     @Override
     public void render(BaseShader shader) {
         shader.setColor(0.0f, 0.0f, 0.0f, 0.5f);
-        shader.setModelMatrix(Transformation.getModelViewMatrixGui(width / 2.0F, height / 2.0f, 0, width, height).get(ShaderProgram.MATRIX_BUFFER));
+        shader.setModelMatrix(ModelMatrixUtils.getModelViewMatrixGui(width / 2.0F, height / 2.0f, 0, width, height).get(ShaderProgram.MATRIX_BUFFER));
         shader.disableTexture();
         Renderer.centeredQuad.renderIndexed();
 

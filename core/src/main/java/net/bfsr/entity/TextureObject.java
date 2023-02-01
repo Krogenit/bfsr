@@ -9,7 +9,7 @@ import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.shader.BaseShader;
 import net.bfsr.math.ModelMatrixType;
-import net.bfsr.math.Transformation;
+import net.bfsr.math.ModelMatrixUtils;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -82,7 +82,7 @@ public class TextureObject {
         shader.setColor(color.x, color.y, color.y, color.w);
         shader.enableTexture();
         OpenGLHelper.bindTexture(texture.getId());
-        shader.setModelMatrix(Transformation.getModelMatrixBuffer(this, interpolation));
+        shader.setModelMatrix(ModelMatrixUtils.getModelMatrixBuffer(this, interpolation));
         Renderer.centeredQuad.renderIndexed();
     }
 

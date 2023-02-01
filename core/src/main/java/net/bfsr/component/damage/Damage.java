@@ -10,8 +10,8 @@ import net.bfsr.client.shader.BaseShader;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.math.ModelMatrixUtils;
 import net.bfsr.math.RotationHelper;
-import net.bfsr.math.Transformation;
 import net.bfsr.util.TimeUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -192,15 +192,15 @@ public class Damage extends TextureObject {
     @Override
     public void render(BaseShader shader, float interpolation) {
         if (damaged || repairTimer > 0) {
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(Transformation.getModelMatrix(this, interpolation), color.x, color.y, color.z, color.w, texture);
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getModelMatrix(this, interpolation), color.x, color.y, color.z, color.w, texture);
         } else if (repairTimer <= 0) {
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(Transformation.getModelMatrix(this, interpolation), color.x, color.y, color.z, colorFix.w, textureFix);
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getModelMatrix(this, interpolation), color.x, color.y, color.z, colorFix.w, textureFix);
         }
     }
 
     public void renderEffects(float interpolation) {
         if (damaged || repairTimer > 0) {
-            Matrix4f modelMatrix = Transformation.getModelMatrix(this, interpolation);
+            Matrix4f modelMatrix = ModelMatrixUtils.getModelMatrix(this, interpolation);
             InstancedRenderer.INSTANCE.addToRenderPipeLine(modelMatrix, colorFire.x, colorFire.y, colorFire.z, colorFire.w, textureFire);
             if (textureLight != null) {
                 InstancedRenderer.INSTANCE.addToRenderPipeLine(modelMatrix, colorLight.x, colorLight.y, colorLight.z, colorLight.w, textureLight);

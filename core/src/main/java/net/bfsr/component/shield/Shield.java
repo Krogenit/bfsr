@@ -10,7 +10,7 @@ import net.bfsr.collision.filter.ShipFilter;
 import net.bfsr.core.Core;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.math.Transformation;
+import net.bfsr.math.ModelMatrixUtils;
 import net.bfsr.network.packet.server.PacketShieldRebuild;
 import net.bfsr.network.packet.server.PacketShieldRebuildingTime;
 import net.bfsr.network.packet.server.PacketShieldRemove;
@@ -189,7 +189,7 @@ public class Shield extends CollisionObject {
     @Override
     public void render(BaseShader shader, float interpolation) {
         if (shieldAlive()) {
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(Transformation.getDefaultModelMatrix(ship.getLastPosition().x, ship.getLastPosition().y, ship.getPosition().x, ship.getPosition().y,
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getDefaultModelMatrix(ship.getLastPosition().x, ship.getLastPosition().y, ship.getPosition().x, ship.getPosition().y,
                     ship.getRotation(), diameter.x * size, diameter.y * size, interpolation), color.x, color.y, color.z, color.w, texture);
         }
     }

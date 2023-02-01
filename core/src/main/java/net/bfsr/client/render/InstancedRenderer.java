@@ -4,7 +4,7 @@ import net.bfsr.client.model.TexturedQuad;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
-import net.bfsr.math.Transformation;
+import net.bfsr.math.ModelMatrixUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
@@ -50,7 +50,7 @@ public class InstancedRenderer {
     }
 
     public void addToRenderPipeLine(TextureObject textureObject, float interpolation) {
-        storeMatrix(Transformation.getModelMatrix(textureObject, interpolation));
+        storeMatrix(ModelMatrixUtils.getModelMatrix(textureObject, interpolation));
         storeColor(textureObject.getColor());
         storeTextureHandle(textureObject.getTexture().getTextureHandle());
         instanceCount++;

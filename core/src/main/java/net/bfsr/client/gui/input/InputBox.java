@@ -17,7 +17,7 @@ import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.client.sound.GuiSoundSource;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.core.Core;
-import net.bfsr.math.Transformation;
+import net.bfsr.math.ModelMatrixUtils;
 import org.joml.Vector2i;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
@@ -250,7 +250,7 @@ public class InputBox extends TexturedGuiObject {
                 int rightStringWidth = stringObject.getStringCache().getStringWidth(stringObject.getString().substring(cursorPosition, cursorPositionEnd), fontSize);
                 shader.setColor(selectionColor.x, selectionColor.y, selectionColor.z, selectionColor.w);
                 shader.disableTexture();
-                shader.setModelMatrix(Transformation.getModelViewMatrixGui(x + leftStringWidth + stringOffset.x, cursorY, 0, rightStringWidth, cursorHeight).get(ShaderProgram.MATRIX_BUFFER));
+                shader.setModelMatrix(ModelMatrixUtils.getModelViewMatrixGui(x + leftStringWidth + stringOffset.x, cursorY, 0, rightStringWidth, cursorHeight).get(ShaderProgram.MATRIX_BUFFER));
                 Renderer.quad.renderIndexed();
                 if (leftToRightSelection) {
                     lineWidth = leftStringWidth + rightStringWidth;
@@ -267,7 +267,7 @@ public class InputBox extends TexturedGuiObject {
         if (renderCursor) {
             shader.disableTexture();
             shader.setColor(color.x, color.y, color.z, color.w);
-            shader.setModelMatrix(Transformation.getModelViewMatrixGui(x + stringOffset.x + lineWidth, cursorY, 0, 1, cursorHeight).get(ShaderProgram.MATRIX_BUFFER));
+            shader.setModelMatrix(ModelMatrixUtils.getModelViewMatrixGui(x + stringOffset.x + lineWidth, cursorY, 0, 1, cursorHeight).get(ShaderProgram.MATRIX_BUFFER));
             Renderer.quad.renderIndexed();
         }
     }

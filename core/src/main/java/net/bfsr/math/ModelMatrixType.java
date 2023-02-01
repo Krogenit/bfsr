@@ -8,9 +8,9 @@ import java.nio.FloatBuffer;
 
 @AllArgsConstructor
 public enum ModelMatrixType {
-    DEFAULT(Transformation::getDefaultModelMatrixBuffer, Transformation::getDefaultModelMatrix, Transformation::getDefaultModelMatrix),
-    BACKGROUND(Transformation::getBackgroundModelMatrixBuffer, Transformation::getBackgroundModelMatrix, null),
-    GUI((textureObject, interpolation) -> Transformation.getGUIModelMatrixBuffer(textureObject), (textureObject, interpolation) -> Transformation.getGUIModelMatrix(textureObject),
+    DEFAULT(ModelMatrixUtils::getDefaultModelMatrixBuffer, ModelMatrixUtils::getDefaultModelMatrix, ModelMatrixUtils::getDefaultModelMatrix),
+    BACKGROUND(ModelMatrixUtils::getBackgroundModelMatrixBuffer, ModelMatrixUtils::getBackgroundModelMatrix, null),
+    GUI((textureObject, interpolation) -> ModelMatrixUtils.getGUIModelMatrixBuffer(textureObject), (textureObject, interpolation) -> ModelMatrixUtils.getGUIModelMatrix(textureObject),
             null);
 
     private final ModelMatrixBufferFunction modelMatrixBufferFunction;

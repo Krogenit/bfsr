@@ -14,8 +14,8 @@ import net.bfsr.component.shield.Shield;
 import net.bfsr.core.Core;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.math.ModelMatrixUtils;
 import net.bfsr.math.RotationHelper;
-import net.bfsr.math.Transformation;
 import net.bfsr.network.packet.server.PacketSpawnBullet;
 import net.bfsr.server.MainServer;
 import net.bfsr.util.TimeUtils;
@@ -227,7 +227,7 @@ public class Bullet extends CollisionObject {
     public void render(BaseShader shader, float interpolation) {
         float size = 6.0f;
         Vector2f pos = getPosition();
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(Transformation.getDefaultModelMatrix(lastPosition.x, lastPosition.y, pos.x, pos.y, getRotation(), size, size, interpolation),
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getDefaultModelMatrix(lastPosition.x, lastPosition.y, pos.x, pos.y, getRotation(), size, size, interpolation),
                 color.x / 1.5f, color.y / 1.5f, color.z / 1.5f, color.w / 4.0f, TextureLoader.getTexture(TextureRegister.particleLight));
         InstancedRenderer.INSTANCE.addToRenderPipeLine(this, interpolation);
     }

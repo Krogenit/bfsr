@@ -27,8 +27,8 @@ import net.bfsr.component.weapon.WeaponSlot;
 import net.bfsr.core.Core;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
+import net.bfsr.math.ModelMatrixUtils;
 import net.bfsr.math.RotationHelper;
-import net.bfsr.math.Transformation;
 import net.bfsr.network.packet.client.PacketShipControl;
 import net.bfsr.profiler.Profiler;
 import net.bfsr.server.MainServer;
@@ -348,7 +348,7 @@ public class GuiInGame extends Gui {
                     color.z = 0.5f;
                 }
 
-                InstancedRenderer.INSTANCE.addToRenderPipeLine(Transformation.getGUIModelMatrix((int) (miniMapX + (pos.x - camPos.x) / mapScaleX), (int) (miniMapY + (pos.y - camPos.y) / mapScaleY),
+                InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getGUIModelMatrix((int) (miniMapX + (pos.x - camPos.x) / mapScaleX), (int) (miniMapY + (pos.y - camPos.y) / mapScaleY),
                         s.getRotation(), (int) (scale.x * shipSize), (int) (scale.y * shipSize)), color.x, color.y, color.z, 1.0f, s.getTexture());
             }
         }
@@ -499,7 +499,7 @@ public class GuiInGame extends Gui {
 
     private void renderQuad(BaseShader shader, float r, float g, float b, float a, Texture texture, int x, int y, float rot, int width, int height) {
         shader.setColor(r, g, b, a);
-        shader.setModelMatrix(Transformation.getModelViewMatrixGui(x, y, rot, width, height).get(ShaderProgram.MATRIX_BUFFER));
+        shader.setModelMatrix(ModelMatrixUtils.getModelViewMatrixGui(x, y, rot, width, height).get(ShaderProgram.MATRIX_BUFFER));
         texture.bind();
         Renderer.centeredQuad.renderIndexed();
     }

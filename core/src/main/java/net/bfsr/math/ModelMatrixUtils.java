@@ -9,7 +9,7 @@ import org.joml.Vector2f;
 
 import java.nio.FloatBuffer;
 
-public class Transformation {
+public class ModelMatrixUtils {
     private static final Matrix4f viewMatrixGui = new Matrix4f();
     private static final Matrix4f modelViewMatrix = new Matrix4f();
     private static final Matrix4f finalModelViewMatrix = new Matrix4f();

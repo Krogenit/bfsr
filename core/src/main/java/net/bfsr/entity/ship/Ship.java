@@ -35,8 +35,8 @@ import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.Direction;
+import net.bfsr.math.ModelMatrixUtils;
 import net.bfsr.math.RotationHelper;
-import net.bfsr.math.Transformation;
 import net.bfsr.network.packet.common.PacketObjectPosition;
 import net.bfsr.network.packet.server.*;
 import net.bfsr.server.MainServer;
@@ -447,14 +447,14 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
             renderShield(shader, interpolation);
         } else {
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(Transformation.getDefaultModelMatrix(lastJumpPosition.x, lastJumpPosition.y, jumpPosition.x, jumpPosition.y, rotation,
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getDefaultModelMatrix(lastJumpPosition.x, lastJumpPosition.y, jumpPosition.x, jumpPosition.y, rotation,
                     40.0f * color.w, 40.0f * color.w, interpolation), effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, TextureLoader.getTexture(TextureRegister.particleJump));
         }
     }
 
     public void render(BaseShader shader, float interpolation) {
         if (spawned) {
-            Matrix4f modelMatrix = Transformation.getModelMatrix(this, interpolation);
+            Matrix4f modelMatrix = ModelMatrixUtils.getModelMatrix(this, interpolation);
             InstancedRenderer.INSTANCE.addToRenderPipeLine(modelMatrix, color.x, color.y, color.z, color.w, texture);
 
             if (hull.getHull() < hull.getMaxHull()) {
