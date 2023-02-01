@@ -1,7 +1,7 @@
 package net.bfsr.entity.ship.engi;
 
-import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleSpawner;
+import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.collision.filter.ShipFilter;
@@ -101,7 +101,7 @@ public class ShipEngiSmall0 extends Ship {
                 RotationHelper.rotate(getRotation(), -3.0f, -1.1f, rotateToVector);
                 ParticleSpawner.spawnEngineBack(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, velocityX, velocityY, getRotation(), 10.0f, 6.0F, 0.8f, 1.0f, 0.5f, 1.0f, false);
                 RotationHelper.rotate(getRotation(), -2.7f, 0, rotateToVector);
-                ParticleSpawner.spawnLight(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, 6.0f, 0.8f, 1.0f, 0.5f, 1.0f, EnumParticlePositionType.BACKGROUND);
+                ParticleSpawner.spawnLight(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, 6.0f, 0.8f, 1.0f, 0.5f, 1.0f, RenderLayer.BACKGROUND_ADDITIVE);
                 break;
             case LEFT:
                 RotationHelper.rotate(getRotation(), 0, 2.1f, rotateToVector);

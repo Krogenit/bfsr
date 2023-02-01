@@ -1,9 +1,9 @@
 package net.bfsr.component.weapon;
 
-import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.Particle;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.ParticleWreck;
+import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.collision.filter.BeamFilter;
@@ -83,7 +83,7 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                         beamColor.w = rand.nextFloat() / 3.0f + 0.66f;
                     }
 
-                    ParticleSpawner.spawnLight(position.x, position.y, scale.x * 2.5f, beamColor.x, beamColor.y, beamColor.z, 0.6f * beamColor.w, EnumParticlePositionType.DEFAULT);
+                    ParticleSpawner.spawnLight(position.x, position.y, scale.x * 2.5f, beamColor.x, beamColor.y, beamColor.z, 0.6f * beamColor.w, RenderLayer.DEFAULT_ADDITIVE);
                     ParticleSpawner.spawnBeam(position.x, position.y, rotation, 2.0f, beamColor.x, beamColor.y, beamColor.z, beamColor.w);
                 }
 

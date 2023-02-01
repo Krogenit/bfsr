@@ -1,7 +1,7 @@
 package net.bfsr.entity.ship.saimon;
 
-import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleSpawner;
+import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.collision.filter.ShipFilter;
@@ -144,7 +144,7 @@ public class ShipSaimonSmall0 extends Ship {
                 ParticleSpawner.spawnEngineBack(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, (float) shipVelocity.x / 50.0f, (float) shipVelocity.y / 50.0f,
                         getRotation(), 10.0f, 6.0F, 1.0f, 0.5f, 0.5f, 1.0f, true);
                 RotationHelper.rotate(getRotation(), -3.5f, 0, rotateToVector);
-                ParticleSpawner.spawnLight(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, 6.0f, 1.0f, 0.5f, 0.5f, 1.0f, EnumParticlePositionType.BACKGROUND);
+                ParticleSpawner.spawnLight(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, 6.0f, 1.0f, 0.5f, 0.5f, 1.0f, RenderLayer.BACKGROUND_ADDITIVE);
                 break;
             case LEFT:
                 RotationHelper.rotate(getRotation(), -0, 3.0f, rotateToVector);

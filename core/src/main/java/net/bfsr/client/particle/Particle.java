@@ -1,5 +1,6 @@
 package net.bfsr.client.particle;
 
+import lombok.Getter;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.collision.AxisAlignedBoundingBox;
@@ -21,13 +22,13 @@ public class Particle extends CollisionObject {
 
     protected float sizeVelocity, alphaVelocity, angularVelocity, maxAlpha;
     protected boolean canCollide, isAlphaFromZero, zeroVelocity;
-    protected EnumParticlePositionType positionType;
-    protected EnumParticleRenderType renderType;
+    @Getter
+    protected RenderLayer renderLayer;
     protected float greater;
 
     public Particle init(World world, int id, TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
                          float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, float greater, boolean isAlphaFromZero, boolean canCollide,
-                         EnumParticlePositionType positionType, EnumParticleRenderType renderType) {
+                         RenderLayer renderLayer) {
         this.world = world;
         this.id = id;
         this.texture = TextureLoader.getTexture(texture);
@@ -43,8 +44,7 @@ public class Particle extends CollisionObject {
         this.greater = greater;
         this.isAlphaFromZero = isAlphaFromZero;
         this.canCollide = canCollide;
-        this.positionType = positionType;
-        this.renderType = renderType;
+        this.renderLayer = renderLayer;
         this.zeroVelocity = velocity.length() != 0;
         this.isDead = false;
 
@@ -65,24 +65,22 @@ public class Particle extends CollisionObject {
     }
 
     public Particle init(int id, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY, float sizeVelocity,
-                         float r, float g, float b, float a, float alphaVelocity, float greater, boolean isAlphaFromZero, boolean canCollide, EnumParticlePositionType positionType,
-                         EnumParticleRenderType renderType) {
+                         float r, float g, float b, float a, float alphaVelocity, float greater, boolean isAlphaFromZero, boolean canCollide, RenderLayer renderLayer) {
         return init(MainServer.getInstance().getWorld(), id, null, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, greater,
-                isAlphaFromZero, canCollide, positionType, renderType);
+                isAlphaFromZero, canCollide, renderLayer);
     }
 
     public Particle init(int id, TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
                          float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, float greater, boolean isAlphaFromZero, boolean canCollide,
-                         EnumParticlePositionType positionType, EnumParticleRenderType renderType) {
+                         RenderLayer renderLayer) {
         return init(Core.getCore().getWorld(), id, texture, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, greater,
-                isAlphaFromZero, canCollide, positionType, renderType);
+                isAlphaFromZero, canCollide, renderLayer);
     }
 
     public Particle init(TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY, float sizeVelocity,
-                         float r, float g, float b, float a, float alphaVelocity, float greater, boolean isAlphaFromZero, EnumParticlePositionType positionType,
-                         EnumParticleRenderType renderType) {
+                         float r, float g, float b, float a, float alphaVelocity, float greater, boolean isAlphaFromZero, RenderLayer renderLayer) {
         return init(Core.getCore().getWorld(), -1, texture, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, greater,
-                isAlphaFromZero, false, positionType, renderType);
+                isAlphaFromZero, false, renderLayer);
     }
 
     protected void addParticle() {
@@ -191,19 +189,6 @@ public class Particle extends CollisionObject {
                     setDead(true);
             }
         }
-    }
-
-    public void setVelocity(Vector2f velocity) {
-        if (canCollide) body.setLinearVelocity(velocity.x, velocity.y);
-        else this.velocity = velocity;
-    }
-
-    public EnumParticlePositionType getPositionType() {
-        return positionType;
-    }
-
-    public EnumParticleRenderType getRenderType() {
-        return renderType;
     }
 
     @Override

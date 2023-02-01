@@ -7,7 +7,6 @@ import net.bfsr.client.camera.Camera;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.ingame.GuiInGame;
 import net.bfsr.client.model.TexturedQuad;
-import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleRenderer;
 import net.bfsr.client.render.debug.OpenGLDebugUtils;
 import net.bfsr.client.render.font.StringRenderer;
@@ -128,9 +127,9 @@ public class Renderer {
         if (world != null) {
             world.renderAmbient(interpolation);
             particleRenderer.waitTasks();
-            particleRenderer.render(EnumParticlePositionType.BACKGROUND);
+            particleRenderer.renderBackground();
             world.renderEntities(shader, interpolation);
-            particleRenderer.render(EnumParticlePositionType.DEFAULT);
+            particleRenderer.render();
             if (EnumOption.SHOW_DEBUG_BOXES.getBoolean()) {
                 GL20.glUseProgram(0);
                 world.renderDebug(null);

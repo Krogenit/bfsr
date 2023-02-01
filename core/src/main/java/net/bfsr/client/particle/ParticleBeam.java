@@ -12,7 +12,7 @@ public class ParticleBeam extends Particle {
     private boolean isSmall;
 
     public ParticleBeam init(WeaponSlotBeam slot, boolean isSmall, TextureRegister texture) {
-        init(texture, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.001f, false, EnumParticlePositionType.DEFAULT, EnumParticleRenderType.ADDITIVE);
+        init(texture, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.001f, false, RenderLayer.DEFAULT_ADDITIVE);
         this.slot = slot;
         this.ship = slot.getShip();
         this.isSmall = isSmall;

@@ -1,7 +1,7 @@
 package net.bfsr.component.damage;
 
-import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleSpawner;
+import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
@@ -87,7 +87,7 @@ public class Damage extends TextureObject {
                 addRotation = RotationHelper.TWOPI * rand.nextFloat();
                 ParticleSpawner.spawnExplosion(position.x, position.y, scale.x, 2.0f);
                 ParticleSpawner.spawnSpark(position.x, position.y, scale.x, 2.0f);
-                ParticleSpawner.spawnLight(position.x, position.y, (scale.x + scale.y), 1.0f, 0.5f, 0.5f, 0.7f, 2.0f, true, EnumParticlePositionType.DEFAULT);
+                ParticleSpawner.spawnLight(position.x, position.y, (scale.x + scale.y), 1.0f, 0.5f, 0.5f, 0.7f, 2.0f, true, RenderLayer.DEFAULT_ADDITIVE);
                 isCreated = true;
             }
 
@@ -118,7 +118,7 @@ public class Damage extends TextureObject {
             repairTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (repairTimer <= 0) {
                 if (isCreated) {
-                    ParticleSpawner.spawnLight(position.x, position.y, (scale.x + scale.y), 0.25f, 0.75f, 1.0f, 1.0f, 5.0f, true, EnumParticlePositionType.DEFAULT);
+                    ParticleSpawner.spawnLight(position.x, position.y, (scale.x + scale.y), 0.25f, 0.75f, 1.0f, 1.0f, 5.0f, true, RenderLayer.DEFAULT_ADDITIVE);
                     isCreated = false;
                 }
                 colorFix.w -= fixSpeed;

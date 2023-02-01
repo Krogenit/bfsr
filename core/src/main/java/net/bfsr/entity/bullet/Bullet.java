@@ -1,8 +1,8 @@
 package net.bfsr.entity.bullet;
 
-import net.bfsr.client.particle.EnumParticlePositionType;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.ParticleWreck;
+import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
@@ -178,7 +178,7 @@ public class Bullet extends CollisionObject {
 
                     ParticleSpawner.spawnDirectedSpark(contact, normal, getScale().x * 1.5f, color.x, color.y, color.z, color.w);
                 } else if (destroyer instanceof Bullet) {
-                    ParticleSpawner.spawnLight(position.x, position.y, getScale().x * 5.0f, 7.0f * 6.0f, color.x, color.y, color.z, 0.5f, 0.25f * 60.0f, true, EnumParticlePositionType.DEFAULT);
+                    ParticleSpawner.spawnLight(position.x, position.y, getScale().x * 5.0f, 7.0f * 6.0f, color.x, color.y, color.z, 0.5f, 0.25f * 60.0f, true, RenderLayer.DEFAULT_ADDITIVE);
                 } else if (destroyer instanceof ParticleWreck) {
                     Vector2 pos1 = contact.getPoint();
                     ParticleSpawner.spawnDirectedSpark(contact, normal, getScale().x * 1.5f, color.x, color.y, color.z, color.w);
@@ -194,7 +194,7 @@ public class Bullet extends CollisionObject {
             } else {
                 ParticleSpawner.spawnDirectedSpark(contact, normal, getScale().x * 1.5f, color.x, color.y, color.z, color.w);
             }
-            ParticleSpawner.spawnLight(position.x, position.y, getScale().x * 3.0f, 3.0f * 6.0f, color.x, color.y, color.z, 0.4f, 0.5f * 60.0f, true, EnumParticlePositionType.DEFAULT);
+            ParticleSpawner.spawnLight(position.x, position.y, getScale().x * 3.0f, 3.0f * 6.0f, color.x, color.y, color.z, 0.4f, 0.5f * 60.0f, true, RenderLayer.DEFAULT_ADDITIVE);
         } else {
             if (destroyer != null) {
                 if (destroyer instanceof Ship s) {

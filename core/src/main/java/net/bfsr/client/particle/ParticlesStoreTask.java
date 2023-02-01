@@ -8,14 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 public class ParticlesStoreTask implements Runnable {
-    private static final EnumParticlePositionType[] POSITION_TYPES = EnumParticlePositionType.values();
-
     private float interpolation;
-    private List<ParticleWreck> particlesWrecks;
-    private List<Particle> backgroundAlphaParticles;
-    private List<Particle> backgroundAdditiveParticles;
-    private List<Particle> alphaParticles;
-    private List<Particle> additiveParticles;
     private final MutableInt backgroundAlphaBufferIndex = new MutableInt();
     private final MutableInt backgroundAdditiveBufferIndex = new MutableInt();
     private final MutableInt alphaBufferIndex = new MutableInt();
@@ -27,18 +20,26 @@ public class ParticlesStoreTask implements Runnable {
     private int alphaParticlesStartIndex, alphaParticlesEndIndex;
     private int additiveParticlesStartIndex, additiveParticlesEndIndex;
     private final Matrix4f modelMatrix = new Matrix4f();
-    private ByteBuffer[] alphaBufferByPositionType;
-    private ByteBuffer[] additiveBufferByPositionType;
+    private final Runnable[] runnables = new Runnable[4];
 
     public void init(List<ParticleWreck> particlesWrecks, List<Particle> backgroundAlphaParticles, List<Particle> backgroundAdditiveParticles, List<Particle> alphaParticles,
-                     List<Particle> additiveParticles, ByteBuffer[] alphaBufferByPositionType, ByteBuffer[] additiveBufferByPositionType) {
-        this.particlesWrecks = particlesWrecks;
-        this.backgroundAlphaParticles = backgroundAlphaParticles;
-        this.backgroundAdditiveParticles = backgroundAdditiveParticles;
-        this.alphaParticles = alphaParticles;
-        this.additiveParticles = additiveParticles;
-        this.alphaBufferByPositionType = alphaBufferByPositionType;
-        this.additiveBufferByPositionType = additiveBufferByPositionType;
+                     List<Particle> additiveParticles, ByteBuffer[] buffers) {
+        ByteBuffer defaultAlphaBlendedBuffer = buffers[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()];
+        ByteBuffer defaultAdditiveBlendedBuffer = buffers[RenderLayer.DEFAULT_ADDITIVE.ordinal()];
+        ByteBuffer backgroundAlphaBlendedBuffer = buffers[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()];
+        ByteBuffer backgroundAdditiveBlendedBuffer = buffers[RenderLayer.BACKGROUND_ADDITIVE.ordinal()];
+        runnables[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()] = () -> {
+            storeParticlesWrecks(particlesWrecks, defaultAlphaBlendedBuffer, interpolation, shipWrecksStartIndex, shipWrecksEndIndex, alphaBufferIndex);
+            storeParticles(alphaParticles, defaultAlphaBlendedBuffer, interpolation, alphaParticlesStartIndex, alphaParticlesEndIndex, alphaBufferIndex);
+        };
+        runnables[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()] = () -> storeParticles(backgroundAlphaParticles, backgroundAlphaBlendedBuffer, interpolation,
+                backgroundAlphaParticlesStartIndex, backgroundAlphaParticlesEndIndex, backgroundAlphaBufferIndex);
+        runnables[RenderLayer.DEFAULT_ADDITIVE.ordinal()] = () -> {
+            storeParticlesWrecksEffects(particlesWrecks, defaultAdditiveBlendedBuffer, interpolation, shipWrecksEffectsStartIndex, shipWrecksEffectsEndIndex, additiveBufferIndex);
+            storeParticles(additiveParticles, defaultAdditiveBlendedBuffer, interpolation, additiveParticlesStartIndex, additiveParticlesEndIndex, additiveBufferIndex);
+        };
+        runnables[RenderLayer.BACKGROUND_ADDITIVE.ordinal()] = () -> storeParticles(backgroundAdditiveParticles, backgroundAdditiveBlendedBuffer, interpolation,
+                backgroundAdditiveParticlesStartIndex, backgroundAdditiveParticlesEndIndex, backgroundAdditiveBufferIndex);
     }
 
     public void update(float interpolation, int backgroundAlphaBufferIndex, int backgroundAdditiveBufferIndex, int alphaBufferIndex, int additiveBufferIndex,
@@ -68,46 +69,8 @@ public class ParticlesStoreTask implements Runnable {
 
     @Override
     public void run() {
-        for (int i = 0; i < POSITION_TYPES.length; i++) {
-            EnumParticlePositionType positionType = POSITION_TYPES[i];
-            ByteBuffer buffer = alphaBufferByPositionType[positionType.ordinal()];
-
-            List<Particle> alphaParticles;
-            int startIndex, endIndex;
-            MutableInt bufferIndex;
-            if (positionType == EnumParticlePositionType.DEFAULT) {
-                storeParticlesWrecks(particlesWrecks, buffer, interpolation, shipWrecksStartIndex, shipWrecksEndIndex, alphaBufferIndex);
-
-                bufferIndex = alphaBufferIndex;
-                alphaParticles = this.alphaParticles;
-                startIndex = alphaParticlesStartIndex;
-                endIndex = alphaParticlesEndIndex;
-            } else {
-                bufferIndex = backgroundAlphaBufferIndex;
-                alphaParticles = backgroundAlphaParticles;
-                startIndex = backgroundAlphaParticlesStartIndex;
-                endIndex = backgroundAlphaParticlesEndIndex;
-            }
-
-            storeParticles(alphaParticles, buffer, interpolation, startIndex, endIndex, bufferIndex);
-            buffer = additiveBufferByPositionType[positionType.ordinal()];
-
-            List<Particle> additiveParticles;
-            if (positionType == EnumParticlePositionType.DEFAULT) {
-                storeParticlesWrecksEffects(particlesWrecks, buffer, interpolation, shipWrecksEffectsStartIndex, shipWrecksEffectsEndIndex, additiveBufferIndex);
-
-                bufferIndex = additiveBufferIndex;
-                additiveParticles = this.additiveParticles;
-                startIndex = additiveParticlesStartIndex;
-                endIndex = additiveParticlesEndIndex;
-            } else {
-                bufferIndex = backgroundAdditiveBufferIndex;
-                additiveParticles = this.backgroundAdditiveParticles;
-                startIndex = backgroundAdditiveParticlesStartIndex;
-                endIndex = backgroundAdditiveParticlesEndIndex;
-            }
-
-            storeParticles(additiveParticles, buffer, interpolation, startIndex, endIndex, bufferIndex);
+        for (int i = 0; i < runnables.length; i++) {
+            runnables[i].run();
         }
     }
 

@@ -12,13 +12,14 @@ import org.lwjgl.opengl.*;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.concurrent.*;
 
 public class ParticleRenderer {
     @Getter
     private static ParticleRenderer instance;
+    public static final RenderLayer[] POSITION_TYPES = RenderLayer.values();
     private static final int INSTANCE_DATA_LENGTH = 22;
     private final int parallelism = Runtime.getRuntime().availableProcessors();
     private final boolean multithreadingSupported = parallelism > 1;
@@ -27,7 +28,7 @@ public class ParticleRenderer {
     @Getter
     private final ParticleInstancedShader particleShader = new ParticleInstancedShader();
 
-    private final HashMap<String, List<Particle>> particlesHashMap = new HashMap<>();
+    private final EnumMap<RenderLayer, List<Particle>> particlesHashMap = new EnumMap<>(RenderLayer.class);
     @Getter
     private final List<Particle> particles = new ArrayList<>();
     private final List<Particle> backgroundAlphaParticles = new ArrayList<>(256);
@@ -38,8 +39,7 @@ public class ParticleRenderer {
     private final List<ParticleWreck> particlesWrecks = new ArrayList<>();
 
     private TexturedQuad quad;
-    private final ByteBuffer[] alphaBufferByPositionType = new ByteBuffer[2];
-    private final ByteBuffer[] additiveBufferByPositionType = new ByteBuffer[2];
+    private final ByteBuffer[] buffers = new ByteBuffer[4];
     private ParticlesStoreTask[] particlesStoreTasks;
     private ExecutorService executorService;
     private Future<?>[] taskFutures;
@@ -49,15 +49,15 @@ public class ParticleRenderer {
     public ParticleRenderer(BaseShader baseShader) {
         this.defaultShader = baseShader;
 
-        alphaBufferByPositionType[EnumParticlePositionType.BACKGROUND.ordinal()] = BufferUtils.createByteBuffer(INSTANCE_DATA_LENGTH * 4 * 4096);
-        alphaBufferByPositionType[EnumParticlePositionType.DEFAULT.ordinal()] = BufferUtils.createByteBuffer(INSTANCE_DATA_LENGTH * 4 * 4096);
-        additiveBufferByPositionType[EnumParticlePositionType.BACKGROUND.ordinal()] = BufferUtils.createByteBuffer(INSTANCE_DATA_LENGTH * 4 * 4096);
-        additiveBufferByPositionType[EnumParticlePositionType.DEFAULT.ordinal()] = BufferUtils.createByteBuffer(INSTANCE_DATA_LENGTH * 4 * 4096);
+        buffers[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()] = BufferUtils.createByteBuffer(INSTANCE_DATA_LENGTH * 4 * 4096);
+        buffers[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()] = BufferUtils.createByteBuffer(INSTANCE_DATA_LENGTH * 4 * 4096);
+        buffers[RenderLayer.BACKGROUND_ADDITIVE.ordinal()] = BufferUtils.createByteBuffer(INSTANCE_DATA_LENGTH * 4 * 4096);
+        buffers[RenderLayer.DEFAULT_ADDITIVE.ordinal()] = BufferUtils.createByteBuffer(INSTANCE_DATA_LENGTH * 4 * 4096);
 
-        particlesHashMap.put(EnumParticleRenderType.ALPHA_BLENDED + " " + EnumParticlePositionType.BACKGROUND, backgroundAlphaParticles);
-        particlesHashMap.put(EnumParticleRenderType.ADDITIVE + " " + EnumParticlePositionType.BACKGROUND, backgroundAdditiveParticles);
-        particlesHashMap.put(EnumParticleRenderType.ALPHA_BLENDED + " " + EnumParticlePositionType.DEFAULT, alphaParticles);
-        particlesHashMap.put(EnumParticleRenderType.ADDITIVE + " " + EnumParticlePositionType.DEFAULT, additiveParticles);
+        particlesHashMap.put(RenderLayer.BACKGROUND_ALPHA_BLENDED, backgroundAlphaParticles);
+        particlesHashMap.put(RenderLayer.BACKGROUND_ADDITIVE, backgroundAdditiveParticles);
+        particlesHashMap.put(RenderLayer.DEFAULT_ALPHA_BLENDED, alphaParticles);
+        particlesHashMap.put(RenderLayer.DEFAULT_ADDITIVE, additiveParticles);
 
         if (multithreadingSupported) {
             taskFutures = new Future[parallelism];
@@ -65,8 +65,7 @@ public class ParticleRenderer {
             executorService = Executors.newFixedThreadPool(parallelism);
             for (int i = 0; i < particlesStoreTasks.length; i++) {
                 particlesStoreTasks[i] = new ParticlesStoreTask();
-                particlesStoreTasks[i].init(particlesWrecks, backgroundAlphaParticles, backgroundAdditiveParticles, alphaParticles, additiveParticles, alphaBufferByPositionType,
-                        additiveBufferByPositionType);
+                particlesStoreTasks[i].init(particlesWrecks, backgroundAlphaParticles, backgroundAdditiveParticles, alphaParticles, additiveParticles, buffers);
             }
         }
 
@@ -106,53 +105,41 @@ public class ParticleRenderer {
         }
     }
 
-    private ByteBuffer checkBufferSize(ByteBuffer buffer, int newDataSize) {
-        while (buffer.capacity() - buffer.position() < newDataSize) {
-            ByteBuffer newBuffer = BufferUtils.createByteBuffer(buffer.capacity() << 1);
-            if (buffer.position() > 0) newBuffer.put(buffer.flip());
-            buffer = newBuffer;
-        }
-
-        return buffer;
-    }
-
-    private void checkBuffersSize() {
-        EnumParticlePositionType[] values = EnumParticlePositionType.values();
-        for (int i = 0; i < values.length; i++) {
-            EnumParticlePositionType positionType = values[i];
+    private void checkBufferSizeAndClear() {
+        for (int i = 0; i < POSITION_TYPES.length; i++) {
+            RenderLayer positionType = POSITION_TYPES[i];
             int newDataSize = 0;
 
-            if (positionType == EnumParticlePositionType.DEFAULT) {
+            if (positionType == RenderLayer.DEFAULT_ALPHA_BLENDED) {
                 newDataSize += particlesWrecks.size() * INSTANCE_DATA_LENGTH * 4;
-            }
-
-            List<Particle> particles = particlesHashMap.get(EnumParticleRenderType.ALPHA_BLENDED + " " + positionType);
-            newDataSize += particles.size() * INSTANCE_DATA_LENGTH * 4;
-
-            alphaBufferByPositionType[positionType.ordinal()] = checkBufferSize(alphaBufferByPositionType[positionType.ordinal()], newDataSize);
-            newDataSize = 0;
-
-            if (positionType == EnumParticlePositionType.DEFAULT) {
+            } else if (positionType == RenderLayer.DEFAULT_ADDITIVE) {
                 newDataSize += particlesWrecks.size() * INSTANCE_DATA_LENGTH * 4 * 2;
             }
 
-            particles = particlesHashMap.get(EnumParticleRenderType.ADDITIVE + " " + positionType);
+            List<Particle> particles = particlesHashMap.get(positionType);
             newDataSize += particles.size() * INSTANCE_DATA_LENGTH * 4;
 
-            additiveBufferByPositionType[positionType.ordinal()] = checkBufferSize(additiveBufferByPositionType[positionType.ordinal()], newDataSize);
+            ByteBuffer buffer = buffers[positionType.ordinal()];
+            while (buffer.capacity() < newDataSize) {
+                buffer = BufferUtils.createByteBuffer(buffer.capacity() << 1);
+                buffers[positionType.ordinal()] = buffer;
+                if (multithreadingSupported) {
+                    for (int i1 = 0; i1 < particlesStoreTasks.length; i1++) {
+                        particlesStoreTasks[i1].init(particlesWrecks, backgroundAlphaParticles, backgroundAdditiveParticles, alphaParticles, additiveParticles, buffers);
+                    }
+                }
+            }
+
+            buffer.clear();
         }
     }
 
     public void storeParticlesToBuffers(float interpolation) {
-        checkBuffersSize();
+        checkBufferSizeAndClear();
 
         int totalParticles = particles.size() + particlesWrecks.size();
         int multithreadedThreshold = 2048;
         int particlesByTask = 2048;
-        alphaBufferByPositionType[EnumParticlePositionType.BACKGROUND.ordinal()].clear();
-        alphaBufferByPositionType[EnumParticlePositionType.DEFAULT.ordinal()].clear();
-        additiveBufferByPositionType[EnumParticlePositionType.BACKGROUND.ordinal()].clear();
-        additiveBufferByPositionType[EnumParticlePositionType.DEFAULT.ordinal()].clear();
 
         boolean multithreaded = multithreadingSupported && totalParticles >= multithreadedThreshold;
         taskCount = multithreaded ? (int) Math.ceil(Math.min(totalParticles / (float) particlesByTask, parallelism)) : 1;
@@ -253,16 +240,34 @@ public class ParticleRenderer {
         }
     }
 
-    public void render(EnumParticlePositionType positionType) {
+    public void renderBackground() {
         particleShader.enable();
 
-        ByteBuffer buffer = alphaBufferByPositionType[positionType.ordinal()];
-        int count;
-        if (positionType == EnumParticlePositionType.DEFAULT) {
-            count = alphaParticles.size() + particlesWrecks.size();
-        } else {
-            count = backgroundAlphaParticles.size();
+        ByteBuffer buffer = buffers[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()];
+        int count = backgroundAlphaParticles.size();
+
+        if (count > 0) {
+            OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            buffer.limit(count * INSTANCE_DATA_LENGTH * 4);
+            render(count, buffer);
         }
+
+        buffer = buffers[RenderLayer.BACKGROUND_ADDITIVE.ordinal()];
+        count = backgroundAdditiveParticles.size();
+
+        if (count > 0) {
+            OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
+            buffer.limit(count * INSTANCE_DATA_LENGTH * 4);
+            render(count, buffer);
+            OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        }
+    }
+
+    public void render() {
+        particleShader.enable();
+
+        ByteBuffer buffer = buffers[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()];
+        int count = alphaParticles.size() + particlesWrecks.size();
 
         if (count > 0) {
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -281,12 +286,8 @@ public class ParticleRenderer {
             defaultShader.enable();
         }
 
-        buffer = additiveBufferByPositionType[positionType.ordinal()];
-        if (positionType == EnumParticlePositionType.DEFAULT) {
-            count = additiveParticles.size() + particleWreckEffects;
-        } else {
-            count = backgroundAdditiveParticles.size();
-        }
+        buffer = buffers[RenderLayer.DEFAULT_ADDITIVE.ordinal()];
+        count = additiveParticles.size() + particleWreckEffects;
 
         if (count > 0) {
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
@@ -308,10 +309,7 @@ public class ParticleRenderer {
     }
 
     void addParticle(Particle particle) {
-        EnumParticlePositionType positionType = particle.getPositionType();
-        EnumParticleRenderType renderType = particle.getRenderType();
-
-        List<Particle> particles = particlesHashMap.computeIfAbsent(renderType + " " + positionType, s -> new ArrayList<>(256));
+        List<Particle> particles = particlesHashMap.get(particle.getRenderLayer());
 
         particles.add(particle);
         this.particles.add(particle);
@@ -327,9 +325,7 @@ public class ParticleRenderer {
         particles.remove(index);
         particle.returnToPool();
 
-        String renderType = particle.getRenderType().toString() + " " + particle.getPositionType().toString();
-
-        List<Particle> particles = particlesHashMap.get(renderType);
+        List<Particle> particles = particlesHashMap.get(particle.getRenderLayer());
         particles.remove(particle);
     }
 
