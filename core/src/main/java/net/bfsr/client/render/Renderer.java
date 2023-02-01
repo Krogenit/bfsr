@@ -111,17 +111,26 @@ public class Renderer {
     }
 
     public void render(float interpolation) {
+        if (Core.getCore().isPaused()) {
+            interpolation = 1.0f;
+        }
+
+        WorldClient world = core.getWorld();
+        if (world != null) {
+            particleRenderer.storeParticlesToBuffers(interpolation);
+        }
+
         resetDrawCalls();
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
         camera.bind();
         OpenGLHelper.alphaGreater(0.0001f);
 
-        WorldClient world = core.getWorld();
         if (world != null) {
             world.renderAmbient(interpolation);
-            particleRenderer.render(EnumParticlePositionType.Background, interpolation);
+            particleRenderer.waitTasks();
+            particleRenderer.render(EnumParticlePositionType.BACKGROUND);
             world.renderEntities(shader, interpolation);
-            particleRenderer.render(EnumParticlePositionType.Default, interpolation);
+            particleRenderer.render(EnumParticlePositionType.DEFAULT);
             if (EnumOption.SHOW_DEBUG_BOXES.getBoolean()) {
                 GL20.glUseProgram(0);
                 world.renderDebug(null);
@@ -168,9 +177,14 @@ public class Renderer {
         }
     }
 
+    public void onExitToMainMenu() {
+        guiInGame.onExitToMainMenu();
+        camera.onExitToMainMenu();
+        particleRenderer.onExitToMainMenu();
+    }
+
     public void clear() {
-        guiInGame.clearByExit();
-        camera.clear();
+        particleRenderer.clear();
     }
 
     public void increaseDrawCalls() {

@@ -222,6 +222,7 @@ public class Core {
         }
 
         soundManager.cleanup();
+        renderer.clear();
     }
 
     public SoundManager getSoundManager() {
