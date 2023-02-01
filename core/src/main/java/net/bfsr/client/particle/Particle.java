@@ -12,7 +12,13 @@ import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.*;
 import org.joml.Vector2f;
 
+import java.util.List;
+
 public class Particle extends CollisionObject {
+    private static final Transform IDENTITY_TRANSFORM = new Transform();
+    private static final AABB CACHED_AABB_0 = new AABB(0, 0, 0, 0);
+    private static final AABB CACHED_AABB_1 = new AABB(0, 0, 0, 0);
+
     protected float sizeVelocity, alphaVelocity, angularVelocity, maxAlpha;
     protected boolean canCollide, isAlphaFromZero, zeroVelocity;
     protected EnumParticlePositionType positionType;
@@ -86,14 +92,26 @@ public class Particle extends CollisionObject {
     @Override
     protected void createAABB() {
         if (canCollide) {
-            AABB aabb = body.createAABB(new Transform());
+            AABB aabb = computeAABB();
 
             if (this.aabb != null) {
                 this.aabb.set((float) aabb.getMinX(), (float) aabb.getMinY(), (float) aabb.getMaxX(), (float) aabb.getMaxY());
             } else {
-                this.aabb = new AxisAlignedBoundingBox(new Vector2f((float) aabb.getMinX(), (float) aabb.getMinY()), new Vector2f((float) aabb.getMaxX(), (float) aabb.getMaxY()));
+                this.aabb = new AxisAlignedBoundingBox((float) aabb.getMinX(), (float) aabb.getMinY(), (float) aabb.getMaxX(), (float) aabb.getMaxY());
             }
         }
+    }
+
+    private AABB computeAABB() {
+        List<BodyFixture> fixtures = body.getFixtures();
+        int size = fixtures.size();
+        fixtures.get(0).getShape().computeAABB(IDENTITY_TRANSFORM, CACHED_AABB_0);
+        for (int i = 1; i < size; i++) {
+            fixtures.get(i).getShape().computeAABB(IDENTITY_TRANSFORM, CACHED_AABB_1);
+            CACHED_AABB_0.union(CACHED_AABB_1);
+        }
+
+        return CACHED_AABB_0;
     }
 
     protected void createFixtures() {
