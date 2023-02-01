@@ -83,7 +83,7 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                         beamColor.w = rand.nextFloat() / 3.0f + 0.66f;
                     }
 
-                    ParticleSpawner.spawnLight(position.x, position.y, scale.x * 2.5f, beamColor.x, beamColor.y, beamColor.z, 0.6f * beamColor.w, EnumParticlePositionType.Default);
+                    ParticleSpawner.spawnLight(position.x, position.y, scale.x * 2.5f, beamColor.x, beamColor.y, beamColor.z, 0.6f * beamColor.w, EnumParticlePositionType.DEFAULT);
                     ParticleSpawner.spawnBeam(position.x, position.y, rotation, 2.0f, beamColor.x, beamColor.y, beamColor.z, beamColor.w);
                 }
 

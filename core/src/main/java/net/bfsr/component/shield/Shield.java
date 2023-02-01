@@ -131,7 +131,7 @@ public class Shield extends CollisionObject {
             Vector3f shipEffectColor = ship.getEffectsColor();
             Vector2f position = getPosition();
             ParticleSpawner.spawnLight(position.x, position.y, ship.getScale().x * 2.0f, shipEffectColor.x, shipEffectColor.y, shipEffectColor.z, 1.0f, 0.04f * 60.0f, false,
-                    EnumParticlePositionType.Default);
+                    EnumParticlePositionType.DEFAULT);
             if (ship.getWorld().getRand().nextInt(2) == 0) {
                 Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldUp0, position.x, position.y));
             } else {
@@ -173,7 +173,7 @@ public class Shield extends CollisionObject {
             Vector3f shipEffectColor = ship.getEffectsColor();
             Vector2f position = getPosition();
             ParticleSpawner.spawnLight(position.x, position.y, ship.getScale().x * 2.0f, 5.0f * 6.0f, shipEffectColor.x, shipEffectColor.y, shipEffectColor.z, 1.0f, 0.04f * 60.0f, false,
-                    EnumParticlePositionType.Default);
+                    EnumParticlePositionType.DEFAULT);
             ParticleSpawner.spawnDisableShield(position.x, position.y, ship.getScale().x * 4.0f, -24.0f, color.x, color.y, color.z, color.w);
             Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldDown, shipPosition.x, shipPosition.y));
         } else {

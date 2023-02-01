@@ -50,12 +50,12 @@ import org.dyn4j.dynamics.contact.Contact;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
 
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -170,7 +170,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
                 }
                 float size = (scale.x + scale.y) * 1.1f;
                 ParticleSpawner.spawnSpark(position.x, position.y, size);
-                ParticleSpawner.spawnLight(position.x, position.y, size, 4.0f * 6.0f, 1, 0.5f, 0.4f, 1.0f, 0.05f * 60.0f, true, EnumParticlePositionType.Default);
+                ParticleSpawner.spawnLight(position.x, position.y, size, 4.0f * 6.0f, 1, 0.5f, 0.4f, 1.0f, 0.05f * 60.0f, true, EnumParticlePositionType.DEFAULT);
                 ParticleSpawner.spawnRocketShoot(position.x, position.y, size);
             }
         }
@@ -269,7 +269,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
                 if (world.isRemote()) {
                     Vector2f velocity = getVelocity();
                     ParticleSpawner.spawnLight(position.x, position.y, velocity.x * 0.5f, velocity.y * 0.5f, 32.0f + scale.x * 0.25f, effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, 3.6f,
-                            true, EnumParticlePositionType.Default);
+                            true, EnumParticlePositionType.DEFAULT);
                     ParticleSpawner.spawnDisableShield(position.x, position.y, velocity.x * 0.5f, velocity.y * 0.5f, 32.0f + scale.x * 0.25f, effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
                     Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.jump, position.x, position.y));
                 }
@@ -417,7 +417,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
             ParticleSpawner.spawnSmallGarbage(4, position.x - scale.x / 2.5f + rand.nextInt((int) (scale.x / 1.25f)), position.y - scale.y / 2.5f + rand.nextInt((int) (scale.y / 1.25f)),
                     velocity.x * 0.001f, velocity.y * 0.001f, baseSize);
             ParticleSpawner.spawnShipOst(1 + rand.nextInt(3), randomVectorX, randomVectorY, velocity.x * 0.02f, velocity.y * 0.02f, 1.0f);
-            ParticleSpawner.spawnLight(randomVectorX, randomVectorY, baseSize + rand.nextFloat() * 2.0f, 60.0f, 1.0f, 0.5f, 0.5f, 0.7f, 0.03f * 60.0f, false, EnumParticlePositionType.Default);
+            ParticleSpawner.spawnLight(randomVectorX, randomVectorY, baseSize + rand.nextFloat() * 2.0f, 60.0f, 1.0f, 0.5f, 0.5f, 0.7f, 0.03f * 60.0f, false, EnumParticlePositionType.DEFAULT);
             ParticleSpawner.spawnSpark(randomVectorX, randomVectorY, baseSize + rand.nextFloat() * 2.0f);
             ParticleSpawner.spawnExplosion(randomVectorX, randomVectorY, baseSize + rand.nextFloat() * 2.0f);
             Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion0, randomVectorX, randomVectorY));
@@ -454,7 +454,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     public void render(BaseShader shader, float interpolation) {
         if (spawned) {
-            FloatBuffer modelMatrix = Transformation.getModelMatrix(this, interpolation);
+            Matrix4f modelMatrix = Transformation.getModelMatrix(this, interpolation);
             InstancedRenderer.INSTANCE.addToRenderPipeLine(modelMatrix, color.x, color.y, color.z, color.w, texture);
 
             if (hull.getHull() < hull.getMaxHull()) {

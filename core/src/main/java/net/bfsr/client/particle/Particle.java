@@ -73,10 +73,10 @@ public class Particle extends CollisionObject {
     }
 
     public Particle init(TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY, float sizeVelocity,
-                         float r, float g, float b, float a, float alphaVelocity, float greater, boolean isAlphaFromZero, boolean canCollide, EnumParticlePositionType positionType,
+                         float r, float g, float b, float a, float alphaVelocity, float greater, boolean isAlphaFromZero, EnumParticlePositionType positionType,
                          EnumParticleRenderType renderType) {
         return init(Core.getCore().getWorld(), -1, texture, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, greater,
-                isAlphaFromZero, canCollide, positionType, renderType);
+                isAlphaFromZero, false, positionType, renderType);
     }
 
     protected void addParticle() {

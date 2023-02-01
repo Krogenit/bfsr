@@ -17,7 +17,7 @@ public class ParticleBeamEffect extends Particle {
     private boolean changeColor;
 
     public ParticleBeamEffect init(WeaponSlotBeam slot, TextureRegister texture) {
-        init(texture, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.001f, false, false, EnumParticlePositionType.Default, EnumParticleRenderType.Additive);
+        init(texture, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.001f, false, EnumParticlePositionType.DEFAULT, EnumParticleRenderType.ADDITIVE);
         this.slot = slot;
         ship = slot.getShip();
         rand = ship.getWorld().getRand();

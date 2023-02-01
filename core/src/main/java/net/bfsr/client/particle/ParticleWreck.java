@@ -51,8 +51,8 @@ public class ParticleWreck extends Particle {
 
     public ParticleWreck init(int id, int textureOffset, boolean isWreck, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation,
                               float angularVelocity, float scaleX, float scaleY, float sizeVelocity, float r, float g, float b, float a, float alphaSpeed) {
-        init(id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaSpeed, 0.001f, false, true, EnumParticlePositionType.Default,
-                EnumParticleRenderType.AlphaBlended);
+        init(id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaSpeed, 0.001f, false, true, EnumParticlePositionType.DEFAULT,
+                EnumParticleRenderType.ALPHA_BLENDED);
         this.textureOffset = textureOffset;
         this.fireExplosion = fireExplosion;
         this.fire = fire;
@@ -66,8 +66,8 @@ public class ParticleWreck extends Particle {
 
     public ParticleWreck init(int id, int textureOffset, Ship ship, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
                               float sizeVelocity, float r, float g, float b, float a, float alphaSpeed, float wreckLifeTime) {
-        init(id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaSpeed, 0.25f, false, true, EnumParticlePositionType.Default,
-                EnumParticleRenderType.AlphaBlended);
+        init(id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaSpeed, 0.25f, false, true, EnumParticlePositionType.DEFAULT,
+                EnumParticleRenderType.ALPHA_BLENDED);
         textureWreck = ship.getWreckTexture(textureOffset);
         this.textureOffset = textureOffset;
         fireExplosion = true;
@@ -86,7 +86,7 @@ public class ParticleWreck extends Particle {
     public ParticleWreck init(int textureOffset, boolean isWreck, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity,
                               float scaleX, float scaleY, float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, int id) {
         init(id, getDebrisTexture(textureOffset, isWreck), x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, 0.001f, false, true,
-                EnumParticlePositionType.Default, EnumParticleRenderType.AlphaBlended);
+                EnumParticlePositionType.DEFAULT, EnumParticleRenderType.ALPHA_BLENDED);
 
         this.textureOffset = textureOffset;
         this.fireExplosion = fireExplosion;
@@ -117,7 +117,7 @@ public class ParticleWreck extends Particle {
     public ParticleWreck init(int textureOffset, Ship ship, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
                               float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, int id, float wreckLifeTime) {
         init(id, ship.getWreckTexture(textureOffset), x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, 0.25f, false, true,
-                EnumParticlePositionType.Default, EnumParticleRenderType.AlphaBlended);
+                EnumParticlePositionType.DEFAULT, EnumParticleRenderType.ALPHA_BLENDED);
 
         rand = world.getRand();
         textureWreck = ship.getWreckTexture(textureOffset);
@@ -354,7 +354,7 @@ public class ParticleWreck extends Particle {
                     pos = getPosition();
                 }
                 Vector2f scale = getScale();
-                ParticleSpawner.spawnLight(pos.x, pos.y, getScale().x * 2.0f, 1.0f, 0.8f, 0.6f, 1.0f, EnumParticlePositionType.Default);
+                ParticleSpawner.spawnLight(pos.x, pos.y, getScale().x * 2.0f, 1.0f, 0.8f, 0.6f, 1.0f, EnumParticlePositionType.DEFAULT);
                 ParticleSpawner.spawnSpark(pos.x, pos.y, getScale().x);
                 ParticleSpawner.spawnExplosion(pos.x, pos.y, getScale().x);
                 ParticleSpawner.spawnSmallGarbage(rand.nextInt(10), pos.x, pos.y, 2.0f, 5.0f + getScale().x);

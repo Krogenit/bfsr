@@ -101,7 +101,7 @@ public class ShipEngiSmall0 extends Ship {
                 RotationHelper.rotate(getRotation(), -3.0f, -1.1f, rotateToVector);
                 ParticleSpawner.spawnEngineBack(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, velocityX, velocityY, getRotation(), 10.0f, 6.0F, 0.8f, 1.0f, 0.5f, 1.0f, false);
                 RotationHelper.rotate(getRotation(), -2.7f, 0, rotateToVector);
-                ParticleSpawner.spawnLight(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, 6.0f, 0.8f, 1.0f, 0.5f, 1.0f, EnumParticlePositionType.Background);
+                ParticleSpawner.spawnLight(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, 6.0f, 0.8f, 1.0f, 0.5f, 1.0f, EnumParticlePositionType.BACKGROUND);
                 break;
             case LEFT:
                 RotationHelper.rotate(getRotation(), 0, 2.1f, rotateToVector);

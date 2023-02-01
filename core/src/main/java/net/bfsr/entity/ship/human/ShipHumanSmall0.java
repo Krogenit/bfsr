@@ -103,7 +103,7 @@ public class ShipHumanSmall0 extends Ship {
                 ParticleSpawner.spawnEngineBack(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, (float) shipVelocity.x / 50.0f, (float) shipVelocity.y / 50.0f, getRotation(),
                         10.0f, 6.0F, 0.5f, 0.5f, 1.0f, 1.0f, true);
                 RotationHelper.rotate(getRotation(), -1.7f, 0, rotateToVector);
-                ParticleSpawner.spawnLight(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, 6.0f, 0.5f, 0.5f, 1.0f, 1.0f, EnumParticlePositionType.Background);
+                ParticleSpawner.spawnLight(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, 6.0f, 0.5f, 0.5f, 1.0f, 1.0f, EnumParticlePositionType.BACKGROUND);
                 break;
             case LEFT:
                 RotationHelper.rotate(getRotation(), -0.5f, 3.0f, rotateToVector);

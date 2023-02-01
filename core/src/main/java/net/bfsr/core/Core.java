@@ -130,7 +130,7 @@ public class Core {
     }
 
     public void quitToMainMenu() {
-        renderer.clear();
+        renderer.onExitToMainMenu();
         clearNetwork();
         stopServer();
         if (world != null) {

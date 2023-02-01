@@ -504,5 +504,5 @@ public class GuiInGame extends Gui {
         Renderer.centeredQuad.renderIndexed();
     }
 
-    public void clearByExit() {}
+    public void onExitToMainMenu() {}
 }

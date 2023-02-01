@@ -13,10 +13,10 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.math.Transformation;
 import net.bfsr.util.TimeUtils;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-import java.nio.FloatBuffer;
 import java.util.Random;
 
 public class Damage extends TextureObject {
@@ -87,7 +87,7 @@ public class Damage extends TextureObject {
                 addRotation = RotationHelper.TWOPI * rand.nextFloat();
                 ParticleSpawner.spawnExplosion(position.x, position.y, scale.x, 2.0f);
                 ParticleSpawner.spawnSpark(position.x, position.y, scale.x, 2.0f);
-                ParticleSpawner.spawnLight(position.x, position.y, (scale.x + scale.y), 1.0f, 0.5f, 0.5f, 0.7f, 2.0f, true, EnumParticlePositionType.Default);
+                ParticleSpawner.spawnLight(position.x, position.y, (scale.x + scale.y), 1.0f, 0.5f, 0.5f, 0.7f, 2.0f, true, EnumParticlePositionType.DEFAULT);
                 isCreated = true;
             }
 
@@ -118,7 +118,7 @@ public class Damage extends TextureObject {
             repairTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (repairTimer <= 0) {
                 if (isCreated) {
-                    ParticleSpawner.spawnLight(position.x, position.y, (scale.x + scale.y), 0.25f, 0.75f, 1.0f, 1.0f, 5.0f, true, EnumParticlePositionType.Default);
+                    ParticleSpawner.spawnLight(position.x, position.y, (scale.x + scale.y), 0.25f, 0.75f, 1.0f, 1.0f, 5.0f, true, EnumParticlePositionType.DEFAULT);
                     isCreated = false;
                 }
                 colorFix.w -= fixSpeed;
@@ -200,7 +200,7 @@ public class Damage extends TextureObject {
 
     public void renderEffects(float interpolation) {
         if (damaged || repairTimer > 0) {
-            FloatBuffer modelMatrix = Transformation.getModelMatrix(this, interpolation);
+            Matrix4f modelMatrix = Transformation.getModelMatrix(this, interpolation);
             InstancedRenderer.INSTANCE.addToRenderPipeLine(modelMatrix, colorFire.x, colorFire.y, colorFire.z, colorFire.w, textureFire);
             if (textureLight != null) {
                 InstancedRenderer.INSTANCE.addToRenderPipeLine(modelMatrix, colorLight.x, colorLight.y, colorLight.z, colorLight.w, textureLight);

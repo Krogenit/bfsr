@@ -82,7 +82,7 @@ public class TextureObject {
         shader.setColor(color.x, color.y, color.y, color.w);
         shader.enableTexture();
         OpenGLHelper.bindTexture(texture.getId());
-        shader.setModelMatrix(Transformation.getModelMatrix(this, interpolation));
+        shader.setModelMatrix(Transformation.getModelMatrixBuffer(this, interpolation));
         Renderer.centeredQuad.renderIndexed();
     }
 

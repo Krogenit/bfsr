@@ -259,7 +259,7 @@ public class Camera {
         return positionAndOrigin;
     }
 
-    public void clear() {
+    public void onExitToMainMenu() {
         followShip = null;
     }
 }
