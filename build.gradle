@@ -1,3 +1,12 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'java'
+}
+
+dependencies {
+    implementation subprojects
+}
+
 allprojects {
     apply plugin: 'java'
 
@@ -14,5 +23,13 @@ allprojects {
 
         testCompileOnly 'org.projectlombok:lombok:1.18.24'
         testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
+                'Main-Class': 'net.bfsr.core.Main',
+                'Multi-Release': true//log4j2 workaround
     }
 }
