@@ -27,15 +27,21 @@ import org.joml.Vector4f;
 import java.util.Random;
 
 public class ParticleWreck extends Particle {
+    @Getter
     private int textureOffset;
 
+    @Getter
     private boolean fire;
+    @Getter
     private boolean light;
+    @Getter
     private boolean fireExplosion;
     private boolean changeFire;
     private boolean changeLight;
+    @Getter
     private boolean shipWreck;
 
+    @Getter
     private float explosionTimer, timerLight, timerLight1, wreckLifeTime, maxWreckLifeTime, hull;
 
     private TextureRegister textureWreck;
@@ -47,6 +53,7 @@ public class ParticleWreck extends Particle {
 
     private Random rand;
 
+    @Getter
     private int destroyedShipId;
 
     public ParticleWreck init(int id, int textureOffset, boolean isWreck, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation,
@@ -567,43 +574,8 @@ public class ParticleWreck extends Particle {
         }
     }
 
-    public boolean isFire() {
-        return fire;
-    }
-
-    public boolean isLight() {
-        return light;
-    }
-
-    public boolean isShipWreck() {
-        return shipWreck;
-    }
-
-    public boolean isFireExplosion() {
-        return fireExplosion;
-    }
-
-    public float getWreckLifeTime() {
-        return wreckLifeTime;
-    }
-
-    public float getMaxWreckLifeTime() {
-        return maxWreckLifeTime;
-    }
-
-    public int getDestroyedShipId() {
-        return destroyedShipId;
-    }
-
-    public int getTextureOffset() {
-        return textureOffset;
-    }
-
-    public float getHull() {
-        return hull;
-    }
-
-    public void setHull(float hull) {
-        this.hull = hull;
+    @Override
+    public void returnToPool() {
+        ParticleSpawner.PARTICLE_WREAK_POOL.returnBack(this);
     }
 }
