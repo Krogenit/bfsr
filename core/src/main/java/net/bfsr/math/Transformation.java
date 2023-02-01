@@ -30,10 +30,6 @@ public class Transformation {
         return textureObject.getModelMatrixType().getMatrix(textureObject, interpolation);
     }
 
-    public static FloatBuffer getDefaultModelMatrixBuffer(float prevX, float prevY, float x, float y, float rotation, float scaleX, float scaleY, float interpolation) {
-        return getDefaultModelMatrix(prevX, prevY, x, y, rotation, scaleX, scaleY, interpolation).get(ShaderProgram.MATRIX_BUFFER);
-    }
-
     public static Matrix4f getDefaultModelMatrix(float prevX, float prevY, float x, float y, float rotation, float scaleX, float scaleY, float interpolation) {
         return getDefaultModelMatrix(prevX, prevY, x, y, rotation, scaleX, scaleY, interpolation, matrix);
     }
