@@ -44,18 +44,21 @@ public class PacketFactionSelect extends ClientPacket {
         switch (faction) {
             case Human:
                 playerShip = new ShipHumanSmall0(world, 0, 0, world.getRand().nextFloat() * RotationHelper.TWOPI, false);
+                playerShip.init();
                 playerShip.addWeaponToSlot(0, new WeaponPlasmSmall(playerShip));
                 playerShip.addWeaponToSlot(1, new WeaponPlasmSmall(playerShip));
 
                 break;
             case Saimon:
                 playerShip = new ShipSaimonSmall0(world, 0, 0, world.getRand().nextFloat() * RotationHelper.TWOPI, false);
+                playerShip.init();
                 playerShip.addWeaponToSlot(0, new WeaponLaserSmall(playerShip));
                 playerShip.addWeaponToSlot(1, new WeaponLaserSmall(playerShip));
 
                 break;
             case Engi:
                 playerShip = new ShipEngiSmall0(world, 0, 0, world.getRand().nextFloat() * RotationHelper.TWOPI, false);
+                playerShip.init();
                 playerShip.addWeaponToSlot(0, new WeaponGausSmall(playerShip));
                 playerShip.addWeaponToSlot(1, new WeaponGausSmall(playerShip));
 
