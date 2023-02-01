@@ -228,7 +228,7 @@ public class Bullet extends CollisionObject {
         float size = 6.0f;
         Vector2f pos = getPosition();
         InstancedRenderer.INSTANCE.addToRenderPipeLine(Transformation.getDefaultModelMatrix(lastPosition.x, lastPosition.y, pos.x, pos.y, getRotation(), size, size, interpolation),
-                color.x, color.y, color.z, color.w / 2.0f, TextureLoader.getTexture(TextureRegister.particleLight));
+                color.x / 1.5f, color.y / 1.5f, color.z / 1.5f, color.w / 4.0f, TextureLoader.getTexture(TextureRegister.particleLight));
         InstancedRenderer.INSTANCE.addToRenderPipeLine(this, interpolation);
     }
 
