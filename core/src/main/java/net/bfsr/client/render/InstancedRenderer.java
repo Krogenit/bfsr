@@ -5,6 +5,7 @@ import net.bfsr.client.render.texture.Texture;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.math.Transformation;
+import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11C;
@@ -12,7 +13,6 @@ import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.GL31C;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 
 public class InstancedRenderer {
     public static InstancedRenderer INSTANCE;
@@ -56,17 +56,30 @@ public class InstancedRenderer {
         instanceCount++;
     }
 
-    public void addToRenderPipeLine(FloatBuffer matrix, float r, float g, float b, float a, Texture texture) {
-        storeMatrix(matrix);
+    public void addToRenderPipeLine(Matrix4f modelMatrix, float r, float g, float b, float a, Texture texture) {
+        storeMatrix(modelMatrix);
         storeColor(r, g, b, a);
         storeTextureHandle(texture.getTextureHandle());
         instanceCount++;
     }
 
-    private void storeMatrix(FloatBuffer matrix) {
-        for (int j = 0; j < 16; j++) {
-            buffer.putFloat(matrix.get(j));
-        }
+    private void storeMatrix(Matrix4f modelMatrix) {
+        buffer.putFloat(modelMatrix.m00());
+        buffer.putFloat(modelMatrix.m01());
+        buffer.putFloat(modelMatrix.m02());
+        buffer.putFloat(modelMatrix.m03());
+        buffer.putFloat(modelMatrix.m10());
+        buffer.putFloat(modelMatrix.m11());
+        buffer.putFloat(modelMatrix.m12());
+        buffer.putFloat(modelMatrix.m13());
+        buffer.putFloat(modelMatrix.m20());
+        buffer.putFloat(modelMatrix.m21());
+        buffer.putFloat(modelMatrix.m22());
+        buffer.putFloat(modelMatrix.m23());
+        buffer.putFloat(modelMatrix.m30());
+        buffer.putFloat(modelMatrix.m31());
+        buffer.putFloat(modelMatrix.m32());
+        buffer.putFloat(modelMatrix.m33());
     }
 
     private void storeColor(Vector4f color) {
