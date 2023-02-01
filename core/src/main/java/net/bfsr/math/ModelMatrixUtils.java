@@ -84,7 +84,9 @@ public class ModelMatrixUtils {
     }
 
     public static Matrix4f getGUIModelMatrix(TextureObject textureObject) {
-        return matrix.identity().translate(textureObject.getPosition().x, textureObject.getPosition().y, 0.0f).scale(textureObject.getScale().x, textureObject.getScale().y, 1.0f);
+        matrix.identity().translate(textureObject.getPosition().x, textureObject.getPosition().y, 0.0f);
+        if (textureObject.getRotation() != 0) matrix.rotateZ(textureObject.getRotation());
+        return matrix.scale(textureObject.getScale().x, textureObject.getScale().y, 1.0f);
     }
 
     public static Matrix4f getGUIModelMatrix(float x, float y, float rotation, float scaleX, float scaleY) {
