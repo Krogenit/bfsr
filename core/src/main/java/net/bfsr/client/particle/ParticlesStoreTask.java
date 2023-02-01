@@ -22,24 +22,25 @@ public class ParticlesStoreTask implements Runnable {
     private final Matrix4f modelMatrix = new Matrix4f();
     private final Runnable[] runnables = new Runnable[4];
 
-    public void init(List<ParticleWreck> particlesWrecks, List<Particle> backgroundAlphaParticles, List<Particle> backgroundAdditiveParticles, List<Particle> alphaParticles,
-                     List<Particle> additiveParticles, ByteBuffer[] buffers) {
+    public void init(List<ParticleWreck> particlesWrecks, List<Particle>[] particlesByRenderLayer, ByteBuffer[] buffers) {
         ByteBuffer defaultAlphaBlendedBuffer = buffers[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()];
         ByteBuffer defaultAdditiveBlendedBuffer = buffers[RenderLayer.DEFAULT_ADDITIVE.ordinal()];
         ByteBuffer backgroundAlphaBlendedBuffer = buffers[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()];
         ByteBuffer backgroundAdditiveBlendedBuffer = buffers[RenderLayer.BACKGROUND_ADDITIVE.ordinal()];
         runnables[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()] = () -> {
             storeParticlesWrecks(particlesWrecks, defaultAlphaBlendedBuffer, interpolation, shipWrecksStartIndex, shipWrecksEndIndex, alphaBufferIndex);
-            storeParticles(alphaParticles, defaultAlphaBlendedBuffer, interpolation, alphaParticlesStartIndex, alphaParticlesEndIndex, alphaBufferIndex);
+            storeParticles(particlesByRenderLayer[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()], defaultAlphaBlendedBuffer, interpolation, alphaParticlesStartIndex, alphaParticlesEndIndex,
+                    alphaBufferIndex);
         };
-        runnables[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()] = () -> storeParticles(backgroundAlphaParticles, backgroundAlphaBlendedBuffer, interpolation,
-                backgroundAlphaParticlesStartIndex, backgroundAlphaParticlesEndIndex, backgroundAlphaBufferIndex);
+        runnables[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()] = () -> storeParticles(particlesByRenderLayer[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()], backgroundAlphaBlendedBuffer,
+                interpolation, backgroundAlphaParticlesStartIndex, backgroundAlphaParticlesEndIndex, backgroundAlphaBufferIndex);
         runnables[RenderLayer.DEFAULT_ADDITIVE.ordinal()] = () -> {
             storeParticlesWrecksEffects(particlesWrecks, defaultAdditiveBlendedBuffer, interpolation, shipWrecksEffectsStartIndex, shipWrecksEffectsEndIndex, additiveBufferIndex);
-            storeParticles(additiveParticles, defaultAdditiveBlendedBuffer, interpolation, additiveParticlesStartIndex, additiveParticlesEndIndex, additiveBufferIndex);
+            storeParticles(particlesByRenderLayer[RenderLayer.DEFAULT_ADDITIVE.ordinal()], defaultAdditiveBlendedBuffer, interpolation, additiveParticlesStartIndex, additiveParticlesEndIndex,
+                    additiveBufferIndex);
         };
-        runnables[RenderLayer.BACKGROUND_ADDITIVE.ordinal()] = () -> storeParticles(backgroundAdditiveParticles, backgroundAdditiveBlendedBuffer, interpolation,
-                backgroundAdditiveParticlesStartIndex, backgroundAdditiveParticlesEndIndex, backgroundAdditiveBufferIndex);
+        runnables[RenderLayer.BACKGROUND_ADDITIVE.ordinal()] = () -> storeParticles(particlesByRenderLayer[RenderLayer.BACKGROUND_ADDITIVE.ordinal()], backgroundAdditiveBlendedBuffer,
+                interpolation, backgroundAdditiveParticlesStartIndex, backgroundAdditiveParticlesEndIndex, backgroundAdditiveBufferIndex);
     }
 
     public void update(float interpolation, int backgroundAlphaBufferIndex, int backgroundAdditiveBufferIndex, int alphaBufferIndex, int additiveBufferIndex,

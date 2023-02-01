@@ -246,7 +246,7 @@ public class GuiInGame extends Gui {
             Vector2f camPos = cam.getPosition();
             int bulletsCount = world.getBullets().size();
             int shipsCount = world.getShips().size();
-            int particlesCount = core.getRenderer().getParticleRenderer().getParticles().size();
+            int particlesCount = core.getRenderer().getParticleRenderer().getParticlesCount();
             int physicParticles = core.getRenderer().getParticleRenderer().getParticlesWrecks().size();
 
             WorldServer sWorld = MainServer.getInstance() != null ? MainServer.getInstance().getWorld() : null;
