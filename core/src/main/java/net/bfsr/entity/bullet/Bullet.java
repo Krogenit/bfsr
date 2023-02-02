@@ -36,27 +36,27 @@ public class Bullet extends CollisionObject {
     private float energy;
     private Object previousAObject;
 
-    public Bullet(WorldClient world, int id, float bulletSpeed, float radRot, float x, float y, float scaleX, float scaleY, Ship ship, TextureRegister texture,
+    public Bullet(WorldClient world, int id, float bulletSpeed, float rotation, float x, float y, float scaleX, float scaleY, Ship ship, TextureRegister texture,
                   float r, float g, float b, float a, float alphaReducer, BulletDamage damage) {
-        super(world, id, texture, x, y, scaleX, scaleY, r, g, b, a);
+        super(world, id, texture, x, y, rotation, scaleX, scaleY, r, g, b, a);
         this.alphaReducer = alphaReducer;
         this.damage = damage;
         this.ship = ship;
         this.bulletSpeed = bulletSpeed;
         energy = damage.getAverageDamage();
-        setBulletVelocityAndStartTransform(radRot, x, y);
+        setBulletVelocityAndStartTransform(rotation, x, y);
         world.addBullet(this);
     }
 
-    public Bullet(WorldServer world, int id, float bulletSpeed, float radRot, float x, float y, float scaleX, float scaleY, Ship ship, float r, float g, float b, float a,
+    public Bullet(WorldServer world, int id, float bulletSpeed, float rotation, float x, float y, float scaleX, float scaleY, Ship ship, float r, float g, float b, float a,
                   float alphaReducer, BulletDamage damage) {
-        super(world, id, x, y, scaleX, scaleY, r, g, b, a);
+        super(world, id, x, y, rotation, scaleX, scaleY, r, g, b, a);
         this.alphaReducer = alphaReducer;
         this.damage = damage;
         this.ship = ship;
         this.bulletSpeed = bulletSpeed;
         energy = damage.getAverageDamage();
-        setBulletVelocityAndStartTransform(radRot, x, y);
+        setBulletVelocityAndStartTransform(rotation, x, y);
         world.addBullet(this);
         MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnBullet(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
