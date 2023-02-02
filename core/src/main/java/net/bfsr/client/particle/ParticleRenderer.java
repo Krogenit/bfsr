@@ -39,6 +39,7 @@ public class ParticleRenderer {
     private ExecutorService executorService;
     private Future<?>[] taskFutures;
     private int particleWreckEffects;
+    @Getter
     private int taskCount;
 
     public ParticleRenderer(BaseShader baseShader) {

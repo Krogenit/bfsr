@@ -7,6 +7,7 @@ import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.input.InputChat;
 import net.bfsr.client.language.Lang;
+import net.bfsr.client.particle.ParticleRenderer;
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.Renderer;
 import net.bfsr.client.render.font.FontType;
@@ -224,6 +225,7 @@ public class GuiInGame extends Gui {
 
         int ups = MainServer.getInstance() != null ? MainServer.getInstance().getUps() : 0;
         int sectionOffset = 20;
+        ParticleRenderer particleRenderer = core.getRenderer().getParticleRenderer();
 
         upperText.update("BFSR Client Dev 0.0.4 \n" +
                 "FPS " + Core.getCore().getRenderer().getFps() + ", Local Server UPS " + ups + " \n" +
@@ -234,6 +236,7 @@ public class GuiInGame extends Gui {
                 "Update: " + formatter.format(updateTime) + "ms / " + formatter.format(sUpdateTime) + "ms " +
                 "\nPhysics: " + formatter.format(physicsTime) + "ms / " + formatter.format(sPhysicsTime) + "ms " +
                 "\nRender: " + formatter.format(renderTime) + "ms " + drawCalls + " draw calls " +
+                "\nParticle Renderer: " + (particleRenderer.getTaskCount() > 1 ? particleRenderer.getTaskCount() + " active threads" : "single-threaded") +
                 "\nNetwork: " + formatter.format(netTime) + "ms / " + formatter.format(sNetworkTime) + "ms " +
                 "\nPing: " + ping + "ms");
         upperText.setPosition(xPos, yPos);
@@ -246,8 +249,8 @@ public class GuiInGame extends Gui {
             Vector2f camPos = cam.getPosition();
             int bulletsCount = world.getBullets().size();
             int shipsCount = world.getShips().size();
-            int particlesCount = core.getRenderer().getParticleRenderer().getParticlesCount();
-            int physicParticles = core.getRenderer().getParticleRenderer().getParticlesWrecks().size();
+            int particlesCount = particleRenderer.getParticlesCount();
+            int physicParticles = particleRenderer.getParticlesWrecks().size();
 
             WorldServer sWorld = MainServer.getInstance() != null ? MainServer.getInstance().getWorld() : null;
             int sBulletsCount = sWorld != null ? sWorld.getBullets().size() : 0;
