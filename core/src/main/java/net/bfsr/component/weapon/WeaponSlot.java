@@ -135,7 +135,8 @@ public abstract class WeaponSlot extends TextureObject {
     public void clear() {
         Body shipBody = ship.getBody();
         List<BodyFixture> bodyFixtures = shipBody.getFixtures();
-        for (BodyFixture bodyFixture : bodyFixtures) {
+        for (int i = 0, bodyFixturesSize = bodyFixtures.size(); i < bodyFixturesSize; i++) {
+            BodyFixture bodyFixture = bodyFixtures.get(i);
             Object userData = bodyFixture.getUserData();
             if (userData == this) {
                 shipBody.removeFixture(bodyFixture);

@@ -153,8 +153,8 @@ public class WorldServer extends World {
     }
 
     @Override
-    protected void removeShip(Ship ship) {
-        super.removeShip(ship);
+    protected void removeShip(Ship ship, int index) {
+        super.removeShip(ship, index);
         if (ship.getOwner() != null) {
             PlayerServer player = ship.getOwner();
             player.removeShip(ship);

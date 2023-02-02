@@ -15,18 +15,16 @@ import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.server.MainServer;
 import net.bfsr.util.TimeUtils;
 import net.bfsr.world.WorldServer;
+import org.dyn4j.TOITransformSavable;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.Geometry;
-import org.dyn4j.geometry.MassType;
-import org.dyn4j.geometry.Polygon;
-import org.dyn4j.geometry.Vector2;
+import org.dyn4j.geometry.*;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 import java.util.Random;
 
-public class ParticleWreck extends Particle {
+public class ParticleWreck extends Particle implements TOITransformSavable {
     @Getter
     private int textureOffset;
 
@@ -55,6 +53,11 @@ public class ParticleWreck extends Particle {
 
     @Getter
     private int destroyedShipId;
+    /**
+     * Saved transform before TOI solver
+     */
+    private final Transform transform = new Transform();
+    private boolean transformUpdated;
 
     public ParticleWreck init(int id, int textureOffset, boolean isWreck, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation,
                               float angularVelocity, float scaleX, float scaleY, float sizeVelocity, float r, float g, float b, float a, float alphaSpeed) {
@@ -556,12 +559,25 @@ public class ParticleWreck extends Particle {
         }
     }
 
+    public void postPhysicsUpdate() {
+        if (transformUpdated) {
+            body.setTransform(transform);
+            transformUpdated = false;
+        }
+    }
+
     public void damage(float damage) {
         hull -= damage;
         if (!world.isRemote() && hull <= 0) {
             MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
             setDead(true);
         }
+    }
+
+    @Override
+    public void saveTransform(Transform transform) {
+        this.transform.set(transform);
+        transformUpdated = true;
     }
 
     private static TextureRegister getDebrisTexture(int textureOffset, boolean isWreck) {

@@ -153,6 +153,12 @@ public class WorldClient extends World {
     }
 
     @Override
+    protected void postPhysicsUpdate() {
+        super.postPhysicsUpdate();
+        Core.getCore().getRenderer().getParticleRenderer().postPhysicsUpdate();
+    }
+
+    @Override
     protected void updateShips() {
         super.updateShips();
         if (playerShip != null) {
@@ -167,8 +173,8 @@ public class WorldClient extends World {
     }
 
     @Override
-    protected void removeShip(Ship ship) {
-        super.removeShip(ship);
+    protected void removeShip(Ship ship, int index) {
+        super.removeShip(ship, index);
 
         if (ship == playerShip)
             playerShip = null;

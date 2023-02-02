@@ -348,4 +348,10 @@ public class ParticleRenderer {
 
         return count;
     }
+
+    public void postPhysicsUpdate() {
+        for (int i = 0, size = particlesWrecks.size(); i < size; i++) {
+            particlesWrecks.get(i).postPhysicsUpdate();
+        }
+    }
 }

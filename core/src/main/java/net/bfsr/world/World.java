@@ -61,17 +61,14 @@ public class World {
         for (int i = 0; i < ships.size(); i++) {
             Ship s = ships.get(i);
             if (s.isDead()) {
-                removeShip(s);
-                i--;
+                removeShip(s, i--);
             }
         }
     }
 
     protected void updateShips() {
-        int size = ships.size();
-        for (int i = 0; i < size; i++) {
-            Ship s = ships.get(i);
-            s.update();
+        for (int i = 0, size = ships.size(); i < size; i++) {
+            ships.get(i).update();
         }
     }
 
@@ -83,30 +80,25 @@ public class World {
             if (bullet.isDead()) {
                 removeObjectById(bullet.getId());
                 physicWorld.removeBody(bullet.getBody());
-                bullets.remove(i);
-                i--;
+                bullets.remove(i--);
             }
         }
     }
 
-    private void postPhysicsUpdate() {
-        int size = ships.size();
-        for (int i = 0; i < size; i++) {
-            Ship s = ships.get(i);
-            s.postPhysicsUpdate();
+    protected void postPhysicsUpdate() {
+        for (int i = 0, size = ships.size(); i < size; i++) {
+            ships.get(i).postPhysicsUpdate();
         }
 
-        size = bullets.size();
-        for (int i = 0; i < size; i++) {
-            Bullet bullet = bullets.get(i);
-            bullet.postPhysicsUpdate();
+        for (int i = 0, size = bullets.size(); i < size; i++) {
+            bullets.get(i).postPhysicsUpdate();
         }
     }
 
-    protected void removeShip(Ship ship) {
+    protected void removeShip(Ship ship, int index) {
         physicWorld.removeBody(ship.getBody());
         ship.clear();
-        ships.remove(ship);
+        ships.remove(index);
         removeObjectById(ship.getId());
     }
 
