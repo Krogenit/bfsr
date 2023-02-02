@@ -61,12 +61,12 @@ public class Bullet extends CollisionObject {
         MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnBullet(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
-    private void setBulletVelocityAndStartTransform(float radRot, float x, float y) {
-        double x1 = Math.cos(radRot);
-        double y1 = Math.sin(radRot);
+    private void setBulletVelocityAndStartTransform(float rotation, float x, float y) {
+        double x1 = Math.cos(rotation);
+        double y1 = Math.sin(rotation);
         velocity.set(x1 * bulletSpeed, y1 * bulletSpeed);
         body.setLinearVelocity(velocity.x, velocity.y);
-        body.getTransform().setRotation(radRot);
+        body.getTransform().setRotation(rotation);
         body.getTransform().setTranslation(x + velocity.x / 500.0f, y + velocity.y / 500.0f);//TODO: посчитать точку появления пули правильно
     }
 
@@ -88,10 +88,7 @@ public class Bullet extends CollisionObject {
 
     public void postPhysicsUpdate() {
         Vector2 velocity = body.getLinearVelocity();
-        double mDx = velocity.x;
-        double mDy = velocity.y;
-
-        double rotateToVector = Math.atan2(mDx, -mDy);
+        double rotateToVector = Math.atan2(-velocity.x, velocity.y);
         body.getTransform().setRotation(rotateToVector + Math.PI / 2.0);
     }
 
