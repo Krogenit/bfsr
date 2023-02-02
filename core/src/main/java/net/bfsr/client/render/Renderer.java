@@ -121,6 +121,7 @@ public class Renderer {
 
         resetDrawCalls();
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+        camera.calculateInterpolatedViewMatrix(interpolation);
         camera.bind();
         OpenGLHelper.alphaGreater(0.0001f);
 

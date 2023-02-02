@@ -1,17 +1,13 @@
 package net.bfsr.math;
 
 public class LUT {
-    static final double PIO2_HI = Double.longBitsToDouble(0x3FF921FB54400000L);
-    static final double PIO2_LO = Double.longBitsToDouble(0x3DD0B4611A626331L);
-    static final double TWOPI_HI = 4 * PIO2_HI;
-    static final double TWOPI_LO = 4 * PIO2_LO;
-    static final int SIN_COS_TABS_SIZE = 2049;
-    static final double SIN_COS_DELTA_HI = TWOPI_HI / (SIN_COS_TABS_SIZE - 1);
-    static final double SIN_COS_DELTA_LO = TWOPI_LO / (SIN_COS_TABS_SIZE - 1);
-    static final double SIN_COS_INDEXER = 1 / (SIN_COS_DELTA_HI + SIN_COS_DELTA_LO);
-    static final float[] sinTab = new float[SIN_COS_TABS_SIZE];
-    static final float[] cosTab = new float[SIN_COS_TABS_SIZE];
-    static final int SIN_COS_TABLE_SIZE_WITH_OFFSET = SIN_COS_TABS_SIZE - 2;
+    private static final int SIN_COS_TABS_SIZE = 2049;
+    private static final double SIN_COS_DELTA_HI = 4 * Double.longBitsToDouble(0x3FF921FB54400000L) / (SIN_COS_TABS_SIZE - 1);
+    private static final double SIN_COS_DELTA_LO = 4 * Double.longBitsToDouble(0x3DD0B4611A626331L) / (SIN_COS_TABS_SIZE - 1);
+    private static final double SIN_COS_INDEXER = 1 / (SIN_COS_DELTA_HI + SIN_COS_DELTA_LO);
+    private static final float[] SIN_TAB = new float[SIN_COS_TABS_SIZE];
+    private static final float[] COS_TAB = new float[SIN_COS_TABS_SIZE];
+    private static final int SIN_COS_TABLE_SIZE_WITH_OFFSET = SIN_COS_TABS_SIZE - 2;
 
     static {
         init();
@@ -41,16 +37,16 @@ public class LUT {
             } else if (i == SIN_COS_PI_MUL_1_5_INDEX) {
                 cosAngle = 0.0f;
             }
-            sinTab[i] = sinAngle;
-            cosTab[i] = cosAngle;
+            SIN_TAB[i] = sinAngle;
+            COS_TAB[i] = cosAngle;
         }
     }
 
     public static float sin(float angle) {
-        return sinTab[((int) (angle * SIN_COS_INDEXER + 0.5)) & SIN_COS_TABLE_SIZE_WITH_OFFSET];
+        return SIN_TAB[((int) (angle * SIN_COS_INDEXER + 0.5f)) & SIN_COS_TABLE_SIZE_WITH_OFFSET];
     }
 
     public static float cos(float angle) {
-        return cosTab[((int) (angle * SIN_COS_INDEXER + 0.5)) & SIN_COS_TABLE_SIZE_WITH_OFFSET];
+        return COS_TAB[((int) (angle * SIN_COS_INDEXER + 0.5f)) & SIN_COS_TABLE_SIZE_WITH_OFFSET];
     }
 }

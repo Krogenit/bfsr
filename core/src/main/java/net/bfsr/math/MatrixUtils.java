@@ -2,43 +2,50 @@ package net.bfsr.math;
 
 import org.joml.Matrix4f;
 
-import java.nio.FloatBuffer;
-
 public class MatrixUtils {
     public static void translateIdentity(Matrix4f matrix, float x, float y) {
-        matrix.set(3, 0, x);
-        matrix.set(3, 1, y);
+        matrix.m30(matrix.m30() + x);
+        matrix.m31(matrix.m31() + y);
     }
 
-    public static void rotateAboutZIdentity(Matrix4f matrix, float angle) {
+    public static void translate(Matrix4f matrix, float x, float y) {
+        matrix.m30(matrix.m30() + matrix.m00() * x + matrix.m10() * y);
+        matrix.m31(matrix.m31() + matrix.m01() * x + matrix.m11() * y);
+        matrix.m32(matrix.m32() + matrix.m02() * x + matrix.m12() * y);
+        matrix.m33(matrix.m33() + matrix.m03() * x + matrix.m13() * y);
+    }
+
+    public static void rotateAboutZ(Matrix4f matrix, float angle) {
         float cos = LUT.cos(angle);
         float sin = LUT.sin(angle);
         float minusSin = -sin;
 
-        matrix.set(0, 0, cos);//m00
-        matrix.set(0, 1, sin);//m01
-        matrix.set(1, 0, minusSin);//m10
-        matrix.set(1, 1, cos);//m11
+        float t00 = matrix.m00() * cos + matrix.m10() * sin;
+        float t01 = matrix.m01() * cos + matrix.m11() * sin;
+        float t02 = matrix.m02() * cos + matrix.m12() * sin;
+        float t03 = matrix.m03() * cos + matrix.m13() * sin;
+        float t10 = matrix.m00() * minusSin + matrix.m10() * cos;
+        float t11 = matrix.m01() * minusSin + matrix.m11() * cos;
+        float t12 = matrix.m02() * minusSin + matrix.m12() * cos;
+        float t13 = matrix.m03() * minusSin + matrix.m13() * cos;
+        matrix.m00(t00);
+        matrix.m01(t01);
+        matrix.m02(t02);
+        matrix.m03(t03);
+        matrix.m10(t10);
+        matrix.m11(t11);
+        matrix.m12(t12);
+        matrix.m13(t13);
     }
 
-    public static void translateIdentity(FloatBuffer matrixBuffer, float x, float y) {
-        matrixBuffer.position(12);
-        matrixBuffer.put(x);//m30
-        matrixBuffer.put(y);//m31
-        matrixBuffer.position(0);
-    }
-
-    public static void rotateAboutZIdentity(FloatBuffer matrixBuffer, float angle) {
-        float cos = LUT.cos(angle);
-        float sin = LUT.sin(angle);
-        float minusSin = -sin;
-
-        matrixBuffer.position(0);
-        matrixBuffer.put(cos);//m00
-        matrixBuffer.put(sin);//m01
-        matrixBuffer.position(4);
-        matrixBuffer.put(minusSin);//m10
-        matrixBuffer.put(cos);//m11
-        matrixBuffer.position(0);
+    public static void scale(Matrix4f matrix, float x, float y) {
+        matrix.m00(matrix.m00() * x);
+        matrix.m01(matrix.m01() * x);
+        matrix.m02(matrix.m02() * x);
+        matrix.m03(matrix.m03() * x);
+        matrix.m10(matrix.m10() * y);
+        matrix.m11(matrix.m11() * y);
+        matrix.m12(matrix.m12() * y);
+        matrix.m13(matrix.m13() * y);
     }
 }

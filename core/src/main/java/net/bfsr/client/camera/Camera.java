@@ -31,6 +31,8 @@ public class Camera {
     private final Matrix4f orthographicMatrix = new Matrix4f();
     @Getter
     private final Matrix4f viewMatrix = new Matrix4f();
+    @Getter
+    private final Matrix4f interpolatedViewMatrix = new Matrix4f();
     private final FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);//можно вынести в отедльный класс
     @Getter
     private final AxisAlignedBoundingBox boundingBox = new AxisAlignedBoundingBox();
@@ -261,5 +263,12 @@ public class Camera {
 
     public void onExitToMainMenu() {
         followShip = null;
+    }
+
+    public void calculateInterpolatedViewMatrix(float interpolation) {
+        float cameraX = lastPosition.x + (position.x - lastPosition.x) * interpolation;
+        float cameraY = lastPosition.y + (position.y - lastPosition.y) * interpolation;
+
+        interpolatedViewMatrix.identity().translate(-origin.x, -origin.y, 0).scale(zoom, zoom, 1.0f).translate(-cameraX, -cameraY, 0);
     }
 }
