@@ -72,8 +72,9 @@ public class Bullet extends CollisionObject {
 
     @Override
     public void update() {
-        lastPosition.set(position);
         super.update();
+        lastRotation = getRotation();
+        lastPosition.set(getPosition());
 
         color.w -= alphaReducer * TimeUtils.UPDATE_DELTA_TIME;
 
@@ -224,8 +225,8 @@ public class Bullet extends CollisionObject {
     public void render(BaseShader shader, float interpolation) {
         float size = 6.0f;
         Vector2f pos = getPosition();
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getDefaultModelMatrix(lastPosition.x, lastPosition.y, pos.x, pos.y, getRotation(), size, size, interpolation),
-                color.x / 1.5f, color.y / 1.5f, color.z / 1.5f, color.w / 4.0f, TextureLoader.getTexture(TextureRegister.particleLight));
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getDefaultModelMatrix(lastPosition.x, lastPosition.y, pos.x, pos.y, lastRotation, getRotation(), size, size,
+                interpolation), color.x / 1.5f, color.y / 1.5f, color.z / 1.5f, color.w / 4.0f, TextureLoader.getTexture(TextureRegister.particleLight));
         InstancedRenderer.INSTANCE.addToRenderPipeLine(this, interpolation);
     }
 

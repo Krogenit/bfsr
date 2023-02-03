@@ -190,7 +190,7 @@ public class Shield extends CollisionObject {
     public void render(BaseShader shader, float interpolation) {
         if (shieldAlive()) {
             InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getDefaultModelMatrix(ship.getLastPosition().x, ship.getLastPosition().y, ship.getPosition().x, ship.getPosition().y,
-                    ship.getRotation(), diameter.x * size, diameter.y * size, interpolation), color.x, color.y, color.z, color.w, texture);
+                    ship.getLastRotation(), ship.getRotation(), diameter.x * size, diameter.y * size, interpolation), color.x, color.y, color.z, color.w, texture);
         }
     }
 

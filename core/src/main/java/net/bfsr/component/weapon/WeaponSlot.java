@@ -20,13 +20,22 @@ import java.util.List;
 import java.util.Random;
 
 public abstract class WeaponSlot extends TextureObject {
+    @Getter
+    @Setter
     protected int id;
     protected World world;
+    @Getter
+    @Setter
     protected Ship ship;
     protected float energyCost;
+    @Getter
     private final float bulletSpeed;
+    @Getter
     protected float shootTimer, shootTimerMax;
+    @Getter
     private final float alphaReducer;
+    @Getter
+    @Setter
     protected Vector2f addPosition;
     private SoundRegistry[] shootSounds;
 
@@ -99,6 +108,9 @@ public abstract class WeaponSlot extends TextureObject {
 
     @Override
     public void update() {
+        lastRotation = rotation;
+        lastPosition.set(position);
+
         updatePos();
         if (shootTimer > 0) {
             shootTimer -= 50.0f * TimeUtils.UPDATE_DELTA_TIME;
@@ -116,20 +128,13 @@ public abstract class WeaponSlot extends TextureObject {
         float xPos = cos * x - sin * y;
         float yPos = sin * x + cos * y;
 
-        lastPosition.set(position);
-        position = new Vector2f(xPos + shipPos.x, yPos + shipPos.y);
+        position.set(xPos + shipPos.x, yPos + shipPos.y);
     }
 
     public Vector2f getAddPosition() {
         return addPosition;
     }
 
-    public void setAddPosition(Vector2f addPosition) {
-        this.addPosition = addPosition;
-    }
-
-    public void setShip(Ship ship) {
-        this.ship = ship;
     }
 
     public void clear() {
@@ -144,37 +149,5 @@ public abstract class WeaponSlot extends TextureObject {
                 break;
             }
         }
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public float getShootTimer() {
-        return shootTimer;
-    }
-
-    public float getShootTimerMax() {
-        return shootTimerMax;
-    }
-
-    public float getBulletSpeed() {
-        return bulletSpeed;
-    }
-
-    public float getEnergyCost() {
-        return energyCost;
-    }
-
-    public float getAlphaReducer() {
-        return alphaReducer;
-    }
-
-    public Ship getShip() {
-        return ship;
     }
 }

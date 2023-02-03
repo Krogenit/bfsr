@@ -1,5 +1,6 @@
 package net.bfsr.client.particle;
 
+import net.bfsr.math.ModelMatrixUtils;
 import net.bfsr.util.MutableInt;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -89,8 +90,8 @@ public class ParticlesStoreTask implements Runnable {
             ParticleWreck particleWreck = particles.get(i);
             if (particleWreck.getColorFire() != null && particleWreck.getColorFire().w > 0) {
                 if (index >= start) {
-                    storeMatrix(particleWreck.getModelMatrixType().getMatrix(particleWreck, interpolation, modelMatrix), buffer, bufferIndex);
-                    storeColor(particleWreck.getColorFire(), buffer, bufferIndex);
+                    storeMatrix(ModelMatrixUtils.getDefaultModelMatrix(particleWreck, interpolation, modelMatrix), buffer, bufferIndex);
+                    storeColor(particleWreck.getLastColorFire(), particleWreck.getColorFire(), buffer, bufferIndex, interpolation);
                     storeTextureHandle(particleWreck.getTextureFire().getTextureHandle(), buffer, bufferIndex);
                 }
                 index++;
@@ -98,8 +99,8 @@ public class ParticlesStoreTask implements Runnable {
 
             if (particleWreck.getColorLight() != null && particleWreck.getColorLight().w > 0) {
                 if (index >= start && index < end) {
-                    storeMatrix(particleWreck.getModelMatrixType().getMatrix(particleWreck, interpolation, modelMatrix), buffer, bufferIndex);
-                    storeColor(particleWreck.getColorLight(), buffer, bufferIndex);
+                    storeMatrix(ModelMatrixUtils.getDefaultModelMatrix(particleWreck, interpolation, modelMatrix), buffer, bufferIndex);
+                    storeColor(particleWreck.getLastColorLight(), particleWreck.getColorLight(), buffer, bufferIndex, interpolation);
                     storeTextureHandle(particleWreck.getTextureLight().getTextureHandle(), buffer, bufferIndex);
                 }
                 index++;
@@ -114,12 +115,14 @@ public class ParticlesStoreTask implements Runnable {
     }
 
     private void storeParticle(Particle particle, ByteBuffer buffer, float interpolation, MutableInt index) {
-        storeMatrix(particle.getModelMatrixType().getMatrix(particle, interpolation, modelMatrix), buffer, index);
-        storeParticleData(particle, buffer, index);
+        storeMatrix(ModelMatrixUtils.getDefaultModelMatrix(particle.getLastPosition().x, particle.getLastPosition().y, particle.getPosition().x, particle.getPosition().y,
+                particle.getLastRotation(), particle.getRotation(), particle.getLastScale().x, particle.getLastScale().y, particle.getScale().x, particle.getScale().y, interpolation,
+                modelMatrix), buffer, index);
+        storeParticleData(particle, buffer, index, interpolation);
     }
 
-    private void storeParticleData(Particle particle, ByteBuffer buffer, MutableInt index) {
-        storeColor(particle.getColor(), buffer, index);
+    private void storeParticleData(Particle particle, ByteBuffer buffer, MutableInt index, float interpolation) {
+        storeColor(particle.getLastColor(), particle.getColor(), buffer, index, interpolation);
         storeTextureHandle(particle.getTexture().getTextureHandle(), buffer, index);
     }
 
@@ -142,11 +145,11 @@ public class ParticlesStoreTask implements Runnable {
         buffer.putFloat(index.getAndAdd(4), modelMatrix.m33());
     }
 
-    private void storeColor(Vector4f color, ByteBuffer buffer, MutableInt index) {
+    private void storeColor(Vector4f lastColor, Vector4f color, ByteBuffer buffer, MutableInt index, float interpolation) {
         buffer.putFloat(index.getAndAdd(4), color.x);
         buffer.putFloat(index.getAndAdd(4), color.y);
         buffer.putFloat(index.getAndAdd(4), color.z);
-        buffer.putFloat(index.getAndAdd(4), color.w);
+        buffer.putFloat(index.getAndAdd(4), lastColor.w + (color.w - lastColor.w) * interpolation);
     }
 
     private void storeTextureHandle(long textureHandle, ByteBuffer buffer, MutableInt index) {

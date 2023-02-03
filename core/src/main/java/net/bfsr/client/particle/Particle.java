@@ -36,8 +36,10 @@ public class Particle extends CollisionObject {
         this.lastPosition.set(position);
         this.velocity.set(velocityX, velocityY);
         this.rotation = rotation;
+        this.lastRotation = rotation;
         this.angularVelocity = angularVelocity;
         this.scale.set(scaleX, scaleY);
+        this.lastScale.set(scaleX, scaleY);
         this.sizeVelocity = sizeVelocity;
         this.color.set(r, g, b, a);
         this.alphaVelocity = alphaVelocity;
@@ -52,6 +54,8 @@ public class Particle extends CollisionObject {
             this.maxAlpha = a;
             this.color.w = 0.0f;
         }
+
+        lastColor.set(color);
 
         if (canCollide) {
             createBody(position.x, position.y);
@@ -147,6 +151,7 @@ public class Particle extends CollisionObject {
     @Override
     public void update() {
         lastPosition.set(getPosition());
+        lastRotation = getRotation();
 
         if (!canCollide) {
             position.x += velocity.x * TimeUtils.UPDATE_DELTA_TIME;
@@ -160,6 +165,7 @@ public class Particle extends CollisionObject {
         }
 
         if (sizeVelocity != 0) {
+            lastScale.set(scale);
             float sizeVel = sizeVelocity * TimeUtils.UPDATE_DELTA_TIME;
             scale.add(sizeVel, sizeVel);
 
@@ -168,6 +174,7 @@ public class Particle extends CollisionObject {
         }
 
         if (alphaVelocity != 0) {
+            lastColor.w = color.w;
             if (isAlphaFromZero) {
                 if (maxAlpha != 0) {
                     color.w += alphaVelocity * TimeUtils.UPDATE_DELTA_TIME;

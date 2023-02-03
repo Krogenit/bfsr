@@ -28,15 +28,30 @@ public class ModelMatrixUtils {
         return textureObject.getModelMatrixType().getMatrix(textureObject, interpolation);
     }
 
-    public static Matrix4f getDefaultModelMatrix(float prevX, float prevY, float x, float y, float rotation, float scaleX, float scaleY, float interpolation) {
-        return getDefaultModelMatrix(prevX, prevY, x, y, rotation, scaleX, scaleY, interpolation, MODEL_MATRIX);
+    public static Matrix4f getDefaultModelMatrix(float prevX, float prevY, float x, float y, float lastRotation, float rotation, float scaleX, float scaleY, float interpolation) {
+        return getDefaultModelMatrix(prevX, prevY, x, y, lastRotation, rotation, scaleX, scaleY, interpolation, MODEL_MATRIX);
     }
 
-    public static Matrix4f getDefaultModelMatrix(float prevX, float prevY, float x, float y, float rotation, float scaleX, float scaleY, float interpolation, Matrix4f destMatrix) {
+    public static Matrix4f getDefaultModelMatrix(float prevX, float prevY, float x, float y, float lastRotation, float rotation, float oldScaleX, float oldScaleY,
+                                                 float scaleX, float scaleY, float interpolation) {
+        return getDefaultModelMatrix(prevX, prevY, x, y, lastRotation, rotation, oldScaleX, oldScaleY, scaleX, scaleY, interpolation, MODEL_MATRIX);
+    }
+
+    public static Matrix4f getDefaultModelMatrix(float prevX, float prevY, float x, float y, float lastRotation, float rotation, float scaleX, float scaleY, float interpolation,
+                                                 Matrix4f destMatrix) {
         destMatrix.set(Core.getCore().getRenderer().getCamera().getInterpolatedViewMatrix());
         MatrixUtils.translate(destMatrix, prevX + (x - prevX) * interpolation, prevY + (y - prevY) * interpolation);
-        if (rotation != 0) MatrixUtils.rotateAboutZ(destMatrix, rotation);
+        if (rotation != 0) MatrixUtils.rotateAboutZ(destMatrix, lastRotation + MathUtils.lerpAngle(lastRotation, rotation) * interpolation);
         MatrixUtils.scale(destMatrix, scaleX, scaleY);
+        return destMatrix;
+    }
+
+    public static Matrix4f getDefaultModelMatrix(float prevX, float prevY, float x, float y, float lastRotation, float rotation, float oldScaleX, float oldScaleY,
+                                                 float scaleX, float scaleY, float interpolation, Matrix4f destMatrix) {
+        destMatrix.set(Core.getCore().getRenderer().getCamera().getInterpolatedViewMatrix());
+        MatrixUtils.translate(destMatrix, prevX + (x - prevX) * interpolation, prevY + (y - prevY) * interpolation);
+        if (rotation != 0) MatrixUtils.rotateAboutZ(destMatrix, lastRotation + MathUtils.lerpAngle(lastRotation, rotation) * interpolation);
+        MatrixUtils.scale(destMatrix, oldScaleX + (scaleX - oldScaleX) * interpolation, oldScaleY + (scaleY - oldScaleY) * interpolation);
         return destMatrix;
     }
 
@@ -50,7 +65,7 @@ public class ModelMatrixUtils {
 
     public static Matrix4f getDefaultModelMatrix(TextureObject textureObject, float interpolation, Matrix4f destMatrix) {
         return getDefaultModelMatrix(textureObject.getLastPosition().x, textureObject.getLastPosition().y, textureObject.getPosition().x, textureObject.getPosition().y,
-                textureObject.getRotation(), textureObject.getScale().x, textureObject.getScale().y, interpolation, destMatrix);
+                textureObject.getLastRotation(), textureObject.getRotation(), textureObject.getScale().x, textureObject.getScale().y, interpolation, destMatrix);
     }
 
     public static FloatBuffer getBackgroundModelMatrixBuffer(TextureObject textureObject, float interpolation) {

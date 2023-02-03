@@ -178,6 +178,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     private void updateShip() {
         Vector2f position = getPosition();
+        lastRotation = getRotation();
         lastPosition.set(position.x, position.y);
 
         if (world.isRemote()) {
@@ -447,7 +448,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
             renderShield(shader, interpolation);
         } else {
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getDefaultModelMatrix(lastJumpPosition.x, lastJumpPosition.y, jumpPosition.x, jumpPosition.y, rotation,
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getDefaultModelMatrix(lastJumpPosition.x, lastJumpPosition.y, jumpPosition.x, jumpPosition.y, lastRotation, rotation,
                     40.0f * color.w, 40.0f * color.w, interpolation), effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, TextureLoader.getTexture(TextureRegister.particleJump));
         }
     }

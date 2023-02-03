@@ -48,6 +48,8 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
 
     @Getter
     private Vector4f colorFire, colorLight;
+    @Getter
+    private Vector4f lastColorFire, lastColorLight;
 
     private Random rand;
 
@@ -60,8 +62,8 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
     private boolean transformUpdated;
 
     public ParticleWreck init(int id, int textureOffset, boolean isWreck, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation,
-                              float angularVelocity, float scaleX, float scaleY, float sizeVelocity, float r, float g, float b, float a, float alphaSpeed) {
-        init(id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaSpeed, 0.001f, false, true, RenderLayer.DEFAULT_ALPHA_BLENDED);
+                              float angularVelocity, float scaleX, float scaleY, float sizeVelocity, float r, float g, float b, float a, float alphaVelocity) {
+        init(id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, 0.001f, false, true, RenderLayer.DEFAULT_ALPHA_BLENDED);
         this.textureOffset = textureOffset;
         this.fireExplosion = fireExplosion;
         this.fire = fire;
@@ -74,8 +76,8 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
     }
 
     public ParticleWreck init(int id, int textureOffset, Ship ship, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
-                              float sizeVelocity, float r, float g, float b, float a, float alphaSpeed, float wreckLifeTime) {
-        init(id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaSpeed, 0.25f, false, true, RenderLayer.DEFAULT_ALPHA_BLENDED);
+                              float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, float wreckLifeTime) {
+        init(id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, 0.25f, false, true, RenderLayer.DEFAULT_ALPHA_BLENDED);
         textureWreck = ship.getWreckTexture(textureOffset);
         this.textureOffset = textureOffset;
         fireExplosion = true;
@@ -108,6 +110,7 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
             textureLight = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.particleWreckLight0.ordinal() + textureOffset]);
             colorLight = new Vector4f();
             colorLight.w = 0.0f;
+            lastColorLight = new Vector4f(colorLight);
             timerLight1 = 200.0f + rand.nextInt(200);
         } else if (fire) {
             textureFire = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.particleDerbisEmber1.ordinal() + textureOffset]);
@@ -115,6 +118,7 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
 
         if (isWreck || fire) {
             colorFire = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
+            lastColorFire = new Vector4f(colorFire);
         }
 
         createBody1(x, y);
@@ -137,8 +141,10 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
         light = true;
         colorFire = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
         colorFire.w = 0.0f;
+        lastColorFire = new Vector4f(colorFire);
         colorLight = new Vector4f();
         colorLight.w = 0.0f;
+        lastColorLight = new Vector4f(colorLight);
         shipWreck = true;
         rand = world.getRand();
         timerLight1 = 200.0f + rand.nextInt(200);
@@ -391,6 +397,8 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
     @Override
     public void update() {
         lastPosition.set(getPosition());
+        lastRotation = getRotation();
+        lastColor.w = color.w;
 
         if (world.isRemote()) {
             aliveTimer += 60.0f * TimeUtils.UPDATE_DELTA_TIME;
@@ -431,6 +439,7 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
                 }
             }
 
+            lastColorFire.set(colorFire);
             if (changeFire) {
                 if (colorFire.w > (shipWreck ? 0.7F : 0.6F)) {
                     if (shipWreck) {
@@ -467,6 +476,7 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
         }
 
         if (light && world.isRemote()) {
+            lastColorLight.set(colorLight);
             timerLight1 -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (timerLight1 <= 0.0f) {
                 if (changeLight) {
@@ -499,6 +509,7 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
 
         if (shipWreck) {
             if (world.isRemote() && wreckLifeTime <= maxWreckLifeTime / 2.0f) {
+                lastColorFire.set(colorFire);
                 if (colorFire.w > 0.0f) {
                     fire = false;
                     colorFire.w -= fireSpeed2;
@@ -525,21 +536,29 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
             }
         } else {
             if (color.w <= 0.5f) {
-                if (colorFire != null && colorFire.w > 0.0f) {
-                    fire = false;
-                    colorFire.w -= fireSpeed2;
-                    colorFire.x -= fireSpeed2;
-                    colorFire.y -= fireSpeed2;
-                    colorFire.z -= fireSpeed2;
+                if (colorFire != null) {
+                    lastColorFire.set(colorFire);
+
+                    if (colorFire.w > 0.0f) {
+                        fire = false;
+                        colorFire.w -= fireSpeed2;
+                        colorFire.x -= fireSpeed2;
+                        colorFire.y -= fireSpeed2;
+                        colorFire.z -= fireSpeed2;
+                    }
                 }
 
                 if (color.w < 0.3f) {
-                    if (colorLight != null && colorLight.w > 0.0f) {
-                        light = false;
-                        colorLight.w -= lightSpeed;
-                        colorLight.x -= lightSpeed;
-                        colorLight.y -= lightSpeed;
-                        colorLight.z -= lightSpeed;
+                    if (colorLight != null) {
+                        lastColorLight.set(colorLight);
+
+                        if (colorLight.w > 0.0f) {
+                            light = false;
+                            colorLight.w -= lightSpeed;
+                            colorLight.x -= lightSpeed;
+                            colorLight.y -= lightSpeed;
+                            colorLight.z -= lightSpeed;
+                        }
                     }
                 }
             }

@@ -68,13 +68,15 @@ public class Damage extends TextureObject {
         float sin = ship.getSin();
         float xPos = cos * addPos.x - sin * addPos.y;
         float yPos = sin * addPos.x + cos * addPos.y;
-        lastPosition.set(position);
         position.x = pos.x + xPos;
         position.y = pos.y + yPos;
     }
 
     @Override
     public void update() {
+        lastRotation = rotation;
+        lastPosition.set(position);
+
         updatePos();
 
         Hull hull = ship.getHull();

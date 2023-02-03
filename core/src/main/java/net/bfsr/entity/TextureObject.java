@@ -18,17 +18,21 @@ public class TextureObject {
     @Setter
     protected Texture texture;
     @Getter
-    protected Vector2f position = new Vector2f();
-    protected Vector2f origin = new Vector2f();
+    protected final Vector2f position = new Vector2f();
+    protected final Vector2f origin = new Vector2f();
     @Getter
-    protected Vector2f scale = new Vector2f();
+    protected final Vector2f scale = new Vector2f();
     @Getter
-    protected Vector2f lastPosition = new Vector2f();
+    protected final Vector2f lastScale = new Vector2f();
     @Getter
-    protected Vector4f color = new Vector4f();
+    protected final Vector2f lastPosition = new Vector2f();
+    @Getter
+    protected final Vector4f color = new Vector4f();
+    @Getter
+    protected final Vector4f lastColor = new Vector4f();
     @Getter
     @Setter
-    protected float rotation;
+    protected float lastRotation, rotation;
     @Getter
     private ModelMatrixType modelMatrixType = ModelMatrixType.DEFAULT;
 
@@ -37,8 +41,11 @@ public class TextureObject {
         this.position.set(x, y);
         this.lastPosition.set(x, y);
         this.rotation = rotation;
+        this.lastRotation = rotation;
         this.color.set(r, g, b, a);
+        this.lastColor.set(r, g, b, a);
         this.scale.set(scaleX, scaleY);
+        this.lastScale.set(scaleX, scaleY);
         this.origin.set(-scaleX / 2.0f, -scaleY / 2.0f);
     }
 
