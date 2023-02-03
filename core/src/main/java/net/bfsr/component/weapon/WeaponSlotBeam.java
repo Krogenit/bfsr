@@ -1,6 +1,6 @@
 package net.bfsr.component.weapon;
 
-import net.bfsr.client.particle.Particle;
+import net.bfsr.client.particle.Beam;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.ParticleWreck;
 import net.bfsr.client.particle.RenderLayer;
@@ -29,8 +29,6 @@ import org.dyn4j.world.result.RaycastResult;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 public abstract class WeaponSlotBeam extends WeaponSlot {
@@ -38,15 +36,15 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
     private final BeamFilter filter = new BeamFilter(null);
     private final float beamMaxRange;
     private float currentBeamRange;
-    private boolean maxColor, beamParticleSpawned;
+    private boolean maxColor;
     private final Vector2f collisionPoint = new Vector2f();
     private final BulletDamage damage;
     private final Vector4f beamColor;
-    private List<Particle> particlesEffects;
     private final Random rand;
     private final Ray ray = new Ray(0);
     private final DetectFilter<Body, BodyFixture> detectFilter = new DetectFilter<>(true, true, filter);
     private final Vector2 rayDirection = new Vector2();
+    private Beam beam;
 
     protected WeaponSlotBeam(Ship ship, float beamMaxRange, BulletDamage damage, Vector4f beamColor, float shootTimerMax, float energyCost, float scaleX, float scaleY, TextureRegister texture,
                              SoundRegistry[] shootSounds) {
@@ -58,23 +56,30 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
         rand = world.getRand();
 
         if (world.isRemote()) {
-            particlesEffects = new ArrayList<>();
+            beam = new Beam(this, ship);
         }
     }
 
     @Override
     public void update() {
+        if (world.isRemote()) {
+            beam.setLastValues();
+        }
+
         super.update();
+
         if (world.isRemote()) {
             if (shootTimer > 0) {
                 if (shootTimer <= shootTimerMax / 3.0f) {
                     maxColor = false;
                     if (beamColor.w > 0.0f) {
                         beamColor.w -= 3.5f * TimeUtils.UPDATE_DELTA_TIME;
+                        if (beamColor.w < 0) beamColor.w = 0;
                     }
                 } else {
                     if (!maxColor && beamColor.w < 1.0f) {
                         beamColor.w += 3.5f * TimeUtils.UPDATE_DELTA_TIME;
+                        if (beamColor.w > 1.0f) beamColor.w = 1.0f;
                     } else {
                         maxColor = true;
                     }
@@ -90,41 +95,28 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                 rayCast();
 
                 if (beamColor.w > 0) {
-                    if (!beamParticleSpawned) {
-                        ParticleSpawner.spawnBeam(this, false);
-                        ParticleSpawner.spawnBeam(this, true);
-                        beamParticleSpawned = true;
-                    }
-
-                    while (particlesEffects.size() < currentBeamRange / 90.0f) {
-                        Particle p = ParticleSpawner.spawnBeamEffect(this);
-                        particlesEffects.add(p);
-                    }
+                    beam.update();
                 }
             } else {
                 if (beamColor.w > 0.0f) {
                     beamColor.w -= 3.5f * TimeUtils.UPDATE_DELTA_TIME;
+                    if (beamColor.w < 0) beamColor.w = 0;
                 }
             }
 
-            for (int i = 0; i < particlesEffects.size(); i++) {
-                Particle p = particlesEffects.get(i);
-                if (p.isDead()) {
-                    particlesEffects.remove(i);
-                    i--;
-                }
-            }
-
+            beam.updateEffects();
         } else {
             if (shootTimer > 0) {
                 if (shootTimer <= shootTimerMax / 3.0f) {
                     maxColor = false;
                     if (beamColor.w > 0.0f) {
                         beamColor.w -= 3.5f * TimeUtils.UPDATE_DELTA_TIME;
+                        if (beamColor.w < 0) beamColor.w = 0;
                     }
                 } else {
                     if (!maxColor && beamColor.w < 1.0f) {
                         beamColor.w += 3.5f * TimeUtils.UPDATE_DELTA_TIME;
+                        if (beamColor.w > 1.0f) beamColor.w = 1.0f;
                     } else {
                         maxColor = true;
                     }
@@ -138,8 +130,17 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
             } else {
                 if (beamColor.w > 0.0f) {
                     beamColor.w -= 3.5f * TimeUtils.UPDATE_DELTA_TIME;
+                    if (beamColor.w < 0) beamColor.w = 0;
                 }
             }
+        }
+    }
+
+    @Override
+    public void updatePos() {
+        super.updatePos();
+        if (world.isRemote() && shootTimer > 0 && beamColor.w > 0) {
+            beam.updatePosition();
         }
     }
 
@@ -157,11 +158,11 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
     }
 
     public void clientShoot() {
-        beamParticleSpawned = false;
         float energy = ship.getReactor().getEnergy();
         playSound();
         shootTimer = shootTimerMax;
         ship.getReactor().setEnergy(energy - energyCost);
+        beam.init();
     }
 
     private void rayCast() {
@@ -169,10 +170,12 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
 
         float cos = ship.getCos();
         float sin = ship.getSin();
-        float startRange = -scale.x / 2.0f;
+        float startRange = -scale.x;
 
-        start.x = cos * startRange + position.x;
-        start.y = sin * startRange + position.y;
+        float startX = cos * startRange;
+        float startY = sin * startRange;
+        start.x = startX + position.x;
+        start.y = startY + position.y;
         collisionPoint.x = 0;
         collisionPoint.y = 0;
         filter.setUserData(ship);
@@ -192,26 +195,29 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
 
             if (userData != null) {
                 float sizeSpeed = 30.0f;
+                float posX = startX + cos * currentBeamRange;
+                float posY = startY + sin * currentBeamRange;
+                float hitX = position.x + posX;
+                float hitY = position.y + posY;
                 if (userData instanceof Ship ship) {
                     ship.attackShip(damage, this.ship, collisionPoint, ship.getFaction() == this.ship.getFaction() ? beamColor.w / 2.0f * 60.0f * TimeUtils.UPDATE_DELTA_TIME :
                             beamColor.w * 60.0f * TimeUtils.UPDATE_DELTA_TIME);
                     if (world.isRemote()) {
                         Random rand = world.getRand();
-                        ParticleSpawner.spawnBeamDamage(raycast, scale.x, sizeSpeed, beamColor);
+                        ParticleSpawner.spawnBeamDamage(raycast, hitX, hitY, scale.x, sizeSpeed, beamColor);
 
                         Shield shield = ship.getShield();
                         if (shield == null || shield.getShield() <= 0) {
                             if (rand.nextInt(5) == 0) {
                                 Hull hull = ship.getHull();
-                                Vector2 pos = raycast.getPoint();
                                 Vector2f velocity = new Vector2f(ship.getVelocity()).mul(0.005f);
                                 if (hull.getHull() / hull.getMaxHull() < 0.5f && rand.nextInt(50) == 0) {
                                     RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 1.5f, ParticleSpawner.CACHED_VECTOR);
-                                    ParticleSpawner.spawnShipOst(1, (float) pos.x, (float) pos.y, velocity.x + ParticleSpawner.CACHED_VECTOR.x,
+                                    ParticleSpawner.spawnShipOst(1, hitX, hitY, velocity.x + ParticleSpawner.CACHED_VECTOR.x,
                                             velocity.y + ParticleSpawner.CACHED_VECTOR.y, 0.5f);
                                 }
                                 RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 1.5f, ParticleSpawner.CACHED_VECTOR);
-                                ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), (float) pos.x, (float) pos.y, velocity.x + ParticleSpawner.CACHED_VECTOR.x,
+                                ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), hitX, hitY, velocity.x + ParticleSpawner.CACHED_VECTOR.x,
                                         velocity.y + ParticleSpawner.CACHED_VECTOR.y, 2.0f * rand.nextFloat());
                             }
                         }
@@ -220,17 +226,16 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                     wreck.damage(damage.getBulletDamageHull() * beamColor.w);
                     if (world.isRemote()) {
                         Random rand = world.getRand();
-                        ParticleSpawner.spawnBeamDamage(raycast, scale.x, sizeSpeed, beamColor);
+                        ParticleSpawner.spawnBeamDamage(raycast, hitX, hitY, scale.x, sizeSpeed, beamColor);
                         if (rand.nextInt(5) == 0) {
-                            Vector2 pos = raycast.getPoint();
                             Vector2f velocity = new Vector2f(wreck.getVelocity()).mul(0.005f);
                             if (rand.nextInt(50) == 0) {
                                 RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 1.5f, ParticleSpawner.CACHED_VECTOR);
-                                ParticleSpawner.spawnShipOst(1, (float) pos.x, (float) pos.y, velocity.x + ParticleSpawner.CACHED_VECTOR.x,
+                                ParticleSpawner.spawnShipOst(1, hitX, hitY, velocity.x + ParticleSpawner.CACHED_VECTOR.x,
                                         velocity.y + ParticleSpawner.CACHED_VECTOR.y, 0.5f);
                             }
                             RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 1.5f, ParticleSpawner.CACHED_VECTOR);
-                            ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), (float) pos.x, (float) pos.y, velocity.x + ParticleSpawner.CACHED_VECTOR.x,
+                            ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), hitX, hitY, velocity.x + ParticleSpawner.CACHED_VECTOR.x,
                                     velocity.y + ParticleSpawner.CACHED_VECTOR.y, 2.0f * rand.nextFloat());
                         }
                     }
@@ -238,21 +243,28 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                     if (world.isRemote()) {
                         CollisionObject obj = (CollisionObject) userData;
                         Random rand = world.getRand();
-                        ParticleSpawner.spawnBeamDamage(raycast, scale.x, sizeSpeed, beamColor);
+                        ParticleSpawner.spawnBeamDamage(raycast, hitX, hitY, scale.x, sizeSpeed, beamColor);
                         if (rand.nextInt(5) == 0) {
-                            Vector2 pos = raycast.getPoint();
                             Vector2f velocity = new Vector2f(obj.getVelocity()).mul(0.005f);
                             if (rand.nextInt(50) == 0) {
                                 RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 1.5f, ParticleSpawner.CACHED_VECTOR);
-                                ParticleSpawner.spawnShipOst(1, (float) pos.x, (float) pos.y, velocity.x + ParticleSpawner.CACHED_VECTOR.x, velocity.y + ParticleSpawner.CACHED_VECTOR.y, 0.5f);
+                                ParticleSpawner.spawnShipOst(1, hitX, hitY, velocity.x + ParticleSpawner.CACHED_VECTOR.x, velocity.y + ParticleSpawner.CACHED_VECTOR.y, 0.5f);
                             }
                             RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 1.5f, ParticleSpawner.CACHED_VECTOR);
-                            ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), (float) pos.x, (float) pos.y, velocity.x + ParticleSpawner.CACHED_VECTOR.x,
+                            ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), hitX, hitY, velocity.x + ParticleSpawner.CACHED_VECTOR.x,
                                     velocity.y + ParticleSpawner.CACHED_VECTOR.y, 2.0f * rand.nextFloat());
                         }
                     }
                 }
             }
+        }
+    }
+
+    @Override
+    public void renderAdditive(float interpolation) {
+        if (shootTimer > 0 && beamColor.w > 0) {
+//            beam.calculateTransform(this, ship);
+            beam.render(null, interpolation);
         }
     }
 
@@ -268,13 +280,6 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
     @Override
     protected void spawnShootParticles() {
 
-    }
-
-    @Override
-    public void clear() {
-        if (world.isRemote()) {
-            particlesEffects.clear();
-        }
     }
 
     public Vector4f getBeamColor() {

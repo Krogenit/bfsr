@@ -12,41 +12,31 @@ public class ParticleBeamEffect extends Particle {
     private WeaponSlotBeam slot;
     private Ship ship;
     private final Vector2f addPos = new Vector2f();
-    private final Vector2f addScale = new Vector2f();
     private Random rand;
     private boolean changeColor;
 
     public ParticleBeamEffect init(WeaponSlotBeam slot, TextureRegister texture) {
-        init(texture, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.001f, false, RenderLayer.DEFAULT_ADDITIVE);
+        init(texture, 0.0f, 0.0f, 0.0f, 0.0f, slot.getRotation(), 0.0f, 5.0f + 2.8f * slot.getShip().getWorld().getRand().nextFloat(),
+                slot.getScale().y / 2.0f + 0.4f * slot.getShip().getWorld().getRand().nextFloat(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.001f, false, RenderLayer.DEFAULT_ADDITIVE);
         this.slot = slot;
-        ship = slot.getShip();
-        rand = ship.getWorld().getRand();
-        color.set(slot.getBeamColor());
-        Vector2f slotScale = slot.getScale();
-        addPos.set(rand.nextFloat(), (rand.nextFloat() * 2.0f - 1.0f) * slotScale.y / 2.0f);
-        addScale.set(5.0f + 2.8f * rand.nextFloat(), slotScale.y / 2.0f + 0.4f * rand.nextFloat());
+        this.ship = slot.getShip();
+        this.rand = ship.getWorld().getRand();
+        this.color.set(slot.getBeamColor());
+        this.lastColor.set(color);
+        this.addPos.set(rand.nextFloat(), (rand.nextFloat() * 2.0f - 1.0f) * slot.getScale().y / 2.0f);
+        calculateTransform();
+        this.lastPosition.set(position);
         return this;
     }
 
     @Override
     public void update() {
         lastPosition.set(position);
-        float beamRange = slot.getCurrentBeamRange();
-        Vector2f slotPos = slot.getPosition();
+        lastRotation = rotation;
+
+        calculateTransform();
+
         Vector4f beamColor = slot.getBeamColor();
-
-        float cos = ship.getCos();
-        float sin = ship.getSin();
-
-        float l = beamRange * addPos.x + (rand.nextFloat() * 2.0f - 1.0f);
-        float k = addPos.y;
-
-        rotation = slot.getRotation();
-        position.x = cos * l - sin * k + slotPos.x;
-        position.y = sin * l + cos * k + slotPos.y;
-        scale.x = addScale.x;
-        scale.y = addScale.y;
-
         float colorSpeed = 0.25f * rand.nextFloat();
         if (changeColor) {
             if (color.w > 0) {
@@ -66,6 +56,21 @@ public class ParticleBeamEffect extends Particle {
         if (ship.isDead() || color.w <= 0) {
             setDead(true);
         }
+    }
+
+    public void calculateTransform() {
+        float beamRange = slot.getCurrentBeamRange();
+        Vector2f slotPos = slot.getPosition();
+
+        float cos = ship.getCos();
+        float sin = ship.getSin();
+
+        float l = beamRange * addPos.x + (rand.nextFloat() * 2.0f - 1.0f);
+        float k = addPos.y;
+
+        rotation = slot.getRotation();
+        position.x = cos * l - sin * k + slotPos.x;
+        position.y = sin * l + cos * k + slotPos.y;
     }
 
     @Override

@@ -23,7 +23,6 @@ import java.util.Random;
 public final class ParticleSpawner {
     private static final Random rand = new Random();
     public static final ParticlePool<Particle> PARTICLE_POOL = new ParticlePool<>();
-    public static final ParticlePool<ParticleBeam> PARTICLE_BEAM_POOL = new ParticlePool<>();
     public static final ParticlePool<ParticleBeamEffect> PARTICLE_BEAM_EFFECT_POOL = new ParticlePool<>();
     public static final ParticlePool<ParticleWreck> PARTICLE_WREAK_POOL = new ParticlePool<>();
     public static final Vector2f CACHED_VECTOR = new Vector2f();
@@ -104,10 +103,6 @@ public final class ParticleSpawner {
         }
     }
 
-    public static void spawnBeam(WeaponSlotBeam slot, boolean isSmall) {
-        PARTICLE_BEAM_POOL.getOrCreate(ParticleBeam::new).init(slot, isSmall, TextureRegister.particleBeam);
-    }
-
     public static void spawnBeam(float x, float y, float rotation, float size, float r, float g, float b, float a) {
         float alphaSpeed = 6.0f;
         float sizeSpeed = 30.0f;
@@ -116,7 +111,7 @@ public final class ParticleSpawner {
                 alphaSpeed, 0.001f, false, RenderLayer.DEFAULT_ADDITIVE);
     }
 
-    public static Particle spawnBeamEffect(WeaponSlotBeam slot) {
+    public static ParticleBeamEffect spawnBeamEffect(WeaponSlotBeam slot) {
         return PARTICLE_BEAM_EFFECT_POOL.getOrCreate(ParticleBeamEffect::new).init(slot, TextureRegister.particleBeamEffect);
     }
 
@@ -351,12 +346,11 @@ public final class ParticleSpawner {
                 0.5f, 0.5f, 0.5f, 0.75f, alphaSpeed, 0.001f, false, RenderLayer.BACKGROUND_ALPHA_BLENDED);
     }
 
-    public static void spawnBeamDamage(Raycast raycast, float size, float sizeSpeed, Vector4f color) {
-        Vector2 point = raycast.getPoint();
+    public static void spawnBeamDamage(Raycast raycast, float x, float y, float size, float sizeSpeed, Vector4f color) {
         Vector2 normal = raycast.getNormal();
         float rot = (float) Math.atan2(normal.x, -normal.y);
         float alphaSpeed = 6.0f;
-        PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleBeamDamage, (float) point.x, (float) point.y, 0, 0, rot, 0, size, size, sizeSpeed,
+        PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleBeamDamage, x, y, 0, 0, rot, 0, size, size, sizeSpeed,
                 color.x, color.y, color.z, color.w, alphaSpeed, 0.001f, false, RenderLayer.DEFAULT_ADDITIVE);
     }
 

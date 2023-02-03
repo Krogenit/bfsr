@@ -438,7 +438,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         }
     }
 
-    public void renderTransparent(BaseShader shader, float interpolation) {
+    public void renderAdditive(BaseShader shader, float interpolation) {
         if (spawned) {
             int size = damages.size();
             for (int i = 0; i < size; i++) {
@@ -446,6 +446,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
                 damage.renderEffects(interpolation);
             }
 
+            renderGunSlotsAdditive(interpolation);
             renderShield(shader, interpolation);
         } else {
             InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getDefaultModelMatrix(lastJumpPosition.x, lastJumpPosition.y, jumpPosition.x, jumpPosition.y, lastRotation, rotation,
@@ -483,6 +484,14 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         for (int i = 0; i < size; i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
             if (weaponSlot != null) InstancedRenderer.INSTANCE.addToRenderPipeLine(weaponSlot, interpolation);
+        }
+    }
+
+    private void renderGunSlotsAdditive(float interpolation) {
+        int size = weaponSlots.size();
+        for (int i = 0; i < size; i++) {
+            WeaponSlot weaponSlot = weaponSlots.get(i);
+            if (weaponSlot != null) weaponSlot.renderAdditive(interpolation);
         }
     }
 

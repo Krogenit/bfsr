@@ -207,7 +207,7 @@ public class WorldClient extends World {
         for (int i = 0; i < size; i++) {
             Ship s = ships.get(i);
             if (s.getAABB().isIntersects(cameraAABB)) {
-                s.renderTransparent(shader, interpolation);
+                s.renderAdditive(shader, interpolation);
             }
         }
 

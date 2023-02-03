@@ -1,5 +1,7 @@
 package net.bfsr.component.weapon;
 
+import lombok.Getter;
+import lombok.Setter;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
@@ -131,9 +133,7 @@ public abstract class WeaponSlot extends TextureObject {
         position.set(xPos + shipPos.x, yPos + shipPos.y);
     }
 
-    public Vector2f getAddPosition() {
-        return addPosition;
-    }
+    public void renderAdditive(float interpolation) {
 
     }
 
