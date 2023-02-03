@@ -144,7 +144,7 @@ public abstract class NetworkManager extends SimpleChannelInboundHandler<Packet>
             this.connectionState = enumconnectionstate;
         }
 
-        for (int i = 3000; !this.receivedPacketsQueue.isEmpty() && i >= 0; --i) {
+        for (int i = 1000; !this.receivedPacketsQueue.isEmpty() && i >= 0; --i) {
             Packet packet = this.receivedPacketsQueue.poll();
             processPacket(packet);
         }
