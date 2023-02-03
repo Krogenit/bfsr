@@ -132,7 +132,16 @@ public class WorldServer extends World {
     @Override
     public void update() {
         super.update();
+        spawnShips();
 
+        updateTime = profiler.getResult("update");
+        physicsTime = profiler.getResult("physics");
+        networkTime = profiler.getResult("network");
+//		System.out.println(delta);
+    }
+
+    @Override
+    protected void updateParticles() {
         for (int i = 0; i < particles.size(); i++) {
             Particle p = particles.get(i);
             p.update();
@@ -142,14 +151,6 @@ public class WorldServer extends World {
                 i--;
             }
         }
-
-//        spawnShips();
-
-        updateTime = profiler.getResult("update");
-        physicsTime = profiler.getResult("physics");
-        networkTime = profiler.getResult("network");
-//		System.out.println(delta);
-
     }
 
     @Override

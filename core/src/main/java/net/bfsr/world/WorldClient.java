@@ -159,6 +159,11 @@ public class WorldClient extends World {
     }
 
     @Override
+    protected void updateParticles() {
+        Core.getCore().getRenderer().getParticleRenderer().update();
+    }
+
+    @Override
     protected void updateShips() {
         super.updateShips();
         if (playerShip != null) {

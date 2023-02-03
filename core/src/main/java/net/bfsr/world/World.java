@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class World {
+public abstract class World {
     protected org.dyn4j.world.World<Body> physicWorld;
     protected final boolean isRemote;
     protected final Profiler profiler;
@@ -28,7 +28,7 @@ public class World {
     protected final TIntObjectMap<CollisionObject> entitiesById = new TIntObjectHashMap<>();
     protected int nextId;
 
-    public World(boolean isRemote, Profiler profiler) {
+    protected World(boolean isRemote, Profiler profiler) {
         this.isRemote = isRemote;
         this.profiler = profiler;
         initPhysicWorld();
@@ -49,6 +49,7 @@ public class World {
     public void update() {
         updateShips();
         updateBullets();
+        updateParticles();
 
         profiler.endStartSection("physics");
         physicWorld.step(1);
@@ -65,6 +66,8 @@ public class World {
             }
         }
     }
+
+    protected abstract void updateParticles();
 
     protected void updateShips() {
         for (int i = 0, size = ships.size(); i < size; i++) {

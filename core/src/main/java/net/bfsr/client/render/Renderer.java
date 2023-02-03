@@ -103,10 +103,12 @@ public class Renderer {
         GL11.glClearColor(0.05F, 0.1F, 0.2F, 1.0F);
     }
 
-    public void update() {
+    public void updateCamera() {
         camera.update();
+    }
+
+    public void update() {
         guiInGame.update();
-        if (!Core.getCore().isPaused()) particleRenderer.update();
     }
 
     public void render(float interpolation) {

@@ -84,6 +84,16 @@ public class Core {
             }
         }
 
+        profiler.endStartSection("update");
+        if (world != null) {
+            renderer.updateCamera();
+            soundManager.updateListenerPosition(renderer.getCamera());
+            if (!paused) world.update();
+            renderer.update();
+        }
+
+        if (currentGui != null) currentGui.update();
+
         profiler.endStartSection("network");
         if (networkManager != null) {
             if (networkManager.isChannelOpen()) {
@@ -96,15 +106,6 @@ public class Core {
                 clearNetwork();
             }
         }
-
-        profiler.endStartSection("update");
-        if (world != null) {
-            renderer.update();
-            soundManager.updateListenerPosition(renderer.getCamera());
-            if (!paused) world.update();
-        }
-
-        if (currentGui != null) currentGui.update();
     }
 
     public void render(float interpolation) {
