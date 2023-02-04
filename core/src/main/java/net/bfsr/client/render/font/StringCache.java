@@ -693,7 +693,7 @@ public class StringCache {
     }
 
     public float getHeight(String s) {
-        return getHeight(s, fontSize);
+        return getHeight(s, fontSize / 2);
     }
 
     public float getHeight(String s, int fontSize) {
