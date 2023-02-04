@@ -9,7 +9,6 @@ import org.joml.Vector4f;
 class StringParams {
     private Vector4f color = new Vector4f();
     private float x, y;
-    private int fontSize;
     private int height;
 
     void addHeight(int height) {

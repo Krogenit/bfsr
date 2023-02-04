@@ -692,6 +692,10 @@ public class StringCache {
         return advance;
     }
 
+    public float getHeight(String s) {
+        return getHeight(s, fontSize);
+    }
+
     public float getHeight(String s, int fontSize) {
         return glyphCache.getHeight(s, fontSize);
     }
