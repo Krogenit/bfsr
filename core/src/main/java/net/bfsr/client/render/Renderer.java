@@ -6,7 +6,6 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.camera.Camera;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.ingame.GuiInGame;
-import net.bfsr.client.model.TexturedQuad;
 import net.bfsr.client.particle.ParticleRenderer;
 import net.bfsr.client.render.debug.OpenGLDebugUtils;
 import net.bfsr.client.render.font.StringRenderer;
@@ -24,7 +23,6 @@ import static org.lwjgl.opengl.GL43C.glDebugMessageCallback;
 
 @Log4j2
 public class Renderer {
-    public static TexturedQuad quad, centeredQuad, counterClockWiseCnteredQuad;
 
     private final Core core;
     @Getter
@@ -57,10 +55,6 @@ public class Renderer {
         setVSync(EnumOption.V_SYNC.getBoolean());
 
         TextureLoader.init();
-
-        quad = TexturedQuad.createQuad();
-        centeredQuad = TexturedQuad.createCenteredQuad();
-        counterClockWiseCnteredQuad = TexturedQuad.createCounterClockWiseCenteredQuad();
 
         camera.init(core.getWidth(), core.getHeight());
         stringRenderer.init();

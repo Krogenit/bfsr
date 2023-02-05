@@ -1,8 +1,8 @@
 package net.bfsr.client.render.texture;
 
+import net.bfsr.client.model.TexturedQuad;
 import net.bfsr.client.render.FrameBuffer;
 import net.bfsr.client.render.OpenGLHelper;
-import net.bfsr.client.render.Renderer;
 import net.bfsr.client.shader.NebulaShader;
 import net.bfsr.client.shader.StarsShader;
 import net.bfsr.core.Core;
@@ -17,6 +17,8 @@ import java.nio.ByteBuffer;
 import java.util.Random;
 
 public final class TextureGenerator {
+    private static TexturedQuad counterClockWiseCenteredQuad;
+
     private static Texture generateSpaceTexture(int width, int height, float density, float brightness, Random random) {
         int count = Math.round(width * height * density);
 
@@ -52,8 +54,8 @@ public final class TextureGenerator {
         int l = size * size;
         byte[] data = new byte[(l << 1)];
         for (int i = 0; i < l; i++) {
-            data[i * 2] = (byte) Math.round(0.5 * (1.0 + random.nextDouble()) * 255);
-            data[i * 2 + 1] = (byte) Math.round(0.5 * (1.0 + random.nextDouble()) * 255);
+            data[(i << 1)] = (byte) Math.round(0.5 * (1.0 + random.nextDouble()) * 255);
+            data[(i << 1) + 1] = (byte) Math.round(0.5 * (1.0 + random.nextDouble()) * 255);
         }
 
         GL45C.glTextureStorage2D(texture.getId(), 1, GL30.GL_RG8, size, size);
@@ -71,6 +73,7 @@ public final class TextureGenerator {
     }
 
     public static Texture generateNebulaTexture(int width, int height, Random random) {
+        if (counterClockWiseCenteredQuad == null) counterClockWiseCenteredQuad = TexturedQuad.createCounterClockWiseCenteredQuad();
         NebulaShader nebulaShader = new NebulaShader();
         StarsShader starsShader = new StarsShader();
         FrameBuffer buffer = new FrameBuffer();
@@ -176,7 +179,7 @@ public final class TextureGenerator {
 
             activeBuffer = 1 - activeBuffer;
             buffer.drawBuffer(activeBuffer);
-            Renderer.counterClockWiseCnteredQuad.renderIndexed();
+            counterClockWiseCenteredQuad.renderIndexed();
             nebulaTexture = buffer.getTexture(activeBuffer);
             noise.delete();
         }
@@ -207,7 +210,7 @@ public final class TextureGenerator {
 
             activeBuffer = 1 - activeBuffer;
             buffer.drawBuffer(activeBuffer);
-            Renderer.counterClockWiseCnteredQuad.renderIndexed();
+            counterClockWiseCenteredQuad.renderIndexed();
             nebulaTexture = buffer.getTexture(activeBuffer);
         }
 
@@ -233,7 +236,7 @@ public final class TextureGenerator {
 
             activeBuffer = 1 - activeBuffer;
             buffer.drawBuffer(activeBuffer);
-            Renderer.counterClockWiseCnteredQuad.renderIndexed();
+            counterClockWiseCenteredQuad.renderIndexed();
             nebulaTexture = buffer.getTexture(activeBuffer);
         }
 
