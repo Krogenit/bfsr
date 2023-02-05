@@ -2,13 +2,13 @@ package net.bfsr.client.gui;
 
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.language.Lang;
+import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.StringCache;
 import net.bfsr.client.render.font.StringOffsetType;
 import net.bfsr.client.render.font.string.DynamicString;
 import net.bfsr.client.render.font.string.StringObject;
 import net.bfsr.client.render.texture.TextureRegister;
-import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.sound.GuiSoundSource;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.core.Core;
@@ -77,11 +77,11 @@ public class Slider extends TexturedGuiObject {
     }
 
     @Override
-    public void render(BaseShader shader) {
-        super.render(shader);
-        slider.render(shader);
+    public void render() {
+        super.render();
+        slider.render();
+        InstancedRenderer.INSTANCE.render();
         stringObject.render();
-        shader.enable();
     }
 
     @Override

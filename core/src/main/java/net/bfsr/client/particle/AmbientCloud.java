@@ -1,7 +1,6 @@
 package net.bfsr.client.particle;
 
 import net.bfsr.client.camera.Camera;
-import net.bfsr.client.shader.BaseShader;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
 import org.joml.Vector2f;
@@ -49,7 +48,7 @@ public class AmbientCloud extends TextureObject {
     }
 
     @Override
-    public void render(BaseShader shader) {
+    public void render(float interpolation) {
 
     }
 

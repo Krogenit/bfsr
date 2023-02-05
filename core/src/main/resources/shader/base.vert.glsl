@@ -8,18 +8,12 @@ out Data {
 } out_Data;
 
 uniform mat4 modelMatrix;
-uniform vec2 uv_scale;
-uniform vec2 uv_offset;
 
-layout(std140, binding = UBO_PROJECTION_MATRIX) uniform ProjectionMatrix {
+layout(std140, binding = UBO_CAMERA_MATRIX) uniform ProjectionViewMatrix {
     mat4 matrix;
-} ub_PrjectionMatrix;
-
-layout(std140, binding = UBO_VIEW_MATRIX) uniform ViewMatrix {
-    mat4 matrix;
-} ub_ViewMatrix;
+} ub_PrjectionViewMatrix;
 
 void main() {
-    gl_Position = ub_PrjectionMatrix.matrix * ub_ViewMatrix.matrix * modelMatrix * vec4(in_PositionUV.xy, 0.0, 1.0);
-    out_Data.textureCoord = in_PositionUV.zw * uv_scale + uv_offset;
+    gl_Position = ub_PrjectionViewMatrix.matrix * modelMatrix * vec4(in_PositionUV.xy, 0.0, 1.0);
+    out_Data.textureCoord = in_PositionUV.zw;
 }

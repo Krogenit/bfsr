@@ -17,7 +17,6 @@ import net.bfsr.client.render.font.string.StringObject;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
-import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.component.Armor;
@@ -35,7 +34,6 @@ import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.Direction;
-import net.bfsr.math.ModelMatrixUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.common.PacketObjectPosition;
 import net.bfsr.network.packet.server.*;
@@ -50,7 +48,6 @@ import org.dyn4j.dynamics.contact.Contact;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
-import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -438,7 +435,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         }
     }
 
-    public void renderAdditive(BaseShader shader, float interpolation) {
+    public void renderAdditive(float interpolation) {
         if (spawned) {
             int size = damages.size();
             for (int i = 0; i < size; i++) {
@@ -447,27 +444,31 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
             }
 
             renderGunSlotsAdditive(interpolation);
-            renderShield(shader, interpolation);
+            renderShield(interpolation);
         } else {
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getDefaultModelMatrix(lastJumpPosition.x, lastJumpPosition.y, jumpPosition.x, jumpPosition.y, lastRotation, rotation,
-                    40.0f * color.w, 40.0f * color.w, interpolation), effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, TextureLoader.getTexture(TextureRegister.particleJump));
+            float size = 40.0f * color.w;
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(lastJumpPosition.x, lastJumpPosition.y, jumpPosition.x, jumpPosition.y, lastRotation, rotation,
+                    size, size, size, size, effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, TextureLoader.getTexture(TextureRegister.particleJump), interpolation);
         }
     }
 
-    public void render(BaseShader shader, float interpolation) {
+    @Override
+    public void render(float interpolation) {
         if (spawned) {
-            Matrix4f modelMatrix = ModelMatrixUtils.getModelMatrix(this, interpolation);
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(modelMatrix, color.x, color.y, color.z, color.w, texture);
+            Vector2f position = getPosition();
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, getRotation(), lastScale.x, lastScale.y, scale.x, scale.y,
+                    color.x, color.y, color.z, color.w, texture, interpolation);
 
             if (hull.getHull() < hull.getMaxHull()) {
                 float hp = hull.getHull() / hull.getMaxHull();
-                InstancedRenderer.INSTANCE.addToRenderPipeLine(modelMatrix, 1.0f, 1.0f, 1.0f, 1.0f - hp, textureDamage);
+                InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, getRotation(), lastScale.x, lastScale.y, scale.x, scale.y,
+                        1.0f, 1.0f, 1.0f, 1.0f - hp, textureDamage, interpolation);
             }
 
             int size = damages.size();
             for (int i = 0; i < size; i++) {
                 Damage damage = damages.get(i);
-                damage.render(shader, interpolation);
+                damage.render(interpolation);
             }
 
             renderGunSlots(interpolation);
@@ -495,9 +496,9 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         }
     }
 
-    private void renderShield(BaseShader shader, float interpolation) {
+    private void renderShield(float interpolation) {
         if (shield != null) {
-            shield.render(shader, interpolation);
+            shield.render(interpolation);
         }
     }
 
@@ -540,10 +541,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
             }
         }
 
-        slot.setAddPosition(getWeaponSlotPosition(i));
-        slot.setShip(this);
-        slot.createBody();
-        slot.setId(i);
+        slot.init(i, getWeaponSlotPosition(i), this);
 
         weaponSlots.set(i, slot);
 

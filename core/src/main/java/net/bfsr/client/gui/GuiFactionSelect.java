@@ -3,16 +3,15 @@ package net.bfsr.client.gui;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.language.Lang;
+import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.string.StaticString;
 import net.bfsr.client.render.font.string.StringObject;
 import net.bfsr.client.render.texture.TextureRegister;
-import net.bfsr.client.shader.BaseShader;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.faction.Faction;
-import net.bfsr.math.ModelMatrixType;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.client.PacketFactionSelect;
 
@@ -42,15 +41,12 @@ public class GuiFactionSelect extends Gui {
 
         shipHuman.setPosition(center.x - 309, center.y + 70);
         shipHuman.setScale(90, 90);
-        shipHuman.setModelMatrixType(ModelMatrixType.GUI);
 
         shipSaimon.setPosition(center.x, center.y + 70);
         shipSaimon.setScale(110, 110);
-        shipSaimon.setModelMatrixType(ModelMatrixType.GUI);
 
         shipEngi.setPosition(center.x + 309, center.y + 70);
         shipEngi.setScale(90, 90);
-        shipEngi.setModelMatrixType(ModelMatrixType.GUI);
 
         aabbHuman = new AxisAlignedBoundingBox(center.x - 460, center.y - 88, center.x - 160, center.y + 260);
         aabbSaimon = new AxisAlignedBoundingBox(center.x - 150, center.y - 88, center.x + 150, center.y + 260);
@@ -106,10 +102,11 @@ public class GuiFactionSelect extends Gui {
     }
 
     @Override
-    public void render(BaseShader shader) {
-        super.render(shader);
-        shipHuman.render(shader);
-        shipSaimon.render(shader);
-        shipEngi.render(shader);
+    public void render(float interpolation) {
+        super.render(interpolation);
+        shipHuman.render(interpolation);
+        shipSaimon.render(interpolation);
+        shipEngi.render(interpolation);
+        InstancedRenderer.INSTANCE.render();
     }
 }

@@ -2,9 +2,6 @@
 #include "common.glsl"
 
 layout(location = 0) in vec4 in_PositionUV;
-layout(location = 1) in mat4 in_ModelMatrix;
-layout(location = 5) in vec4 in_Color;
-layout(location = 6) in uvec2 in_TextureHandle;
 
 out Data {
     vec2 textureCoords;
@@ -12,17 +9,17 @@ out Data {
     flat uvec2 textureHandle;
 } out_Data;
 
-layout(std140, binding = UBO_PROJECTION_MATRIX) uniform ProjectionMatrix {
+layout(std140, binding = UBO_CAMERA_MATRIX) uniform ProjectionViewMatrix {
     mat4 matrix;
-} ub_PrjectionMatrix;
+} ub_PrjectionViewMatrix;
 
-layout(std140, binding = UBO_VIEW_MATRIX) uniform ViewMatrix {
-    mat4 matrix;
-} ub_ViewMatrix;
+layout(std430, binding = 0) readonly buffer Materials {
+    ColorAndTexture materials[];
+} sb_Material;
 
 void main() {
-    gl_Position = ub_PrjectionMatrix.matrix * ub_ViewMatrix.matrix * in_ModelMatrix * vec4(in_PositionUV.xy, 0.0, 1.0);
-    out_Data.color = in_Color;
+    gl_Position = ub_PrjectionViewMatrix.matrix * vec4(in_PositionUV.xy, 0.0, 1.0);
+    out_Data.color = sb_Material.materials[gl_VertexID / 4].color;
     out_Data.textureCoords = in_PositionUV.zw;
-    out_Data.textureHandle = in_TextureHandle;
+    out_Data.textureHandle = sb_Material.materials[gl_VertexID / 4].textureHandle;
 }

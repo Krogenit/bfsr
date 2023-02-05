@@ -1,9 +1,7 @@
-struct ViewData {
-    mat4 projectionMatrix;
-    mat4 viewMatrix;
-    mat4 modelMatrix;
+struct ColorAndTexture {
+    vec4 color;
+    uvec2 textureHandle;
+    vec2 padding;
 };
 
-#define USB_VIEW 0
-#define UBO_PROJECTION_MATRIX 0
-#define UBO_VIEW_MATRIX 1
+#define UBO_CAMERA_MATRIX 0

@@ -24,6 +24,10 @@ public final class VBO {
         return new VBO(id);
     }
 
+    void storeData(ByteBuffer data, int flags) {
+        storeData(Integer.toUnsignedLong(data.remaining()), flags, MemoryUtil.memAddress(data));
+    }
+
     void storeData(LongBuffer data, int flags) {
         storeData(Integer.toUnsignedLong(data.remaining()) << 3, flags, MemoryUtil.memAddress(data));
     }

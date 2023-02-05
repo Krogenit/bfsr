@@ -5,19 +5,16 @@ import lombok.Setter;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
-import net.bfsr.client.render.Renderer;
+import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.StringCache;
 import net.bfsr.client.render.font.string.DynamicString;
 import net.bfsr.client.render.font.string.StaticString;
 import net.bfsr.client.render.font.string.StringObject;
 import net.bfsr.client.render.texture.TextureRegister;
-import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.client.sound.GuiSoundSource;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.core.Core;
-import net.bfsr.math.ModelMatrixUtils;
 import org.joml.Vector2i;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
@@ -224,13 +221,11 @@ public class InputBox extends TexturedGuiObject {
     }
 
     @Override
-    public void render(BaseShader shader) {
-        super.render(shader);
-
+    public void render() {
+        super.render();
+        InstancedRenderer.INSTANCE.render();
         renderString();
-        shader.enable();
-        renderSelectionAndCursor(shader);
-        shader.enableTexture();
+        renderSelectionAndCursor();
     }
 
     void renderString() {
@@ -241,17 +236,15 @@ public class InputBox extends TexturedGuiObject {
         }
     }
 
-    void renderSelectionAndCursor(BaseShader shader) {
+    void renderSelectionAndCursor() {
         float lineWidth;
         int cursorY = y + stringOffset.y + height / 2 - cursorHeight / 2;
         if (stringObject.getString().length() > 0) {
             if (cursorPositionEnd != cursorPosition) {
                 int leftStringWidth = stringObject.getStringCache().getStringWidth(stringObject.getString().substring(0, cursorPosition), fontSize);
                 int rightStringWidth = stringObject.getStringCache().getStringWidth(stringObject.getString().substring(cursorPosition, cursorPositionEnd), fontSize);
-                shader.setColor(selectionColor.x, selectionColor.y, selectionColor.z, selectionColor.w);
-                shader.disableTexture();
-                shader.setModelMatrix(ModelMatrixUtils.getModelViewMatrixGui(x + leftStringWidth + stringOffset.x, cursorY, 0, rightStringWidth, cursorHeight).get(ShaderProgram.MATRIX_BUFFER));
-                Renderer.quad.renderIndexed();
+                InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(x + leftStringWidth + stringOffset.x, cursorY, rightStringWidth, cursorHeight, selectionColor.x, selectionColor.y, selectionColor.z,
+                        selectionColor.w, 0);
                 if (leftToRightSelection) {
                     lineWidth = leftStringWidth + rightStringWidth;
                 } else {
@@ -265,10 +258,7 @@ public class InputBox extends TexturedGuiObject {
         }
 
         if (renderCursor) {
-            shader.disableTexture();
-            shader.setColor(color.x, color.y, color.z, color.w);
-            shader.setModelMatrix(ModelMatrixUtils.getModelViewMatrixGui(x + stringOffset.x + lineWidth, cursorY, 0, 1, cursorHeight).get(ShaderProgram.MATRIX_BUFFER));
-            Renderer.quad.renderIndexed();
+            InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(x + stringOffset.x + lineWidth, cursorY, 1, cursorHeight, color.x, color.y, color.z, color.w, 0);
         }
     }
 

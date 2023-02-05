@@ -7,22 +7,20 @@ import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.core.Core;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.math.MatrixUtils;
 import net.bfsr.network.packet.client.PacketCameraPosition;
 import net.bfsr.settings.EnumOption;
 import net.bfsr.util.TimeUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 
-import java.nio.FloatBuffer;
 import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Camera {
-    private static final int PROJECTION_MATRIX_UBO = 0;
-    public static final int VIEW_MATRIX_UBO = 1;
+    public static final int UBO_CAMERA_MATRIX = 0;
 
     private static final float Z_NEAR = -1.0f;
     private static final float Z_FAR = 100.0f;
@@ -32,13 +30,12 @@ public class Camera {
     @Getter
     private final Matrix4f viewMatrix = new Matrix4f();
     @Getter
-    private final Matrix4f interpolatedViewMatrix = new Matrix4f();
-    private final FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);//можно вынести в отедльный класс
+    private final Matrix4f projectionViewMatrix = new Matrix4f();
     @Getter
     private final AxisAlignedBoundingBox boundingBox = new AxisAlignedBoundingBox();
 
     @Getter
-    private final Vector2f position = new Vector2f(0, 0);
+    private final Vector2f position = new Vector2f();
     private final Vector2f mouseMovingAccumulator = new Vector2f();
     @Getter
     private final Vector2f lastPosition = new Vector2f();
@@ -47,6 +44,8 @@ public class Camera {
     private final Vector2f origin = new Vector2f();
     @Getter
     private float zoom = 10.0f;
+    @Getter
+    private float lastZoom = zoom;
 
     private int width, height;
     private final Vector2f vectorInCamSpace = new Vector2f();
@@ -56,9 +55,8 @@ public class Camera {
     @Getter
     private int projectionMatrixUBO;
     @Getter
-    private int viewMatrixUBO;
-    @Getter
-    private int GUIViewMatrixUBO;
+    private int projectionViewMatrixUBO;
+    private boolean zoomChanged;
 
     public void init(int width, int height) {
         this.width = width;
@@ -68,18 +66,16 @@ public class Camera {
         boundingBox.set(position.x + origin.x, position.y + origin.y, position.x - origin.x, position.y - origin.y);
 
         projectionMatrixUBO = GL45.glCreateBuffers();
-        viewMatrixUBO = GL45.glCreateBuffers();
-        GUIViewMatrixUBO = GL45.glCreateBuffers();
+        projectionViewMatrixUBO = GL45.glCreateBuffers();
 
         orthographicMatrix.ortho(0.0f, width, height, 0.0f, Z_NEAR, Z_FAR);
-        orthographicMatrix.get(matrixBuffer);
-        GL45.glNamedBufferStorage(projectionMatrixUBO, matrixBuffer, GL44.GL_DYNAMIC_STORAGE_BIT);
+        GL45.glNamedBufferStorage(projectionMatrixUBO, orthographicMatrix.get(ShaderProgram.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
 
         viewMatrix.translate(-origin.x, -origin.y, 0).scale(zoom, zoom, 1.0f).translate(-position.x, -position.y, 0);
-        viewMatrix.get(matrixBuffer);
-        GL45.glNamedBufferStorage(viewMatrixUBO, matrixBuffer, GL44.GL_DYNAMIC_STORAGE_BIT);
 
-        GL45.glNamedBufferStorage(GUIViewMatrixUBO, new Matrix4f().get(ShaderProgram.MATRIX_BUFFER), 0);
+        projectionViewMatrix.ortho(-width / 2.0f * zoom, width / 2.0f * zoom, height / 2.0f * zoom, -height / 2.0f * zoom, Z_NEAR, Z_FAR);
+        projectionViewMatrix.mul(new Matrix4f().lookAt(position.x, position.y, 0, 0, 0, -1, 0, 1, 0), projectionViewMatrix);
+        GL45.glNamedBufferStorage(projectionViewMatrixUBO, projectionViewMatrix.get(ShaderProgram.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
     }
 
     @Deprecated
@@ -167,6 +163,7 @@ public class Camera {
     }
 
     public void scroll(float y) {
+        lastZoom = zoom;
         float zoomMax = 30.0f;
         float zoomMin = 2.0f;
         float step = EnumOption.CAMERA_ZOOM_SPEED.getFloat() * zoom;
@@ -177,6 +174,8 @@ public class Camera {
         } else if (zoom < zoomMin) {
             zoom = zoomMin;
         }
+
+        zoomChanged = true;
     }
 
     public void mouseMove(float dx, float dy) {
@@ -188,6 +187,12 @@ public class Camera {
 
     public void update() {
         lastPosition.set(position.x, position.y);
+
+        if (zoomChanged) {
+            zoomChanged = false;
+        } else {
+            lastZoom = zoom;
+        }
 
         position.x += mouseMovingAccumulator.x;
         position.y += mouseMovingAccumulator.y;
@@ -214,12 +219,7 @@ public class Camera {
 
             if (EnumOption.CAMERA_FOLLOW_PLAYER.getBoolean()) followShip();
 
-            if (position.x != lastPosition.x || position.y != lastPosition.y) {
-                viewMatrix.identity();
-                viewMatrix.translate(-origin.x, -origin.y, 0).scale(zoom, zoom, 1.0f).translate(-position.x, -position.y, 0);
-                viewMatrix.get(matrixBuffer);
-                GL45.glNamedBufferSubData(viewMatrixUBO, 0, matrixBuffer);
-
+            if (position.x != lastPosition.x || position.y != lastPosition.y || lastZoom != zoom) {
                 boundingBox.setMinX(position.x + origin.x / zoom);
                 boundingBox.setMinY(position.y + origin.y / zoom);
                 boundingBox.setMaxX(position.x - origin.x / zoom);
@@ -235,7 +235,7 @@ public class Camera {
     }
 
     public void bind() {
-        GL30.glBindBufferBase(GL31.GL_UNIFORM_BUFFER, PROJECTION_MATRIX_UBO, projectionMatrixUBO);
+        GL30.glBindBufferBase(GL31.GL_UNIFORM_BUFFER, UBO_CAMERA_MATRIX, projectionViewMatrixUBO);
     }
 
     public void resize(int width, int height) {
@@ -245,8 +245,7 @@ public class Camera {
         origin.x = -width / 2.0f;
         origin.y = -height / 2.0f;
 
-        GL45.glNamedBufferSubData(projectionMatrixUBO, 0, orthographicMatrix.identity().ortho(0.0f, width, height, 0.0f, Z_NEAR, Z_FAR).get(matrixBuffer));
-        GL45.glNamedBufferSubData(viewMatrixUBO, 0, viewMatrix.identity().translate(-origin.x, -origin.y, 0).scale(zoom, zoom, 1.0f).translate(-position.x, -position.y, 0).get(matrixBuffer));
+        GL45.glNamedBufferSubData(projectionMatrixUBO, 0, orthographicMatrix.identity().ortho(0.0f, width, height, 0.0f, Z_NEAR, Z_FAR).get(ShaderProgram.MATRIX_BUFFER));
     }
 
     public Vector2f getWorldVector(Vector2f pos) {
@@ -268,7 +267,11 @@ public class Camera {
     public void calculateInterpolatedViewMatrix(float interpolation) {
         float cameraX = lastPosition.x + (position.x - lastPosition.x) * interpolation;
         float cameraY = lastPosition.y + (position.y - lastPosition.y) * interpolation;
+        float interpolatedZoom = lastZoom + (zoom - lastZoom) * interpolation;
 
-        interpolatedViewMatrix.identity().translate(-origin.x, -origin.y, 0).scale(zoom, zoom, 1.0f).translate(-cameraX, -cameraY, 0);
+        MatrixUtils.translateIdentity(viewMatrix.identity(), -origin.x, -origin.y);
+        MatrixUtils.scale(viewMatrix, interpolatedZoom, interpolatedZoom);
+        MatrixUtils.translate(viewMatrix, -cameraX, -cameraY);
+        GL45.glNamedBufferSubData(projectionViewMatrixUBO, 0, orthographicMatrix.mul(viewMatrix, projectionViewMatrix).get(ShaderProgram.MATRIX_BUFFER));
     }
 }

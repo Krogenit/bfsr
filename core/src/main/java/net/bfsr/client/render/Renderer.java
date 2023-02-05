@@ -12,7 +12,6 @@ import net.bfsr.client.render.debug.OpenGLDebugUtils;
 import net.bfsr.client.render.font.StringRenderer;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.shader.primitive.PrimitiveShaders;
 import net.bfsr.core.Core;
 import net.bfsr.settings.EnumOption;
 import net.bfsr.world.WorldClient;
@@ -80,8 +79,6 @@ public class Renderer {
         }
 
         GLFW.glfwShowWindow(window);
-
-        PrimitiveShaders.INSTANCE.init();
     }
 
     private void setupOpenGL(int width, int height) {
@@ -122,7 +119,7 @@ public class Renderer {
         }
 
         resetDrawCalls();
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
         camera.calculateInterpolatedViewMatrix(interpolation);
         camera.bind();
         OpenGLHelper.alphaGreater(0.0001f);
@@ -135,23 +132,22 @@ public class Renderer {
             particleRenderer.render();
             if (EnumOption.SHOW_DEBUG_BOXES.getBoolean()) {
                 GL20.glUseProgram(0);
-                world.renderDebug(null);
-                shader.enable();
+                world.renderDebug();
             }
         }
 
-        shader.enable();
-        GL30.glBindBufferBase(GL31.GL_UNIFORM_BUFFER, Camera.VIEW_MATRIX_UBO, camera.getGUIViewMatrixUBO());
+        GL30.glBindBufferBase(GL31.GL_UNIFORM_BUFFER, Camera.UBO_CAMERA_MATRIX, camera.getProjectionMatrixUBO());
 
         if (world != null) {
-            guiInGame.render(shader);
+            guiInGame.render(interpolation);
         }
 
-        shader.enable();
         Gui gui = core.getCurrentGui();
         if (gui != null) {
-            gui.render(shader);
+            gui.render(interpolation);
         }
+
+        InstancedRenderer.INSTANCE.render();
     }
 
     private void resetDrawCalls() {
@@ -173,9 +169,7 @@ public class Renderer {
         int i = GL11.glGetError();
 
         if (i != 0) {
-            log.error("########## GL ERROR ##########");
-            log.error("Erorr number {}", i);
-            log.error("Error in {}", name);
+            log.error("OpenGL Error {} number {}", name, i);
         }
     }
 

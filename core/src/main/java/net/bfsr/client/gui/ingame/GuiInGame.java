@@ -9,15 +9,12 @@ import net.bfsr.client.gui.input.InputChat;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.particle.ParticleRenderer;
 import net.bfsr.client.render.InstancedRenderer;
-import net.bfsr.client.render.Renderer;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.string.DynamicString;
 import net.bfsr.client.render.font.string.StringObject;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
-import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.component.Armor;
 import net.bfsr.component.ArmorPlate;
@@ -28,7 +25,6 @@ import net.bfsr.component.weapon.WeaponSlot;
 import net.bfsr.core.Core;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
-import net.bfsr.math.ModelMatrixUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.client.PacketShipControl;
 import net.bfsr.profiler.Profiler;
@@ -287,7 +283,7 @@ public class GuiInGame extends Gui {
     }
 
     private boolean canControlShip(Ship s) {
-        return s.getName().equals(core.getPlayerName());
+        return core.getPlayerName().equals(s.getName());
     }
 
     public void setShipControl() {
@@ -312,7 +308,7 @@ public class GuiInGame extends Gui {
         currentShip = ship;
     }
 
-    private void renderMap(World world) {
+    private void renderMap(World world, float interpolation) {
         List<Ship> ships = world.getShips();
         Vector2f camPos = core.getRenderer().getCamera().getPosition();
         float mapOffsetX = 600;
@@ -351,42 +347,44 @@ public class GuiInGame extends Gui {
                     color.z = 0.5f;
                 }
 
-                InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getGUIModelMatrix((int) (miniMapX + (pos.x - camPos.x) / mapScaleX), (int) (miniMapY + (pos.y - camPos.y) / mapScaleY),
-                        s.getRotation(), (int) (scale.x * shipSize), (int) (scale.y * shipSize)), color.x, color.y, color.z, 1.0f, s.getTexture());
+                int x = (int) (miniMapX + (pos.x - camPos.x) / mapScaleX);
+                int y = (int) (miniMapY + (pos.y - camPos.y) / mapScaleY);
+                int sizeX = (int) (scale.x * shipSize);
+                int sizeY = (int) (scale.y * shipSize);
+                InstancedRenderer.INSTANCE.addToRenderPipeLine(x, y, x, y, s.getLastRotation(), s.getRotation(), sizeX, sizeY, sizeX, sizeY, color.x, color.y, color.z, 1.0f, s.getTexture(),
+                        interpolation);
             }
         }
-
-        InstancedRenderer.INSTANCE.render();
 
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 
-    private void renderShipInHUD(BaseShader shader, Ship ship, int x, int y, float shipSize) {
+    private void renderShipInHUD(Ship ship, int x, int y, float shipSize) {
         float hull = ship.getHull().getHull() / ship.getHull().getMaxHull();
-        renderQuad(shader, 1.0f - hull, hull, 0.0f, 1.0f, ship.getTexture(), x, y, (float) (-Math.PI / 2.0f), (int) (ship.getScale().x * shipSize), (int) (ship.getScale().y * shipSize));
+        renderQuad(1.0f - hull, hull, 0.0f, 1.0f, ship.getTexture(), x, y, (float) (-Math.PI / 2.0f), (int) (ship.getScale().x * shipSize), (int) (ship.getScale().y * shipSize));
     }
 
-    private void renderHullValue(BaseShader shader, Ship ship, int x, int y) {
+    private void renderHullValue(Ship ship, int x, int y) {
         textHull.update(Math.round(ship.getHull().getHull()) + "");
         textHull.setPosition(x - textHull.getStringWidth() / 2, y + 16);
-        renderQuad(shader, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, x, y + 12, 0, textHull.getStringWidth() + 8, 18);
+        renderQuad(0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, x, y + 12, 0, textHull.getStringWidth() + 8, 18);
         textHull.render();
     }
 
-    private void renderShield(BaseShader shader, Shield shield, int x, int y) {
+    private void renderShield(Shield shield, int x, int y) {
         float shieldValue = shield.getShield() / shield.getMaxShield();
         int shieldSize = (int) (220 * shield.getSize());
-        renderQuad(shader, 1.0f - shieldValue, shieldValue, 0.0f, 1.0f, this.shield.getTexture(), x, y, 0, shieldSize, shieldSize);
+        renderQuad(1.0f - shieldValue, shieldValue, 0.0f, 1.0f, this.shield.getTexture(), x, y, 0, shieldSize, shieldSize);
     }
 
-    private void renderShieldValue(BaseShader shader, Shield shield, int x, int y) {
+    private void renderShieldValue(Shield shield, int x, int y) {
         textShield.update(Math.round(shield.getShield()) + "");
         textShield.setPosition(x - textShield.getStringWidth() / 2, y + 74);
-        renderQuad(shader, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, x, y + 70, 0, textShield.getStringWidth() + 8, 18);
+        renderQuad(0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, x, y + 70, 0, textShield.getStringWidth() + 8, 18);
         textShield.render();
     }
 
-    private void renderArmorPlates(BaseShader shader, Ship ship, int x, int y) {
+    private void renderArmorPlates(Ship ship, int x, int y) {
         Armor armor = ship.getArmor();
         ArmorPlate[] plates = armor.getArmorPlates();
         float rot = (float) Math.PI;
@@ -398,12 +396,12 @@ public class GuiInGame extends Gui {
                 rotationVector.x += x;
                 rotationVector.y += y;
                 float armorPlateValue = plate.getArmor() / plate.getArmorMax();
-                renderQuad(shader, 1.0f - armorPlateValue, armorPlateValue, 0.0f, 1.0f, armorPlate.getTexture(), (int) rotationVector.x, (int) rotationVector.y, (float) (rot + Math.PI), 64, 64);
+                renderQuad(1.0f - armorPlateValue, armorPlateValue, 0.0f, 1.0f, armorPlate.getTexture(), (int) rotationVector.x, (int) rotationVector.y, (float) (rot + Math.PI), 64, 64);
             }
         }
     }
 
-    private void renderWeaponSlots(BaseShader shader, Ship ship, int x, int y, float shipSize) {
+    private void renderWeaponSlots(Ship ship, int x, int y, float shipSize) {
         int size = ship.getWeaponSlots().size();
         for (int i = 0; i < size; i++) {
             WeaponSlot slot = ship.getWeaponSlots().get(i);
@@ -413,29 +411,28 @@ public class GuiInGame extends Gui {
                 RotationHelper.rotate((float) (-Math.PI / 2.0f), pos.x, pos.y, rotationVector);
                 int slotWidth = (int) (slot.getScale().x * shipSize);
                 int slothHeight = (int) (slot.getScale().y * shipSize);
-                renderQuad(shader, reload, 0.0f, 1.0f - reload, 1.0f, slot.getTexture(), (int) (x + rotationVector.x * shipSize), (int) (y + rotationVector.y * shipSize),
+                renderQuad(reload, 0.0f, 1.0f - reload, 1.0f, slot.getTexture(), (int) (x + rotationVector.x * shipSize), (int) (y + rotationVector.y * shipSize),
                         (float) (-Math.PI / 2.0f), slotWidth, slothHeight);
             }
         }
     }
 
-    private void renderCurrentShipInfo(BaseShader shader) {
+    private void renderCurrentShipInfo() {
         int x = hudShip.getX() + hudShip.getWidth() / 2;
         int y = hudShip.getY() + hudShip.getHeight() / 2;
         float shipSize = 10.0f;
 
-        renderShipInHUD(shader, currentShip, x, y, shipSize);
-        renderHullValue(shader, currentShip, x, y);
-        shader.enable();
+        renderShipInHUD(currentShip, x, y, shipSize);
+        InstancedRenderer.INSTANCE.render();
+        renderHullValue(currentShip, x, y);
 
         Shield shield = currentShip.getShield();
         if (shield != null && shield.shieldAlive()) {
-            renderShield(shader, shield, x, y);
-            renderShieldValue(shader, shield, x, y);
-            shader.enable();
+            renderShield(shield, x, y);
+            renderShieldValue(shield, x, y);
         }
 
-        renderArmorPlates(shader, currentShip, x, y);
+        renderArmorPlates(currentShip, x, y);
 
         Texture energyText = energy.getTexture();
         int energyWidth = 16;
@@ -447,12 +444,13 @@ public class GuiInGame extends Gui {
             RotationHelper.rotate(rot, -100, 0, rotationVector);
             rotationVector.x += x;
             rotationVector.y += y;
-            renderQuad(shader, 0.0f, 0.0f, 0.0f, 1.0f, energyText, (int) rotationVector.x, (int) rotationVector.y, (float) (-Math.PI + rot), energyWidth, energyHeight);
+            renderQuad(0.0f, 0.0f, 0.0f, 1.0f, energyText, (int) rotationVector.x, (int) rotationVector.y, (float) (-Math.PI + rot), energyWidth, energyHeight);
             if (energy >= i) {
-                renderQuad(shader, 0.25f, 0.5f, 1.0f, 1.0f, energyText, (int) rotationVector.x, (int) rotationVector.y, (float) (-Math.PI + rot), energyWidth, energyHeight);
+                renderQuad(0.25f, 0.5f, 1.0f, 1.0f, energyText, (int) rotationVector.x, (int) rotationVector.y, (float) (-Math.PI + rot), energyWidth, energyHeight);
             }
         }
 
+        InstancedRenderer.INSTANCE.render();
         shipCargo.setPosition(hudShipAdd0.getX() + 16, hudShipAdd0.getY() + 26);
         shipCargo.update(Lang.getString(Lang.getString("gui.shipCargo") + ": " + currentShip.getCargo().getCapacity() + "/" + currentShip.getCargo().getMaxCapacity()));
         shipCargo.render();
@@ -460,37 +458,37 @@ public class GuiInGame extends Gui {
         shipCrew.setPosition(hudShipAdd0.getX() + 16, hudShipAdd0.getY() + 40);
         shipCrew.update(Lang.getString(Lang.getString("gui.shipCrew") + ": " + currentShip.getCrew().getCrewSize() + "/" + currentShip.getCrew().getMaxCrewSize()));
         shipCrew.render();
-        shader.enable();
 
-        renderWeaponSlots(shader, currentShip, x, y, shipSize);
+        renderWeaponSlots(currentShip, x, y, shipSize);
     }
 
-    private void renderOtherShipInfo(BaseShader shader) {
+    private void renderOtherShipInfo() {
         int x = hudShipSecondary.getX() + hudShipSecondary.getWidth() / 2;
         int y = hudShipSecondary.getY() + hudShipSecondary.getHeight() / 2;
 
         float shipSize = 10.0f;
 
-        renderShipInHUD(shader, otherShip, x, y, shipSize);
+        renderShipInHUD(otherShip, x, y, shipSize);
 
         Shield shield = otherShip.getShield();
         if (shield != null && shield.shieldAlive()) {
-            renderShield(shader, shield, x, y);
+            renderShield(shield, x, y);
         }
 
-        renderArmorPlates(shader, otherShip, x, y);
-        renderWeaponSlots(shader, otherShip, x, y, shipSize);
+        renderArmorPlates(otherShip, x, y);
+        renderWeaponSlots(otherShip, x, y, shipSize);
     }
 
     @Override
-    public void render(BaseShader shader) {
-        super.render(shader);
+    public void render(float interpolation) {
+        super.render(interpolation);
 
-        renderMap(Core.getCore().getWorld());
-        if (currentShip != null) renderCurrentShipInfo(shader);
-        if (otherShip != null) renderOtherShipInfo(shader);
+        renderMap(Core.getCore().getWorld(), interpolation);
+        if (currentShip != null) renderCurrentShipInfo();
+        if (otherShip != null) renderOtherShipInfo();
 
         if (EnumOption.IS_DEBUG.getBoolean()) {
+            InstancedRenderer.INSTANCE.render();
             upperText.render();
             worldText.render();
 
@@ -500,11 +498,8 @@ public class GuiInGame extends Gui {
         }
     }
 
-    private void renderQuad(BaseShader shader, float r, float g, float b, float a, Texture texture, int x, int y, float rot, int width, int height) {
-        shader.setColor(r, g, b, a);
-        shader.setModelMatrix(ModelMatrixUtils.getModelViewMatrixGui(x, y, rot, width, height).get(ShaderProgram.MATRIX_BUFFER));
-        texture.bind();
-        Renderer.centeredQuad.renderIndexed();
+    private void renderQuad(float r, float g, float b, float a, Texture texture, int x, int y, float rot, int width, int height) {
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(x, y, rot, width, height, r, g, b, a, texture);
     }
 
     public void onExitToMainMenu() {}

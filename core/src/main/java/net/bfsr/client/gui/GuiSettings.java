@@ -4,16 +4,13 @@ import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.scroll.Scroll;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.Renderer;
+import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.StringOffsetType;
 import net.bfsr.client.render.font.string.StaticString;
 import net.bfsr.client.render.font.string.StringObject;
 import net.bfsr.client.render.texture.TextureRegister;
-import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.core.Core;
-import net.bfsr.math.ModelMatrixUtils;
 import net.bfsr.settings.EnumOption;
 import net.bfsr.settings.SettingsCategory;
 import net.bfsr.settings.option.SettingsOption;
@@ -146,16 +143,13 @@ public class GuiSettings extends Gui {
     }
 
     @Override
-    public void render(BaseShader shader) {
+    public void render(float interpolation) {
         if (isInGame) {
-            shader.setColor(0.0f, 0.0f, 0.0f, 0.5f);
-            shader.setModelMatrix(ModelMatrixUtils.getModelViewMatrixGui(width / 2.0F, height / 2.0f, 0, width, height).get(ShaderProgram.MATRIX_BUFFER));
-            shader.disableTexture();
-            Renderer.centeredQuad.renderIndexed();
+            InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(width / 2.0F, height / 2.0f, width, height, 0.0f, 0.0f, 0.0f, 0.5f, 0);
         }
 
-        backgroundTop.render(shader);
-        backgroundDown.render(shader);
+        backgroundTop.render();
+        backgroundDown.render();
         mainText.render();
 
         GL11C.glEnable(GL11C.GL_SCISSOR_TEST);
@@ -165,16 +159,14 @@ public class GuiSettings extends Gui {
             sections.get(i).render();
         }
 
-        shader.enable();
-
         int size = scissorAffected.size();
         for (int i = 0; i < size; i++) {
-            scissorAffected.get(i).render(shader);
+            scissorAffected.get(i).render();
         }
 
         GL11C.glDisable(GL11C.GL_SCISSOR_TEST);
 
-        saveButton.render(shader);
-        scroll.render(shader);
+        saveButton.render();
+        scroll.render();
     }
 }

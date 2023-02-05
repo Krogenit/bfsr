@@ -1,7 +1,6 @@
 package net.bfsr.client.gui;
 
 import lombok.NoArgsConstructor;
-import net.bfsr.client.shader.BaseShader;
 import net.bfsr.core.Core;
 import org.joml.Vector2i;
 
@@ -49,10 +48,10 @@ public abstract class Gui {
         }
     }
 
-    public void render(BaseShader shader) {
+    public void render(float interpolation) {
         int size = guiObjects.size();
         for (int i = 0; i < size; i++) {
-            guiObjects.get(i).render(shader);
+            guiObjects.get(i).render();
         }
     }
 

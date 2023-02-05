@@ -2,11 +2,9 @@ package net.bfsr.client.particle;
 
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.texture.TextureRegister;
-import net.bfsr.client.shader.BaseShader;
 import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.math.ModelMatrixUtils;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;
@@ -86,11 +84,11 @@ public class Beam extends TextureObject {
     }
 
     @Override
-    public void render(BaseShader shader, float interpolation) {
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getDefaultModelMatrix(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, lastScale.x,
-                lastScale.y, scale.x, scale.y, interpolation), color.x, color.y, color.z, color.w / 3.0f, texture);
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getDefaultModelMatrix(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, lastScale.x,
-                lastScale.y / 3.0f, scale.x, scale.y / 3.0f, interpolation), color.x, color.y, color.z, color.w, texture);
+    public void render(float interpolation) {
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, lastScale.x,
+                lastScale.y, scale.x, scale.y, color.x, color.y, color.z, color.w / 3.0f, texture, interpolation);
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, lastScale.x,
+                lastScale.y / 3.0f, scale.x, scale.y / 3.0f, color.x, color.y, color.z, color.w, texture, interpolation);
     }
 
     public void setLastValues() {

@@ -1,5 +1,6 @@
 package net.bfsr.world;
 
+import net.bfsr.client.camera.Camera;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.render.InstancedRenderer;
@@ -8,14 +9,12 @@ import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureGenerator;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
-import net.bfsr.math.ModelMatrixType;
 import net.bfsr.network.packet.client.PacketCommand;
 import net.bfsr.server.EnumCommand;
 import org.joml.Vector2f;
@@ -27,7 +26,7 @@ import java.util.Random;
 
 public class WorldClient extends World {
     private final Core core;
-    private final TextureObject background = new TextureObject(TextureLoader.dummyTexture, 0, 0, 2560 << 1, 2560 << 1).setModelMatrixType(ModelMatrixType.BACKGROUND);
+    private final TextureObject background = new TextureObject(TextureLoader.dummyTexture, 0, 0, 2560 << 1, 2560 << 1);
     private Ship playerShip;
     private int spawnTimer;
     private Texture backgroundTexture;
@@ -186,7 +185,18 @@ public class WorldClient extends World {
     }
 
     public void renderAmbient(float interpolation) {
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(background, interpolation);
+        Vector2f scale = background.getScale();
+        float moveFactor = 0.005f;
+        Camera camera = Core.getCore().getRenderer().getCamera();
+        float cameraZoom = camera.getLastZoom() + (camera.getZoom() - camera.getLastZoom()) * interpolation;
+        float lastX = (camera.getLastPosition().x - camera.getLastPosition().x * moveFactor / cameraZoom);
+        float lastY = (camera.getLastPosition().y - camera.getLastPosition().y * moveFactor / cameraZoom);
+        float x = (camera.getPosition().x - camera.getPosition().x * moveFactor / cameraZoom);
+        float y = (camera.getPosition().y - camera.getPosition().y * moveFactor / cameraZoom);
+        float zoom = (float) (0.5f + Math.log(cameraZoom) * 0.01f);
+        float scaleX = scale.x / cameraZoom * zoom;
+        float scaleY = scale.y / cameraZoom * zoom;
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(lastX, lastY, x, y, 0, 0, scaleX, scaleY, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f, background.getTexture(), interpolation);
         InstancedRenderer.INSTANCE.render();
     }
 
@@ -197,7 +207,7 @@ public class WorldClient extends World {
         for (int i = 0; i < size; i++) {
             Ship s = ships.get(i);
             if (s.getAABB().isIntersects(cameraAABB)) {
-                s.render(shader, interpolation);
+                s.render(interpolation);
             }
         }
 
@@ -207,7 +217,7 @@ public class WorldClient extends World {
         for (int i = 0; i < size; i++) {
             Ship s = ships.get(i);
             if (s.getAABB().isIntersects(cameraAABB)) {
-                s.renderAdditive(shader, interpolation);
+                s.renderAdditive(interpolation);
             }
         }
 
@@ -215,7 +225,7 @@ public class WorldClient extends World {
         for (int i = 0; i < size; i++) {
             Bullet b = bullets.get(i);
             if (b.getAABB().isIntersects(cameraAABB)) {
-                b.render(shader, interpolation);
+                b.render(interpolation);
             }
         }
 
@@ -223,7 +233,7 @@ public class WorldClient extends World {
         OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    public void renderDebug(ShaderProgram shaderProgram) {
+    public void renderDebug() {
         core.getRenderer().getCamera().setupOpenGLMatrix();
 
         int size = ships.size();

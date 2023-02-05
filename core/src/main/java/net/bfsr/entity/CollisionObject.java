@@ -363,7 +363,7 @@ public class CollisionObject extends TextureObject {
         if (diff < -Math.PI) diff += Geometry.TWO_PI;
         if (diff > Math.PI) diff -= Geometry.TWO_PI;
 
-        float alpha = Math.abs(diff) > Math.PI / 2.0 ? 1.0f : 0.25f;
+        float alpha = (float) (Math.max(Math.abs(diff) / 10.0f, 0.1f));
 
         double a = diff * alpha + rs;
 

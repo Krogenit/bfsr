@@ -1,7 +1,5 @@
 package net.bfsr.client.gui;
 
-import net.bfsr.client.shader.BaseShader;
-
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
@@ -76,7 +74,7 @@ public abstract class AbstractGuiObject implements IGuiObject {
     public void update() {}
 
     @Override
-    public void render(BaseShader shader) {}
+    public void render() {}
 
     @Override
     public void onMouseLeftClick() {}

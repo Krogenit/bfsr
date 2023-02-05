@@ -263,8 +263,7 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
     @Override
     public void renderAdditive(float interpolation) {
         if (shootTimer > 0 && beamColor.w > 0) {
-//            beam.calculateTransform(this, ship);
-            beam.render(null, interpolation);
+            beam.render(interpolation);
         }
     }
 

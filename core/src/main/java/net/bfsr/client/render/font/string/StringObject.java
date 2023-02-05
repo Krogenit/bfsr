@@ -6,7 +6,6 @@ import net.bfsr.client.gui.AbstractGuiObject;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.StringCache;
 import net.bfsr.client.render.font.StringOffsetType;
-import net.bfsr.client.shader.BaseShader;
 import net.bfsr.core.Core;
 import net.bfsr.util.MatrixBufferUtils;
 import org.joml.Vector4f;
@@ -128,14 +127,9 @@ public abstract class StringObject extends AbstractGuiObject {
         return stringCache.getStringWidth(string, fontSize);
     }
 
+    @Override
     public void render() {
         Core.getCore().getRenderer().getStringRenderer().render(glString);
-    }
-
-    @Override
-    public void render(BaseShader shader) {
-        render();
-        shader.enable();
     }
 
     @Override

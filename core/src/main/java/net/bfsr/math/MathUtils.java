@@ -7,6 +7,6 @@ public class MathUtils {
     public static final float THREE_PI = (float) (Math.PI * 3.0);
 
     public static float lerpAngle(float start, float end) {
-        return ((((end - start) % TWO_PI) + THREE_PI) % TWO_PI) - PI;
+        return (((end - start) % TWO_PI) + THREE_PI) % TWO_PI - PI;
     }
 }

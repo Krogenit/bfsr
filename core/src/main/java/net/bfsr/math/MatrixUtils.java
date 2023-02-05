@@ -4,8 +4,8 @@ import org.joml.Matrix4f;
 
 public class MatrixUtils {
     public static void translateIdentity(Matrix4f matrix, float x, float y) {
-        matrix.m30(matrix.m30() + x);
-        matrix.m31(matrix.m31() + y);
+        matrix.m30(x);
+        matrix.m31(y);
     }
 
     public static void translate(Matrix4f matrix, float x, float y) {

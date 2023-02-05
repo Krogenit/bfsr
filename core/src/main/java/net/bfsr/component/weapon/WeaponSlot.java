@@ -49,11 +49,10 @@ public abstract class WeaponSlot extends TextureObject {
         this.shootTimerMax = shootTimerMax;
         this.energyCost = energyCost;
         this.bulletSpeed = bulletSpeed;
+        this.lastScale.set(scaleX, scaleY);
         this.scale.set(scaleX, scaleY);
         this.alphaReducer = alphaReducer;
     }
-
-    public abstract void createBody();
 
     protected WeaponSlot(Ship ship, SoundRegistry[] shootSounds, float shootTimerMax, float energyCost, float bulletSpeed, float alphaReducer, float scaleX, float scaleY, TextureRegister texture) {
         this.shootSounds = shootSounds;
@@ -64,6 +63,7 @@ public abstract class WeaponSlot extends TextureObject {
         this.shootTimerMax = shootTimerMax;
         this.energyCost = energyCost;
         this.bulletSpeed = bulletSpeed;
+        this.lastScale.set(scaleX, scaleY);
         this.scale.set(scaleX, scaleY);
         this.alphaReducer = alphaReducer;
 
@@ -71,6 +71,18 @@ public abstract class WeaponSlot extends TextureObject {
             this.texture = TextureLoader.getTexture(texture);
         }
     }
+
+    public void init(int id, Vector2f addPosition, Ship ship) {
+        this.addPosition = addPosition;
+        this.ship = ship;
+        createBody();
+        this.id = id;
+        updatePos();
+        lastRotation = rotation;
+        lastPosition.set(position);
+    }
+
+    public abstract void createBody();
 
     protected abstract void spawnShootParticles();
 

@@ -5,12 +5,9 @@ import net.bfsr.client.gui.GuiSettings;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.Renderer;
+import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.texture.TextureRegister;
-import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.core.Core;
-import net.bfsr.math.ModelMatrixUtils;
 import org.lwjgl.glfw.GLFW;
 
 public class GuiInGameMenu extends Gui {
@@ -45,12 +42,8 @@ public class GuiInGameMenu extends Gui {
     }
 
     @Override
-    public void render(BaseShader shader) {
-        shader.setColor(0.0f, 0.0f, 0.0f, 0.5f);
-        shader.setModelMatrix(ModelMatrixUtils.getModelViewMatrixGui(width / 2.0F, height / 2.0f, 0, width, height).get(ShaderProgram.MATRIX_BUFFER));
-        shader.disableTexture();
-        Renderer.centeredQuad.renderIndexed();
-
-        super.render(shader);
+    public void render(float interpolation) {
+        InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(width / 2.0F, height / 2.0f, width, height, 0.0f, 0.0f, 0.0f, 0.5f, 0);
+        super.render(interpolation);
     }
 }

@@ -6,7 +6,6 @@ import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
-import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.component.hull.Hull;
@@ -14,7 +13,6 @@ import net.bfsr.component.shield.Shield;
 import net.bfsr.core.Core;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.math.ModelMatrixUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.server.PacketSpawnBullet;
 import net.bfsr.server.MainServer;
@@ -222,11 +220,11 @@ public class Bullet extends CollisionObject {
     }
 
     @Override
-    public void render(BaseShader shader, float interpolation) {
+    public void render(float interpolation) {
         float size = 6.0f;
         Vector2f pos = getPosition();
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getDefaultModelMatrix(lastPosition.x, lastPosition.y, pos.x, pos.y, lastRotation, getRotation(), size, size,
-                interpolation), color.x / 1.5f, color.y / 1.5f, color.z / 1.5f, color.w / 4.0f, TextureLoader.getTexture(TextureRegister.particleLight));
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, pos.x, pos.y, lastRotation, getRotation(), size, size, size, size,
+                color.x / 1.5f, color.y / 1.5f, color.z / 1.5f, color.w / 4.0f, TextureLoader.getTexture(TextureRegister.particleLight), interpolation);
         InstancedRenderer.INSTANCE.addToRenderPipeLine(this, interpolation);
     }
 

@@ -2,14 +2,10 @@ package net.bfsr.entity;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.render.OpenGLHelper;
-import net.bfsr.client.render.Renderer;
+import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
-import net.bfsr.client.shader.BaseShader;
-import net.bfsr.math.ModelMatrixType;
-import net.bfsr.math.ModelMatrixUtils;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -19,7 +15,6 @@ public class TextureObject {
     protected Texture texture;
     @Getter
     protected final Vector2f position = new Vector2f();
-    protected final Vector2f origin = new Vector2f();
     @Getter
     protected final Vector2f scale = new Vector2f();
     @Getter
@@ -33,8 +28,6 @@ public class TextureObject {
     @Getter
     @Setter
     protected float lastRotation, rotation;
-    @Getter
-    private ModelMatrixType modelMatrixType = ModelMatrixType.DEFAULT;
 
     public TextureObject(Texture texture, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a) {
         this.texture = texture;
@@ -46,7 +39,6 @@ public class TextureObject {
         this.lastColor.set(r, g, b, a);
         this.scale.set(scaleX, scaleY);
         this.lastScale.set(scaleX, scaleY);
-        this.origin.set(-scaleX / 2.0f, -scaleY / 2.0f);
     }
 
     public TextureObject(Texture texture, float x, float y, float rotation, float scaleX, float scaleY) {
@@ -81,16 +73,8 @@ public class TextureObject {
 
     }
 
-    public void render(BaseShader shader) {
-        render(shader, 1.0f);
-    }
-
-    public void render(BaseShader shader, float interpolation) {
-        shader.setColor(color.x, color.y, color.y, color.w);
-        shader.enableTexture();
-        OpenGLHelper.bindTexture(texture.getId());
-        shader.setModelMatrix(ModelMatrixUtils.getModelMatrixBuffer(this, interpolation));
-        Renderer.centeredQuad.renderIndexed();
+    public void render(float interpolation) {
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(this, interpolation);
     }
 
     public void setPosition(float x, float y) {
@@ -103,11 +87,6 @@ public class TextureObject {
 
     public void setColor(float r, float g, float b, float a) {
         this.color.set(r, g, b, a);
-    }
-
-    public TextureObject setModelMatrixType(ModelMatrixType modelMatrixType) {
-        this.modelMatrixType = modelMatrixType;
-        return this;
     }
 
     public void clear() {

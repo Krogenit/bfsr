@@ -1,12 +1,10 @@
 package net.bfsr.client.gui;
 
 import lombok.Getter;
-import net.bfsr.client.render.OpenGLHelper;
-import net.bfsr.client.render.Renderer;
+import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
-import net.bfsr.client.shader.BaseShader;
 
 public class TexturedGuiObject extends SimpleGuiObject {
     @Getter
@@ -28,11 +26,7 @@ public class TexturedGuiObject extends SimpleGuiObject {
     }
 
     @Override
-    public void render(BaseShader shader) {
-        shader.setColor(color.x, color.y, color.z, color.w);
-        shader.enableTexture();
-        OpenGLHelper.bindTexture(texture.getId());
-        shader.setModelMatrix(modelMatrixBuffer);
-        Renderer.quad.renderIndexed();
+    public void render() {
+        InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(x, y, width, height, color.x, color.y, color.z, color.w, texture);
     }
 }

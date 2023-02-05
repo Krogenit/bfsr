@@ -63,6 +63,10 @@ public class VAO {
         VBOs[index].storeData(data, flags, () -> vertexArrayElementBuffer(index));
     }
 
+    public void updateBuffer(int index, ByteBuffer data, int flags) {
+        VBOs[index].storeData(data, flags);
+    }
+
     public void updateBuffer(int index, FloatBuffer data, int flags) {
         VBOs[index].storeData(data, flags);
     }

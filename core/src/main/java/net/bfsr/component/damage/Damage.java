@@ -6,14 +6,11 @@ import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
-import net.bfsr.client.shader.BaseShader;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.math.ModelMatrixUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.util.TimeUtils;
-import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -192,20 +189,25 @@ public class Damage extends TextureObject {
     }
 
     @Override
-    public void render(BaseShader shader, float interpolation) {
+    public void render(float interpolation) {
         if (damaged || repairTimer > 0) {
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getModelMatrix(this, interpolation), color.x, color.y, color.z, color.w, texture);
-        } else if (repairTimer <= 0) {
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(ModelMatrixUtils.getModelMatrix(this, interpolation), color.x, color.y, color.z, colorFix.w, textureFix);
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, scale.x, scale.y, scale.x, scale.y,
+                    color.x, color.y, color.z, color.w, texture, interpolation);
+        } else if (repairTimer <= 0 && colorFix.w > 0) {
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, scale.x, scale.y, scale.x, scale.y,
+                    color.x, color.y, color.z, colorFix.w, textureFix, interpolation);
         }
     }
 
     public void renderEffects(float interpolation) {
         if (damaged || repairTimer > 0) {
-            Matrix4f modelMatrix = ModelMatrixUtils.getModelMatrix(this, interpolation);
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(modelMatrix, colorFire.x, colorFire.y, colorFire.z, colorFire.w, textureFire);
-            if (textureLight != null) {
-                InstancedRenderer.INSTANCE.addToRenderPipeLine(modelMatrix, colorLight.x, colorLight.y, colorLight.z, colorLight.w, textureLight);
+            if (colorFire.w > 0) {
+                InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, scale.x, scale.y, scale.x, scale.y,
+                        colorFire.x, colorFire.y, colorFire.z, colorFire.w, textureFire, interpolation);
+            }
+            if (textureLight != null && colorLight.w > 0) {
+                InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, scale.x, scale.y, scale.x, scale.y,
+                        colorLight.x, colorLight.y, colorLight.z, colorLight.w, textureLight, interpolation);
             }
         }
     }
