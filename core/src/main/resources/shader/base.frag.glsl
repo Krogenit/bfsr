@@ -1,19 +1,14 @@
 #version 450
+#extension GL_ARB_bindless_texture : enable
 
 layout(location = 0) out vec4 out_Color;
 
 in Data {
-    vec2 textureCoord;
+    vec2 textureCoords;
+    vec4 color;
+    flat uvec2 textureHandle;
 } in_Data;
 
-uniform sampler2D textureOpaque;
-uniform vec4 color;
-uniform bool useTexture;
-
 void main() {
-    if (useTexture) {
-        out_Color = texture(textureOpaque, in_Data.textureCoord) * color;
-    } else {
-        out_Color = color;
-    }
+    out_Color = texture(sampler2D(in_Data.textureHandle), in_Data.textureCoords) * in_Data.color;
 }

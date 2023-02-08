@@ -102,8 +102,8 @@ public class GuiFactionSelect extends Gui {
     @Override
     public void render(float interpolation) {
         super.render(interpolation);
-        shipHuman.render(interpolation);
-        shipSaimon.render(interpolation);
-        shipEngi.render(interpolation);
+        shipHuman.render();
+        shipSaimon.render();
+        shipEngi.render();
     }
 }

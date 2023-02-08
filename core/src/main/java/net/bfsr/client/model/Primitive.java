@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 public class Primitive {
-    final VAO vao;
+    protected final VAO vao;
     @Getter
     private final int vertexCount;
     @Getter
@@ -66,9 +66,5 @@ public class Primitive {
 
     public void clear() {
         vao.clear();
-    }
-
-    public int getVaoId() {
-        return vao.getId();
     }
 }

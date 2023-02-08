@@ -48,7 +48,7 @@ public class AmbientCloud extends TextureObject {
     }
 
     @Override
-    public void render(float interpolation) {
+    public void render() {
 
     }
 

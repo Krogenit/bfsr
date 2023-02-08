@@ -2,15 +2,14 @@ package net.bfsr.client.particle;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.OpenGLHelper;
-import net.bfsr.client.render.VAO;
-import net.bfsr.client.shader.BaseShader;
-import net.bfsr.client.shader.ParticleInstancedShader;
 import net.bfsr.core.Core;
 import net.bfsr.settings.EnumOption;
 import net.bfsr.util.MulthithreadingUtils;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -23,15 +22,10 @@ public class ParticleRenderer {
     public static final RenderLayer[] RENDER_LAYERS = RenderLayer.values();
     private static final int START_PARTICLE_COUNT = 8192;
 
-    private final BaseShader defaultShader;
-    @Getter
-    private final ParticleInstancedShader particleShader = new ParticleInstancedShader();
-
     private final List<Particle>[] particlesByRenderLayer = new List[4];
     @Getter
     private final List<ParticleWreck> particlesWrecks = new ArrayList<>();
 
-    private VAO vao;
     private final ByteBuffer[] materialBuffers = new ByteBuffer[4];
     private final FloatBuffer[] vertexBuffers = new FloatBuffer[4];
     private ParticlesStoreTask[] particlesStoreTasks;
@@ -41,9 +35,7 @@ public class ParticleRenderer {
     @Getter
     private int taskCount;
 
-    public ParticleRenderer(BaseShader baseShader) {
-        this.defaultShader = baseShader;
-
+    public ParticleRenderer() {
         for (int i = 0; i < RENDER_LAYERS.length; i++) {
             materialBuffers[RENDER_LAYERS[i].ordinal()] = BufferUtils.createByteBuffer(START_PARTICLE_COUNT << 5);
             vertexBuffers[RENDER_LAYERS[i].ordinal()] = BufferUtils.createFloatBuffer(START_PARTICLE_COUNT << 4);
@@ -61,15 +53,7 @@ public class ParticleRenderer {
         }
     }
 
-    public void init() {
-        this.particleShader.load();
-        this.particleShader.init();
-
-        vao = VAO.create(2);
-        vao.createVertexBuffers();
-        vao.attributeBindingAndFormat(0, 4, 0, 0);
-        vao.enableAttributes(1);
-    }
+    public void init() {}
 
     public void update() {
         for (int i = 0; i < particlesByRenderLayer.length; i++) {
@@ -242,8 +226,6 @@ public class ParticleRenderer {
     }
 
     public void renderBackground() {
-        particleShader.enable();
-
         FloatBuffer vertexBuffer = vertexBuffers[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()];
         ByteBuffer materialBuffer = materialBuffers[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()];
         int count = particlesByRenderLayer[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()].size();
@@ -268,8 +250,6 @@ public class ParticleRenderer {
     }
 
     public void render() {
-        particleShader.enable();
-
         FloatBuffer vertexBuffer = vertexBuffers[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()];
         ByteBuffer materialBuffer = materialBuffers[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()];
         int count = particlesByRenderLayer[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()].size() + particlesWrecks.size();
@@ -287,7 +267,7 @@ public class ParticleRenderer {
                 ParticleWreck particle = particlesWrecks.get(i);
                 particle.renderDebug();
             }
-            defaultShader.enable();
+            Core.getCore().getRenderer().getShader().enable();
         }
 
         vertexBuffer = vertexBuffers[RenderLayer.DEFAULT_ADDITIVE.ordinal()];
@@ -301,14 +281,7 @@ public class ParticleRenderer {
     }
 
     private void render(int count, FloatBuffer vertexBuffer, ByteBuffer materialBuffer) {
-        vertexBuffer.limit(count << 4);
-        materialBuffer.limit(count << 5);
-        vao.bind();
-        vao.updateVertexBuffer(0, vertexBuffer, GL44C.GL_DYNAMIC_STORAGE_BIT, 16);
-        vao.updateBuffer(1, materialBuffer, GL44C.GL_DYNAMIC_STORAGE_BIT);
-        vao.bindBufferBase(GL43C.GL_SHADER_STORAGE_BUFFER, 0, 1);
-        GL31C.glDrawArrays(GL11C.GL_QUADS, 0, count << 2);
-        Core.getCore().getRenderer().increaseDrawCalls();
+        InstancedRenderer.INSTANCE.render(count, vertexBuffer, materialBuffer);
     }
 
     void addParticle(ParticleWreck particle) {

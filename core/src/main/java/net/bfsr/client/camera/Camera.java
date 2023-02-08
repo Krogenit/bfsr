@@ -3,13 +3,13 @@ package net.bfsr.client.camera;
 import lombok.Getter;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
-import net.bfsr.client.shader.ShaderProgram;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.core.Core;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.MatrixUtils;
 import net.bfsr.network.packet.client.PacketCameraPosition;
 import net.bfsr.settings.EnumOption;
+import net.bfsr.util.MatrixBufferUtils;
 import net.bfsr.util.TimeUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -69,13 +69,13 @@ public class Camera {
         projectionViewMatrixUBO = GL45.glCreateBuffers();
 
         orthographicMatrix.ortho(0.0f, width, height, 0.0f, Z_NEAR, Z_FAR);
-        GL45.glNamedBufferStorage(projectionMatrixUBO, orthographicMatrix.get(ShaderProgram.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
+        GL45.glNamedBufferStorage(projectionMatrixUBO, orthographicMatrix.get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
 
         viewMatrix.translate(-origin.x, -origin.y, 0).scale(zoom, zoom, 1.0f).translate(-position.x, -position.y, 0);
 
         projectionViewMatrix.ortho(-width / 2.0f * zoom, width / 2.0f * zoom, height / 2.0f * zoom, -height / 2.0f * zoom, Z_NEAR, Z_FAR);
         projectionViewMatrix.mul(new Matrix4f().lookAt(position.x, position.y, 0, 0, 0, -1, 0, 1, 0), projectionViewMatrix);
-        GL45.glNamedBufferStorage(projectionViewMatrixUBO, projectionViewMatrix.get(ShaderProgram.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
+        GL45.glNamedBufferStorage(projectionViewMatrixUBO, projectionViewMatrix.get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
     }
 
     @Deprecated
@@ -245,7 +245,7 @@ public class Camera {
         origin.x = -width / 2.0f;
         origin.y = -height / 2.0f;
 
-        GL45.glNamedBufferSubData(projectionMatrixUBO, 0, orthographicMatrix.identity().ortho(0.0f, width, height, 0.0f, Z_NEAR, Z_FAR).get(ShaderProgram.MATRIX_BUFFER));
+        GL45.glNamedBufferSubData(projectionMatrixUBO, 0, orthographicMatrix.identity().ortho(0.0f, width, height, 0.0f, Z_NEAR, Z_FAR).get(MatrixBufferUtils.MATRIX_BUFFER));
     }
 
     public Vector2f getWorldVector(Vector2f pos) {
@@ -272,6 +272,6 @@ public class Camera {
         MatrixUtils.translateIdentity(viewMatrix.identity(), -origin.x, -origin.y);
         MatrixUtils.scale(viewMatrix, interpolatedZoom, interpolatedZoom);
         MatrixUtils.translate(viewMatrix, -cameraX, -cameraY);
-        GL45.glNamedBufferSubData(projectionViewMatrixUBO, 0, orthographicMatrix.mul(viewMatrix, projectionViewMatrix).get(ShaderProgram.MATRIX_BUFFER));
+        GL45.glNamedBufferSubData(projectionViewMatrixUBO, 0, orthographicMatrix.mul(viewMatrix, projectionViewMatrix).get(MatrixBufferUtils.MATRIX_BUFFER));
     }
 }

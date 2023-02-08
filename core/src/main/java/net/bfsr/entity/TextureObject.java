@@ -2,6 +2,7 @@ package net.bfsr.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.bfsr.client.render.BufferType;
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.StoreRenderObjectTask;
 import net.bfsr.client.render.texture.Texture;
@@ -76,8 +77,8 @@ public class TextureObject {
 
     }
 
-    public void render(float interpolation) {
-        InstancedRenderer.INSTANCE.addTask(storeRenderObjectTask);
+    public void render() {
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(this, BufferType.GUI);
     }
 
     public void setPosition(float x, float y) {

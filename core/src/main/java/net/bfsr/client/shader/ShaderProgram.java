@@ -3,19 +3,17 @@ package net.bfsr.client.shader;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.shader.loader.Definition;
+import net.bfsr.util.MatrixBufferUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL20;
 
 import java.nio.FloatBuffer;
 
 @Getter
 public abstract class ShaderProgram {
-    public static final FloatBuffer MATRIX_BUFFER = BufferUtils.createFloatBuffer(16);
-
     @Setter
     private int program;
     private final Definition[] definitions;
@@ -82,7 +80,7 @@ public abstract class ShaderProgram {
     }
 
     protected void setMat4(int location, Matrix4f matrix) {
-        GL20.glUniformMatrix4fv(location, false, matrix.get(MATRIX_BUFFER));
+        GL20.glUniformMatrix4fv(location, false, matrix.get(MatrixBufferUtils.MATRIX_BUFFER));
     }
 
     protected void setMat4(int location, FloatBuffer matrixBuffer) {

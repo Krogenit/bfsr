@@ -1,8 +1,12 @@
 package net.bfsr.util;
 
+import org.lwjgl.BufferUtils;
+
 import java.nio.FloatBuffer;
 
 public class MatrixBufferUtils {
+    public static final FloatBuffer MATRIX_BUFFER = BufferUtils.createFloatBuffer(16);
+
     public static void setPosition(FloatBuffer matrixBuffer, float x, float y) {
         matrixBuffer.position(12);
         matrixBuffer.put(x);

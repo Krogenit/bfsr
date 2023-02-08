@@ -60,6 +60,10 @@ public class InstancedRenderer {
         vao.enableAttributes(1);
     }
 
+    public void bind() {
+        vao.bind();
+    }
+
     public void render(BufferType bufferType) {
         StoreRenderObjectTask storeRenderObjectTask = storeRenderObjectTasks[bufferType.ordinal()];
 
@@ -70,8 +74,6 @@ public class InstancedRenderer {
         }
 
         if (storeRenderObjectTask.getObjectCount() > 0) {
-            Core.getCore().getRenderer().getParticleRenderer().getParticleShader().enable();
-            vao.bind();
             vao.updateVertexBuffer(0, storeRenderObjectTask.getVertexBuffer().limit(storeRenderObjectTask.getObjectCount() * VERTEX_DATA_SIZE), GL44C.GL_DYNAMIC_STORAGE_BIT, VERTEX_DATA_SIZE);
             vao.updateBuffer(1, storeRenderObjectTask.getMaterialBuffer().limit(storeRenderObjectTask.getObjectCount() * MATERIAL_DATA_SIZE), GL44C.GL_DYNAMIC_STORAGE_BIT);
             vao.bindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 0, 1);
@@ -79,6 +81,14 @@ public class InstancedRenderer {
             Core.getCore().getRenderer().increaseDrawCalls();
             storeRenderObjectTask.reset();
         }
+    }
+
+    public void render(int count, FloatBuffer vertexBuffer, ByteBuffer materialBuffer) {
+        vao.updateVertexBuffer(0, vertexBuffer.limit(count * VERTEX_DATA_SIZE), GL44C.GL_DYNAMIC_STORAGE_BIT, VERTEX_DATA_SIZE);
+        vao.updateBuffer(1, materialBuffer.limit(count * MATERIAL_DATA_SIZE), GL44C.GL_DYNAMIC_STORAGE_BIT);
+        vao.bindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 0, 1);
+        GL11C.glDrawArrays(GL11C.GL_QUADS, 0, count << 2);
+        Core.getCore().getRenderer().increaseDrawCalls();
     }
 
     public void addToRenderPipeLine(GLString glString, BufferType bufferType) {
