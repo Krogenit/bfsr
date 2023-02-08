@@ -1,8 +1,10 @@
 package net.bfsr.client.gui.scroll;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.bfsr.client.gui.SimpleGuiObject;
 import net.bfsr.client.input.Mouse;
+import net.bfsr.client.render.BufferType;
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.sound.GuiSoundSource;
 import net.bfsr.client.sound.SoundRegistry;
@@ -27,6 +29,8 @@ public class Scroll extends SimpleGuiObject {
     private int scrollY;
     private final List<ScrollableGuiObject> scrollableElements = new ArrayList<>();
     private BiFunction<Integer, Integer, Integer> viewHeightResizeFunction = (width, height) -> viewHeight;
+    @Setter
+    private float scrollModifier = 20.0f;
 
     public Scroll() {
         super(0, 0, 0, 0);
@@ -38,7 +42,7 @@ public class Scroll extends SimpleGuiObject {
 
     @Override
     public void scroll(float y) {
-        updatePositionAndSize((int) (scroll - y * 10.0f));
+        updatePositionAndSize((int) (scroll - y * scrollModifier));
     }
 
     public void scrollBottom() {
