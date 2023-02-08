@@ -8,6 +8,7 @@ import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.shader.ParticleInstancedShader;
 import net.bfsr.core.Core;
 import net.bfsr.settings.EnumOption;
+import net.bfsr.util.MulthithreadingUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 
@@ -19,13 +20,8 @@ import java.util.concurrent.*;
 
 @Log4j2
 public class ParticleRenderer {
-    @Getter
-    private static ParticleRenderer instance;
     public static final RenderLayer[] RENDER_LAYERS = RenderLayer.values();
-    private static final int INSTANCE_DATA_LENGTH = 22;
     private static final int START_PARTICLE_COUNT = 8192;
-    private final int parallelism = Runtime.getRuntime().availableProcessors();
-    private final boolean multithreadingSupported = parallelism > 1;
 
     private final BaseShader defaultShader;
     @Getter
@@ -54,17 +50,15 @@ public class ParticleRenderer {
             particlesByRenderLayer[RENDER_LAYERS[i].ordinal()] = new ArrayList<>(256);
         }
 
-        if (multithreadingSupported) {
-            taskFutures = new Future[parallelism];
-            particlesStoreTasks = new ParticlesStoreTask[parallelism];
-            executorService = Executors.newFixedThreadPool(parallelism);
+        if (MulthithreadingUtils.MULTITHREADING_SUPPORTED) {
+            taskFutures = new Future[MulthithreadingUtils.PARALLELISM];
+            particlesStoreTasks = new ParticlesStoreTask[MulthithreadingUtils.PARALLELISM];
+            executorService = Executors.newFixedThreadPool(MulthithreadingUtils.PARALLELISM);
             for (int i = 0; i < particlesStoreTasks.length; i++) {
                 particlesStoreTasks[i] = new ParticlesStoreTask();
                 particlesStoreTasks[i].init(particlesWrecks, particlesByRenderLayer, vertexBuffers, materialBuffers);
             }
         }
-
-        instance = this;
     }
 
     public void init() {
@@ -117,7 +111,7 @@ public class ParticleRenderer {
             while (buffer.capacity() < newDataSize * 8 * 4) {
                 buffer = BufferUtils.createByteBuffer(buffer.capacity() << 1);
                 materialBuffers[renderLayer.ordinal()] = buffer;
-                if (multithreadingSupported) {
+                if (MulthithreadingUtils.MULTITHREADING_SUPPORTED) {
                     for (int i1 = 0; i1 < particlesStoreTasks.length; i1++) {
                         particlesStoreTasks[i1].init(particlesWrecks, particlesByRenderLayer, vertexBuffers, materialBuffers);
                     }
@@ -130,7 +124,7 @@ public class ParticleRenderer {
             while (vertexBuffer.capacity() < newDataSize << 4) {
                 vertexBuffer = BufferUtils.createFloatBuffer(vertexBuffer.capacity() << 1);
                 vertexBuffers[renderLayer.ordinal()] = vertexBuffer;
-                if (multithreadingSupported) {
+                if (MulthithreadingUtils.MULTITHREADING_SUPPORTED) {
                     for (int i1 = 0; i1 < particlesStoreTasks.length; i1++) {
                         particlesStoreTasks[i1].init(particlesWrecks, particlesByRenderLayer, vertexBuffers, materialBuffers);
                     }
@@ -148,8 +142,8 @@ public class ParticleRenderer {
         int multithreadedThreshold = 2048;
         int particlesByTask = 2048;
 
-        boolean multithreaded = multithreadingSupported && totalParticles >= multithreadedThreshold;
-        taskCount = multithreaded ? (int) Math.ceil(Math.min(totalParticles / (float) particlesByTask, parallelism)) : 1;
+        boolean multithreaded = MulthithreadingUtils.MULTITHREADING_SUPPORTED && totalParticles >= multithreadedThreshold;
+        taskCount = multithreaded ? (int) Math.ceil(Math.min(totalParticles / (float) particlesByTask, MulthithreadingUtils.PARALLELISM)) : 1;
 
         particleWreckEffects = calculateParticleWreckEffects();
 
@@ -270,7 +264,6 @@ public class ParticleRenderer {
             vertexBuffer.limit(count << 4);
             materialBuffer.limit(count << 5);
             render(count, vertexBuffer, materialBuffer);
-            OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         }
     }
 
@@ -283,8 +276,6 @@ public class ParticleRenderer {
 
         if (count > 0) {
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-            vertexBuffer.limit(count << 4);
-            materialBuffer.limit(count << 5);
             render(count, vertexBuffer, materialBuffer);
         }
 
@@ -305,17 +296,16 @@ public class ParticleRenderer {
 
         if (count > 0) {
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
-            vertexBuffer.limit(count << 4);
-            materialBuffer.limit(count << 5);
             render(count, vertexBuffer, materialBuffer);
-            OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         }
     }
 
-    private void render(int count, FloatBuffer vertexBuffer, ByteBuffer buffer) {
+    private void render(int count, FloatBuffer vertexBuffer, ByteBuffer materialBuffer) {
+        vertexBuffer.limit(count << 4);
+        materialBuffer.limit(count << 5);
         vao.bind();
         vao.updateVertexBuffer(0, vertexBuffer, GL44C.GL_DYNAMIC_STORAGE_BIT, 16);
-        vao.updateBuffer(1, buffer, GL44C.GL_DYNAMIC_STORAGE_BIT);
+        vao.updateBuffer(1, materialBuffer, GL44C.GL_DYNAMIC_STORAGE_BIT);
         vao.bindBufferBase(GL43C.GL_SHADER_STORAGE_BUFFER, 0, 1);
         GL31C.glDrawArrays(GL11C.GL_QUADS, 0, count << 2);
         Core.getCore().getRenderer().increaseDrawCalls();
@@ -350,13 +340,15 @@ public class ParticleRenderer {
     }
 
     public void clear() {
-        executorService.shutdown();
-        try {
-            if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+        if (executorService != null) {
+            executorService.shutdown();
+            try {
+                if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+                    executorService.shutdownNow();
+                }
+            } catch (InterruptedException e) {
                 executorService.shutdownNow();
             }
-        } catch (InterruptedException e) {
-            executorService.shutdownNow();
         }
     }
 

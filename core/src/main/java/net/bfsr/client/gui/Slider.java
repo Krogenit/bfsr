@@ -2,11 +2,9 @@ package net.bfsr.client.gui;
 
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.StringCache;
 import net.bfsr.client.render.font.StringOffsetType;
-import net.bfsr.client.render.font.string.DynamicString;
 import net.bfsr.client.render.font.string.StringObject;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.sound.GuiSoundSource;
@@ -38,7 +36,7 @@ public class Slider extends TexturedGuiObject {
         String string = Lang.getString("settings." + option.getOptionName()) + ": " + DecimalUtils.formatWithToDigits(baseValue);
         FontType font = FontType.XOLONIUM;
         StringCache stringCache = font.getStringCache();
-        stringObject = new DynamicString(font, string, 0, 0, fontSize, StringOffsetType.CENTERED);
+        stringObject = new StringObject(font, string, 0, 0, fontSize, StringOffsetType.CENTERED);
         stringObject.setPosition(x + width / 2, (int) (y + (height - stringCache.getHeight(string, fontSize)) / 2.0f + stringCache.getAscent(string, fontSize)));
         stringObject.compile();
 
@@ -80,7 +78,6 @@ public class Slider extends TexturedGuiObject {
     public void render() {
         super.render();
         slider.render();
-        InstancedRenderer.INSTANCE.render();
         stringObject.render();
     }
 

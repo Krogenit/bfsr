@@ -2,67 +2,46 @@ package net.bfsr.client.render.font.string;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.render.VAO;
-import net.bfsr.client.render.font.StringRenderer;
-import net.bfsr.util.MatrixBufferUtils;
-import org.joml.Matrix4f;
-import org.joml.Vector2f;
+import net.bfsr.client.render.InstancedRenderer;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL43;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.LongBuffer;
 
 @Getter
 public class GLString {
-    private VAO vao;
-    @Setter
-    private int vertexCount;
     @Setter
     private int width, height;
-    @Setter
-    private FloatBuffer matrixBuffer = new Matrix4f().get(BufferUtils.createFloatBuffer(16));
+    private FloatBuffer vertexBuffer;
+    private ByteBuffer materialBuffer;
 
-    public void init() {
-        vao = VAO.create(2);
-        vao.createVertexBuffers();
-        vao.attributeBindingAndFormat(0, 4, 0, 0);
-        vao.attributeBindingAndFormat(1, 4, 0, 16);
-        vao.enableAttributes(2);
+    public void init(int glyphCount) {
+        vertexBuffer = BufferUtils.createFloatBuffer(glyphCount * InstancedRenderer.VERTEX_DATA_SIZE);
+        materialBuffer = BufferUtils.createByteBuffer(glyphCount * InstancedRenderer.MATERIAL_DATA_SIZE);
     }
 
-    public void fillBuffer(FloatBuffer vertexBuffer, LongBuffer textureBuffer) {
-        fillBuffer(vertexBuffer, textureBuffer, 0);
+    public void flipBuffers() {
+        vertexBuffer.flip();
+        materialBuffer.flip();
     }
 
-    void fillBuffer(FloatBuffer vertexBuffer, LongBuffer textureBuffer, int flags) {
-        vao.updateVertexBuffer(0, vertexBuffer, flags, StringRenderer.VERTEX_DATA_SIZE);
-        vao.updateBuffer(1, textureBuffer, flags);
-        vertexCount = vertexBuffer.remaining() / (StringRenderer.VERTEX_DATA_SIZE / 4);
+    public void checkBuffers(int dataSize) {
+        while (vertexBuffer.capacity() - vertexBuffer.position() < dataSize * InstancedRenderer.VERTEX_DATA_SIZE) {
+            FloatBuffer newBuffer = BufferUtils.createFloatBuffer(vertexBuffer.capacity() << 1);
+            vertexBuffer.flip();
+            newBuffer.put(vertexBuffer);
+            vertexBuffer = newBuffer;
+        }
+        while (materialBuffer.capacity() - materialBuffer.position() < dataSize * InstancedRenderer.MATERIAL_DATA_SIZE) {
+            ByteBuffer newBuffer = BufferUtils.createByteBuffer(materialBuffer.capacity() << 1);
+            materialBuffer.flip();
+            newBuffer.put(materialBuffer);
+            materialBuffer = newBuffer;
+        }
     }
 
-    public void bind() {
-        vao.bind();
-        vao.bindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 0, 1);
-    }
-
-    public void setPosition(Vector2f vector) {
-        setPosition(vector.x, vector.y);
-    }
-
-    public void setPosition(float x, float y) {
-        MatrixBufferUtils.setPosition(matrixBuffer, x, y);
-    }
-
-    public void setX(float x) {
-        MatrixBufferUtils.setX(matrixBuffer, x);
-    }
-
-    public void setY(float y) {
-        MatrixBufferUtils.setY(matrixBuffer, y);
-    }
-
-    public void clear() {
-        vao.clear();
+    public void clearBuffers() {
+        vertexBuffer.clear();
+        materialBuffer.clear();
     }
 }

@@ -8,9 +8,9 @@ import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.input.InputChat;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.particle.ParticleRenderer;
+import net.bfsr.client.render.BufferType;
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.font.FontType;
-import net.bfsr.client.render.font.string.DynamicString;
 import net.bfsr.client.render.font.string.StringObject;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
@@ -58,14 +58,14 @@ public class GuiInGame extends Gui {
     @Setter
     private long ping;
 
-    private final StringObject controlText = new DynamicString(FontType.XOLONIUM, Lang.getString("gui.control"), 16);
-    private final StringObject upperText = new DynamicString(FontType.CONSOLA);
-    private final StringObject worldText = new DynamicString(FontType.CONSOLA);
-    private final StringObject shipText = new DynamicString(FontType.CONSOLA);
-    private final StringObject shipCargo = new DynamicString(FontType.CONSOLA);
-    private final StringObject shipCrew = new DynamicString(FontType.CONSOLA);
-    private final StringObject textHull = new DynamicString(FontType.CONSOLA);
-    private final StringObject textShield = new DynamicString(FontType.CONSOLA);
+    private final StringObject controlText = new StringObject(FontType.XOLONIUM, Lang.getString("gui.control"), 16);
+    private final StringObject upperText = new StringObject(FontType.CONSOLA);
+    private final StringObject worldText = new StringObject(FontType.CONSOLA);
+    private final StringObject shipText = new StringObject(FontType.CONSOLA);
+    private final StringObject shipCargo = new StringObject(FontType.CONSOLA);
+    private final StringObject shipCrew = new StringObject(FontType.CONSOLA);
+    private final StringObject textHull = new StringObject(FontType.CONSOLA);
+    private final StringObject textShield = new StringObject(FontType.CONSOLA);
 
     private final InputChat chatInput = new InputChat();
 
@@ -352,7 +352,7 @@ public class GuiInGame extends Gui {
                 int sizeX = (int) (scale.x * shipSize);
                 int sizeY = (int) (scale.y * shipSize);
                 InstancedRenderer.INSTANCE.addToRenderPipeLine(x, y, x, y, s.getLastRotation(), s.getRotation(), sizeX, sizeY, sizeX, sizeY, color.x, color.y, color.z, 1.0f, s.getTexture(),
-                        interpolation);
+                        BufferType.GUI);
             }
         }
 
@@ -423,7 +423,6 @@ public class GuiInGame extends Gui {
         float shipSize = 10.0f;
 
         renderShipInHUD(currentShip, x, y, shipSize);
-        InstancedRenderer.INSTANCE.render();
         renderHullValue(currentShip, x, y);
 
         Shield shield = currentShip.getShield();
@@ -450,7 +449,6 @@ public class GuiInGame extends Gui {
             }
         }
 
-        InstancedRenderer.INSTANCE.render();
         shipCargo.setPosition(hudShipAdd0.getX() + 16, hudShipAdd0.getY() + 26);
         shipCargo.update(Lang.getString(Lang.getString("gui.shipCargo") + ": " + currentShip.getCargo().getCapacity() + "/" + currentShip.getCargo().getMaxCapacity()));
         shipCargo.render();
@@ -488,7 +486,6 @@ public class GuiInGame extends Gui {
         if (otherShip != null) renderOtherShipInfo();
 
         if (EnumOption.IS_DEBUG.getBoolean()) {
-            InstancedRenderer.INSTANCE.render();
             upperText.render();
             worldText.render();
 
@@ -499,7 +496,7 @@ public class GuiInGame extends Gui {
     }
 
     private void renderQuad(float r, float g, float b, float a, Texture texture, int x, int y, float rot, int width, int height) {
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(x, y, rot, width, height, r, g, b, a, texture);
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(x, y, rot, width, height, r, g, b, a, texture, BufferType.GUI);
     }
 
     public void onExitToMainMenu() {}

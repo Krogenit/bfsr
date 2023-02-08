@@ -43,6 +43,8 @@ public class Renderer {
     @Setter
     @Getter
     private int fps;
+    @Getter
+    private float interpolation;
 
     public Renderer(Core core) {
         this.core = core;
@@ -102,28 +104,36 @@ public class Renderer {
         guiInGame.update();
     }
 
-    public void render(float interpolation) {
+    public void prepareRender(float interpolation) {
         if (Core.getCore().isPaused()) {
             interpolation = 1.0f;
         }
 
+        this.interpolation = interpolation;
+
         WorldClient world = core.getWorld();
         if (world != null) {
             particleRenderer.storeParticlesToBuffers(interpolation);
+            world.prepareAmbient();
+            world.prepareEntities();
         }
+    }
 
+    public void render() {
         resetDrawCalls();
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
         camera.calculateInterpolatedViewMatrix(interpolation);
         camera.bind();
         OpenGLHelper.alphaGreater(0.0001f);
 
+        WorldClient world = core.getWorld();
         if (world != null) {
-            world.renderAmbient(interpolation);
+            world.renderAmbient();
             particleRenderer.waitTasks();
             particleRenderer.renderBackground();
-            world.renderEntities(shader, interpolation);
+            world.renderEntities();
             particleRenderer.render();
+            OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
             if (EnumOption.SHOW_DEBUG_BOXES.getBoolean()) {
                 GL20.glUseProgram(0);
                 world.renderDebug();
@@ -141,7 +151,7 @@ public class Renderer {
             gui.render(interpolation);
         }
 
-        InstancedRenderer.INSTANCE.render();
+        InstancedRenderer.INSTANCE.render(BufferType.GUI);
     }
 
     private void resetDrawCalls() {
@@ -175,6 +185,7 @@ public class Renderer {
 
     public void clear() {
         particleRenderer.clear();
+        instancedRenderer.clear();
     }
 
     public void increaseDrawCalls() {

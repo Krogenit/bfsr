@@ -2,7 +2,7 @@ package net.bfsr.client.gui.input;
 
 import net.bfsr.client.gui.scroll.Scroll;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.InstancedRenderer;
+import net.bfsr.client.render.BufferType;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.core.Core;
 import net.bfsr.network.packet.common.PacketChatMessage;
@@ -54,7 +54,6 @@ public class InputChat extends InputBox {
 
     @Override
     public void render() {
-        InstancedRenderer.INSTANCE.render();
         renderString();
 
         int lineX = stringOffset.x;
@@ -70,7 +69,7 @@ public class InputChat extends InputBox {
             int stringHeight = FontType.DEFAULT.getStringCache().getStringHeight(string, fontSize, width - 40, -1);
             if (lineY >= chatTop && lineY < chatBottom || lineY + stringHeight >= chatTop && lineY + stringHeight < chatBottom) {
                 Core.getCore().getRenderer().getStringRenderer().render(string, FontType.DEFAULT.getStringCache(), fontSize, x + lineX, y + lineY, textColor.x, textColor.y,
-                        textColor.z, textColor.w, width - 40, -1);
+                        textColor.z, textColor.w, width - 40, -1, BufferType.GUI);
             }
 
             lineY += stringHeight;

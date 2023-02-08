@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.bfsr.client.input.Mouse;
+import net.bfsr.client.render.BufferType;
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.util.MatrixBufferUtils;
 import org.joml.Matrix4f;
@@ -85,7 +86,7 @@ public class SimpleGuiObject extends AbstractGuiObject {
 
     @Override
     public void render() {
-        InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(x, y, width, height, color.x, color.y, color.z, color.w, 0);
+        InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(x, y, width, height, color.x, color.y, color.z, color.w, 0, BufferType.GUI);
     }
 
     public boolean isIntersects() {

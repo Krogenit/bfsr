@@ -3,7 +3,9 @@ package net.bfsr.entity.bullet;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.ParticleWreck;
 import net.bfsr.client.particle.RenderLayer;
+import net.bfsr.client.render.BufferType;
 import net.bfsr.client.render.InstancedRenderer;
+import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
@@ -27,6 +29,8 @@ import org.joml.Vector2f;
 import java.util.Random;
 
 public class Bullet extends CollisionObject {
+    private static Texture lightTexture;
+
     protected final Ship ship;
     private final float bulletSpeed;
     private final float alphaReducer;
@@ -44,6 +48,7 @@ public class Bullet extends CollisionObject {
         energy = damage.getAverageDamage();
         setBulletVelocityAndStartTransform(rotation, x, y);
         world.addBullet(this);
+        lightTexture = TextureLoader.getTexture(TextureRegister.particleLight);
     }
 
     public Bullet(WorldServer world, int id, float bulletSpeed, float rotation, float x, float y, float scaleX, float scaleY, Ship ship, float r, float g, float b, float a,
@@ -219,13 +224,12 @@ public class Bullet extends CollisionObject {
         return ship.attackShip(damage, ship, getPosition(), ship.getFaction() == ship.getFaction() ? 0.5f : 1.0f);
     }
 
-    @Override
-    public void render(float interpolation) {
+    public void render() {
         float size = 6.0f;
         Vector2f pos = getPosition();
         InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, pos.x, pos.y, lastRotation, getRotation(), size, size, size, size,
-                color.x / 1.5f, color.y / 1.5f, color.z / 1.5f, color.w / 4.0f, TextureLoader.getTexture(TextureRegister.particleLight), interpolation);
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(this, interpolation);
+                color.x / 1.5f, color.y / 1.5f, color.z / 1.5f, color.w / 4.0f, lightTexture, BufferType.ENTITIES_ADDITIVE);
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(this, BufferType.ENTITIES_ADDITIVE);
     }
 
     public BulletDamage getDamage() {

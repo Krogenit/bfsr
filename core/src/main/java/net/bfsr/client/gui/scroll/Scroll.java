@@ -119,7 +119,7 @@ public class Scroll extends SimpleGuiObject {
 
     @Override
     public void render() {
-        InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(x, y, width, height, color.x, color.y, color.z, color.w, 0);
+        InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(x, y, width, height, color.x, color.y, color.z, color.w, 0, BufferType.GUI);
     }
 
     @Override

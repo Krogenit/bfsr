@@ -1,5 +1,6 @@
 package net.bfsr.client.particle;
 
+import net.bfsr.client.render.BufferType;
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.component.weapon.WeaponSlotBeam;
@@ -83,12 +84,11 @@ public class Beam extends TextureObject {
         }
     }
 
-    @Override
-    public void render(float interpolation) {
+    public void render() {
         InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, lastScale.x,
-                lastScale.y, scale.x, scale.y, color.x, color.y, color.z, color.w / 3.0f, texture, interpolation);
+                lastScale.y, scale.x, scale.y, color.x, color.y, color.z, color.w / 3.0f, texture, BufferType.ENTITIES_ADDITIVE);
         InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, lastScale.x,
-                lastScale.y / 3.0f, scale.x, scale.y / 3.0f, color.x, color.y, color.z, color.w, texture, interpolation);
+                lastScale.y / 3.0f, scale.x, scale.y / 3.0f, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ADDITIVE);
     }
 
     public void setLastValues() {

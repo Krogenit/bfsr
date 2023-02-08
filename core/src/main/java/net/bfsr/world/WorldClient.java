@@ -3,12 +3,12 @@ package net.bfsr.world;
 import net.bfsr.client.camera.Camera;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
+import net.bfsr.client.render.BufferType;
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureGenerator;
 import net.bfsr.client.render.texture.TextureLoader;
-import net.bfsr.client.shader.BaseShader;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
@@ -184,53 +184,62 @@ public class WorldClient extends World {
             playerShip = null;
     }
 
-    public void renderAmbient(float interpolation) {
-        Vector2f scale = background.getScale();
-        float moveFactor = 0.005f;
-        Camera camera = Core.getCore().getRenderer().getCamera();
-        float cameraZoom = camera.getLastZoom() + (camera.getZoom() - camera.getLastZoom()) * interpolation;
-        float lastX = (camera.getLastPosition().x - camera.getLastPosition().x * moveFactor / cameraZoom);
-        float lastY = (camera.getLastPosition().y - camera.getLastPosition().y * moveFactor / cameraZoom);
-        float x = (camera.getPosition().x - camera.getPosition().x * moveFactor / cameraZoom);
-        float y = (camera.getPosition().y - camera.getPosition().y * moveFactor / cameraZoom);
-        float zoom = (float) (0.5f + Math.log(cameraZoom) * 0.01f);
-        float scaleX = scale.x / cameraZoom * zoom;
-        float scaleY = scale.y / cameraZoom * zoom;
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(lastX, lastY, x, y, 0, 0, scaleX, scaleY, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f, background.getTexture(), interpolation);
-        InstancedRenderer.INSTANCE.render();
+    public void prepareAmbient() {
+        InstancedRenderer.INSTANCE.addTask(() -> {
+            Vector2f scale = background.getScale();
+            float moveFactor = 0.005f;
+            Camera camera = Core.getCore().getRenderer().getCamera();
+            float cameraZoom = camera.getLastZoom() + (camera.getZoom() - camera.getLastZoom()) * Core.getCore().getRenderer().getInterpolation();
+            float lastX = (camera.getLastPosition().x - camera.getLastPosition().x * moveFactor / cameraZoom);
+            float lastY = (camera.getLastPosition().y - camera.getLastPosition().y * moveFactor / cameraZoom);
+            float x = (camera.getPosition().x - camera.getPosition().x * moveFactor / cameraZoom);
+            float y = (camera.getPosition().y - camera.getPosition().y * moveFactor / cameraZoom);
+            float zoom = (float) (0.5f + Math.log(cameraZoom) * 0.01f);
+            float scaleX = scale.x / cameraZoom * zoom;
+            float scaleY = scale.y / cameraZoom * zoom;
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(lastX, lastY, x, y, 0, 0, scaleX, scaleY, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f, background.getTexture(), BufferType.BACKGROUND);
+        }, BufferType.BACKGROUND);
     }
 
-    public void renderEntities(BaseShader shader, float interpolation) {
-        AxisAlignedBoundingBox cameraAABB = core.getRenderer().getCamera().getBoundingBox();
+    public void renderAmbient() {
+        InstancedRenderer.INSTANCE.render(BufferType.BACKGROUND);
+    }
 
-        int size = ships.size();
-        for (int i = 0; i < size; i++) {
-            Ship s = ships.get(i);
-            if (s.getAABB().isIntersects(cameraAABB)) {
-                s.render(interpolation);
+    public void prepareEntities() {
+        InstancedRenderer.INSTANCE.addTask(() -> {
+            AxisAlignedBoundingBox cameraAABB = core.getRenderer().getCamera().getBoundingBox();
+
+            for (int i = 0, size = ships.size(); i < size; i++) {
+                Ship s = ships.get(i);
+                if (s.getAABB().isIntersects(cameraAABB)) {
+                    s.render();
+                }
             }
-        }
+        }, BufferType.ENTITIES_ALPHA);
+        InstancedRenderer.INSTANCE.addTask(() -> {
+            AxisAlignedBoundingBox cameraAABB = core.getRenderer().getCamera().getBoundingBox();
 
-        InstancedRenderer.INSTANCE.render();
-        OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
-
-        for (int i = 0; i < size; i++) {
-            Ship s = ships.get(i);
-            if (s.getAABB().isIntersects(cameraAABB)) {
-                s.renderAdditive(interpolation);
+            for (int i = 0, size = ships.size(); i < size; i++) {
+                Ship s = ships.get(i);
+                if (s.getAABB().isIntersects(cameraAABB)) {
+                    s.renderAdditive();
+                }
             }
-        }
 
-        size = bullets.size();
-        for (int i = 0; i < size; i++) {
-            Bullet b = bullets.get(i);
-            if (b.getAABB().isIntersects(cameraAABB)) {
-                b.render(interpolation);
+            for (int i = 0, size = bullets.size(); i < size; i++) {
+                Bullet b = bullets.get(i);
+                if (b.getAABB().isIntersects(cameraAABB)) {
+                    b.render();
+                }
             }
-        }
+        }, BufferType.ENTITIES_ADDITIVE);
+    }
 
-        InstancedRenderer.INSTANCE.render();
+    public void renderEntities() {
         OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        InstancedRenderer.INSTANCE.render(BufferType.ENTITIES_ALPHA);
+        OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
+        InstancedRenderer.INSTANCE.render(BufferType.ENTITIES_ADDITIVE);
     }
 
     public void renderDebug() {

@@ -4,10 +4,10 @@ import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.scroll.Scroll;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.language.Lang;
+import net.bfsr.client.render.BufferType;
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.StringOffsetType;
-import net.bfsr.client.render.font.string.StaticString;
 import net.bfsr.client.render.font.string.StringObject;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.core.Core;
@@ -26,7 +26,7 @@ public class GuiSettings extends Gui {
     private final boolean isInGame;
     private final List<StringObject> sections = new ArrayList<>();
     private final Scroll scroll = new Scroll();
-    private final StringObject mainText = new StaticString(FontType.XOLONIUM, Lang.getString("gui.settings.mainText"));
+    private final StringObject mainText = new StringObject(FontType.XOLONIUM, Lang.getString("gui.settings.mainText"));
     private final SimpleGuiObject backgroundTop = new SimpleGuiObject();
     private final SimpleGuiObject backgroundDown = new SimpleGuiObject();
     private final List<SimpleGuiObject> scissorAffected = new ArrayList<>();
@@ -75,7 +75,7 @@ public class GuiSettings extends Gui {
         for (Map.Entry<SettingsCategory, List<EnumOption>> entry : optionsByCategory.entrySet()) {
             List<EnumOption> options = entry.getValue();
 
-            StringObject sectionText = new StaticString(FontType.XOLONIUM, Lang.getString("settings.section." + entry.getKey().getCategoryName()), fontSectionSize, StringOffsetType.CENTERED);
+            StringObject sectionText = new StringObject(FontType.XOLONIUM, Lang.getString("settings.section." + entry.getKey().getCategoryName()), fontSectionSize, StringOffsetType.CENTERED);
             sections.add(sectionText);
             scroll.registerGuiObject(sectionText);
             registerGuiObject(sectionText);
@@ -145,7 +145,7 @@ public class GuiSettings extends Gui {
     @Override
     public void render(float interpolation) {
         if (isInGame) {
-            InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(width / 2.0F, height / 2.0f, width, height, 0.0f, 0.0f, 0.0f, 0.5f, 0);
+            InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(width / 2.0F, height / 2.0f, width, height, 0.0f, 0.0f, 0.0f, 0.5f, 0, BufferType.GUI);
         }
 
         backgroundTop.render();

@@ -2,11 +2,9 @@ package net.bfsr.client.gui.button;
 
 import lombok.Setter;
 import net.bfsr.client.gui.TexturedGuiObject;
-import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.StringCache;
 import net.bfsr.client.render.font.StringOffsetType;
-import net.bfsr.client.render.font.string.DynamicString;
 import net.bfsr.client.render.font.string.StringObject;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.sound.GuiSoundSource;
@@ -26,7 +24,7 @@ public class Button extends TexturedGuiObject {
         super(texture, x, y, width, height);
         FontType font = FontType.XOLONIUM;
         StringCache stringCache = font.getStringCache();
-        stringObject = new DynamicString(font, string, fontSize, StringOffsetType.CENTERED);
+        stringObject = new StringObject(font, string, fontSize, StringOffsetType.CENTERED);
         stringObject.setPosition(x + width / 2, (int) (y + (height - stringCache.getHeight(string, fontSize)) / 2.0f + stringCache.getAscent(string, fontSize)));
         stringObject.compile();
         clickSound = SoundRegistry.buttonClick;
@@ -102,7 +100,6 @@ public class Button extends TexturedGuiObject {
     public void render() {
         super.render();
         if (stringObject.getString().length() > 0) {
-            InstancedRenderer.INSTANCE.render();
             stringObject.render();
         }
     }

@@ -2,6 +2,7 @@ package net.bfsr.component.damage;
 
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
+import net.bfsr.client.render.BufferType;
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
@@ -188,26 +189,25 @@ public class Damage extends TextureObject {
         }
     }
 
-    @Override
-    public void render(float interpolation) {
+    public void render() {
         if (damaged || repairTimer > 0) {
             InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, scale.x, scale.y, scale.x, scale.y,
-                    color.x, color.y, color.z, color.w, texture, interpolation);
+                    color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
         } else if (repairTimer <= 0 && colorFix.w > 0) {
             InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, scale.x, scale.y, scale.x, scale.y,
-                    color.x, color.y, color.z, colorFix.w, textureFix, interpolation);
+                    color.x, color.y, color.z, colorFix.w, textureFix, BufferType.ENTITIES_ALPHA);
         }
     }
 
-    public void renderEffects(float interpolation) {
+    public void renderEffects() {
         if (damaged || repairTimer > 0) {
             if (colorFire.w > 0) {
                 InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, scale.x, scale.y, scale.x, scale.y,
-                        colorFire.x, colorFire.y, colorFire.z, colorFire.w, textureFire, interpolation);
+                        colorFire.x, colorFire.y, colorFire.z, colorFire.w, textureFire, BufferType.ENTITIES_ADDITIVE);
             }
             if (textureLight != null && colorLight.w > 0) {
                 InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, scale.x, scale.y, scale.x, scale.y,
-                        colorLight.x, colorLight.y, colorLight.z, colorLight.w, textureLight, interpolation);
+                        colorLight.x, colorLight.y, colorLight.z, colorLight.w, textureLight, BufferType.ENTITIES_ADDITIVE);
             }
         }
     }

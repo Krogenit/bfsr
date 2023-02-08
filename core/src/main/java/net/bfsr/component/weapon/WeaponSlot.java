@@ -145,7 +145,7 @@ public abstract class WeaponSlot extends TextureObject {
         position.set(xPos + shipPos.x, yPos + shipPos.y);
     }
 
-    public void renderAdditive(float interpolation) {
+    public void renderAdditive() {
 
     }
 

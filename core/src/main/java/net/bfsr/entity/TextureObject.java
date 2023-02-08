@@ -3,6 +3,7 @@ package net.bfsr.entity;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.render.InstancedRenderer;
+import net.bfsr.client.render.StoreRenderObjectTask;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
@@ -28,6 +29,8 @@ public class TextureObject {
     @Getter
     @Setter
     protected float lastRotation, rotation;
+    @Getter
+    private final StoreRenderObjectTask storeRenderObjectTask = new StoreRenderObjectTask();
 
     public TextureObject(Texture texture, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a) {
         this.texture = texture;
@@ -74,7 +77,7 @@ public class TextureObject {
     }
 
     public void render(float interpolation) {
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(this, interpolation);
+        InstancedRenderer.INSTANCE.addTask(storeRenderObjectTask);
     }
 
     public void setPosition(float x, float y) {
@@ -87,6 +90,10 @@ public class TextureObject {
 
     public void setColor(float r, float g, float b, float a) {
         this.color.set(r, g, b, a);
+    }
+
+    public void setStoreRenderObjectTaskRunnable(Runnable runnable) {
+        storeRenderObjectTask.setRunnable(runnable);
     }
 
     public void clear() {

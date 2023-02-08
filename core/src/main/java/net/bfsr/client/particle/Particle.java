@@ -88,7 +88,7 @@ public class Particle extends CollisionObject {
     }
 
     protected void addParticle() {
-        ParticleRenderer.getInstance().addParticle(this);
+        Core.getCore().getRenderer().getParticleRenderer().addParticle(this);
     }
 
     @Override

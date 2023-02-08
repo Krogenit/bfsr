@@ -3,16 +3,18 @@ package net.bfsr.client.render.font.string;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.gui.AbstractGuiObject;
+import net.bfsr.client.render.BufferType;
+import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.StringCache;
 import net.bfsr.client.render.font.StringOffsetType;
 import net.bfsr.core.Core;
-import net.bfsr.util.MatrixBufferUtils;
 import org.joml.Vector4f;
 
-public abstract class StringObject extends AbstractGuiObject {
+public class StringObject extends AbstractGuiObject {
     @Getter
     private String string;
+    private float x, y;
     @Getter
     private int fontSize;
     @Getter
@@ -21,13 +23,13 @@ public abstract class StringObject extends AbstractGuiObject {
     private final Vector4f color = new Vector4f();
     @Setter
     private StringOffsetType stringOffsetType;
-    private final GLString glString;
+    private final GLString glString = new GLString();
 
-    protected StringObject(FontType font) {
+    public StringObject(FontType font) {
         this(font, 14);
     }
 
-    protected StringObject(FontType font, String string) {
+    public StringObject(FontType font, String string) {
         this(font, string, 0, 0, 14);
     }
 
@@ -35,27 +37,31 @@ public abstract class StringObject extends AbstractGuiObject {
         this(font, "", 0, 0, fontSize);
     }
 
-    protected StringObject(FontType font, int fontSize, StringOffsetType stringOffsetType) {
+    public StringObject(FontType font, int fontSize, StringOffsetType stringOffsetType) {
         this(font, "", 0, 0, fontSize, stringOffsetType);
     }
 
-    protected StringObject(FontType font, String string, int fontSize) {
+    public StringObject(FontType font, String string, int fontSize) {
         this(font, string, fontSize, StringOffsetType.DEFAULT);
     }
 
-    protected StringObject(FontType font, String string, int fontSize, StringOffsetType stringOffsetType) {
+    public StringObject(FontType font, String string, int fontSize, StringOffsetType stringOffsetType) {
         this(font, string, 0, 0, fontSize, stringOffsetType);
     }
 
-    protected StringObject(FontType font, String string, float x, float y, int fontSize) {
+    public StringObject(FontType font, String string, float x, float y, int fontSize) {
         this(font, string, x, y, fontSize, StringOffsetType.DEFAULT);
     }
 
-    protected StringObject(FontType font, String string, float x, float y, int fontSize, StringOffsetType stringOffsetType) {
+    public StringObject(FontType font, int fontSize, float r, float g, float b, float a) {
+        this(font, "", 0, 0, fontSize, r, g, b, a, StringOffsetType.DEFAULT);
+    }
+
+    public StringObject(FontType font, String string, float x, float y, int fontSize, StringOffsetType stringOffsetType) {
         this(font, string, x, y, fontSize, 1.0f, 1.0f, 1.0f, 1.0f, stringOffsetType);
     }
 
-    protected StringObject(FontType font, String string, int fontSize, float r, float g, float b, float a) {
+    public StringObject(FontType font, String string, int fontSize, float r, float g, float b, float a) {
         this(font, string, 0, 0, fontSize, r, g, b, a, StringOffsetType.DEFAULT);
     }
 
@@ -64,17 +70,15 @@ public abstract class StringObject extends AbstractGuiObject {
     }
 
     protected StringObject(FontType font, String string, float x, float y, int fontSize, float r, float g, float b, float a, StringOffsetType stringOffsetType) {
-        this.glString = createGLString();
         this.stringCache = font.getStringCache();
         this.string = string;
         this.fontSize = fontSize;
         this.stringOffsetType = stringOffsetType;
         this.color.set(r, g, b, a);
-        this.glString.init();
-        this.glString.setPosition(x, y);
+        this.glString.init(Math.max(string.length(), 8));
+        this.x = x;
+        this.y = y;
     }
-
-    protected abstract GLString createGLString();
 
     public void update(String string) {
         this.string = string;
@@ -82,7 +86,7 @@ public abstract class StringObject extends AbstractGuiObject {
     }
 
     public StringObject compile() {
-        Core.getCore().getRenderer().getStringRenderer().createString(glString, stringCache, string, 0, 0, fontSize, color.x, color.y, color.z, color.w, stringOffsetType);
+        Core.getCore().getRenderer().getStringRenderer().createString(glString, stringCache, string, x, y, fontSize, color.x, color.y, color.z, color.w, stringOffsetType);
         return this;
     }
 
@@ -93,18 +97,22 @@ public abstract class StringObject extends AbstractGuiObject {
 
     @Override
     public StringObject setPosition(int x, int y) {
-        glString.setPosition(x, y);
+        this.x = x;
+        this.y = y;
+        compile();
         return this;
     }
 
     @Override
     public void setX(int x) {
-        glString.setX(x);
+        this.x = x;
+        compile();
     }
 
     @Override
     public void setY(int y) {
-        glString.setY(y);
+        this.y = y;
+        compile();
     }
 
     public void setColor(float r, float g, float b, float a) {
@@ -129,21 +137,16 @@ public abstract class StringObject extends AbstractGuiObject {
 
     @Override
     public void render() {
-        Core.getCore().getRenderer().getStringRenderer().render(glString);
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(glString, BufferType.GUI);
     }
 
     @Override
     public int getY() {
-        return (int) MatrixBufferUtils.getY(glString.getMatrixBuffer());
+        return (int) y;
     }
 
     @Override
     public int getHeight() {
         return glString.getHeight();
-    }
-
-    @Override
-    public void clear() {
-        glString.clear();
     }
 }

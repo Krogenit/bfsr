@@ -7,7 +7,6 @@ import net.bfsr.client.gui.input.InputBox;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.StringOffsetType;
-import net.bfsr.client.render.font.string.DynamicString;
 import net.bfsr.client.render.font.string.StringObject;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.core.Core;
@@ -21,7 +20,7 @@ import java.net.UnknownHostException;
 
 @Log4j2
 public class GuiConnect extends Gui {
-    private final StringObject connectingText = new DynamicString(FontType.XOLONIUM, 20, StringOffsetType.CENTERED);
+    private final StringObject connectingText = new StringObject(FontType.XOLONIUM, 20, StringOffsetType.CENTERED);
 
     public GuiConnect(Gui parentGui) {
         super(parentGui);

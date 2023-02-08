@@ -3,7 +3,7 @@ package net.bfsr.client.gui;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.render.font.FontType;
-import net.bfsr.client.render.font.string.StaticString;
+import net.bfsr.client.render.font.string.StringObject;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.core.Core;
 import net.bfsr.network.packet.client.PacketRespawn;
@@ -31,7 +31,7 @@ public class GuiDestroyed extends Gui {
 
         registerGuiObject(new Button(TextureRegister.guiButtonBase, buttonWidth, buttonHeight, Lang.getString("gui.ingamemenu.tomainmenu"),
                 16, () -> Core.getCore().quitToMainMenu()).atCenter(-buttonsOffset - buttonWidth / 2, 72));
-        registerGuiObject(new StaticString(FontType.XOLONIUM, Lang.getString("gui.destroyed.shipWasDestroyed"), 20).compile().atCenter(-286, -104));
-        registerGuiObject(new StaticString(FontType.CONSOLA, Lang.getString("gui.destroyed.destroyedBy") + ": " + destroyedBy, 16).compile().atCenter(-286, -64));
+        registerGuiObject(new StringObject(FontType.XOLONIUM, Lang.getString("gui.destroyed.shipWasDestroyed"), 20).compile().atCenter(-286, -104));
+        registerGuiObject(new StringObject(FontType.CONSOLA, Lang.getString("gui.destroyed.destroyedBy") + ": " + destroyedBy, 16).compile().atCenter(-286, -64));
     }
 }

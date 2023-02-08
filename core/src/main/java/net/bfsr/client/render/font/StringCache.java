@@ -217,7 +217,7 @@ public class StringCache {
      * @param breakAtSpaces set to prefer breaking line at spaces than in the middle of a word
      * @return the number of characters from str that will fit inside width
      */
-    private int sizeString(String str, int width, boolean breakAtSpaces) {
+    public int sizeString(String str, int width, boolean breakAtSpaces) {
         /* Check for invalid arguments */
         if (str == null || str.isEmpty()) {
             return 0;
@@ -238,9 +238,9 @@ public class StringCache {
             if (breakAtSpaces) {
                 char c = str.charAt(glyphs[index].stringIndex);
                 if (c == SPACE) {
-                    wsIndex = index;
+                    wsIndex = index + 1;
                 } else if (c == NEW_LINE) {
-                    wsIndex = index;
+                    wsIndex = index + 1;
                     break;
                 }
             }
@@ -255,7 +255,7 @@ public class StringCache {
         }
 
         /* Avoid splitting individual words if breakAtSpaces set; same test condition as in Minecraft's FontRenderer */
-        if (index < glyphs.length && wsIndex != -1 && wsIndex < index) {
+        if (index < glyphs.length && wsIndex >= 0) {
             index = wsIndex;
         }
 

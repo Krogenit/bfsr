@@ -2,6 +2,7 @@ package net.bfsr.component.shield;
 
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
+import net.bfsr.client.render.BufferType;
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
@@ -184,13 +185,12 @@ public class Shield extends CollisionObject {
         alive = false;
     }
 
-    @Override
-    public void render(float interpolation) {
+    public void render() {
         if (shieldAlive()) {
             float sizeY = diameter.y * size;
             float sizeX = diameter.x * size;
             InstancedRenderer.INSTANCE.addToRenderPipeLine(ship.getLastPosition().x, ship.getLastPosition().y, ship.getPosition().x, ship.getPosition().y,
-                    ship.getLastRotation(), ship.getRotation(), sizeX, sizeY, sizeX, sizeY, color.x, color.y, color.z, color.w, texture, interpolation);
+                    ship.getLastRotation(), ship.getRotation(), sizeX, sizeY, sizeX, sizeY, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ADDITIVE);
         }
     }
 

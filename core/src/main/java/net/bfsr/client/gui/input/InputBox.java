@@ -5,11 +5,10 @@ import lombok.Setter;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
+import net.bfsr.client.render.BufferType;
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.StringCache;
-import net.bfsr.client.render.font.string.DynamicString;
-import net.bfsr.client.render.font.string.StaticString;
 import net.bfsr.client.render.font.string.StringObject;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.sound.GuiSoundSource;
@@ -46,9 +45,9 @@ public class InputBox extends TexturedGuiObject {
         int stringX = x + stringOffsetX;
         int stringY = (int) (y + (height - font.getStringCache().getHeight(string, fontSize)) / 2.0f + font.getStringCache().getAscent(string, fontSize)) + stringOffsetY;
 
-        this.stringObject = new DynamicString(font, fontSize, textColor.x, textColor.y, textColor.z, textColor.w);
+        this.stringObject = new StringObject(font, fontSize, textColor.x, textColor.y, textColor.z, textColor.w);
         this.stringObject.setPosition(stringX, stringY);
-        this.emptyStringObject = new StaticString(font, string, fontSize, textColor.x, textColor.y, textColor.z, textColor.w);
+        this.emptyStringObject = new StringObject(font, string, fontSize, textColor.x, textColor.y, textColor.z, textColor.w);
         this.emptyStringObject.setPosition(stringX, stringY);
         this.emptyStringObject.compile();
 
@@ -223,7 +222,6 @@ public class InputBox extends TexturedGuiObject {
     @Override
     public void render() {
         super.render();
-        InstancedRenderer.INSTANCE.render();
         renderString();
         renderSelectionAndCursor();
     }
@@ -244,7 +242,7 @@ public class InputBox extends TexturedGuiObject {
                 int leftStringWidth = stringObject.getStringCache().getStringWidth(stringObject.getString().substring(0, cursorPosition), fontSize);
                 int rightStringWidth = stringObject.getStringCache().getStringWidth(stringObject.getString().substring(cursorPosition, cursorPositionEnd), fontSize);
                 InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(x + leftStringWidth + stringOffset.x, cursorY, rightStringWidth, cursorHeight, selectionColor.x, selectionColor.y, selectionColor.z,
-                        selectionColor.w, 0);
+                        selectionColor.w, 0, BufferType.GUI);
                 if (leftToRightSelection) {
                     lineWidth = leftStringWidth + rightStringWidth;
                 } else {
@@ -258,7 +256,7 @@ public class InputBox extends TexturedGuiObject {
         }
 
         if (renderCursor) {
-            InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(x + stringOffset.x + lineWidth, cursorY, 1, cursorHeight, color.x, color.y, color.z, color.w, 0);
+            InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(x + stringOffset.x + lineWidth, cursorY, 1, cursorHeight, color.x, color.y, color.z, color.w, 0, BufferType.GUI);
         }
     }
 

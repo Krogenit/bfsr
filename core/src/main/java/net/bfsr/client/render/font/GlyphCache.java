@@ -575,7 +575,7 @@ public class GlyphCache {
          * Initialize texture with the now cleared BufferedImage. Using a texture with GL_ALPHA8 internal format may result in
          * faster rendering since the GPU has to only fetch 1 byte per texel instead of 4 with a regular RGBA texture.
          */
-        GL45C.glTextureStorage2D(textureName, 1, antiAliasEnabled ? GL11.GL_ALPHA8 : GL11.GL_ALPHA4, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+        GL45C.glTextureStorage2D(textureName, 1, GL11.GL_RGBA8, TEXTURE_WIDTH, TEXTURE_HEIGHT);
         GL45C.glTextureSubImage2D(textureName, 0, 0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT, GL11C.GL_RGBA, GL11C.GL_UNSIGNED_BYTE, imageBuffer);
 
         GL45C.glTextureParameteri(textureName, GL11C.GL_TEXTURE_WRAP_S, GL13C.GL_CLAMP_TO_BORDER);

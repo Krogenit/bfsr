@@ -109,8 +109,10 @@ public class Core {
     }
 
     public void render(float interpolation) {
+        profiler.endStartSection("prepareRender");
+        renderer.prepareRender(interpolation);
         profiler.endStartSection("render");
-        renderer.render(interpolation);
+        renderer.render();
         profiler.endSection();
     }
 

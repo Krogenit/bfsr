@@ -157,7 +157,7 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
 
     @Override
     protected void addParticle() {
-        ParticleRenderer.getInstance().addParticle(this);
+        Core.getCore().getRenderer().getParticleRenderer().addParticle(this);
     }
 
     private void createBody1(float x, float y) {

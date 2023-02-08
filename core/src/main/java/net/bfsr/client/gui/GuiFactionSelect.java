@@ -3,9 +3,7 @@ package net.bfsr.client.gui;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.font.FontType;
-import net.bfsr.client.render.font.string.StaticString;
 import net.bfsr.client.render.font.string.StringObject;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.collision.AxisAlignedBoundingBox;
@@ -52,13 +50,13 @@ public class GuiFactionSelect extends Gui {
         aabbSaimon = new AxisAlignedBoundingBox(center.x - 150, center.y - 88, center.x + 150, center.y + 260);
         aabbEngi = new AxisAlignedBoundingBox(center.x + 160, center.y - 88, center.x + 460, center.y + 260);
 
-        StringObject stringObject = new StaticString(FontType.XOLONIUM, Lang.getString("gui.selectFaction.maintext"), 24).compile();
+        StringObject stringObject = new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.maintext"), 24).compile();
         registerGuiObject(stringObject.atCenter(-stringObject.getStringWidth() / 2, -96));
 
         int discFontSize = 16;
-        registerGuiObject(new StaticString(FontType.XOLONIUM, Lang.getString("gui.selectFaction.humanDisc"), discFontSize).compile().atCenter(-450, -64));
-        registerGuiObject(new StaticString(FontType.XOLONIUM, Lang.getString("gui.selectFaction.saimonDisc"), discFontSize).compile().atCenter(-142, -64));
-        registerGuiObject(new StaticString(FontType.XOLONIUM, Lang.getString("gui.selectFaction.engiDisc"), discFontSize).compile().atCenter(166, -64));
+        registerGuiObject(new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.humanDisc"), discFontSize).compile().atCenter(-450, -64));
+        registerGuiObject(new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.saimonDisc"), discFontSize).compile().atCenter(-142, -64));
+        registerGuiObject(new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.engiDisc"), discFontSize).compile().atCenter(166, -64));
     }
 
     private void updateRot(TextureObject ship, AxisAlignedBoundingBox aabb) {
@@ -107,6 +105,5 @@ public class GuiFactionSelect extends Gui {
         shipHuman.render(interpolation);
         shipSaimon.render(interpolation);
         shipEngi.render(interpolation);
-        InstancedRenderer.INSTANCE.render();
     }
 }
