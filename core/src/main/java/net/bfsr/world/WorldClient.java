@@ -206,7 +206,7 @@ public class WorldClient extends World {
     }
 
     public void renderAmbient() {
-        InstancedRenderer.INSTANCE.render(BufferType.BACKGROUND);
+        InstancedRenderer.INSTANCE.syncAndRender(BufferType.BACKGROUND);
     }
 
     public void prepareEntities() {
@@ -245,9 +245,9 @@ public class WorldClient extends World {
 
     public void renderEntities() {
         OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        InstancedRenderer.INSTANCE.render(BufferType.ENTITIES_ALPHA);
+        InstancedRenderer.INSTANCE.syncAndRender(BufferType.ENTITIES_ALPHA);
         OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
-        InstancedRenderer.INSTANCE.render(BufferType.ENTITIES_ADDITIVE);
+        InstancedRenderer.INSTANCE.syncAndRender(BufferType.ENTITIES_ADDITIVE);
     }
 
     public void renderDebug() {

@@ -4,34 +4,24 @@ import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.render.instanced.BufferType;
 import net.bfsr.client.render.instanced.InstancedRenderer;
-import net.bfsr.client.render.instanced.StoreRenderObjectTask;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
+@Getter
 public class TextureObject {
-    @Getter
     @Setter
     protected Texture texture;
-    @Getter
     protected final Vector2f position = new Vector2f();
-    @Getter
     protected final Vector2f scale = new Vector2f();
-    @Getter
     protected final Vector2f lastScale = new Vector2f();
-    @Getter
     protected final Vector2f lastPosition = new Vector2f();
-    @Getter
     protected final Vector4f color = new Vector4f();
-    @Getter
     protected final Vector4f lastColor = new Vector4f();
-    @Getter
     @Setter
     protected float lastRotation, rotation;
-    @Getter
-    private final StoreRenderObjectTask storeRenderObjectTask = new StoreRenderObjectTask();
 
     public TextureObject(Texture texture, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a) {
         this.texture = texture;
@@ -73,9 +63,7 @@ public class TextureObject {
         this(null, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public void update() {
-
-    }
+    public void update() {}
 
     public void render() {
         InstancedRenderer.INSTANCE.addToRenderPipeLine(this, BufferType.GUI);
@@ -93,11 +81,5 @@ public class TextureObject {
         this.color.set(r, g, b, a);
     }
 
-    public void setStoreRenderObjectTaskRunnable(Runnable runnable) {
-        storeRenderObjectTask.setRunnable(runnable);
-    }
-
-    public void clear() {
-
-    }
+    public void clear() {}
 }

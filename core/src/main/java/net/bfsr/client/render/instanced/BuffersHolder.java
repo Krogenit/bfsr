@@ -3,59 +3,23 @@ package net.bfsr.client.render.instanced;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.util.MutableInt;
-import org.jetbrains.annotations.NotNull;
 import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 @Getter
-public class StoreRenderObjectTask {
+public class BuffersHolder {
     @Setter
-    private Runnable runnable;
-    @Setter
-    private Future<?> future = new Future() {
-
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            return false;
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return false;
-        }
-
-        @Override
-        public boolean isDone() {
-            return false;
-        }
-
-        @Override
-        public Object get() throws InterruptedException, ExecutionException {
-            return null;
-        }
-
-        @Override
-        public Object get(long timeout, @NotNull TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            return null;
-        }
-    };
+    private Future<?> future;
     private FloatBuffer vertexBuffer;
     private ByteBuffer materialBuffer;
     private final MutableInt vertexBufferIndex = new MutableInt();
     private final MutableInt materialBufferIndex = new MutableInt();
     private int objectCount;
 
-    public StoreRenderObjectTask() {
-        this(1);
-    }
-
-    public StoreRenderObjectTask(int initialObjectCount) {
+    public BuffersHolder(int initialObjectCount) {
         vertexBuffer = BufferUtils.createFloatBuffer(initialObjectCount * InstancedRenderer.VERTEX_DATA_SIZE);
         materialBuffer = BufferUtils.createByteBuffer(initialObjectCount * InstancedRenderer.MATERIAL_DATA_SIZE);
     }

@@ -28,15 +28,15 @@ public class InstancedRenderer {
     private VAO vao;
     private ExecutorService executorService;
     @Getter
-    private final StoreRenderObjectTask[] storeRenderObjectTasks = new StoreRenderObjectTask[BufferType.values().length];
+    private final BuffersHolder[] buffersHolders = new BuffersHolder[BufferType.values().length];
 
     public InstancedRenderer() {
         INSTANCE = this;
 
-        storeRenderObjectTasks[BufferType.BACKGROUND.ordinal()] = new StoreRenderObjectTask(1);
-        storeRenderObjectTasks[BufferType.ENTITIES_ALPHA.ordinal()] = new StoreRenderObjectTask(512);
-        storeRenderObjectTasks[BufferType.ENTITIES_ADDITIVE.ordinal()] = new StoreRenderObjectTask(512);
-        storeRenderObjectTasks[BufferType.GUI.ordinal()] = new StoreRenderObjectTask(1024);
+        buffersHolders[BufferType.BACKGROUND.ordinal()] = new BuffersHolder(1);
+        buffersHolders[BufferType.ENTITIES_ALPHA.ordinal()] = new BuffersHolder(512);
+        buffersHolders[BufferType.ENTITIES_ADDITIVE.ordinal()] = new BuffersHolder(512);
+        buffersHolders[BufferType.GUI.ordinal()] = new BuffersHolder(1024);
 
         if (MulthithreadingUtils.MULTITHREADING_SUPPORTED) {
             executorService = Executors.newFixedThreadPool(MulthithreadingUtils.PARALLELISM);
@@ -44,7 +44,7 @@ public class InstancedRenderer {
     }
 
     public void addTask(Runnable runnable, BufferType bufferType) {
-        storeRenderObjectTasks[bufferType.ordinal()].setFuture(executorService.submit(runnable));
+        buffersHolders[bufferType.ordinal()].setFuture(executorService.submit(runnable));
     }
 
     public Future<?> addTask(Runnable runnable) {
@@ -62,8 +62,8 @@ public class InstancedRenderer {
         vao.bind();
     }
 
-    public void render(BufferType bufferType) {
-        StoreRenderObjectTask storeRenderObjectTask = storeRenderObjectTasks[bufferType.ordinal()];
+    public void syncAndRender(BufferType bufferType) {
+        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
 
         try {
             storeRenderObjectTask.getFuture().get();
@@ -71,6 +71,14 @@ public class InstancedRenderer {
             throw new RuntimeException(e);
         }
 
+        if (storeRenderObjectTask.getObjectCount() > 0) {
+            render(storeRenderObjectTask.getObjectCount(), storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getMaterialBuffer());
+            storeRenderObjectTask.reset();
+        }
+    }
+
+    public void render(BufferType bufferType) {
+        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
         if (storeRenderObjectTask.getObjectCount() > 0) {
             render(storeRenderObjectTask.getObjectCount(), storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getMaterialBuffer());
             storeRenderObjectTask.reset();
@@ -86,7 +94,7 @@ public class InstancedRenderer {
     }
 
     public void addToRenderPipeLine(GLString glString, BufferType bufferType) {
-        StoreRenderObjectTask storeRenderObjectTask = storeRenderObjectTasks[bufferType.ordinal()];
+        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
         storeRenderObjectTask.getVertexBuffer().put(storeRenderObjectTask.getVertexBufferIndex().getAndAdd(glString.getVertexBuffer().remaining()), glString.getVertexBuffer(), 0,
                 glString.getVertexBuffer().remaining());
         storeRenderObjectTask.getMaterialBuffer().put(storeRenderObjectTask.getMaterialBufferIndex().getAndAdd(glString.getMaterialBuffer().remaining()), glString.getMaterialBuffer(), 0,
@@ -95,7 +103,7 @@ public class InstancedRenderer {
     }
 
     public void addToRenderPipeLine(GLString glString, float x, float y, BufferType bufferType) {
-        StoreRenderObjectTask storeRenderObjectTask = storeRenderObjectTasks[bufferType.ordinal()];
+        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
 
         int vertexDataSize = glString.getVertexBuffer().remaining();
         int startIndex = storeRenderObjectTask.getVertexBufferIndex().getAndAdd(vertexDataSize);
@@ -112,7 +120,7 @@ public class InstancedRenderer {
     }
 
     public void addToRenderPipeLine(TextureObject textureObject, BufferType bufferType) {
-        StoreRenderObjectTask storeRenderObjectTask = storeRenderObjectTasks[bufferType.ordinal()];
+        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
         putVertices(textureObject, Core.getCore().getRenderer().getInterpolation(), storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex());
         putColor(textureObject.getColor(), storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
         putTextureHandle(textureObject.getTexture().getTextureHandle(), storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
@@ -121,7 +129,7 @@ public class InstancedRenderer {
 
     public void addToRenderPipeLine(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
                                     float r, float g, float b, float a, Texture texture, BufferType bufferType) {
-        StoreRenderObjectTask storeRenderObjectTask = storeRenderObjectTasks[bufferType.ordinal()];
+        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
         addToRenderPipeLine(lastX, lastY, x, y, lastRotation, rotation, lastScaleX, lastScaleY, scaleX, scaleY, r, g, b, a, texture, Core.getCore().getRenderer().getInterpolation(),
                 storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
                 storeRenderObjectTask.getMaterialBufferIndex());
@@ -130,7 +138,7 @@ public class InstancedRenderer {
 
     public void addToRenderPipeLine(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
                                     Vector4f lastColor, Vector4f color, Texture texture, BufferType bufferType) {
-        StoreRenderObjectTask storeRenderObjectTask = storeRenderObjectTasks[bufferType.ordinal()];
+        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
         addToRenderPipeLine(lastX, lastY, x, y, lastRotation, rotation, lastScaleX, lastScaleY, scaleX, scaleY, lastColor, color, texture, Core.getCore().getRenderer().getInterpolation(),
                 storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
                 storeRenderObjectTask.getMaterialBufferIndex());
@@ -154,7 +162,7 @@ public class InstancedRenderer {
     }
 
     public void addToRenderPipeLine(float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a, Texture texture, BufferType bufferType) {
-        StoreRenderObjectTask storeRenderObjectTask = storeRenderObjectTasks[bufferType.ordinal()];
+        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
         putVertices(x, y, LUT.sin(rotation), LUT.cos(rotation), scaleX * 0.5f, scaleY * 0.5f, storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex());
         putColor(r, g, b, a, storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
         putTextureHandle(texture.getTextureHandle(), storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
@@ -166,7 +174,7 @@ public class InstancedRenderer {
     }
 
     public void addGUIElementToRenderPipeLine(float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, long textureHandle, BufferType bufferType) {
-        StoreRenderObjectTask storeRenderObjectTask = storeRenderObjectTasks[bufferType.ordinal()];
+        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
         putVertices(x, sizeY + y, sizeX + x, sizeY + y, sizeX + x, y, x, y, storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex());
         putColor(r, g, b, a, storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
         putTextureHandle(textureHandle, storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
