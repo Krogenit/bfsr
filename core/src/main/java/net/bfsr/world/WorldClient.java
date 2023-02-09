@@ -6,6 +6,8 @@ import net.bfsr.client.input.Mouse;
 import net.bfsr.client.render.BufferType;
 import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.OpenGLHelper;
+import net.bfsr.client.render.instanced.BufferType;
+import net.bfsr.client.render.instanced.InstancedRenderer;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureGenerator;
 import net.bfsr.client.render.texture.TextureLoader;

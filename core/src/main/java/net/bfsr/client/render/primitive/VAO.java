@@ -1,4 +1,4 @@
-package net.bfsr.client.render;
+package net.bfsr.client.render.primitive;
 
 import lombok.Getter;
 import org.lwjgl.opengl.*;

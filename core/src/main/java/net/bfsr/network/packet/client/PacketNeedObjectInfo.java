@@ -43,7 +43,7 @@ public class PacketNeedObjectInfo extends ClientPacket {
                 networkManager.scheduleOutboundPacket(new PacketSpawnShip(ship));
                 networkManager.scheduleOutboundPacket(new PacketShipName(ship));
                 networkManager.scheduleOutboundPacket(new PacketShipFaction(ship));
-                Direction dir = ship.getPrevMoveDir();
+                Direction dir = ship.getLastMoveDir();
                 if (dir != null) networkManager.scheduleOutboundPacket(new PacketShipEngine(objectId, dir.ordinal()));
                 for (WeaponSlot slot : ship.getWeaponSlots()) {
                     if (slot != null) networkManager.scheduleOutboundPacket(new PacketShipSetWeaponSlot(ship, slot));

@@ -2,8 +2,8 @@ package net.bfsr.component.damage;
 
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
-import net.bfsr.client.render.BufferType;
-import net.bfsr.client.render.InstancedRenderer;
+import net.bfsr.client.render.instanced.BufferType;
+import net.bfsr.client.render.instanced.InstancedRenderer;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;

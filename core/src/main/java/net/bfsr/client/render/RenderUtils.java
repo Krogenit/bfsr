@@ -1,6 +1,7 @@
 package net.bfsr.client.render;
 
 import net.bfsr.client.render.primitive.DynamicVertexColorBuffer;
+import net.bfsr.client.render.primitive.VAO;
 import net.bfsr.client.render.primitive.VertexColorBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;

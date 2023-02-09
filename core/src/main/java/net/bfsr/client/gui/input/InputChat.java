@@ -2,8 +2,8 @@ package net.bfsr.client.gui.input;
 
 import net.bfsr.client.gui.scroll.Scroll;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.BufferType;
 import net.bfsr.client.render.font.FontType;
+import net.bfsr.client.render.instanced.BufferType;
 import net.bfsr.core.Core;
 import net.bfsr.network.packet.common.PacketChatMessage;
 import org.lwjgl.glfw.GLFW;

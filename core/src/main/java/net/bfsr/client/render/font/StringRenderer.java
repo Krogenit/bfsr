@@ -1,8 +1,8 @@
 package net.bfsr.client.render.font;
 
-import net.bfsr.client.render.BufferType;
-import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.font.string.GLString;
+import net.bfsr.client.render.instanced.BufferType;
+import net.bfsr.client.render.instanced.InstancedRenderer;
 import org.joml.Vector3f;
 
 import java.nio.ByteBuffer;

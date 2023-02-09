@@ -1,7 +1,7 @@
 package net.bfsr.client.particle;
 
-import net.bfsr.client.render.BufferType;
-import net.bfsr.client.render.InstancedRenderer;
+import net.bfsr.client.render.instanced.BufferType;
+import net.bfsr.client.render.instanced.InstancedRenderer;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.entity.TextureObject;

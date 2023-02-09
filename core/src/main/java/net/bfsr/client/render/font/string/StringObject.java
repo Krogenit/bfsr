@@ -3,11 +3,11 @@ package net.bfsr.client.render.font.string;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.gui.AbstractGuiObject;
-import net.bfsr.client.render.BufferType;
-import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.StringCache;
 import net.bfsr.client.render.font.StringOffsetType;
+import net.bfsr.client.render.instanced.BufferType;
+import net.bfsr.client.render.instanced.InstancedRenderer;
 import net.bfsr.core.Core;
 import org.joml.Vector4f;
 

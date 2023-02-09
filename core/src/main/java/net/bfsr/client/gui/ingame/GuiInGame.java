@@ -7,11 +7,11 @@ import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.input.InputChat;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.particle.ParticleRenderer;
-import net.bfsr.client.render.BufferType;
-import net.bfsr.client.render.InstancedRenderer;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.string.StringObject;
+import net.bfsr.client.render.instanced.BufferType;
+import net.bfsr.client.render.instanced.InstancedRenderer;
+import net.bfsr.client.render.particle.ParticleRenderer;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
@@ -239,14 +239,14 @@ public class GuiInGame extends Gui {
 
         yPos += upperText.getHeight() + sectionOffset;
 
-        World world = core.getWorld();
+        WorldClient world = core.getWorld();
         if (world != null) {
             Camera cam = core.getRenderer().getCamera();
             Vector2f camPos = cam.getPosition();
             int bulletsCount = world.getBullets().size();
             int shipsCount = world.getShips().size();
             int particlesCount = particleRenderer.getParticlesCount();
-            int physicParticles = particleRenderer.getParticlesWrecks().size();
+            int physicParticles = world.getParticleManager().getParticlesWrecks().size();
 
             WorldServer sWorld = MainServer.getInstance() != null ? MainServer.getInstance().getWorld() : null;
             int sBulletsCount = sWorld != null ? sWorld.getBullets().size() : 0;

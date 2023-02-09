@@ -1,7 +1,8 @@
-package net.bfsr.client.render;
+package net.bfsr.client.render.instanced;
 
 import lombok.Getter;
 import net.bfsr.client.render.font.string.GLString;
+import net.bfsr.client.render.primitive.VAO;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
@@ -16,10 +17,7 @@ import org.lwjgl.opengl.GL44C;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class InstancedRenderer {
     public static InstancedRenderer INSTANCE;
@@ -49,8 +47,8 @@ public class InstancedRenderer {
         storeRenderObjectTasks[bufferType.ordinal()].setFuture(executorService.submit(runnable));
     }
 
-    public void addTask(StoreRenderObjectTask task) {
-        task.setFuture(executorService.submit(task.getRunnable()));
+    public Future<?> addTask(Runnable runnable) {
+        return executorService.submit(runnable);
     }
 
     public void init() {
@@ -74,11 +72,7 @@ public class InstancedRenderer {
         }
 
         if (storeRenderObjectTask.getObjectCount() > 0) {
-            vao.updateVertexBuffer(0, storeRenderObjectTask.getVertexBuffer().limit(storeRenderObjectTask.getObjectCount() * VERTEX_DATA_SIZE), GL44C.GL_DYNAMIC_STORAGE_BIT, VERTEX_DATA_SIZE);
-            vao.updateBuffer(1, storeRenderObjectTask.getMaterialBuffer().limit(storeRenderObjectTask.getObjectCount() * MATERIAL_DATA_SIZE), GL44C.GL_DYNAMIC_STORAGE_BIT);
-            vao.bindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 0, 1);
-            GL11C.glDrawArrays(GL11C.GL_QUADS, 0, storeRenderObjectTask.getObjectCount() << 2);
-            Core.getCore().getRenderer().increaseDrawCalls();
+            render(storeRenderObjectTask.getObjectCount(), storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getMaterialBuffer());
             storeRenderObjectTask.reset();
         }
     }
@@ -119,9 +113,9 @@ public class InstancedRenderer {
 
     public void addToRenderPipeLine(TextureObject textureObject, BufferType bufferType) {
         StoreRenderObjectTask storeRenderObjectTask = storeRenderObjectTasks[bufferType.ordinal()];
-        storeVertices(textureObject, Core.getCore().getRenderer().getInterpolation(), storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex());
-        storeColor(textureObject.getColor(), storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
-        storeTextureHandle(textureObject.getTexture().getTextureHandle(), storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
+        putVertices(textureObject, Core.getCore().getRenderer().getInterpolation(), storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex());
+        putColor(textureObject.getColor(), storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
+        putTextureHandle(textureObject.getTexture().getTextureHandle(), storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
         storeRenderObjectTask.incrementObjectCount();
     }
 
@@ -137,16 +131,24 @@ public class InstancedRenderer {
     public void addToRenderPipeLine(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
                                     float r, float g, float b, float a, Texture texture, float interpolation, FloatBuffer vertexBuffer, MutableInt vertexBufferIndex,
                                     ByteBuffer materialBuffer, MutableInt materialBufferIndex) {
-        storeVertices(lastX, lastY, x, y, lastRotation, rotation, lastScaleX, lastScaleY, scaleX, scaleY, interpolation, vertexBuffer, vertexBufferIndex);
-        storeColor(r, g, b, a, materialBuffer, materialBufferIndex);
-        storeTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
+        putVertices(lastX, lastY, x, y, lastRotation, rotation, lastScaleX, lastScaleY, scaleX, scaleY, interpolation, vertexBuffer, vertexBufferIndex);
+        putColor(r, g, b, a, materialBuffer, materialBufferIndex);
+        putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
+    }
+
+    public void addToRenderPipeLine(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
+                                    Vector4f lastColor, Vector4f color, Texture texture, float interpolation, FloatBuffer vertexBuffer, MutableInt vertexBufferIndex,
+                                    ByteBuffer materialBuffer, MutableInt materialBufferIndex) {
+        putVertices(lastX, lastY, x, y, lastRotation, rotation, lastScaleX, lastScaleY, scaleX, scaleY, interpolation, vertexBuffer, vertexBufferIndex);
+        putColor(lastColor, color, materialBuffer, materialBufferIndex, interpolation);
+        putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
     }
 
     public void addToRenderPipeLine(float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a, Texture texture, BufferType bufferType) {
         StoreRenderObjectTask storeRenderObjectTask = storeRenderObjectTasks[bufferType.ordinal()];
-        storeVertices(x, y, LUT.sin(rotation), LUT.cos(rotation), scaleX * 0.5f, scaleY * 0.5f, storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex());
-        storeColor(r, g, b, a, storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
-        storeTextureHandle(texture.getTextureHandle(), storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
+        putVertices(x, y, LUT.sin(rotation), LUT.cos(rotation), scaleX * 0.5f, scaleY * 0.5f, storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex());
+        putColor(r, g, b, a, storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
+        putTextureHandle(texture.getTextureHandle(), storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
         storeRenderObjectTask.incrementObjectCount();
     }
 
@@ -156,27 +158,27 @@ public class InstancedRenderer {
 
     public void addGUIElementToRenderPipeLine(float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, long textureHandle, BufferType bufferType) {
         StoreRenderObjectTask storeRenderObjectTask = storeRenderObjectTasks[bufferType.ordinal()];
-        storeVertices(x, sizeY + y, sizeX + x, sizeY + y, sizeX + x, y, x, y, storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex());
-        storeColor(r, g, b, a, storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
-        storeTextureHandle(textureHandle, storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
+        putVertices(x, sizeY + y, sizeX + x, sizeY + y, sizeX + x, y, x, y, storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex());
+        putColor(r, g, b, a, storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
+        putTextureHandle(textureHandle, storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
         storeRenderObjectTask.incrementObjectCount();
     }
 
     public void addGUIElementToRenderPipeLine(float x, float y, float rotation, float sizeX, float sizeY, float r, float g, float b, float a, long textureHandle, FloatBuffer vertexBuffer,
                                               MutableInt vertexBufferIndex, ByteBuffer materialBuffer, MutableInt materialBufferIndex) {
-        storeGuiElementVertices(x, y, LUT.sin(rotation), LUT.cos(rotation), sizeX, sizeY, vertexBuffer, vertexBufferIndex);
-        storeColor(r, g, b, a, materialBuffer, materialBufferIndex);
-        storeTextureHandle(textureHandle, materialBuffer, materialBufferIndex);
+        putGuiElementVertices(x, y, LUT.sin(rotation), LUT.cos(rotation), sizeX, sizeY, vertexBuffer, vertexBufferIndex);
+        putColor(r, g, b, a, materialBuffer, materialBufferIndex);
+        putTextureHandle(textureHandle, materialBuffer, materialBufferIndex);
     }
 
-    private void storeVertices(TextureObject textureObject, float interpolation, FloatBuffer floatBuffer, MutableInt bufferIndex) {
-        storeVertices(textureObject.getLastPosition().x, textureObject.getLastPosition().y, textureObject.getPosition().x, textureObject.getPosition().y, textureObject.getLastRotation(),
+    private void putVertices(TextureObject textureObject, float interpolation, FloatBuffer floatBuffer, MutableInt bufferIndex) {
+        putVertices(textureObject.getLastPosition().x, textureObject.getLastPosition().y, textureObject.getPosition().x, textureObject.getPosition().y, textureObject.getLastRotation(),
                 textureObject.getRotation(), textureObject.getLastScale().x, textureObject.getLastScale().y, textureObject.getScale().x, textureObject.getScale().y, interpolation,
                 floatBuffer, bufferIndex);
     }
 
-    private void storeVertices(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
-                               float interpolation, FloatBuffer floatBuffer, MutableInt bufferIndex) {
+    public void putVertices(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
+                            float interpolation, FloatBuffer floatBuffer, MutableInt bufferIndex) {
         final float sizeX = 0.5f * (lastScaleX + (scaleX - lastScaleX) * interpolation);
         final float sizeY = 0.5f * (lastScaleY + (scaleY - lastScaleY) * interpolation);
         final float interpolatedRotation = lastRotation + MathUtils.lerpAngle(lastRotation, rotation) * interpolation;
@@ -184,14 +186,14 @@ public class InstancedRenderer {
         final float cos = LUT.cos(interpolatedRotation);
         final float positionX = lastX + (x - lastX) * interpolation;
         final float positionY = lastY + (y - lastY) * interpolation;
-        storeVertices(positionX, positionY, sin, cos, sizeX, sizeY, floatBuffer, bufferIndex);
+        putVertices(positionX, positionY, sin, cos, sizeX, sizeY, floatBuffer, bufferIndex);
     }
 
-    private void storeVertices(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
-        storeVertices(-sizeX + x, sizeY + y, sizeX + x, sizeY + y, sizeX + x, -sizeY + y, -sizeX + x, -sizeY + y, floatBuffer, bufferIndex);
+    private void putVertices(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
+        putVertices(-sizeX + x, sizeY + y, sizeX + x, sizeY + y, sizeX + x, -sizeY + y, -sizeX + x, -sizeY + y, floatBuffer, bufferIndex);
     }
 
-    private void storeVertices(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, FloatBuffer floatBuffer, MutableInt bufferIndex) {
+    private void putVertices(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, FloatBuffer floatBuffer, MutableInt bufferIndex) {
         final float u1 = 0.0f;
         final float v1 = 1.0f;
         final float u2 = 1.0f;
@@ -219,7 +221,7 @@ public class InstancedRenderer {
         floatBuffer.put(bufferIndex.getAndIncrement(), v4);
     }
 
-    private void storeVertices(float x, float y, float sin, float cos, float sizeX, float sizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
+    private void putVertices(float x, float y, float sin, float cos, float sizeX, float sizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
         final float minusSizeX = -sizeX;
         final float minusSizeY = -sizeY;
 
@@ -262,7 +264,7 @@ public class InstancedRenderer {
         floatBuffer.put(bufferIndex.getAndIncrement(), v4);
     }
 
-    private void storeGuiElementVertices(float x, float y, float sin, float cos, float sizeX, float sizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
+    private void putGuiElementVertices(float x, float y, float sin, float cos, float sizeX, float sizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
         final float u1 = 0.0f;
         final float v1 = 1.0f;
         final float u2 = 1.0f;
@@ -302,23 +304,31 @@ public class InstancedRenderer {
         floatBuffer.put(bufferIndex.getAndIncrement(), v4);
     }
 
-    private void storeColor(Vector4f color, ByteBuffer byteBuffer, MutableInt bufferIndex) {
-        storeColor(color.x, color.y, color.z, color.w, byteBuffer, bufferIndex);
+    private void putColor(Vector4f color, ByteBuffer byteBuffer, MutableInt bufferIndex) {
+        putColor(color.x, color.y, color.z, color.w, byteBuffer, bufferIndex);
     }
 
-    private void storeColor(float r, float g, float b, float a, ByteBuffer byteBuffer, MutableInt bufferIndex) {
+    private void putColor(float r, float g, float b, float a, ByteBuffer byteBuffer, MutableInt bufferIndex) {
         byteBuffer.putFloat(bufferIndex.getAndAdd(4), r);
         byteBuffer.putFloat(bufferIndex.getAndAdd(4), g);
         byteBuffer.putFloat(bufferIndex.getAndAdd(4), b);
         byteBuffer.putFloat(bufferIndex.getAndAdd(4), a);
     }
 
-    private void storeTextureHandle(long textureHandle, ByteBuffer byteBuffer, MutableInt bufferIndex) {
+    public void putColor(Vector4f lastColor, Vector4f color, ByteBuffer byteBuffer, MutableInt index, float interpolation) {
+        byteBuffer.putFloat(index.getAndAdd(4), color.x);
+        byteBuffer.putFloat(index.getAndAdd(4), color.y);
+        byteBuffer.putFloat(index.getAndAdd(4), color.z);
+        byteBuffer.putFloat(index.getAndAdd(4), lastColor.w + (color.w - lastColor.w) * interpolation);
+    }
+
+    public void putTextureHandle(long textureHandle, ByteBuffer byteBuffer, MutableInt bufferIndex) {
         byteBuffer.putLong(bufferIndex.getAndAdd(8), textureHandle);
         byteBuffer.putLong(bufferIndex.getAndAdd(8), 0);//padding
     }
 
     public void clear() {
+        vao.clear();
         if (executorService != null) {
             executorService.shutdown();
             try {

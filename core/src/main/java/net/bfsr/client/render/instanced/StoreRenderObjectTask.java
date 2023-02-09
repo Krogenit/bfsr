@@ -1,4 +1,4 @@
-package net.bfsr.client.render;
+package net.bfsr.client.render.instanced;
 
 import lombok.Getter;
 import lombok.Setter;

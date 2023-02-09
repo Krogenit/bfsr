@@ -1,7 +1,7 @@
 package net.bfsr.client.model;
 
 import lombok.Getter;
-import net.bfsr.client.render.VAO;
+import net.bfsr.client.render.primitive.VAO;
 import net.bfsr.core.Core;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL44C;

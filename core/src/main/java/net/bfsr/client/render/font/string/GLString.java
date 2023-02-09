@@ -2,7 +2,7 @@ package net.bfsr.client.render.font.string;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.render.InstancedRenderer;
+import net.bfsr.client.render.instanced.InstancedRenderer;
 import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;
