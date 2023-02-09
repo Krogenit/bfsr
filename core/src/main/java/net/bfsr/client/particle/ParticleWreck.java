@@ -49,9 +49,9 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
     private Texture textureFire, textureLight;
 
     @Getter
-    private Vector4f colorFire, colorLight;
+    private final Vector4f colorFire = new Vector4f(), colorLight = new Vector4f();
     @Getter
-    private Vector4f lastColorFire, lastColorLight;
+    private final Vector4f lastColorFire = new Vector4f(), lastColorLight = new Vector4f();
 
     private Random rand;
 
@@ -61,7 +61,7 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
      * Saved transform before TOI solver
      */
     private final Transform transform = new Transform();
-    private boolean transformUpdated;
+    private boolean transformSaved;
 
     public ParticleWreck init(int id, int textureOffset, boolean isWreck, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation,
                               float angularVelocity, float scaleX, float scaleY, float sizeVelocity, float r, float g, float b, float a, float alphaVelocity) {
@@ -72,6 +72,10 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
         light = isWreck;
         shipWreck = false;
         hull = 10;
+        colorFire.set(0.0f);
+        lastColorFire.set(0.0f);
+        colorLight.set(0.0f);
+        lastColorLight.set(0.0f);
         createBody1(x, y);
         createAABB();
         return this;
@@ -90,6 +94,10 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
         destroyedShipId = ship.getId();
         hull = ship.getHull().getMaxHull() / 4.0f;
         rand = world.getRand();
+        colorFire.set(0.0f);
+        lastColorFire.set(0.0f);
+        colorLight.set(0.0f);
+        lastColorLight.set(0.0f);
         createBody1(x, y);
         createAABB();
         return this;
@@ -110,17 +118,24 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
         if (isWreck) {
             textureFire = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.particleWreckFire0.ordinal() + textureOffset]);
             textureLight = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.particleWreckLight0.ordinal() + textureOffset]);
-            colorLight = new Vector4f();
-            colorLight.w = 0.0f;
-            lastColorLight = new Vector4f(colorLight);
+            colorLight.set(0.0f);
+            lastColorLight.set(colorLight);
             timerLight1 = 200.0f + rand.nextInt(200);
         } else if (fire) {
             textureFire = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.particleDerbisEmber1.ordinal() + textureOffset]);
+            colorLight.set(0.0f);
+            lastColorLight.set(colorLight);
+        } else {
+            colorLight.set(0.0f);
+            lastColorLight.set(colorLight);
         }
 
         if (isWreck || fire) {
-            colorFire = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
-            lastColorFire = new Vector4f(colorFire);
+            colorFire.set(1.0f, 1.0f, 1.0f, 1.0f);
+            lastColorFire.set(colorFire);
+        } else {
+            colorFire.set(0.0f);
+            lastColorFire.set(colorFire);
         }
 
         createBody1(x, y);
@@ -141,12 +156,10 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
         fireExplosion = false;
         fire = true;
         light = true;
-        colorFire = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
-        colorFire.w = 0.0f;
-        lastColorFire = new Vector4f(colorFire);
-        colorLight = new Vector4f();
-        colorLight.w = 0.0f;
-        lastColorLight = new Vector4f(colorLight);
+        colorFire.set(1.0f, 1.0f, 1.0f, 0.0f);
+        lastColorFire.set(colorFire);
+        colorLight.set(0.0f);
+        lastColorLight.set(colorLight);
         shipWreck = true;
         rand = world.getRand();
         timerLight1 = 200.0f + rand.nextInt(200);
@@ -159,7 +172,7 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
 
     @Override
     protected void addParticle() {
-        Core.getCore().getRenderer().getParticleRenderer().addParticle(this);
+        Core.getCore().getWorld().getParticleManager().addParticle(this);
     }
 
     private void createBody1(float x, float y) {
@@ -401,6 +414,8 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
         lastPosition.set(getPosition());
         lastRotation = getRotation();
         lastColor.w = color.w;
+        lastColorFire.set(colorFire);
+        lastColorLight.set(colorLight);
 
         if (world.isRemote()) {
             aliveTimer += 60.0f * TimeUtils.UPDATE_DELTA_TIME;
@@ -441,7 +456,6 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
                 }
             }
 
-            lastColorFire.set(colorFire);
             if (changeFire) {
                 if (colorFire.w > (shipWreck ? 0.7F : 0.6F)) {
                     if (shipWreck) {
@@ -449,11 +463,17 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
                         colorFire.x -= fireSpeed;
                         colorFire.y -= fireSpeed / 4.0f;
                         colorFire.z -= fireSpeed / 4.0f;
+                        if (colorFire.w < 0.0f) {
+                            colorFire.set(0.0f);
+                        }
                     } else {
                         colorFire.w -= fireSpeed1 - fireAddSpeed;
                         colorFire.x -= fireSpeed1;
                         colorFire.y -= fireSpeed1;
                         colorFire.z -= fireSpeed1;
+                        if (colorFire.w < 0.0f) {
+                            colorFire.set(0.0f);
+                        }
                     }
                 } else {
                     changeFire = false;
@@ -478,7 +498,6 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
         }
 
         if (light && world.isRemote()) {
-            lastColorLight.set(colorLight);
             timerLight1 -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (timerLight1 <= 0.0f) {
                 if (changeLight) {
@@ -487,6 +506,9 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
                         colorLight.x -= lightSpeed;
                         colorLight.y -= lightSpeed;
                         colorLight.z -= lightSpeed;
+                        if (colorLight.w < 0.0f) {
+                            colorLight.set(0.0f);
+                        }
                     } else {
                         changeLight = false;
                         timerLight += 25.0f;
@@ -511,24 +533,31 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
 
         if (shipWreck) {
             if (world.isRemote() && wreckLifeTime <= maxWreckLifeTime / 2.0f) {
-                lastColorFire.set(colorFire);
                 if (colorFire.w > 0.0f) {
                     fire = false;
                     colorFire.w -= fireSpeed2;
                     colorFire.x -= fireSpeed2;
                     colorFire.y -= fireSpeed2;
                     colorFire.z -= fireSpeed2;
+                    if (colorFire.w < 0.0f) {
+                        colorFire.set(0.0f);
+                    }
                 }
             }
 
             wreckLifeTime -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (wreckLifeTime <= maxWreckLifeTime / 7.0f) {
-                if (world.isRemote() && colorLight.w > 0.0f) {
-                    light = false;
-                    colorLight.w -= lightSpeed;
-                    colorLight.x -= lightSpeed;
-                    colorLight.y -= lightSpeed;
-                    colorLight.z -= lightSpeed;
+                if (world.isRemote()) {
+                    if (colorLight.w > 0.0f) {
+                        light = false;
+                        colorLight.w -= lightSpeed;
+                        colorLight.x -= lightSpeed;
+                        colorLight.y -= lightSpeed;
+                        colorLight.z -= lightSpeed;
+                        if (colorLight.w < 0.0f) {
+                            colorLight.set(0.0f);
+                        }
+                    }
                 }
             } else if (wreckLifeTime <= 0) {
                 if (!world.isRemote()) {
@@ -538,28 +567,26 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
             }
         } else {
             if (color.w <= 0.5f) {
-                if (colorFire != null) {
-                    lastColorFire.set(colorFire);
-
-                    if (colorFire.w > 0.0f) {
-                        fire = false;
-                        colorFire.w -= fireSpeed2;
-                        colorFire.x -= fireSpeed2;
-                        colorFire.y -= fireSpeed2;
-                        colorFire.z -= fireSpeed2;
+                if (colorFire.w > 0.0f) {
+                    fire = false;
+                    colorFire.w -= fireSpeed2;
+                    colorFire.x -= fireSpeed2;
+                    colorFire.y -= fireSpeed2;
+                    colorFire.z -= fireSpeed2;
+                    if (colorFire.w < 0.0f) {
+                        colorFire.set(0.0f);
                     }
                 }
 
                 if (color.w < 0.3f) {
-                    if (colorLight != null) {
-                        lastColorLight.set(colorLight);
-
-                        if (colorLight.w > 0.0f) {
-                            light = false;
-                            colorLight.w -= lightSpeed;
-                            colorLight.x -= lightSpeed;
-                            colorLight.y -= lightSpeed;
-                            colorLight.z -= lightSpeed;
+                    if (colorLight.w > 0.0f) {
+                        light = false;
+                        colorLight.w -= lightSpeed;
+                        colorLight.x -= lightSpeed;
+                        colorLight.y -= lightSpeed;
+                        colorLight.z -= lightSpeed;
+                        if (colorLight.w < 0.0f) {
+                            colorLight.set(0.0f);
                         }
                     }
                 }
@@ -576,15 +603,18 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
                 }
             } else {
                 color.w -= alphaVelocity * TimeUtils.UPDATE_DELTA_TIME;
+                if (color.w < 0.0f) color.w = 0.0f;
             }
         }
     }
 
     public void postPhysicsUpdate() {
-        if (transformUpdated) {
+        if (transformSaved) {
             body.setTransform(transform);
-            transformUpdated = false;
+            transformSaved = false;
         }
+
+        updateWorldAABB();
     }
 
     public void damage(float damage) {
@@ -598,7 +628,31 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
     @Override
     public void saveTransform(Transform transform) {
         this.transform.set(transform);
-        transformUpdated = true;
+        transformSaved = true;
+    }
+
+    @Override
+    public void render() {
+        Vector2f position = getPosition();
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, getRotation(), lastScale.x, lastScale.y, scale.x, scale.y,
+                color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
+    }
+
+    public void renderAdditive() {
+        if (colorFire.w > 0) {
+            Vector2f position = getPosition();
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, getRotation(), lastScale.x, lastScale.y, scale.x, scale.y,
+                    lastColorFire, colorFire, textureFire, BufferType.ENTITIES_ADDITIVE);
+        }
+
+        if (colorLight.w > 0) {
+            Vector2f position = getPosition();
+            if (textureLight == null) {
+                System.out.println();
+            }
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, getRotation(), lastScale.x, lastScale.y, scale.x, scale.y,
+                    lastColorLight, colorLight, textureLight, BufferType.ENTITIES_ADDITIVE);
+        }
     }
 
     private static TextureRegister getDebrisTexture(int textureOffset, boolean isWreck) {
@@ -610,7 +664,8 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
     }
 
     @Override
-    public void returnToPool() {
+    public void onRemoved() {
         ParticleSpawner.PARTICLE_WREAK_POOL.returnBack(this);
+        Core.getCore().getWorld().removeDynamicParticle(this);
     }
 }

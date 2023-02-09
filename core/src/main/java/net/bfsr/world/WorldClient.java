@@ -1,10 +1,10 @@
 package net.bfsr.world;
 
+import lombok.Getter;
 import net.bfsr.client.camera.Camera;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
-import net.bfsr.client.render.BufferType;
-import net.bfsr.client.render.InstancedRenderer;
+import net.bfsr.client.particle.ParticleManager;
 import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.render.instanced.BufferType;
 import net.bfsr.client.render.instanced.InstancedRenderer;
@@ -33,6 +33,8 @@ public class WorldClient extends World {
     private int spawnTimer;
     private Texture backgroundTexture;
     private boolean disableLeftClickShipSelection;
+    @Getter
+    private final ParticleManager particleManager = new ParticleManager();
 
     public WorldClient() {
         super(true, Core.getCore().getProfiler());
@@ -59,7 +61,7 @@ public class WorldClient extends World {
                 int size = ships.size();
                 for (int i = 0; i < size; i++) {
                     Ship ship = ships.get(i);
-                    if (ship.getAABB().isIntersects(Mouse.getWorldPosition(core.getRenderer().getCamera()))) {
+                    if (ship.getWorldAABB().isIntersects(Mouse.getWorldPosition(core.getRenderer().getCamera()))) {
                         core.getGuiInGame().selectShip(ship);
                     }
                 }
@@ -78,7 +80,7 @@ public class WorldClient extends World {
         int size = ships.size();
         for (int i = 0; i < size; i++) {
             Ship ship = ships.get(i);
-            if (ship.getAABB().isIntersects(Mouse.getWorldPosition(core.getRenderer().getCamera()))) {
+            if (ship.getWorldAABB().isIntersects(Mouse.getWorldPosition(core.getRenderer().getCamera()))) {
                 core.getGuiInGame().selectShipSecondary(ship);
             }
         }
@@ -156,12 +158,12 @@ public class WorldClient extends World {
     @Override
     protected void postPhysicsUpdate() {
         super.postPhysicsUpdate();
-        Core.getCore().getRenderer().getParticleRenderer().postPhysicsUpdate();
+        particleManager.postPhysicsUpdate();
     }
 
     @Override
     protected void updateParticles() {
-        Core.getCore().getRenderer().getParticleRenderer().update();
+        particleManager.update();
     }
 
     @Override
@@ -213,24 +215,28 @@ public class WorldClient extends World {
 
             for (int i = 0, size = ships.size(); i < size; i++) {
                 Ship s = ships.get(i);
-                if (s.getAABB().isIntersects(cameraAABB)) {
+                if (s.getWorldAABB().isIntersects(cameraAABB)) {
                     s.render();
                 }
             }
+
+            particleManager.render();
         }, BufferType.ENTITIES_ALPHA);
         InstancedRenderer.INSTANCE.addTask(() -> {
             AxisAlignedBoundingBox cameraAABB = core.getRenderer().getCamera().getBoundingBox();
 
             for (int i = 0, size = ships.size(); i < size; i++) {
                 Ship s = ships.get(i);
-                if (s.getAABB().isIntersects(cameraAABB)) {
+                if (s.getWorldAABB().isIntersects(cameraAABB)) {
                     s.renderAdditive();
                 }
             }
 
+            particleManager.renderAdditive();
+
             for (int i = 0, size = bullets.size(); i < size; i++) {
                 Bullet b = bullets.get(i);
-                if (b.getAABB().isIntersects(cameraAABB)) {
+                if (b.getWorldAABB().isIntersects(cameraAABB)) {
                     b.render();
                 }
             }
@@ -258,6 +264,8 @@ public class WorldClient extends World {
             Bullet bullet = bullets.get(i);
             bullet.renderDebug();
         }
+
+        particleManager.renderDebug();
     }
 
     public void setPlayerShip(Ship playerShip) {
@@ -272,5 +280,11 @@ public class WorldClient extends World {
 
     public void disableShipDeselection() {
         disableLeftClickShipSelection = true;
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        particleManager.clear();
     }
 }

@@ -1,8 +1,10 @@
 package net.bfsr.collision;
 
+import lombok.Getter;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 
+@Getter
 public class AxisAlignedBoundingBox {
     private final Vector2f min;
     private final Vector2f max;
@@ -11,6 +13,10 @@ public class AxisAlignedBoundingBox {
 
     public AxisAlignedBoundingBox() {
         this(new Vector2f(), new Vector2f());
+    }
+
+    public AxisAlignedBoundingBox(AxisAlignedBoundingBox aabb) {
+        this(aabb.min.x, aabb.min.y, aabb.max.x, aabb.max.y);
     }
 
     public AxisAlignedBoundingBox(Vector2f min, Vector2f max) {

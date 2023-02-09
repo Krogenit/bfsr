@@ -129,6 +129,15 @@ public class InstancedRenderer {
     }
 
     public void addToRenderPipeLine(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
+                                    Vector4f lastColor, Vector4f color, Texture texture, BufferType bufferType) {
+        StoreRenderObjectTask storeRenderObjectTask = storeRenderObjectTasks[bufferType.ordinal()];
+        addToRenderPipeLine(lastX, lastY, x, y, lastRotation, rotation, lastScaleX, lastScaleY, scaleX, scaleY, lastColor, color, texture, Core.getCore().getRenderer().getInterpolation(),
+                storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
+                storeRenderObjectTask.getMaterialBufferIndex());
+        storeRenderObjectTask.incrementObjectCount();
+    }
+
+    public void addToRenderPipeLine(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
                                     float r, float g, float b, float a, Texture texture, float interpolation, FloatBuffer vertexBuffer, MutableInt vertexBufferIndex,
                                     ByteBuffer materialBuffer, MutableInt materialBufferIndex) {
         putVertices(lastX, lastY, x, y, lastRotation, rotation, lastScaleX, lastScaleY, scaleX, scaleY, interpolation, vertexBuffer, vertexBufferIndex);

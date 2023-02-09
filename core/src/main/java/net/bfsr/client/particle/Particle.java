@@ -4,23 +4,22 @@ import lombok.Getter;
 import net.bfsr.client.render.instanced.InstancedRenderer;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
-import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.core.Core;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.server.MainServer;
+import net.bfsr.util.MutableInt;
 import net.bfsr.util.TimeUtils;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.*;
+import org.dyn4j.geometry.Convex;
+import org.dyn4j.geometry.Geometry;
+import org.dyn4j.geometry.MassType;
 import org.joml.Vector2f;
 
-import java.util.List;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
 public class Particle extends CollisionObject {
-    private static final Transform IDENTITY_TRANSFORM = new Transform();
-    private static final AABB CACHED_AABB_0 = new AABB(0, 0, 0, 0);
-    private static final AABB CACHED_AABB_1 = new AABB(0, 0, 0, 0);
-
     protected float sizeVelocity, alphaVelocity, angularVelocity, maxAlpha;
     protected boolean canCollide, isAlphaFromZero, zeroVelocity;
     @Getter
@@ -89,32 +88,15 @@ public class Particle extends CollisionObject {
     }
 
     protected void addParticle() {
-        Core.getCore().getRenderer().getParticleRenderer().addParticle(this);
+        Core.getCore().getWorld().getParticleManager().addParticle(this);
+        Core.getCore().getRenderer().getParticleRenderer().addParticleToRenderLayer(this, renderLayer);
     }
 
     @Override
     protected void createAABB() {
         if (canCollide) {
-            AABB aabb = computeAABB();
-
-            if (this.aabb != null) {
-                this.aabb.set((float) aabb.getMinX(), (float) aabb.getMinY(), (float) aabb.getMaxX(), (float) aabb.getMaxY());
-            } else {
-                this.aabb = new AxisAlignedBoundingBox((float) aabb.getMinX(), (float) aabb.getMinY(), (float) aabb.getMaxX(), (float) aabb.getMaxY());
-            }
+            super.createAABB();
         }
-    }
-
-    private AABB computeAABB() {
-        List<BodyFixture> fixtures = body.getFixtures();
-        int size = fixtures.size();
-        fixtures.get(0).getShape().computeAABB(IDENTITY_TRANSFORM, CACHED_AABB_0);
-        for (int i = 1; i < size; i++) {
-            fixtures.get(i).getShape().computeAABB(IDENTITY_TRANSFORM, CACHED_AABB_1);
-            CACHED_AABB_0.union(CACHED_AABB_1);
-        }
-
-        return CACHED_AABB_0;
     }
 
     protected void createFixtures() {
@@ -199,6 +181,13 @@ public class Particle extends CollisionObject {
         }
     }
 
+    public void putToBuffer(FloatBuffer vertexBuffer, ByteBuffer materialBuffer, float interpolation, MutableInt vertexBufferIndex, MutableInt materialBufferIndex) {
+        InstancedRenderer.INSTANCE.putVertices(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, lastScale.x, lastScale.y, scale.x, scale.y,
+                interpolation, vertexBuffer, vertexBufferIndex);
+        InstancedRenderer.INSTANCE.putColor(lastColor, color, materialBuffer, materialBufferIndex, interpolation);
+        InstancedRenderer.INSTANCE.putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
+    }
+
     @Override
     public Vector2f getPosition() {
         if (canCollide) return super.getPosition();
@@ -219,7 +208,8 @@ public class Particle extends CollisionObject {
         return angularVelocity;
     }
 
-    public void returnToPool() {
+    public void onRemoved() {
         ParticleSpawner.PARTICLE_POOL.returnBack(this);
+        Core.getCore().getRenderer().getParticleRenderer().removeParticleFromRenderLayer(this, renderLayer);
     }
 }

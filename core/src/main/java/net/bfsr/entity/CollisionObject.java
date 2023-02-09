@@ -24,19 +24,29 @@ import org.lwjgl.opengl.GL11;
 import java.util.List;
 
 public class CollisionObject extends TextureObject {
+    private static final Transform IDENTITY_TRANSFORM = new Transform();
+    private static final AABB CACHED_AABB_0 = new AABB(0, 0, 0, 0);
+    private static final AABB CACHED_AABB_1 = new AABB(0, 0, 0, 0);
     protected static final Vector2f rotateToVector = new Vector2f();
     protected static final Vector2f angleToVelocity = new Vector2f();
 
+    @Getter
     protected World world;
+    @Getter
     protected Body body;
+    @Getter
+    @Setter
     protected boolean isDead;
     @Getter
     @Setter
     protected int id;
     protected Vector2f velocity = new Vector2f();
     protected AxisAlignedBoundingBox aabb;
+    @Getter
+    protected AxisAlignedBoundingBox worldAABB;
     protected float aliveTimer;
-    private Direction prevMoveDir;
+    @Getter
+    private Direction lastMoveDir;
 
     public CollisionObject(World world, int id, TextureRegister texture, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a) {
         super(TextureLoader.getTexture(texture), x, y, rotation, scaleX, scaleY, r, g, b, a);
@@ -81,14 +91,37 @@ public class CollisionObject extends TextureObject {
     }
 
     protected void createAABB() {
-        org.dyn4j.geometry.AABB aabb = body.createAABB(new Transform());
-        this.aabb = new AxisAlignedBoundingBox(new Vector2f((float) aabb.getMinX(), (float) aabb.getMinY()),
-                new Vector2f((float) aabb.getMaxX(), (float) aabb.getMaxY()));
+        AABB aabb = computeAABB();
+
+        if (this.aabb != null) {
+            this.aabb.set((float) aabb.getMinX(), (float) aabb.getMinY(), (float) aabb.getMaxX(), (float) aabb.getMaxY());
+        } else {
+            this.aabb = new AxisAlignedBoundingBox((float) aabb.getMinX(), (float) aabb.getMinY(), (float) aabb.getMaxX(), (float) aabb.getMaxY());
+            this.worldAABB = new AxisAlignedBoundingBox(this.aabb);
+        }
+    }
+
+    protected AABB computeAABB() {
+        List<BodyFixture> fixtures = body.getFixtures();
+        int size = fixtures.size();
+        fixtures.get(0).getShape().computeAABB(IDENTITY_TRANSFORM, CACHED_AABB_0);
+        for (int i = 1; i < size; i++) {
+            fixtures.get(i).getShape().computeAABB(IDENTITY_TRANSFORM, CACHED_AABB_1);
+            CACHED_AABB_0.union(CACHED_AABB_1);
+        }
+
+        return CACHED_AABB_0;
+    }
+
+    protected void updateWorldAABB() {
+        Vector2f position = getPosition();
+        worldAABB.set(aabb.getMin().x + position.x, aabb.getMin().y + position.y, aabb.getMax().x + position.x, aabb.getMax().y + position.y);
     }
 
     @Override
     public void update() {
         if (world.isRemote()) {
+            updateWorldAABB();
             aliveTimer += 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (aliveTimer > 120) {
                 setDead(true);
@@ -156,9 +189,9 @@ public class CollisionObject extends TextureObject {
             ship.spawnEngineParticles(dir);
             if (ship == world.getPlayerShip()) Core.getCore().sendPacket(new PacketShipEngine(id, dir.ordinal()));
         } else {
-            if (prevMoveDir != null && prevMoveDir != dir)
+            if (lastMoveDir != null && lastMoveDir != dir)
                 MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipEngine(id, dir.ordinal()), pos, WorldServer.PACKET_UPDATE_DISTANCE);
-            prevMoveDir = dir;
+            lastMoveDir = dir;
         }
     }
 
@@ -394,31 +427,7 @@ public class CollisionObject extends TextureObject {
         return velocity;
     }
 
-    public Body getBody() {
-        return body;
-    }
-
-    public World getWorld() {
-        return world;
-    }
-
-    public void setDead(boolean isDead) {
-        this.isDead = isDead;
-    }
-
-    public boolean isDead() {
-        return isDead;
-    }
-
-    public AxisAlignedBoundingBox getAABB() {
-        return aabb.translate(getPosition());
-    }
-
     public float getAngularVelocity() {
         return (float) body.getAngularVelocity();
-    }
-
-    public Direction getPrevMoveDir() {
-        return prevMoveDir;
     }
 }

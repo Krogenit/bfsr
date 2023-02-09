@@ -6,16 +6,21 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.camera.Camera;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.ingame.GuiInGame;
-import net.bfsr.client.particle.ParticleRenderer;
 import net.bfsr.client.render.debug.OpenGLDebugUtils;
 import net.bfsr.client.render.font.StringRenderer;
+import net.bfsr.client.render.instanced.BufferType;
+import net.bfsr.client.render.instanced.InstancedRenderer;
+import net.bfsr.client.render.particle.ParticleRenderer;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.shader.BaseShader;
 import net.bfsr.core.Core;
 import net.bfsr.settings.EnumOption;
 import net.bfsr.world.WorldClient;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL31;
+import org.lwjgl.opengl.GLDebugMessageCallback;
 import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL43C.GL_DEBUG_TYPE_OTHER;
@@ -25,13 +30,13 @@ import static org.lwjgl.opengl.GL43C.glDebugMessageCallback;
 public class Renderer {
     private final Core core;
     @Getter
-    private final Camera camera;
+    private final Camera camera = new Camera();
     @Getter
     private final BaseShader shader = new BaseShader();
     @Getter
     private final StringRenderer stringRenderer = new StringRenderer();
     @Getter
-    private final ParticleRenderer particleRenderer;
+    private final ParticleRenderer particleRenderer = new ParticleRenderer();
     private final InstancedRenderer instancedRenderer = new InstancedRenderer();
     @Getter
     private GuiInGame guiInGame;
@@ -47,8 +52,6 @@ public class Renderer {
 
     public Renderer(Core core) {
         this.core = core;
-        camera = new Camera();
-        particleRenderer = new ParticleRenderer();
     }
 
     public void init(long window, int width, int height) {
@@ -59,7 +62,6 @@ public class Renderer {
 
         camera.init(core.getWidth(), core.getHeight());
         stringRenderer.init();
-        particleRenderer.init();
         instancedRenderer.init();
         shader.load();
         shader.init();
@@ -112,7 +114,7 @@ public class Renderer {
 
         WorldClient world = core.getWorld();
         if (world != null) {
-            particleRenderer.storeParticlesToBuffers(interpolation);
+            particleRenderer.storeParticlesToBuffers();
             world.prepareAmbient();
             world.prepareEntities();
         }
@@ -130,13 +132,12 @@ public class Renderer {
         WorldClient world = core.getWorld();
         if (world != null) {
             world.renderAmbient();
-            particleRenderer.waitTasks();
             particleRenderer.renderBackground();
             world.renderEntities();
             particleRenderer.render();
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
             if (EnumOption.SHOW_DEBUG_BOXES.getBoolean()) {
-                GL20.glUseProgram(0);
+                shader.disable();
                 world.renderDebug();
                 shader.enable();
             }
@@ -186,7 +187,6 @@ public class Renderer {
     }
 
     public void clear() {
-        particleRenderer.clear();
         instancedRenderer.clear();
     }
 

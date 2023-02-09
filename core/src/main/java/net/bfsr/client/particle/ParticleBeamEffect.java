@@ -2,6 +2,7 @@ package net.bfsr.client.particle;
 
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.component.weapon.WeaponSlotBeam;
+import net.bfsr.core.Core;
 import net.bfsr.entity.ship.Ship;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -74,7 +75,8 @@ public class ParticleBeamEffect extends Particle {
     }
 
     @Override
-    public void returnToPool() {
+    public void onRemoved() {
         ParticleSpawner.PARTICLE_BEAM_EFFECT_POOL.returnBack(this);
+        Core.getCore().getRenderer().getParticleRenderer().removeParticleFromRenderLayer(this, renderLayer);
     }
 }
