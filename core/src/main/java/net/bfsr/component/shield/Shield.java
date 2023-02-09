@@ -189,8 +189,8 @@ public class Shield extends CollisionObject {
         if (shieldAlive()) {
             float sizeY = diameter.y * size;
             float sizeX = diameter.x * size;
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(ship.getLastPosition().x, ship.getLastPosition().y, ship.getPosition().x, ship.getPosition().y,
-                    ship.getLastRotation(), ship.getRotation(), sizeX, sizeY, sizeX, sizeY, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ADDITIVE);
+            InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(ship.getLastPosition().x, ship.getLastPosition().y, ship.getPosition().x, ship.getPosition().y,
+                    ship.getLastSin(), ship.getLastCos(), ship.getSin(), ship.getCos(), sizeX, sizeY, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ADDITIVE);
         }
     }
 

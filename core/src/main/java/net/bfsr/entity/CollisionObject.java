@@ -47,6 +47,10 @@ public class CollisionObject extends TextureObject {
     protected float aliveTimer;
     @Getter
     private Direction lastMoveDir;
+    @Getter
+    protected float lastSin, lastCos;
+    @Getter
+    protected float sin, cos;
 
     public CollisionObject(World world, int id, TextureRegister texture, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a) {
         super(TextureLoader.getTexture(texture), x, y, rotation, scaleX, scaleY, r, g, b, a);
@@ -121,13 +125,20 @@ public class CollisionObject extends TextureObject {
     @Override
     public void update() {
         if (world.isRemote()) {
-            updateWorldAABB();
+            lastSin = sin;
+            lastCos = cos;
             aliveTimer += 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (aliveTimer > 120) {
                 setDead(true);
                 aliveTimer = 0;
             }
         }
+    }
+
+    public void postPhysicsUpdate() {
+        sin = (float) body.getTransform().getSint();
+        cos = (float) body.getTransform().getCost();
+        updateWorldAABB();
     }
 
     private void move(Vector2 r, float speed) {

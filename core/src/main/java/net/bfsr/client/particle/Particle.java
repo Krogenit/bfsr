@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 public class Particle extends CollisionObject {
+    @Getter
     protected float sizeVelocity, alphaVelocity, angularVelocity, maxAlpha;
     protected boolean canCollide, isAlphaFromZero, zeroVelocity;
     @Getter
@@ -198,14 +199,6 @@ public class Particle extends CollisionObject {
     public float getRotation() {
         if (canCollide) return super.getRotation();
         else return rotation;
-    }
-
-    public float getAlphaVelocity() {
-        return alphaVelocity;
-    }
-
-    public float getAngularVelocity() {
-        return angularVelocity;
     }
 
     public void onRemoved() {

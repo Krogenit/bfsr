@@ -38,7 +38,6 @@ public class Beam extends TextureObject {
         Vector2f slotScale = slot.getScale();
         Vector2f slotPos = slot.getPosition();
         this.color.set(slot.getBeamColor());
-        this.rotation = slot.getRotation();
 
         float cos = ship.getCos();
         float sin = ship.getSin();
@@ -85,15 +84,14 @@ public class Beam extends TextureObject {
     }
 
     public void render() {
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, lastScale.x,
-                lastScale.y, scale.x, scale.y, color.x, color.y, color.z, color.w / 3.0f, texture, BufferType.ENTITIES_ADDITIVE);
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, lastScale.x,
-                lastScale.y / 3.0f, scale.x, scale.y / 3.0f, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ADDITIVE);
+        InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, ship.getLastSin(), ship.getLastCos(), ship.getSin(), ship.getCos(),
+                lastScale.x, lastScale.y, scale.x, scale.y, color.x, color.y, color.z, color.w / 3.0f, texture, BufferType.ENTITIES_ADDITIVE);
+        InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, ship.getLastSin(), ship.getLastCos(), ship.getSin(), ship.getCos(),
+                lastScale.x, lastScale.y / 3.0f, scale.x, scale.y / 3.0f, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ADDITIVE);
     }
 
     public void setLastValues() {
         lastScale.set(scale);
         lastPosition.set(position);
-        lastRotation = rotation;
     }
 }

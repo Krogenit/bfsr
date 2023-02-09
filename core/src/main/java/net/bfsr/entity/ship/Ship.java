@@ -1,5 +1,6 @@
 package net.bfsr.entity.ship;
 
+import lombok.Getter;
 import net.bfsr.ai.Ai;
 import net.bfsr.ai.AiAggressiveType;
 import net.bfsr.ai.task.AiAttackTarget;
@@ -60,21 +61,29 @@ import java.util.Random;
 public abstract class Ship extends CollisionObject implements TOITransformSavable {
     private static Texture jumpTexture;
 
+    @Getter
     private Armor armor;
+    @Getter
     private Shield shield;
+    @Getter
     private Engine engine;
+    @Getter
     private Faction faction;
+    @Getter
     private Reactor reactor;
+    @Getter
     private Crew crew;
+    @Getter
     private Hull hull;
+    @Getter
     private Cargo cargo;
 
     private String name;
     private StringObject stringObject;
 
     private final List<Vector2f> weaponPositions = new ArrayList<>();
+    @Getter
     private List<WeaponSlot> weaponSlots;
-    private float sin, cos;
     private boolean spawned;
     private final Vector2f jumpVelocity = new Vector2f();
     private final Vector2f jumpPosition = new Vector2f();
@@ -88,7 +97,9 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     private PlayerServer owner;
     private boolean controlledByPlayer;
 
+    @Getter
     private final Ai ai;
+    @Getter
     private CollisionObject lastAttacker, target;
 
     protected Texture textureDamage;
@@ -282,11 +293,14 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         }
     }
 
+    @Override
     public void postPhysicsUpdate() {
         if (transformUpdated) {
             body.setTransform(transform);
             transformUpdated = false;
         }
+
+        super.postPhysicsUpdate();
 
         float maxForwardSpeed = engine.getMaxForwardSpeed();
         float maxForwardSpeedSquared = maxForwardSpeed * maxForwardSpeed;
@@ -295,10 +309,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
             double percent = maxForwardSpeedSquared / magnitudeSquared;
             body.getLinearVelocity().multiply(percent);
         }
-
-        double rotation = getRotation();
-        sin = (float) Math.sin(rotation);
-        cos = (float) Math.cos(rotation);
 
         updateComponents();
 
@@ -450,8 +460,8 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
             renderShield();
         } else {
             float size = 40.0f * color.w;
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(lastJumpPosition.x, lastJumpPosition.y, jumpPosition.x, jumpPosition.y, lastRotation, rotation,
-                    size, size, size, size, effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, jumpTexture, BufferType.ENTITIES_ADDITIVE);
+            InstancedRenderer.INSTANCE.addToRenderPipeLine(lastJumpPosition.x, lastJumpPosition.y, jumpPosition.x, jumpPosition.y, rotation, size, size,
+                    effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, jumpTexture, BufferType.ENTITIES_ADDITIVE);
         }
     }
 
@@ -459,12 +469,12 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         if (spawned) {
             Vector2f position = getPosition();
 
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, getRotation(), lastScale.x, lastScale.y, scale.x, scale.y,
+            InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
                     color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
 
             if (hull.getHull() < hull.getMaxHull()) {
                 float hp = hull.getHull() / hull.getMaxHull();
-                InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, getRotation(), lastScale.x, lastScale.y, scale.x, scale.y,
+                InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
                         1.0f, 1.0f, 1.0f, 1.0f - hp, textureDamage, BufferType.ENTITIES_ALPHA);
             }
 
@@ -487,7 +497,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         int size = weaponSlots.size();
         for (int i = 0; i < size; i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
-            if (weaponSlot != null) InstancedRenderer.INSTANCE.addToRenderPipeLine(weaponSlot, BufferType.ENTITIES_ALPHA);
+            if (weaponSlot != null) weaponSlot.render();
         }
     }
 
@@ -507,14 +517,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     public void setHull(Hull hull) {
         this.hull = hull;
-    }
-
-    public Hull getHull() {
-        return hull;
-    }
-
-    public Crew getCrew() {
-        return crew;
     }
 
     protected void setCrew(Crew crew) {
@@ -561,20 +563,8 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         return weaponSlots.get(i);
     }
 
-    public List<WeaponSlot> getWeaponSlots() {
-        return weaponSlots;
-    }
-
     public void setReactor(Reactor reactor) {
         this.reactor = reactor;
-    }
-
-    public Reactor getReactor() {
-        return reactor;
-    }
-
-    public Engine getEngine() {
-        return engine;
     }
 
     public void setEngine(Engine engine) {
@@ -585,24 +575,8 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         this.armor = armor;
     }
 
-    public Armor getArmor() {
-        return armor;
-    }
-
     public void setShield(Shield shield) {
         this.shield = shield;
-    }
-
-    public Shield getShield() {
-        return shield;
-    }
-
-    public float getSin() {
-        return sin;
-    }
-
-    public float getCos() {
-        return cos;
     }
 
     public abstract void spawnEngineParticles(Direction dir);
@@ -676,20 +650,8 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         damages.add(d);
     }
 
-    public Faction getFaction() {
-        return faction;
-    }
-
     public void setCargo(Cargo cargo) {
         this.cargo = cargo;
-    }
-
-    public Cargo getCargo() {
-        return cargo;
-    }
-
-    public CollisionObject getLastAttacker() {
-        return lastAttacker;
     }
 
     public PlayerServer getOwner() {
@@ -712,16 +674,8 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         return controlledByPlayer;
     }
 
-    public CollisionObject getTarget() {
-        return target;
-    }
-
     public void setTarget(CollisionObject target) {
         this.target = target;
-    }
-
-    public Ai getAi() {
-        return ai;
     }
 
     public abstract TextureRegister getWreckTexture(int textureOffset);
@@ -738,9 +692,8 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     public void updateClientPositionFromPacket(Vector2f pos, float rot, Vector2f velocity, float angularVelocity) {
         super.updateClientPositionFromPacket(pos, rot, velocity, angularVelocity);
 
-        double rotation = getRotation();
-        sin = (float) Math.sin(rotation);
-        cos = (float) Math.cos(rotation);
+        sin = (float) body.getTransform().getRotation().getSint();
+        cos = (float) body.getTransform().getRotation().getCost();
 
         int size = weaponSlots.size();
         for (int i = 0; i < size; i++) {

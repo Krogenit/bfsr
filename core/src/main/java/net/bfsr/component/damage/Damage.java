@@ -191,23 +191,23 @@ public class Damage extends TextureObject {
 
     public void render() {
         if (damaged || repairTimer > 0) {
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, scale.x, scale.y, scale.x, scale.y,
-                    color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
+            InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, ship.getLastSin(), ship.getLastCos(), ship.getSin(), ship.getCos(),
+                    scale.x, scale.y, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
         } else if (repairTimer <= 0 && colorFix.w > 0) {
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, scale.x, scale.y, scale.x, scale.y,
-                    color.x, color.y, color.z, colorFix.w, textureFix, BufferType.ENTITIES_ALPHA);
+            InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, ship.getLastSin(), ship.getLastCos(), ship.getSin(), ship.getCos(),
+                    scale.x, scale.y, color.x, color.y, color.z, colorFix.w, textureFix, BufferType.ENTITIES_ALPHA);
         }
     }
 
     public void renderEffects() {
         if (damaged || repairTimer > 0) {
             if (colorFire.w > 0) {
-                InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, scale.x, scale.y, scale.x, scale.y,
-                        colorFire.x, colorFire.y, colorFire.z, colorFire.w, textureFire, BufferType.ENTITIES_ADDITIVE);
+                InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, ship.getLastSin(), ship.getLastCos(), ship.getSin(), ship.getCos(),
+                        scale.x, scale.y, colorFire.x, colorFire.y, colorFire.z, colorFire.w, textureFire, BufferType.ENTITIES_ADDITIVE);
             }
             if (textureLight != null && colorLight.w > 0) {
-                InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, scale.x, scale.y, scale.x, scale.y,
-                        colorLight.x, colorLight.y, colorLight.z, colorLight.w, textureLight, BufferType.ENTITIES_ADDITIVE);
+                InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, ship.getLastSin(), ship.getLastCos(), ship.getSin(), ship.getCos(),
+                        scale.x, scale.y, colorLight.x, colorLight.y, colorLight.z, colorLight.w, textureLight, BufferType.ENTITIES_ADDITIVE);
             }
         }
     }

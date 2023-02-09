@@ -411,6 +411,8 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
 
     @Override
     public void update() {
+        lastSin = sin;
+        lastCos = cos;
         lastPosition.set(getPosition());
         lastRotation = getRotation();
         lastColor.w = color.w;
@@ -614,7 +616,7 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
             transformSaved = false;
         }
 
-        updateWorldAABB();
+        super.postPhysicsUpdate();
     }
 
     public void damage(float damage) {
@@ -634,23 +636,20 @@ public class ParticleWreck extends Particle implements TOITransformSavable {
     @Override
     public void render() {
         Vector2f position = getPosition();
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, getRotation(), lastScale.x, lastScale.y, scale.x, scale.y,
+        InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
                 color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
     }
 
     public void renderAdditive() {
         if (colorFire.w > 0) {
             Vector2f position = getPosition();
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, getRotation(), lastScale.x, lastScale.y, scale.x, scale.y,
+            InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
                     lastColorFire, colorFire, textureFire, BufferType.ENTITIES_ADDITIVE);
         }
 
         if (colorLight.w > 0) {
             Vector2f position = getPosition();
-            if (textureLight == null) {
-                System.out.println();
-            }
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, getRotation(), lastScale.x, lastScale.y, scale.x, scale.y,
+            InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
                     lastColorLight, colorLight, textureLight, BufferType.ENTITIES_ADDITIVE);
         }
     }

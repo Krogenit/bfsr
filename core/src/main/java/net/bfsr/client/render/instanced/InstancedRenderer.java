@@ -127,10 +127,64 @@ public class InstancedRenderer {
         storeRenderObjectTask.incrementObjectCount();
     }
 
+    public void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin, float cos, float lastScaleX, float lastScaleY, float scaleX,
+                                          float scaleY, float r, float g, float b, float a, Texture texture, BufferType bufferType) {
+        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
+        addToRenderPipeLineSinCos(lastX, lastY, x, y, lastSin, lastCos, sin, cos, lastScaleX, lastScaleY, scaleX, scaleY, r, g, b, a, texture, Core.getCore().getRenderer().getInterpolation(),
+                storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
+                storeRenderObjectTask.getMaterialBufferIndex());
+        storeRenderObjectTask.incrementObjectCount();
+    }
+
+    public void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin, float cos, float scaleX,
+                                          float scaleY, float r, float g, float b, float a, Texture texture, BufferType bufferType) {
+        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
+        addToRenderPipeLineSinCos(lastX, lastY, x, y, lastSin, lastCos, sin, cos, scaleX, scaleY, r, g, b, a, texture, Core.getCore().getRenderer().getInterpolation(),
+                storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
+                storeRenderObjectTask.getMaterialBufferIndex());
+        storeRenderObjectTask.incrementObjectCount();
+    }
+
+    public void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin, float cos, float scaleX, float scaleY,
+                                          Vector4f lastColor, Vector4f color, Texture texture, BufferType bufferType) {
+        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
+        addToRenderPipeLineSinCos(lastX, lastY, x, y, lastSin, lastCos, sin, cos, scaleX, scaleY, lastColor, color, texture, Core.getCore().getRenderer().getInterpolation(),
+                storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
+                storeRenderObjectTask.getMaterialBufferIndex());
+        storeRenderObjectTask.incrementObjectCount();
+    }
+
+    public void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float sin, float cos, float scaleX, float scaleY,
+                                          float r, float g, float b, float a, Texture texture, BufferType bufferType) {
+        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
+        addToRenderPipeLineSinCos(lastX, lastY, x, y, sin, cos, scaleX, scaleY, r, g, b, a, texture, Core.getCore().getRenderer().getInterpolation(),
+                storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
+                storeRenderObjectTask.getMaterialBufferIndex());
+        storeRenderObjectTask.incrementObjectCount();
+    }
+
     public void addToRenderPipeLine(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
                                     float r, float g, float b, float a, Texture texture, BufferType bufferType) {
         BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
         addToRenderPipeLine(lastX, lastY, x, y, lastRotation, rotation, lastScaleX, lastScaleY, scaleX, scaleY, r, g, b, a, texture, Core.getCore().getRenderer().getInterpolation(),
+                storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
+                storeRenderObjectTask.getMaterialBufferIndex());
+        storeRenderObjectTask.incrementObjectCount();
+    }
+
+    public void addToRenderPipeLine(float lastX, float lastY, float x, float y, float scaleX, float scaleY,
+                                    float r, float g, float b, float a, Texture texture, BufferType bufferType) {
+        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
+        addToRenderPipeLine(lastX, lastY, x, y, scaleX, scaleY, r, g, b, a, texture, Core.getCore().getRenderer().getInterpolation(),
+                storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
+                storeRenderObjectTask.getMaterialBufferIndex());
+        storeRenderObjectTask.incrementObjectCount();
+    }
+
+    public void addToRenderPipeLine(float lastX, float lastY, float x, float y, float rotation, float scaleX, float scaleY,
+                                    float r, float g, float b, float a, Texture texture, BufferType bufferType) {
+        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
+        addToRenderPipeLine(lastX, lastY, x, y, rotation, scaleX, scaleY, r, g, b, a, texture, Core.getCore().getRenderer().getInterpolation(),
                 storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
                 storeRenderObjectTask.getMaterialBufferIndex());
         storeRenderObjectTask.incrementObjectCount();
@@ -149,6 +203,58 @@ public class InstancedRenderer {
                                     float r, float g, float b, float a, Texture texture, float interpolation, FloatBuffer vertexBuffer, MutableInt vertexBufferIndex,
                                     ByteBuffer materialBuffer, MutableInt materialBufferIndex) {
         putVertices(lastX, lastY, x, y, lastRotation, rotation, lastScaleX, lastScaleY, scaleX, scaleY, interpolation, vertexBuffer, vertexBufferIndex);
+        putColor(r, g, b, a, materialBuffer, materialBufferIndex);
+        putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
+    }
+
+    public void addToRenderPipeLine(float lastX, float lastY, float x, float y, float scaleX, float scaleY,
+                                    float r, float g, float b, float a, Texture texture, float interpolation, FloatBuffer vertexBuffer, MutableInt vertexBufferIndex,
+                                    ByteBuffer materialBuffer, MutableInt materialBufferIndex) {
+        putVertices(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, 0.5f * scaleX, 0.5f * scaleY, vertexBuffer, vertexBufferIndex);
+        putColor(r, g, b, a, materialBuffer, materialBufferIndex);
+        putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
+    }
+
+    public void addToRenderPipeLine(float lastX, float lastY, float x, float y, float rotation, float scaleX, float scaleY,
+                                    float r, float g, float b, float a, Texture texture, float interpolation, FloatBuffer vertexBuffer, MutableInt vertexBufferIndex,
+                                    ByteBuffer materialBuffer, MutableInt materialBufferIndex) {
+        putVertices(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, LUT.sin(rotation), LUT.cos(rotation), 0.5f * scaleX, 0.5f * scaleY, vertexBuffer,
+                vertexBufferIndex);
+        putColor(r, g, b, a, materialBuffer, materialBufferIndex);
+        putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
+    }
+
+    public void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin, float cos, float lastScaleX, float lastScaleY, float scaleX,
+                                          float scaleY, float r, float g, float b, float a, Texture texture, float interpolation, FloatBuffer vertexBuffer, MutableInt vertexBufferIndex,
+                                          ByteBuffer materialBuffer, MutableInt materialBufferIndex) {
+        putVertices(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, lastSin + (sin - lastSin) * interpolation, lastCos + (cos - lastCos) * interpolation,
+                0.5f * (lastScaleX + (scaleX - lastScaleX) * interpolation), 0.5f * (lastScaleY + (scaleY - lastScaleY) * interpolation), vertexBuffer, vertexBufferIndex);
+        putColor(r, g, b, a, materialBuffer, materialBufferIndex);
+        putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
+    }
+
+    public void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin, float cos, float scaleX,
+                                          float scaleY, float r, float g, float b, float a, Texture texture, float interpolation, FloatBuffer vertexBuffer, MutableInt vertexBufferIndex,
+                                          ByteBuffer materialBuffer, MutableInt materialBufferIndex) {
+        putVertices(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, lastSin + (sin - lastSin) * interpolation, lastCos + (cos - lastCos) * interpolation,
+                0.5f * scaleX, 0.5f * scaleY, vertexBuffer, vertexBufferIndex);
+        putColor(r, g, b, a, materialBuffer, materialBufferIndex);
+        putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
+    }
+
+    public void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin, float cos, float scaleX,
+                                          float scaleY, Vector4f lastColor, Vector4f color, Texture texture, float interpolation, FloatBuffer vertexBuffer, MutableInt vertexBufferIndex,
+                                          ByteBuffer materialBuffer, MutableInt materialBufferIndex) {
+        putVertices(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, lastSin + (sin - lastSin) * interpolation, lastCos + (cos - lastCos) * interpolation,
+                0.5f * scaleX, 0.5f * scaleY, vertexBuffer, vertexBufferIndex);
+        putColor(lastColor, color, materialBuffer, materialBufferIndex, interpolation);
+        putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
+    }
+
+    public void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float sin, float cos, float scaleX,
+                                          float scaleY, float r, float g, float b, float a, Texture texture, float interpolation, FloatBuffer vertexBuffer, MutableInt vertexBufferIndex,
+                                          ByteBuffer materialBuffer, MutableInt materialBufferIndex) {
+        putVertices(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, sin, cos, 0.5f * scaleX, 0.5f * scaleY, vertexBuffer, vertexBufferIndex);
         putColor(r, g, b, a, materialBuffer, materialBufferIndex);
         putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
     }
@@ -196,14 +302,9 @@ public class InstancedRenderer {
 
     public void putVertices(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
                             float interpolation, FloatBuffer floatBuffer, MutableInt bufferIndex) {
-        final float sizeX = 0.5f * (lastScaleX + (scaleX - lastScaleX) * interpolation);
-        final float sizeY = 0.5f * (lastScaleY + (scaleY - lastScaleY) * interpolation);
         final float interpolatedRotation = lastRotation + MathUtils.lerpAngle(lastRotation, rotation) * interpolation;
-        final float sin = LUT.sin(interpolatedRotation);
-        final float cos = LUT.cos(interpolatedRotation);
-        final float positionX = lastX + (x - lastX) * interpolation;
-        final float positionY = lastY + (y - lastY) * interpolation;
-        putVertices(positionX, positionY, sin, cos, sizeX, sizeY, floatBuffer, bufferIndex);
+        putVertices(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, LUT.sin(interpolatedRotation), LUT.cos(interpolatedRotation),
+                0.5f * (lastScaleX + (scaleX - lastScaleX) * interpolation), 0.5f * (lastScaleY + (scaleY - lastScaleY) * interpolation), floatBuffer, bufferIndex);
     }
 
     private void putVertices(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {

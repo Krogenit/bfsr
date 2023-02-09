@@ -351,8 +351,8 @@ public class GuiInGame extends Gui {
                 int y = (int) (miniMapY + (pos.y - camPos.y) / mapScaleY);
                 int sizeX = (int) (scale.x * shipSize);
                 int sizeY = (int) (scale.y * shipSize);
-                InstancedRenderer.INSTANCE.addToRenderPipeLine(x, y, x, y, s.getLastRotation(), s.getRotation(), sizeX, sizeY, sizeX, sizeY, color.x, color.y, color.z, 1.0f, s.getTexture(),
-                        BufferType.GUI);
+                InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(x, y, x, y, s.getLastSin(), s.getLastCos(), s.getSin(), s.getCos(), sizeX, sizeY, color.x, color.y, color.z, 1.0f,
+                        s.getTexture(), BufferType.GUI);
             }
         }
 

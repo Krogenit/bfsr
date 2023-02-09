@@ -2,6 +2,8 @@ package net.bfsr.component.weapon;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.bfsr.client.render.instanced.BufferType;
+import net.bfsr.client.render.instanced.InstancedRenderer;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
@@ -143,6 +145,12 @@ public abstract class WeaponSlot extends TextureObject {
         float yPos = sin * x + cos * y;
 
         position.set(xPos + shipPos.x, yPos + shipPos.y);
+    }
+
+    @Override
+    public void render() {
+        InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, ship.getLastSin(), ship.getLastCos(), ship.getSin(), ship.getCos(),
+                scale.x, scale.y, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
     }
 
     public void renderAdditive() {

@@ -1,5 +1,6 @@
 package net.bfsr.entity.bullet;
 
+import lombok.Getter;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.ParticleWreck;
 import net.bfsr.client.particle.RenderLayer;
@@ -15,6 +16,8 @@ import net.bfsr.component.shield.Shield;
 import net.bfsr.core.Core;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.math.LUT;
+import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.server.PacketSpawnBullet;
 import net.bfsr.server.MainServer;
@@ -31,9 +34,11 @@ import java.util.Random;
 public class Bullet extends CollisionObject {
     private static Texture lightTexture;
 
+    @Getter
     protected final Ship ship;
     private final float bulletSpeed;
     private final float alphaReducer;
+    @Getter
     private BulletDamage damage;
     private float energy;
     private Object previousAObject;
@@ -76,7 +81,6 @@ public class Bullet extends CollisionObject {
     @Override
     public void update() {
         super.update();
-        lastRotation = getRotation();
         lastPosition.set(getPosition());
 
         color.w -= alphaReducer * TimeUtils.UPDATE_DELTA_TIME;
@@ -90,10 +94,16 @@ public class Bullet extends CollisionObject {
         }
     }
 
+    @Override
     public void postPhysicsUpdate() {
         Vector2 velocity = body.getLinearVelocity();
-        double rotateToVector = Math.atan2(-velocity.x, velocity.y);
-        body.getTransform().setRotation(rotateToVector + Math.PI / 2.0);
+        float rotateToVector = (float) Math.atan2(-velocity.x, velocity.y) + MathUtils.HALF_PI;
+        sin = LUT.sin(rotateToVector);
+        cos = LUT.cos(rotateToVector);
+        lastSin = sin;
+        lastCos = cos;
+        body.getTransform().setRotation(sin, cos);
+        updateWorldAABB();
     }
 
     public void checkCollision(Contact contact, Vector2 normal, Body body) {
@@ -227,20 +237,9 @@ public class Bullet extends CollisionObject {
     public void render() {
         float size = 6.0f;
         Vector2f pos = getPosition();
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, pos.x, pos.y, lastRotation, getRotation(), size, size, size, size,
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, pos.x, pos.y, size, size,
                 color.x / 1.5f, color.y / 1.5f, color.z / 1.5f, color.w / 4.0f, lightTexture, BufferType.ENTITIES_ADDITIVE);
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(this, BufferType.ENTITIES_ADDITIVE);
-    }
-
-    public BulletDamage getDamage() {
-        return damage;
-    }
-
-    public void setDamage(BulletDamage damage) {
-        this.damage = damage;
-    }
-
-    public Ship getOwnerShip() {
-        return ship;
+        InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, pos.x, pos.y, sin, cos, scale.x, scale.y, color.x, color.y, color.z, color.w,
+                texture, BufferType.ENTITIES_ADDITIVE);
     }
 }

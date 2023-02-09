@@ -28,7 +28,7 @@ public class PacketSpawnBullet extends ServerPacket {
         this.className = bullet.getClass().getName();
         this.pos = bullet.getPosition();
         this.rot = bullet.getRotation();
-        this.shipId = bullet.getOwnerShip().getId();
+        this.shipId = bullet.getShip().getId();
     }
 
     @Override
