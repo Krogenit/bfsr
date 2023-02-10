@@ -155,7 +155,9 @@ public class Camera {
     }
 
     public void scroll(float y) {
-        zoomAccumulator += y * EnumOption.CAMERA_ZOOM_SPEED.getFloat() * (zoom + zoomAccumulator);
+        if (Core.getCore().getCurrentGui() == null) {
+            zoomAccumulator += y * EnumOption.CAMERA_ZOOM_SPEED.getFloat() * (zoom + zoomAccumulator);
+        }
     }
 
     public void mouseMove(float dx, float dy) {
