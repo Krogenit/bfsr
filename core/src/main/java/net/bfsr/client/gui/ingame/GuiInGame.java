@@ -1,7 +1,5 @@
 package net.bfsr.client.gui.ingame;
 
-import lombok.Setter;
-import net.bfsr.client.camera.Camera;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.button.Button;
@@ -11,14 +9,12 @@ import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.string.StringObject;
 import net.bfsr.client.render.instanced.BufferType;
 import net.bfsr.client.render.instanced.InstancedRenderer;
-import net.bfsr.client.render.particle.ParticleRenderer;
 import net.bfsr.client.render.texture.Texture;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.component.Armor;
 import net.bfsr.component.ArmorPlate;
-import net.bfsr.component.hull.Hull;
 import net.bfsr.component.reactor.Reactor;
 import net.bfsr.component.shield.Shield;
 import net.bfsr.component.weapon.WeaponSlot;
@@ -27,24 +23,18 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.client.PacketShipControl;
-import net.bfsr.profiler.Profiler;
-import net.bfsr.server.MainServer;
 import net.bfsr.settings.EnumOption;
 import net.bfsr.world.World;
 import net.bfsr.world.WorldClient;
-import net.bfsr.world.WorldServer;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
-import java.text.DecimalFormat;
 import java.util.List;
 
 public class GuiInGame extends Gui {
     private final Core core = Core.getCore();
-
-    private final DecimalFormat formatter = new DecimalFormat("0.00");
 
     private final TexturedGuiObject armorPlate = new TexturedGuiObject(TextureRegister.guiArmorPlate);
     private final TexturedGuiObject energy = new TexturedGuiObject(TextureRegister.guiEnergy);
@@ -55,13 +45,7 @@ public class GuiInGame extends Gui {
     private final TexturedGuiObject shield = new TexturedGuiObject(TextureRegister.guiShield);
     private final TexturedGuiObject chat = new TexturedGuiObject(TextureRegister.guiChat);
 
-    @Setter
-    private long ping;
-
     private final StringObject controlText = new StringObject(FontType.XOLONIUM, Lang.getString("gui.control"), 16);
-    private final StringObject upperText = new StringObject(FontType.CONSOLA);
-    private final StringObject worldText = new StringObject(FontType.CONSOLA);
-    private final StringObject shipText = new StringObject(FontType.CONSOLA);
     private final StringObject shipCargo = new StringObject(FontType.CONSOLA);
     private final StringObject shipCrew = new StringObject(FontType.CONSOLA);
     private final StringObject textHull = new StringObject(FontType.CONSOLA);
@@ -72,16 +56,12 @@ public class GuiInGame extends Gui {
     private Ship currentShip;
     private Ship otherShip;
 
-    private final AxisAlignedBoundingBox shipAABB = new AxisAlignedBoundingBox(new Vector2f(), new Vector2f());
-    private final AxisAlignedBoundingBox mapBoundingBox = new AxisAlignedBoundingBox(new Vector2f(), new Vector2f());
+    private final AxisAlignedBoundingBox shipAABB = new AxisAlignedBoundingBox();
+    private final AxisAlignedBoundingBox mapBoundingBox = new AxisAlignedBoundingBox();
     private final Vector4f color = new Vector4f();
     private final Vector2f rotationVector = new Vector2f();
-
-    private Button buttonControl;
-
-    private final String openGlVersion = GL11.glGetString(GL11.GL_VERSION);
-    private final String openGlRenderer = GL11.glGetString(GL11.GL_RENDERER);
     private final Texture shieldTexture = TextureLoader.getTexture(TextureRegister.shieldSmall0);
+    private final DebugInfoElement debugInfoElement = new DebugInfoElement();
 
     @Override
     protected void initElements() {
@@ -116,7 +96,7 @@ public class GuiInGame extends Gui {
         chatInput.atBottomLeftCorner(0, -chatHeight);
         registerGuiObject(chatInput);
 
-        buttonControl = new Button(TextureRegister.guiButtonControl, () -> {
+        Button buttonControl = new Button(TextureRegister.guiButtonControl, () -> {
             WorldClient w = core.getWorld();
             Ship playerControlledShip = w.getPlayerShip();
             if (playerControlledShip != null) {
@@ -166,11 +146,6 @@ public class GuiInGame extends Gui {
     }
 
     @Override
-    public void textInput(int key) {
-        super.textInput(key);
-    }
-
-    @Override
     public void onMouseLeftRelease() {
         super.onMouseLeftRelease();
         chatInput.onMouseLeftRelease();
@@ -184,7 +159,7 @@ public class GuiInGame extends Gui {
 
     @Override
     public void update() {
-        if (EnumOption.IS_DEBUG.getBoolean()) updateDebugInfo();
+        if (EnumOption.IS_DEBUG.getBoolean()) debugInfoElement.update(6, map.getHeight() + 6);
 
         if (currentShip != null && currentShip.isDead()) {
             currentShip = null;
@@ -195,91 +170,6 @@ public class GuiInGame extends Gui {
         }
 
         super.update();
-    }
-
-    private void updateDebugInfo() {
-        int yPos = map.getHeight() + 6;
-        int xPos = 6;
-
-        Profiler profiler = core.getProfiler();
-        Profiler sProfiler = MainServer.getInstance() != null ? MainServer.getInstance().getProfiler() : null;
-        float updateTime = profiler.getResult("update");
-        float renderTime = profiler.getResult("render");
-        int drawCalls = core.getRenderer().getLastFrameDrawCalls();
-        float physicsTime = profiler.getResult("physics");
-        float netTime = profiler.getResult("network");
-        float sUpdateTime = sProfiler != null ? sProfiler.getResult("update") : 0;
-        float sPhysicsTime = sProfiler != null ? sProfiler.getResult("physics") : 0;
-        float sNetworkTime = sProfiler != null ? sProfiler.getResult("network") : 0;
-        Runtime runtime = Runtime.getRuntime();
-        long maxMemory = runtime.maxMemory();
-        long totalMemory = runtime.totalMemory();
-        long freeMemory = runtime.freeMemory();
-        long maxMemoryMB = maxMemory / 1024L / 1024L;
-        long totalMemoryMB = totalMemory / 1024L / 1024L;
-        long freeMemoryMB = freeMemory / 1024L / 1024L;
-
-        int ups = MainServer.getInstance() != null ? MainServer.getInstance().getUps() : 0;
-        int sectionOffset = 20;
-        ParticleRenderer particleRenderer = core.getRenderer().getParticleRenderer();
-
-        upperText.update("BFSR Client Dev 0.0.4 \n" +
-                "FPS " + Core.getCore().getRenderer().getFps() + ", Local Server UPS " + ups + " \n" +
-                "Memory: " + (totalMemoryMB - freeMemoryMB) + "MB / " + totalMemoryMB + "MB up to " + maxMemoryMB + "MB \n" +
-                "OpenGL: " + openGlRenderer + " \nVersion " + openGlVersion + " \n" +
-
-                " \n" +
-                "Update: " + formatter.format(updateTime) + "ms / " + formatter.format(sUpdateTime) + "ms " +
-                "\nPhysics: " + formatter.format(physicsTime) + "ms / " + formatter.format(sPhysicsTime) + "ms " +
-                "\nRender: " + formatter.format(renderTime) + "ms " + drawCalls + " draw calls " +
-                "\nParticle Renderer: " + (particleRenderer.getTaskCount() > 1 ? particleRenderer.getTaskCount() + " active threads" : "single-threaded") +
-                "\nNetwork: " + formatter.format(netTime) + "ms / " + formatter.format(sNetworkTime) + "ms " +
-                "\nPing: " + ping + "ms");
-        upperText.setPosition(xPos, yPos);
-
-        yPos += upperText.getHeight() + sectionOffset;
-
-        WorldClient world = core.getWorld();
-        if (world != null) {
-            Camera cam = core.getRenderer().getCamera();
-            Vector2f camPos = cam.getPosition();
-            int bulletsCount = world.getBullets().size();
-            int shipsCount = world.getShips().size();
-            int particlesCount = particleRenderer.getParticlesCount();
-            int physicParticles = world.getParticleManager().getWreckCount();
-
-            WorldServer sWorld = MainServer.getInstance() != null ? MainServer.getInstance().getWorld() : null;
-            int sBulletsCount = sWorld != null ? sWorld.getBullets().size() : 0;
-            int sShipsCount = sWorld != null ? sWorld.getShips().size() : 0;
-            int sParticlesCount = sWorld != null ? sWorld.getParticles().size() : 0;
-            worldText.update("---World--- " +
-                    "\nCamera pos: " + formatter.format(camPos.x) + ", " + formatter.format(camPos.y) + " " +
-                    "\nShips count: " + shipsCount + "/" + sShipsCount +
-                    " \nBullets count: " + bulletsCount + "/" + sBulletsCount +
-                    " \nParticles count: " + particlesCount +
-                    " \nPhysic particles count: " + physicParticles + "/" + sParticlesCount);
-            worldText.setPosition(xPos, yPos);
-
-            yPos += worldText.getHeight() + sectionOffset;
-            Ship playerShip = world.getPlayerShip();
-            if (playerShip != null) {
-                Vector2f pos = playerShip.getPosition();
-                Vector2f velocity = playerShip.getVelocity();
-                Hull hull = playerShip.getHull();
-                Shield shield = playerShip.getShield();
-                Reactor reactor = playerShip.getReactor();
-                shipText.update("---Player Ship--- "
-                        + "\nShip = " + playerShip.getClass().getSimpleName() + " \n" +
-                        "Pos: " + formatter.format(pos.x) + ", " + formatter.format(pos.y) + " \n" +
-                        "Velocity: " + formatter.format(velocity.x) + ", " + formatter.format(velocity.y) + " \n" +
-                        "Mass: " + formatter.format(playerShip.getBody().getMass().getMass()) + " \n" +
-
-                        "Hull: " + formatter.format(hull.getHull()) + "/" + formatter.format(hull.getMaxHull()) + " \n" +
-                        "Shield: " + formatter.format(shield.getShield()) + "/" + formatter.format(shield.getMaxShield()) + " \n" +
-                        "Reactor: " + formatter.format(reactor.getEnergy()) + "/" + formatter.format(reactor.getMaxEnergy()));
-                shipText.setPosition(xPos, yPos);
-            }
-        }
     }
 
     private boolean canControlShip(Ship s) {
@@ -320,7 +210,7 @@ public class GuiInGame extends Gui {
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         int offsetY = 17;
         int offsetX = 22;
-        GL11.glScissor(map.getX() + offsetX, height - map.getHeight() + offsetY, map.getWidth() - offsetX * 2, map.getHeight() - offsetY * 2);
+        GL11.glScissor(map.getX() + offsetX, height - map.getHeight() + offsetY, map.getWidth() - (offsetX << 1), map.getHeight() - (offsetY << 1));
 
         int miniMapX = map.getX() + map.getWidth() / 2;
         int miniMapY = map.getY() + map.getHeight() / 2;
@@ -486,19 +376,14 @@ public class GuiInGame extends Gui {
         if (currentShip != null) renderCurrentShipInfo();
         if (otherShip != null) renderOtherShipInfo();
 
-        if (EnumOption.IS_DEBUG.getBoolean()) {
-            upperText.render();
-            worldText.render();
-
-            if (Core.getCore().getWorld().getPlayerShip() != null) {
-                shipText.render();
-            }
-        }
+        if (EnumOption.IS_DEBUG.getBoolean()) debugInfoElement.render();
     }
 
     private void renderQuad(float r, float g, float b, float a, Texture texture, int x, int y, float rot, int width, int height) {
         InstancedRenderer.INSTANCE.addToRenderPipeLine(x, y, rot, width, height, r, g, b, a, texture, BufferType.GUI);
     }
 
-    public void onExitToMainMenu() {}
+    public void setPing(long ping) {
+        debugInfoElement.setPing(ping);
+    }
 }
