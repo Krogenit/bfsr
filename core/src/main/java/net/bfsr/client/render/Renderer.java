@@ -142,7 +142,7 @@ public class Renderer {
             }
         }
 
-        GL30.glBindBufferBase(GL31.GL_UNIFORM_BUFFER, Camera.UBO_CAMERA_MATRIX, camera.getProjectionMatrixUBO());
+        camera.bindGUI();
 
         if (world != null) {
             guiInGame.render(interpolation);
