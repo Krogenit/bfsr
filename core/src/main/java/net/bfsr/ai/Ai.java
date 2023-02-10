@@ -22,7 +22,8 @@ public class Ai {
     }
 
     public void update() {
-        for (AiTask task : tasks) {
+        for (int i = 0, tasksSize = tasks.size(); i < tasksSize; i++) {
+            AiTask task = tasks.get(i);
             if (task.shouldExecute())
                 task.execute();
         }

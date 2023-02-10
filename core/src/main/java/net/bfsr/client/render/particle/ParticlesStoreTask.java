@@ -36,14 +36,10 @@ public class ParticlesStoreTask implements Runnable {
         ByteBuffer backgroundAlphaBlendedBuffer = materialBuffers[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()];
         ByteBuffer backgroundAdditiveBlendedBuffer = materialBuffers[RenderLayer.BACKGROUND_ADDITIVE.ordinal()];
         if (renderLayer == RenderLayer.DEFAULT_ALPHA_BLENDED) {
-            runnables[0] = () -> {
-                storeParticles(particlesByRenderLayer[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()], defaultAlphaBlendedVertexBuffer, defaultAlphaBlendedBuffer, interpolation,
-                        alphaParticlesStartIndex, alphaParticlesEndIndex, alphaVertexBufferIndex, alphaBufferIndex);
-            };
-            runnables[1] = () -> {
-                storeParticles(particlesByRenderLayer[RenderLayer.DEFAULT_ADDITIVE.ordinal()], defaultAdditiveBlendedVertexBuffer, defaultAdditiveBlendedBuffer, interpolation,
-                        additiveParticlesStartIndex, additiveParticlesEndIndex, additiveVertexBufferIndex, additiveBufferIndex);
-            };
+            runnables[0] = () -> storeParticles(particlesByRenderLayer[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()], defaultAlphaBlendedVertexBuffer, defaultAlphaBlendedBuffer, interpolation,
+                    alphaParticlesStartIndex, alphaParticlesEndIndex, alphaVertexBufferIndex, alphaBufferIndex);
+            runnables[1] = () -> storeParticles(particlesByRenderLayer[RenderLayer.DEFAULT_ADDITIVE.ordinal()], defaultAdditiveBlendedVertexBuffer, defaultAdditiveBlendedBuffer, interpolation,
+                    additiveParticlesStartIndex, additiveParticlesEndIndex, additiveVertexBufferIndex, additiveBufferIndex);
         } else {
             runnables[0] = () -> storeParticles(particlesByRenderLayer[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()],
                     backgroundAlphaBlendedVertexBuffer, backgroundAlphaBlendedBuffer, interpolation, alphaParticlesStartIndex, alphaParticlesEndIndex, alphaVertexBufferIndex, alphaBufferIndex);

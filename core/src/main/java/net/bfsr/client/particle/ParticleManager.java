@@ -1,6 +1,5 @@
 package net.bfsr.client.particle;
 
-import lombok.Getter;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.core.Core;
 
@@ -9,7 +8,6 @@ import java.util.List;
 
 public class ParticleManager {
     private final List<Particle> particles = new ArrayList<>();
-    @Getter
     private final List<ParticleWreck> particlesWrecks = new ArrayList<>(64);
 
     public void update() {
@@ -36,13 +34,6 @@ public class ParticleManager {
         for (int i = 0, size = particlesWrecks.size(); i < size; i++) {
             particlesWrecks.get(i).postPhysicsUpdate();
         }
-    }
-
-    public void clear() {
-        for (int i = 0; i < particlesWrecks.size(); i++) {
-            particlesWrecks.get(i).onRemoved();
-        }
-        particlesWrecks.clear();
     }
 
     public void renderDebug() {
@@ -80,5 +71,20 @@ public class ParticleManager {
 
     public void addParticle(Particle particle) {
         particles.add(particle);
+    }
+
+    public int getParticlesCount() {
+        return particles.size();
+    }
+
+    public int getWreckCount() {
+        return particlesWrecks.size();
+    }
+
+    public void clear() {
+        for (int i = 0; i < particlesWrecks.size(); i++) {
+            particlesWrecks.get(i).onRemoved();
+        }
+        particlesWrecks.clear();
     }
 }

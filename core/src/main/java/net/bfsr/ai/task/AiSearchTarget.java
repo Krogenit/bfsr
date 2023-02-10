@@ -18,21 +18,18 @@ public class AiSearchTarget extends AiTask {
     @Override
     public void execute() {
         AiAggressiveType type = ship.getAi().getAggressiveType();
-        switch (type) {
-            case ATTACK:
-                CollisionObject attacker = ship.getLastAttacker();
-                if (attacker != null && !attacker.isDead() && attacker instanceof Ship && isEnemy((Ship) attacker)) {
-                    ship.setTarget(attacker);
-                } else findNewTarget();
-                break;
-            case DEFEND:
-                attacker = ship.getLastAttacker();
-                if (attacker != null && !attacker.isDead() && attacker instanceof Ship && isEnemy((Ship) attacker)) {
-                    ship.setTarget(attacker);
-                }
-                break;
-            case NOTHING:
-                break;
+        if (type == AiAggressiveType.ATTACK) {
+            CollisionObject attacker = ship.getLastAttacker();
+            if (attacker != null && !attacker.isDead() && attacker instanceof Ship && isEnemy((Ship) attacker)) {
+                ship.setTarget(attacker);
+            } else findNewTarget();
+        } else if (type == AiAggressiveType.DEFEND) {
+            CollisionObject attacker;
+            attacker = ship.getLastAttacker();
+            if (attacker != null && !attacker.isDead() && attacker instanceof Ship && isEnemy((Ship) attacker)) {
+                ship.setTarget(attacker);
+            }
+        } else if (type == AiAggressiveType.NOTHING) {
         }
     }
 
@@ -41,7 +38,8 @@ public class AiSearchTarget extends AiTask {
         List<Ship> ships = world.getShips();
         float distance = Float.MAX_VALUE;
         Ship nearShip = null;
-        for (Ship ship : ships) {
+        for (int i = 0, shipsSize = ships.size(); i < shipsSize; i++) {
+            Ship ship = ships.get(i);
             if (this.ship != ship && isEnemy(ship)) {
                 float newDist = this.ship.getPosition().distance(ship.getPosition());
                 if (newDist < distance && newDist <= maxSearchRange) {

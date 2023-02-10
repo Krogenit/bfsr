@@ -18,8 +18,6 @@ import net.bfsr.settings.EnumOption;
 import net.bfsr.world.WorldClient;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GLDebugMessageCallback;
 import org.lwjgl.system.MemoryUtil;
 
@@ -114,9 +112,10 @@ public class Renderer {
 
         WorldClient world = core.getWorld();
         if (world != null) {
-            particleRenderer.storeParticlesToBuffers();
+            particleRenderer.putBackgroundParticlesToBuffers();
             world.prepareAmbient();
             world.prepareEntities();
+            particleRenderer.putParticlesToBuffers();
         }
     }
 
@@ -170,14 +169,6 @@ public class Renderer {
 
     public void setVSync(boolean value) {
         GLFW.glfwSwapInterval(value ? 1 : 0);
-    }
-
-    public void checkGlError(String name) {
-        int i = GL11.glGetError();
-
-        if (i != 0) {
-            log.error("OpenGL Error {} number {}", name, i);
-        }
     }
 
     public void onExitToMainMenu() {

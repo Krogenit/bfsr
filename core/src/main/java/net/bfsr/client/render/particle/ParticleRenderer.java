@@ -6,6 +6,7 @@ import net.bfsr.client.particle.Particle;
 import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.render.OpenGLHelper;
 import net.bfsr.client.render.instanced.InstancedRenderer;
+import net.bfsr.core.Core;
 import net.bfsr.util.MulthithreadingUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -31,6 +32,7 @@ public class ParticleRenderer {
     private Future<?>[] backgroundTaskFutures;
     @Getter
     private int taskCount;
+    private boolean multithreaded;
 
     public ParticleRenderer() {
         for (int i = 0; i < RENDER_LAYERS.length; i++) {
@@ -88,72 +90,85 @@ public class ParticleRenderer {
         }
     }
 
-    public void storeParticlesToBuffers() {
+    public void putBackgroundParticlesToBuffers() {
         checkBufferSizeAndClear();
 
         int totalParticles = getParticlesCount();
         int multithreadedThreshold = 2048;
         int particlesByTask = 2048;
 
-        boolean multithreaded = MulthithreadingUtils.MULTITHREADING_SUPPORTED && totalParticles >= multithreadedThreshold;
+        multithreaded = MulthithreadingUtils.MULTITHREADING_SUPPORTED && totalParticles >= multithreadedThreshold;
         taskCount = multithreaded ? (int) Math.ceil(Math.min(totalParticles / (float) particlesByTask, MulthithreadingUtils.PARALLELISM)) : 1;
 
         int backgroundAlphaBufferIndex = 0;
         int backgroundAdditiveBufferIndex = 0;
-        int alphaBufferIndex = 0;
-        int additiveBufferIndex = 0;
 
         int backgroundAlphaParticlesPerTask = (int) Math.ceil(getParticles(RenderLayer.BACKGROUND_ALPHA_BLENDED).size() / (float) taskCount);
         int backgroundAlphaParticlesStartIndex = 0, backgroundAlphaParticlesEndIndex = backgroundAlphaParticlesPerTask;
         int backgroundAdditiveParticlesPerTask = (int) Math.ceil(getParticles(RenderLayer.BACKGROUND_ADDITIVE).size() / (float) taskCount);
         int backgroundAdditiveParticlesStartIndex = 0, backgroundAdditiveParticlesEndIndex = backgroundAdditiveParticlesPerTask;
-        int alphaParticlesPerTask = (int) Math.ceil(getParticles(RenderLayer.DEFAULT_ALPHA_BLENDED).size() / (float) taskCount);
-        int alphaParticlesStartIndex = 0, alphaParticlesEndIndex = alphaParticlesPerTask;
-        int additiveParticlesPerTask = (int) Math.ceil(getParticles(RenderLayer.DEFAULT_ADDITIVE).size() / (float) taskCount);
-        int additiveParticlesStartIndex = 0, additiveParticlesEndIndex = additiveParticlesPerTask;
 
-        for (int i = 0; i < taskCount; i++) {
-            ParticlesStoreTask backgroundParticlesStoreTask = backgroundParticlesStoreTasks[i];
-            ParticlesStoreTask particlesStoreTask = particlesStoreTasks[i];
+        if (multithreaded) {
+            for (int i = 0; i < taskCount; i++) {
+                ParticlesStoreTask backgroundParticlesStoreTask = backgroundParticlesStoreTasks[i];
 
-            backgroundParticlesStoreTask.update(backgroundAlphaBufferIndex, backgroundAdditiveBufferIndex, backgroundAlphaParticlesStartIndex, backgroundAlphaParticlesEndIndex,
-                    backgroundAdditiveParticlesStartIndex, backgroundAdditiveParticlesEndIndex);
-            particlesStoreTask.update(alphaBufferIndex, additiveBufferIndex, alphaParticlesStartIndex, alphaParticlesEndIndex, additiveParticlesStartIndex, additiveParticlesEndIndex);
-            if (multithreaded) {
+                backgroundParticlesStoreTask.update(backgroundAlphaBufferIndex, backgroundAdditiveBufferIndex, backgroundAlphaParticlesStartIndex, backgroundAlphaParticlesEndIndex,
+                        backgroundAdditiveParticlesStartIndex, backgroundAdditiveParticlesEndIndex);
+
                 backgroundTaskFutures[i] = InstancedRenderer.INSTANCE.addTask(backgroundParticlesStoreTask);
 
                 backgroundAlphaBufferIndex += backgroundAlphaParticlesPerTask << 4;
                 backgroundAdditiveBufferIndex += backgroundAdditiveParticlesPerTask << 4;
-                alphaBufferIndex += alphaParticlesPerTask << 4;
-                additiveBufferIndex += additiveParticlesPerTask << 4;
 
                 backgroundAlphaParticlesStartIndex += backgroundAlphaParticlesPerTask;
                 backgroundAlphaParticlesEndIndex = Math.min(backgroundAlphaParticlesEndIndex + backgroundAlphaParticlesPerTask, getParticles(RenderLayer.BACKGROUND_ALPHA_BLENDED).size());
 
                 backgroundAdditiveParticlesStartIndex += backgroundAdditiveParticlesPerTask;
                 backgroundAdditiveParticlesEndIndex = Math.min(backgroundAdditiveParticlesEndIndex + backgroundAdditiveParticlesPerTask, getParticles(RenderLayer.BACKGROUND_ADDITIVE).size());
+            }
+        } else {
+            ParticlesStoreTask backgroundParticlesStoreTask = backgroundParticlesStoreTasks[0];
+            backgroundParticlesStoreTask.update(backgroundAlphaBufferIndex, backgroundAdditiveBufferIndex, backgroundAlphaParticlesStartIndex, backgroundAlphaParticlesEndIndex,
+                    backgroundAdditiveParticlesStartIndex, backgroundAdditiveParticlesEndIndex);
+            backgroundParticlesStoreTask.run();
+        }
+    }
+
+    public void putParticlesToBuffers() {
+        int alphaBufferIndex = 0;
+        int additiveBufferIndex = 0;
+
+        int alphaParticlesPerTask = (int) Math.ceil(getParticles(RenderLayer.DEFAULT_ALPHA_BLENDED).size() / (float) taskCount);
+        int alphaParticlesStartIndex = 0, alphaParticlesEndIndex = alphaParticlesPerTask;
+        int additiveParticlesPerTask = (int) Math.ceil(getParticles(RenderLayer.DEFAULT_ADDITIVE).size() / (float) taskCount);
+        int additiveParticlesStartIndex = 0, additiveParticlesEndIndex = additiveParticlesPerTask;
+
+        if (multithreaded) {
+            for (int i = 0; i < taskCount; i++) {
+                ParticlesStoreTask particlesStoreTask = particlesStoreTasks[i];
+
+                particlesStoreTask.update(alphaBufferIndex, additiveBufferIndex, alphaParticlesStartIndex, alphaParticlesEndIndex, additiveParticlesStartIndex, additiveParticlesEndIndex);
+
+                taskFutures[i] = InstancedRenderer.INSTANCE.addTask(particlesStoreTasks[i]);
+
+                alphaBufferIndex += alphaParticlesPerTask << 4;
+                additiveBufferIndex += additiveParticlesPerTask << 4;
 
                 alphaParticlesStartIndex += alphaParticlesPerTask;
                 alphaParticlesEndIndex = Math.min(alphaParticlesEndIndex + alphaParticlesPerTask, getParticles(RenderLayer.DEFAULT_ALPHA_BLENDED).size());
 
                 additiveParticlesStartIndex += additiveParticlesPerTask;
                 additiveParticlesEndIndex = Math.min(additiveParticlesEndIndex + additiveParticlesPerTask, getParticles(RenderLayer.DEFAULT_ADDITIVE).size());
-            } else {
-                backgroundParticlesStoreTasks[i].run();
-                particlesStoreTasks[i].run();
-                taskCount = 0;
             }
-        }
-
-        if (multithreaded) {
-            for (int i = 0; i < taskCount; i++) {
-                taskFutures[i] = InstancedRenderer.INSTANCE.addTask(particlesStoreTasks[i]);
-            }
+        } else {
+            ParticlesStoreTask particlesStoreTask = particlesStoreTasks[0];
+            particlesStoreTask.update(alphaBufferIndex, additiveBufferIndex, alphaParticlesStartIndex, alphaParticlesEndIndex, additiveParticlesStartIndex, additiveParticlesEndIndex);
+            particlesStoreTask.run();
         }
     }
 
     public void waitTasks(Future<?>[] taskFutures) {
-        if (taskCount > 0) {
+        if (multithreaded) {
             try {
                 for (int i = 0; i < taskCount; i++) {
                     taskFutures[i].get();
@@ -208,11 +223,7 @@ public class ParticleRenderer {
 
     public void onExitToMainMenu() {
         for (int i = 0; i < particlesByRenderLayer.length; i++) {
-            List<Particle> particles = particlesByRenderLayer[i];
-            for (int i1 = 0; i1 < particles.size(); i1++) {
-                particles.get(i1).onRemoved();
-            }
-            particles.clear();
+            particlesByRenderLayer[i].clear();
         }
     }
 
@@ -221,11 +232,6 @@ public class ParticleRenderer {
     }
 
     public int getParticlesCount() {
-        int count = 0;
-        for (int i = 0; i < particlesByRenderLayer.length; i++) {
-            count += particlesByRenderLayer[i].size();
-        }
-
-        return count;
+        return Core.getCore().getWorld().getParticleManager().getParticlesCount();
     }
 }

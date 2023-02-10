@@ -6,10 +6,10 @@ import org.joml.Vector3f;
 import org.lwjgl.opengl.GL20;
 
 public class StarsShader extends ShaderProgram {
-    int loc_textureOpaque;
-    int loc_coreColor, loc_haloColor;
-    int loc_center, loc_resolution;
-    int loc_coreRadius, loc_haloFalloff, loc_scale;
+    private int loc_textureOpaque;
+    private int loc_coreColor, loc_haloColor;
+    private int loc_center, loc_resolution;
+    private int loc_coreRadius, loc_haloFalloff, loc_scale;
 
     public StarsShader() {
         super(new Definition(GL20.GL_VERTEX_SHADER, "stars.vert.glsl"), new Definition(GL20.GL_FRAGMENT_SHADER, "stars.frag.glsl"));

@@ -24,11 +24,11 @@ public class Button extends TexturedGuiObject {
         super(texture, x, y, width, height);
         FontType font = FontType.XOLONIUM;
         StringCache stringCache = font.getStringCache();
-        stringObject = new StringObject(font, string, fontSize, StringOffsetType.CENTERED);
-        stringObject.setPosition(x + width / 2, (int) (y + (height - stringCache.getHeight(string, fontSize)) / 2.0f + stringCache.getAscent(string, fontSize)));
-        stringObject.compile();
-        clickSound = SoundRegistry.buttonClick;
-        collideSound = SoundRegistry.buttonCollide;
+        this.stringObject = new StringObject(font, string, fontSize, StringOffsetType.CENTERED);
+        this.stringObject.setPosition(x + width / 2, (int) (y + (height - stringCache.getHeight(string, fontSize)) / 2.0f + stringCache.getAscent(string, fontSize)));
+        this.stringObject.compile();
+        this.clickSound = SoundRegistry.buttonClick;
+        this.collideSound = SoundRegistry.buttonCollide;
         this.onMouseClickedRunnable = onMouseClickedRunnable;
     }
 

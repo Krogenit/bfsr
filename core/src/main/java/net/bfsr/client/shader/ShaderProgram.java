@@ -13,7 +13,7 @@ import org.lwjgl.opengl.GL20;
 import java.nio.FloatBuffer;
 
 @Getter
-public abstract class ShaderProgram {
+public class ShaderProgram {
     @Setter
     private int program;
     private final Definition[] definitions;
@@ -26,7 +26,6 @@ public abstract class ShaderProgram {
         ProgramManager.INSTANCE.createProgram(this);
     }
 
-    @Deprecated
     public void init() {
         getAllUniformLocations();
         enable();
@@ -34,10 +33,13 @@ public abstract class ShaderProgram {
         disable();
     }
 
-    @Deprecated
-    protected abstract void getAllUniformLocations();
-    @Deprecated
-    protected abstract void initUniforms();
+    protected void getAllUniformLocations() {
+
+    }
+
+    protected void initUniforms() {
+
+    }
 
     protected int getUniformLocation(String uniformName) {
         return GL20.glGetUniformLocation(program, uniformName);

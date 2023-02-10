@@ -246,7 +246,7 @@ public class GuiInGame extends Gui {
             int bulletsCount = world.getBullets().size();
             int shipsCount = world.getShips().size();
             int particlesCount = particleRenderer.getParticlesCount();
-            int physicParticles = world.getParticleManager().getParticlesWrecks().size();
+            int physicParticles = world.getParticleManager().getWreckCount();
 
             WorldServer sWorld = MainServer.getInstance() != null ? MainServer.getInstance().getWorld() : null;
             int sBulletsCount = sWorld != null ? sWorld.getBullets().size() : 0;
