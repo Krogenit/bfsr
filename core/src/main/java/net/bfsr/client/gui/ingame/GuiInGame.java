@@ -308,7 +308,7 @@ public class GuiInGame extends Gui {
         currentShip = ship;
     }
 
-    private void renderMap(World world, float interpolation) {
+    private void renderMap(World world) {
         List<Ship> ships = world.getShips();
         Vector2f camPos = core.getRenderer().getCamera().getPosition();
         float mapOffsetX = 600;
@@ -356,6 +356,7 @@ public class GuiInGame extends Gui {
             }
         }
 
+        InstancedRenderer.INSTANCE.render(BufferType.GUI);
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 
@@ -480,8 +481,8 @@ public class GuiInGame extends Gui {
     @Override
     public void render(float interpolation) {
         super.render(interpolation);
-
-        renderMap(Core.getCore().getWorld(), interpolation);
+        InstancedRenderer.INSTANCE.render(BufferType.GUI);
+        renderMap(Core.getCore().getWorld());
         if (currentShip != null) renderCurrentShipInfo();
         if (otherShip != null) renderOtherShipInfo();
 
