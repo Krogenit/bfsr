@@ -189,24 +189,22 @@ public class WorldClient extends World {
     }
 
     public void prepareAmbient() {
-        InstancedRenderer.INSTANCE.addTask(() -> {
-            Vector2f scale = background.getScale();
-            float moveFactor = 0.005f;
-            Camera camera = Core.getCore().getRenderer().getCamera();
-            float cameraZoom = camera.getLastZoom() + (camera.getZoom() - camera.getLastZoom()) * Core.getCore().getRenderer().getInterpolation();
-            float lastX = (camera.getLastPosition().x - camera.getLastPosition().x * moveFactor / cameraZoom);
-            float lastY = (camera.getLastPosition().y - camera.getLastPosition().y * moveFactor / cameraZoom);
-            float x = (camera.getPosition().x - camera.getPosition().x * moveFactor / cameraZoom);
-            float y = (camera.getPosition().y - camera.getPosition().y * moveFactor / cameraZoom);
-            float zoom = (float) (0.5f + Math.log(cameraZoom) * 0.01f);
-            float scaleX = scale.x / cameraZoom * zoom;
-            float scaleY = scale.y / cameraZoom * zoom;
-            InstancedRenderer.INSTANCE.addToRenderPipeLine(lastX, lastY, x, y, 0, 0, scaleX, scaleY, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f, background.getTexture(), BufferType.BACKGROUND);
-        }, BufferType.BACKGROUND);
+        Vector2f scale = background.getScale();
+        float moveFactor = 0.005f;
+        Camera camera = Core.getCore().getRenderer().getCamera();
+        float cameraZoom = camera.getLastZoom() + (camera.getZoom() - camera.getLastZoom()) * Core.getCore().getRenderer().getInterpolation();
+        float lastX = (camera.getLastPosition().x - camera.getLastPosition().x * moveFactor / cameraZoom);
+        float lastY = (camera.getLastPosition().y - camera.getLastPosition().y * moveFactor / cameraZoom);
+        float x = (camera.getPosition().x - camera.getPosition().x * moveFactor / cameraZoom);
+        float y = (camera.getPosition().y - camera.getPosition().y * moveFactor / cameraZoom);
+        float zoom = (float) (0.5f + Math.log(cameraZoom) * 0.01f);
+        float scaleX = scale.x / cameraZoom * zoom;
+        float scaleY = scale.y / cameraZoom * zoom;
+        InstancedRenderer.INSTANCE.addToRenderPipeLine(lastX, lastY, x, y, 0, 0, scaleX, scaleY, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f, background.getTexture(), BufferType.BACKGROUND);
     }
 
     public void renderAmbient() {
-        InstancedRenderer.INSTANCE.syncAndRender(BufferType.BACKGROUND);
+        InstancedRenderer.INSTANCE.render(BufferType.BACKGROUND);
     }
 
     public void prepareEntities() {
