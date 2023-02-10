@@ -36,7 +36,7 @@ public class InstancedRenderer {
         buffersHolders[BufferType.BACKGROUND.ordinal()] = new BuffersHolder(1);
         buffersHolders[BufferType.ENTITIES_ALPHA.ordinal()] = new BuffersHolder(512);
         buffersHolders[BufferType.ENTITIES_ADDITIVE.ordinal()] = new BuffersHolder(512);
-        buffersHolders[BufferType.GUI.ordinal()] = new BuffersHolder(1024);
+        buffersHolders[BufferType.GUI.ordinal()] = new BuffersHolder(512);
 
         if (MulthithreadingUtils.MULTITHREADING_SUPPORTED) {
             executorService = Executors.newFixedThreadPool(MulthithreadingUtils.PARALLELISM);
@@ -63,25 +63,25 @@ public class InstancedRenderer {
     }
 
     public void syncAndRender(BufferType bufferType) {
-        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
 
         try {
-            storeRenderObjectTask.getFuture().get();
+            buffersHolder.getFuture().get();
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
 
-        if (storeRenderObjectTask.getObjectCount() > 0) {
-            render(storeRenderObjectTask.getObjectCount(), storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getMaterialBuffer());
-            storeRenderObjectTask.reset();
+        if (buffersHolder.getObjectCount() > 0) {
+            render(buffersHolder.getObjectCount(), buffersHolder.getVertexBuffer(), buffersHolder.getMaterialBuffer());
+            buffersHolder.reset();
         }
     }
 
     public void render(BufferType bufferType) {
-        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
-        if (storeRenderObjectTask.getObjectCount() > 0) {
-            render(storeRenderObjectTask.getObjectCount(), storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getMaterialBuffer());
-            storeRenderObjectTask.reset();
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
+        if (buffersHolder.getObjectCount() > 0) {
+            render(buffersHolder.getObjectCount(), buffersHolder.getVertexBuffer(), buffersHolder.getMaterialBuffer());
+            buffersHolder.reset();
         }
     }
 
@@ -94,109 +94,182 @@ public class InstancedRenderer {
     }
 
     public void addToRenderPipeLine(GLString glString, BufferType bufferType) {
-        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
-        storeRenderObjectTask.getVertexBuffer().put(storeRenderObjectTask.getVertexBufferIndex().getAndAdd(glString.getVertexBuffer().remaining()), glString.getVertexBuffer(), 0,
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
+        buffersHolder.checkBuffersSize(glString.getVertexBuffer().remaining() / VERTEX_DATA_SIZE);
+        buffersHolder.getVertexBuffer().put(buffersHolder.getVertexBufferIndex().getAndAdd(glString.getVertexBuffer().remaining()), glString.getVertexBuffer(), 0,
                 glString.getVertexBuffer().remaining());
-        storeRenderObjectTask.getMaterialBuffer().put(storeRenderObjectTask.getMaterialBufferIndex().getAndAdd(glString.getMaterialBuffer().remaining()), glString.getMaterialBuffer(), 0,
+        buffersHolder.getMaterialBuffer().put(buffersHolder.getMaterialBufferIndex().getAndAdd(glString.getMaterialBuffer().remaining()), glString.getMaterialBuffer(), 0,
                 glString.getMaterialBuffer().remaining());
-        storeRenderObjectTask.addObjectCount(glString.getVertexBuffer().remaining() / VERTEX_DATA_SIZE);
+        buffersHolder.addObjectCount(glString.getVertexBuffer().remaining() / VERTEX_DATA_SIZE);
     }
 
     public void addToRenderPipeLine(GLString glString, float x, float y, BufferType bufferType) {
-        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
 
         int vertexDataSize = glString.getVertexBuffer().remaining();
-        int startIndex = storeRenderObjectTask.getVertexBufferIndex().getAndAdd(vertexDataSize);
-        storeRenderObjectTask.getVertexBuffer().put(startIndex, glString.getVertexBuffer(), 0, vertexDataSize);
+        int startIndex = buffersHolder.getVertexBufferIndex().getAndAdd(vertexDataSize);
+        buffersHolder.getVertexBuffer().put(startIndex, glString.getVertexBuffer(), 0, vertexDataSize);
 
         for (int i = 0; i < vertexDataSize; i += 4) {
-            storeRenderObjectTask.getVertexBuffer().put(startIndex + i, glString.getVertexBuffer().get(i) + x);
-            storeRenderObjectTask.getVertexBuffer().put(startIndex + i + 1, glString.getVertexBuffer().get(i + 1) + y);
+            buffersHolder.getVertexBuffer().put(startIndex + i, glString.getVertexBuffer().get(i) + x);
+            buffersHolder.getVertexBuffer().put(startIndex + i + 1, glString.getVertexBuffer().get(i + 1) + y);
         }
 
-        storeRenderObjectTask.getMaterialBuffer().put(storeRenderObjectTask.getMaterialBufferIndex().getAndAdd(glString.getMaterialBuffer().remaining()), glString.getMaterialBuffer(), 0,
+        buffersHolder.getMaterialBuffer().put(buffersHolder.getMaterialBufferIndex().getAndAdd(glString.getMaterialBuffer().remaining()), glString.getMaterialBuffer(), 0,
                 glString.getMaterialBuffer().remaining());
-        storeRenderObjectTask.addObjectCount(vertexDataSize / VERTEX_DATA_SIZE);
+        buffersHolder.addObjectCount(vertexDataSize / VERTEX_DATA_SIZE);
+    }
+
+    public void renderString(GLString glString, float lastX, float lastY, float x, float y, float scaleX, float scaleY, BufferType bufferType) {
+        float interpolation = Core.getCore().getRenderer().getInterpolation();
+        renderString(glString, lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, scaleX, scaleY, bufferType);
+    }
+
+    public void renderStringWithShadow(GLString glString, float lastX, float lastY, float x, float y, float scaleX, float scaleY, float shadowOffsetX, float shadowOffsetY,
+                                       BufferType bufferType) {
+        float interpolation = Core.getCore().getRenderer().getInterpolation();
+        renderStringWithShadow(glString, lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, scaleX, scaleY, shadowOffsetX, shadowOffsetY, bufferType);
+    }
+
+    public void renderString(GLString glString, float x, float y, float scaleX, float scaleY, BufferType bufferType) {
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
+
+        FloatBuffer stringVertexBuffer = glString.getVertexBuffer();
+        int vertexDataSize = stringVertexBuffer.remaining();
+        int startIndex = buffersHolder.getVertexBufferIndex().getAndAdd(vertexDataSize);
+        FloatBuffer vertexBuffer = buffersHolder.getVertexBuffer();
+        vertexBuffer.put(startIndex, stringVertexBuffer, 0, vertexDataSize);
+
+        for (int i = 0; i < vertexDataSize; i += 4) {
+            vertexBuffer.put(startIndex + i, stringVertexBuffer.get(i) * scaleX + x);
+            vertexBuffer.put(startIndex + i + 1, stringVertexBuffer.get(i + 1) * scaleY + y);
+        }
+
+        ByteBuffer stringMaterialBuffer = glString.getMaterialBuffer();
+        buffersHolder.getMaterialBuffer().put(buffersHolder.getMaterialBufferIndex().getAndAdd(stringMaterialBuffer.remaining()), stringMaterialBuffer, 0, stringMaterialBuffer.remaining());
+        buffersHolder.addObjectCount(vertexDataSize / VERTEX_DATA_SIZE);
+    }
+
+    public void renderStringWithShadow(GLString glString, float x, float y, float scaleX, float scaleY, float shadowOffsetX, float shadowOffsetY, BufferType bufferType) {
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
+        FloatBuffer stringVertexBuffer = glString.getVertexBuffer();
+        int vertexDataSize = stringVertexBuffer.remaining();
+        int objectCount = vertexDataSize / VERTEX_DATA_SIZE << 1;
+        buffersHolder.checkBuffersSize(objectCount);
+        int startIndex = buffersHolder.getVertexBufferIndex().getAndAdd(vertexDataSize);
+
+        FloatBuffer vertexBuffer = buffersHolder.getVertexBuffer();
+        vertexBuffer.put(startIndex, stringVertexBuffer, 0, vertexDataSize);
+
+        for (int i = 0; i < vertexDataSize; i += 4) {
+            vertexBuffer.put(startIndex + i, stringVertexBuffer.get(i) * scaleX + x + shadowOffsetX);
+            vertexBuffer.put(startIndex + i + 1, stringVertexBuffer.get(i + 1) * scaleY + y + shadowOffsetY);
+        }
+
+        startIndex = buffersHolder.getVertexBufferIndex().getAndAdd(vertexDataSize);
+
+        vertexBuffer.put(startIndex, stringVertexBuffer, 0, vertexDataSize);
+
+        for (int i = 0; i < vertexDataSize; i += 4) {
+            vertexBuffer.put(startIndex + i, stringVertexBuffer.get(i) * scaleX + x);
+            vertexBuffer.put(startIndex + i + 1, stringVertexBuffer.get(i + 1) * scaleY + y);
+        }
+
+        ByteBuffer materialBuffer = buffersHolder.getMaterialBuffer();
+        ByteBuffer stringMaterialBuffer = glString.getMaterialBuffer();
+        int materialStartIndex = buffersHolder.getMaterialBufferIndex().getAndAdd(stringMaterialBuffer.remaining());
+        materialBuffer.put(materialStartIndex, stringMaterialBuffer, 0, stringMaterialBuffer.remaining());
+
+        int materialDataSize = stringMaterialBuffer.remaining();
+
+        for (int i = 0; i < materialDataSize; i += 32) {
+            materialBuffer.putFloat(materialStartIndex + i, 0.0f);
+            materialBuffer.putFloat(materialStartIndex + i + 4, 0.0f);
+            materialBuffer.putFloat(materialStartIndex + i + 8, 0.0f);
+        }
+
+        materialBuffer.put(buffersHolder.getMaterialBufferIndex().getAndAdd(stringMaterialBuffer.remaining()), stringMaterialBuffer, 0, stringMaterialBuffer.remaining());
+        buffersHolder.addObjectCount(objectCount);
     }
 
     public void addToRenderPipeLine(TextureObject textureObject, BufferType bufferType) {
-        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
-        putVertices(textureObject, Core.getCore().getRenderer().getInterpolation(), storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex());
-        putColor(textureObject.getColor(), storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
-        putTextureHandle(textureObject.getTexture().getTextureHandle(), storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
-        storeRenderObjectTask.incrementObjectCount();
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
+        putVertices(textureObject, Core.getCore().getRenderer().getInterpolation(), buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
+        putColor(textureObject.getColor(), buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        putTextureHandle(textureObject.getTexture().getTextureHandle(), buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        buffersHolder.incrementObjectCount();
     }
 
     public void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin, float cos, float lastScaleX, float lastScaleY, float scaleX,
                                           float scaleY, float r, float g, float b, float a, Texture texture, BufferType bufferType) {
-        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
         addToRenderPipeLineSinCos(lastX, lastY, x, y, lastSin, lastCos, sin, cos, lastScaleX, lastScaleY, scaleX, scaleY, r, g, b, a, texture, Core.getCore().getRenderer().getInterpolation(),
-                storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
-                storeRenderObjectTask.getMaterialBufferIndex());
-        storeRenderObjectTask.incrementObjectCount();
+                buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex(), buffersHolder.getMaterialBuffer(),
+                buffersHolder.getMaterialBufferIndex());
+        buffersHolder.incrementObjectCount();
     }
 
     public void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin, float cos, float scaleX,
                                           float scaleY, float r, float g, float b, float a, Texture texture, BufferType bufferType) {
-        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
         addToRenderPipeLineSinCos(lastX, lastY, x, y, lastSin, lastCos, sin, cos, scaleX, scaleY, r, g, b, a, texture, Core.getCore().getRenderer().getInterpolation(),
-                storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
-                storeRenderObjectTask.getMaterialBufferIndex());
-        storeRenderObjectTask.incrementObjectCount();
+                buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex(), buffersHolder.getMaterialBuffer(),
+                buffersHolder.getMaterialBufferIndex());
+        buffersHolder.incrementObjectCount();
     }
 
     public void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin, float cos, float scaleX, float scaleY,
                                           Vector4f lastColor, Vector4f color, Texture texture, BufferType bufferType) {
-        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
         addToRenderPipeLineSinCos(lastX, lastY, x, y, lastSin, lastCos, sin, cos, scaleX, scaleY, lastColor, color, texture, Core.getCore().getRenderer().getInterpolation(),
-                storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
-                storeRenderObjectTask.getMaterialBufferIndex());
-        storeRenderObjectTask.incrementObjectCount();
+                buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex(), buffersHolder.getMaterialBuffer(),
+                buffersHolder.getMaterialBufferIndex());
+        buffersHolder.incrementObjectCount();
     }
 
     public void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float sin, float cos, float scaleX, float scaleY,
                                           float r, float g, float b, float a, Texture texture, BufferType bufferType) {
-        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
         addToRenderPipeLineSinCos(lastX, lastY, x, y, sin, cos, scaleX, scaleY, r, g, b, a, texture, Core.getCore().getRenderer().getInterpolation(),
-                storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
-                storeRenderObjectTask.getMaterialBufferIndex());
-        storeRenderObjectTask.incrementObjectCount();
+                buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex(), buffersHolder.getMaterialBuffer(),
+                buffersHolder.getMaterialBufferIndex());
+        buffersHolder.incrementObjectCount();
     }
 
     public void addToRenderPipeLine(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
                                     float r, float g, float b, float a, Texture texture, BufferType bufferType) {
-        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
         addToRenderPipeLine(lastX, lastY, x, y, lastRotation, rotation, lastScaleX, lastScaleY, scaleX, scaleY, r, g, b, a, texture, Core.getCore().getRenderer().getInterpolation(),
-                storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
-                storeRenderObjectTask.getMaterialBufferIndex());
-        storeRenderObjectTask.incrementObjectCount();
+                buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex(), buffersHolder.getMaterialBuffer(),
+                buffersHolder.getMaterialBufferIndex());
+        buffersHolder.incrementObjectCount();
     }
 
     public void addToRenderPipeLine(float lastX, float lastY, float x, float y, float scaleX, float scaleY,
                                     float r, float g, float b, float a, Texture texture, BufferType bufferType) {
-        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
         addToRenderPipeLine(lastX, lastY, x, y, scaleX, scaleY, r, g, b, a, texture, Core.getCore().getRenderer().getInterpolation(),
-                storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
-                storeRenderObjectTask.getMaterialBufferIndex());
-        storeRenderObjectTask.incrementObjectCount();
+                buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex(), buffersHolder.getMaterialBuffer(),
+                buffersHolder.getMaterialBufferIndex());
+        buffersHolder.incrementObjectCount();
     }
 
     public void addToRenderPipeLine(float lastX, float lastY, float x, float y, float rotation, float scaleX, float scaleY,
                                     float r, float g, float b, float a, Texture texture, BufferType bufferType) {
-        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
         addToRenderPipeLine(lastX, lastY, x, y, rotation, scaleX, scaleY, r, g, b, a, texture, Core.getCore().getRenderer().getInterpolation(),
-                storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
-                storeRenderObjectTask.getMaterialBufferIndex());
-        storeRenderObjectTask.incrementObjectCount();
+                buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex(), buffersHolder.getMaterialBuffer(),
+                buffersHolder.getMaterialBufferIndex());
+        buffersHolder.incrementObjectCount();
     }
 
     public void addToRenderPipeLine(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
                                     Vector4f lastColor, Vector4f color, Texture texture, BufferType bufferType) {
-        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
         addToRenderPipeLine(lastX, lastY, x, y, lastRotation, rotation, lastScaleX, lastScaleY, scaleX, scaleY, lastColor, color, texture, Core.getCore().getRenderer().getInterpolation(),
-                storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex(), storeRenderObjectTask.getMaterialBuffer(),
-                storeRenderObjectTask.getMaterialBufferIndex());
-        storeRenderObjectTask.incrementObjectCount();
+                buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex(), buffersHolder.getMaterialBuffer(),
+                buffersHolder.getMaterialBufferIndex());
+        buffersHolder.incrementObjectCount();
     }
 
     public void addToRenderPipeLine(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
@@ -268,11 +341,11 @@ public class InstancedRenderer {
     }
 
     public void addToRenderPipeLine(float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a, Texture texture, BufferType bufferType) {
-        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
-        putVertices(x, y, LUT.sin(rotation), LUT.cos(rotation), scaleX * 0.5f, scaleY * 0.5f, storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex());
-        putColor(r, g, b, a, storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
-        putTextureHandle(texture.getTextureHandle(), storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
-        storeRenderObjectTask.incrementObjectCount();
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
+        putVertices(x, y, LUT.sin(rotation), LUT.cos(rotation), scaleX * 0.5f, scaleY * 0.5f, buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
+        putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        putTextureHandle(texture.getTextureHandle(), buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        buffersHolder.incrementObjectCount();
     }
 
     public void addGUIElementToRenderPipeLine(float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, Texture texture, BufferType bufferType) {
@@ -280,11 +353,11 @@ public class InstancedRenderer {
     }
 
     public void addGUIElementToRenderPipeLine(float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, long textureHandle, BufferType bufferType) {
-        BuffersHolder storeRenderObjectTask = buffersHolders[bufferType.ordinal()];
-        putVertices(x, sizeY + y, sizeX + x, sizeY + y, sizeX + x, y, x, y, storeRenderObjectTask.getVertexBuffer(), storeRenderObjectTask.getVertexBufferIndex());
-        putColor(r, g, b, a, storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
-        putTextureHandle(textureHandle, storeRenderObjectTask.getMaterialBuffer(), storeRenderObjectTask.getMaterialBufferIndex());
-        storeRenderObjectTask.incrementObjectCount();
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
+        putVertices(x, sizeY + y, sizeX + x, sizeY + y, sizeX + x, y, x, y, buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
+        putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        buffersHolder.incrementObjectCount();
     }
 
     public void addGUIElementToRenderPipeLine(float x, float y, float rotation, float sizeX, float sizeY, float r, float g, float b, float a, long textureHandle, FloatBuffer vertexBuffer,
