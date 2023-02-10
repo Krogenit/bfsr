@@ -71,8 +71,6 @@ public class ShipSaimonSmall0 extends Ship {
 
     @Override
     protected void createBody(float x, float y) {
-        super.createBody(x, y);
-
         Vector2[] vertices = new Vector2[4];
         vertices[0] = new Vector2(-5.05f, -1.75f);
         vertices[1] = new Vector2(-3.45f, -1.75f);

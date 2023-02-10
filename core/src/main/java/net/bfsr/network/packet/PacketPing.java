@@ -16,7 +16,6 @@ import java.io.IOException;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PacketPing extends Packet {
-
     private long time;
 
     @Override

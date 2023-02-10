@@ -31,7 +31,7 @@ import org.joml.Vector2f;
 
 import java.util.Random;
 
-public class Bullet extends CollisionObject {
+public abstract class Bullet extends CollisionObject {
     private static Texture lightTexture;
 
     @Getter
@@ -39,12 +39,12 @@ public class Bullet extends CollisionObject {
     private final float bulletSpeed;
     private final float alphaReducer;
     @Getter
-    private BulletDamage damage;
+    private final BulletDamage damage;
     private float energy;
     private Object previousAObject;
 
-    public Bullet(WorldClient world, int id, float bulletSpeed, float rotation, float x, float y, float scaleX, float scaleY, Ship ship, TextureRegister texture,
-                  float r, float g, float b, float a, float alphaReducer, BulletDamage damage) {
+    protected Bullet(WorldClient world, int id, float bulletSpeed, float rotation, float x, float y, float scaleX, float scaleY, Ship ship, TextureRegister texture,
+                     float r, float g, float b, float a, float alphaReducer, BulletDamage damage) {
         super(world, id, texture, x, y, rotation, scaleX, scaleY, r, g, b, a);
         this.alphaReducer = alphaReducer;
         this.damage = damage;
@@ -56,8 +56,8 @@ public class Bullet extends CollisionObject {
         lightTexture = TextureLoader.getTexture(TextureRegister.particleLight);
     }
 
-    public Bullet(WorldServer world, int id, float bulletSpeed, float rotation, float x, float y, float scaleX, float scaleY, Ship ship, float r, float g, float b, float a,
-                  float alphaReducer, BulletDamage damage) {
+    protected Bullet(WorldServer world, int id, float bulletSpeed, float rotation, float x, float y, float scaleX, float scaleY, Ship ship, float r, float g, float b, float a,
+                     float alphaReducer, BulletDamage damage) {
         super(world, id, x, y, rotation, scaleX, scaleY, r, g, b, a);
         this.alphaReducer = alphaReducer;
         this.damage = damage;

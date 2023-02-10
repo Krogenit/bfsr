@@ -19,11 +19,11 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.packet.client.PacketCommand;
 import net.bfsr.server.EnumCommand;
+import net.bfsr.util.DecimalUtils;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
-import java.text.DecimalFormat;
 import java.util.Random;
 
 public class WorldClient extends World {
@@ -70,9 +70,8 @@ public class WorldClient extends World {
     }
 
     public void onMouseLeftRelease() {
-        DecimalFormat f = new DecimalFormat("0.00");
         Vector2f mpos = Mouse.getWorldPosition(core.getRenderer().getCamera());
-        System.out.println("vertecies[0] = new Vector2(" + f.format(mpos.x) + "f, " + f.format(mpos.y) + "f);");
+        System.out.println("vertecies[0] = new Vector2(" + DecimalUtils.formatWithToDigits(mpos.x) + "f, " + DecimalUtils.formatWithToDigits(mpos.y) + "f);");
     }
 
     public void onMouseRightClicked() {

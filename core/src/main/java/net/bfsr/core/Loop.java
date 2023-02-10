@@ -9,7 +9,7 @@ public class Loop extends AbstractLoop {
     protected void loop() {
         // At the very most we will update the game this many times before a new render.
         // If you're worried about visual hitches more than perfect timing, set this to 1.
-        final int maxUpdatesBeforeRender = 10;
+        final int maxUpdatesBeforeRender = 4;
         // We will need the last update time.
         double lastUpdateTime = System.nanoTime();
 
@@ -29,6 +29,12 @@ public class Loop extends AbstractLoop {
                 update();
                 lastUpdateTime += timeBetweenUpdates;
                 updateCount++;
+            }
+
+            // If for some reason an update takes forever, we don't want to do an insane number of catchups.
+            // If you were doing some sort of game that needed to keep EXACT time, you would get rid of this.
+            if (now - lastUpdateTime > timeBetweenUpdates) {
+                lastUpdateTime = now - timeBetweenUpdates;
             }
 
             // Render. To do so, we need to calculate interpolation for a smooth render.

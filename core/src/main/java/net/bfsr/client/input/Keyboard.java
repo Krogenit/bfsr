@@ -8,13 +8,13 @@ import java.util.function.Consumer;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class Keyboard {
+public final class Keyboard {
     private static long window;
 
     public static void init(long win) {
         window = win;
 
-        glfwSetKeyCallback(window, (window1, key, scancode, action, mods) -> {
+        glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
             if (action != GLFW_RELEASE) {
                 WorldClient world = Core.getCore().getWorld();
                 if (world != null) world.input(key);

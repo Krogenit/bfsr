@@ -46,8 +46,6 @@ public class Shield extends CollisionObject {
 
     @Override
     protected void createBody(float x, float y) {
-        super.createBody(x, y);
-
         List<BodyFixture> fixtures = ship.getBody().getFixtures();
         if (shieldFixture != null) {
             ship.getBody().removeFixture(shieldFixture);

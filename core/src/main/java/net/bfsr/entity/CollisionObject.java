@@ -1,6 +1,7 @@
 package net.bfsr.entity;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
@@ -23,7 +24,8 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 
-public class CollisionObject extends TextureObject {
+@NoArgsConstructor
+public abstract class CollisionObject extends TextureObject {
     private static final Transform IDENTITY_TRANSFORM = new Transform();
     private static final AABB CACHED_AABB_0 = new AABB(0, 0, 0, 0);
     private static final AABB CACHED_AABB_1 = new AABB(0, 0, 0, 0);
@@ -33,7 +35,7 @@ public class CollisionObject extends TextureObject {
     @Getter
     protected World world;
     @Getter
-    protected Body body;
+    protected final Body body = new Body();
     @Getter
     @Setter
     protected boolean isDead;
@@ -52,7 +54,7 @@ public class CollisionObject extends TextureObject {
     @Getter
     protected float sin, cos;
 
-    public CollisionObject(World world, int id, TextureRegister texture, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a) {
+    protected CollisionObject(World world, int id, TextureRegister texture, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a) {
         super(TextureLoader.getTexture(texture), x, y, rotation, scaleX, scaleY, r, g, b, a);
         this.world = world;
         this.id = id;
@@ -60,39 +62,35 @@ public class CollisionObject extends TextureObject {
         createAABB();
     }
 
-    public CollisionObject(World world, int id, TextureRegister texture, float x, float y, float rotation, float scaleX, float scaleY) {
+    protected CollisionObject(World world, int id, TextureRegister texture, float x, float y, float rotation, float scaleX, float scaleY) {
         this(world, id, texture, x, y, rotation, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public CollisionObject(World world, int id, TextureRegister texture, float x, float y, float scaleX, float scaleY, float r, float g, float b, float a) {
+    protected CollisionObject(World world, int id, TextureRegister texture, float x, float y, float scaleX, float scaleY, float r, float g, float b, float a) {
         this(world, id, texture, x, y, 0, scaleX, scaleY, r, g, b, a);
     }
 
-    public CollisionObject(World world, int id, TextureRegister texture, float x, float y, float scaleX, float scaleY) {
+    protected CollisionObject(World world, int id, TextureRegister texture, float x, float y, float scaleX, float scaleY) {
         this(world, id, texture, x, y, 0, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public CollisionObject(World world, int id, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a) {
+    protected CollisionObject(World world, int id, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a) {
         this(world, id, null, x, y, rotation, scaleX, scaleY, r, g, b, a);
     }
 
-    public CollisionObject(World world, int id, float x, float y, float scaleX, float scaleY, float r, float g, float b, float a) {
+    protected CollisionObject(World world, int id, float x, float y, float scaleX, float scaleY, float r, float g, float b, float a) {
         this(world, id, null, x, y, 0, scaleX, scaleY, r, g, b, a);
     }
 
-    public CollisionObject(World world, int id, float x, float y, float scaleX, float scaleY) {
+    protected CollisionObject(World world, int id, float x, float y, float scaleX, float scaleY) {
         this(world, id, null, x, y, 0, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public CollisionObject(World world) {
+    protected CollisionObject(World world) {
         this.world = world;
     }
 
-    public CollisionObject() {}
-
-    protected void createBody(float x, float y) {
-        body = new Body();
-    }
+    protected abstract void createBody(float x, float y);
 
     protected void createAABB() {
         AABB aabb = computeAABB();

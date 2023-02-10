@@ -71,8 +71,6 @@ public class ShipHumanSmall0 extends Ship {
 
     @Override
     protected void createBody(float x, float y) {
-        super.createBody(x, y);
-
         Vector2[] vertices = new Vector2[7];
         vertices[0] = new Vector2(-2.9f, 0.2f);
         vertices[1] = new Vector2(-2.9f, -0.2f);

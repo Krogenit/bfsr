@@ -1,9 +1,9 @@
-package net.bfsr.client.particle;
+package net.bfsr.util;
 
 import java.util.Stack;
 import java.util.function.Supplier;
 
-public class ParticlePool<T extends Particle> {
+public class ObjectPool<T> {
     private final Stack<T> particles = new Stack<>();
 
     public T getOrCreate(Supplier<T> supplier) {

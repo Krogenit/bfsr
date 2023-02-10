@@ -23,7 +23,6 @@ public class BulletLaserSmall extends Bullet {
 
     @Override
     protected void createBody(float x, float y) {
-        super.createBody(x, y);
         Vector2[] vertices = new Vector2[4];
         vertices[0] = new Vector2(-0.6f, -0.2f);
         vertices[1] = new Vector2(0.6f, -0.2f);

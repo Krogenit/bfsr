@@ -64,8 +64,6 @@ public class ShipEngiSmall0 extends Ship {
 
     @Override
     protected void createBody(float x, float y) {
-        super.createBody(x, y);
-
         Vector2[] vertices = new Vector2[7];
         vertices[0] = new Vector2(-3.6f, 0.0f);
         vertices[1] = new Vector2(-1.7f, -2.0f);

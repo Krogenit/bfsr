@@ -172,7 +172,6 @@ public class Renderer {
     }
 
     public void onExitToMainMenu() {
-        guiInGame.onExitToMainMenu();
         camera.onExitToMainMenu();
         particleRenderer.onExitToMainMenu();
     }

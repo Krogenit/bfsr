@@ -8,4 +8,8 @@ public final class DecimalUtils {
     public static String formatWithToDigits(float value) {
         return FORMATTER.format(value);
     }
+
+    public static String formatWithToDigits(double value) {
+        return FORMATTER.format(value);
+    }
 }
