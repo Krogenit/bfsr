@@ -1,6 +1,6 @@
 package net.bfsr.entity.bullet;
 
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.collision.filter.BulletFilter;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.physics.PhysicsUtils;

@@ -19,8 +19,8 @@ public abstract class Gui {
     }
 
     public void init() {
-        width = Core.getCore().getWidth();
-        height = Core.getCore().getHeight();
+        width = Core.get().getScreenWidth();
+        height = Core.get().getScreenHeight();
         updateCenter();
         initElements();
         resize(width, height);

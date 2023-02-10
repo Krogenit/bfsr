@@ -40,6 +40,6 @@ public class ThreadLocalServer extends Thread {
         NetworkManagerClient networkManager = NetworkManagerClient.provideLocalClient(socketAddress, new GuiMainMenu());
         networkManager.scheduleOutboundPacket(new PacketHandshake(5, socketAddress.toString(), 0, EnumConnectionState.LOGIN));
         networkManager.scheduleOutboundPacket(new PacketLoginStart("Local Player", "local", false));
-        Core.getCore().setNetworkManager(networkManager);
+        Core.get().setNetworkManager(networkManager);
     }
 }

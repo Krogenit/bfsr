@@ -1,9 +1,8 @@
 package net.bfsr.client.sound;
 
 public enum SoundRegistry {
-
     buttonCollide("gui/buttonCollide", 0.275f),
-    buttonClick("gui/buttonClick", 2f),
+    buttonClick("gui/buttonClick", 2.0f),
 
     weaponShootPlasm0("weapon/plasm0", 1.0f),
     weaponShootPlasm1("weapon/plasm1", 1.0f),

@@ -9,8 +9,6 @@ public class AxisAlignedBoundingBox {
     private final Vector2f min;
     private final Vector2f max;
 
-    private static final AxisAlignedBoundingBox TRANSLATED_AABB = new AxisAlignedBoundingBox(new Vector2f(), new Vector2f());
-
     public AxisAlignedBoundingBox() {
         this(new Vector2f(), new Vector2f());
     }
@@ -66,13 +64,5 @@ public class AxisAlignedBoundingBox {
     @Override
     public String toString() {
         return "AABB [min=" + min + ", max=" + max + "]";
-    }
-
-    public AxisAlignedBoundingBox translate(Vector2f pos) {
-        TRANSLATED_AABB.min.x = min.x + pos.x;
-        TRANSLATED_AABB.min.y = min.y + pos.y;
-        TRANSLATED_AABB.max.x = max.x + pos.x;
-        TRANSLATED_AABB.max.y = max.y + pos.y;
-        return TRANSLATED_AABB;
     }
 }

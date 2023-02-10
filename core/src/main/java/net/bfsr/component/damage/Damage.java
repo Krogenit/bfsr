@@ -2,15 +2,15 @@ package net.bfsr.component.damage;
 
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
-import net.bfsr.client.render.instanced.BufferType;
-import net.bfsr.client.render.instanced.InstancedRenderer;
-import net.bfsr.client.render.texture.Texture;
-import net.bfsr.client.render.texture.TextureLoader;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.texture.Texture;
+import net.bfsr.client.renderer.texture.TextureLoader;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.math.RotationHelper;
+import net.bfsr.math.MathUtils;
 import net.bfsr.util.TimeUtils;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -81,10 +81,10 @@ public class Damage extends TextureObject {
         float hullValue = hull.getHull();
         float maxHull = hull.getMaxHull();
         damaged = hullValue / maxHull <= creationDamage;
-//		damaged = true;
+
         if (damaged) {
             if (!isCreated) {
-                addRotation = RotationHelper.TWOPI * rand.nextFloat();
+                addRotation = MathUtils.TWO_PI * rand.nextFloat();
                 ParticleSpawner.spawnExplosion(position.x, position.y, scale.x, 2.0f);
                 ParticleSpawner.spawnSpark(position.x, position.y, scale.x, 2.0f);
                 ParticleSpawner.spawnLight(position.x, position.y, (scale.x + scale.y), 1.0f, 0.5f, 0.5f, 0.7f, 2.0f, true, RenderLayer.DEFAULT_ADDITIVE);

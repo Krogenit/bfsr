@@ -5,12 +5,12 @@ import lombok.Setter;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
-import net.bfsr.client.render.font.FontType;
-import net.bfsr.client.render.font.StringCache;
-import net.bfsr.client.render.font.string.StringObject;
-import net.bfsr.client.render.instanced.BufferType;
-import net.bfsr.client.render.instanced.InstancedRenderer;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.font.FontType;
+import net.bfsr.client.renderer.font.StringCache;
+import net.bfsr.client.renderer.font.string.StringObject;
+import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.sound.GuiSoundSource;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.core.Core;
@@ -201,7 +201,7 @@ public class InputBox extends TexturedGuiObject {
         if (isIntersects()) {
             if (!collided) {
                 collided = true;
-                Core.getCore().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonCollide));
+                Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonCollide));
             }
         } else {
             collided = false;
@@ -268,7 +268,7 @@ public class InputBox extends TexturedGuiObject {
     private void setTyping(boolean value) {
         if (value) {
             setCursorPositionByMouse();
-            Core.getCore().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
+            Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
         } else {
             renderCursor = false;
             cursorTimer = cursorMaxTimer;

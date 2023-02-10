@@ -1,7 +1,7 @@
 package net.bfsr.component.shield;
 
-import net.bfsr.client.render.texture.TextureLoader;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.texture.TextureLoader;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
 import org.joml.Vector2f;
 
@@ -12,7 +12,6 @@ public class ShieldSmall0 extends Shield {
         setShield(maxShield);
         setShieldRegen(shieldRegen);
         setTimeToRebuild(rebuildTime);
-        setScale(1, 1);
 
         if (ship.getWorld().isRemote()) {
             setColor(r, g, b, a);
@@ -29,7 +28,6 @@ public class ShieldSmall0 extends Shield {
         setShield(15);
         setShieldRegen(0.6f);
         setTimeToRebuild(200);
-        setScale(1, 1);
 
         if (ship.getWorld().isRemote()) {
             setColor(r, g, b, a);

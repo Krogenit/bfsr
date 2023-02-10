@@ -1,7 +1,6 @@
 package net.bfsr.component.cargo;
 
 public class Cargo {
-
     private int capacity;
     private final int maxCapacity;
 

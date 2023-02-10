@@ -14,7 +14,6 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
 public class SoundBuffer {
-
     private final int bufferId;
     private ShortBuffer pcm;
     private ByteBuffer vorbis;

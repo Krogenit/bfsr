@@ -1,7 +1,6 @@
 package net.bfsr.component.crew;
 
 public class Crew {
-
     private int crewSize, maxCrewSize;
 
     public Crew(int maxCrewSize) {

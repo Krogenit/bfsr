@@ -2,9 +2,9 @@ package net.bfsr.client.gui.ingame;
 
 import lombok.Setter;
 import net.bfsr.client.camera.Camera;
-import net.bfsr.client.render.font.FontType;
-import net.bfsr.client.render.font.string.StringObject;
-import net.bfsr.client.render.particle.ParticleRenderer;
+import net.bfsr.client.renderer.font.FontType;
+import net.bfsr.client.renderer.font.string.StringObject;
+import net.bfsr.client.renderer.particle.ParticleRenderer;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.component.reactor.Reactor;
 import net.bfsr.component.shield.Shield;
@@ -29,7 +29,7 @@ public class DebugInfoElement {
     private final StringObject shipText = new StringObject(FontType.CONSOLA);
 
     public void update(int x, int y) {
-        Core core = Core.getCore();
+        Core core = Core.get();
         Profiler profiler = core.getProfiler();
         float updateTime = profiler.getResult("update");
         float renderTime = profiler.getResult("render");
@@ -188,7 +188,7 @@ public class DebugInfoElement {
         upperText.render();
         worldText.render();
 
-        if (Core.getCore().getWorld().getPlayerShip() != null) {
+        if (Core.get().getWorld().getPlayerShip() != null) {
             shipText.render();
         }
     }

@@ -1,8 +1,8 @@
 package net.bfsr.client.particle;
 
-import net.bfsr.client.render.instanced.BufferType;
-import net.bfsr.client.render.instanced.InstancedRenderer;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.entity.ship.Ship;

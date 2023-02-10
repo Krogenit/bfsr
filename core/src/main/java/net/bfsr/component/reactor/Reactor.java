@@ -1,10 +1,14 @@
 package net.bfsr.component.reactor;
 
+import lombok.Getter;
 import net.bfsr.util.TimeUtils;
 
 public class Reactor {
-
-    private float energy, maxEnergy, regenEnergy;
+    @Getter
+    private float energy;
+    @Getter
+    private final float maxEnergy;
+    private final float regenEnergy;
 
     public Reactor(float maxEnergy, float regenEnergy) {
         this.energy = maxEnergy;
@@ -32,25 +36,5 @@ public class Reactor {
         if (this.energy < 0) {
             this.energy = 0;
         }
-    }
-
-    public float getEnergy() {
-        return energy;
-    }
-
-    public void setMaxEnergy(float maxEnergy) {
-        this.maxEnergy = maxEnergy;
-    }
-
-    public float getMaxEnergy() {
-        return maxEnergy;
-    }
-
-    public void setRegenEnergy(float regenEnergy) {
-        this.regenEnergy = regenEnergy;
-    }
-
-    public float getRegenEnergy() {
-        return regenEnergy;
     }
 }

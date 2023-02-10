@@ -25,7 +25,7 @@ public final class Mouse {
         GLFW.glfwSetCursorPosCallback(window, (windowHandle, xpos, ypos) -> {
             lastPosition.set(position.x, position.y);
             position.set((float) xpos, (float) ypos);
-            Core.getCore().getRenderer().getCamera().mouseMove(position.x - lastPosition.x, position.y - lastPosition.y);
+            Core.get().getRenderer().getCamera().mouseMove(position.x - lastPosition.x, position.y - lastPosition.y);
         });
         GLFW.glfwSetCursorEnterCallback(window, (windowHandle, entered) -> {});
         GLFW.glfwSetMouseButtonCallback(window, (windowHandle, button, action, mode) -> {
@@ -36,22 +36,22 @@ public final class Mouse {
         GLFW.glfwSetScrollCallback(window, (windowHandle, x, y) -> {
             float floatY = (float) y;
             guiInput(gui -> gui.onMouseScroll(floatY));
-            Core.getCore().getRenderer().getCamera().scroll(floatY);
+            Core.get().getRenderer().getCamera().scroll(floatY);
         });
     }
 
     private static void guiInput(Consumer<Gui> consumer) {
-        Gui gui = Core.getCore().getCurrentGui();
+        Gui gui = Core.get().getCurrentGui();
         if (gui != null) {
             consumer.accept(gui);
         }
 
-        consumer.accept(Core.getCore().getGuiInGame());
+        consumer.accept(Core.get().getGuiInGame());
     }
 
     private static void guiAndWorldInput(Consumer<Gui> guiConsumer, Consumer<WorldClient> worldConsumer) {
         guiInput(guiConsumer);
-        WorldClient world = Core.getCore().getWorld();
+        WorldClient world = Core.get().getWorld();
         if (world != null) worldConsumer.accept(world);
     }
 

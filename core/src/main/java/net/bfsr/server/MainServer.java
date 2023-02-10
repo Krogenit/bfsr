@@ -119,7 +119,7 @@ public class MainServer extends Loop {
     @Override
     protected void update() {
         profiler.startSection("update");
-        if (!singlePlayer || !Core.getCore().isPaused()) world.update();
+        if (!singlePlayer || !Core.get().isPaused()) world.update();
         profiler.endStartSection("network");
         networkSystem.networkTick();
         profiler.endSection();

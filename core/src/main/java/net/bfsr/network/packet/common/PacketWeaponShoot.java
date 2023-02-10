@@ -37,7 +37,7 @@ public class PacketWeaponShoot extends Packet {
 
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
-        CollisionObject obj = Core.getCore().getWorld().getEntityById(id);
+        CollisionObject obj = Core.get().getWorld().getEntityById(id);
         if (obj instanceof Ship) {
             Ship ship = (Ship) obj;
             WeaponSlot weaponSlot = ship.getWeaponSlot(slot);

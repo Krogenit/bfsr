@@ -13,7 +13,7 @@ import net.bfsr.entity.ship.engi.ShipEngiSmall0;
 import net.bfsr.entity.ship.human.ShipHumanSmall0;
 import net.bfsr.entity.ship.saimon.ShipSaimonSmall0;
 import net.bfsr.faction.Faction;
-import net.bfsr.math.RotationHelper;
+import net.bfsr.math.MathUtils;
 import net.bfsr.network.EnumGui;
 import net.bfsr.network.packet.server.PacketOpenGui;
 import net.bfsr.profiler.Profiler;
@@ -66,14 +66,14 @@ public class WorldServer extends World {
             Vector2f pos = new Vector2f(-150, 0);
             Ship ship;
             float angle = 0.1f;
-            if (sameFaction && lastFaction == Faction.Human) count = count - botCount;
+            if (sameFaction && lastFaction == Faction.HUMAN) count = count - botCount;
             for (int i = 0; i < count; i++) {
                 pos.x = rand.nextInt(1) - 250;
                 pos.y = rand.nextInt(100) - 50;
 //				pos = RotationHelper.rotate(angle, pos.x, pos.y);
-                ship = new ShipHumanSmall0(this, pos.x, pos.y, rand.nextFloat() * RotationHelper.TWOPI, false);
+                ship = new ShipHumanSmall0(this, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, false);
                 ship.init();
-                ship.setFaction(Faction.Human);
+                ship.setFaction(Faction.HUMAN);
                 if (rand.nextInt(2) == 0) {
                     ship.addWeaponToSlot(0, new WeaponBeamSmall(ship));
                     ship.addWeaponToSlot(1, new WeaponBeamSmall(ship));
@@ -88,14 +88,14 @@ public class WorldServer extends World {
 //			pos = RotationHelper.rotate((float) (Math.PI * 2f / 3f), pos.x, pos.y);
             pos = new Vector2f(0, 0);
             count = maxCount;
-            if (sameFaction && lastFaction == Faction.Saimon) count = count - botCount;
+            if (sameFaction && lastFaction == Faction.SAIMON) count = count - botCount;
             for (int i = 0; i < count; i++) {
                 pos.y = rand.nextInt(1) - 350;
                 pos.x = rand.nextInt(100) - 50;
 //				pos = RotationHelper.rotate(angle, pos.x, pos.y);
-                ship = new ShipSaimonSmall0(this, pos.x, pos.y, rand.nextFloat() * RotationHelper.TWOPI, false);
+                ship = new ShipSaimonSmall0(this, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, false);
                 ship.init();
-                ship.setFaction(Faction.Saimon);
+                ship.setFaction(Faction.SAIMON);
                 if (rand.nextInt(2) == 0) {
                     ship.addWeaponToSlot(0, new WeaponBeamSmall(ship));
                     ship.addWeaponToSlot(1, new WeaponBeamSmall(ship));
@@ -110,14 +110,14 @@ public class WorldServer extends World {
 //			pos = RotationHelper.rotate((float) (Math.PI * 2f / 3f), pos.x, pos.y);
             pos = new Vector2f(150, 0);
             count = maxCount;
-            if (sameFaction && lastFaction == Faction.Engi) count = count - botCount;
+            if (sameFaction && lastFaction == Faction.ENGI) count = count - botCount;
             for (int i = 0; i < count; i++) {
                 pos.x = rand.nextInt(1) + 250;
                 pos.y = rand.nextInt(100) - 50;
 //				pos = RotationHelper.rotate(angle, pos.x, pos.y);
-                ship = new ShipEngiSmall0(this, pos.x, pos.y, rand.nextFloat() * RotationHelper.TWOPI, false);
+                ship = new ShipEngiSmall0(this, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, false);
                 ship.init();
-                ship.setFaction(Faction.Engi);
+                ship.setFaction(Faction.ENGI);
                 if (rand.nextInt(2) == 0) {
                     ship.addWeaponToSlot(0, new WeaponBeamSmall(ship));
                     ship.addWeaponToSlot(1, new WeaponBeamSmall(ship));

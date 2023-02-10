@@ -42,7 +42,7 @@ public class PacketArmorInfo extends ServerPacket {
 
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
-        WorldClient world = Core.getCore().getWorld();
+        WorldClient world = Core.get().getWorld();
         CollisionObject obj = world.getEntityById(id);
         if (obj != null) {
             Ship ship = (Ship) obj;

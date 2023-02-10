@@ -8,10 +8,9 @@ import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.ingame.GuiInGame;
 import net.bfsr.client.gui.menu.GuiMainMenu;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.Renderer;
+import net.bfsr.client.renderer.Renderer;
 import net.bfsr.client.sound.SoundListener;
 import net.bfsr.client.sound.SoundManager;
-import net.bfsr.network.NetworkManager;
 import net.bfsr.network.Packet;
 import net.bfsr.network.client.NetworkManagerClient;
 import net.bfsr.profiler.Profiler;
@@ -31,22 +30,33 @@ public class Core {
     private static Core instance;
 
     @Setter
+    @Getter
     private int screenWidth, screenHeight;
     private long window;
     @Setter
     @Getter
     private boolean paused;
 
+    @Getter
     private final SoundManager soundManager;
+    @Setter
+    @Getter
     private WorldClient world;
+    @Getter
     private Gui currentGui;
+    @Getter
     private final Renderer renderer;
+    @Getter
     private final ClientSettings settings;
+    @Getter
     private final Profiler profiler;
 
     private ThreadLocalServer localServer;
+    @Getter
+    @Setter
     private NetworkManagerClient networkManager;
 
+    @Getter
     private String playerName;
 
     private final Queue<ListenableFutureTask<?>> futureTasks = Queues.newArrayDeque();
@@ -186,36 +196,20 @@ public class Core {
         }
     }
 
-    public Renderer getRenderer() {
-        return renderer;
-    }
-
-    public WorldClient getWorld() {
-        return world;
-    }
-
-    public Gui getCurrentGui() {
-        return currentGui;
-    }
-
     public GuiInGame getGuiInGame() {
         return renderer.getGuiInGame();
     }
 
-    public int getWidth() {
-        return screenWidth;
-    }
-
-    public int getHeight() {
-        return screenHeight;
-    }
-
-    public static Core getCore() {
+    public static Core get() {
         return instance;
     }
 
-    public ClientSettings getSettings() {
-        return settings;
+    public boolean canControlShip() {
+        return !renderer.getGuiInGame().isActive() && currentGui == null;
+    }
+
+    public void stop() {
+        GLFW.glfwSetWindowShouldClose(window, true);
     }
 
     public void clear() {
@@ -226,37 +220,5 @@ public class Core {
 
         soundManager.cleanup();
         renderer.clear();
-    }
-
-    public SoundManager getSoundManager() {
-        return soundManager;
-    }
-
-    public void setWorld(WorldClient world) {
-        this.world = world;
-    }
-
-    public Profiler getProfiler() {
-        return profiler;
-    }
-
-    public String getPlayerName() {
-        return playerName;
-    }
-
-    public boolean canControlShip() {
-        return !renderer.getGuiInGame().isActive() && currentGui == null;
-    }
-
-    public NetworkManager getNetworkManager() {
-        return networkManager;
-    }
-
-    public void setNetworkManager(NetworkManagerClient networkManager) {
-        this.networkManager = networkManager;
-    }
-
-    public void stop() {
-        GLFW.glfwSetWindowShouldClose(window, true);
     }
 }

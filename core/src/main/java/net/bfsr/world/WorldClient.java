@@ -5,12 +5,12 @@ import net.bfsr.client.camera.Camera;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.particle.ParticleManager;
-import net.bfsr.client.render.OpenGLHelper;
-import net.bfsr.client.render.instanced.BufferType;
-import net.bfsr.client.render.instanced.InstancedRenderer;
-import net.bfsr.client.render.texture.Texture;
-import net.bfsr.client.render.texture.TextureGenerator;
-import net.bfsr.client.render.texture.TextureLoader;
+import net.bfsr.client.renderer.OpenGLHelper;
+import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.texture.Texture;
+import net.bfsr.client.renderer.texture.TextureGenerator;
+import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
@@ -37,9 +37,9 @@ public class WorldClient extends World {
     private final ParticleManager particleManager = new ParticleManager();
 
     public WorldClient() {
-        super(true, Core.getCore().getProfiler());
+        super(true, Core.get().getProfiler());
 
-        this.core = Core.getCore();
+        this.core = Core.get();
     }
 
     public void setSeed(long seed) {
@@ -106,16 +106,16 @@ public class WorldClient extends World {
 //					|| --spawnTimer <= 0
 //					|| ((bots == 0 || sameFaction) && --spawnTimer <= 0)
         ) {
-            Vector2f pos = Mouse.getWorldPosition(Core.getCore().getRenderer().getCamera());
+            Vector2f pos = Mouse.getWorldPosition(Core.get().getRenderer().getCamera());
 
             if (core.getNetworkManager() != null)
 //					for(int i=0;i<1;i++) {
-//						Vector2f pos = new Vector2f(Core.getCore().getRenderer().getCamera().getPosition()).add(RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 5500 * rand.nextFloat()));
+//						Vector2f pos = new Vector2f(Core.getCore().getRenderer().getCamera().getPosition()).add(RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 5500 * rand.nextFloat()));
                 core.sendPacket(new PacketCommand(EnumCommand.SpawnShip, "" + pos.x, "" + pos.y));
 //					}
             spawnTimer = 60;
         } else if (key == GLFW.GLFW_KEY_G) {
-            Vector2f pos = Mouse.getWorldPosition(Core.getCore().getRenderer().getCamera());
+            Vector2f pos = Mouse.getWorldPosition(Core.get().getRenderer().getCamera());
             Vector2f randomVector1 = new Vector2f(pos).add(-10 + rand.nextInt(21), -10 + rand.nextInt(21));
             core.sendPacket(new PacketCommand(EnumCommand.SpawnParticle, "" + randomVector1.x, "" + randomVector1.y));
 
@@ -148,9 +148,9 @@ public class WorldClient extends World {
             }
 
         } else if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_P) {
-            Core.getCore().setPaused(!Core.getCore().isPaused());
+            Core.get().setPaused(!Core.get().isPaused());
         } else if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_C) {
-            Core.getCore().setCurrentGui(null);
+            Core.get().setCurrentGui(null);
         }
     }
 
@@ -190,8 +190,8 @@ public class WorldClient extends World {
     public void prepareAmbient() {
         Vector2f scale = background.getScale();
         float moveFactor = 0.005f;
-        Camera camera = Core.getCore().getRenderer().getCamera();
-        float cameraZoom = camera.getLastZoom() + (camera.getZoom() - camera.getLastZoom()) * Core.getCore().getRenderer().getInterpolation();
+        Camera camera = Core.get().getRenderer().getCamera();
+        float cameraZoom = camera.getLastZoom() + (camera.getZoom() - camera.getLastZoom()) * Core.get().getRenderer().getInterpolation();
         float lastX = (camera.getLastPosition().x - camera.getLastPosition().x * moveFactor / cameraZoom);
         float lastY = (camera.getLastPosition().y - camera.getLastPosition().y * moveFactor / cameraZoom);
         float x = (camera.getPosition().x - camera.getPosition().x * moveFactor / cameraZoom);

@@ -74,7 +74,7 @@ public class PacketShipInfo extends ServerPacket {
 
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
-        CollisionObject obj = Core.getCore().getWorld().getEntityById(id);
+        CollisionObject obj = Core.get().getWorld().getEntityById(id);
         if (obj instanceof Ship ship) {
             Armor shipArmor = ship.getArmor();
             ArmorPlate[] plates = shipArmor.getArmorPlates();
@@ -87,7 +87,7 @@ public class PacketShipInfo extends ServerPacket {
             Shield shipShield = ship.getShield();
             if (shipShield != null) shipShield.setShield(shield);
         } else {
-            Core.getCore().sendPacket(new PacketNeedObjectInfo(id));
+            Core.get().sendPacket(new PacketNeedObjectInfo(id));
         }
     }
 }

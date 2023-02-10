@@ -51,7 +51,7 @@ public class PacketSpawnShip extends ServerPacket {
 
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
-        WorldClient world = Core.getCore().getWorld();
+        WorldClient world = Core.get().getWorld();
         if (world.getEntityById(id) == null) {
             try {
                 Class<?> clazz = Class.forName(shipClassName);

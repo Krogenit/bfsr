@@ -2,7 +2,7 @@ package net.bfsr.math;
 
 import org.joml.Matrix4f;
 
-public class MatrixUtils {
+public final class MatrixUtils {
     public static void translateIdentity(Matrix4f matrix, float x, float y) {
         matrix.m30(x);
         matrix.m31(y);

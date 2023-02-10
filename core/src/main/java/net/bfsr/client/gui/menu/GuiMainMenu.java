@@ -6,7 +6,7 @@ import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.multiplayer.GuiConnect;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.core.Core;
 
 public class GuiMainMenu extends Gui {
@@ -18,9 +18,9 @@ public class GuiMainMenu extends Gui {
         int buttonWidth = 260;
         int buttonHeight = 40;
         int x = -buttonWidth / 2;
-        registerGuiObject(new Button(Lang.getString("gui.mainmenu.singleplayer"), () -> Core.getCore().startSinglePlayer()).atCenter(x, -45).setSize(buttonWidth, buttonHeight));
-        registerGuiObject(new Button(Lang.getString("gui.mainmenu.multiplayer"), () -> Core.getCore().setCurrentGui(new GuiConnect(this))).atCenter(x, 0).setSize(260, 40));
-        registerGuiObject(new Button(Lang.getString("gui.mainmenu.options"), () -> Core.getCore().setCurrentGui(new GuiSettings(this))).atCenter(x, 45).setSize(260, 40));
-        registerGuiObject(new Button(Lang.getString("gui.mainmenu.quit"), () -> Core.getCore().stop()).atCenter(x, 90).setSize(260, 40));
+        registerGuiObject(new Button(Lang.getString("gui.mainmenu.singleplayer"), () -> Core.get().startSinglePlayer()).atCenter(x, -45).setSize(buttonWidth, buttonHeight));
+        registerGuiObject(new Button(Lang.getString("gui.mainmenu.multiplayer"), () -> Core.get().setCurrentGui(new GuiConnect(this))).atCenter(x, 0).setSize(260, 40));
+        registerGuiObject(new Button(Lang.getString("gui.mainmenu.options"), () -> Core.get().setCurrentGui(new GuiSettings(this))).atCenter(x, 45).setSize(260, 40));
+        registerGuiObject(new Button(Lang.getString("gui.mainmenu.quit"), () -> Core.get().stop()).atCenter(x, 90).setSize(260, 40));
     }
 }

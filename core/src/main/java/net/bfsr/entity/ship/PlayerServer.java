@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerServer {
-
     @Getter
     @Setter
     private NetworkManagerServer networkManager;

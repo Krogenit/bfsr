@@ -10,7 +10,7 @@ import net.bfsr.entity.ship.engi.ShipEngiSmall0;
 import net.bfsr.entity.ship.human.ShipHumanSmall0;
 import net.bfsr.entity.ship.saimon.ShipSaimonSmall0;
 import net.bfsr.faction.Faction;
-import net.bfsr.math.RotationHelper;
+import net.bfsr.math.MathUtils;
 import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.client.ClientPacket;
 import net.bfsr.network.server.NetworkManagerServer;
@@ -42,22 +42,22 @@ public class PacketFactionSelect extends ClientPacket {
         Faction faction = Faction.values()[this.faction];
         Ship playerShip = null;
         switch (faction) {
-            case Human:
-                playerShip = new ShipHumanSmall0(world, 0, 0, world.getRand().nextFloat() * RotationHelper.TWOPI, false);
+            case HUMAN:
+                playerShip = new ShipHumanSmall0(world, 0, 0, world.getRand().nextFloat() * MathUtils.TWO_PI, false);
                 playerShip.init();
                 playerShip.addWeaponToSlot(0, new WeaponPlasmSmall(playerShip));
                 playerShip.addWeaponToSlot(1, new WeaponPlasmSmall(playerShip));
 
                 break;
-            case Saimon:
-                playerShip = new ShipSaimonSmall0(world, 0, 0, world.getRand().nextFloat() * RotationHelper.TWOPI, false);
+            case SAIMON:
+                playerShip = new ShipSaimonSmall0(world, 0, 0, world.getRand().nextFloat() * MathUtils.TWO_PI, false);
                 playerShip.init();
                 playerShip.addWeaponToSlot(0, new WeaponLaserSmall(playerShip));
                 playerShip.addWeaponToSlot(1, new WeaponLaserSmall(playerShip));
 
                 break;
-            case Engi:
-                playerShip = new ShipEngiSmall0(world, 0, 0, world.getRand().nextFloat() * RotationHelper.TWOPI, false);
+            case ENGI:
+                playerShip = new ShipEngiSmall0(world, 0, 0, world.getRand().nextFloat() * MathUtils.TWO_PI, false);
                 playerShip.init();
                 playerShip.addWeaponToSlot(0, new WeaponGausSmall(playerShip));
                 playerShip.addWeaponToSlot(1, new WeaponGausSmall(playerShip));

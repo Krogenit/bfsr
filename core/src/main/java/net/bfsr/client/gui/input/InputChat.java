@@ -2,9 +2,9 @@ package net.bfsr.client.gui.input;
 
 import net.bfsr.client.gui.scroll.Scroll;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.font.FontType;
-import net.bfsr.client.render.instanced.BufferType;
-import net.bfsr.client.render.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.font.FontType;
+import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.InstancedRenderer;
 import net.bfsr.core.Core;
 import net.bfsr.network.packet.common.PacketChatMessage;
 import org.lwjgl.glfw.GLFW;
@@ -34,7 +34,7 @@ public class InputChat extends InputBox {
         if (key == GLFW.GLFW_KEY_ENTER) {
             String input = stringObject.getString().trim();
             if (input.length() > 0) {
-                Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketChatMessage(Core.getCore().getPlayerName() + ": " + input));
+                Core.get().getNetworkManager().scheduleOutboundPacket(new PacketChatMessage(Core.get().getPlayerName() + ": " + input));
             }
             stringObject.update("");
             resetCursorPosition();
@@ -71,7 +71,7 @@ public class InputChat extends InputBox {
             String string = lines.get(i);
             int stringHeight = FontType.DEFAULT.getStringCache().getStringHeight(string, fontSize, width - 40, -1);
             if (lineY >= chatTop && lineY < chatBottom || lineY + stringHeight >= chatTop && lineY + stringHeight < chatBottom) {
-                Core.getCore().getRenderer().getStringRenderer().render(string, FontType.DEFAULT.getStringCache(), fontSize, x + lineX, y + lineY, textColor.x, textColor.y,
+                Core.get().getRenderer().getStringRenderer().render(string, FontType.DEFAULT.getStringCache(), fontSize, x + lineX, y + lineY, textColor.x, textColor.y,
                         textColor.z, textColor.w, width - 40, -1, BufferType.GUI);
             }
 

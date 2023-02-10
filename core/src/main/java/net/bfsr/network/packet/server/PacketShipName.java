@@ -35,7 +35,7 @@ public class PacketShipName extends ServerPacket {
 
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
-        CollisionObject obj = Core.getCore().getWorld().getEntityById(id);
+        CollisionObject obj = Core.get().getWorld().getEntityById(id);
         if (obj instanceof Ship) {
             Ship ship = (Ship) obj;
             ship.setName(name);

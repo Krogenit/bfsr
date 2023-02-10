@@ -50,7 +50,7 @@ public class PacketObjectPosition extends Packet {
 
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
-        Core core = Core.getCore();
+        Core core = Core.get();
         CollisionObject obj = core.getWorld().getEntityById(id);
         if (obj != null) {
             obj.updateClientPositionFromPacket(pos, rot, velocity, angularVelocity);

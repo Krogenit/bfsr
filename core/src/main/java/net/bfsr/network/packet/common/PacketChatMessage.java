@@ -31,7 +31,7 @@ public class PacketChatMessage extends Packet {
 
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
-        Core.getCore().getGuiInGame().addChatMessage(message);
+        Core.get().getGuiInGame().addChatMessage(message);
     }
 
     @Override

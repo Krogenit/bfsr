@@ -1,13 +1,19 @@
 package net.bfsr.component;
 
+import lombok.Getter;
+import lombok.Setter;
 import net.bfsr.util.TimeUtils;
 
 public class ArmorPlate {
-
+    @Getter
+    @Setter
     private float armor;
     private final float armorRegenSpeed;
+    @Getter
     private final float armorMax;
     private final float armorHullProtection;
+    @Setter
+    @Getter
     private int id;
 
     public ArmorPlate(float armor, float armorRegenSpeed, float armorHullProtection) {
@@ -28,33 +34,5 @@ public class ArmorPlate {
             this.armor -= damageToArmor;
             return damageToHull / armorHullProtection;
         } else return damageToHull;
-    }
-
-    public float getArmor() {
-        return armor;
-    }
-
-    public float getArmorMax() {
-        return armorMax;
-    }
-
-    public float getArmorRegenSpeed() {
-        return armorRegenSpeed;
-    }
-
-    public float getArmorHullProtection() {
-        return armorHullProtection;
-    }
-
-    public void setArmor(float armor) {
-        this.armor = armor;
-    }
-
-    public void setId(int i) {
-        this.id = i;
-    }
-
-    public int getId() {
-        return id;
     }
 }

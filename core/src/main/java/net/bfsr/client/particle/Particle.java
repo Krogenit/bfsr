@@ -2,9 +2,9 @@ package net.bfsr.client.particle;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.render.instanced.InstancedRenderer;
-import net.bfsr.client.render.texture.TextureLoader;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.texture.TextureLoader;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.server.MainServer;
@@ -71,19 +71,19 @@ public class Particle extends TextureObject {
     public Particle init(TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
                          float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero, boolean canCollide,
                          RenderLayer renderLayer) {
-        return init(Core.getCore().getWorld(), texture, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity,
+        return init(Core.get().getWorld(), texture, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity,
                 isAlphaFromZero, canCollide, renderLayer);
     }
 
     public Particle init(TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY, float sizeVelocity,
                          float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero, RenderLayer renderLayer) {
-        return init(Core.getCore().getWorld(), texture, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity,
+        return init(Core.get().getWorld(), texture, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity,
                 isAlphaFromZero, false, renderLayer);
     }
 
     protected void addParticle() {
-        Core.getCore().getWorld().getParticleManager().addParticle(this);
-        Core.getCore().getRenderer().getParticleRenderer().addParticleToRenderLayer(this, renderLayer);
+        Core.get().getWorld().getParticleManager().addParticle(this);
+        Core.get().getRenderer().getParticleRenderer().addParticleToRenderLayer(this, renderLayer);
     }
 
     @Override
@@ -157,6 +157,6 @@ public class Particle extends TextureObject {
 
     public void onRemoved() {
         ParticleSpawner.PARTICLE_POOL.returnBack(this);
-        Core.getCore().getRenderer().getParticleRenderer().removeParticleFromRenderLayer(this, renderLayer);
+        Core.get().getRenderer().getParticleRenderer().removeParticleFromRenderLayer(this, renderLayer);
     }
 }

@@ -32,7 +32,7 @@ public class PacketRemoveObject extends ServerPacket {
 
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
-        CollisionObject obj = Core.getCore().getWorld().getEntityById(id);
+        CollisionObject obj = Core.get().getWorld().getEntityById(id);
         if (obj != null) {
             if (obj instanceof Ship ship) {
                 ship.destroyShip();

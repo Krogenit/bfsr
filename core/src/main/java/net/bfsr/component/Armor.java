@@ -3,7 +3,6 @@ package net.bfsr.component;
 import net.bfsr.math.Direction;
 
 public class Armor {
-
     private final ArmorPlate[] armorPlates;
 
     public Armor() {

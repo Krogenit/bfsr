@@ -3,14 +3,14 @@ package net.bfsr.client.gui;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.font.FontType;
-import net.bfsr.client.render.font.string.StringObject;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.font.FontType;
+import net.bfsr.client.renderer.font.string.StringObject;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.faction.Faction;
-import net.bfsr.math.RotationHelper;
+import net.bfsr.math.MathUtils;
 import net.bfsr.network.packet.client.PacketFactionSelect;
 
 public class GuiFactionSelect extends Gui {
@@ -25,16 +25,16 @@ public class GuiFactionSelect extends Gui {
         registerGuiObject(new TexturedGuiObject(TextureRegister.guiLogoBFSR).atCenter(-216 / 2, -200 - 216 / 2).setSize(216, 216));
         registerGuiObject(new TexturedGuiObject(TextureRegister.guiBfsrText2).atCenter(-860 / 2, -200 - 80 / 2).setSize(860, 80));
         registerGuiObject(new Button(Lang.getString("gui.selectFaction.human"), () -> {
-            Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketFactionSelect(Faction.Human));
-            Core.getCore().setCurrentGui(null);
+            Core.get().getNetworkManager().scheduleOutboundPacket(new PacketFactionSelect(Faction.HUMAN));
+            Core.get().setCurrentGui(null);
         }).atCenter(-309 - 300 / 2, 230 - 50 / 2));
         registerGuiObject(new Button(Lang.getString("gui.selectFaction.saimon"), () -> {
-            Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketFactionSelect(Faction.Saimon));
-            Core.getCore().setCurrentGui(null);
+            Core.get().getNetworkManager().scheduleOutboundPacket(new PacketFactionSelect(Faction.SAIMON));
+            Core.get().setCurrentGui(null);
         }).atCenter(-1 - 300 / 2, 230 - 50 / 2));
         registerGuiObject(new Button(Lang.getString("gui.selectFaction.engi"), () -> {
-            Core.getCore().getNetworkManager().scheduleOutboundPacket(new PacketFactionSelect(Faction.Engi));
-            Core.getCore().setCurrentGui(null);
+            Core.get().getNetworkManager().scheduleOutboundPacket(new PacketFactionSelect(Faction.ENGI));
+            Core.get().setCurrentGui(null);
         }).atCenter(309 - 300 / 2, 230 - 50 / 2));
 
         shipHuman.setPosition(center.x - 309, center.y + 70);
@@ -65,17 +65,17 @@ public class GuiFactionSelect extends Gui {
         if (aabb.isIntersects(Mouse.getPosition())) {
             ship.setRotation(ship.getRotation() + rotSpeed);
 
-            if (ship.getRotation() > RotationHelper.TWOPI) {
-                ship.setRotation(ship.getRotation() - RotationHelper.TWOPI);
+            if (ship.getRotation() > MathUtils.TWO_PI) {
+                ship.setRotation(ship.getRotation() - MathUtils.TWO_PI);
             }
         } else {
             if (ship.getRotation() > 0) {
                 if (ship.getRotation() > Math.PI) {
-                    float dif = RotationHelper.TWOPI - ship.getRotation();
+                    float dif = MathUtils.TWO_PI - ship.getRotation();
                     if (dif < 0.01f) dif = 0.01f;
                     ship.setRotation(ship.getRotation() + rotSpeed * dif);
 
-                    if (ship.getRotation() > RotationHelper.TWOPI) {
+                    if (ship.getRotation() > MathUtils.TWO_PI) {
                         ship.setRotation(0);
                     }
                 } else {

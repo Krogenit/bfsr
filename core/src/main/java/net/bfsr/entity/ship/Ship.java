@@ -10,14 +10,14 @@ import net.bfsr.client.input.Mouse;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.particle.Wreck;
-import net.bfsr.client.render.font.FontType;
-import net.bfsr.client.render.font.StringOffsetType;
-import net.bfsr.client.render.font.string.StringObject;
-import net.bfsr.client.render.instanced.BufferType;
-import net.bfsr.client.render.instanced.InstancedRenderer;
-import net.bfsr.client.render.texture.Texture;
-import net.bfsr.client.render.texture.TextureLoader;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.font.FontType;
+import net.bfsr.client.renderer.font.StringOffsetType;
+import net.bfsr.client.renderer.font.string.StringObject;
+import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.texture.Texture;
+import net.bfsr.client.renderer.texture.TextureLoader;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.component.Armor;
@@ -35,6 +35,7 @@ import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.Direction;
+import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.common.PacketObjectPosition;
 import net.bfsr.network.packet.server.*;
@@ -114,7 +115,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     protected Ship(WorldServer world, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, boolean spawned) {
         super(world, world.getNextId(), x, y, rotation, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 0.0f);
-        RotationHelper.angleToVelocity(this.rotation + Math.PI, -jumpSpeed * 6.0f, jumpVelocity);
+        RotationHelper.angleToVelocity(this.rotation + MathUtils.PI, -jumpSpeed * 6.0f, jumpVelocity);
         this.jumpPosition.set(jumpVelocity.x / 60.0f * (64.0f + scale.x * 0.1f) * -0.5f + x, jumpVelocity.y / 60.0f * (64.0f + scale.y * 0.1f) * -0.5f + y);
         this.effectsColor.set(r, g, b);
         setRotation(this.rotation);
@@ -130,7 +131,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     protected Ship(WorldClient w, int id, TextureRegister texture, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b) {
         super(w, id, texture, x, y, rotation, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 0.0f);
         this.damages = new ArrayList<>();
-        RotationHelper.angleToVelocity(this.rotation + Math.PI, -jumpSpeed * 6.0f, jumpVelocity);
+        RotationHelper.angleToVelocity(this.rotation + MathUtils.PI, -jumpSpeed * 6.0f, jumpVelocity);
         this.jumpPosition.set(jumpVelocity.x / 60.0f * (64.0f + scale.x * 0.1f) * -0.5f + x, jumpVelocity.y / 60.0f * (64.0f + scale.y * 0.1f) * -0.5f + y);
         this.effectsColor.set(r, g, b);
         setRotation(this.rotation);
@@ -145,7 +146,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         if (destroingTimer == 0) {
             if (body.isAtRest()) body.setAtRest(false);
 
-            rotateToVector(Mouse.getWorldPosition(Core.getCore().getRenderer().getCamera()), engine.getRotationSpeed());
+            rotateToVector(Mouse.getWorldPosition(Core.get().getRenderer().getCamera()), engine.getRotationSpeed());
 
             if (Keyboard.isKeyDown(GLFW.GLFW_KEY_W)) {
                 move(this, Direction.FORWARD);
@@ -171,11 +172,11 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
                 float baseSize = 4.0f + scale.x * 0.25f;
                 Random rand = world.getRand();
                 Vector2f position = getPosition();
-                Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion1, position.x, position.y));
+                Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion1, position.x, position.y));
                 ParticleSpawner.spawnShockwave(0, position, baseSize + 3.0f);
                 for (int i = 0; i < 8; i++) {
                     Vector2f velocity = getVelocity();
-                    RotationHelper.angleToVelocity(rand.nextFloat() * RotationHelper.TWOPI, scale.x, angleToVelocity);
+                    RotationHelper.angleToVelocity(rand.nextFloat() * MathUtils.TWO_PI, scale.x, angleToVelocity);
                     ParticleSpawner.spawnMediumGarbage(1, position.x + -scale.x / 2.25f + rand.nextInt((int) (scale.x / 1.25f)), position.y + -scale.y / 2.25f + rand.nextInt((int) (scale.y / 1.25f)),
                             velocity.x + angleToVelocity.x, velocity.y + angleToVelocity.y, baseSize);
                 }
@@ -194,7 +195,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
         if (world.isRemote()) {
             if (this == world.getPlayerShip()) {
-                Core.getCore().sendPacket(new PacketObjectPosition(this));
+                Core.get().sendPacket(new PacketObjectPosition(this));
                 aliveTimer = 0;
             } else {
                 if (remoteMoveDirectionForEngineParticles != null) {
@@ -275,7 +276,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
             updateShip();
         } else {
             if (((jumpVelocity.x < 0 && jumpPosition.x <= position.x) || (jumpVelocity.x > 0 && jumpPosition.x >= position.x)) && ((jumpVelocity.y < 0 && jumpPosition.y <= position.y)
-                    || (jumpVelocity.y > 0 && jumpPosition.y >= position.y))) {
+                    || (jumpVelocity.y >= 0 && jumpPosition.y >= position.y))) {
                 setSpawmed();
                 setVelocity(jumpVelocity.mul(0.26666668f));
                 if (world.isRemote()) {
@@ -283,7 +284,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
                     ParticleSpawner.spawnLight(position.x, position.y, velocity.x * 0.5f, velocity.y * 0.5f, 32.0f + scale.x * 0.25f, effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, 3.6f,
                             true, RenderLayer.DEFAULT_ADDITIVE);
                     ParticleSpawner.spawnDisableShield(position.x, position.y, velocity.x * 0.5f, velocity.y * 0.5f, 32.0f + scale.x * 0.25f, effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
-                    Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.jump, position.x, position.y));
+                    Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.jump, position.x, position.y));
                 }
             } else {
                 lastJumpPosition.set(jumpPosition);
@@ -356,7 +357,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         if (world.isRemote()) {
             Random rand = world.getRand();
             ParticleSpawner.spawnDirectedSpark(contact, normal, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
-            Vector2f angletovel = RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 0.15f);
+            Vector2f angletovel = RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.15f);
             Vector2 point = contact.getPoint();
             ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), (float) point.x, (float) point.y, velocity.x * 0.25f + angletovel.x, velocity.y * 0.25f + angletovel.y, 2.0f * rand.nextFloat());
         }
@@ -426,7 +427,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
             ParticleSpawner.spawnLight(randomVectorX, randomVectorY, baseSize + rand.nextFloat() * 2.0f, 60.0f, 1.0f, 0.5f, 0.5f, 0.7f, 0.03f * 60.0f, false, RenderLayer.DEFAULT_ADDITIVE);
             ParticleSpawner.spawnSpark(randomVectorX, randomVectorY, baseSize + rand.nextFloat() * 2.0f);
             ParticleSpawner.spawnExplosion(randomVectorX, randomVectorY, baseSize + rand.nextFloat() * 2.0f);
-            Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion0, randomVectorX, randomVectorY));
+            Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion0, randomVectorX, randomVectorY));
         } else {
             ParticleSpawner.spawnDamageDebris(world, 1, position.x - scale.x / 2.5f + rand.nextInt((int) (scale.x / 1.25f)), position.y - scale.y / 2.5f + rand.nextInt((int) (scale.y / 1.25f)),
                     velocity.x * 0.1f, velocity.y * 0.1f, 1.0f);

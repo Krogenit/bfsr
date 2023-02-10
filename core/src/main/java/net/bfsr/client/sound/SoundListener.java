@@ -8,10 +8,6 @@ import static org.lwjgl.openal.AL11.AL_EXPONENT_DISTANCE;
 import static org.lwjgl.openal.AL11.AL_EXPONENT_DISTANCE_CLAMPED;
 
 public class SoundListener {
-    public SoundListener() {
-        this(new Vector3f(0, 0, 0));
-    }
-
     public SoundListener(Vector3f position) {
         alListener3f(AL_POSITION, position.x, position.y, position.z);
         alListener3f(AL_VELOCITY, 0, 0, 0);

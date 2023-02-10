@@ -1,6 +1,6 @@
 package net.bfsr.math;
 
-public class LUT {
+public final class LUT {
     private static final int SIN_COS_TABS_SIZE = 2049;
     private static final double SIN_COS_DELTA_HI = 4 * Double.longBitsToDouble(0x3FF921FB54400000L) / (SIN_COS_TABS_SIZE - 1);
     private static final double SIN_COS_DELTA_LO = 4 * Double.longBitsToDouble(0x3DD0B4611A626331L) / (SIN_COS_TABS_SIZE - 1);

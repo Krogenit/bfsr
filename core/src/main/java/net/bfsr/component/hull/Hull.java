@@ -1,5 +1,7 @@
 package net.bfsr.component.hull;
 
+import lombok.Getter;
+import lombok.Setter;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.network.packet.server.PacketDestroingShip;
 import net.bfsr.server.MainServer;
@@ -7,8 +9,10 @@ import net.bfsr.util.TimeUtils;
 import net.bfsr.world.WorldServer;
 
 public class Hull {
-
+    @Getter
+    @Setter
     private float hull;
+    @Getter
     private final float maxHull;
     private final float regenHull;
     private final Ship ship;
@@ -45,17 +49,5 @@ public class Hull {
                 MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketDestroingShip(ship), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
             }
         }
-    }
-
-    public void setHull(float hull) {
-        this.hull = hull;
-    }
-
-    public float getHull() {
-        return hull;
-    }
-
-    public float getMaxHull() {
-        return maxHull;
     }
 }

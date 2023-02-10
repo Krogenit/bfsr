@@ -3,13 +3,14 @@ package net.bfsr.entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.bfsr.client.render.texture.TextureLoader;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.texture.TextureLoader;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.component.Engine;
 import net.bfsr.core.Core;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.Direction;
+import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.common.PacketShipEngine;
 import net.bfsr.server.MainServer;
@@ -176,7 +177,7 @@ public abstract class CollisionObject extends TextureObject {
                     if (world.isRemote()) {
                         ship.spawnEngineParticles(dir);
                         if (ship == world.getPlayerShip()) {
-                            Core.getCore().sendPacket(new PacketShipEngine(id, dir.ordinal()));
+                            Core.get().sendPacket(new PacketShipEngine(id, dir.ordinal()));
                         }
                     } else MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipEngine(id, dir.ordinal()), pos, WorldServer.PACKET_UPDATE_DISTANCE);
                 }
@@ -186,7 +187,7 @@ public abstract class CollisionObject extends TextureObject {
                     if (world.isRemote()) {
                         ship.spawnEngineParticles(dir);
                         if (ship == world.getPlayerShip()) {
-                            Core.getCore().sendPacket(new PacketShipEngine(id, dir.ordinal()));
+                            Core.get().sendPacket(new PacketShipEngine(id, dir.ordinal()));
                         }
                     } else MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipEngine(id, dir.ordinal()), pos, WorldServer.PACKET_UPDATE_DISTANCE);
                 }
@@ -196,7 +197,7 @@ public abstract class CollisionObject extends TextureObject {
 
         if (world.isRemote()) {
             ship.spawnEngineParticles(dir);
-            if (ship == world.getPlayerShip()) Core.getCore().sendPacket(new PacketShipEngine(id, dir.ordinal()));
+            if (ship == world.getPlayerShip()) Core.get().sendPacket(new PacketShipEngine(id, dir.ordinal()));
         } else {
             if (lastMoveDir != null && lastMoveDir != dir)
                 MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipEngine(id, dir.ordinal()), pos, WorldServer.PACKET_UPDATE_DISTANCE);
@@ -215,7 +216,7 @@ public abstract class CollisionObject extends TextureObject {
 
     public void rotateToVector(Vector2f vector, float rotateSpeed) {
         Transform transform = body.getTransform();
-        double rot = transform.getRotationAngle();
+        float rot = (float) transform.getRotationAngle();
         rotateToVector.x = (float) (vector.x - transform.getTranslationX());
         rotateToVector.y = (float) (vector.y - transform.getTranslationY());
 
@@ -351,7 +352,7 @@ public abstract class CollisionObject extends TextureObject {
                 GL11.glTranslated(center.x, center.y, 0);
                 GL11.glBegin(GL11.GL_LINE_LOOP);
                 float count = 10.0f;
-                float angleAdd = RotationHelper.TWOPI / count;
+                float angleAdd = MathUtils.TWO_PI / count;
                 float startAngle = 0.0f;
                 for (int i = 0; i < count; i++) {
                     Vector2f pos = RotationHelper.angleToVelocity(startAngle, (float) circle.getRadius());

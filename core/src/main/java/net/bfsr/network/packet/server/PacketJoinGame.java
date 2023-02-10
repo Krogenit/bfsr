@@ -25,7 +25,7 @@ public class PacketJoinGame extends ServerPacket {
 
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
-        Core core = Core.getCore();
+        Core core = Core.get();
         core.setCurrentGui(null);
         core.getWorld().setSeed(seed);
     }

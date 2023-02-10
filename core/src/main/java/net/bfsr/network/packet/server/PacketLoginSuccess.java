@@ -30,7 +30,7 @@ public class PacketLoginSuccess extends ServerPacket {
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
         networkManager.setConnectionState(EnumConnectionState.PLAY);
-        Core.getCore().addFutureTask(() -> Core.getCore().setWorld(new WorldClient()));
+        Core.get().addFutureTask(() -> Core.get().setWorld(new WorldClient()));
     }
 
     @Override

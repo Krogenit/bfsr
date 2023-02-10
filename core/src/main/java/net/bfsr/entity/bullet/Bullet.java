@@ -4,11 +4,11 @@ import lombok.Getter;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.particle.Wreck;
-import net.bfsr.client.render.instanced.BufferType;
-import net.bfsr.client.render.instanced.InstancedRenderer;
-import net.bfsr.client.render.texture.Texture;
-import net.bfsr.client.render.texture.TextureLoader;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.texture.Texture;
+import net.bfsr.client.renderer.texture.TextureLoader;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.component.hull.Hull;
@@ -114,12 +114,12 @@ public abstract class Bullet extends CollisionObject {
                     previousAObject = ship;
                     Vector2f position = getPosition();
                     if (damageShip(ship)) {
-                        if (world.isRemote()) Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.damageNoShield, position.x, position.y));
+                        if (world.isRemote()) Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.damageNoShield, position.x, position.y));
                         //Hull damage
                         destroyBullet(ship, contact, normal);
                         setDead(true);
                     } else {
-                        if (world.isRemote()) Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.damage, position.x, position.y));
+                        if (world.isRemote()) Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.damage, position.x, position.y));
                         //Shield reflection
                         destroyBullet(ship, contact, normal);
                         damage(this);
@@ -179,10 +179,10 @@ public abstract class Bullet extends CollisionObject {
                         Random rand = world.getRand();
                         ParticleSpawner.spawnDirectedSpark(contact, normal, getScale().x * 1.5f, color.x, color.y, color.z, color.w);
                         if (hull.getHull() / hull.getMaxHull() < 0.5f && rand.nextInt(2) == 0) {
-                            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 1.5f, angleToVelocity);
+                            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.5f, angleToVelocity);
                             ParticleSpawner.spawnShipOst(1, (float) pos1.x, (float) pos1.y, velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.5f);
                         }
-                        Vector2f angleToVelocity = RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 2.5f * (rand.nextFloat() + 0.5f));
+                        Vector2f angleToVelocity = RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 2.5f * (rand.nextFloat() + 0.5f));
                         ParticleSpawner.spawnSmallGarbage(1 + rand.nextInt(3), (float) pos1.x, (float) pos1.y, velocityX + angleToVelocity.x, velocityY + angleToVelocity.y,
                                 2.0f * (rand.nextFloat() + 0.5f), 5.0f, 0.5f);
                     }
@@ -195,10 +195,10 @@ public abstract class Bullet extends CollisionObject {
                     ParticleSpawner.spawnDirectedSpark(contact, normal, getScale().x * 1.5f, color.x, color.y, color.z, color.w);
                     Random rand = world.getRand();
                     if (rand.nextInt(4) == 0) {
-                        RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 1.5f, angleToVelocity);
+                        RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.5f, angleToVelocity);
                         ParticleSpawner.spawnShipOst(1, (float) pos1.x, (float) pos1.y, velocity.x + angleToVelocity.x, velocity.y + angleToVelocity.y, 0.5f);
                     }
-                    RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 2.5f * (rand.nextFloat() + 0.5f), angleToVelocity);
+                    RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 2.5f * (rand.nextFloat() + 0.5f), angleToVelocity);
                     ParticleSpawner.spawnSmallGarbage(1 + rand.nextInt(3), (float) pos1.x, (float) pos1.y, velocity.x + angleToVelocity.x, velocity.y + angleToVelocity.y,
                             2.0f * (rand.nextFloat() + 0.5f), 5.0f, 0.5f);
                 }
@@ -217,7 +217,7 @@ public abstract class Bullet extends CollisionObject {
                         float velocityY = destroyer.getVelocity().y * 0.005f;
                         Random rand = world.getRand();
                         if (hull.getHull() / hull.getMaxHull() < 0.25f && rand.nextInt(2) == 0) {
-                            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 1.5f, angleToVelocity);
+                            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.5f, angleToVelocity);
                             ParticleSpawner.spawnDamageDebris(world, rand.nextInt(2), (float) pos1.x, (float) pos1.y, velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f);
                         }
                     }

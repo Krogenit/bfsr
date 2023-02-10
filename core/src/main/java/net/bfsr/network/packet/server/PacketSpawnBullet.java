@@ -51,9 +51,9 @@ public class PacketSpawnBullet extends ServerPacket {
 
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
-        if (Core.getCore().getWorld().getEntityById(id) == null) {
+        if (Core.get().getWorld().getEntityById(id) == null) {
             try {
-                WorldClient world = Core.getCore().getWorld();
+                WorldClient world = Core.get().getWorld();
                 CollisionObject obj = world.getEntityById(shipId);
                 if (obj instanceof Ship ship) {
                     Class<?> clazz = Class.forName(className);

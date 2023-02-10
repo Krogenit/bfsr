@@ -1,9 +1,15 @@
 package net.bfsr.component;
 
+import lombok.Getter;
+
 public class Engine {
+    @Getter
     private final float forwardSpeed, backwardSpeed, sideSpeed;
+    @Getter
     private final float maxForwardSpeed;
+    @Getter
     private final float maneuverability;
+    @Getter
     private final float rotationSpeed;
 
     public Engine(float forwardSpeed, float backwardSpeed, float sideSpeed,
@@ -15,29 +21,5 @@ public class Engine {
         this.maxForwardSpeed = maxForwardSpeed;
         this.maneuverability = maneuverability;
         this.rotationSpeed = rotationSpeed;
-    }
-
-    public float getForwardSpeed() {
-        return forwardSpeed;
-    }
-
-    public float getBackwardSpeed() {
-        return backwardSpeed;
-    }
-
-    public float getSideSpeed() {
-        return sideSpeed;
-    }
-
-    public float getMaxForwardSpeed() {
-        return maxForwardSpeed;
-    }
-
-    public float getManeuverability() {
-        return maneuverability;
-    }
-
-    public float getRotationSpeed() {
-        return rotationSpeed;
     }
 }

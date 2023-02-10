@@ -1,7 +1,6 @@
 package net.bfsr.math;
 
-public class MathUtils {
-    public static final float DEGREES_TO_RADIANS = (float) (1.0 / 180.0 * Math.PI);
+public final class MathUtils {
     public static final float PI = (float) Math.PI;
     public static final float TWO_PI = (float) (Math.PI * 2.0);
     public static final float THREE_PI = (float) (Math.PI * 3.0);

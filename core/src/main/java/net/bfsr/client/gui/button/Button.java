@@ -2,11 +2,11 @@ package net.bfsr.client.gui.button;
 
 import lombok.Setter;
 import net.bfsr.client.gui.TexturedGuiObject;
-import net.bfsr.client.render.font.FontType;
-import net.bfsr.client.render.font.StringCache;
-import net.bfsr.client.render.font.StringOffsetType;
-import net.bfsr.client.render.font.string.StringObject;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.font.FontType;
+import net.bfsr.client.renderer.font.StringCache;
+import net.bfsr.client.renderer.font.StringOffsetType;
+import net.bfsr.client.renderer.font.string.StringObject;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.sound.GuiSoundSource;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.core.Core;
@@ -70,7 +70,7 @@ public class Button extends TexturedGuiObject {
             if (isIntersects()) {
                 if (!collided) {
                     collided = true;
-                    Core.getCore().getSoundManager().play(new GuiSoundSource(collideSound));
+                    Core.get().getSoundManager().play(new GuiSoundSource(collideSound));
                 }
             } else {
                 collided = false;
@@ -84,7 +84,7 @@ public class Button extends TexturedGuiObject {
             onMouseClickedRunnable.run();
 
             if (clickSound != null) {
-                Core.getCore().getSoundManager().play(new GuiSoundSource(clickSound));
+                Core.get().getSoundManager().play(new GuiSoundSource(clickSound));
             }
         }
     }
@@ -92,7 +92,7 @@ public class Button extends TexturedGuiObject {
     @Override
     public void onMouseRightClick() {
         if (isIntersects() && clickSound != null) {
-            Core.getCore().getSoundManager().play(new GuiSoundSource(clickSound));
+            Core.get().getSoundManager().play(new GuiSoundSource(clickSound));
         }
     }
 

@@ -1,14 +1,16 @@
 package net.bfsr.component.shield;
 
+import lombok.Getter;
+import lombok.Setter;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
-import net.bfsr.client.render.instanced.BufferType;
-import net.bfsr.client.render.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.collision.filter.ShipFilter;
 import net.bfsr.core.Core;
-import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.network.packet.server.PacketShieldRebuild;
 import net.bfsr.network.packet.server.PacketShieldRebuildingTime;
@@ -24,27 +26,32 @@ import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.util.List;
 
-public class Shield extends CollisionObject {
+public class Shield {
+    @Setter
+    private Texture texture;
+    @Getter
+    private final Vector4f color = new Vector4f();
+    @Getter
     private float shield, maxShield;
     private float shieldRegen;
     private Vector2f radius;
     private Vector2f diameter;
     private float timeToRebuild, rebuildingTime;
+    @Getter
     private float size;
     private final Ship ship;
     private boolean alive;
     private BodyFixture shieldFixture;
 
     protected Shield(Ship ship) {
-        super(ship.getWorld());
         this.ship = ship;
         this.size = 1.0f;
     }
 
-    @Override
     protected void createBody(float x, float y) {
         List<BodyFixture> fixtures = ship.getBody().getFixtures();
         if (shieldFixture != null) {
@@ -88,16 +95,15 @@ public class Shield extends CollisionObject {
         alive = true;
     }
 
-    @Override
     public void update() {
-        if (!world.isRemote() && alive && shield <= 0) {
+        if (!ship.getWorld().isRemote() && alive && shield <= 0) {
             removeShield();
         }
 
         if (shield < maxShield && shieldAlive()) {
             shield += shieldRegen * TimeUtils.UPDATE_DELTA_TIME;
 
-            if (world.isRemote() && size < 1.0f) {
+            if (ship.getWorld().isRemote() && size < 1.0f) {
                 size += 3.6f * TimeUtils.UPDATE_DELTA_TIME;
                 if (size > 1.0f) size = 1.0f;
             }
@@ -107,7 +113,7 @@ public class Shield extends CollisionObject {
             }
         }
 
-        if (!world.isRemote() && rebuildingTime < timeToRebuild) {
+        if (!ship.getWorld().isRemote() && rebuildingTime < timeToRebuild) {
             rebuildingTime += 60.0f * TimeUtils.UPDATE_DELTA_TIME;
 
             if (rebuildingTime >= timeToRebuild) {
@@ -124,22 +130,21 @@ public class Shield extends CollisionObject {
         shield = maxShield / 5.0f;
         rebuildingTime = timeToRebuild;
 
-        if (world.isRemote()) {
+        Vector2f position = ship.getPosition();
+        if (ship.getWorld().isRemote()) {
             Vector3f shipEffectColor = ship.getEffectsColor();
-            Vector2f position = getPosition();
             ParticleSpawner.spawnLight(position.x, position.y, ship.getScale().x * 2.0f, shipEffectColor.x, shipEffectColor.y, shipEffectColor.z, 1.0f, 0.04f * 60.0f, false,
                     RenderLayer.DEFAULT_ADDITIVE);
             if (ship.getWorld().getRand().nextInt(2) == 0) {
-                Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldUp0, position.x, position.y));
+                Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldUp0, position.x, position.y));
             } else {
-                Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldUp1, position.x, position.y));
+                Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldUp1, position.x, position.y));
             }
         } else {
             MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRebuild(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         }
 
-        Vector2f shipPosition = ship.getPosition();
-        createBody(shipPosition.x, shipPosition.y);
+        createBody(position.x, position.y);
     }
 
     public boolean damage(float shieldDamage) {
@@ -147,7 +152,7 @@ public class Shield extends CollisionObject {
             shield -= shieldDamage;
             return true;
         } else {
-            if (!world.isRemote()) {
+            if (!ship.getWorld().isRemote()) {
                 setRebuildingTime(0);
                 MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRebuildingTime(ship.getId(), 0), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
             }
@@ -166,13 +171,13 @@ public class Shield extends CollisionObject {
         ship.recalculateMass();
 
         Vector2f shipPosition = ship.getPosition();
-        if (world.isRemote()) {
+        if (ship.getWorld().isRemote()) {
             Vector3f shipEffectColor = ship.getEffectsColor();
-            Vector2f position = getPosition();
+            Vector2f position = ship.getPosition();
             ParticleSpawner.spawnLight(position.x, position.y, ship.getScale().x * 2.0f, 5.0f * 6.0f, shipEffectColor.x, shipEffectColor.y, shipEffectColor.z, 1.0f, 0.04f * 60.0f, false,
                     RenderLayer.DEFAULT_ADDITIVE);
             ParticleSpawner.spawnDisableShield(position.x, position.y, ship.getScale().x * 4.0f, -24.0f, color.x, color.y, color.z, color.w);
-            Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldDown, shipPosition.x, shipPosition.y));
+            Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldDown, shipPosition.x, shipPosition.y));
         } else {
             MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRemove(ship.getId()), shipPosition.x, shipPosition.y, WorldServer.PACKET_SPAWN_DISTANCE);
         }
@@ -192,16 +197,6 @@ public class Shield extends CollisionObject {
         }
     }
 
-    @Override
-    public float getRotation() {
-        return ship.getRotation();
-    }
-
-    @Override
-    public Vector2f getPosition() {
-        return ship.getPosition();
-    }
-
     public void setShield(float shield) {
         this.shield = shield;
     }
@@ -219,24 +214,7 @@ public class Shield extends CollisionObject {
         this.shieldRegen = shieldRegen;
     }
 
-    public Ship getShip() {
-        return ship;
-    }
-
-    @Override
-    public Vector2f getScale() {
-        return new Vector2f(diameter.x * size, diameter.y * size);
-    }
-
-    public float getShield() {
-        return shield;
-    }
-
-    public float getMaxShield() {
-        return maxShield;
-    }
-
-    public float getSize() {
-        return size;
+    public void setColor(float r, float g, float b, float a) {
+        this.color.set(r, g, b, a);
     }
 }

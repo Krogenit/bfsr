@@ -5,13 +5,13 @@ import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.input.InputChat;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.font.FontType;
-import net.bfsr.client.render.font.string.StringObject;
-import net.bfsr.client.render.instanced.BufferType;
-import net.bfsr.client.render.instanced.InstancedRenderer;
-import net.bfsr.client.render.texture.Texture;
-import net.bfsr.client.render.texture.TextureLoader;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.font.FontType;
+import net.bfsr.client.renderer.font.string.StringObject;
+import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.texture.Texture;
+import net.bfsr.client.renderer.texture.TextureLoader;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.component.Armor;
 import net.bfsr.component.ArmorPlate;
@@ -34,7 +34,7 @@ import org.lwjgl.opengl.GL11;
 import java.util.List;
 
 public class GuiInGame extends Gui {
-    private final Core core = Core.getCore();
+    private final Core core = Core.get();
 
     private final TexturedGuiObject armorPlate = new TexturedGuiObject(TextureRegister.guiArmorPlate);
     private final TexturedGuiObject energy = new TexturedGuiObject(TextureRegister.guiEnergy);
@@ -140,8 +140,8 @@ public class GuiInGame extends Gui {
     public void input(int key) {
         super.input(key);
 
-        if (key == GLFW.GLFW_KEY_ESCAPE && Core.getCore().canControlShip()) {
-            Core.getCore().setCurrentGui(new GuiInGameMenu());
+        if (key == GLFW.GLFW_KEY_ESCAPE && Core.get().canControlShip()) {
+            Core.get().setCurrentGui(new GuiInGameMenu());
         }
     }
 
@@ -223,11 +223,11 @@ public class GuiInGame extends Gui {
             shipAABB.set(pos.x - sX, pos.y - sY, pos.x + sX, pos.y + sY);
             if (mapBoundingBox.isIntersects(shipAABB)) {
                 Faction faction = s.getFaction();
-                if (faction == Faction.Engi) {
+                if (faction == Faction.ENGI) {
                     color.x = 0.5f;
                     color.y = 1.0f;
                     color.z = 0.5f;
-                } else if (faction == Faction.Human) {
+                } else if (faction == Faction.HUMAN) {
                     color.x = 0.5f;
                     color.y = 0.5f;
                     color.z = 1.0f;
@@ -372,7 +372,7 @@ public class GuiInGame extends Gui {
     public void render(float interpolation) {
         super.render(interpolation);
         InstancedRenderer.INSTANCE.render(BufferType.GUI);
-        renderMap(Core.getCore().getWorld());
+        renderMap(Core.get().getWorld());
         if (currentShip != null) renderCurrentShipInfo();
         if (otherShip != null) renderOtherShipInfo();
 

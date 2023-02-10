@@ -5,10 +5,10 @@ import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.input.InputBox;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.font.FontType;
-import net.bfsr.client.render.font.StringOffsetType;
-import net.bfsr.client.render.font.string.StringObject;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.font.FontType;
+import net.bfsr.client.renderer.font.StringOffsetType;
+import net.bfsr.client.renderer.font.string.StringObject;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.core.Core;
 import net.bfsr.network.client.NetworkManagerClient;
 import net.bfsr.network.packet.PacketHandshake;
@@ -56,35 +56,35 @@ public class GuiConnect extends Gui {
                         try {
                             port = Integer.parseInt(inputString[1]);
                         } catch (NumberFormatException e) {
-                            Core.getCore().addFutureTask(() -> setErrorMessage("Wrong port number"));
+                            Core.get().addFutureTask(() -> setErrorMessage("Wrong port number"));
                             return;
                         }
 
                         String playerName = usernameInputBox.getString();
 
                         if (playerName.length() < 3) {
-                            Core.getCore().addFutureTask(() -> setErrorMessage("Username must be at least 3 characters"));
+                            Core.get().addFutureTask(() -> setErrorMessage("Username must be at least 3 characters"));
                             return;
                         }
 
                         String password = passwordInputBox.getString();
 
                         if (password.length() < 3) {
-                            Core.getCore().addFutureTask(() -> setErrorMessage("Password must be at least 3 characters"));
+                            Core.get().addFutureTask(() -> setErrorMessage("Password must be at least 3 characters"));
                             return;
                         }
 
                         try {
-                            Core.getCore().clearNetwork();
+                            Core.get().clearNetwork();
                             inetaddress = InetAddress.getByName(host);
                             NetworkManagerClient networkManager = NetworkManagerClient.provideLanClient(inetaddress, port, parentGui);
                             networkManager.scheduleOutboundPacket(new PacketHandshake(5, inetaddress.toString(), port, EnumConnectionState.LOGIN));
                             networkManager.scheduleOutboundPacket(new PacketLoginStart(playerName, password, false));
-                            Core.getCore().setNetworkManager(networkManager);
+                            Core.get().setNetworkManager(networkManager);
                         } catch (UnknownHostException unknownhostexception) {
                             log.error("Couldn't connect to server", unknownhostexception);
-                            Core.getCore().addFutureTask(() -> setErrorMessage(Lang.getString("connect.failed") + " Unknown Host"));
-                            Core.getCore().clearNetwork();
+                            Core.get().addFutureTask(() -> setErrorMessage(Lang.getString("connect.failed") + " Unknown Host"));
+                            Core.get().clearNetwork();
                         } catch (Exception e) {
                             log.error("Couldn't connect to server", e);
                             String s = e.toString();
@@ -95,19 +95,19 @@ public class GuiConnect extends Gui {
                             }
 
                             String finalS = s;
-                            Core.getCore().addFutureTask(() -> setErrorMessage(Lang.getString("connect.failed") + " " + finalS));
-                            Core.getCore().clearNetwork();
+                            Core.get().addFutureTask(() -> setErrorMessage(Lang.getString("connect.failed") + " " + finalS));
+                            Core.get().clearNetwork();
                         }
                     } else {
-                        Core.getCore().addFutureTask(() -> setErrorMessage("Incorrect Host Name"));
+                        Core.get().addFutureTask(() -> setErrorMessage("Incorrect Host Name"));
                     }
                 });
                 t.start();
             }
         }).atCenter(buttonOffsetX, 50));
         registerGuiObject(new Button(Lang.getString("gui.back"), () -> {
-            Core.getCore().clearNetwork();
-            Core.getCore().setCurrentGui(parentGui);
+            Core.get().clearNetwork();
+            Core.get().setCurrentGui(parentGui);
         }).atCenter(buttonOffsetX, 200));
         registerGuiObject(connectingText.atCenter(0, 150));
     }

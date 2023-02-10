@@ -4,12 +4,12 @@ import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.scroll.Scroll;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.font.FontType;
-import net.bfsr.client.render.font.StringOffsetType;
-import net.bfsr.client.render.font.string.StringObject;
-import net.bfsr.client.render.instanced.BufferType;
-import net.bfsr.client.render.instanced.InstancedRenderer;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.font.FontType;
+import net.bfsr.client.renderer.font.StringOffsetType;
+import net.bfsr.client.renderer.font.string.StringObject;
+import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.core.Core;
 import net.bfsr.settings.EnumOption;
 import net.bfsr.settings.SettingsCategory;
@@ -36,7 +36,7 @@ public class GuiSettings extends Gui {
 
     public GuiSettings(Gui parentGui) {
         super(parentGui);
-        isInGame = Core.getCore().getWorld() != null;
+        isInGame = Core.get().getWorld() != null;
         mainText.setStringOffsetType(StringOffsetType.CENTERED);
         for (int i = 0; i < lastOptions.length; i++) {
             lastOptions[i] = new SettingsOption<>(options[i].getValue());
@@ -120,8 +120,8 @@ public class GuiSettings extends Gui {
                 .setWidth(25).setHeightResizeConsumer((width, height) -> height - halfBackgroundHeight);
         registerGuiObject(scroll);
         saveButton = new Button(Lang.getString("gui.settings.save"), 20, () -> {
-            Core.getCore().getSettings().saveSettings();
-            Core.getCore().setCurrentGui(parentGui);
+            Core.get().getSettings().saveSettings();
+            Core.get().setCurrentGui(parentGui);
         });
         registerGuiObject(saveButton.atBottom(-150, -55));
     }
@@ -132,7 +132,7 @@ public class GuiSettings extends Gui {
 
         if (key == GLFW.GLFW_KEY_ESCAPE) {
             restoreSettings();
-            Core.getCore().setCurrentGui(parentGui);
+            Core.get().setCurrentGui(parentGui);
         }
     }
 

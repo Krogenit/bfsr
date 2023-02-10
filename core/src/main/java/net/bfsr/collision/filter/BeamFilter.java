@@ -20,5 +20,4 @@ public class BeamFilter extends CollisionFilter<Ship> {
 
         return false;
     }
-
 }

@@ -2,8 +2,8 @@ package net.bfsr.entity.ship.human;
 
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
-import net.bfsr.client.render.texture.TextureLoader;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.texture.TextureLoader;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.collision.filter.ShipFilter;
 import net.bfsr.component.Armor;
 import net.bfsr.component.ArmorPlate;

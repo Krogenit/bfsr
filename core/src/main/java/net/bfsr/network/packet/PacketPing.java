@@ -30,7 +30,7 @@ public class PacketPing extends Packet {
 
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
-        Core.getCore().getGuiInGame().setPing(time);
+        Core.get().getGuiInGame().setPing(time);
     }
 
     @Override

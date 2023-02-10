@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.gui.SimpleGuiObject;
 import net.bfsr.client.input.Mouse;
-import net.bfsr.client.render.instanced.BufferType;
-import net.bfsr.client.render.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.InstancedRenderer;
 import net.bfsr.client.sound.GuiSoundSource;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.core.Core;
@@ -58,7 +58,7 @@ public class Scroll extends SimpleGuiObject {
         if (isIntersects()) {
             if (!collided) {
                 collided = true;
-                Core.getCore().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonCollide));
+                Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonCollide));
             }
         } else {
             collided = false;
@@ -108,7 +108,7 @@ public class Scroll extends SimpleGuiObject {
             movingByMouse = true;
             mouseStartClickY = (int) Mouse.getPosition().y;
             clickStartScroll = scroll;
-            Core.getCore().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
+            Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
         }
     }
 

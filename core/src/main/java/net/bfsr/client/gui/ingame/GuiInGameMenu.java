@@ -5,9 +5,9 @@ import net.bfsr.client.gui.GuiSettings;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.instanced.BufferType;
-import net.bfsr.client.render.instanced.InstancedRenderer;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.core.Core;
 import org.lwjgl.glfw.GLFW;
 
@@ -17,9 +17,9 @@ public class GuiInGameMenu extends Gui {
     @Override
     protected void initElements() {
         int x = -150;
-        registerGuiObject(new Button(Lang.getString("gui.ingamemenu.backtogame"), () -> Core.getCore().setCurrentGui(null)).atCenter(x, -30));
-        registerGuiObject(new Button(Lang.getString("gui.ingamemenu.settings"), () -> Core.getCore().setCurrentGui(new GuiSettings(this))).atCenter(x, 30));
-        registerGuiObject(new Button(Lang.getString("gui.ingamemenu.tomainmenu"), () -> Core.getCore().quitToMainMenu()).atCenter(x, 180));
+        registerGuiObject(new Button(Lang.getString("gui.ingamemenu.backtogame"), () -> Core.get().setCurrentGui(null)).atCenter(x, -30));
+        registerGuiObject(new Button(Lang.getString("gui.ingamemenu.settings"), () -> Core.get().setCurrentGui(new GuiSettings(this))).atCenter(x, 30));
+        registerGuiObject(new Button(Lang.getString("gui.ingamemenu.tomainmenu"), () -> Core.get().quitToMainMenu()).atCenter(x, 180));
         registerGuiObject(new TexturedGuiObject(TextureRegister.guiLogoBFSR).atCenter(-128, -328).setSize(256, 256));
     }
 
@@ -28,7 +28,7 @@ public class GuiInGameMenu extends Gui {
         super.update();
 
         if (wantCloseGui) {
-            Core.getCore().setCurrentGui(null);
+            Core.get().setCurrentGui(null);
             wantCloseGui = false;
         }
     }

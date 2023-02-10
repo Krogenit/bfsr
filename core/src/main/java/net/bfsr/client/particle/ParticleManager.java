@@ -44,7 +44,7 @@ public class ParticleManager {
     }
 
     public void render() {
-        AxisAlignedBoundingBox cameraAABB = Core.getCore().getRenderer().getCamera().getBoundingBox();
+        AxisAlignedBoundingBox cameraAABB = Core.get().getRenderer().getCamera().getBoundingBox();
 
         for (int i = 0, size = particlesWrecks.size(); i < size; i++) {
             Wreck wreck = particlesWrecks.get(i);
@@ -55,7 +55,7 @@ public class ParticleManager {
     }
 
     public void renderAdditive() {
-        AxisAlignedBoundingBox cameraAABB = Core.getCore().getRenderer().getCamera().getBoundingBox();
+        AxisAlignedBoundingBox cameraAABB = Core.get().getRenderer().getCamera().getBoundingBox();
 
         for (int i = 0, size = particlesWrecks.size(); i < size; i++) {
             Wreck wreck = particlesWrecks.get(i);

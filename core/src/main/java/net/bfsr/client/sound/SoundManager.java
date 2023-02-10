@@ -61,6 +61,12 @@ public class SoundManager {
         this.listener = listener;
         this.listener.setGain(EnumOption.SOUND_VOLUME.getFloat());
         this.listener.setExponentClampedDistanceModel();
+
+        Vector3f at = new Vector3f();
+        cameraMatrix.positiveZ(at).negate();
+        Vector3f up = new Vector3f();
+        cameraMatrix.positiveY(up);
+        listener.setOrientation(at, up);
     }
 
     private void checkSoundsToClear() {
@@ -76,15 +82,8 @@ public class SoundManager {
 
     public void updateListenerPosition(Camera camera) {
         checkSoundsToClear();
-        // Update camera matrix with camera data
-        cameraMatrix.translate(-camera.getPosition().x, -camera.getPosition().y, -0);
 
         listener.setPosition(camera.getPosition());
-        Vector3f at = new Vector3f();
-        cameraMatrix.positiveZ(at).negate();
-        Vector3f up = new Vector3f();
-        cameraMatrix.positiveY(up);
-        listener.setOrientation(at, up);
 
         float newSoundVolume = EnumOption.SOUND_VOLUME.getFloat();
         if (lastSoundVolume != newSoundVolume) {

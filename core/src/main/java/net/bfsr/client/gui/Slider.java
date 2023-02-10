@@ -2,11 +2,11 @@ package net.bfsr.client.gui;
 
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.render.font.FontType;
-import net.bfsr.client.render.font.StringCache;
-import net.bfsr.client.render.font.StringOffsetType;
-import net.bfsr.client.render.font.string.StringObject;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.font.FontType;
+import net.bfsr.client.renderer.font.StringCache;
+import net.bfsr.client.renderer.font.StringOffsetType;
+import net.bfsr.client.renderer.font.string.StringObject;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.sound.GuiSoundSource;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.core.Core;
@@ -67,7 +67,7 @@ public class Slider extends TexturedGuiObject {
         if (isIntersects()) {
             if (!collided) {
                 collided = true;
-                Core.getCore().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonCollide));
+                Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonCollide));
             }
         } else {
             collided = false;
@@ -130,7 +130,7 @@ public class Slider extends TexturedGuiObject {
     public void onMouseLeftClick() {
         if (isIntersects()) {
             movingByMouse = true;
-            Core.getCore().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
+            Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
         }
     }
 

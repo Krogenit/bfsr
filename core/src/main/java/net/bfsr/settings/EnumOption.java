@@ -24,14 +24,14 @@ public enum EnumOption {
 
     V_SYNC(SettingsCategory.GRAPHICS, new BooleanOption(true), (option, value) -> {
         option.option.setValue(!((Boolean) option.option.getValue()).booleanValue());
-        Core.getCore().getRenderer().setVSync(option.getBoolean());
+        Core.get().getRenderer().setVSync(option.getBoolean());
     }),
     MAX_FPS(SettingsCategory.GRAPHICS, 10, 240, new IntegerOption(60), ConsumerUtils.INTEGER_DEFAULT_CONSUMER),
 
     IS_DEBUG(SettingsCategory.DEBUG, new BooleanOption(false), ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
     IS_PROFILING(SettingsCategory.DEBUG, new BooleanOption(false), (option, value) -> {
         option.option.setValue(!((Boolean) option.option.getValue()).booleanValue());
-        Core.getCore().getProfiler().setEnable(option.getBoolean());
+        Core.get().getProfiler().setEnable(option.getBoolean());
     }),
     SHOW_DEBUG_BOXES(SettingsCategory.DEBUG, new BooleanOption(false), ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER);
 

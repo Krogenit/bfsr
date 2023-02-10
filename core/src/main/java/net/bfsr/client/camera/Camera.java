@@ -84,7 +84,7 @@ public class Camera {
     }
 
     private void followShip() {
-        Ship playerShip = Core.getCore().getWorld().getPlayerShip();
+        Ship playerShip = Core.get().getWorld().getPlayerShip();
         if (playerShip != null) {
             Vector2f shipPosition = playerShip.getPosition();
             float minDistance = 0.04f;
@@ -120,9 +120,9 @@ public class Camera {
 
     private void findShipToFollow() {
         Ship newShip = null;
-        if (Core.getCore().getWorld().getShips().size() > 0) {
+        if (Core.get().getWorld().getShips().size() > 0) {
             float minDist = Float.MAX_VALUE;
-            List<Ship> ships = Core.getCore().getWorld().getShips();
+            List<Ship> ships = Core.get().getWorld().getShips();
             for (int i = 0; i < ships.size(); i++) {
                 Ship s = ships.get(i);
                 float dist = s.getPosition().distance(position.x, position.y);
@@ -155,7 +155,7 @@ public class Camera {
     }
 
     public void scroll(float y) {
-        if (Core.getCore().getCurrentGui() == null) {
+        if (Core.get().getCurrentGui() == null) {
             zoomAccumulator += y * EnumOption.CAMERA_ZOOM_SPEED.getFloat() * (zoom + zoomAccumulator);
         }
     }
@@ -176,12 +176,12 @@ public class Camera {
         position.y += mouseMovingAccumulator.y;
         mouseMovingAccumulator.set(0, 0);
 
-        if (Core.getCore().getWorld() != null) {
-            if (Core.getCore().canControlShip()) {
+        if (Core.get().getWorld() != null) {
+            if (Core.get().canControlShip()) {
                 if (EnumOption.CAMERA_MOVE_BY_SCREEN_BORDERS.getBoolean()) moveByScreenBorders();
             }
 
-            boolean noShip = Core.getCore().getWorld().getPlayerShip() == null;
+            boolean noShip = Core.get().getWorld().getPlayerShip() == null;
             float keyMoveSpeed = EnumOption.CAMERA_MOVE_BY_KEY_SPEED.getFloat();
             if (Keyboard.isKeyDown(GLFW_KEY_LEFT) || (noShip && Keyboard.isKeyDown(GLFW_KEY_A))) {
                 position.x -= keyMoveSpeed * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
@@ -205,7 +205,7 @@ public class Camera {
 
                 long time = System.currentTimeMillis();
                 if (time - lastSendTime > 500) {
-                    Core.getCore().sendPacket(new PacketCameraPosition(position.x, position.y));
+                    Core.get().sendPacket(new PacketCameraPosition(position.x, position.y));
                     lastSendTime = time;
                 }
             }

@@ -1,11 +1,12 @@
 package net.bfsr.client.particle;
 
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.core.Core;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.server.PacketSpawnParticle;
 import net.bfsr.server.MainServer;
@@ -37,10 +38,10 @@ public final class ParticleSpawner {
         Random rand = w.getRand();
         if (w.isRemote()) {
             ship.setDead(true);
-            Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion1, pos.x, pos.y));
+            Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion1, pos.x, pos.y));
             spawnShockwave(0, pos, baseSize + 3.0f);
             for (int i = 0; i < 8; i++) {
-                RotationHelper.angleToVelocity(rand.nextFloat() * RotationHelper.TWOPI, 7.0f, CACHED_VECTOR);
+                RotationHelper.angleToVelocity(rand.nextFloat() * MathUtils.TWO_PI, 7.0f, CACHED_VECTOR);
                 spawnMediumGarbage(1, pos.x + -scale.x / 2.25f + rand.nextInt((int) (scale.x / 1.25f)), pos.y + -scale.y / 2.25f + rand.nextInt((int) (scale.y / 1.25f)),
                         velocity.x * 0.25f + CACHED_VECTOR.x, velocity.y * 0.25f + CACHED_VECTOR.y, baseSize);
             }
@@ -73,9 +74,9 @@ public final class ParticleSpawner {
 
     public static void spawnDamageDebris(World world, int count, float x, float y, float velocityX, float velocityY, float size) {
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(rand.nextFloat() * RotationHelper.TWOPI, 4.0f + rand.nextFloat() * 2.0f, CACHED_VECTOR);
+            RotationHelper.angleToVelocity(rand.nextFloat() * MathUtils.TWO_PI, 4.0f + rand.nextFloat() * 2.0f, CACHED_VECTOR);
             CACHED_VECTOR.add(velocityX, velocityY).mul(0.7f);
-            float angle = rand.nextFloat() * RotationHelper.TWOPI;
+            float angle = rand.nextFloat() * MathUtils.TWO_PI;
             float angleVel = (-0.005f + rand.nextFloat() / 200.0f) * 60.0f;
             float size2 = (1.0F - rand.nextFloat() / 3.0F) * 2.0f * size;
             float alphaVel = 0.1f;//RandomHelper.randomFloat(rand, 0.0003f, 0.0006f) * 60f;
@@ -89,8 +90,8 @@ public final class ParticleSpawner {
 
     public static void spawnDamageWrecks(World world, int count, float x, float y, float velocityX, float velocityY) {
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(rand.nextFloat() * RotationHelper.TWOPI, 4.0f + rand.nextFloat() * 2.0f, CACHED_VECTOR);
-            float angle = rand.nextFloat() * RotationHelper.TWOPI;
+            RotationHelper.angleToVelocity(rand.nextFloat() * MathUtils.TWO_PI, 4.0f + rand.nextFloat() * 2.0f, CACHED_VECTOR);
+            float angle = rand.nextFloat() * MathUtils.TWO_PI;
             float angleVel = (-0.005f + rand.nextFloat() / 200.0f) * 60.0f;
             float size = (1.0F - rand.nextFloat() / 3.0F) * 4.0f;
             float alphaVel = 0.04f;
@@ -116,11 +117,11 @@ public final class ParticleSpawner {
     public static void spawnLightingIon(Vector2f pos, float size) {
         int count = rand.nextInt(3) + 1;
         for (int i = 0; i < count; i++) {
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = 0.0F;
             float sizeVel = 3.2F;
             float alphaVel = 8.0F;
-            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), size / 4.0f, CACHED_VECTOR);
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), size / 4.0f, CACHED_VECTOR);
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleLighting, pos.x + CACHED_VECTOR.x, pos.y + CACHED_VECTOR.y, 0, 0, angle, angleVel, size, size, sizeVel,
                     0.75F, 0.75F, 1, 1.5f, alphaVel, true, RenderLayer.DEFAULT_ADDITIVE);
         }
@@ -128,7 +129,7 @@ public final class ParticleSpawner {
 
     public static void spawnRocketShoot(float x, float y, float size) {
         for (int a = 0; a < 2; a++) {
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = 0.0F;
             float sizeVel = 1.5F * 6.0f;
             float alphaVel = 0.025F * 60.0f;
@@ -137,7 +138,7 @@ public final class ParticleSpawner {
         }
 
         for (int a = 0; a < 1; a++) {
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = 0.0F;
             float sizeVel = 1.5F * 6.0f;
             float alphaVel = 0.02F * 60.0f;
@@ -147,7 +148,7 @@ public final class ParticleSpawner {
     }
 
     public static void spawnShockwave(int type, Vector2f pos, float size) {
-        float angle = RotationHelper.TWOPI * rand.nextFloat();
+        float angle = MathUtils.TWO_PI * rand.nextFloat();
         float angleVel = 0.0F;
         float sizeVel = type == 1 ? 0.8F * 6.0f : type == 2 ? 1.5F * 6.0f : 6.0F * 6.0f;
         float alphaVel = type == 1 ? 0.004F * 60.0f : type == 2 ? 0.006F * 60.0f : 0.02F * 60.0f;
@@ -157,8 +158,8 @@ public final class ParticleSpawner {
 
     public static void spawnSpark(float x, float y, float size, float sizeVel) {
         for (int i = 0; i < 3; i++) {
-            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 0.2f * 6.0f, CACHED_VECTOR);
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.2f * 6.0f, CACHED_VECTOR);
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = 0;
             float alphaVel = 0.03f * 60.0f;
 
@@ -167,8 +168,8 @@ public final class ParticleSpawner {
         }
 
         for (int i = 0; i < 2; i++) {
-            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 0.2f * 6.0f, CACHED_VECTOR);
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.2f * 6.0f, CACHED_VECTOR);
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = 0;
             sizeVel = 0;
             float alphaVel = 0.04f * 60.0f;
@@ -180,8 +181,8 @@ public final class ParticleSpawner {
 
     public static void spawnSpark(float x, float y, float size) {
         for (int i = 0; i < 3; i++) {
-            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 0.2f * 6.0f, CACHED_VECTOR);
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.2f * 6.0f, CACHED_VECTOR);
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = 0;
             float sizeVel = 6.0f;
             float alphaVel = 0.03f * 60.0f;
@@ -191,8 +192,8 @@ public final class ParticleSpawner {
         }
 
         for (int i = 0; i < 2; i++) {
-            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 0.2f * 6.0f, CACHED_VECTOR);
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.2f * 6.0f, CACHED_VECTOR);
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = 0;
             float sizeVel = 0;
             float alphaVel = 0.04f * 60.0f;
@@ -204,8 +205,8 @@ public final class ParticleSpawner {
 
     public static void spawnSmallGarbage(int count, float x, float y, float velocityScale, float size) {
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 0.2f + rand.nextFloat() / 3.0f * 6.0f, CACHED_VECTOR);
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.2f + rand.nextFloat() / 3.0f * 6.0f, CACHED_VECTOR);
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = RandomHelper.randomFloat(rand, -0.001f, 0.001f) * 60.0f;
             float sizeVel = 0.025f + rand.nextFloat() / 6.0f * 6.0f;
             float alphaVel = 0.004F * 60.0f;
@@ -216,9 +217,9 @@ public final class ParticleSpawner {
 
     public static void spawnSmallGarbage(int count, float x, float y, float velocityX, float velocityY, float size, float sizeVel, float alphaVel) {
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 0.2f + rand.nextFloat() / 3.0f * 6.0f, CACHED_VECTOR);
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.2f + rand.nextFloat() / 3.0f * 6.0f, CACHED_VECTOR);
             CACHED_VECTOR.add(velocityX * 0.6f, velocityY * 0.6f);
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = RandomHelper.randomFloat(rand, -0.001f, 0.001f) * 60.0f;
             float color = 0.7f;
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleGarbage0, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, 1.0f + size, 1.0f + size, sizeVel,
@@ -228,9 +229,9 @@ public final class ParticleSpawner {
 
     public static void spawnSmallGarbage(int count, float x, float y, float velocityX, float velocityY, float size) {
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 0.02f + rand.nextFloat() / 3.0f * 6.0f, CACHED_VECTOR);
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.02f + rand.nextFloat() / 3.0f * 6.0f, CACHED_VECTOR);
             CACHED_VECTOR.add(velocityX * 0.6f, velocityY * 0.6f);
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = RandomHelper.randomFloat(rand, -0.001f, 0.001f) * 60.0f;
             float sizeVel = 0.025f + rand.nextFloat() / 6.0f * 6.0f;
             float alphaVel = 0.002F * 60.0f;
@@ -241,8 +242,8 @@ public final class ParticleSpawner {
 
     public static void spawnMediumGarbage(int count, float x, float y, float velocityX, float velocityY, float size) {
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 0.04f + rand.nextFloat() / 8.0f * 6.0f, CACHED_VECTOR);
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.04f + rand.nextFloat() / 8.0f * 6.0f, CACHED_VECTOR);
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = 0.0005f - rand.nextFloat() / 2000.0f * 60.0f;
             float sizeVel = 0.46F + rand.nextFloat() / 8.0f * 6.0f;
             float alphaVel = 0.002F * 60.0f;
@@ -253,8 +254,8 @@ public final class ParticleSpawner {
 
     public static void spawnLargeGarbage(int count, Vector2f pos, Vector2f velocity, float size) {
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 0.2f + rand.nextFloat() / 4.0f * 6.0f, CACHED_VECTOR);
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.2f + rand.nextFloat() / 4.0f * 6.0f, CACHED_VECTOR);
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = 0.0005f - rand.nextFloat() / 2000.0f * 60.0f;
             float sizeVel = 0.25F * 6.0f;
             float alphaVel = 0.001F * 60.0f;
@@ -265,8 +266,8 @@ public final class ParticleSpawner {
 
     public static void spawnShipOst(int count, float x, float y, float velocityX, float velocityY, float size) {
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 0.2f + rand.nextFloat() / 3.0f * 6.0f, CACHED_VECTOR);
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.2f + rand.nextFloat() / 3.0f * 6.0f, CACHED_VECTOR);
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = RandomHelper.randomFloat(rand, -0.05f, 0.05f) * 60.0f;
             float size1 = (2.0f + rand.nextFloat()) * size;
             float sizeVel = 0;
@@ -287,8 +288,8 @@ public final class ParticleSpawner {
     public static void spawnDamageSmoke(float x, float y, float size, float sizeVel, float velScale) {
         int count = rand.nextInt(4) + 1;
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 0.05f + rand.nextFloat() / 3.0f * 6.0f, CACHED_VECTOR);
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.05f + rand.nextFloat() / 3.0f * 6.0f, CACHED_VECTOR);
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = 0.0F;
             float alphaVel = 0.015F * 60.0f;
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleSmoke1, x, y, CACHED_VECTOR.x * velScale, CACHED_VECTOR.y * velScale, angle, angleVel,
@@ -299,8 +300,8 @@ public final class ParticleSpawner {
     public static void spawnDamageSmoke(float x, float y, float size) {
         int count = rand.nextInt(4) + 1;
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 0.05f + rand.nextFloat() / 3.0f * 6.0f, CACHED_VECTOR);
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.05f + rand.nextFloat() / 3.0f * 6.0f, CACHED_VECTOR);
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = 0.0F;
             float sizeVel = 0.75F * 6.0f;
             float alphaVel = 0.015F * 60.0f;
@@ -312,8 +313,8 @@ public final class ParticleSpawner {
     public static void spawnExplosion(float x, float y, float size, float sizeVel) {
         int count = rand.nextInt(2) + 1;
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 0.01f + rand.nextFloat() / 4.0f * 6.0f, CACHED_VECTOR);
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.01f + rand.nextFloat() / 4.0f * 6.0f, CACHED_VECTOR);
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = RandomHelper.randomFloat(rand, -0.004f, 0.004f) * 60.0f;
             float alphaVel = 0.014F * 60.0f;
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleExplosion, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, size, size, sizeVel,
@@ -324,8 +325,8 @@ public final class ParticleSpawner {
     public static void spawnExplosion(float x, float y, float size) {
         int count = rand.nextInt(2) + 1;
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 0.01f + rand.nextFloat() / 4.0f * 6.0f, CACHED_VECTOR);
-            float angle = RotationHelper.TWOPI * rand.nextFloat();
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.01f + rand.nextFloat() / 4.0f * 6.0f, CACHED_VECTOR);
+            float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = RandomHelper.randomFloat(rand, -0.004f, 0.004f) * 60.0f;
             float sizeVel = 0.9F * 6.0f;
             float alphaVel = 0.014F * 60.0f;
@@ -335,7 +336,7 @@ public final class ParticleSpawner {
     }
 
     public static void spawnShipEngineSmoke(float x, float y) {
-        float rot = (rand.nextFloat() * RotationHelper.TWOPI);
+        float rot = (rand.nextFloat() * MathUtils.TWO_PI);
         float rotSpeed = (rand.nextFloat() - 0.5f) / 100.0f * 60.0f;
         float sizeRandom = RandomHelper.randomFloat(rand, 0.5f, 1.0f);
         float sizeSpeed = 12.0f;
@@ -371,7 +372,7 @@ public final class ParticleSpawner {
     }
 
     public static void spawnDisableShield(float x, float y, float size, float sizeSpeed, float r, float g, float b, float a) {
-        float rot = (rand.nextFloat() * RotationHelper.TWOPI);
+        float rot = (rand.nextFloat() * MathUtils.TWO_PI);
         float rotSpeed = (rand.nextFloat() - 0.5f) / 20.0f * 60.0f;
         float alphaSpeed = 0.06f * 60.0f;
         PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleDisableShield, x, y, 0, 0, rot, rotSpeed, size, size, sizeSpeed,
@@ -379,7 +380,7 @@ public final class ParticleSpawner {
     }
 
     public static void spawnDisableShield(float x, float y, float velocityX, float velocityY, float size, float r, float g, float b, float a) {
-        float rot = (rand.nextFloat() * RotationHelper.TWOPI);
+        float rot = (rand.nextFloat() * MathUtils.TWO_PI);
         float rotSpeed = (rand.nextFloat() - 0.5f) / 20.0f * 60.0f;
         float sizeSpeed = 6.0f;
         float alphaSpeed = 0.06f * 60.0f;
@@ -388,7 +389,7 @@ public final class ParticleSpawner {
     }
 
     public static void spawnDisableShield(float x, float y, float size, float r, float g, float b, float a) {
-        float rot = (rand.nextFloat() * RotationHelper.TWOPI);
+        float rot = (rand.nextFloat() * MathUtils.TWO_PI);
         float rotSpeed = (rand.nextFloat() - 0.5f) / 20.0f * 60.0f;
         float sizeSpeed = 60.0f;
         float alphaSpeed = 0.06f * 60.0f;
@@ -424,9 +425,9 @@ public final class ParticleSpawner {
                 r, g, b, a, alphaVel, false, RenderLayer.BACKGROUND_ADDITIVE);
 
         if (spawnSmoke) {
-            RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 1.2f, CACHED_VECTOR);
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.2f, CACHED_VECTOR);
             alphaVel = 0.05f;
-            rot = (rand.nextFloat() * RotationHelper.TWOPI);
+            rot = (rand.nextFloat() * MathUtils.TWO_PI);
             sizeVel = 7.0F;
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleSmoke2, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, rot, angleVel, 3.0f, 3.0f, sizeVel,
                     r, g, b, 0.075f, alphaVel, false, RenderLayer.BACKGROUND_ALPHA_BLENDED);

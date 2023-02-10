@@ -2,6 +2,7 @@ package net.bfsr.ai.task;
 
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
 import org.joml.Vector2f;
 
@@ -39,7 +40,7 @@ public class AiFlyingAround extends AiTask {
     }
 
     private void calculateNewPoint(Vector2f pos) {
-        Vector2f addPos = RotationHelper.angleToVelocity(RotationHelper.TWOPI * obj.getWorld().getRand().nextFloat(), size);
+        Vector2f addPos = RotationHelper.angleToVelocity(MathUtils.TWO_PI * obj.getWorld().getRand().nextFloat(), size);
         currentPoint = new Vector2f(pos.x + addPos.x, pos.y + addPos.y);
     }
 

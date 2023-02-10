@@ -60,10 +60,10 @@ public class NetworkManagerClient extends NetworkManager {
     public void onDisconnect(String reason) {
         switch (connectionState) {
             case PLAY:
-                Core.getCore().setCurrentGui(new GuiDisconnected(new GuiMainMenu(), "disconnect.lost", reason));
+                Core.get().setCurrentGui(new GuiDisconnected(new GuiMainMenu(), "disconnect.lost", reason));
                 break;
             case LOGIN:
-                Core.getCore().setCurrentGui(new GuiDisconnected(currentGui, "connect.failed", reason));
+                Core.get().setCurrentGui(new GuiDisconnected(currentGui, "connect.failed", reason));
                 break;
         }
     }

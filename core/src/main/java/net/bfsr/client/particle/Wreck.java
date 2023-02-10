@@ -1,11 +1,11 @@
 package net.bfsr.client.particle;
 
 import lombok.Getter;
-import net.bfsr.client.render.instanced.BufferType;
-import net.bfsr.client.render.instanced.InstancedRenderer;
-import net.bfsr.client.render.texture.Texture;
-import net.bfsr.client.render.texture.TextureLoader;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.texture.Texture;
+import net.bfsr.client.renderer.texture.TextureLoader;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.collision.filter.WreckFilter;
@@ -127,14 +127,14 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
 
     public Wreck init(int textureOffset, boolean isWreck, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity,
                       float scaleX, float scaleY, float r, float g, float b, float a, float alphaVelocity, int id) {
-        return init(Core.getCore().getWorld(), id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, r, g, b, a, alphaVelocity,
+        return init(Core.get().getWorld(), id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, r, g, b, a, alphaVelocity,
                 TextureLoader.getTexture(getDebrisTexture(textureOffset, isWreck)), textureOffset, false, fire, isWreck,
-                fireExplosion, null, 10, 0, 0, Core.getCore().getWorld().getRand(), isWreck || fire ? 1.0f : 0.0f, isWreck || fire ? 1.0f : 0.0f,
+                fireExplosion, null, 10, 0, 0, Core.get().getWorld().getRand(), isWreck || fire ? 1.0f : 0.0f, isWreck || fire ? 1.0f : 0.0f,
                 isWreck || fire ? 1.0f : 0.0f, isWreck || fire ? 1.0f : 0.0f,
                 isWreck ? TextureLoader.getTexture(TextureRegister.values()[TextureRegister.particleWreckFire0.ordinal() + textureOffset]) : fire ?
                         TextureLoader.getTexture(TextureRegister.values()[TextureRegister.particleDerbisEmber1.ordinal() + textureOffset]) : null,
                 isWreck ? TextureLoader.getTexture(TextureRegister.values()[TextureRegister.particleWreckLight0.ordinal() + textureOffset]) : null,
-                isWreck ? 200.0f + Core.getCore().getWorld().getRand().nextInt(200) : 0.0f);
+                isWreck ? 200.0f + Core.get().getWorld().getRand().nextInt(200) : 0.0f);
     }
 
     public Wreck init(int textureOffset, Ship ship, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
@@ -147,7 +147,7 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
     }
 
     protected void addParticle() {
-        Core.getCore().getWorld().getParticleManager().addParticle(this);
+        Core.get().getWorld().getParticleManager().addParticle(this);
     }
 
     @Override
@@ -347,7 +347,7 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
 
                 if (shipWreck) {
                     ParticleSpawner.spawnMediumGarbage(3, pos.x, pos.y, velocity.x * 0.1f, velocity.y * 0.1f, scale.x / 2.0f);
-                    Core.getCore().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion0, pos.x, pos.y));
+                    Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion0, pos.x, pos.y));
                 }
             }
 
@@ -608,6 +608,6 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
 
     public void onRemoved() {
         ParticleSpawner.PARTICLE_WREAK_POOL.returnBack(this);
-        Core.getCore().getWorld().removePhysicObject(this);
+        Core.get().getWorld().removePhysicObject(this);
     }
 }

@@ -2,10 +2,10 @@ package net.bfsr.component.weapon;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.render.instanced.BufferType;
-import net.bfsr.client.render.instanced.InstancedRenderer;
-import net.bfsr.client.render.texture.TextureLoader;
-import net.bfsr.client.render.texture.TextureRegister;
+import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.texture.TextureLoader;
+import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.core.Core;
@@ -92,7 +92,7 @@ public abstract class WeaponSlot extends TextureObject {
         float energy = ship.getReactor().getEnergy();
         if (shootTimer <= 0 && energy >= energyCost) {
             if (world.isRemote()) {
-                Core.getCore().sendPacket(new PacketWeaponShoot(ship.getId(), id));
+                Core.get().sendPacket(new PacketWeaponShoot(ship.getId(), id));
             } else {
                 MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketWeaponShoot(ship.getId(), id), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
                 createBullet();
@@ -116,7 +116,7 @@ public abstract class WeaponSlot extends TextureObject {
             Random rand = world.getRand();
             SoundRegistry sound = shootSounds[rand.nextInt(size)];
             SoundSourceEffect source = new SoundSourceEffect(sound, position.x, position.y);
-            Core.getCore().getSoundManager().play(source);
+            Core.get().getSoundManager().play(source);
         }
     }
 

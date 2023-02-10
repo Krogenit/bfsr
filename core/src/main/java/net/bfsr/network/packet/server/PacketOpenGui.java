@@ -49,10 +49,10 @@ public class PacketOpenGui extends ServerPacket {
         EnumGui enumGui = EnumGui.values()[gui];
         switch (enumGui) {
             case SelectFaction:
-                Core.getCore().setCurrentGui(new GuiFactionSelect());
+                Core.get().setCurrentGui(new GuiFactionSelect());
                 return;
             case Destroyed:
-                Core.getCore().setCurrentGui(new GuiDestroyed(destroyer));
+                Core.get().setCurrentGui(new GuiDestroyed(destroyer));
         }
     }
 }
