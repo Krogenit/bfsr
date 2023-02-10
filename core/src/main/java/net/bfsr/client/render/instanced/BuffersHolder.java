@@ -24,12 +24,12 @@ public class BuffersHolder {
         materialBuffer = BufferUtils.createByteBuffer(initialObjectCount * InstancedRenderer.MATERIAL_DATA_SIZE);
     }
 
-    private void checkBuffersSize(int objectCount) {
-        while (vertexBuffer.capacity() - vertexBuffer.position() < objectCount * InstancedRenderer.VERTEX_DATA_SIZE) {
+    void checkBuffersSize(int objectCount) {
+        while (vertexBuffer.capacity() - vertexBufferIndex.get() < objectCount * InstancedRenderer.VERTEX_DATA_SIZE) {
             vertexBuffer = BufferUtils.createFloatBuffer(vertexBuffer.capacity() << 1);
         }
 
-        while (materialBuffer.capacity() - materialBuffer.position() < objectCount * InstancedRenderer.MATERIAL_DATA_SIZE) {
+        while (materialBuffer.capacity() - materialBufferIndex.get() < objectCount * InstancedRenderer.MATERIAL_DATA_SIZE) {
             materialBuffer = BufferUtils.createByteBuffer(materialBuffer.capacity() << 1);
         }
     }
