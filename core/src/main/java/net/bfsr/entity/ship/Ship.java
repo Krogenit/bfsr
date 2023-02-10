@@ -8,8 +8,8 @@ import net.bfsr.ai.task.AiSearchTarget;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.particle.ParticleSpawner;
-import net.bfsr.client.particle.ParticleWreck;
 import net.bfsr.client.particle.RenderLayer;
+import net.bfsr.client.particle.Wreck;
 import net.bfsr.client.render.font.FontType;
 import net.bfsr.client.render.font.StringOffsetType;
 import net.bfsr.client.render.font.string.StringObject;
@@ -252,7 +252,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
                 impactPowerForOther /= 400.0f;
 
                 if (impactPowerForOther > 0.25f) otherShip.damageByCollision(this, impactPowerForOther, contact, normal);
-            } else if (userData instanceof ParticleWreck) {
+            } else if (userData instanceof Wreck) {
                 if (collisionTimer <= 0) {
                     collisionTimer = 2;
                     if (world.isRemote()) {

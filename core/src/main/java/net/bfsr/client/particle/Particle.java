@@ -1,37 +1,35 @@
 package net.bfsr.client.particle;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.bfsr.client.render.instanced.InstancedRenderer;
 import net.bfsr.client.render.texture.TextureLoader;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.core.Core;
-import net.bfsr.entity.CollisionObject;
+import net.bfsr.entity.TextureObject;
 import net.bfsr.server.MainServer;
 import net.bfsr.util.MutableInt;
 import net.bfsr.util.TimeUtils;
 import net.bfsr.world.World;
-import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.Convex;
-import org.dyn4j.geometry.Geometry;
-import org.dyn4j.geometry.MassType;
 import org.joml.Vector2f;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
-public class Particle extends CollisionObject {
+public class Particle extends TextureObject {
     @Getter
     protected float sizeVelocity, alphaVelocity, angularVelocity, maxAlpha;
     protected boolean canCollide, isAlphaFromZero, zeroVelocity;
     @Getter
     protected RenderLayer renderLayer;
-    protected float greater;
+    private final Vector2f velocity = new Vector2f();
+    @Getter
+    @Setter
+    private boolean isDead;
 
-    public Particle init(World world, int id, TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
-                         float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, float greater, boolean isAlphaFromZero, boolean canCollide,
+    public Particle init(World world, TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
+                         float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero, boolean canCollide,
                          RenderLayer renderLayer) {
-        this.world = world;
-        this.id = id;
         this.texture = TextureLoader.getTexture(texture);
         this.position.set(x, y);
         this.lastPosition.set(position);
@@ -44,7 +42,6 @@ public class Particle extends CollisionObject {
         this.sizeVelocity = sizeVelocity;
         this.color.set(r, g, b, a);
         this.alphaVelocity = alphaVelocity;
-        this.greater = greater;
         this.isAlphaFromZero = isAlphaFromZero;
         this.canCollide = canCollide;
         this.renderLayer = renderLayer;
@@ -58,10 +55,6 @@ public class Particle extends CollisionObject {
 
         lastColor.set(color);
 
-        if (canCollide) {
-            createBody(position.x, position.y);
-        }
-
         if (world.isRemote()) {
             addParticle();
         }
@@ -69,67 +62,28 @@ public class Particle extends CollisionObject {
         return this;
     }
 
-    public Particle init(int id, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY, float sizeVelocity,
-                         float r, float g, float b, float a, float alphaVelocity, float greater, boolean isAlphaFromZero, boolean canCollide, RenderLayer renderLayer) {
-        return init(MainServer.getInstance().getWorld(), id, null, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, greater,
+    public Particle init(float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY, float sizeVelocity,
+                         float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero, boolean canCollide, RenderLayer renderLayer) {
+        return init(MainServer.getInstance().getWorld(), null, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity,
                 isAlphaFromZero, canCollide, renderLayer);
     }
 
-    public Particle init(int id, TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
-                         float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, float greater, boolean isAlphaFromZero, boolean canCollide,
+    public Particle init(TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
+                         float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero, boolean canCollide,
                          RenderLayer renderLayer) {
-        return init(Core.getCore().getWorld(), id, texture, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, greater,
+        return init(Core.getCore().getWorld(), texture, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity,
                 isAlphaFromZero, canCollide, renderLayer);
     }
 
     public Particle init(TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY, float sizeVelocity,
-                         float r, float g, float b, float a, float alphaVelocity, float greater, boolean isAlphaFromZero, RenderLayer renderLayer) {
-        return init(Core.getCore().getWorld(), -1, texture, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, greater,
+                         float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero, RenderLayer renderLayer) {
+        return init(Core.getCore().getWorld(), texture, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity,
                 isAlphaFromZero, false, renderLayer);
     }
 
     protected void addParticle() {
         Core.getCore().getWorld().getParticleManager().addParticle(this);
         Core.getCore().getRenderer().getParticleRenderer().addParticleToRenderLayer(this, renderLayer);
-    }
-
-    @Override
-    protected void createAABB() {
-        if (canCollide) {
-            super.createAABB();
-        }
-    }
-
-    protected void createFixtures() {
-        body.removeFixture(0);
-        Vector2f size = getScale();
-        Convex convex;
-        if (size.x == size.y) {
-            convex = Geometry.createCircle(size.x / 2.0f);
-        } else {
-            convex = Geometry.createRectangle(size.x, size.y);
-        }
-
-        BodyFixture bodyFixture = new BodyFixture(convex);
-        body.addFixture(bodyFixture);
-    }
-
-    @Override
-    protected void createBody(float x, float y) {
-        if (canCollide) {
-            if (body == null) super.createBody(x, y);
-
-            createFixtures();
-            body.translate(x, y);
-            body.setMass(MassType.NORMAL);
-            body.setUserData(this);
-            body.setLinearVelocity(velocity.x, velocity.y);
-            body.getTransform().setRotation(rotation);
-            body.setAngularVelocity(angularVelocity);
-            body.setLinearDamping(0.05f);
-            body.setAngularDamping(0.005f);
-            world.addDynamicParticle(this);
-        }
     }
 
     @Override

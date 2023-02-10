@@ -9,6 +9,7 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.server.PacketSpawnParticle;
 import net.bfsr.server.MainServer;
+import net.bfsr.util.ObjectPool;
 import net.bfsr.util.RandomHelper;
 import net.bfsr.world.World;
 import net.bfsr.world.WorldServer;
@@ -22,9 +23,9 @@ import java.util.Random;
 
 public final class ParticleSpawner {
     private static final Random rand = new Random();
-    public static final ParticlePool<Particle> PARTICLE_POOL = new ParticlePool<>();
-    public static final ParticlePool<ParticleBeamEffect> PARTICLE_BEAM_EFFECT_POOL = new ParticlePool<>();
-    public static final ParticlePool<ParticleWreck> PARTICLE_WREAK_POOL = new ParticlePool<>();
+    public static final ObjectPool<Particle> PARTICLE_POOL = new ObjectPool<>();
+    public static final ObjectPool<ParticleBeamEffect> PARTICLE_BEAM_EFFECT_POOL = new ObjectPool<>();
+    public static final ObjectPool<Wreck> PARTICLE_WREAK_POOL = new ObjectPool<>();
     public static final Vector2f CACHED_VECTOR = new Vector2f();
 
     public static void spawnDestroyShipSmall(Ship ship) {
@@ -65,10 +66,9 @@ public final class ParticleSpawner {
 
     public static void spawnShipWreck(Ship s, int textureOffset, float x, float y, float angle, float velocityX, float velocityY, float alphaVel, float wreckLifeTime) {
         float angleVel = (-0.005f + rand.nextFloat() / 200.0f) * 60.0f;
-        float sizeVel = 0.0f;
-        ParticleWreck particleWreck = PARTICLE_WREAK_POOL.getOrCreate(ParticleWreck::new).init(s.getWorld().getNextId(), textureOffset, s, x, y, velocityX, velocityY, angle, angleVel,
-                s.getScale().x, s.getScale().y, sizeVel, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel, wreckLifeTime);
-        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(particleWreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
+        Wreck wreck = PARTICLE_WREAK_POOL.getOrCreate(Wreck::new).init(s.getWorld().getNextId(), textureOffset, s, x, y, velocityX, velocityY, angle, angleVel,
+                s.getScale().x, s.getScale().y, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel, wreckLifeTime);
+        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     public static void spawnDamageDebris(World world, int count, float x, float y, float velocityX, float velocityY, float size) {
@@ -78,13 +78,12 @@ public final class ParticleSpawner {
             float angle = rand.nextFloat() * RotationHelper.TWOPI;
             float angleVel = (-0.005f + rand.nextFloat() / 200.0f) * 60.0f;
             float size2 = (1.0F - rand.nextFloat() / 3.0F) * 2.0f * size;
-            float sizeVel = 0.0f;
             float alphaVel = 0.1f;//RandomHelper.randomFloat(rand, 0.0003f, 0.0006f) * 60f;
             boolean isFire = rand.nextInt(3) == 0;
             boolean isFireExplosion = isFire && rand.nextInt(5) == 0;
-            ParticleWreck particleWreck = PARTICLE_WREAK_POOL.getOrCreate(ParticleWreck::new).init(world.getNextId(), rand.nextInt(6), false, isFire, isFireExplosion, x, y,
-                    CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, size2, size2, sizeVel, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel);
-            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(particleWreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
+            Wreck wreck = PARTICLE_WREAK_POOL.getOrCreate(Wreck::new).init(world, world.getNextId(), rand.nextInt(6), false, isFire, isFireExplosion, x, y,
+                    CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, size2, size2, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel);
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
         }
     }
 
@@ -94,12 +93,11 @@ public final class ParticleSpawner {
             float angle = rand.nextFloat() * RotationHelper.TWOPI;
             float angleVel = (-0.005f + rand.nextFloat() / 200.0f) * 60.0f;
             float size = (1.0F - rand.nextFloat() / 3.0F) * 4.0f;
-            float sizeVel = 0.0f;
             float alphaVel = 0.04f;
             boolean isFireExplosion = rand.nextInt(4) == 0;
-            ParticleWreck particleWreck = PARTICLE_WREAK_POOL.getOrCreate(ParticleWreck::new).init(world.getNextId(), rand.nextInt(3), true, true, isFireExplosion,
-                    x, y, CACHED_VECTOR.x + velocityX * 0.7f, CACHED_VECTOR.y + velocityY * 0.7f, angle, angleVel, size, size, sizeVel, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel);
-            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(particleWreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
+            Wreck wreck = PARTICLE_WREAK_POOL.getOrCreate(Wreck::new).init(world, world.getNextId(), rand.nextInt(3), true, true, isFireExplosion,
+                    x, y, CACHED_VECTOR.x + velocityX * 0.7f, CACHED_VECTOR.y + velocityY * 0.7f, angle, angleVel, size, size, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel);
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
         }
     }
 
@@ -108,7 +106,7 @@ public final class ParticleSpawner {
         float sizeSpeed = 30.0f;
         RotationHelper.angleToVelocity(rotation, 10.0f, CACHED_VECTOR);
         PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleBeamDamage, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, rotation, 0, size, size, sizeSpeed, r, g, b, a,
-                alphaSpeed, 0.001f, false, RenderLayer.DEFAULT_ADDITIVE);
+                alphaSpeed, false, RenderLayer.DEFAULT_ADDITIVE);
     }
 
     public static ParticleBeamEffect spawnBeamEffect(WeaponSlotBeam slot) {
@@ -124,7 +122,7 @@ public final class ParticleSpawner {
             float alphaVel = 8.0F;
             RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), size / 4.0f, CACHED_VECTOR);
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleLighting, pos.x + CACHED_VECTOR.x, pos.y + CACHED_VECTOR.y, 0, 0, angle, angleVel, size, size, sizeVel,
-                    0.75F, 0.75F, 1, 1.5f, alphaVel, 0.001f, true, RenderLayer.DEFAULT_ADDITIVE);
+                    0.75F, 0.75F, 1, 1.5f, alphaVel, true, RenderLayer.DEFAULT_ADDITIVE);
         }
     }
 
@@ -135,7 +133,7 @@ public final class ParticleSpawner {
             float sizeVel = 1.5F * 6.0f;
             float alphaVel = 0.025F * 60.0f;
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleRocketEffect, x, y, 0, 0, angle, angleVel, size, size, sizeVel, 1.0f, 1.0f, 0.5f, 1.0f,
-                    alphaVel, 0.001f, true, RenderLayer.DEFAULT_ADDITIVE);
+                    alphaVel, true, RenderLayer.DEFAULT_ADDITIVE);
         }
 
         for (int a = 0; a < 1; a++) {
@@ -144,7 +142,7 @@ public final class ParticleSpawner {
             float sizeVel = 1.5F * 6.0f;
             float alphaVel = 0.02F * 60.0f;
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleRocketSmoke, x, y, 0, 0, angle, angleVel, size, size, sizeVel, 0.3f, 0.3f, 0.3f, 1.0f,
-                    alphaVel, 0.001f, true, RenderLayer.DEFAULT_ALPHA_BLENDED);
+                    alphaVel, true, RenderLayer.DEFAULT_ALPHA_BLENDED);
         }
     }
 
@@ -154,7 +152,7 @@ public final class ParticleSpawner {
         float sizeVel = type == 1 ? 0.8F * 6.0f : type == 2 ? 1.5F * 6.0f : 6.0F * 6.0f;
         float alphaVel = type == 1 ? 0.004F * 60.0f : type == 2 ? 0.006F * 60.0f : 0.02F * 60.0f;
         PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.values()[TextureRegister.particleSockwaveSmall.ordinal() + type], pos.x, pos.y, 0, 0, angle, angleVel, size, size,
-                sizeVel, 0.5F, 0.5F, 0.5F, 1, alphaVel, 0.001f, false, RenderLayer.DEFAULT_ADDITIVE);
+                sizeVel, 0.5F, 0.5F, 0.5F, 1, alphaVel, false, RenderLayer.DEFAULT_ADDITIVE);
     }
 
     public static void spawnSpark(float x, float y, float size, float sizeVel) {
@@ -165,7 +163,7 @@ public final class ParticleSpawner {
             float alphaVel = 0.03f * 60.0f;
 
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleExplosion, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, size / 2.0f, size / 2.0f,
-                    sizeVel, 1.0f, 0.5f, 0.0f, 1.0f, alphaVel, 0.001f, true, RenderLayer.DEFAULT_ADDITIVE);
+                    sizeVel, 1.0f, 0.5f, 0.0f, 1.0f, alphaVel, true, RenderLayer.DEFAULT_ADDITIVE);
         }
 
         for (int i = 0; i < 2; i++) {
@@ -176,7 +174,7 @@ public final class ParticleSpawner {
             float alphaVel = 0.04f * 60.0f;
 
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.values()[TextureRegister.particleSpark0.ordinal() + rand.nextInt(4)], x, y, CACHED_VECTOR.x, CACHED_VECTOR.y,
-                    angle, angleVel, size, size, sizeVel, 1.0f, 0.5f, 0.0f, 1.0f, alphaVel, 0.001f, true, RenderLayer.DEFAULT_ADDITIVE);
+                    angle, angleVel, size, size, sizeVel, 1.0f, 0.5f, 0.0f, 1.0f, alphaVel, true, RenderLayer.DEFAULT_ADDITIVE);
         }
     }
 
@@ -189,7 +187,7 @@ public final class ParticleSpawner {
             float alphaVel = 0.03f * 60.0f;
 
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleExplosion, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, size / 2.0f, size / 2.0f, sizeVel,
-                    1.0f, 0.5f, 0.0f, 1.0f, alphaVel, 0.001f, true, RenderLayer.DEFAULT_ADDITIVE);
+                    1.0f, 0.5f, 0.0f, 1.0f, alphaVel, true, RenderLayer.DEFAULT_ADDITIVE);
         }
 
         for (int i = 0; i < 2; i++) {
@@ -200,7 +198,7 @@ public final class ParticleSpawner {
             float alphaVel = 0.04f * 60.0f;
 
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.values()[TextureRegister.particleSpark0.ordinal() + rand.nextInt(4)], x, y, CACHED_VECTOR.x, CACHED_VECTOR.y,
-                    angle, angleVel, size, size, sizeVel, 1.0f, 0.5f, 0.0f, 1.0f, alphaVel, 0.001f, true, RenderLayer.DEFAULT_ADDITIVE);
+                    angle, angleVel, size, size, sizeVel, 1.0f, 0.5f, 0.0f, 1.0f, alphaVel, true, RenderLayer.DEFAULT_ADDITIVE);
         }
     }
 
@@ -212,7 +210,7 @@ public final class ParticleSpawner {
             float sizeVel = 0.025f + rand.nextFloat() / 6.0f * 6.0f;
             float alphaVel = 0.004F * 60.0f;
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleGarbage0, x, y, CACHED_VECTOR.x * velocityScale, CACHED_VECTOR.y * velocityScale,
-                    angle, angleVel, 1.0f + size, 1.0f + size, sizeVel, 0.6f, 0.6f, 0.6f, 1.0f, alphaVel, 0.001f, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
+                    angle, angleVel, 1.0f + size, 1.0f + size, sizeVel, 0.6f, 0.6f, 0.6f, 1.0f, alphaVel, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
         }
     }
 
@@ -224,7 +222,7 @@ public final class ParticleSpawner {
             float angleVel = RandomHelper.randomFloat(rand, -0.001f, 0.001f) * 60.0f;
             float color = 0.7f;
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleGarbage0, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, 1.0f + size, 1.0f + size, sizeVel,
-                    color, color, color, 1.0f, alphaVel, 0.001f, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
+                    color, color, color, 1.0f, alphaVel, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
         }
     }
 
@@ -237,7 +235,7 @@ public final class ParticleSpawner {
             float sizeVel = 0.025f + rand.nextFloat() / 6.0f * 6.0f;
             float alphaVel = 0.002F * 60.0f;
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleGarbage0, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, 1.0f + size, 1.0f + size, sizeVel,
-                    0.6f, 0.6f, 0.6f, 1.0f, alphaVel, 0.001f, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
+                    0.6f, 0.6f, 0.6f, 1.0f, alphaVel, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
         }
     }
 
@@ -249,7 +247,7 @@ public final class ParticleSpawner {
             float sizeVel = 0.46F + rand.nextFloat() / 8.0f * 6.0f;
             float alphaVel = 0.002F * 60.0f;
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleGarbage1, x, y, velocityX * 0.35f + CACHED_VECTOR.x, velocityY * 0.35f + CACHED_VECTOR.y,
-                    angle, angleVel, size + 2.5f, size + 2.5f, sizeVel, 0.7f, 0.7f, 0.7f, 1.0f, alphaVel, 0.001f, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
+                    angle, angleVel, size + 2.5f, size + 2.5f, sizeVel, 0.7f, 0.7f, 0.7f, 1.0f, alphaVel, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
         }
     }
 
@@ -261,7 +259,7 @@ public final class ParticleSpawner {
             float sizeVel = 0.25F * 6.0f;
             float alphaVel = 0.001F * 60.0f;
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleGarbage2, pos.x, pos.y, velocity.x * 6.0f + CACHED_VECTOR.x, velocity.y * 6.0f + CACHED_VECTOR.y, angle,
-                    angleVel, size + 7.0f, size + 7.0f, sizeVel, 0.9f, 0.9f, 0.9f, 1.0f, alphaVel, 0.001f, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
+                    angleVel, size + 7.0f, size + 7.0f, sizeVel, 0.9f, 0.9f, 0.9f, 1.0f, alphaVel, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
         }
     }
 
@@ -275,14 +273,14 @@ public final class ParticleSpawner {
             float alphaVel = 0.06f;
             TextureRegister texture = rand.nextInt(2) == 0 ? TextureRegister.particleShipOst0 : TextureRegister.particleShipOst1;
             PARTICLE_POOL.getOrCreate(Particle::new).init(texture, x, y, velocityX * 12.0f + CACHED_VECTOR.x, velocityY * 12.0f + CACHED_VECTOR.y, angle, angleVel,
-                    size1, size1, sizeVel, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel, 0.001f, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
+                    size1, size1, sizeVel, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
         }
     }
 
     public static void spawnWeaponShoot(TextureRegister texture, Vector2f pos, float angle, float size, float r, float g, float b, float a) {
-        PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleLight, pos.x, pos.y, 0, 0, 0, 0, size, size, 0, r, g, b, a, 0.05f * 60.0f, 0.001f,
+        PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleLight, pos.x, pos.y, 0, 0, 0, 0, size, size, 0, r, g, b, a, 0.05f * 60.0f,
                 false, RenderLayer.DEFAULT_ADDITIVE);
-        PARTICLE_POOL.getOrCreate(Particle::new).init(texture, pos.x, pos.y, 0, 0, angle, 0, size, size, 0, r, g, b, a, 0.05f * 60.0f, 0.001f, false,
+        PARTICLE_POOL.getOrCreate(Particle::new).init(texture, pos.x, pos.y, 0, 0, angle, 0, size, size, 0, r, g, b, a, 0.05f * 60.0f, false,
                 RenderLayer.DEFAULT_ADDITIVE);
     }
 
@@ -294,7 +292,7 @@ public final class ParticleSpawner {
             float angleVel = 0.0F;
             float alphaVel = 0.015F * 60.0f;
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleSmoke1, x, y, CACHED_VECTOR.x * velScale, CACHED_VECTOR.y * velScale, angle, angleVel,
-                    size, size, sizeVel, 1.0f, 1.0f, 1.0f, 0.6f, alphaVel, 0.001f, true, RenderLayer.DEFAULT_ALPHA_BLENDED);
+                    size, size, sizeVel, 1.0f, 1.0f, 1.0f, 0.6f, alphaVel, true, RenderLayer.DEFAULT_ALPHA_BLENDED);
         }
     }
 
@@ -307,7 +305,7 @@ public final class ParticleSpawner {
             float sizeVel = 0.75F * 6.0f;
             float alphaVel = 0.015F * 60.0f;
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleSmokeRing, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, size, size, sizeVel,
-                    0.75f, 0.75f, 0.75f, 0.75f, alphaVel, 0.001f, true, RenderLayer.DEFAULT_ALPHA_BLENDED);
+                    0.75f, 0.75f, 0.75f, 0.75f, alphaVel, true, RenderLayer.DEFAULT_ALPHA_BLENDED);
         }
     }
 
@@ -319,7 +317,7 @@ public final class ParticleSpawner {
             float angleVel = RandomHelper.randomFloat(rand, -0.004f, 0.004f) * 60.0f;
             float alphaVel = 0.014F * 60.0f;
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleExplosion, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, size, size, sizeVel,
-                    1.0f, 1.0f, 1.0f, 1.0f, alphaVel, 0.001f, false, RenderLayer.DEFAULT_ADDITIVE);
+                    1.0f, 1.0f, 1.0f, 1.0f, alphaVel, false, RenderLayer.DEFAULT_ADDITIVE);
         }
     }
 
@@ -332,7 +330,7 @@ public final class ParticleSpawner {
             float sizeVel = 0.9F * 6.0f;
             float alphaVel = 0.014F * 60.0f;
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleExplosion, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, size, size, sizeVel,
-                    1.0f, 1.0f, 1.0f, 1.0f, alphaVel, 0.001f, false, RenderLayer.DEFAULT_ADDITIVE);
+                    1.0f, 1.0f, 1.0f, 1.0f, alphaVel, false, RenderLayer.DEFAULT_ADDITIVE);
         }
     }
 
@@ -343,7 +341,7 @@ public final class ParticleSpawner {
         float sizeSpeed = 12.0f;
         float alphaSpeed = 2.7f;
         PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleSmoke2, x, y, 0, 0, rot, rotSpeed, 1.5f * sizeRandom, 1.5f * sizeRandom, sizeSpeed,
-                0.5f, 0.5f, 0.5f, 0.75f, alphaSpeed, 0.001f, false, RenderLayer.BACKGROUND_ALPHA_BLENDED);
+                0.5f, 0.5f, 0.5f, 0.75f, alphaSpeed, false, RenderLayer.BACKGROUND_ALPHA_BLENDED);
     }
 
     public static void spawnBeamDamage(Raycast raycast, float x, float y, float size, float sizeSpeed, Vector4f color) {
@@ -351,7 +349,7 @@ public final class ParticleSpawner {
         float rot = (float) Math.atan2(normal.x, -normal.y);
         float alphaSpeed = 6.0f;
         PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleBeamDamage, x, y, 0, 0, rot, 0, size, size, sizeSpeed,
-                color.x, color.y, color.z, color.w, alphaSpeed, 0.001f, false, RenderLayer.DEFAULT_ADDITIVE);
+                color.x, color.y, color.z, color.w, alphaSpeed, false, RenderLayer.DEFAULT_ADDITIVE);
     }
 
     public static void spawnDirectedSpark(Contact contact, Vector2 normal, float size, float r, float g, float b, float a) {
@@ -360,7 +358,7 @@ public final class ParticleSpawner {
         rot += Math.PI / 2.0;
         float alphaSpeed = 6.0f;
         PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleDirectedSpark, (float) point.x, (float) point.y, 0, 0, rot, 0, size, size, 0.0f,
-                r, g, b, a, alphaSpeed, 0.001f, false, RenderLayer.DEFAULT_ADDITIVE);
+                r, g, b, a, alphaSpeed, false, RenderLayer.DEFAULT_ADDITIVE);
     }
 
     public static void spawnDirectedSplat(Contact contact, Vector2 normal, float size, float r, float g, float b, float a) {
@@ -369,7 +367,7 @@ public final class ParticleSpawner {
         rot += Math.PI / 2.0;
         float alphaSpeed = 6.0f;
         PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleDirectedSplat, (float) point.x, (float) point.y, 0, 0, rot, 0, size, size, 0.0f,
-                r, g, b, a, alphaSpeed, 0.001f, false, RenderLayer.DEFAULT_ADDITIVE);
+                r, g, b, a, alphaSpeed, false, RenderLayer.DEFAULT_ADDITIVE);
     }
 
     public static void spawnDisableShield(float x, float y, float size, float sizeSpeed, float r, float g, float b, float a) {
@@ -377,7 +375,7 @@ public final class ParticleSpawner {
         float rotSpeed = (rand.nextFloat() - 0.5f) / 20.0f * 60.0f;
         float alphaSpeed = 0.06f * 60.0f;
         PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleDisableShield, x, y, 0, 0, rot, rotSpeed, size, size, sizeSpeed,
-                r, g, b, a, alphaSpeed, 0.001f, true, RenderLayer.DEFAULT_ADDITIVE);
+                r, g, b, a, alphaSpeed, true, RenderLayer.DEFAULT_ADDITIVE);
     }
 
     public static void spawnDisableShield(float x, float y, float velocityX, float velocityY, float size, float r, float g, float b, float a) {
@@ -386,7 +384,7 @@ public final class ParticleSpawner {
         float sizeSpeed = 6.0f;
         float alphaSpeed = 0.06f * 60.0f;
         PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleDisableShield, x, y, velocityX, velocityY, rot, rotSpeed, size, size, sizeSpeed,
-                r, g, b, a, alphaSpeed, 0.001f, true, RenderLayer.DEFAULT_ADDITIVE);
+                r, g, b, a, alphaSpeed, true, RenderLayer.DEFAULT_ADDITIVE);
     }
 
     public static void spawnDisableShield(float x, float y, float size, float r, float g, float b, float a) {
@@ -395,35 +393,35 @@ public final class ParticleSpawner {
         float sizeSpeed = 60.0f;
         float alphaSpeed = 0.06f * 60.0f;
         PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleDisableShield, x, y, 0, 0, rot, rotSpeed, size, size, sizeSpeed,
-                r, g, b, a, alphaSpeed, 0.001f, true, RenderLayer.DEFAULT_ADDITIVE);
+                r, g, b, a, alphaSpeed, true, RenderLayer.DEFAULT_ADDITIVE);
     }
 
     public static void spawnLight(float x, float y, float size, float sizeSpeed, float r, float g, float b, float a, float alphaSpeed, boolean alphaFromZero, RenderLayer renderLayer) {
         PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleLight, x, y, 0, 0, 0, 0, size, size, sizeSpeed, r, g, b, a,
-                alphaSpeed, 0.001f, alphaFromZero, renderLayer);
+                alphaSpeed, alphaFromZero, renderLayer);
     }
 
     public static void spawnLight(float x, float y, float velocityX, float velocityY, float size, float r, float g, float b, float a, float alphaSpeed, boolean alphaFromZero,
                                   RenderLayer position) {
         PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleLight, x, y, velocityX, velocityY, 0, 0, size, size, 0,
-                r, g, b, a, alphaSpeed, 0.001f, alphaFromZero, position);
+                r, g, b, a, alphaSpeed, alphaFromZero, position);
     }
 
     public static void spawnLight(float x, float y, float size, float r, float g, float b, float a, float alphaSpeed, boolean alphaFromZero, RenderLayer renderLayer) {
         PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleLight, x, y, 0, 0, 0, 0, size, size, 0, r, g, b, a,
-                alphaSpeed, 0.001f, alphaFromZero, renderLayer);
+                alphaSpeed, alphaFromZero, renderLayer);
     }
 
     public static void spawnLight(float x, float y, float size, float r, float g, float b, float a, RenderLayer renderLayer) {
         PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleLight, x, y, 0, 0, 0, 0, size, size, 0, r, g, b, a,
-                0.5f * 60.0f, 0.001f, false, renderLayer);
+                0.5f * 60.0f, false, renderLayer);
     }
 
     public static void spawnEngineBack(float x, float y, float velocityX, float velocityY, float rot, float size, float alphaVel, float r, float g, float b, float a, boolean spawnSmoke) {
         float angleVel = 0;
         float sizeVel = -0.9f;
         PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleShipEngineBack, x, y, velocityX * 30.0f, velocityY * 30.0f, rot, angleVel, size, size, sizeVel,
-                r, g, b, a, alphaVel, 0.001f, false, RenderLayer.BACKGROUND_ADDITIVE);
+                r, g, b, a, alphaVel, false, RenderLayer.BACKGROUND_ADDITIVE);
 
         if (spawnSmoke) {
             RotationHelper.angleToVelocity(RotationHelper.TWOPI * rand.nextFloat(), 1.2f, CACHED_VECTOR);
@@ -431,7 +429,7 @@ public final class ParticleSpawner {
             rot = (rand.nextFloat() * RotationHelper.TWOPI);
             sizeVel = 7.0F;
             PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleSmoke2, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, rot, angleVel, 3.0f, 3.0f, sizeVel,
-                    r, g, b, 0.075f, alphaVel, 0.001f, false, RenderLayer.BACKGROUND_ALPHA_BLENDED);
+                    r, g, b, 0.075f, alphaVel, false, RenderLayer.BACKGROUND_ALPHA_BLENDED);
         }
     }
 }

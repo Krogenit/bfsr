@@ -2,7 +2,7 @@ package net.bfsr.network.packet.server;
 
 import lombok.NoArgsConstructor;
 import net.bfsr.client.particle.ParticleSpawner;
-import net.bfsr.client.particle.ParticleWreck;
+import net.bfsr.client.particle.Wreck;
 import net.bfsr.core.Core;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.ship.Ship;
@@ -20,17 +20,17 @@ public class PacketSpawnParticle extends ServerPacket {
     private int id, destroyedShipId;
     private int textureOffset;
     private boolean isFire, isLight, isFireExplosion, isShipWreck;
-    private float rot, sizeVelocity, alphaVelocity, rotationSpeed, wreckLifeTime, wreckMaxLifeTime;
+    private float rot, alphaVelocity, rotationSpeed, wreckLifeTime, wreckMaxLifeTime;
     private Vector2f pos, velocity, size;
     private Vector4f color;
 
-    public PacketSpawnParticle(ParticleWreck p) {
+    public PacketSpawnParticle(Wreck p) {
         this.id = p.getId();
         this.destroyedShipId = p.getDestroyedShipId();
         this.textureOffset = p.getTextureOffset();
         this.isShipWreck = p.isShipWreck();
-        this.wreckLifeTime = p.getWreckLifeTime();
-        this.wreckMaxLifeTime = p.getMaxWreckLifeTime();
+        this.wreckLifeTime = p.getLifeTime();
+        this.wreckMaxLifeTime = p.getMaxLifeTime();
         this.isFire = p.isFire();
         this.isLight = p.isLight();
         this.isFireExplosion = p.isFireExplosion();
@@ -65,7 +65,6 @@ public class PacketSpawnParticle extends ServerPacket {
         rot = data.readFloat();
         rotationSpeed = data.readFloat();
         size = data.readVector2f();
-        sizeVelocity = data.readFloat();
         color = data.readVector4f();
         alphaVelocity = data.readFloat();
     }
@@ -92,7 +91,6 @@ public class PacketSpawnParticle extends ServerPacket {
         data.writeFloat(rot);
         data.writeFloat(rotationSpeed);
         data.writeVector2f(size);
-        data.writeFloat(sizeVelocity);
         data.writeVector4f(color);
         data.writeFloat(alphaVelocity);
     }
@@ -104,13 +102,12 @@ public class PacketSpawnParticle extends ServerPacket {
             if (isShipWreck) {
                 CollisionObject obj = world.getEntityById(destroyedShipId);
                 if (obj instanceof Ship) {
-                    ParticleSpawner.PARTICLE_WREAK_POOL.getOrCreate(ParticleWreck::new).init(textureOffset, (Ship) obj, pos.x, pos.y, velocity.x, velocity.y,
-                            rot, rotationSpeed, size.x, size.y, sizeVelocity, color.x, color.y, color.z, color.w, alphaVelocity, id, wreckMaxLifeTime);
+                    ParticleSpawner.PARTICLE_WREAK_POOL.getOrCreate(Wreck::new).init(textureOffset, (Ship) obj, pos.x, pos.y, velocity.x, velocity.y,
+                            rot, rotationSpeed, size.x, size.y, color.x, color.y, color.z, color.w, alphaVelocity, id, wreckMaxLifeTime);
                 }
             } else {
-                ParticleSpawner.PARTICLE_WREAK_POOL.getOrCreate(ParticleWreck::new).init(textureOffset, isLight, isFire, isFireExplosion,
-                        pos.x, pos.y, velocity.x, velocity.y, rot, rotationSpeed,
-                        size.x, size.y, sizeVelocity, color.x, color.y, color.z, color.w, alphaVelocity, id);
+                ParticleSpawner.PARTICLE_WREAK_POOL.getOrCreate(Wreck::new).init(textureOffset, isLight, isFire, isFireExplosion, pos.x, pos.y, velocity.x, velocity.y,
+                        rot, rotationSpeed, size.x, size.y, color.x, color.y, color.z, color.w, alphaVelocity, id);
             }
         }
     }

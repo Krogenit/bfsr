@@ -1,6 +1,6 @@
 package net.bfsr.collision.filter;
 
-import net.bfsr.client.particle.ParticleWreck;
+import net.bfsr.client.particle.Wreck;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import org.dyn4j.collision.Filter;
@@ -17,7 +17,7 @@ public class WreckFilter extends CollisionFilter {
 
         if (filter instanceof CollisionFilter) {
             Object otherData = ((CollisionFilter) filter).getUserData();
-            return otherData instanceof Ship || otherData instanceof ParticleWreck || otherData instanceof Bullet;
+            return otherData instanceof Ship || otherData instanceof Wreck || otherData instanceof Bullet;
         }
 
         return false;

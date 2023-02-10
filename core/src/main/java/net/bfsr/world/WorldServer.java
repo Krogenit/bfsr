@@ -1,6 +1,7 @@
 package net.bfsr.world;
 
-import net.bfsr.client.particle.Particle;
+import lombok.Getter;
+import net.bfsr.client.particle.Wreck;
 import net.bfsr.component.weapon.small.WeaponBeamSmall;
 import net.bfsr.component.weapon.small.WeaponGausSmall;
 import net.bfsr.component.weapon.small.WeaponLaserSmall;
@@ -26,12 +27,13 @@ public class WorldServer extends World {
     public static final float PACKET_SPAWN_DISTANCE = 600;
     public static final float PACKET_UPDATE_DISTANCE = 400;
 
-    private float updateTime, physicsTime, networkTime;
-
+    @Getter
     private final List<PlayerServer> players = new ArrayList<>();
     private final HashMap<String, PlayerServer> playersByName = new HashMap<>();
+    @Getter
     private final long seed;
-    private final List<Particle> particles = new ArrayList<>();
+    @Getter
+    private final List<Wreck> particles = new ArrayList<>();
 
     private float timer;
 
@@ -133,20 +135,15 @@ public class WorldServer extends World {
     public void update() {
         super.update();
         spawnShips();
-
-        updateTime = profiler.getResult("update");
-        physicsTime = profiler.getResult("physics");
-        networkTime = profiler.getResult("network");
-//		System.out.println(delta);
     }
 
     @Override
     protected void updateParticles() {
         for (int i = 0; i < particles.size(); i++) {
-            Particle p = particles.get(i);
-            p.update();
-            if (p.isDead()) {
-                removeDynamicParticle(p);
+            Wreck wreck = particles.get(i);
+            wreck.update();
+            if (wreck.isDead()) {
+                removePhysicObject(wreck);
                 particles.remove(i);
                 i--;
             }
@@ -173,9 +170,8 @@ public class WorldServer extends World {
         }
     }
 
-    public void addDynamicParticle(Particle particle) {
-        super.addDynamicParticle(particle);
-        particles.add(particle);
+    public void addWreck(Wreck wreck) {
+        particles.add(wreck);
     }
 
     public void removePlayer(PlayerServer player) {
@@ -194,30 +190,6 @@ public class WorldServer extends World {
 
     public boolean canJoin(PlayerServer player) {
         return !playersByName.containsKey(player.getUserName());
-    }
-
-    public List<PlayerServer> getPlayers() {
-        return players;
-    }
-
-    public long getSeed() {
-        return seed;
-    }
-
-    public float getUpdateTime() {
-        return updateTime;
-    }
-
-    public float getPhysicsTime() {
-        return physicsTime;
-    }
-
-    public float getNetworkTime() {
-        return networkTime;
-    }
-
-    public List<Particle> getParticles() {
-        return particles;
     }
 
     @Override

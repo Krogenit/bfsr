@@ -2,8 +2,8 @@ package net.bfsr.entity.bullet;
 
 import lombok.Getter;
 import net.bfsr.client.particle.ParticleSpawner;
-import net.bfsr.client.particle.ParticleWreck;
 import net.bfsr.client.particle.RenderLayer;
+import net.bfsr.client.particle.Wreck;
 import net.bfsr.client.render.instanced.BufferType;
 import net.bfsr.client.render.instanced.InstancedRenderer;
 import net.bfsr.client.render.texture.Texture;
@@ -137,7 +137,7 @@ public abstract class Bullet extends CollisionObject {
                 if (bullet.isDead()) {
                     bullet.destroyBullet(this, contact, normal);
                 }
-            } else if (userData instanceof ParticleWreck wreck) {
+            } else if (userData instanceof Wreck wreck) {
                 wreck.damage(damage.bulletDamageHull);
                 destroyBullet(wreck, contact, normal);
             }
@@ -190,7 +190,7 @@ public abstract class Bullet extends CollisionObject {
                     ParticleSpawner.spawnDirectedSpark(contact, normal, getScale().x * 1.5f, color.x, color.y, color.z, color.w);
                 } else if (destroyer instanceof Bullet) {
                     ParticleSpawner.spawnLight(position.x, position.y, getScale().x * 5.0f, 7.0f * 6.0f, color.x, color.y, color.z, 0.5f, 0.25f * 60.0f, true, RenderLayer.DEFAULT_ADDITIVE);
-                } else if (destroyer instanceof ParticleWreck) {
+                } else if (destroyer instanceof Wreck) {
                     Vector2 pos1 = contact.getPoint();
                     ParticleSpawner.spawnDirectedSpark(contact, normal, getScale().x * 1.5f, color.x, color.y, color.z, color.w);
                     Random rand = world.getRand();

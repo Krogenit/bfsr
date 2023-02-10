@@ -2,7 +2,7 @@ package net.bfsr.network.packet.server;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import net.bfsr.client.particle.Particle;
+import net.bfsr.client.particle.Wreck;
 import net.bfsr.core.Core;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.bullet.Bullet;
@@ -34,12 +34,11 @@ public class PacketRemoveObject extends ServerPacket {
     public void processOnClientSide(NetworkManagerClient networkManager) {
         CollisionObject obj = Core.getCore().getWorld().getEntityById(id);
         if (obj != null) {
-            if (obj instanceof Ship) {
-                ((Ship) obj).destroyShip();
+            if (obj instanceof Ship ship) {
+                ship.destroyShip();
             } else if (obj instanceof Bullet) {
                 obj.setDead(true);
-            } else if (obj instanceof Particle) {
-                Particle p = (Particle) obj;
+            } else if (obj instanceof Wreck p) {
                 p.setDead(true);
             }
         }

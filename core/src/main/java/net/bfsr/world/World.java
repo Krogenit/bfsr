@@ -2,7 +2,6 @@ package net.bfsr.world;
 
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
-import net.bfsr.client.particle.Particle;
 import net.bfsr.collision.ContactListener;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.bullet.Bullet;
@@ -120,14 +119,14 @@ public abstract class World {
         physicWorld.addBody(bullet.getBody());
     }
 
-    public void addDynamicParticle(Particle p) {
-        entitiesById.put(p.getId(), p);
-        physicWorld.addBody(p.getBody());
+    public void addPhysicObject(CollisionObject collisionObject) {
+        entitiesById.put(collisionObject.getId(), collisionObject);
+        physicWorld.addBody(collisionObject.getBody());
     }
 
-    public void removeDynamicParticle(Particle p) {
-        removeObjectById(p.getId());
-        physicWorld.removeBody(p.getBody());
+    public void removePhysicObject(CollisionObject collisionObject) {
+        removeObjectById(collisionObject.getId());
+        physicWorld.removeBody(collisionObject.getBody());
     }
 
     protected void removeObjectById(int id) {

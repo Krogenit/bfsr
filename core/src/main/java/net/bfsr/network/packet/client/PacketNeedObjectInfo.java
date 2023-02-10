@@ -2,7 +2,7 @@ package net.bfsr.network.packet.client;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import net.bfsr.client.particle.ParticleWreck;
+import net.bfsr.client.particle.Wreck;
 import net.bfsr.component.weapon.WeaponSlot;
 import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.bullet.Bullet;
@@ -55,8 +55,8 @@ public class PacketNeedObjectInfo extends ClientPacket {
             } else if (obj instanceof Bullet) {
                 Bullet b = (Bullet) obj;
                 networkManager.scheduleOutboundPacket(new PacketSpawnBullet(b));
-            } else if (obj instanceof ParticleWreck) {
-                ParticleWreck p = (ParticleWreck) obj;
+            } else if (obj instanceof Wreck) {
+                Wreck p = (Wreck) obj;
                 networkManager.scheduleOutboundPacket(new PacketSpawnParticle(p));
             }
         }

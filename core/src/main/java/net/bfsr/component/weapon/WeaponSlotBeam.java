@@ -2,8 +2,8 @@ package net.bfsr.component.weapon;
 
 import net.bfsr.client.particle.Beam;
 import net.bfsr.client.particle.ParticleSpawner;
-import net.bfsr.client.particle.ParticleWreck;
 import net.bfsr.client.particle.RenderLayer;
+import net.bfsr.client.particle.Wreck;
 import net.bfsr.client.render.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.collision.filter.BeamFilter;
@@ -222,7 +222,7 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                             }
                         }
                     }
-                } else if (userData instanceof ParticleWreck wreck) {
+                } else if (userData instanceof Wreck wreck) {
                     wreck.damage(damage.getBulletDamageHull() * beamColor.w);
                     if (world.isRemote()) {
                         Random rand = world.getRand();

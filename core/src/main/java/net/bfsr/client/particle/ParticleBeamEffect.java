@@ -17,8 +17,8 @@ public class ParticleBeamEffect extends Particle {
     private boolean changeColor;
 
     public ParticleBeamEffect init(WeaponSlotBeam slot, TextureRegister texture) {
-        init(texture, 0.0f, 0.0f, 0.0f, 0.0f, slot.getRotation(), 0.0f, 5.0f + 2.8f * slot.getShip().getWorld().getRand().nextFloat(),
-                slot.getScale().y / 2.0f + 0.4f * slot.getShip().getWorld().getRand().nextFloat(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.001f, false, RenderLayer.DEFAULT_ADDITIVE);
+        init(texture, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 5.0f + 2.8f * slot.getShip().getWorld().getRand().nextFloat(),
+                slot.getScale().y / 2.0f + 0.4f * slot.getShip().getWorld().getRand().nextFloat(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, false, RenderLayer.DEFAULT_ADDITIVE);
         this.slot = slot;
         this.ship = slot.getShip();
         this.rand = ship.getWorld().getRand();

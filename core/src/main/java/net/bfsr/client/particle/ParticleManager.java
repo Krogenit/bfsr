@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ParticleManager {
     private final List<Particle> particles = new ArrayList<>();
-    private final List<ParticleWreck> particlesWrecks = new ArrayList<>(64);
+    private final List<Wreck> particlesWrecks = new ArrayList<>(64);
 
     public void update() {
         for (int i = 0; i < particles.size(); i++) {
@@ -21,7 +21,7 @@ public class ParticleManager {
         }
 
         for (int i = 0; i < particlesWrecks.size(); i++) {
-            ParticleWreck particle = particlesWrecks.get(i);
+            Wreck particle = particlesWrecks.get(i);
             particle.update();
             if (particle.isDead()) {
                 particle.onRemoved();
@@ -38,7 +38,7 @@ public class ParticleManager {
 
     public void renderDebug() {
         for (int i = 0; i < particlesWrecks.size(); i++) {
-            ParticleWreck particle = particlesWrecks.get(i);
+            Wreck particle = particlesWrecks.get(i);
             particle.renderDebug();
         }
     }
@@ -47,7 +47,7 @@ public class ParticleManager {
         AxisAlignedBoundingBox cameraAABB = Core.getCore().getRenderer().getCamera().getBoundingBox();
 
         for (int i = 0, size = particlesWrecks.size(); i < size; i++) {
-            ParticleWreck wreck = particlesWrecks.get(i);
+            Wreck wreck = particlesWrecks.get(i);
             if (wreck.getWorldAABB().isIntersects(cameraAABB)) {
                 wreck.render();
             }
@@ -58,15 +58,15 @@ public class ParticleManager {
         AxisAlignedBoundingBox cameraAABB = Core.getCore().getRenderer().getCamera().getBoundingBox();
 
         for (int i = 0, size = particlesWrecks.size(); i < size; i++) {
-            ParticleWreck wreck = particlesWrecks.get(i);
+            Wreck wreck = particlesWrecks.get(i);
             if (wreck.getWorldAABB().isIntersects(cameraAABB)) {
                 wreck.renderAdditive();
             }
         }
     }
 
-    public void addParticle(ParticleWreck particleWreck) {
-        particlesWrecks.add(particleWreck);
+    public void addParticle(Wreck wreck) {
+        particlesWrecks.add(wreck);
     }
 
     public void addParticle(Particle particle) {
