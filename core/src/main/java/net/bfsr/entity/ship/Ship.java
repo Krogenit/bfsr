@@ -311,11 +311,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         }
 
         updateComponents();
-
-        if (stringObject != null) {
-            Transform transform = body.getTransform();
-            stringObject.setPosition((int) transform.getTranslationX(), (int) (transform.getTranslationY() + 3.2f + scale.y / 4.0f));
-        }
     }
 
     @Override
@@ -485,6 +480,8 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
             }
 
             renderGunSlots();
+            float yOffset = 3.2f + scale.y / 4.0f;
+            stringObject.renderWithShadow(BufferType.ENTITIES_ALPHA, lastPosition.x, lastPosition.y + yOffset, position.x, position.y + yOffset, 0.1f, 0.1f, 0.1f, 0.1f);
         }
     }
 
@@ -609,10 +606,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     }
 
     public void clear() {
-        if (stringObject != null) {
-            stringObject.clear();
-        }
-
         int size = weaponSlots.size();
         for (int i = 0; i < size; i++) {
             WeaponSlot slot = weaponSlots.get(i);
@@ -622,11 +615,8 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     private void createName() {
         if (world.isRemote() && name != null) {
-            clear();
-            stringObject = new StringObject(FontType.XOLONIUM, name, 20, StringOffsetType.CENTERED);
+            stringObject = new StringObject(FontType.XOLONIUM, name, 14, StringOffsetType.CENTERED);
             stringObject.compile();
-            Transform transform = body.getTransform();
-            stringObject.setPosition((int) transform.getTranslationX(), (int) (transform.getTranslationY() + 3.2f + scale.y / 4.0f));
         }
     }
 
@@ -705,11 +695,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         for (int i = 0; i < size; i++) {
             Damage damage = damages.get(i);
             damage.updatePos();
-        }
-
-        if (stringObject != null) {
-            Transform transform = body.getTransform();
-            stringObject.setPosition((int) transform.getTranslationX(), (int) (transform.getTranslationY() + 32.0f + scale.y / 4.0f));
         }
     }
 
