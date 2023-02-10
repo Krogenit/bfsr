@@ -152,6 +152,8 @@ public class GuiSettings extends Gui {
         backgroundDown.render();
         mainText.render();
 
+        InstancedRenderer.INSTANCE.render(BufferType.GUI);
+
         GL11C.glEnable(GL11C.GL_SCISSOR_TEST);
         GL11C.glScissor(0, 60, width, Math.max(height - 120, 0));
 
@@ -164,6 +166,7 @@ public class GuiSettings extends Gui {
             scissorAffected.get(i).render();
         }
 
+        InstancedRenderer.INSTANCE.render(BufferType.GUI);
         GL11C.glDisable(GL11C.GL_SCISSOR_TEST);
 
         saveButton.render();
