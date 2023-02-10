@@ -145,7 +145,7 @@ public class GuiSettings extends Gui {
     @Override
     public void render(float interpolation) {
         if (isInGame) {
-            InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(width / 2.0F, height / 2.0f, width, height, 0.0f, 0.0f, 0.0f, 0.5f, 0, BufferType.GUI);
+            InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(0, 0, width, height, 0.0f, 0.0f, 0.0f, 0.5f, 0, BufferType.GUI);
         }
 
         backgroundTop.render();
