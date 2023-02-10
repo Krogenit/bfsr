@@ -515,7 +515,8 @@ public class InstancedRenderer {
 
     public void putTextureHandle(long textureHandle, ByteBuffer byteBuffer, MutableInt bufferIndex) {
         byteBuffer.putLong(bufferIndex.getAndAdd(8), textureHandle);
-        byteBuffer.putLong(bufferIndex.getAndAdd(8), 0);//padding
+        byteBuffer.putInt(bufferIndex.getAndAdd(4), textureHandle != 0 ? 1 : 0);
+        byteBuffer.putInt(bufferIndex.getAndAdd(4), 0);//padding
     }
 
     public void clear() {

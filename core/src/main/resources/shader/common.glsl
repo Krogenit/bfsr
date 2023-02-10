@@ -1,7 +1,8 @@
-struct ColorAndTexture {
+struct Material {
     vec4 color;
     uvec2 textureHandle;
-    vec2 padding;
+    bool useTexture;
+    bool padding;
 };
 
 #define UBO_CAMERA_MATRIX 0

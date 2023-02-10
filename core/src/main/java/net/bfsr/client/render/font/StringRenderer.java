@@ -178,6 +178,7 @@ public class StringRenderer {
         materialBuffer.putFloat(b);
         materialBuffer.putFloat(a);
         materialBuffer.putLong(textureHandle);
-        materialBuffer.putLong(0);//padding
+        materialBuffer.putInt(textureHandle != 0 ? 1 : 0);
+        materialBuffer.putInt(0);//padding
     }
 }
