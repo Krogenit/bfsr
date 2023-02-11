@@ -110,8 +110,8 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     /**
      * Saved transform before TOI solver
      */
-    private final Transform transform = new Transform();
-    private boolean transformUpdated;
+    private final Transform savedTransform = new Transform();
+    private boolean transformSaved;
 
     protected Ship(WorldServer world, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, boolean spawned) {
         super(world, world.getNextId(), x, y, rotation, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 0.0f);
@@ -296,9 +296,9 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     @Override
     public void postPhysicsUpdate() {
-        if (transformUpdated) {
-            body.setTransform(transform);
-            transformUpdated = false;
+        if (transformSaved) {
+            body.setTransform(savedTransform);
+            transformSaved = false;
         }
 
         super.postPhysicsUpdate();
@@ -316,8 +316,8 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     @Override
     public void saveTransform(Transform transform) {
-        this.transform.set(transform);
-        transformUpdated = true;
+        this.savedTransform.set(transform);
+        transformSaved = true;
     }
 
     private void shoot() {
