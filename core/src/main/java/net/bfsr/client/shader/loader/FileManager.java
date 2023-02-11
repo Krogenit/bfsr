@@ -164,7 +164,7 @@ public class FileManager {
 
     private String loadFile(String fileName) {
         StringBuilder shaderSource = new StringBuilder(1024);
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Files.newInputStream(new File(PathHelper.shader, fileName).toPath()), StandardCharsets.UTF_8))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Files.newInputStream(new File(PathHelper.SHADER, fileName).toPath()), StandardCharsets.UTF_8))) {
             String line;
 
             while ((line = reader.readLine()) != null) {

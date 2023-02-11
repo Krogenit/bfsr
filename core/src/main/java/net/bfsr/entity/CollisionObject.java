@@ -56,7 +56,7 @@ public abstract class CollisionObject extends TextureObject {
     protected float sin, cos;
 
     protected CollisionObject(World world, int id, TextureRegister texture, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a) {
-        super(TextureLoader.getTexture(texture), x, y, rotation, scaleX, scaleY, r, g, b, a);
+        super(texture != null ? TextureLoader.getTexture(texture) : null, x, y, rotation, scaleX, scaleY, r, g, b, a);
         this.world = world;
         this.id = id;
         createBody(x, y);

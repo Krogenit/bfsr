@@ -11,6 +11,7 @@ import net.bfsr.client.language.Lang;
 import net.bfsr.client.renderer.Renderer;
 import net.bfsr.client.sound.SoundListener;
 import net.bfsr.client.sound.SoundManager;
+import net.bfsr.entity.wreck.WreckRegistry;
 import net.bfsr.network.Packet;
 import net.bfsr.network.client.NetworkManagerClient;
 import net.bfsr.profiler.Profiler;
@@ -84,6 +85,7 @@ public class Core {
         this.currentGui = new GuiMainMenu();
         this.currentGui.init();
         profiler.setEnable(EnumOption.IS_PROFILING.getBoolean());
+        WreckRegistry.INSTANCE.init();
     }
 
     public void update() {

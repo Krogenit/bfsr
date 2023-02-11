@@ -41,7 +41,7 @@ public class SoundBuffer {
 
     private ShortBuffer readVorbis(String fileName, int bufferSize, STBVorbisInfo info) throws Exception {
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            vorbis = IOUtil.ioResourceToByteBuffer(PathHelper.sound + File.separator + fileName + ".ogg", bufferSize);
+            vorbis = IOUtil.ioResourceToByteBuffer(PathHelper.SOUND + File.separator + fileName + ".ogg", bufferSize);
             IntBuffer error = stack.mallocInt(1);
             long decoder = STBVorbis.stb_vorbis_open_memory(vorbis, error, null);
             if (decoder == MemoryUtil.NULL) {

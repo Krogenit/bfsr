@@ -6,6 +6,7 @@ import com.squareup.moshi.Moshi;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.config.IConfig;
 
 import java.io.File;
 import java.io.IOException;

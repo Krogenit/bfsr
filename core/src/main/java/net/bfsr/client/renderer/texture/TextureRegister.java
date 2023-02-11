@@ -139,33 +139,6 @@ public enum TextureRegister {
     particleWreckLight1("particle/wreck/wrecklight1"),
     particleWreckLight2("particle/wreck/wrecklight2"),
 
-    particleWreckEngiSmall0Wreck0("particle/wreck/small/engi_small0_wreck0"),
-    particleWreckEngiSmall0Wreck1("particle/wreck/small/engi_small0_wreck1"),
-
-    particleWreckEngiSmall0Fire0("particle/wreck/small/engi_small0_wreckfire0"),
-    particleWreckEngiSmall0Fire1("particle/wreck/small/engi_small0_wreckfire1"),
-
-    particleWreckEngiSmall0Light0("particle/wreck/small/engi_small0_wrecklight0"),
-    particleWreckEngiSmall0Light1("particle/wreck/small/engi_small0_wrecklight1"),
-
-    particleWreckHumanSmall0Wreck0("particle/wreck/small/human_small0_wreck0"),
-    particleWreckHumanSmall0Wreck1("particle/wreck/small/human_small0_wreck1"),
-
-    particleWreckHumanSmall0Fire0("particle/wreck/small/human_small0_wreckfire0"),
-    particleWreckHumanSmall0Fire1("particle/wreck/small/human_small0_wreckfire1"),
-
-    particleWreckHumanSmall0Light0("particle/wreck/small/human_small0_wrecklight0"),
-    particleWreckHumanSmall0Light1("particle/wreck/small/human_small0_wrecklight1"),
-
-    particleWreckSaimonSmall0Wreck0("particle/wreck/small/saimon_small0_wreck0"),
-    particleWreckSaimonSmall0Wreck1("particle/wreck/small/saimon_small0_wreck1"),
-
-    particleWreckSaimonSmall0Fire0("particle/wreck/small/saimon_small0_wreckfire0"),
-    particleWreckSaimonSmall0Fire1("particle/wreck/small/saimon_small0_wreckfire1"),
-
-    particleWreckSaimonSmall0Light0("particle/wreck/small/saimon_small0_wrecklight0"),
-    particleWreckSaimonSmall0Light1("particle/wreck/small/saimon_small0_wrecklight1"),
-
     particleExplosion("particle/explosion"),
     particleSmokeRing("particle/smokering"),
 

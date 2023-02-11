@@ -19,7 +19,7 @@ public final class Lang {
     private static final List<String> LANGUAGES = new ArrayList<>();
 
     public static void load() {
-        File folder = new File(PathHelper.content, "lang");
+        File folder = new File(PathHelper.CONTENT, "lang");
         if (folder.exists()) {
             try {
                 for (final File file : folder.listFiles()) {

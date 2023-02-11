@@ -1,6 +1,7 @@
 package net.bfsr.entity.ship;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.bfsr.ai.Ai;
 import net.bfsr.ai.AiAggressiveType;
 import net.bfsr.ai.task.AiAttackTarget;
@@ -77,8 +78,10 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     @Getter
     private Hull hull;
     @Getter
+    @Setter
     private Cargo cargo;
 
+    @Getter
     private String name;
     private StringObject stringObject;
 
@@ -95,6 +98,8 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     private int destroingTimer, sparksTimer;
     protected int maxDestroingTimer, maxSparksTimer;
 
+    @Getter
+    @Setter
     private PlayerServer owner;
     private boolean controlledByPlayer;
 
@@ -119,7 +124,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         this.jumpPosition.set(jumpVelocity.x / 60.0f * (64.0f + scale.x * 0.1f) * -0.5f + x, jumpVelocity.y / 60.0f * (64.0f + scale.y * 0.1f) * -0.5f + y);
         this.effectsColor.set(r, g, b);
         setRotation(this.rotation);
-        if (spawned) setSpawmed();
+        if (spawned) setSpawned();
         this.ai = new Ai(this);
         this.ai.setAggressiveType(AiAggressiveType.ATTACK);
         this.ai.addTask(new AiSearchTarget(this, 4000.0f));
@@ -128,8 +133,8 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
-    protected Ship(WorldClient w, int id, TextureRegister texture, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b) {
-        super(w, id, texture, x, y, rotation, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 0.0f);
+    protected Ship(WorldClient world, int id, TextureRegister texture, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b) {
+        super(world, id, texture, x, y, rotation, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 0.0f);
         this.damages = new ArrayList<>();
         RotationHelper.angleToVelocity(this.rotation + MathUtils.PI, -jumpSpeed * 6.0f, jumpVelocity);
         this.jumpPosition.set(jumpVelocity.x / 60.0f * (64.0f + scale.x * 0.1f) * -0.5f + x, jumpVelocity.y / 60.0f * (64.0f + scale.y * 0.1f) * -0.5f + y);
@@ -277,7 +282,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         } else {
             if (((jumpVelocity.x < 0 && jumpPosition.x <= position.x) || (jumpVelocity.x > 0 && jumpPosition.x >= position.x)) && ((jumpVelocity.y < 0 && jumpPosition.y <= position.y)
                     || (jumpVelocity.y >= 0 && jumpPosition.y >= position.y))) {
-                setSpawmed();
+                setSpawned();
                 setVelocity(jumpVelocity.mul(0.26666668f));
                 if (world.isRemote()) {
                     Vector2f velocity = getVelocity();
@@ -579,7 +584,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     public abstract void spawnEngineParticles(Direction dir);
 
-    public void setSpawmed() {
+    public void setSpawned() {
         color.w = 1.0f;
         spawned = true;
         world.spawnShip(this);
@@ -594,16 +599,12 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         body.setLinearVelocity(new Vector2(velocity.x, velocity.y));
     }
 
-    public void setRotation(float rotate) {
-        body.getTransform().setRotation(rotate);
+    public void setRotation(float rotation) {
+        body.getTransform().setRotation(rotation);
     }
 
     public Vector3f getEffectsColor() {
         return effectsColor;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public void clear() {
@@ -641,18 +642,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         damages.add(d);
     }
 
-    public void setCargo(Cargo cargo) {
-        this.cargo = cargo;
-    }
-
-    public PlayerServer getOwner() {
-        return owner;
-    }
-
-    public void setOwner(PlayerServer owner) {
-        this.owner = owner;
-    }
-
     public boolean isBot() {
         return owner == null;
     }
@@ -668,12 +657,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     public void setTarget(CollisionObject target) {
         this.target = target;
     }
-
-    public abstract TextureRegister getWreckTexture(int textureOffset);
-
-    public abstract TextureRegister getWreckFireTexture(int textureOffset);
-
-    public abstract TextureRegister getWreckLightTexture(int textureOffset);
 
     public void setMoveDirection(Direction dir) {
         remoteMoveDirectionForEngineParticles = dir;
@@ -709,4 +692,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
             if (weaponSlot != null) weaponSlot.updatePos();
         }
     }
+
+    public abstract ShipType getType();
 }

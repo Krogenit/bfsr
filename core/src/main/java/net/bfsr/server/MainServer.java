@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.core.Core;
 import net.bfsr.core.Loop;
 import net.bfsr.entity.ship.PlayerServer;
+import net.bfsr.entity.wreck.WreckRegistry;
 import net.bfsr.network.EnumGui;
 import net.bfsr.network.NetworkSystem;
 import net.bfsr.network.packet.server.PacketJoinGame;
@@ -66,6 +67,7 @@ public class MainServer extends Loop {
         networkSystem = new NetworkSystem(this);
         profiler = new Profiler();
         profiler.setEnable(true);
+        WreckRegistry.INSTANCE.init();
         dataBase = new SimpleDataBase(this);
         world = new WorldServer(profiler);
         playerManager = new PlayerManager(world);

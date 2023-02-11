@@ -1,4 +1,4 @@
-package net.bfsr.settings;
+package net.bfsr.config;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

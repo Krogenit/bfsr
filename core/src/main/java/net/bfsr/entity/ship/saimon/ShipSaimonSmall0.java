@@ -15,13 +15,14 @@ import net.bfsr.component.hull.Hull;
 import net.bfsr.component.reactor.Reactor;
 import net.bfsr.component.shield.ShieldSmall0;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.ShipType;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.world.WorldClient;
 import net.bfsr.world.WorldServer;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.Geometry;
+import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
@@ -30,8 +31,8 @@ public class ShipSaimonSmall0 extends Ship {
         super(world, x, y, rot, 10, 10, 1.0f, 0.6f, 0.5f, spawned);
     }
 
-    public ShipSaimonSmall0(WorldClient w, int id, float x, float y, float rot) {
-        super(w, id, TextureRegister.shipSaimonSmall0, x, y, rot, 10, 10, 1.0f, 0.6f, 0.5f);
+    public ShipSaimonSmall0(WorldClient world, int id, float x, float y, float rot) {
+        super(world, id, TextureRegister.shipSaimonSmall0, x, y, rot, 10, 10, 1.0f, 0.6f, 0.5f);
         this.textureDamage = TextureLoader.getTexture(TextureRegister.shipSaimonSmall0Damage);
         addDamage(new Damage(this, 0.8f, 0, new Vector2f(1.0f, -0.4f), 0.08f));
         addDamage(new Damage(this, 0.6f, 0, new Vector2f(0.5f, -1.8f), 0.1f));
@@ -76,7 +77,7 @@ public class ShipSaimonSmall0 extends Ship {
         vertices[1] = new Vector2(-3.45f, -1.75f);
         vertices[2] = new Vector2(-0.57f, -0.95f);
         vertices[3] = new Vector2(-1.5f, -0.0f);
-        BodyFixture fixture = new BodyFixture(Geometry.createPolygon(vertices));
+        BodyFixture fixture = new BodyFixture(new Polygon(vertices));
         fixture.setFilter(new ShipFilter(this));
         fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         body.addFixture(fixture);
@@ -86,7 +87,7 @@ public class ShipSaimonSmall0 extends Ship {
         vertices[1] = new Vector2(-0.57f, 0.85f);
         vertices[2] = new Vector2(-3.1f, 1.65f);
         vertices[3] = new Vector2(-5.05f, 1.65f);
-        fixture = new BodyFixture(Geometry.createPolygon(vertices));
+        fixture = new BodyFixture(new Polygon(vertices));
         fixture.setFilter(new ShipFilter(this));
         fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         body.addFixture(fixture);
@@ -98,7 +99,7 @@ public class ShipSaimonSmall0 extends Ship {
         vertices[3] = new Vector2(4.0f, 0.74f);
         vertices[4] = new Vector2(-3.3f, 0.74f);
         vertices[5] = new Vector2(-3.9f, -0.05f);
-        fixture = new BodyFixture(Geometry.createPolygon(vertices));
+        fixture = new BodyFixture(new Polygon(vertices));
         fixture.setFilter(new ShipFilter(this));
         fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         body.addFixture(fixture);
@@ -108,7 +109,7 @@ public class ShipSaimonSmall0 extends Ship {
         vertices[1] = new Vector2(-0.9f, -3.1f);
         vertices[2] = new Vector2(1.4f, -3.1f);
         vertices[3] = new Vector2(1.4f, -0.9f);
-        fixture = new BodyFixture(Geometry.createPolygon(vertices));
+        fixture = new BodyFixture(new Polygon(vertices));
         fixture.setFilter(new ShipFilter(this));
         fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         body.addFixture(fixture);
@@ -118,7 +119,7 @@ public class ShipSaimonSmall0 extends Ship {
         vertices[1] = new Vector2(-0.4f, 0.75f);
         vertices[2] = new Vector2(1.4f, 0.75f);
         vertices[3] = new Vector2(1.4f, 3.05f);
-        fixture = new BodyFixture(Geometry.createPolygon(vertices));
+        fixture = new BodyFixture(new Polygon(vertices));
         fixture.setFilter(new ShipFilter(this));
         fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         body.addFixture(fixture);
@@ -135,47 +136,32 @@ public class ShipSaimonSmall0 extends Ship {
     public void spawnEngineParticles(Direction dir) {
         Vector2f shipPos = getPosition();
 
-        switch (dir) {
-            case FORWARD:
-                RotationHelper.rotate(getRotation(), -3.3f, 0, rotateToVector);
-                Vector2 shipVelocity = body.getLinearVelocity();
-                ParticleSpawner.spawnEngineBack(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, (float) shipVelocity.x / 50.0f, (float) shipVelocity.y / 50.0f,
-                        getRotation(), 10.0f, 6.0F, 1.0f, 0.5f, 0.5f, 1.0f, true);
-                RotationHelper.rotate(getRotation(), -3.5f, 0, rotateToVector);
-                ParticleSpawner.spawnLight(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, 6.0f, 1.0f, 0.5f, 0.5f, 1.0f, RenderLayer.BACKGROUND_ADDITIVE);
-                break;
-            case LEFT:
-                RotationHelper.rotate(getRotation(), -0, 3.0f, rotateToVector);
-                ParticleSpawner.spawnShipEngineSmoke(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y);
-                break;
-            case RIGHT:
-                RotationHelper.rotate(getRotation(), -0, -3.0f, rotateToVector);
-                ParticleSpawner.spawnShipEngineSmoke(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y);
-                break;
-            case BACKWARD:
-                RotationHelper.rotate(getRotation(), 5.0f, 0, rotateToVector);
-                ParticleSpawner.spawnShipEngineSmoke(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y);
-                break;
+        if (dir == Direction.FORWARD) {
+            RotationHelper.rotate(getRotation(), -3.3f, 0, rotateToVector);
+            Vector2 shipVelocity = body.getLinearVelocity();
+            ParticleSpawner.spawnEngineBack(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, (float) shipVelocity.x / 50.0f, (float) shipVelocity.y / 50.0f,
+                    getRotation(), 10.0f, 6.0F, 1.0f, 0.5f, 0.5f, 1.0f, true);
+            RotationHelper.rotate(getRotation(), -3.5f, 0, rotateToVector);
+            ParticleSpawner.spawnLight(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, 6.0f, 1.0f, 0.5f, 0.5f, 1.0f, RenderLayer.BACKGROUND_ADDITIVE);
+        } else if (dir == Direction.LEFT) {
+            RotationHelper.rotate(getRotation(), -0, 3.0f, rotateToVector);
+            ParticleSpawner.spawnShipEngineSmoke(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y);
+        } else if (dir == Direction.RIGHT) {
+            RotationHelper.rotate(getRotation(), -0, -3.0f, rotateToVector);
+            ParticleSpawner.spawnShipEngineSmoke(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y);
+        } else if (dir == Direction.BACKWARD) {
+            RotationHelper.rotate(getRotation(), 5.0f, 0, rotateToVector);
+            ParticleSpawner.spawnShipEngineSmoke(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y);
         }
-    }
-
-    @Override
-    public TextureRegister getWreckTexture(int textureOffset) {
-        return TextureRegister.values()[TextureRegister.particleWreckSaimonSmall0Wreck0.ordinal() + textureOffset];
-    }
-
-    @Override
-    public TextureRegister getWreckFireTexture(int textureOffset) {
-        return TextureRegister.values()[TextureRegister.particleWreckSaimonSmall0Fire0.ordinal() + textureOffset];
-    }
-
-    @Override
-    public TextureRegister getWreckLightTexture(int textureOffset) {
-        return TextureRegister.values()[TextureRegister.particleWreckSaimonSmall0Light0.ordinal() + textureOffset];
     }
 
     @Override
     protected void createDestroyParticles() {
         ParticleSpawner.spawnDestroyShipSmall(this);
+    }
+
+    @Override
+    public ShipType getType() {
+        return ShipType.SAIMON_SMALL_0;
     }
 }

@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import lombok.Getter;
 import lombok.Setter;
+import net.bfsr.config.IConfig;
 
 import java.io.File;
 import java.io.FileReader;

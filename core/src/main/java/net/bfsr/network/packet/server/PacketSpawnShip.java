@@ -59,7 +59,7 @@ public class PacketSpawnShip extends ServerPacket {
                 Ship ship = (Ship) ctr.newInstance(world, id, position.x, position.y, rot);
                 ship.init();
 
-                if (isSpawned) ship.setSpawmed();
+                if (isSpawned) ship.setSpawned();
             } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException e) {
                 log.error("Couldn't create ship instance", e);
             }

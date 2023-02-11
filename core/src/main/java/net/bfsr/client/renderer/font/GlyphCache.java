@@ -236,7 +236,7 @@ public class GlyphCache {
      */
     void setFontFromFile(String fontFileName, boolean antiAlias) {
         try {
-            InputStream stream = new FileInputStream(new File(PathHelper.font, fontFileName));
+            InputStream stream = new FileInputStream(new File(PathHelper.FONT, fontFileName));
 
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             Font font = Font.createFont(Font.TRUETYPE_FONT, stream);

@@ -1,5 +1,7 @@
 package net.bfsr.client.renderer.texture;
 
+import gnu.trove.map.TMap;
+import gnu.trove.map.hash.THashMap;
 import net.bfsr.client.renderer.texture.dds.DDSFile;
 import net.bfsr.util.PathHelper;
 import org.lwjgl.opengl.*;
@@ -12,10 +14,9 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.EnumMap;
 
 public final class TextureLoader {
-    private static final EnumMap<TextureRegister, Texture> LOADED_TEXTURES = new EnumMap<>(TextureRegister.class);
+    private static final TMap<String, Texture> LOADED_TEXTURES = new THashMap<>();
     public static Texture dummyTexture;
 
     public static void init() {
@@ -40,27 +41,32 @@ public final class TextureLoader {
         }
     }
 
-    public static Texture getTexture(TextureRegister texture, boolean createMips) {
-        if (texture == null) return null;
-        if (!LOADED_TEXTURES.containsKey(texture)) loadPngTexture(texture, createMips);
-
-        return LOADED_TEXTURES.get(texture);
+    public static Texture getTexture(TextureRegister texture) {
+        return getTexture(texture.getPath());
     }
 
-    public static Texture getTexture(TextureRegister texture) {
-        return getTexture(texture, true);
+    public static Texture getTexture(String path) {
+        return getTexture(path, true);
+    }
+
+    public static Texture getTexture(TextureRegister texture, boolean createMips) {
+        return getTexture(texture.getPath(), createMips);
+    }
+
+    public static Texture getTexture(String path, boolean createMips) {
+        return LOADED_TEXTURES.computeIfAbsent(path, s -> loadPngTexture(path, createMips));
     }
 
     private static void loadDDSTexture(TextureRegister name) {
-        if (LOADED_TEXTURES.containsKey(name)) {
-            LOADED_TEXTURES.get(name);
+        if (LOADED_TEXTURES.containsKey(name.getPath())) {
+            LOADED_TEXTURES.get(name.getPath());
             return;
         }
 
         DDSFile dds = null;
 
         try {
-            InputStream in = new FileInputStream(new File(PathHelper.texture, name.getPath().replace("/", File.separator) + ".dds"));
+            InputStream in = new FileInputStream(new File(PathHelper.TEXTURE, name.getPath().replace("/", File.separator) + ".dds"));
             dds = new DDSFile(in);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -69,10 +75,10 @@ public final class TextureLoader {
         if (dds == null) throw new RuntimeException("Failed to load a texture file " + name);
 
         Texture texture = generateTexture(dds);
-        LOADED_TEXTURES.put(name, texture);
+        LOADED_TEXTURES.put(name.getPath(), texture);
     }
 
-    private static void loadPngTexture(TextureRegister name, boolean createMips) {
+    private static Texture loadPngTexture(String path, boolean createMips) {
         ByteBuffer image;
         int width, height, channels;
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -81,7 +87,7 @@ public final class TextureLoader {
             IntBuffer comp = stack.mallocInt(1);
 
             STBImage.stbi_set_flip_vertically_on_load(false);
-            image = STBImage.stbi_load(new File(PathHelper.texture, name.getPath().replace("/", File.separator) + ".png").toString(), w, h, comp, 0);
+            image = STBImage.stbi_load(new File(PathHelper.TEXTURE, path.replace("/", File.separator) + ".png").toString(), w, h, comp, 0);
             if (image == null) {
                 throw new RuntimeException("Failed to load a texture file!" + System.lineSeparator() + STBImage.stbi_failure_reason());
             }
@@ -91,7 +97,7 @@ public final class TextureLoader {
             height = h.get();
         }
 
-        LOADED_TEXTURES.put(name, createTexture(width, height, image, channels, createMips));
+        return createTexture(width, height, image, channels, createMips);
     }
 
     private static Texture generateTexture(DDSFile dds) {

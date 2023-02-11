@@ -100,7 +100,7 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
     public Wreck init(World world, int id, int textureOffset, boolean light, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation,
                       float angularVelocity, float scaleX, float scaleY, float r, float g, float b, float a, float alphaVelocity) {
         return init(world, id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, r, g, b, a, alphaVelocity, null, textureOffset, fire, light,
-                fireExplosion, 10, 0, null, 0.0f, 0.0f, 0.0f, 0.0f, null, null, 0);
+                fireExplosion, 10, 0, world.getRand(), 0.0f, 0.0f, 0.0f, 0.0f, null, null, 0);
     }
 
     public Wreck init(int textureOffset, boolean isWreck, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity,

@@ -57,19 +57,19 @@ public final class ParticleSpawner {
             Vector2 bodyVelocity = ship.getBody().getLinearVelocity();
             float rot = ship.getRotation();
             if (rand.nextInt(2) == 0) {
-                spawnShipWreck(ship, 0, pos.x, pos.y, rot, -rot * 3.0f + (float) bodyVelocity.x * 0.4f, -rot * 3.0f + (float) bodyVelocity.y * 0.4f, 0.02f);
+                spawnShipWreck(ship, 0, pos.x, pos.y, rot, -rot * 3.0f + (float) bodyVelocity.x * 0.4f, -rot * 3.0f + (float) bodyVelocity.y * 0.4f, 0.02f, 750.0f);
             }
 
             if (rand.nextInt(2) == 0) {
-                spawnShipWreck(ship, 1, pos.x, pos.y, rot, rot * 3.0f - (float) bodyVelocity.x * 0.4f, rot * 3.0f - (float) bodyVelocity.y * 0.4f, 0.02f);
+                spawnShipWreck(ship, 1, pos.x, pos.y, rot, rot * 3.0f - (float) bodyVelocity.x * 0.4f, rot * 3.0f - (float) bodyVelocity.y * 0.4f, 0.02f, 750.0f);
             }
         }
     }
 
-    public static void spawnShipWreck(Ship s, int textureOffset, float x, float y, float angle, float velocityX, float velocityY, float alphaVel) {
+    public static void spawnShipWreck(Ship s, int wreckIndex, float x, float y, float angle, float velocityX, float velocityY, float alphaVel, float lifeTime) {
         float angleVel = (-0.005f + rand.nextFloat() / 200.0f) * 60.0f;
-        ShipWreck wreck = PARTICLE_SHIP_WREAK_POOL.getOrCreate(ShipWreck::new).init(s.getWorld().getNextId(), textureOffset, s, x, y, velocityX, velocityY, angle, angleVel,
-                s.getScale().x, s.getScale().y, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel);
+        ShipWreck wreck = PARTICLE_SHIP_WREAK_POOL.getOrCreate(ShipWreck::new).init(s.getWorld().getNextId(), wreckIndex, s, x, y, velocityX, velocityY, angle, angleVel,
+                s.getScale().x, s.getScale().y, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel, lifeTime);
         MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
     }
 

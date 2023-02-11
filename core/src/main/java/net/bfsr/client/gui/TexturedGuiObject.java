@@ -17,7 +17,7 @@ public class TexturedGuiObject extends SimpleGuiObject {
 
     public TexturedGuiObject(TextureRegister texture, int x, int y, int width, int height) {
         super(x, y, width, height);
-        this.texture = TextureLoader.getTexture(texture);
+        if (texture != null) this.texture = TextureLoader.getTexture(texture);
     }
 
     @Override
