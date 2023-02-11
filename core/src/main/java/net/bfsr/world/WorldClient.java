@@ -268,7 +268,7 @@ public class WorldClient extends World {
     public void setPlayerShip(Ship playerShip) {
         this.playerShip = playerShip;
         core.getGuiInGame().selectShip(playerShip);
-        core.getGuiInGame().setShipControl();
+        core.getGuiInGame().onShipControlStarted();
     }
 
     public Ship getPlayerShip() {

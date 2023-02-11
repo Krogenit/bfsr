@@ -340,6 +340,14 @@ public class InstancedRenderer {
         putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
     }
 
+    public void addToRenderPipeLine(float x, float y, float scaleX, float scaleY, float r, float g, float b, float a, Texture texture, BufferType bufferType) {
+        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
+        putVertices(x, y, scaleX * 0.5f, scaleY * 0.5f, buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
+        putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        putTextureHandle(texture.getTextureHandle(), buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        buffersHolder.incrementObjectCount();
+    }
+
     public void addToRenderPipeLine(float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a, Texture texture, BufferType bufferType) {
         BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
         putVertices(x, y, LUT.sin(rotation), LUT.cos(rotation), scaleX * 0.5f, scaleY * 0.5f, buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
