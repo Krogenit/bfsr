@@ -7,7 +7,6 @@ import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
-import net.bfsr.server.MainServer;
 import net.bfsr.util.MutableInt;
 import net.bfsr.util.TimeUtils;
 import net.bfsr.world.World;
@@ -19,7 +18,7 @@ import java.nio.FloatBuffer;
 public class Particle extends TextureObject {
     @Getter
     protected float sizeVelocity, alphaVelocity, angularVelocity, maxAlpha;
-    protected boolean canCollide, isAlphaFromZero, zeroVelocity;
+    protected boolean isAlphaFromZero, zeroVelocity;
     @Getter
     protected RenderLayer renderLayer;
     private final Vector2f velocity = new Vector2f();
@@ -28,8 +27,7 @@ public class Particle extends TextureObject {
     private boolean isDead;
 
     public Particle init(World world, TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
-                         float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero, boolean canCollide,
-                         RenderLayer renderLayer) {
+                         float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero, RenderLayer renderLayer) {
         this.texture = TextureLoader.getTexture(texture);
         this.position.set(x, y);
         this.lastPosition.set(position);
@@ -43,7 +41,6 @@ public class Particle extends TextureObject {
         this.color.set(r, g, b, a);
         this.alphaVelocity = alphaVelocity;
         this.isAlphaFromZero = isAlphaFromZero;
-        this.canCollide = canCollide;
         this.renderLayer = renderLayer;
         this.zeroVelocity = velocity.length() != 0;
         this.isDead = false;
@@ -62,23 +59,10 @@ public class Particle extends TextureObject {
         return this;
     }
 
-    public Particle init(float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY, float sizeVelocity,
-                         float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero, boolean canCollide, RenderLayer renderLayer) {
-        return init(MainServer.getInstance().getWorld(), null, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity,
-                isAlphaFromZero, canCollide, renderLayer);
-    }
-
-    public Particle init(TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
-                         float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero, boolean canCollide,
-                         RenderLayer renderLayer) {
-        return init(Core.get().getWorld(), texture, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity,
-                isAlphaFromZero, canCollide, renderLayer);
-    }
-
     public Particle init(TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY, float sizeVelocity,
                          float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero, RenderLayer renderLayer) {
         return init(Core.get().getWorld(), texture, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity,
-                isAlphaFromZero, false, renderLayer);
+                isAlphaFromZero, renderLayer);
     }
 
     protected void addParticle() {
@@ -91,15 +75,13 @@ public class Particle extends TextureObject {
         lastPosition.set(getPosition());
         lastRotation = getRotation();
 
-        if (!canCollide) {
-            position.x += velocity.x * TimeUtils.UPDATE_DELTA_TIME;
-            position.y += velocity.y * TimeUtils.UPDATE_DELTA_TIME;
-            rotation += angularVelocity * TimeUtils.UPDATE_DELTA_TIME;
+        position.x += velocity.x * TimeUtils.UPDATE_DELTA_TIME;
+        position.y += velocity.y * TimeUtils.UPDATE_DELTA_TIME;
+        rotation += angularVelocity * TimeUtils.UPDATE_DELTA_TIME;
 
-            if (!zeroVelocity) {
-                velocity.x *= 0.99f * TimeUtils.UPDATE_DELTA_TIME;
-                velocity.y *= 0.99f * TimeUtils.UPDATE_DELTA_TIME;
-            }
+        if (!zeroVelocity) {
+            velocity.x *= 0.99f * TimeUtils.UPDATE_DELTA_TIME;
+            velocity.y *= 0.99f * TimeUtils.UPDATE_DELTA_TIME;
         }
 
         if (sizeVelocity != 0) {
@@ -116,9 +98,6 @@ public class Particle extends TextureObject {
             if (isAlphaFromZero) {
                 if (maxAlpha != 0) {
                     color.w += alphaVelocity * TimeUtils.UPDATE_DELTA_TIME;
-
-                    if (color.w >= maxAlpha * 2.0f)
-                        setDead(true);
 
                     if (color.w >= maxAlpha) {
                         maxAlpha = 0.0f;
@@ -141,18 +120,6 @@ public class Particle extends TextureObject {
                 interpolation, vertexBuffer, vertexBufferIndex);
         InstancedRenderer.INSTANCE.putColor(lastColor, color, materialBuffer, materialBufferIndex, interpolation);
         InstancedRenderer.INSTANCE.putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
-    }
-
-    @Override
-    public Vector2f getPosition() {
-        if (canCollide) return super.getPosition();
-        else return position;
-    }
-
-    @Override
-    public float getRotation() {
-        if (canCollide) return super.getRotation();
-        else return rotation;
     }
 
     public void onRemoved() {
