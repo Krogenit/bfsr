@@ -2,6 +2,7 @@ package net.bfsr.network.packet.server;
 
 import lombok.NoArgsConstructor;
 import net.bfsr.client.particle.ParticleSpawner;
+import net.bfsr.client.particle.ShipWreck;
 import net.bfsr.client.particle.Wreck;
 import net.bfsr.core.Core;
 import net.bfsr.entity.CollisionObject;
@@ -24,13 +25,30 @@ public class PacketSpawnParticle extends ServerPacket {
     private Vector2f pos, velocity, size;
     private Vector4f color;
 
+    public PacketSpawnParticle(ShipWreck p) {
+        this.id = p.getId();
+        this.destroyedShipId = p.getDestroyedShipId();
+        this.textureOffset = p.getTextureOffset();
+        this.isShipWreck = true;
+        this.wreckLifeTime = p.getLifeTime();
+        this.wreckMaxLifeTime = p.getMaxLifeTime();
+        this.isFire = p.isFire();
+        this.isLight = p.isLight();
+        this.isFireExplosion = p.isFireExplosion();
+        this.alphaVelocity = p.getAlphaVelocity();
+        this.rotationSpeed = p.getAngularVelocity();
+        this.velocity = p.getVelocity();
+        this.size = p.getScale();
+        this.pos = p.getPosition();
+        this.color = p.getColor();
+        this.rot = p.getRotation();
+    }
+
     public PacketSpawnParticle(Wreck p) {
         this.id = p.getId();
         this.destroyedShipId = p.getDestroyedShipId();
         this.textureOffset = p.getTextureOffset();
-        this.isShipWreck = p.isShipWreck();
-        this.wreckLifeTime = p.getLifeTime();
-        this.wreckMaxLifeTime = p.getMaxLifeTime();
+        this.isShipWreck = false;
         this.isFire = p.isFire();
         this.isLight = p.isLight();
         this.isFireExplosion = p.isFireExplosion();
@@ -102,7 +120,7 @@ public class PacketSpawnParticle extends ServerPacket {
             if (isShipWreck) {
                 CollisionObject obj = world.getEntityById(destroyedShipId);
                 if (obj instanceof Ship) {
-                    ParticleSpawner.PARTICLE_WREAK_POOL.getOrCreate(Wreck::new).init(textureOffset, (Ship) obj, pos.x, pos.y, velocity.x, velocity.y,
+                    ParticleSpawner.PARTICLE_SHIP_WREAK_POOL.getOrCreate(ShipWreck::new).init(textureOffset, (Ship) obj, pos.x, pos.y, velocity.x, velocity.y,
                             rot, rotationSpeed, size.x, size.y, color.x, color.y, color.z, color.w, alphaVelocity, id, wreckMaxLifeTime);
                 }
             } else {

@@ -27,6 +27,7 @@ public final class ParticleSpawner {
     public static final ObjectPool<Particle> PARTICLE_POOL = new ObjectPool<>();
     public static final ObjectPool<ParticleBeamEffect> PARTICLE_BEAM_EFFECT_POOL = new ObjectPool<>();
     public static final ObjectPool<Wreck> PARTICLE_WREAK_POOL = new ObjectPool<>();
+    public static final ObjectPool<ShipWreck> PARTICLE_SHIP_WREAK_POOL = new ObjectPool<>();
     public static final Vector2f CACHED_VECTOR = new Vector2f();
 
     public static void spawnDestroyShipSmall(Ship ship) {
@@ -56,19 +57,19 @@ public final class ParticleSpawner {
             Vector2 bodyVelocity = ship.getBody().getLinearVelocity();
             float rot = ship.getRotation();
             if (rand.nextInt(2) == 0) {
-                spawnShipWreck(ship, 0, pos.x, pos.y, rot, -rot * 3.0f + (float) bodyVelocity.x * 0.4f, -rot * 3.0f + (float) bodyVelocity.y * 0.4f, 0.02f, 750.0f);
+                spawnShipWreck(ship, 0, pos.x, pos.y, rot, -rot * 3.0f + (float) bodyVelocity.x * 0.4f, -rot * 3.0f + (float) bodyVelocity.y * 0.4f, 0.02f);
             }
 
             if (rand.nextInt(2) == 0) {
-                spawnShipWreck(ship, 1, pos.x, pos.y, rot, rot * 3.0f - (float) bodyVelocity.x * 0.4f, rot * 3.0f - (float) bodyVelocity.y * 0.4f, 0.02f, 750.0f);
+                spawnShipWreck(ship, 1, pos.x, pos.y, rot, rot * 3.0f - (float) bodyVelocity.x * 0.4f, rot * 3.0f - (float) bodyVelocity.y * 0.4f, 0.02f);
             }
         }
     }
 
-    public static void spawnShipWreck(Ship s, int textureOffset, float x, float y, float angle, float velocityX, float velocityY, float alphaVel, float wreckLifeTime) {
+    public static void spawnShipWreck(Ship s, int textureOffset, float x, float y, float angle, float velocityX, float velocityY, float alphaVel) {
         float angleVel = (-0.005f + rand.nextFloat() / 200.0f) * 60.0f;
-        Wreck wreck = PARTICLE_WREAK_POOL.getOrCreate(Wreck::new).init(s.getWorld().getNextId(), textureOffset, s, x, y, velocityX, velocityY, angle, angleVel,
-                s.getScale().x, s.getScale().y, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel, wreckLifeTime);
+        ShipWreck wreck = PARTICLE_SHIP_WREAK_POOL.getOrCreate(ShipWreck::new).init(s.getWorld().getNextId(), textureOffset, s, x, y, velocityX, velocityY, angle, angleVel,
+                s.getScale().x, s.getScale().y, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel);
         MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
     }
 

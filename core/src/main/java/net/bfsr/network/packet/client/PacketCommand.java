@@ -95,7 +95,7 @@ public class PacketCommand extends ClientPacket {
                 Vector2 linearVelocity = player.getPlayerShip().getBody().getLinearVelocity();
                 float rot = player.getPlayerShip().getRotation();
                 ParticleSpawner.spawnShipWreck(player.getPlayerShip(), 0, pos.x, pos.y, rot, -rot * 30.0f + (float) linearVelocity.x * 0.8f,
-                        -rot * 30.0f + (float) linearVelocity.y * 0.8f, 0.02f, 2000f);
+                        -rot * 30.0f + (float) linearVelocity.y * 0.8f, 0.02f);
         }
     }
 }
