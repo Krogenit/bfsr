@@ -3,7 +3,6 @@ package net.bfsr.client.renderer.texture;
 import lombok.Getter;
 
 public enum TextureRegister {
-
     shipHumanSmall0("entity/ship/human_small0"),
     shipHumanSmall0Damage("entity/ship/human_small0_damage"),
 
@@ -115,30 +114,6 @@ public enum TextureRegister {
     particleDirectedSpark("particle/directedspark"),
     particleDirectedSplat("particle/directedsplat"),
 
-    particleDerbis1("particle/damage/ship_debris_01"),
-    particleDerbis2("particle/damage/ship_debris_02"),
-    particleDerbis3("particle/damage/ship_debris_03"),
-    particleDerbis4("particle/damage/ship_debris_04"),
-    particleDerbis5("particle/damage/ship_debris_05"),
-    particleDerbis6("particle/damage/ship_debris_06"),
-
-    particleDerbisEmber1("particle/damage/ship_debris_ember_01"),
-    particleDerbisEmber2("particle/damage/ship_debris_ember_02"),
-    particleDerbisEmber3("particle/damage/ship_debris_ember_03"),
-    particleDerbisEmber4("particle/damage/ship_debris_ember_04"),
-    particleDerbisEmber5("particle/damage/ship_debris_ember_05"),
-    particleDerbisEmber6("particle/damage/ship_debris_ember_06"),
-
-    particleWreck0("particle/wreck/wreck0"),
-    particleWreck1("particle/wreck/wreck1"),
-    particleWreck2("particle/wreck/wreck2"),
-    particleWreckFire0("particle/wreck/wreckfire0"),
-    particleWreckFire1("particle/wreck/wreckfire1"),
-    particleWreckFire2("particle/wreck/wreckfire2"),
-    particleWreckLight0("particle/wreck/wrecklight0"),
-    particleWreckLight1("particle/wreck/wrecklight1"),
-    particleWreckLight2("particle/wreck/wrecklight2"),
-
     particleExplosion("particle/explosion"),
     particleSmokeRing("particle/smokering"),
 
@@ -161,16 +136,7 @@ public enum TextureRegister {
     particleSockwaveMedium("particle/bigshockwave"),
     particleSockwaveLarge("particle/shockwave"),
 
-    particleLighting("particle/lighting"),
-
-    fontArial("font/arial"),
-    fontArialNew("font/arial_new"),
-    fontBahnschrift("font/bahnschrift"),
-    fontXolonium("font/xolonium-regular"),
-    fontConthrax("font/conthrax-sb"),
-
-    fontConsola("font/consola"),
-    fontNasalization_rg("font/nasalization-rg");
+    particleLighting("particle/lighting");
 
     @Getter
     private final String path;

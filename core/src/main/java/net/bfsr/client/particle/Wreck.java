@@ -5,10 +5,12 @@ import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.InstancedRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
-import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.collision.filter.WreckFilter;
 import net.bfsr.core.Core;
 import net.bfsr.entity.CollisionObject;
+import net.bfsr.entity.wreck.RegisteredShipWreck;
+import net.bfsr.entity.wreck.WreckRegistry;
+import net.bfsr.entity.wreck.WreckType;
 import net.bfsr.network.packet.common.PacketObjectPosition;
 import net.bfsr.network.packet.server.PacketRemoveObject;
 import net.bfsr.physics.PhysicsUtils;
@@ -18,7 +20,10 @@ import net.bfsr.world.World;
 import net.bfsr.world.WorldServer;
 import org.dyn4j.TOITransformSavable;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.*;
+import org.dyn4j.geometry.Geometry;
+import org.dyn4j.geometry.MassType;
+import org.dyn4j.geometry.Polygon;
+import org.dyn4j.geometry.Transform;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -28,7 +33,7 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
     @Getter
     private float alphaVelocity;
     @Getter
-    private int textureOffset;
+    private int wreckIndex;
 
     @Getter
     protected boolean fire;
@@ -36,7 +41,7 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
     protected boolean light;
     @Getter
     private boolean fireExplosion;
-    protected boolean changeFire;
+    protected boolean fireFadingOut;
     private boolean changeLight;
 
     @Getter
@@ -59,10 +64,13 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
      */
     private final Transform transform = new Transform();
     private boolean transformSaved;
+    @Getter
+    private WreckType wreckType;
+    protected RegisteredShipWreck registeredShipWreck;
 
-    public Wreck init(World world, int id, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY, float r, float g, float b, float a,
-                      float alphaVelocity, Texture texture, int textureOffset, boolean fire, boolean light, boolean fireExplosion, float hull, int destroyedShipId,
-                      Random random, float fireR, float fireG, float fireB, float fireA, Texture textureFire, Texture textureLight, float timerLight1) {
+    public Wreck init(World world, int id, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY, float r, float g, float b,
+                      float a, float alphaVelocity, String texture, int wreckIndex, boolean fire, boolean light, boolean fireExplosion, float hull, int destroyedShipId,
+                      String textureFire, String textureLight, WreckType wreckType, RegisteredShipWreck registeredShipWreck) {
         this.world = world;
         this.id = id;
         this.position.set(x, y);
@@ -73,46 +81,49 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
         this.scale.set(scaleX, scaleY);
         this.lastScale.set(scale);
         this.color.set(r, g, b, a);
-        this.lastColor.set(color);
         this.alphaVelocity = alphaVelocity;
-        this.texture = texture;
-        this.textureOffset = textureOffset;
+        this.wreckIndex = wreckIndex;
         this.fireExplosion = fireExplosion;
         this.fire = fire;
         this.light = light;
         this.hull = hull;
-        this.colorFire.set(fireR, fireG, fireB, fireA);
-        this.lastColorFire.set(colorFire);
-        this.colorLight.set(0.0f);
-        this.lastColorLight.set(colorLight);
         this.destroyedShipId = destroyedShipId;
-        this.random = random;
-        this.textureFire = textureFire;
-        this.textureLight = textureLight;
-        this.sparkleActivationTimer = timerLight1;
+        this.random = world.getRand();
         this.aliveTimer = 0;
+        this.wreckType = wreckType;
+        this.registeredShipWreck = registeredShipWreck;
+
+        if (world.isRemote()) {
+            this.lastColor.set(color);
+            this.colorFire.set(fire ? 1.0f : 0.0f);
+            this.lastColorFire.set(colorFire);
+            this.colorLight.set(1.0f, 1.0f, 1.0f, 0.0f);
+            this.lastColorLight.set(colorLight);
+            this.texture = TextureLoader.getTexture(texture);
+            this.textureFire = TextureLoader.getTexture(textureFire);
+            this.textureLight = textureLight != null ? TextureLoader.getTexture(textureLight) : null;
+            this.sparkleActivationTimer = light ? 200.0f + world.getRand().nextInt(200) : 0.0f;
+        }
+
         createBody(x, y, angularVelocity);
         createAABB();
         addParticle();
         return this;
     }
 
-    public Wreck init(World world, int id, int textureOffset, boolean light, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation,
-                      float angularVelocity, float scaleX, float scaleY, float r, float g, float b, float a, float alphaVelocity) {
-        return init(world, id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, r, g, b, a, alphaVelocity, null, textureOffset, fire, light,
-                fireExplosion, 10, 0, world.getRand(), 0.0f, 0.0f, 0.0f, 0.0f, null, null, 0);
+    public Wreck init(World world, int id, int wreckIndex, boolean light, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation,
+                      float angularVelocity, float scaleX, float scaleY, float r, float g, float b, float a, float alphaVelocity, WreckType wreckType) {
+        return init(world, id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, r, g, b, a, alphaVelocity, null, wreckIndex, fire, light,
+                fireExplosion, 10, 0, null, null, wreckType, WreckRegistry.INSTANCE.getWreck(wreckType, wreckIndex));
     }
 
-    public Wreck init(int textureOffset, boolean isWreck, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity,
-                      float scaleX, float scaleY, float r, float g, float b, float a, float alphaVelocity, int id) {
-        return init(Core.get().getWorld(), id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, r, g, b, a, alphaVelocity,
-                TextureLoader.getTexture(getDebrisTexture(textureOffset, isWreck)), textureOffset, fire, isWreck,
-                fireExplosion, 10, 0, Core.get().getWorld().getRand(), isWreck || fire ? 1.0f : 0.0f, isWreck || fire ? 1.0f : 0.0f,
-                isWreck || fire ? 1.0f : 0.0f, isWreck || fire ? 1.0f : 0.0f,
-                isWreck ? TextureLoader.getTexture(TextureRegister.values()[TextureRegister.particleWreckFire0.ordinal() + textureOffset]) : fire ?
-                        TextureLoader.getTexture(TextureRegister.values()[TextureRegister.particleDerbisEmber1.ordinal() + textureOffset]) : null,
-                isWreck ? TextureLoader.getTexture(TextureRegister.values()[TextureRegister.particleWreckLight0.ordinal() + textureOffset]) : null,
-                isWreck ? 200.0f + Core.get().getWorld().getRand().nextInt(200) : 0.0f);
+    public Wreck init(int wreckIndex, boolean light, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity,
+                      float scaleX, float scaleY, float r, float g, float b, float a, float alphaVelocity, int id, WreckType wreckType) {
+        RegisteredShipWreck wreck = WreckRegistry.INSTANCE.getWreck(wreckType, wreckIndex);
+        init(Core.get().getWorld(), id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, r, g, b, a, alphaVelocity, wreck.getTexture(),
+                wreckIndex, fire, light, fireExplosion, 10, 0, wreck.getFireTexture(),
+                wreck.getSparkleTexture(), wreckType, wreck);
+        return this;
     }
 
     protected void addParticle() {
@@ -148,95 +159,11 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
 
     protected void createFixtures() {
         if (body.getFixtures().size() > 0) body.removeFixture(0);
-        if (light) {
-            Vector2[] vertecies = null;
-            if (textureOffset == 0) {
-                vertecies = new Vector2[4];
-                vertecies[0] = new Vector2(7.21f, 9.16f);
-                vertecies[1] = new Vector2(-9.19f, 4.76f);
-                vertecies[2] = new Vector2(-7.99f, -10.44f);
-                vertecies[3] = new Vector2(8.81f, -7.24f);
-            } else if (textureOffset == 1) {
-                vertecies = new Vector2[4];
-                vertecies[0] = new Vector2(-0.79f, 11.56f);
-                vertecies[1] = new Vector2(-7.99f, -0.44f);
-                vertecies[2] = new Vector2(3.61f, -10.84f);
-                vertecies[3] = new Vector2(6.81f, 1.56f);
-            } else if (textureOffset == 2) {
-                vertecies = new Vector2[5];
-                vertecies[0] = new Vector2(-5.16f, 7.97f);
-                vertecies[1] = new Vector2(-11.96f, -0.03f);
-                vertecies[2] = new Vector2(-5.96f, -9.23f);
-                vertecies[3] = new Vector2(7.24f, -11.23f);
-                vertecies[4] = new Vector2(8.84f, 1.97f);
-            }
-
-            for (int i = 0; i < vertecies.length; i++) {
-                Vector2 vertex = vertecies[i];
-                vertex.divide(26.0f);
-                vertex.x *= scale.x;
-                vertex.y *= scale.y;
-            }
-            Polygon p = Geometry.createPolygon(vertecies);
-            BodyFixture bodyFixture = new BodyFixture(p);
-            bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-            bodyFixture.setFilter(new WreckFilter(this));
-            body.addFixture(bodyFixture);
-        } else {
-            Vector2[] vertecies = null;
-            if (textureOffset == 0) {
-                vertecies = new Vector2[4];
-                vertecies[0] = new Vector2(3.40f, 10.93f);
-                vertecies[1] = new Vector2(-11.00f, -10.27f);
-                vertecies[2] = new Vector2(4.60f, -9.07f);
-                vertecies[3] = new Vector2(12.60f, 4.93f);
-            } else if (textureOffset == 1) {
-                vertecies = new Vector2[4];
-                vertecies[0] = new Vector2(7.94f, 5.84f);
-                vertecies[1] = new Vector2(-12.26f, -4.51f);
-                vertecies[2] = new Vector2(-9.56f, -7.29f);
-                vertecies[3] = new Vector2(12.15f, -0.43f);
-            } else if (textureOffset == 2) {
-                vertecies = new Vector2[5];
-                vertecies[0] = new Vector2(-3.61f, 9.74f);
-                vertecies[1] = new Vector2(-11.21f, -6.66f);
-                vertecies[2] = new Vector2(-2.51f, -13.46f);
-                vertecies[3] = new Vector2(11.89f, -7.86f);
-                vertecies[4] = new Vector2(8.29f, 9.34f);
-            } else if (textureOffset == 3) {
-                vertecies = new Vector2[4];
-                vertecies[0] = new Vector2(-6.88f, 8.32f);
-                vertecies[1] = new Vector2(-8.08f, -2.88f);
-                vertecies[2] = new Vector2(-0.48f, -10.48f);
-                vertecies[3] = new Vector2(6.72f, 3.92f);
-            } else if (textureOffset == 4) {
-                vertecies = new Vector2[5];
-                vertecies[0] = new Vector2(-2.48f, 12.80f);
-                vertecies[1] = new Vector2(-12.88f, 1.20f);
-                vertecies[2] = new Vector2(-6.08f, -10.00f);
-                vertecies[3] = new Vector2(12.72f, -8.00f);
-                vertecies[4] = new Vector2(4.32f, 12.00f);
-            } else if (textureOffset == 5) {
-                vertecies = new Vector2[5];
-                vertecies[0] = new Vector2(-6.88f, 11.20f);
-                vertecies[1] = new Vector2(-12.48f, -6.00f);
-                vertecies[2] = new Vector2(2.72f, -13.60f);
-                vertecies[3] = new Vector2(13.52f, -4.80f);
-                vertecies[4] = new Vector2(6.72f, 12.40f);
-            }
-
-            for (int i = 0; i < vertecies.length; i++) {
-                Vector2 vertex = vertecies[i];
-                vertex.divide(30.0f);
-                vertex.x *= scale.x;
-                vertex.y *= scale.y;
-            }
-            Polygon p = Geometry.createPolygon(vertecies);
-            BodyFixture bodyFixture = new BodyFixture(p);
-            bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-            bodyFixture.setFilter(new WreckFilter(this));
-            body.addFixture(bodyFixture);
-        }
+        Polygon p = Geometry.scale(registeredShipWreck.getPolygon(), scale.x);
+        BodyFixture bodyFixture = new BodyFixture(p);
+        bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
+        bodyFixture.setFilter(new WreckFilter(this));
+        body.addFixture(bodyFixture);
     }
 
     @Override
@@ -275,11 +202,8 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
             MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketObjectPosition(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         }
 
-        if (fire && world.isRemote()) {
+        if (world.isRemote()) {
             updateFireAndExplosion();
-        }
-
-        if (light && world.isRemote()) {
             updateSparkle();
         }
 
@@ -303,99 +227,88 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
     }
 
     protected void updateFireAndExplosion() {
-        updateExplosion();
+        if (fireExplosion) {
+            updateExplosion();
+        }
+
         updateFire();
     }
 
     protected void updateFire() {
-        float fireSpeed = 0.180f * TimeUtils.UPDATE_DELTA_TIME;
-        float fireAddSpeed = 0.0300f * TimeUtils.UPDATE_DELTA_TIME;
+        if (fire) {
+            float fireSpeed = 0.180f * TimeUtils.UPDATE_DELTA_TIME;
 
-        if (changeFire) {
-            if (colorFire.w > 0.6f) {
-                colorFire.w -= fireSpeed - fireAddSpeed;
-                colorFire.x -= fireSpeed;
-                colorFire.y -= fireSpeed;
-                colorFire.z -= fireSpeed;
-                if (colorFire.w < 0.0f) {
-                    colorFire.set(0.0f);
+            if (fireFadingOut) {
+                if (colorFire.w > 0.4f) {
+                    colorFire.w -= fireSpeed;
+                    if (colorFire.w < 0.0f) {
+                        colorFire.w = 0.0f;
+                    }
+                } else {
+                    fireFadingOut = false;
                 }
             } else {
-                changeFire = false;
-            }
-        } else {
-            if (colorFire.w < 1.0f) {
-                colorFire.w += fireSpeed + fireAddSpeed;
-                colorFire.x += fireSpeed;
-                colorFire.y += fireSpeed;
-                colorFire.z += fireSpeed;
-            } else {
-                changeFire = true;
+                if (colorFire.w < 1.0f) {
+                    colorFire.w += fireSpeed;
+                } else {
+                    fireFadingOut = true;
+                }
             }
         }
 
         if (color.w <= 0.5f) {
             if (colorFire.w > 0.0f) {
-                fireSpeed = 0.120F * TimeUtils.UPDATE_DELTA_TIME;
+                float fireSpeed = alphaVelocity * 4.0f * TimeUtils.UPDATE_DELTA_TIME;
 
                 fire = false;
                 colorFire.w -= fireSpeed;
-                colorFire.x -= fireSpeed;
-                colorFire.y -= fireSpeed;
-                colorFire.z -= fireSpeed;
                 if (colorFire.w < 0.0f) {
-                    colorFire.set(0.0f);
+                    colorFire.w = 0.0f;
                 }
             }
         }
     }
 
     protected void updateExplosion() {
-        if (fireExplosion) {
-            explosionTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-            if (explosionTimer <= 0 && color.w > 0.6f) {
-                float size = scale.x / 4.0f;
-                Vector2f position = getPosition();
-                ParticleSpawner.spawnExplosion(position.x, position.y, size / 10.0f);
-                ParticleSpawner.spawnDamageSmoke(position.x, position.y, size + 1.0f);
-                explosionTimer = 8 + world.getRand().nextInt(8);
-            }
+        explosionTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+        if (explosionTimer <= 0 && color.w > 0.6f) {
+            float size = scale.x / 4.0f;
+            Vector2f position = getPosition();
+            ParticleSpawner.spawnExplosion(position.x, position.y, size / 10.0f);
+            ParticleSpawner.spawnDamageSmoke(position.x, position.y, size + 1.0f);
+            explosionTimer = 8 + world.getRand().nextInt(8);
         }
     }
 
     protected void updateSparkle() {
-        float lightSpeed = 12.0f * TimeUtils.UPDATE_DELTA_TIME;
-        sparkleActivationTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-        if (sparkleActivationTimer <= 0.0f) {
-            if (changeLight) {
-                if (colorLight.w > 0.0f) {
-                    colorLight.w -= lightSpeed;
-                    colorLight.x -= lightSpeed;
-                    colorLight.y -= lightSpeed;
-                    colorLight.z -= lightSpeed;
-                    if (colorLight.w < 0.0f) {
-                        colorLight.set(0.0f);
+        if (light) {
+            float lightSpeed = 12.0f * TimeUtils.UPDATE_DELTA_TIME;
+            sparkleActivationTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+            if (sparkleActivationTimer <= 0.0f) {
+                if (changeLight) {
+                    if (colorLight.w > 0.0f) {
+                        colorLight.w -= lightSpeed;
+                        if (colorLight.w < 0.0f) {
+                            colorLight.w = 0.0f;
+                        }
+                    } else {
+                        changeLight = false;
+                        sparkleBlinkTimer += 25.0f;
                     }
                 } else {
-                    changeLight = false;
-                    sparkleBlinkTimer += 25.0f;
-                }
-            } else {
-                if (colorLight.w < color.w) {
-                    colorLight.w += lightSpeed;
-                    colorLight.x += lightSpeed;
-                    colorLight.y += lightSpeed;
-                    colorLight.z += lightSpeed;
-                } else {
-                    changeLight = true;
-                    sparkleBlinkTimer += 25.0f;
+                    if (colorLight.w < color.w) {
+                        colorLight.w += lightSpeed;
+                    } else {
+                        changeLight = true;
+                        sparkleBlinkTimer += 25.0f;
+                    }
                 }
             }
-        }
 
-        if (sparkleBlinkTimer >= 100.0f) {
-            sparkleActivationTimer = 200.0f + random.nextInt(200);
-            sparkleBlinkTimer = 0.0f;
+            if (sparkleBlinkTimer >= 100.0f) {
+                sparkleActivationTimer = 200.0f + random.nextInt(200);
+                sparkleBlinkTimer = 0.0f;
+            }
         }
 
         updateSparkleFading();
@@ -408,11 +321,8 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
 
                 light = false;
                 colorLight.w -= lightSpeed;
-                colorLight.x -= lightSpeed;
-                colorLight.y -= lightSpeed;
-                colorLight.z -= lightSpeed;
                 if (colorLight.w < 0.0f) {
-                    colorLight.set(0.0f);
+                    colorLight.w = 0.0f;
                 }
             }
         }
@@ -459,14 +369,6 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
             Vector2f position = getPosition();
             InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
                     lastColorLight, colorLight, textureLight, BufferType.ENTITIES_ADDITIVE);
-        }
-    }
-
-    private static TextureRegister getDebrisTexture(int textureOffset, boolean isWreck) {
-        if (isWreck) {
-            return TextureRegister.values()[TextureRegister.particleWreck0.ordinal() + textureOffset];
-        } else {
-            return TextureRegister.values()[TextureRegister.particleDerbis1.ordinal() + textureOffset];
         }
     }
 

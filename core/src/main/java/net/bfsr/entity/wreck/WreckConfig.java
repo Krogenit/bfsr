@@ -7,6 +7,7 @@ import net.bfsr.config.Vector2fConfigurable;
 @Getter
 @Configurable
 public class WreckConfig {
+    private WreckType type;
     private String texturePath, fireTexturePath, sparkleTexturePath;
     private Vector2fConfigurable[] vertices;
 }

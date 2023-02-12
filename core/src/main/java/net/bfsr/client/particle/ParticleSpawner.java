@@ -6,6 +6,7 @@ import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.core.Core;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.wreck.WreckType;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.server.PacketSpawnParticle;
@@ -57,19 +58,19 @@ public final class ParticleSpawner {
             Vector2 bodyVelocity = ship.getBody().getLinearVelocity();
             float rot = ship.getRotation();
             if (rand.nextInt(2) == 0) {
-                spawnShipWreck(ship, 0, pos.x, pos.y, rot, -rot * 3.0f + (float) bodyVelocity.x * 0.4f, -rot * 3.0f + (float) bodyVelocity.y * 0.4f, 0.02f, 750.0f);
+                spawnShipWreck(ship, 0, pos.x, pos.y, rot, -rot * 3.0f + (float) bodyVelocity.x * 0.4f, -rot * 3.0f + (float) bodyVelocity.y * 0.4f, 750.0f);
             }
 
             if (rand.nextInt(2) == 0) {
-                spawnShipWreck(ship, 1, pos.x, pos.y, rot, rot * 3.0f - (float) bodyVelocity.x * 0.4f, rot * 3.0f - (float) bodyVelocity.y * 0.4f, 0.02f, 750.0f);
+                spawnShipWreck(ship, 1, pos.x, pos.y, rot, rot * 3.0f - (float) bodyVelocity.x * 0.4f, rot * 3.0f - (float) bodyVelocity.y * 0.4f, 750.0f);
             }
         }
     }
 
-    public static void spawnShipWreck(Ship s, int wreckIndex, float x, float y, float angle, float velocityX, float velocityY, float alphaVel, float lifeTime) {
+    public static void spawnShipWreck(Ship s, int wreckIndex, float x, float y, float angle, float velocityX, float velocityY, float lifeTime) {
         float angleVel = (-0.005f + rand.nextFloat() / 200.0f) * 60.0f;
         ShipWreck wreck = PARTICLE_SHIP_WREAK_POOL.getOrCreate(ShipWreck::new).init(s.getWorld().getNextId(), wreckIndex, s, x, y, velocityX, velocityY, angle, angleVel,
-                s.getScale().x, s.getScale().y, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel, lifeTime);
+                s.getScale().x, s.getScale().y, 0.5f, 0.5f, 0.5f, 1.0f, lifeTime);
         MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
@@ -84,7 +85,7 @@ public final class ParticleSpawner {
             boolean isFire = rand.nextInt(3) == 0;
             boolean isFireExplosion = isFire && rand.nextInt(5) == 0;
             Wreck wreck = PARTICLE_WREAK_POOL.getOrCreate(Wreck::new).init(world, world.getNextId(), rand.nextInt(6), false, isFire, isFireExplosion, x, y,
-                    CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, size2, size2, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel);
+                    CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, size2, size2, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel, WreckType.SMALL);
             MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
         }
     }
@@ -98,7 +99,7 @@ public final class ParticleSpawner {
             float alphaVel = 0.04f;
             boolean isFireExplosion = rand.nextInt(4) == 0;
             Wreck wreck = PARTICLE_WREAK_POOL.getOrCreate(Wreck::new).init(world, world.getNextId(), rand.nextInt(3), true, true, isFireExplosion,
-                    x, y, CACHED_VECTOR.x + velocityX * 0.7f, CACHED_VECTOR.y + velocityY * 0.7f, angle, angleVel, size, size, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel);
+                    x, y, CACHED_VECTOR.x + velocityX * 0.7f, CACHED_VECTOR.y + velocityY * 0.7f, angle, angleVel, size, size, 0.5f, 0.5f, 0.5f, 1.0f, alphaVel, WreckType.DEFAULT);
             MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnParticle(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
         }
     }

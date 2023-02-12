@@ -2,7 +2,6 @@ package net.bfsr.client.particle;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.collision.filter.WreckFilter;
@@ -10,6 +9,7 @@ import net.bfsr.core.Core;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.RegisteredShipWreck;
 import net.bfsr.entity.wreck.WreckRegistry;
+import net.bfsr.entity.wreck.WreckType;
 import net.bfsr.network.packet.server.PacketRemoveObject;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.server.MainServer;
@@ -21,26 +21,23 @@ import org.joml.Vector2f;
 
 @NoArgsConstructor
 public class ShipWreck extends Wreck {
-    private RegisteredShipWreck registeredShipWreck;
     @Getter
     private float lifeTime, maxLifeTime;
 
     public ShipWreck init(int wreckIndex, Ship ship, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
-                          float r, float g, float b, float a, float alphaVelocity, int id, float lifeTime) {
-        registeredShipWreck = WreckRegistry.INSTANCE.getWrecks(ship.getType())[wreckIndex];
-        init(ship.getWorld(), id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, r, g, b, a, alphaVelocity,
-                TextureLoader.getTexture(registeredShipWreck.getTexture()), wreckIndex, true, true, true, ship.getHull().getMaxHull() / 4.0f, ship.getId(),
-                ship.getWorld().getRand(), 1.0f, 1.0f, 1.0f, 0.0f, TextureLoader.getTexture(registeredShipWreck.getFireTexture()),
-                TextureLoader.getTexture(registeredShipWreck.getSparkleTexture()), 200.0f + ship.getWorld().getRand().nextInt(200));
+                          float r, float g, float b, float a, int id, float lifeTime) {
+        RegisteredShipWreck wreck = WreckRegistry.INSTANCE.getWrecks(ship.getType())[wreckIndex];
+        init(ship.getWorld(), id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, r, g, b, a, 0.0f, wreck.getTexture(), wreckIndex, true, true, true,
+                ship.getHull().getMaxHull() / 4.0f, ship.getId(), wreck.getFireTexture(), wreck.getSparkleTexture(), WreckType.SHIP, wreck);
         this.lifeTime = maxLifeTime = lifeTime;
         return this;
     }
 
     public ShipWreck init(int id, int wreckIndex, Ship ship, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
-                          float r, float g, float b, float a, float alphaVelocity, float lifeTime) {
-        registeredShipWreck = WreckRegistry.INSTANCE.getWrecks(ship.getType())[wreckIndex];
-        init(ship.getWorld(), id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, r, g, b, a, alphaVelocity, null, wreckIndex, true, true, true,
-                ship.getHull().getMaxHull() / 4.0f, ship.getId(), ship.getWorld().getRand(), 0.0f, 0.0f, 0.0f, 0.0f, null, null, 0.0f);
+                          float r, float g, float b, float a, float lifeTime) {
+        RegisteredShipWreck wreck = WreckRegistry.INSTANCE.getWrecks(ship.getType())[wreckIndex];
+        init(ship.getWorld(), id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, r, g, b, a, 0.0f, null, wreckIndex, true, true, true,
+                ship.getHull().getMaxHull() / 4.0f, ship.getId(), null, null, WreckType.SHIP, wreck);
         this.lifeTime = maxLifeTime = lifeTime;
         return this;
     }
@@ -53,6 +50,7 @@ public class ShipWreck extends Wreck {
 
     @Override
     protected void createFixtures() {
+        if (body.getFixtures().size() > 0) body.removeFixture(0);
         BodyFixture bodyFixture = new BodyFixture(registeredShipWreck.getPolygon());
         bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         bodyFixture.setFilter(new WreckFilter(this));
@@ -72,43 +70,35 @@ public class ShipWreck extends Wreck {
 
     @Override
     protected void updateFire() {
-        float fireSpeed = 0.120f * TimeUtils.UPDATE_DELTA_TIME;
-        float fireAddSpeed = 0.0300f * TimeUtils.UPDATE_DELTA_TIME;
+        if (fire) {
+            float fireSpeed = 0.120f * TimeUtils.UPDATE_DELTA_TIME;
 
-        if (changeFire) {
-            if (colorFire.w > 0.7f) {
-                colorFire.w -= fireSpeed - fireAddSpeed;
-                colorFire.x -= fireSpeed;
-                colorFire.y -= fireSpeed / 4.0f;
-                colorFire.z -= fireSpeed / 4.0f;
-                if (colorFire.w < 0.0f) {
-                    colorFire.set(0.0f);
+            if (fireFadingOut) {
+                if (colorFire.w > 0.7f) {
+                    colorFire.w -= fireSpeed;
+                    if (colorFire.w < 0.0f) {
+                        colorFire.w = 0.0f;
+                    }
+                } else {
+                    fireFadingOut = false;
                 }
             } else {
-                changeFire = false;
-            }
-        } else {
-            if (colorFire.w < 1.0f) {
-                colorFire.w += fireSpeed + fireAddSpeed;
-                colorFire.x += fireSpeed;
-                colorFire.y += fireSpeed / 4.0f;
-                colorFire.z += fireSpeed / 4.0f;
-            } else {
-                changeFire = true;
+                if (colorFire.w < 1.0f) {
+                    colorFire.w += fireSpeed;
+                } else {
+                    fireFadingOut = true;
+                }
             }
         }
 
         if (lifeTime <= maxLifeTime / 2.0f) {
             if (colorFire.w > 0.0f) {
-                fireSpeed = 0.120F * TimeUtils.UPDATE_DELTA_TIME;
+                float fireSpeed = 0.120F * TimeUtils.UPDATE_DELTA_TIME;
 
                 fire = false;
                 colorFire.w -= fireSpeed;
-                colorFire.x -= fireSpeed;
-                colorFire.y -= fireSpeed;
-                colorFire.z -= fireSpeed;
                 if (colorFire.w < 0.0f) {
-                    colorFire.set(0.0f);
+                    colorFire.w = 0.0f;
                 }
             }
         }
@@ -122,11 +112,8 @@ public class ShipWreck extends Wreck {
 
                 light = false;
                 colorLight.w -= lightSpeed;
-                colorLight.x -= lightSpeed;
-                colorLight.y -= lightSpeed;
-                colorLight.z -= lightSpeed;
                 if (colorLight.w < 0.0f) {
-                    colorLight.set(0.0f);
+                    colorLight.w = 0.0f;
                 }
             }
         }
