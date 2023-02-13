@@ -9,7 +9,7 @@ public abstract class AbstractLoop {
         running = true;
     }
 
-    protected abstract boolean shouldWait(double now, double lastUpdateTime);
+    protected abstract boolean shouldWait(long now, double lastUpdateTime, long lastFrameTime);
 
     protected abstract void update();
 

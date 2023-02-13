@@ -113,13 +113,13 @@ public class Main extends Loop {
 
     @Override
     protected boolean isVSync() {
-        return EnumOption.V_SYNC.getBoolean();
+        return EnumOption.V_SYNC.getBoolean() && EnumOption.MAX_FPS.getMaxValue() - EnumOption.MAX_FPS.getInteger() <= 0;
     }
 
     @Override
-    protected boolean shouldWait(double now, double lastUpdateTime) {
-        int maxFps = EnumOption.MAX_FPS.getInteger();
-        return maxFps < 240 && now - lastUpdateTime < 1_000_000_000.0f / maxFps;
+    protected boolean shouldWait(long now, double lastUpdateTime, long lastFrameTime) {
+        int fps = EnumOption.MAX_FPS.getInteger();
+        return fps < EnumOption.MAX_FPS.getMaxValue() && now - lastFrameTime < 1_000_000_000.0 / fps;
     }
 
     public static void main(String[] args) {

@@ -12,15 +12,16 @@ public class Loop extends AbstractLoop {
         final int maxUpdatesBeforeRender = 4;
         // We will need the last update time.
         double lastUpdateTime = System.nanoTime();
+        long lastFrameTime = System.nanoTime();
 
         // Simple way of finding FPS.
-        int lastSecondTime = (int) (lastUpdateTime / 1000000000);
+        int lastSecondTime = (int) (lastUpdateTime / 1000000000.0f);
         int frameCount = 0;
 
         timeBetweenUpdates = 1_000_000_000.0f / getUpdatesPerSecond();
 
         while (isRunning()) {
-            double now = System.nanoTime();
+            long now = System.nanoTime();
 
             int updateCount = 0;
 
@@ -34,16 +35,18 @@ public class Loop extends AbstractLoop {
             // If for some reason an update takes forever, we don't want to do an insane number of catchups.
             // If you were doing some sort of game that needed to keep EXACT time, you would get rid of this.
             if (now - lastUpdateTime > timeBetweenUpdates) {
-                lastUpdateTime = now - timeBetweenUpdates;
+                lastUpdateTime = now;
             }
 
             // Render. To do so, we need to calculate interpolation for a smooth render.
-            float interpolation = Math.min(1.0f, (float) ((now - lastUpdateTime) / timeBetweenUpdates));
+            float interpolation = Math.min(1.0f, (float) (now - lastUpdateTime) / timeBetweenUpdates);
             render(interpolation);
+            onPostRender();
+
             frameCount++;
 
             // Update the frames we got.
-            int thisSecond = (int) (lastUpdateTime / 1000000000);
+            int thisSecond = (int) (lastUpdateTime / 1000000000.0f);
             if (thisSecond > lastSecondTime) {
                 setFps(frameCount);
                 frameCount = 0;
@@ -52,7 +55,7 @@ public class Loop extends AbstractLoop {
 
             // Yield until it has been at least the target time between renders. This saves the CPU from hogging.
             if (!isVSync()) {
-                while (shouldWait(now, lastUpdateTime)) {
+                while (shouldWait(now, lastUpdateTime, lastFrameTime)) {
                     Thread.yield();
 
                     // This stops the app from consuming all your CPU. It makes this slightly less accurate, but is worth it.
@@ -67,16 +70,16 @@ public class Loop extends AbstractLoop {
 
                     now = System.nanoTime();
                 }
-            }
 
-            onPostRender();
+                lastFrameTime = now;
+            }
         }
 
         clear();
     }
 
     @Override
-    protected boolean shouldWait(double now, double lastUpdateTime) {
+    protected boolean shouldWait(long now, double lastUpdateTime, long lastFrameTime) {
         return now - lastUpdateTime < timeBetweenUpdates;
     }
 
