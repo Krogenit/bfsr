@@ -47,7 +47,7 @@ public class WeaponGausSmall extends WeaponSlot {
 
     @Override
     protected void createBullet() {
-        new BulletGausSmall((WorldServer) world, world.getNextId(), rotation, position.x, position.y, ship);
+        new BulletGausSmall((WorldServer) world, world.getNextId(), position.x, position.y, ship);
     }
 
     @Override

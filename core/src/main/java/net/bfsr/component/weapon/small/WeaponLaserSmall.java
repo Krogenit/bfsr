@@ -45,7 +45,7 @@ public class WeaponLaserSmall extends WeaponSlot {
 
     @Override
     protected void createBullet() {
-        new BulletLaserSmall((WorldServer) world, world.getNextId(), rotation, position.x, position.y, ship);
+        new BulletLaserSmall((WorldServer) world, world.getNextId(), position.x, position.y, ship);
     }
 
     @Override

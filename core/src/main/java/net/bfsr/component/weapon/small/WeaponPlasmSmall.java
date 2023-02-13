@@ -47,7 +47,7 @@ public class WeaponPlasmSmall extends WeaponSlot {
 
     @Override
     protected void createBullet() {
-        new BulletPlasmSmall((WorldServer) world, world.getNextId(), rotation, position.x, position.y, ship);
+        new BulletPlasmSmall((WorldServer) world, world.getNextId(), position.x, position.y, ship);
     }
 
     @Override

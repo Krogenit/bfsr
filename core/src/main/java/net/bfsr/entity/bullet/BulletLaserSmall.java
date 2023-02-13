@@ -13,12 +13,12 @@ import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
 
 public class BulletLaserSmall extends Bullet {
-    public BulletLaserSmall(WorldServer world, int id, float radRot, float x, float y, Ship ship) {
-        super(world, id, 75.0f, radRot, x, y, 2.4f, 2.4f, ship, 1.0f, 0.5f, 0.5f, 1.5f, 1.68f, new BulletDamage(2.5f, 2.5f, 5.0f));
+    public BulletLaserSmall(WorldServer world, int id, float x, float y, Ship ship) {
+        super(world, id, 75.0f, x, y, 2.4f, 2.4f, ship, 1.0f, 0.5f, 0.5f, 1.5f, 1.68f, new BulletDamage(2.5f, 2.5f, 5.0f));
     }
 
-    public BulletLaserSmall(WorldClient world, int id, float radRot, float x, float y, Ship ship) {
-        super(world, id, 75.0f, radRot, x, y, 2.4f, 2.4f, ship, TextureRegister.smallLaser, 1.0f, 0.5f, 0.5f, 1.5f, 1.68f, new BulletDamage(2.5f, 2.5f, 5.0f));
+    public BulletLaserSmall(WorldClient world, int id, float sin, float cos, float x, float y, Ship ship) {
+        super(world, id, 75.0f, sin, cos, x, y, 2.4f, 2.4f, ship, TextureRegister.smallLaser, 1.0f, 0.5f, 0.5f, 1.5f, 1.68f, new BulletDamage(2.5f, 2.5f, 5.0f));
     }
 
     @Override

@@ -13,21 +13,22 @@ import org.joml.Vector2f;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 @NoArgsConstructor
 public class PacketSpawnBullet extends ServerPacket {
-
     private int id;
     private String className;
     private Vector2f pos;
-    private float rot;
+    private float sin, cos;
     private int shipId;
 
     public PacketSpawnBullet(Bullet bullet) {
         this.id = bullet.getId();
         this.className = bullet.getClass().getName();
         this.pos = bullet.getPosition();
-        this.rot = bullet.getRotation();
+        this.sin = bullet.getSin();
+        this.cos = bullet.getCos();
         this.shipId = bullet.getShip().getId();
     }
 
@@ -36,7 +37,8 @@ public class PacketSpawnBullet extends ServerPacket {
         id = data.readInt();
         className = data.readStringFromBuffer(1024);
         pos = data.readVector2f();
-        rot = data.readFloat();
+        sin = data.readFloat();
+        cos = data.readFloat();
         shipId = data.readInt();
     }
 
@@ -45,7 +47,8 @@ public class PacketSpawnBullet extends ServerPacket {
         data.writeInt(id);
         data.writeStringToBuffer(className);
         data.writeVector2f(pos);
-        data.writeFloat(rot);
+        data.writeFloat(sin);
+        data.writeFloat(cos);
         data.writeInt(shipId);
     }
 
@@ -57,10 +60,11 @@ public class PacketSpawnBullet extends ServerPacket {
                 CollisionObject obj = world.getEntityById(shipId);
                 if (obj instanceof Ship ship) {
                     Class<?> clazz = Class.forName(className);
-                    Constructor<?> ctr = clazz.getConstructor(WorldClient.class, int.class, float.class, float.class, float.class, Ship.class);
-                    ctr.newInstance(world, id, rot, pos.x, pos.y, ship);
+                    Constructor<?> ctr = clazz.getConstructor(WorldClient.class, int.class, float.class, float.class, float.class, float.class, Ship.class);
+                    ctr.newInstance(world, id, sin, cos, pos.x, pos.y, ship);
                 }
-            } catch (Exception e) {
+            } catch (ClassNotFoundException | InvocationTargetException | SecurityException | NoSuchMethodException | InstantiationException | IllegalArgumentException
+                     | IllegalAccessException e) {
                 e.printStackTrace();
             }
         }

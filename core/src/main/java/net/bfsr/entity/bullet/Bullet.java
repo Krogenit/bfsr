@@ -43,38 +43,40 @@ public abstract class Bullet extends CollisionObject {
     private float energy;
     private Object previousAObject;
 
-    protected Bullet(WorldClient world, int id, float bulletSpeed, float rotation, float x, float y, float scaleX, float scaleY, Ship ship, TextureRegister texture,
+    protected Bullet(WorldClient world, int id, float bulletSpeed, float sin, float cos, float x, float y, float scaleX, float scaleY, Ship ship, TextureRegister texture,
                      float r, float g, float b, float a, float alphaReducer, BulletDamage damage) {
-        super(world, id, texture, x, y, rotation, scaleX, scaleY, r, g, b, a);
+        super(world, id, texture, x, y, 0.0f, scaleX, scaleY, r, g, b, a);
+        this.sin = sin;
+        this.cos = cos;
         this.alphaReducer = alphaReducer;
         this.damage = damage;
         this.ship = ship;
         this.bulletSpeed = bulletSpeed;
         energy = damage.getAverageDamage();
-        setBulletVelocityAndStartTransform(rotation, x, y);
+        setBulletVelocityAndStartTransform(x, y);
         world.addBullet(this);
         lightTexture = TextureLoader.getTexture(TextureRegister.particleLight);
     }
 
-    protected Bullet(WorldServer world, int id, float bulletSpeed, float rotation, float x, float y, float scaleX, float scaleY, Ship ship, float r, float g, float b, float a,
+    protected Bullet(WorldServer world, int id, float bulletSpeed, float x, float y, float scaleX, float scaleY, Ship ship, float r, float g, float b, float a,
                      float alphaReducer, BulletDamage damage) {
-        super(world, id, x, y, rotation, scaleX, scaleY, r, g, b, a);
+        super(world, id, x, y, 0.0f, scaleX, scaleY, r, g, b, a);
+        this.sin = ship.getSin();
+        this.cos = ship.getCos();
         this.alphaReducer = alphaReducer;
         this.damage = damage;
         this.ship = ship;
         this.bulletSpeed = bulletSpeed;
         energy = damage.getAverageDamage();
-        setBulletVelocityAndStartTransform(rotation, x, y);
+        setBulletVelocityAndStartTransform(x, y);
         world.addBullet(this);
         MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnBullet(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
-    private void setBulletVelocityAndStartTransform(float rotation, float x, float y) {
-        double x1 = Math.cos(rotation);
-        double y1 = Math.sin(rotation);
-        velocity.set(x1 * bulletSpeed, y1 * bulletSpeed);
+    private void setBulletVelocityAndStartTransform(float x, float y) {
+        velocity.set(cos * bulletSpeed, sin * bulletSpeed);
         body.setLinearVelocity(velocity.x, velocity.y);
-        body.getTransform().setRotation(rotation);
+        body.getTransform().setRotation(sin, cos);
         body.getTransform().setTranslation(x + velocity.x / 500.0f, y + velocity.y / 500.0f);//TODO: посчитать точку появления пули правильно
     }
 

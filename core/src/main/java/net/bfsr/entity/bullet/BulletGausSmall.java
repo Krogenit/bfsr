@@ -13,12 +13,12 @@ import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
 
 public class BulletGausSmall extends Bullet {
-    public BulletGausSmall(WorldServer world, int id, float radRot, float x, float y, Ship ship) {
-        super(world, id, 70.0f, radRot, x, y, 2.4f, 2.4f, ship, 1.0f, 1.0f, 0.5f, 1.5f, 1.56f, new BulletDamage(2.5f, 5.0f, 2.5f));
+    public BulletGausSmall(WorldServer world, int id, float x, float y, Ship ship) {
+        super(world, id, 70.0f, x, y, 2.4f, 2.4f, ship, 1.0f, 1.0f, 0.5f, 1.5f, 1.56f, new BulletDamage(2.5f, 5.0f, 2.5f));
     }
 
-    public BulletGausSmall(WorldClient world, int id, float radRot, float x, float y, Ship ship) {
-        super(world, id, 70.0f, radRot, x, y, 2.4f, 2.4f, ship, TextureRegister.smallGaus, 1.0f, 1.0f, 0.5f, 1.5f, 1.56f, new BulletDamage(2.5f, 5.0f, 2.5f));
+    public BulletGausSmall(WorldClient world, int id, float sin, float cos, float x, float y, Ship ship) {
+        super(world, id, 70.0f, sin, cos, x, y, 2.4f, 2.4f, ship, TextureRegister.smallGaus, 1.0f, 1.0f, 0.5f, 1.5f, 1.56f, new BulletDamage(2.5f, 5.0f, 2.5f));
     }
 
     @Override
