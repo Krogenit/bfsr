@@ -13,7 +13,6 @@ import net.bfsr.network.packet.server.PacketOpenGui;
 import net.bfsr.network.server.NetworkManagerServer;
 import net.bfsr.network.status.ServerStatusResponse;
 import net.bfsr.profiler.Profiler;
-import net.bfsr.settings.ServerSettings;
 import net.bfsr.world.WorldServer;
 
 import java.io.BufferedReader;
