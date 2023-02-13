@@ -38,12 +38,18 @@ public class GuiFactionSelect extends Gui {
         }).atCenter(309 - 300 / 2, 230 - 50 / 2));
 
         shipHuman.setPosition(center.x - 309, center.y + 70);
+        shipHuman.getLastPosition().set(center.x - 309, center.y + 70);
+        shipHuman.getLastScale().set(90);
         shipHuman.setScale(90, 90);
 
         shipSaimon.setPosition(center.x, center.y + 70);
+        shipSaimon.getLastPosition().set(center.x, center.y + 70);
+        shipSaimon.getLastScale().set(110);
         shipSaimon.setScale(110, 110);
 
         shipEngi.setPosition(center.x + 309, center.y + 70);
+        shipEngi.getLastPosition().set(center.x + 309, center.y + 70);
+        shipEngi.getLastScale().set(90);
         shipEngi.setScale(90, 90);
 
         aabbHuman = new AxisAlignedBoundingBox(center.x - 460, center.y - 88, center.x - 160, center.y + 260);
@@ -62,6 +68,7 @@ public class GuiFactionSelect extends Gui {
     private void updateRot(TextureObject ship, AxisAlignedBoundingBox aabb) {
         float rotSpeed = 0.04f;
 
+        ship.setLastRotation(ship.getRotation());
         if (aabb.isIntersects(Mouse.getPosition())) {
             ship.setRotation(ship.getRotation() + rotSpeed);
 
