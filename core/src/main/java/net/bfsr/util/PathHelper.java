@@ -2,7 +2,7 @@ package net.bfsr.util;
 
 import java.io.File;
 
-public class PathHelper {
+public final class PathHelper {
     public static final File CONTENT = new File("..\\..\\", "core/src/main/resources");
     public static final File TEXTURE = new File(CONTENT, "texture");
     public static final File SOUND = new File(CONTENT, "sound");

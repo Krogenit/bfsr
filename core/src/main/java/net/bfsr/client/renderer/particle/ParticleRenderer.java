@@ -7,7 +7,7 @@ import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.renderer.OpenGLHelper;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.core.Core;
-import net.bfsr.util.MulthithreadingUtils;
+import net.bfsr.util.MultithreadingUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -41,11 +41,11 @@ public class ParticleRenderer {
             particlesByRenderLayer[RENDER_LAYERS[i].ordinal()] = new ArrayList<>(256);
         }
 
-        if (MulthithreadingUtils.MULTITHREADING_SUPPORTED) {
-            backgroundTaskFutures = new Future[MulthithreadingUtils.PARALLELISM];
-            taskFutures = new Future[MulthithreadingUtils.PARALLELISM];
-            particlesStoreTasks = new ParticlesStoreTask[MulthithreadingUtils.PARALLELISM];
-            backgroundParticlesStoreTasks = new ParticlesStoreTask[MulthithreadingUtils.PARALLELISM];
+        if (MultithreadingUtils.MULTITHREADING_SUPPORTED) {
+            backgroundTaskFutures = new Future[MultithreadingUtils.PARALLELISM];
+            taskFutures = new Future[MultithreadingUtils.PARALLELISM];
+            particlesStoreTasks = new ParticlesStoreTask[MultithreadingUtils.PARALLELISM];
+            backgroundParticlesStoreTasks = new ParticlesStoreTask[MultithreadingUtils.PARALLELISM];
             for (int i = 0; i < particlesStoreTasks.length; i++) {
                 particlesStoreTasks[i] = new ParticlesStoreTask(particlesByRenderLayer, RenderLayer.DEFAULT_ALPHA_BLENDED);
                 particlesStoreTasks[i].init(vertexBuffers, materialBuffers);
@@ -82,7 +82,7 @@ public class ParticleRenderer {
             vertexBuffer.clear();
         }
 
-        if (resized && MulthithreadingUtils.MULTITHREADING_SUPPORTED) {
+        if (resized && MultithreadingUtils.MULTITHREADING_SUPPORTED) {
             for (int i = 0; i < particlesStoreTasks.length; i++) {
                 particlesStoreTasks[i].init(vertexBuffers, materialBuffers);
                 backgroundParticlesStoreTasks[i].init(vertexBuffers, materialBuffers);
@@ -97,8 +97,8 @@ public class ParticleRenderer {
         int multithreadedThreshold = 2048;
         int particlesByTask = 2048;
 
-        multithreaded = MulthithreadingUtils.MULTITHREADING_SUPPORTED && totalParticles >= multithreadedThreshold;
-        taskCount = multithreaded ? (int) Math.ceil(Math.min(totalParticles / (float) particlesByTask, MulthithreadingUtils.PARALLELISM)) : 1;
+        multithreaded = MultithreadingUtils.MULTITHREADING_SUPPORTED && totalParticles >= multithreadedThreshold;
+        taskCount = multithreaded ? (int) Math.ceil(Math.min(totalParticles / (float) particlesByTask, MultithreadingUtils.PARALLELISM)) : 1;
 
         int backgroundAlphaBufferIndex = 0;
         int backgroundAdditiveBufferIndex = 0;

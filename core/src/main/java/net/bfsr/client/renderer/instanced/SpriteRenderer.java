@@ -8,7 +8,7 @@ import net.bfsr.core.Core;
 import net.bfsr.entity.TextureObject;
 import net.bfsr.math.LUT;
 import net.bfsr.math.MathUtils;
-import net.bfsr.util.MulthithreadingUtils;
+import net.bfsr.util.MultithreadingUtils;
 import net.bfsr.util.MutableInt;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11C;
@@ -38,8 +38,8 @@ public class SpriteRenderer {
         buffersHolders[BufferType.ENTITIES_ADDITIVE.ordinal()] = new BuffersHolder(512);
         buffersHolders[BufferType.GUI.ordinal()] = new BuffersHolder(512);
 
-        if (MulthithreadingUtils.MULTITHREADING_SUPPORTED) {
-            executorService = Executors.newFixedThreadPool(MulthithreadingUtils.PARALLELISM);
+        if (MultithreadingUtils.MULTITHREADING_SUPPORTED) {
+            executorService = Executors.newFixedThreadPool(MultithreadingUtils.PARALLELISM);
         }
     }
 

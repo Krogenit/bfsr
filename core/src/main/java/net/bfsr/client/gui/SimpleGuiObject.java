@@ -6,12 +6,8 @@ import lombok.Setter;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
-import net.bfsr.util.MatrixBufferUtils;
-import org.joml.Matrix4f;
 import org.joml.Vector4f;
-import org.lwjgl.BufferUtils;
 
-import java.nio.FloatBuffer;
 import java.util.function.Supplier;
 
 @NoArgsConstructor
@@ -21,7 +17,6 @@ public class SimpleGuiObject extends AbstractGuiObject {
     @Getter
     protected int width, height;
     protected Vector4f color = new Vector4f(1.0f);
-    protected FloatBuffer modelMatrixBuffer = new Matrix4f().get(BufferUtils.createFloatBuffer(16));
     @Setter
     private Supplier<Boolean> intersectsCheckMethod = () -> isIntersects(Mouse.getPosition().x, Mouse.getPosition().y);
 
@@ -34,26 +29,22 @@ public class SimpleGuiObject extends AbstractGuiObject {
         this.y = y;
         this.width = width;
         this.height = height;
-        MatrixBufferUtils.set(modelMatrixBuffer, x, y, width, height);
     }
 
     @Override
     public void setX(int x) {
         this.x = x;
-        MatrixBufferUtils.setX(modelMatrixBuffer, x);
     }
 
     @Override
     public void setY(int y) {
         this.y = y;
-        MatrixBufferUtils.setY(modelMatrixBuffer, y);
     }
 
     @Override
     public SimpleGuiObject setPosition(int x, int y) {
         this.x = x;
         this.y = y;
-        MatrixBufferUtils.setPosition(modelMatrixBuffer, x, y);
         return this;
     }
 
@@ -61,21 +52,18 @@ public class SimpleGuiObject extends AbstractGuiObject {
     public SimpleGuiObject setSize(int width, int height) {
         this.width = width;
         this.height = height;
-        MatrixBufferUtils.setSize(modelMatrixBuffer, width, height);
         return this;
     }
 
     @Override
     public SimpleGuiObject setWidth(int width) {
         this.width = width;
-        MatrixBufferUtils.setWidth(modelMatrixBuffer, width);
         return this;
     }
 
     @Override
     public SimpleGuiObject setHeight(int height) {
         this.height = height;
-        MatrixBufferUtils.setHeight(modelMatrixBuffer, height);
         return this;
     }
 
