@@ -32,8 +32,7 @@ public class PacketShieldRebuildingTime extends ServerPacket {
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
         CollisionObject obj = Core.get().getWorld().getEntityById(id);
-        if (obj != null) {
-            Ship ship = (Ship) obj;
+        if (obj instanceof Ship ship) {
             Shield shield = ship.getShield();
             if (shield != null) shield.setRebuildingTime(time);
         }

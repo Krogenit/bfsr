@@ -33,8 +33,7 @@ public class PacketDestroingShip extends ServerPacket {
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
         CollisionObject obj = Core.get().getWorld().getEntityById(id);
-        if (obj != null) {
-            Ship ship = (Ship) obj;
+        if (obj instanceof Ship ship) {
             ship.setDestroing();
         }
     }
