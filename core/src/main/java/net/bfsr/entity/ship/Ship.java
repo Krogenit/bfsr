@@ -280,7 +280,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         if (spawned) {
             updateShip();
         } else {
-            if (((jumpVelocity.x < 0 && jumpPosition.x <= position.x) || (jumpVelocity.x > 0 && jumpPosition.x >= position.x)) && ((jumpVelocity.y < 0 && jumpPosition.y <= position.y)
+            if (((jumpVelocity.x < 0 && jumpPosition.x <= position.x) || (jumpVelocity.x >= 0 && jumpPosition.x >= position.x)) && ((jumpVelocity.y < 0 && jumpPosition.y <= position.y)
                     || (jumpVelocity.y >= 0 && jumpPosition.y >= position.y))) {
                 setSpawned();
                 setVelocity(jumpVelocity.mul(0.26666668f));
