@@ -6,7 +6,7 @@ import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.core.Core;
 import org.lwjgl.glfw.GLFW;
@@ -44,7 +44,7 @@ public class GuiInGameMenu extends Gui {
 
     @Override
     public void render(float interpolation) {
-        InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(0, 0, width, height, 0.0f, 0.0f, 0.0f, 0.5f, 0, BufferType.GUI);
+        SpriteRenderer.INSTANCE.addGUIElementToRenderPipeLine(0, 0, width, height, 0.0f, 0.0f, 0.0f, 0.5f, 0, BufferType.GUI);
         super.render(interpolation);
     }
 }

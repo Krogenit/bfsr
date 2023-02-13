@@ -9,7 +9,7 @@ import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringCache;
 import net.bfsr.client.renderer.font.string.StringObject;
 import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.sound.GuiSoundSource;
 import net.bfsr.client.sound.SoundRegistry;
@@ -241,7 +241,7 @@ public class InputBox extends TexturedGuiObject {
             if (cursorPositionEnd != cursorPosition) {
                 int leftStringWidth = stringObject.getStringCache().getStringWidth(stringObject.getString().substring(0, cursorPosition), fontSize);
                 int rightStringWidth = stringObject.getStringCache().getStringWidth(stringObject.getString().substring(cursorPosition, cursorPositionEnd), fontSize);
-                InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(x + leftStringWidth + stringOffset.x, cursorY, rightStringWidth, cursorHeight, selectionColor.x, selectionColor.y, selectionColor.z,
+                SpriteRenderer.INSTANCE.addGUIElementToRenderPipeLine(x + leftStringWidth + stringOffset.x, cursorY, rightStringWidth, cursorHeight, selectionColor.x, selectionColor.y, selectionColor.z,
                         selectionColor.w, 0, BufferType.GUI);
                 if (leftToRightSelection) {
                     lineWidth = leftStringWidth + rightStringWidth;
@@ -256,7 +256,7 @@ public class InputBox extends TexturedGuiObject {
         }
 
         if (renderCursor) {
-            InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(x + stringOffset.x + lineWidth, cursorY, 1, cursorHeight, color.x, color.y, color.z, color.w, 0, BufferType.GUI);
+            SpriteRenderer.INSTANCE.addGUIElementToRenderPipeLine(x + stringOffset.x + lineWidth, cursorY, 1, cursorHeight, color.x, color.y, color.z, color.w, 0, BufferType.GUI);
         }
     }
 

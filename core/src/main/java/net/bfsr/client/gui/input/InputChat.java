@@ -4,7 +4,7 @@ import net.bfsr.client.gui.scroll.Scroll;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.core.Core;
 import net.bfsr.network.packet.common.PacketChatMessage;
 import org.lwjgl.glfw.GLFW;
@@ -56,7 +56,7 @@ public class InputChat extends InputBox {
     @Override
     public void render() {
         renderString();
-        InstancedRenderer.INSTANCE.render(BufferType.GUI);
+        SpriteRenderer.INSTANCE.render(BufferType.GUI);
 
         int lineX = stringOffset.x;
         int lineY = 28 - scroll.getScroll();
@@ -78,7 +78,7 @@ public class InputChat extends InputBox {
             lineY += stringHeight;
         }
 
-        InstancedRenderer.INSTANCE.render(BufferType.GUI);
+        SpriteRenderer.INSTANCE.render(BufferType.GUI);
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
 
         renderSelectionAndCursor();

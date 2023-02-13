@@ -2,7 +2,7 @@ package net.bfsr.client.renderer.font;
 
 import net.bfsr.client.renderer.font.string.GLString;
 import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import org.joml.Vector3f;
 
 import java.nio.ByteBuffer;
@@ -129,7 +129,7 @@ public class StringRenderer {
     }
 
     public void render(GLString glString, BufferType bufferType) {
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(glString, bufferType);
+        SpriteRenderer.INSTANCE.addToRenderPipeLine(glString, bufferType);
     }
 
     public void render(String string, StringCache stringCache, int fontSize, float x, float y, BufferType bufferType) {

@@ -7,7 +7,7 @@ import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringCache;
 import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.core.Core;
 import org.joml.Vector4f;
 
@@ -137,27 +137,27 @@ public class StringObject extends AbstractGuiObject {
 
     @Override
     public void render() {
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(glString, BufferType.GUI);
+        SpriteRenderer.INSTANCE.addToRenderPipeLine(glString, BufferType.GUI);
     }
 
     public void render(BufferType bufferType) {
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(glString, bufferType);
+        SpriteRenderer.INSTANCE.addToRenderPipeLine(glString, bufferType);
     }
 
     public void render(BufferType bufferType, float x, float y) {
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(glString, x, y, bufferType);
+        SpriteRenderer.INSTANCE.addToRenderPipeLine(glString, x, y, bufferType);
     }
 
     public void render(BufferType bufferType, float x, float y, float scaleX, float scaleY) {
-        InstancedRenderer.INSTANCE.renderString(glString, x, y, scaleX, scaleY, bufferType);
+        SpriteRenderer.INSTANCE.renderString(glString, x, y, scaleX, scaleY, bufferType);
     }
 
     public void render(BufferType bufferType, float lastX, float lastY, float x, float y, float scaleX, float scaleY) {
-        InstancedRenderer.INSTANCE.renderString(glString, lastX, lastY, x, y, scaleX, scaleY, bufferType);
+        SpriteRenderer.INSTANCE.renderString(glString, lastX, lastY, x, y, scaleX, scaleY, bufferType);
     }
 
     public void renderWithShadow(BufferType bufferType, float lastX, float lastY, float x, float y, float scaleX, float scaleY, float shadowOffsetX, float shadowOffsetY) {
-        InstancedRenderer.INSTANCE.renderStringWithShadow(glString, lastX, lastY, x, y, scaleX, scaleY, shadowOffsetX, shadowOffsetY, bufferType);
+        SpriteRenderer.INSTANCE.renderStringWithShadow(glString, lastX, lastY, x, y, scaleX, scaleY, shadowOffsetX, shadowOffsetY, bufferType);
     }
 
 

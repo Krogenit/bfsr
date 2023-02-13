@@ -9,7 +9,7 @@ import net.bfsr.client.gui.ingame.GuiInGame;
 import net.bfsr.client.renderer.debug.OpenGLDebugUtils;
 import net.bfsr.client.renderer.font.StringRenderer;
 import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.particle.ParticleRenderer;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.shader.BaseShader;
@@ -35,7 +35,7 @@ public class Renderer {
     private final StringRenderer stringRenderer = new StringRenderer();
     @Getter
     private final ParticleRenderer particleRenderer = new ParticleRenderer();
-    private final InstancedRenderer instancedRenderer = new InstancedRenderer();
+    private final SpriteRenderer spriteRenderer = new SpriteRenderer();
     @Getter
     private GuiInGame guiInGame;
     @Getter
@@ -60,7 +60,7 @@ public class Renderer {
 
         camera.init(core.getScreenWidth(), core.getScreenHeight());
         stringRenderer.init();
-        instancedRenderer.init();
+        spriteRenderer.init();
         shader.load();
         shader.init();
 
@@ -124,7 +124,7 @@ public class Renderer {
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
         camera.calculateInterpolatedViewMatrix(interpolation);
         camera.bind();
-        instancedRenderer.bind();
+        spriteRenderer.bind();
         shader.enable();
         OpenGLHelper.alphaGreater(0.0001f);
 
@@ -153,7 +153,7 @@ public class Renderer {
             gui.render(interpolation);
         }
 
-        InstancedRenderer.INSTANCE.render(BufferType.GUI);
+        SpriteRenderer.INSTANCE.render(BufferType.GUI);
     }
 
     private void resetDrawCalls() {
@@ -177,7 +177,7 @@ public class Renderer {
     }
 
     public void clear() {
-        instancedRenderer.clear();
+        spriteRenderer.clear();
     }
 
     public void increaseDrawCalls() {

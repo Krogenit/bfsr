@@ -7,7 +7,7 @@ import net.bfsr.client.input.Mouse;
 import net.bfsr.client.particle.ParticleManager;
 import net.bfsr.client.renderer.OpenGLHelper;
 import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureGenerator;
 import net.bfsr.client.renderer.texture.TextureLoader;
@@ -199,15 +199,15 @@ public class WorldClient extends World {
         float zoom = (float) (0.5f + Math.log(cameraZoom) * 0.01f);
         float scaleX = scale.x / cameraZoom * zoom;
         float scaleY = scale.y / cameraZoom * zoom;
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(lastX, lastY, x, y, 0, 0, scaleX, scaleY, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f, background.getTexture(), BufferType.BACKGROUND);
+        SpriteRenderer.INSTANCE.addToRenderPipeLine(lastX, lastY, x, y, 0, 0, scaleX, scaleY, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f, background.getTexture(), BufferType.BACKGROUND);
     }
 
     public void renderAmbient() {
-        InstancedRenderer.INSTANCE.render(BufferType.BACKGROUND);
+        SpriteRenderer.INSTANCE.render(BufferType.BACKGROUND);
     }
 
     public void prepareEntities() {
-        InstancedRenderer.INSTANCE.addTask(() -> {
+        SpriteRenderer.INSTANCE.addTask(() -> {
             AxisAlignedBoundingBox cameraAABB = core.getRenderer().getCamera().getBoundingBox();
 
             for (int i = 0, size = ships.size(); i < size; i++) {
@@ -219,7 +219,7 @@ public class WorldClient extends World {
 
             particleManager.render();
         }, BufferType.ENTITIES_ALPHA);
-        InstancedRenderer.INSTANCE.addTask(() -> {
+        SpriteRenderer.INSTANCE.addTask(() -> {
             AxisAlignedBoundingBox cameraAABB = core.getRenderer().getCamera().getBoundingBox();
 
             for (int i = 0, size = ships.size(); i < size; i++) {
@@ -242,9 +242,9 @@ public class WorldClient extends World {
 
     public void renderEntities() {
         OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        InstancedRenderer.INSTANCE.syncAndRender(BufferType.ENTITIES_ALPHA);
+        SpriteRenderer.INSTANCE.syncAndRender(BufferType.ENTITIES_ALPHA);
         OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
-        InstancedRenderer.INSTANCE.syncAndRender(BufferType.ENTITIES_ADDITIVE);
+        SpriteRenderer.INSTANCE.syncAndRender(BufferType.ENTITIES_ADDITIVE);
     }
 
     public void renderDebug() {

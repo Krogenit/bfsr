@@ -8,7 +8,7 @@ import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.font.string.StringObject;
 import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.core.Core;
 import net.bfsr.settings.EnumOption;
@@ -145,14 +145,14 @@ public class GuiSettings extends Gui {
     @Override
     public void render(float interpolation) {
         if (isInGame) {
-            InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(0, 0, width, height, 0.0f, 0.0f, 0.0f, 0.5f, 0, BufferType.GUI);
+            SpriteRenderer.INSTANCE.addGUIElementToRenderPipeLine(0, 0, width, height, 0.0f, 0.0f, 0.0f, 0.5f, 0, BufferType.GUI);
         }
 
         backgroundTop.render();
         backgroundDown.render();
         mainText.render();
 
-        InstancedRenderer.INSTANCE.render(BufferType.GUI);
+        SpriteRenderer.INSTANCE.render(BufferType.GUI);
 
         GL11C.glEnable(GL11C.GL_SCISSOR_TEST);
         GL11C.glScissor(0, 60, width, Math.max(height - 120, 0));
@@ -166,7 +166,7 @@ public class GuiSettings extends Gui {
             scissorAffected.get(i).render();
         }
 
-        InstancedRenderer.INSTANCE.render(BufferType.GUI);
+        SpriteRenderer.INSTANCE.render(BufferType.GUI);
         GL11C.glDisable(GL11C.GL_SCISSOR_TEST);
 
         saveButton.render();

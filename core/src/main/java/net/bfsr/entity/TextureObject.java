@@ -3,7 +3,7 @@ package net.bfsr.entity;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.renderer.texture.TextureRegister;
@@ -66,7 +66,7 @@ public class TextureObject {
     public void update() {}
 
     public void render() {
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(this, BufferType.GUI);
+        SpriteRenderer.INSTANCE.addToRenderPipeLine(this, BufferType.GUI);
     }
 
     public void setPosition(float x, float y) {

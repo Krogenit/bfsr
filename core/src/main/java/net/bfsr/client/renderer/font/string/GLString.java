@@ -2,7 +2,7 @@ package net.bfsr.client.renderer.font.string;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;
@@ -16,8 +16,8 @@ public class GLString {
     private ByteBuffer materialBuffer;
 
     public void init(int glyphCount) {
-        vertexBuffer = BufferUtils.createFloatBuffer(glyphCount * InstancedRenderer.VERTEX_DATA_SIZE);
-        materialBuffer = BufferUtils.createByteBuffer(glyphCount * InstancedRenderer.MATERIAL_DATA_SIZE);
+        vertexBuffer = BufferUtils.createFloatBuffer(glyphCount * SpriteRenderer.VERTEX_DATA_SIZE);
+        materialBuffer = BufferUtils.createByteBuffer(glyphCount * SpriteRenderer.MATERIAL_DATA_SIZE);
     }
 
     public void flipBuffers() {
@@ -26,13 +26,13 @@ public class GLString {
     }
 
     public void checkBuffers(int dataSize) {
-        while (vertexBuffer.capacity() - vertexBuffer.position() < dataSize * InstancedRenderer.VERTEX_DATA_SIZE) {
+        while (vertexBuffer.capacity() - vertexBuffer.position() < dataSize * SpriteRenderer.VERTEX_DATA_SIZE) {
             FloatBuffer newBuffer = BufferUtils.createFloatBuffer(vertexBuffer.capacity() << 1);
             vertexBuffer.flip();
             newBuffer.put(vertexBuffer);
             vertexBuffer = newBuffer;
         }
-        while (materialBuffer.capacity() - materialBuffer.position() < dataSize * InstancedRenderer.MATERIAL_DATA_SIZE) {
+        while (materialBuffer.capacity() - materialBuffer.position() < dataSize * SpriteRenderer.MATERIAL_DATA_SIZE) {
             ByteBuffer newBuffer = BufferUtils.createByteBuffer(materialBuffer.capacity() << 1);
             materialBuffer.flip();
             newBuffer.put(materialBuffer);

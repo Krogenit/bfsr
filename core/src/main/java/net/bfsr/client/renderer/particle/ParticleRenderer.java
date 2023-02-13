@@ -5,7 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.particle.Particle;
 import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.renderer.OpenGLHelper;
-import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.core.Core;
 import net.bfsr.util.MulthithreadingUtils;
 import org.lwjgl.BufferUtils;
@@ -115,7 +115,7 @@ public class ParticleRenderer {
                 backgroundParticlesStoreTask.update(backgroundAlphaBufferIndex, backgroundAdditiveBufferIndex, backgroundAlphaParticlesStartIndex, backgroundAlphaParticlesEndIndex,
                         backgroundAdditiveParticlesStartIndex, backgroundAdditiveParticlesEndIndex);
 
-                backgroundTaskFutures[i] = InstancedRenderer.INSTANCE.addTask(backgroundParticlesStoreTask);
+                backgroundTaskFutures[i] = SpriteRenderer.INSTANCE.addTask(backgroundParticlesStoreTask);
 
                 backgroundAlphaBufferIndex += backgroundAlphaParticlesPerTask << 4;
                 backgroundAdditiveBufferIndex += backgroundAdditiveParticlesPerTask << 4;
@@ -149,7 +149,7 @@ public class ParticleRenderer {
 
                 particlesStoreTask.update(alphaBufferIndex, additiveBufferIndex, alphaParticlesStartIndex, alphaParticlesEndIndex, additiveParticlesStartIndex, additiveParticlesEndIndex);
 
-                taskFutures[i] = InstancedRenderer.INSTANCE.addTask(particlesStoreTasks[i]);
+                taskFutures[i] = SpriteRenderer.INSTANCE.addTask(particlesStoreTasks[i]);
 
                 alphaBufferIndex += alphaParticlesPerTask << 4;
                 additiveBufferIndex += additiveParticlesPerTask << 4;
@@ -210,7 +210,7 @@ public class ParticleRenderer {
     }
 
     private void render(int count, FloatBuffer vertexBuffer, ByteBuffer materialBuffer) {
-        InstancedRenderer.INSTANCE.render(count, vertexBuffer, materialBuffer);
+        SpriteRenderer.INSTANCE.render(count, vertexBuffer, materialBuffer);
     }
 
     public void addParticleToRenderLayer(Particle particle, RenderLayer renderLayer) {

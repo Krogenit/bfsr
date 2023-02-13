@@ -2,7 +2,7 @@ package net.bfsr.client.gui;
 
 import lombok.Getter;
 import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.renderer.texture.TextureRegister;
@@ -28,6 +28,6 @@ public class TexturedGuiObject extends SimpleGuiObject {
 
     @Override
     public void render() {
-        InstancedRenderer.INSTANCE.addGUIElementToRenderPipeLine(x, y, width, height, color.x, color.y, color.z, color.w, texture, BufferType.GUI);
+        SpriteRenderer.INSTANCE.addGUIElementToRenderPipeLine(x, y, width, height, color.x, color.y, color.z, color.w, texture, BufferType.GUI);
     }
 }

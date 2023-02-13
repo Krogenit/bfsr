@@ -5,7 +5,7 @@ import lombok.Setter;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
@@ -192,7 +192,7 @@ public class Shield {
         if (shieldAlive()) {
             float sizeY = diameter.y * size;
             float sizeX = diameter.x * size;
-            InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(ship.getLastPosition().x, ship.getLastPosition().y, ship.getPosition().x, ship.getPosition().y,
+            SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(ship.getLastPosition().x, ship.getLastPosition().y, ship.getPosition().x, ship.getPosition().y,
                     ship.getLastSin(), ship.getLastCos(), ship.getSin(), ship.getCos(), sizeX, sizeY, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ADDITIVE);
         }
     }

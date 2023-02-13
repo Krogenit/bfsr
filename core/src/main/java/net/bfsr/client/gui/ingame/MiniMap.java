@@ -3,7 +3,7 @@ package net.bfsr.client.gui.ingame;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.core.Core;
@@ -74,12 +74,12 @@ public class MiniMap {
                 int y = (int) (miniMapY + (pos.y - camPos.y) / mapScaleY);
                 int sizeX = (int) (scale.x * shipSize);
                 int sizeY = (int) (scale.y * shipSize);
-                InstancedRenderer.INSTANCE.addToRenderPipeLineSinCos(x, y, x, y, s.getLastSin(), s.getLastCos(), s.getSin(), s.getCos(), sizeX, sizeY, color.x, color.y, color.z, 1.0f,
+                SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(x, y, x, y, s.getLastSin(), s.getLastCos(), s.getSin(), s.getCos(), sizeX, sizeY, color.x, color.y, color.z, 1.0f,
                         s.getTexture(), BufferType.GUI);
             }
         }
 
-        InstancedRenderer.INSTANCE.render(BufferType.GUI);
+        SpriteRenderer.INSTANCE.render(BufferType.GUI);
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 

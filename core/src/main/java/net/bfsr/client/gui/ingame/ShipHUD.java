@@ -6,7 +6,7 @@ import net.bfsr.client.language.Lang;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.string.StringObject;
 import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.InstancedRenderer;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.renderer.texture.TextureRegister;
@@ -110,14 +110,14 @@ public class ShipHUD {
     private void renderHullValue(Ship ship, int x, int y) {
         textHull.update(Math.round(ship.getHull().getHull()) + "");
         textHull.setPosition(x - textHull.getStringWidth() / 2, y + 16);
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(x, y + 12, textHull.getStringWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, BufferType.GUI);
+        SpriteRenderer.INSTANCE.addToRenderPipeLine(x, y + 12, textHull.getStringWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, BufferType.GUI);
         textHull.render();
     }
 
     private void renderShieldValue(Shield shield, int x, int y) {
         textShield.update(Math.round(shield.getShield()) + "");
         textShield.setPosition(x - textShield.getStringWidth() / 2, y + 74);
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(x, y + 70, textShield.getStringWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, BufferType.GUI);
+        SpriteRenderer.INSTANCE.addToRenderPipeLine(x, y + 70, textShield.getStringWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, BufferType.GUI);
         textShield.render();
     }
 
@@ -246,10 +246,10 @@ public class ShipHUD {
     }
 
     private void renderQuad(int x, int y, float rot, int width, int height, float r, float g, float b, float a, Texture texture) {
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(x, y, rot, width, height, r, g, b, a, texture, BufferType.GUI);
+        SpriteRenderer.INSTANCE.addToRenderPipeLine(x, y, rot, width, height, r, g, b, a, texture, BufferType.GUI);
     }
 
     private void renderQuad(int x, int y, int width, int height, float r, float g, float b, float a, Texture texture) {
-        InstancedRenderer.INSTANCE.addToRenderPipeLine(x, y, width, height, r, g, b, a, texture, BufferType.GUI);
+        SpriteRenderer.INSTANCE.addToRenderPipeLine(x, y, width, height, r, g, b, a, texture, BufferType.GUI);
     }
 }

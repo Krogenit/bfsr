@@ -19,8 +19,8 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.concurrent.*;
 
-public class InstancedRenderer {
-    public static InstancedRenderer INSTANCE;
+public class SpriteRenderer {
+    public static SpriteRenderer INSTANCE;
 
     public static final int VERTEX_DATA_SIZE = 16;
     public static final int MATERIAL_DATA_SIZE = 32;
@@ -30,7 +30,7 @@ public class InstancedRenderer {
     @Getter
     private final BuffersHolder[] buffersHolders = new BuffersHolder[BufferType.values().length];
 
-    public InstancedRenderer() {
+    public SpriteRenderer() {
         INSTANCE = this;
 
         buffersHolders[BufferType.BACKGROUND.ordinal()] = new BuffersHolder(1);
