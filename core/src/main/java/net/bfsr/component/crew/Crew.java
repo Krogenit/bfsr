@@ -1,29 +1,19 @@
 package net.bfsr.component.crew;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
 public class Crew {
-    private int crewSize, maxCrewSize;
+    private final int maxCrewSize;
+    @Setter
+    private int crewSize;
 
     public Crew(int maxCrewSize) {
         this.maxCrewSize = maxCrewSize;
     }
 
-    public void setCrewSize(int crewSize) {
-        this.crewSize = crewSize;
-    }
-
-    public void setMaxCrewSize(int maxCrewSize) {
-        this.maxCrewSize = maxCrewSize;
-    }
-
-    public int getCrewSize() {
-        return crewSize;
-    }
-
-    public int getMaxCrewSize() {
-        return maxCrewSize;
-    }
-
     public float getCrewRegen() {
-        return crewSize / 100f;
+        return crewSize / 100.0f;
     }
 }

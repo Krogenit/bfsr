@@ -20,43 +20,40 @@ import java.util.Random;
 public class Damage extends TextureObject {
     private final Ship ship;
     private final int type;
-    private boolean isCreated, changeFire, changeLight, damaged;
+    private boolean holeCreated, fireFadingOut, lightFadingOut, damaged;
     private float addRotation;
     private float ionTimer;
     private final float creationDamage;
     private float repairTimer;
     private float smokeTimer;
-    private float lightingTimer;
-    private float lightingTimer1;
+    private float sparkleFlickerTimer;
+    private float sparkleActivationTimer;
     private Texture textureLight;
     private final Texture textureFire;
     private final Texture textureFix;
     private final Vector2f addPos;
-    private final Vector4f colorFix;
-    private final Vector4f colorFire;
-    private final Vector4f colorLight;
+    private final Vector4f colorFix = new Vector4f(1.0f, 1.0f, 1.0f, 0.0f);
+    private final Vector4f colorFire = new Vector4f(1.0f, 1.0f, 1.0f, 0.5f);
+    private final Vector4f colorLight = new Vector4f(1.0f, 1.0f, 1.0f, 0.0f);
     private final Random rand;
 
     public Damage(Ship ship, float damage, int type, Vector2f addPos, float size) {
         super(TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipDamage0.ordinal() + type]), ship.getPosition().x, ship.getPosition().y);
         this.ship = ship;
-        creationDamage = damage;
+        this.creationDamage = damage;
         this.type = type;
         this.addPos = addPos;
 
-        textureFire = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipDamageFire0.ordinal() + type]);
-        textureFix = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipFix0.ordinal() + type]);
+        this.textureFire = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipDamageFire0.ordinal() + type]);
+        this.textureFix = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipFix0.ordinal() + type]);
 
         if (type > 1) {
-            textureLight = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipDamageLight2.ordinal() + type - 2]);
+            this.textureLight = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipDamageLight2.ordinal() + type - 2]);
         }
 
-        colorFire = new Vector4f(0.5f, 0.5f, 0.5f, 0.5f);
-        colorLight = new Vector4f(0, 0, 0, 0);
-        colorFix = new Vector4f(0, 0, 0, 0);
-        rand = ship.getWorld().getRand();
-        scale.x *= size;
-        scale.y *= size;
+        this.rand = ship.getWorld().getRand();
+        this.scale.x *= size;
+        this.scale.y *= size;
     }
 
     public void updatePos() {
@@ -83,12 +80,12 @@ public class Damage extends TextureObject {
         damaged = hullValue / maxHull <= creationDamage;
 
         if (damaged) {
-            if (!isCreated) {
+            if (!holeCreated) {
                 addRotation = MathUtils.TWO_PI * rand.nextFloat();
                 ParticleSpawner.spawnExplosion(position.x, position.y, scale.x, 2.0f);
                 ParticleSpawner.spawnSpark(position.x, position.y, scale.x, 2.0f);
                 ParticleSpawner.spawnLight(position.x, position.y, (scale.x + scale.y), 1.0f, 0.5f, 0.5f, 0.7f, 2.0f, true, RenderLayer.DEFAULT_ADDITIVE);
-                isCreated = true;
+                holeCreated = true;
             }
 
             smokeTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
@@ -102,88 +99,69 @@ public class Damage extends TextureObject {
                 ParticleSpawner.spawnLightingIon(position, (scale.x + scale.y) / 1.5f);
                 ionTimer = 200 + rand.nextInt(120);
             }
-            colorFix.x = 1;
-            colorFix.y = 1;
-            colorFix.z = 1;
-            colorFix.w = 1;
+            colorFix.w = 1.0f;
         } else if (colorFix.w > 0) {
             float fixSpeed = 0.03f * TimeUtils.UPDATE_DELTA_TIME;
             if (colorFix.w >= 1.0f && repairTimer != 1000) {
                 repairTimer = 1000;
                 colorFix.w -= fixSpeed;
-                colorFix.x -= fixSpeed;
-                colorFix.y -= fixSpeed;
-                colorFix.z -= fixSpeed;
+                if (colorFix.w < 0.0f) colorFix.w = 0.0f;
             }
             repairTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (repairTimer <= 0) {
-                if (isCreated) {
+                if (holeCreated) {
                     ParticleSpawner.spawnLight(position.x, position.y, (scale.x + scale.y), 0.25f, 0.75f, 1.0f, 1.0f, 5.0f, true, RenderLayer.DEFAULT_ADDITIVE);
-                    isCreated = false;
+                    holeCreated = false;
                 }
-                colorFix.w -= fixSpeed;
-                colorFix.x -= fixSpeed;
-                colorFix.y -= fixSpeed;
                 colorFix.z -= fixSpeed;
+                if (colorFix.w < 0.0f) colorFix.w = 0.0f;
             }
         }
 
         if (damaged || repairTimer > 0) {
             float fireSpeed = 0.3f * TimeUtils.UPDATE_DELTA_TIME;
-            if (changeFire) {
-                if (colorFire.w > 0.5F) {
+            if (fireFadingOut) {
+                if (colorFire.w > 0.5f) {
                     colorFire.w -= fireSpeed;
-                    colorFire.x -= fireSpeed;
-                    colorFire.y -= fireSpeed;
-                    colorFire.z -= fireSpeed;
+                    if (colorFire.w < 0.0f) colorFire.w = 0.0f;
                 } else {
-                    changeFire = false;
+                    fireFadingOut = false;
                 }
             } else {
-                if (colorFire.w < 1) {
+                if (colorFire.w < 1.0f) {
                     colorFire.w += fireSpeed;
-                    colorFire.x += fireSpeed;
-                    colorFire.y += fireSpeed;
-                    colorFire.z += fireSpeed;
                 } else {
-                    changeFire = true;
+                    fireFadingOut = true;
                 }
             }
             if (type > 1) {
-                lightingTimer1 -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+                sparkleActivationTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
                 float lightSpeed = 12.0f * TimeUtils.UPDATE_DELTA_TIME;
-                if (lightingTimer1 <= 0) {
-                    if (changeLight) {
-                        if (colorLight.w > 0.0F) {
+                if (sparkleActivationTimer <= 0) {
+                    if (lightFadingOut) {
+                        if (colorLight.w > 0.0f) {
                             colorLight.w -= lightSpeed;
-                            colorLight.x -= lightSpeed;
-                            colorLight.y -= lightSpeed;
-                            colorLight.z -= lightSpeed;
+                            if (colorLight.w < 0.0f) colorLight.w = 0.0f;
                         } else {
-                            changeLight = false;
-                            lightingTimer += 25 + rand.nextInt(25);
+                            lightFadingOut = false;
+                            sparkleFlickerTimer += 25 + rand.nextInt(25);
                         }
                     } else {
                         if (colorLight.w < 1.0F) {
                             colorLight.w += lightSpeed;
-                            colorLight.x += lightSpeed;
-                            colorLight.y += lightSpeed;
-                            colorLight.z += lightSpeed;
                         } else {
-                            changeLight = true;
-                            lightingTimer += 25 + rand.nextInt(25);
+                            lightFadingOut = true;
+                            sparkleFlickerTimer += 25 + rand.nextInt(25);
                         }
                     }
-                } else if (colorLight.w > 0.0F) {
+                } else if (colorLight.w > 0.0f) {
                     colorLight.w -= lightSpeed;
-                    colorLight.x -= lightSpeed;
-                    colorLight.y -= lightSpeed;
-                    colorLight.z -= lightSpeed;
+                    if (colorLight.w < 0.0f) colorLight.w = 0.0f;
                 }
 
-                if (lightingTimer >= 100) {
-                    lightingTimer1 = 60 + rand.nextInt(240);
-                    lightingTimer = 0;
+                if (sparkleFlickerTimer >= 100) {
+                    sparkleActivationTimer = 60 + rand.nextInt(240);
+                    sparkleFlickerTimer = 0;
                 }
             }
         }

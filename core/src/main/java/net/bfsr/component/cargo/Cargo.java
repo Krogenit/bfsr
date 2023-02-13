@@ -1,5 +1,8 @@
 package net.bfsr.component.cargo;
 
+import lombok.Getter;
+
+@Getter
 public class Cargo {
     private int capacity;
     private final int maxCapacity;
@@ -13,13 +16,5 @@ public class Cargo {
 
         capacity += value;
         return true;
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    public int getMaxCapacity() {
-        return maxCapacity;
     }
 }
