@@ -20,10 +20,7 @@ import net.bfsr.server.MainServer;
 import net.bfsr.util.TimeUtils;
 import net.bfsr.world.WorldServer;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.Convex;
-import org.dyn4j.geometry.Geometry;
-import org.dyn4j.geometry.Polygon;
-import org.dyn4j.geometry.Vector2;
+import org.dyn4j.geometry.*;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -38,8 +35,8 @@ public class Shield {
     @Getter
     private float shield, maxShield;
     private float shieldRegen;
-    private Vector2f radius;
-    private Vector2f diameter;
+    private final Vector2f radius = new Vector2f();
+    private final Vector2f diameter = new Vector2f();
     private float timeToRebuild, rebuildingTime;
     @Getter
     private float size;
@@ -52,14 +49,13 @@ public class Shield {
         this.size = 1.0f;
     }
 
-    protected void createBody(float x, float y) {
+    protected void createBody() {
         List<BodyFixture> fixtures = ship.getBody().getFixtures();
         if (shieldFixture != null) {
             ship.getBody().removeFixture(shieldFixture);
             shieldFixture = null;
         }
 
-        radius = new Vector2f();
         for (int i = 0; i < fixtures.size(); i++) {
             BodyFixture bodyFixture = fixtures.get(i);
             Convex convex = bodyFixture.getShape();
@@ -75,13 +71,12 @@ public class Shield {
                     }
                 }
             }
-
         }
 
         float offset = 1.4f;
-        diameter = new Vector2f(radius.x * 2.0f + offset, radius.y * 2.0f + offset);
+        diameter.set(radius.x * 2.0f + offset, radius.y * 2.0f + offset);
 
-        Polygon ellipse = Geometry.createPolygonalEllipse(16, diameter.x, diameter.y);
+        Ellipse ellipse = Geometry.createEllipse(diameter.x, diameter.y);
         shieldFixture = new BodyFixture(ellipse);
         shieldFixture.setUserData(this);
         shieldFixture.setDensity(PhysicsUtils.SHIELD_FIXTURE_DENSITY);
@@ -100,7 +95,7 @@ public class Shield {
             removeShield();
         }
 
-        if (shield < maxShield && shieldAlive()) {
+        if (shield < maxShield && isShieldAlive()) {
             shield += shieldRegen * TimeUtils.UPDATE_DELTA_TIME;
 
             if (ship.getWorld().isRemote() && size < 1.0f) {
@@ -122,7 +117,7 @@ public class Shield {
         }
     }
 
-    public boolean shieldAlive() {
+    public boolean isShieldAlive() {
         return rebuildingTime >= timeToRebuild;
     }
 
@@ -144,7 +139,7 @@ public class Shield {
             MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRebuild(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         }
 
-        createBody(position.x, position.y);
+        createBody();
     }
 
     public boolean damage(float shieldDamage) {
@@ -189,7 +184,7 @@ public class Shield {
     }
 
     public void render() {
-        if (shieldAlive()) {
+        if (isShieldAlive()) {
             float sizeY = diameter.y * size;
             float sizeX = diameter.x * size;
             SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(ship.getLastPosition().x, ship.getLastPosition().y, ship.getPosition().x, ship.getPosition().y,

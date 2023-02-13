@@ -124,7 +124,6 @@ public abstract class WeaponSlot extends TextureObject {
 
     @Override
     public void update() {
-        lastRotation = rotation;
         lastPosition.set(position);
 
         updatePos();
@@ -135,7 +134,6 @@ public abstract class WeaponSlot extends TextureObject {
     }
 
     public void updatePos() {
-        rotation = ship.getRotation();
         Vector2f shipPos = ship.getPosition();
         float x = addPosition.x;
         float y = addPosition.y;
@@ -143,7 +141,6 @@ public abstract class WeaponSlot extends TextureObject {
         float sin = ship.getSin();
         float xPos = cos * x - sin * y;
         float yPos = sin * x + cos * y;
-
         position.set(xPos + shipPos.x, yPos + shipPos.y);
     }
 
