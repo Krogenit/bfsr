@@ -7,3 +7,6 @@
 gradlew
 gradlew.bat
 /gradle/
+/core/client/out/
+/core/common/out/
+/core/server/out/

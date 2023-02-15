@@ -1,17 +1,23 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
-dependencies {
-    implementation subprojects
-}
+//dependencies {
+//    implementation subprojects
+//}
 
-allprojects {
+//allprojects {
+//
+//}
+
+subprojects {
     apply plugin: 'java'
 
     compileJava.options.encoding = compileTestJava.options.encoding = "UTF-8"
     sourceCompatibility = targetCompatibility = JavaVersion.VERSION_18
+
+    project.ext.jomlVersion = "1.10.5"
 
     repositories {
         mavenCentral()

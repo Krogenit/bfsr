@@ -1,0 +1,7 @@
+{
+  "name": "humanSmall0",
+  "texture": "component/shield/station0",
+  "maxShield": 15.0,
+  "shieldRegen": 0.6,
+  "rebuildTime": 200
+}
