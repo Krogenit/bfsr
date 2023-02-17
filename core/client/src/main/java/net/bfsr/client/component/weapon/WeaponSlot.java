@@ -97,8 +97,6 @@ public abstract class WeaponSlot extends TextureObject {
         }
     }
 
-    protected abstract void createBullet();
-
     @Override
     public void update() {
         lastPosition.set(position);

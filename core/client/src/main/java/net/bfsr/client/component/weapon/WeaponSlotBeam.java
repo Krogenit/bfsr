@@ -217,9 +217,6 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
     }
 
     @Override
-    protected void createBullet() {}
-
-    @Override
     protected void spawnShootParticles() {}
 
     @Override

@@ -1,7 +1,6 @@
 package net.bfsr.client.component.weapon;
 
 import net.bfsr.client.collision.filter.ShipFilter;
-import net.bfsr.client.entity.bullet.BulletPlasmSmall;
 import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.renderer.texture.TextureRegister;
@@ -41,11 +40,6 @@ public class WeaponPlasmSmall extends WeaponSlot {
         bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         ship.getBody().addFixture(bodyFixture);
         ship.recalculateMass();
-    }
-
-    @Override
-    protected void createBullet() {
-        new BulletPlasmSmall(world, world.getNextId(), position.x, position.y, ship.getSin(), ship.getCos(), ship);
     }
 
     @Override
