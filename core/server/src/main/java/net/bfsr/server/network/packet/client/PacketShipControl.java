@@ -2,9 +2,9 @@ package net.bfsr.server.network.packet.client;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import net.bfsr.entity.CollisionObject;
-import net.bfsr.entity.ship.ShipCommon;
+import net.bfsr.entity.GameObject;
 import net.bfsr.network.PacketBuffer;
+import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.network.NetworkManagerServer;
 import net.bfsr.server.network.PacketIn;
 
@@ -24,8 +24,8 @@ public class PacketShipControl implements PacketIn {
 
     @Override
     public void processOnServerSide(NetworkManagerServer networkManager) {
-        CollisionObject obj = networkManager.getWorld().getEntityById(id);
-        if (obj instanceof ShipCommon ship) {
+        GameObject obj = networkManager.getWorld().getEntityById(id);
+        if (obj instanceof Ship ship) {
             ship.setControlledByPlayer(control);
         }
     }

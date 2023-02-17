@@ -1,11 +1,10 @@
 package net.bfsr.client.entity.bullet;
 
-import net.bfsr.client.entity.Bullet;
+import net.bfsr.client.collision.filter.BulletFilter;
+import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.world.WorldClient;
-import net.bfsr.collision.filter.BulletFilter;
 import net.bfsr.entity.bullet.BulletDamage;
-import net.bfsr.entity.ship.ShipCommon;
 import net.bfsr.physics.PhysicsUtils;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
@@ -14,8 +13,8 @@ import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
 
 public class BulletGausSmall extends Bullet {
-    public BulletGausSmall(WorldClient world, int id, float sin, float cos, float x, float y, ShipCommon ship) {
-        super(world, id, 70.0f, sin, cos, x, y, 2.4f, 2.4f, ship, TextureRegister.smallGaus, 1.0f, 1.0f, 0.5f, 1.5f, 1.56f, new BulletDamage(2.5f, 5.0f, 2.5f));
+    public BulletGausSmall(WorldClient world, int id, float x, float y, float sin, float cos, Ship ship) {
+        super(world, id, 70.0f, x, y, sin, cos, 2.4f, 2.4f, ship, TextureRegister.smallGaus, 1.0f, 1.0f, 0.5f, 1.5f, 1.56f, new BulletDamage(2.5f, 5.0f, 2.5f));
     }
 
     @Override

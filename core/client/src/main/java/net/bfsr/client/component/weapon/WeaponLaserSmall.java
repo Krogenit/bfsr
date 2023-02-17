@@ -1,13 +1,11 @@
 package net.bfsr.client.component.weapon;
 
-import net.bfsr.client.component.WeaponSlot;
-import net.bfsr.client.entity.Ship;
+import net.bfsr.client.collision.filter.ShipFilter;
 import net.bfsr.client.entity.bullet.BulletLaserSmall;
+import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
-import net.bfsr.client.world.WorldClient;
-import net.bfsr.collision.filter.ShipFilter;
 import net.bfsr.math.RotationHelper;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
@@ -45,7 +43,7 @@ public class WeaponLaserSmall extends WeaponSlot {
 
     @Override
     protected void createBullet() {
-        new BulletLaserSmall((WorldClient) world, world.getNextId(), ship.getSin(), ship.getCos(), position.x, position.y, ship);
+        new BulletLaserSmall(world, world.getNextId(), position.x, position.y, ship.getSin(), ship.getCos(), ship);
     }
 
     @Override

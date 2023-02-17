@@ -2,14 +2,14 @@ package net.bfsr.client.network.packet.server;
 
 import lombok.NoArgsConstructor;
 import net.bfsr.client.core.Core;
+import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.network.NetworkManagerClient;
 import net.bfsr.client.network.packet.PacketIn;
 import net.bfsr.client.network.packet.client.PacketNeedObjectInfo;
 import net.bfsr.component.Armor;
 import net.bfsr.component.ArmorPlate;
 import net.bfsr.component.shield.ShieldCommon;
-import net.bfsr.entity.CollisionObject;
-import net.bfsr.entity.ship.ShipCommon;
+import net.bfsr.entity.GameObject;
 import net.bfsr.network.PacketBuffer;
 
 import java.io.IOException;
@@ -22,24 +22,6 @@ public class PacketShipInfo implements PacketIn {
     private float hull;
     private float energy;
     private float shield;
-
-    public PacketShipInfo(ShipCommon ship) {
-        this.id = ship.getId();
-
-        Armor armor = ship.getArmor();
-        ArmorPlate[] plates = armor.getArmorPlates();
-        this.armor = new float[plates.length];
-        for (int i = 0; i < plates.length; i++) {
-            if (plates[i] != null) {
-                this.armor[i] = plates[i].getArmor();
-            }
-        }
-
-        this.crew = ship.getCrew() != null ? ship.getCrew().getCrewSize() : 0;
-        this.hull = ship.getHull().getHull();
-        this.energy = ship.getReactor().getEnergy();
-        this.shield = ship.getShield() != null ? ship.getShield().getShield() : 0;
-    }
 
     @Override
     public void read(PacketBuffer data) throws IOException {
@@ -58,8 +40,8 @@ public class PacketShipInfo implements PacketIn {
 
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
-        CollisionObject obj = Core.get().getWorld().getEntityById(id);
-        if (obj instanceof ShipCommon ship) {
+        GameObject obj = Core.get().getWorld().getEntityById(id);
+        if (obj instanceof Ship ship) {
             Armor shipArmor = ship.getArmor();
             ArmorPlate[] plates = shipArmor.getArmorPlates();
             for (int i = 0; i < plates.length; i++) {

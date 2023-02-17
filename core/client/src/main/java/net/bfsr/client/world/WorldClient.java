@@ -3,7 +3,9 @@ package net.bfsr.client.world;
 import lombok.Getter;
 import net.bfsr.client.camera.Camera;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.Ship;
+import net.bfsr.client.entity.TextureObject;
+import net.bfsr.client.entity.bullet.Bullet;
+import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.network.packet.client.PacketCommand;
@@ -17,9 +19,6 @@ import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureGenerator;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.command.Command;
-import net.bfsr.entity.TextureObject;
-import net.bfsr.entity.bullet.BulletCommon;
-import net.bfsr.entity.ship.ShipCommon;
 import net.bfsr.faction.Faction;
 import net.bfsr.util.DecimalUtils;
 import net.bfsr.world.World;
@@ -29,9 +28,9 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Random;
 
-public class WorldClient extends World<Ship> {
+public class WorldClient extends World<Ship, Bullet> {
     private final Core core;
-    private final TextureObject background = new TextureObject(0, 0, 2560 << 1, 2560 << 1);
+    private final TextureObject background = new TextureObject(2560 << 1, 2560 << 1);
     private Ship playerShip;
     private int spawnTimer;
     private Texture backgroundTexture = new Texture(0, 0);
@@ -40,7 +39,7 @@ public class WorldClient extends World<Ship> {
     private final ParticleManager particleManager = new ParticleManager();
 
     public WorldClient() {
-        super(true, Core.get().getProfiler());
+        super(Core.get().getProfiler());
 
         this.core = Core.get();
     }
@@ -91,7 +90,7 @@ public class WorldClient extends World<Ship> {
         int bots = 0;
         boolean sameFaction = true;
         Faction lastFaction = null;
-        for (ShipCommon s : ships) {
+        for (Ship s : ships) {
 //            if (s.isBot()) {
 //                bots++;
 //            }
@@ -209,7 +208,7 @@ public class WorldClient extends World<Ship> {
             AxisAlignedBoundingBox cameraAABB = core.getRenderer().getCamera().getBoundingBox();
 
             for (int i = 0, size = ships.size(); i < size; i++) {
-                ShipCommon s = ships.get(i);
+                Ship s = ships.get(i);
                 if (s.getWorldAABB().isIntersects(cameraAABB)) {
                     s.render();
                 }
@@ -230,7 +229,7 @@ public class WorldClient extends World<Ship> {
             particleManager.renderAdditive();
 
             for (int i = 0, size = bullets.size(); i < size; i++) {
-                BulletCommon b = bullets.get(i);
+                Bullet b = bullets.get(i);
                 if (b.getWorldAABB().isIntersects(cameraAABB)) {
                     b.render();
                 }
@@ -253,7 +252,7 @@ public class WorldClient extends World<Ship> {
         }
 
         for (int i = 0, size = bullets.size(); i < size; i++) {
-            BulletCommon bullet = bullets.get(i);
+            Bullet bullet = bullets.get(i);
             DebugRenderer.INSTANCE.render(bullet);
         }
 

@@ -24,35 +24,11 @@ public class Armor {
     }
 
     public void setArmorPlateByDir(Direction dir, ArmorPlate armor) {
-        switch (dir) {
-            case FORWARD:
-                setArmorPlateToSlot(0, armor);
-                break;
-            case LEFT:
-                setArmorPlateToSlot(1, armor);
-                break;
-            case BACKWARD:
-                setArmorPlateToSlot(2, armor);
-                break;
-            case RIGHT:
-                setArmorPlateToSlot(3, armor);
-                break;
-        }
+        setArmorPlateToSlot(dir.ordinal(), armor);
     }
 
     public ArmorPlate getArmorPlatreByDir(Direction dir) {
-        switch (dir) {
-            case FORWARD:
-                return armorPlates[0];
-            case LEFT:
-                return armorPlates[1];
-            case BACKWARD:
-                return armorPlates[2];
-            case RIGHT:
-                return armorPlates[3];
-            default:
-                return null;
-        }
+        return armorPlates[dir.ordinal()];
     }
 
     public void setArmorPlateToSlot(int i, ArmorPlate armor) {

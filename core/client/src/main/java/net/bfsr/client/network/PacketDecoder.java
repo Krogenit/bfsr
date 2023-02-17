@@ -50,7 +50,7 @@ public class PacketDecoder extends ByteToMessageDecoder {
     private PacketIn generatePacket(BiMap biMap, int id) {
         try {
             Class<?> oclass = (Class<?>) biMap.get(id);
-            return oclass == null ? null : (PacketIn) oclass.newInstance();
+            return oclass == null ? null : (PacketIn) oclass.getConstructor().newInstance();
         } catch (Exception e) {
             log.error("Couldn't create packet {}", id, e);
             return null;

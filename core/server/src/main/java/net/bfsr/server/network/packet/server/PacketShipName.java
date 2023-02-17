@@ -1,9 +1,9 @@
 package net.bfsr.server.network.packet.server;
 
 import lombok.NoArgsConstructor;
-import net.bfsr.entity.ship.ShipCommon;
 import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
+import net.bfsr.server.entity.ship.Ship;
 
 import java.io.IOException;
 
@@ -12,7 +12,7 @@ public class PacketShipName implements PacketOut {
     private int id;
     private String name;
 
-    public PacketShipName(ShipCommon ship) {
+    public PacketShipName(Ship ship) {
         this.id = ship.getId();
         this.name = ship.getName();
     }

@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.network.LoginState;
 import net.bfsr.server.MainServer;
-import net.bfsr.server.entity.Ship;
+import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.network.packet.common.PacketKeepAlive;
 import net.bfsr.server.network.packet.server.PacketDisconnectLogin;
 import net.bfsr.server.network.packet.server.PacketLoginSuccess;

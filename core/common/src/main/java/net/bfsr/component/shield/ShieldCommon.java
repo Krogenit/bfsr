@@ -1,10 +1,10 @@
 package net.bfsr.component.shield;
 
 import lombok.Getter;
-import net.bfsr.collision.filter.ShipFilter;
-import net.bfsr.entity.ship.ShipCommon;
+import lombok.Setter;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.util.TimeUtils;
+import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.*;
 import org.joml.Vector2f;
@@ -13,19 +13,23 @@ import java.util.List;
 
 public class ShieldCommon {
     @Getter
-    protected float shield, maxShield;
-    private float shieldRegen;
+    @Setter
+    protected float shield;
+    @Getter
+    protected final float maxShield;
+    private final float shieldRegen;
     private final Vector2f radius = new Vector2f();
     protected final Vector2f diameter = new Vector2f();
-    protected float timeToRebuild, rebuildingTime;
+    protected final float timeToRebuild;
+    protected float rebuildingTime;
     @Getter
     protected float size;
-    protected final ShipCommon ship;
+    protected final Body body;
     protected boolean alive;
     private BodyFixture shieldFixture;
 
-    protected ShieldCommon(ShipCommon ship, float maxShield, float shieldRegen, float timeToRebuild) {
-        this.ship = ship;
+    protected ShieldCommon(Body body, float maxShield, float shieldRegen, float timeToRebuild) {
+        this.body = body;
         this.size = 1.0f;
         this.maxShield = maxShield;
         this.shieldRegen = shieldRegen;
@@ -35,9 +39,9 @@ public class ShieldCommon {
     }
 
     public void createBody() {
-        List<BodyFixture> fixtures = ship.getBody().getFixtures();
+        List<BodyFixture> fixtures = body.getFixtures();
         if (shieldFixture != null) {
-            ship.getBody().removeFixture(shieldFixture);
+            body.removeFixture(shieldFixture);
             shieldFixture = null;
         }
 
@@ -67,9 +71,9 @@ public class ShieldCommon {
         shieldFixture.setDensity(PhysicsUtils.SHIELD_FIXTURE_DENSITY);
         shieldFixture.setFriction(0.0f);
         shieldFixture.setRestitution(0.1f);
-        shieldFixture.setFilter(new ShipFilter(ship));
-        ship.getBody().addFixture(shieldFixture);
-        ship.recalculateMass();
+        shieldFixture.setFilter(body.getFixture(0).getFilter());
+        body.addFixture(shieldFixture);
+        body.setMass(MassType.NORMAL);
         diameter.x += 0.1f;
         diameter.y += 0.1f;
         alive = true;
@@ -109,38 +113,19 @@ public class ShieldCommon {
         return false;
     }
 
-    protected void onNoShieldDamage() {
-
-    }
+    protected void onNoShieldDamage() {}
 
     public void setRebuildingTime(int time) {
         rebuildingTime = time;
     }
 
     public void removeShield() {
-        ship.getBody().removeFixture(shieldFixture);
+        body.removeFixture(shieldFixture);
         shieldFixture = null;
-        ship.recalculateMass();
+        body.setMass(MassType.NORMAL);
         rebuildingTime = 0;
         size = 0.0f;
         shield = 0;
         alive = false;
-    }
-
-    public void setShield(float shield) {
-        this.shield = shield;
-    }
-
-    void setMaxShield(float maxShield) {
-        this.maxShield = maxShield;
-    }
-
-    void setTimeToRebuild(float timeToRebuild) {
-        rebuildingTime = timeToRebuild;
-        this.timeToRebuild = timeToRebuild;
-    }
-
-    void setShieldRegen(float shieldRegen) {
-        this.shieldRegen = shieldRegen;
     }
 }

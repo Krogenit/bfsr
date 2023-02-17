@@ -1,9 +1,9 @@
 package net.bfsr.client.gui.ingame;
 
-import net.bfsr.client.component.WeaponSlot;
-import net.bfsr.client.component.WeaponSlotBeam;
+import net.bfsr.client.component.Shield;
+import net.bfsr.client.component.weapon.WeaponSlot;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.Ship;
+import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.language.Lang;
@@ -20,7 +20,6 @@ import net.bfsr.component.Armor;
 import net.bfsr.component.ArmorPlate;
 import net.bfsr.component.reactor.Reactor;
 import net.bfsr.component.shield.ShieldCommon;
-import net.bfsr.component.weapon.WeaponSlotCommon;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
 import org.joml.Vector2f;
@@ -98,7 +97,7 @@ public class ShipHUD {
         }
     }
 
-    private void renderShield(ShieldCommon shield, int x, int y) {
+    private void renderShield(Shield shield, int x, int y) {
         float shieldValue = shield.getShield() / shield.getMaxShield();
         int shieldSize = (int) (220 * shield.getSize());
         renderQuad(x, y, shieldSize, shieldSize, 1.0f - shieldValue, shieldValue, 0.0f, 1.0f, this.shield.getTexture());
@@ -143,20 +142,15 @@ public class ShipHUD {
     private void renderWeaponSlots(Ship ship, int x, int y, float shipSize) {
         int size = ship.getWeaponSlots().size();
         for (int i = 0; i < size; i++) {
-            WeaponSlotCommon slot = ship.getWeaponSlots().get(i);
+            WeaponSlot slot = ship.getWeaponSlots().get(i);
             if (slot != null) {
                 float reload = slot.getShootTimer() / slot.getShootTimerMax();
                 Vector2f pos = slot.getAddPosition();
                 RotationHelper.rotate((float) (-Math.PI / 2.0f), pos.x, pos.y, rotationVector);
                 int slotWidth = (int) (slot.getScale().x * shipSize);
                 int slothHeight = (int) (slot.getScale().y * shipSize);
-                if (slot instanceof WeaponSlot) {
-                    renderQuad((int) (x + rotationVector.x * shipSize), (int) (y + rotationVector.y * shipSize), -MathUtils.HALF_PI, slotWidth, slothHeight,
-                            reload, 0.0f, 1.0f - reload, 1.0f, ((WeaponSlot) slot).getTexture());
-                } else if (slot instanceof WeaponSlotBeam) {
-                    renderQuad((int) (x + rotationVector.x * shipSize), (int) (y + rotationVector.y * shipSize), -MathUtils.HALF_PI, slotWidth, slothHeight,
-                            reload, 0.0f, 1.0f - reload, 1.0f, ((WeaponSlotBeam) slot).getTexture());
-                }
+                renderQuad((int) (x + rotationVector.x * shipSize), (int) (y + rotationVector.y * shipSize), -MathUtils.HALF_PI, slotWidth, slothHeight,
+                        reload, 0.0f, 1.0f - reload, 1.0f, slot.getTexture());
             }
         }
     }
@@ -169,7 +163,7 @@ public class ShipHUD {
         renderShipInHUD(currentShip, x, y, shipSize);
         renderHullValue(currentShip, x, y);
 
-        ShieldCommon shield = currentShip.getShield();
+        Shield shield = currentShip.getShield();
         if (shield != null && shield.isShieldAlive()) {
             renderShield(shield, x, y);
             renderShieldValue(shield, x, y);
@@ -212,7 +206,7 @@ public class ShipHUD {
 
         renderShipInHUD(otherShip, x, y, shipSize);
 
-        ShieldCommon shield = otherShip.getShield();
+        Shield shield = otherShip.getShield();
         if (shield != null && shield.isShieldAlive()) {
             renderShield(shield, x, y);
         }

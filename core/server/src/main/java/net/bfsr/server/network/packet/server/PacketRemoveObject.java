@@ -2,9 +2,9 @@ package net.bfsr.server.network.packet.server;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import net.bfsr.entity.CollisionObject;
 import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
+import net.bfsr.server.entity.CollisionObject;
 
 import java.io.IOException;
 

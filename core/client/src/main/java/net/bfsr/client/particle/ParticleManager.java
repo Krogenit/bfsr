@@ -1,16 +1,16 @@
 package net.bfsr.client.particle;
 
 import net.bfsr.client.core.Core;
+import net.bfsr.client.entity.wreck.Wreck;
 import net.bfsr.client.renderer.debug.DebugRenderer;
 import net.bfsr.collision.AxisAlignedBoundingBox;
-import net.bfsr.entity.wreck.WreckCommon;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ParticleManager {
     private final List<Particle> particles = new ArrayList<>();
-    private final List<WreckCommon> particlesWrecks = new ArrayList<>(64);
+    private final List<Wreck> particlesWrecks = new ArrayList<>(64);
 
     public void update() {
         for (int i = 0; i < particles.size(); i++) {
@@ -23,10 +23,10 @@ public class ParticleManager {
         }
 
         for (int i = 0; i < particlesWrecks.size(); i++) {
-            WreckCommon particle = particlesWrecks.get(i);
-            particle.update();
-            if (particle.isDead()) {
-                particle.onRemoved();
+            Wreck wreck = particlesWrecks.get(i);
+            wreck.update();
+            if (wreck.isDead()) {
+                wreck.onRemoved();
                 particlesWrecks.remove(i--);
             }
         }
@@ -48,7 +48,7 @@ public class ParticleManager {
         AxisAlignedBoundingBox cameraAABB = Core.get().getRenderer().getCamera().getBoundingBox();
 
         for (int i = 0, size = particlesWrecks.size(); i < size; i++) {
-            WreckCommon wreck = particlesWrecks.get(i);
+            Wreck wreck = particlesWrecks.get(i);
             if (wreck.getWorldAABB().isIntersects(cameraAABB)) {
                 wreck.render();
             }
@@ -59,14 +59,14 @@ public class ParticleManager {
         AxisAlignedBoundingBox cameraAABB = Core.get().getRenderer().getCamera().getBoundingBox();
 
         for (int i = 0, size = particlesWrecks.size(); i < size; i++) {
-            WreckCommon wreck = particlesWrecks.get(i);
+            Wreck wreck = particlesWrecks.get(i);
             if (wreck.getWorldAABB().isIntersects(cameraAABB)) {
                 wreck.renderAdditive();
             }
         }
     }
 
-    public void addParticle(WreckCommon wreck) {
+    public void addParticle(Wreck wreck) {
         particlesWrecks.add(wreck);
     }
 

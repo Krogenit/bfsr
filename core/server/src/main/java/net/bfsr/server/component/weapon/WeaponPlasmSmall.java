@@ -1,11 +1,9 @@
 package net.bfsr.server.component.weapon;
 
-import net.bfsr.collision.filter.ShipFilter;
-import net.bfsr.entity.ship.ShipCommon;
 import net.bfsr.physics.PhysicsUtils;
-import net.bfsr.server.component.WeaponSlot;
+import net.bfsr.server.collision.filter.ShipFilter;
 import net.bfsr.server.entity.bullet.BulletPlasmSmall;
-import net.bfsr.server.world.WorldServer;
+import net.bfsr.server.entity.ship.Ship;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Polygon;
@@ -13,7 +11,7 @@ import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
 public class WeaponPlasmSmall extends WeaponSlot {
-    public WeaponPlasmSmall(ShipCommon ship) {
+    public WeaponPlasmSmall(Ship ship) {
         super(ship, 30, 5, 75.0f, 1.68f, 2.6f, 1.4f);
     }
 
@@ -42,6 +40,6 @@ public class WeaponPlasmSmall extends WeaponSlot {
 
     @Override
     protected void createBullet() {
-        new BulletPlasmSmall((WorldServer) world, world.getNextId(), position.x, position.y, ship);
+        new BulletPlasmSmall(world, world.getNextId(), position.x, position.y, ship);
     }
 }

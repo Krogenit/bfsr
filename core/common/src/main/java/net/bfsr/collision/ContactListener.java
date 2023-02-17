@@ -1,7 +1,6 @@
 package net.bfsr.collision;
 
-import net.bfsr.entity.bullet.BulletCommon;
-import net.bfsr.entity.ship.ShipCommon;
+import net.bfsr.entity.GameObject;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.contact.Contact;
 import org.dyn4j.world.ContactCollisionData;
@@ -14,21 +13,13 @@ public class ContactListener extends ContactListenerAdapter<Body> {
         Body body2 = collision.getBody2();
 
         Object userData = body1.getUserData();
-        if (userData != null) {
-            if (userData instanceof BulletCommon) {
-                ((BulletCommon) userData).checkCollision(contact, collision.getContactConstraint().getNormal(), body2);
-            } else if (userData instanceof ShipCommon) {
-                ((ShipCommon) userData).checkCollision(contact, collision.getContactConstraint().getNormal(), body2);
-            }
+        if (userData instanceof GameObject gameObject) {
+            gameObject.checkCollision(contact, collision.getContactConstraint().getNormal(), body2);
         }
 
         userData = body2.getUserData();
-        if (userData != null) {
-            if (userData instanceof BulletCommon) {
-                ((BulletCommon) userData).checkCollision(contact, collision.getContactConstraint().getNormal(), body1);
-            } else if (userData instanceof ShipCommon) {
-                ((ShipCommon) userData).checkCollision(contact, collision.getContactConstraint().getNormal(), body1);
-            }
+        if (userData instanceof GameObject gameObject) {
+            gameObject.checkCollision(contact, collision.getContactConstraint().getNormal(), body1);
         }
     }
 }

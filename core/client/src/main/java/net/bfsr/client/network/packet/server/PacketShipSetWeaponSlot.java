@@ -1,15 +1,16 @@
 package net.bfsr.client.network.packet.server;
 
+import net.bfsr.client.component.weapon.WeaponSlot;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.Ship;
+import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.network.NetworkManagerClient;
 import net.bfsr.client.network.packet.PacketIn;
-import net.bfsr.component.weapon.WeaponSlotCommon;
-import net.bfsr.entity.CollisionObject;
+import net.bfsr.entity.GameObject;
 import net.bfsr.network.PacketBuffer;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 public class PacketShipSetWeaponSlot implements PacketIn {
     private int id;
@@ -25,15 +26,16 @@ public class PacketShipSetWeaponSlot implements PacketIn {
 
     @Override
     public void processOnClientSide(NetworkManagerClient networkManager) {
-        CollisionObject obj = Core.get().getWorld().getEntityById(id);
+        GameObject obj = Core.get().getWorld().getEntityById(id);
         if (obj instanceof Ship ship) {
             try {
                 Class<?> clazz = Class.forName("net.bfsr.client.component.weapon." + slot);
                 Constructor<?> ctr = clazz.getConstructor(Ship.class);
-                WeaponSlotCommon slot = (WeaponSlotCommon) ctr.newInstance(ship);
+                WeaponSlot slot = (WeaponSlot) ctr.newInstance(ship);
                 ship.addWeaponToSlot(slotId, slot);
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException | SecurityException |
+                     InvocationTargetException e) {
+                throw new RuntimeException(e);
             }
         }
     }

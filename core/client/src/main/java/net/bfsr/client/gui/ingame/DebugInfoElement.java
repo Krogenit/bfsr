@@ -3,7 +3,7 @@ package net.bfsr.client.gui.ingame;
 import lombok.Setter;
 import net.bfsr.client.camera.Camera;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.Ship;
+import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.string.StringObject;
 import net.bfsr.client.renderer.particle.ParticleRenderer;

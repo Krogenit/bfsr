@@ -1,10 +1,9 @@
 package net.bfsr.client.component.weapon;
 
-import net.bfsr.client.component.WeaponSlotBeam;
-import net.bfsr.client.entity.Ship;
+import net.bfsr.client.collision.filter.ShipFilter;
+import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
-import net.bfsr.collision.filter.ShipFilter;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.physics.PhysicsUtils;
 import org.dyn4j.dynamics.BodyFixture;

@@ -1,6 +1,7 @@
 package net.bfsr.client.gui;
 
 import net.bfsr.client.core.Core;
+import net.bfsr.client.entity.TextureObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.language.Lang;
@@ -13,7 +14,6 @@ import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.collision.AxisAlignedBoundingBox;
-import net.bfsr.entity.TextureObject;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.MathUtils;
 

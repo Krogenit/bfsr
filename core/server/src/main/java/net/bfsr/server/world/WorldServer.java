@@ -1,9 +1,6 @@
 package net.bfsr.server.world;
 
 import lombok.Getter;
-import net.bfsr.entity.CollisionObject;
-import net.bfsr.entity.ship.ShipCommon;
-import net.bfsr.entity.wreck.WreckCommon;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.MathUtils;
 import net.bfsr.network.EnumGui;
@@ -12,10 +9,13 @@ import net.bfsr.server.component.weapon.WeaponBeamSmall;
 import net.bfsr.server.component.weapon.WeaponGausSmall;
 import net.bfsr.server.component.weapon.WeaponLaserSmall;
 import net.bfsr.server.component.weapon.WeaponPlasmSmall;
-import net.bfsr.server.entity.Ship;
+import net.bfsr.server.entity.CollisionObject;
+import net.bfsr.server.entity.bullet.Bullet;
+import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.entity.ship.ShipEngiSmall0;
 import net.bfsr.server.entity.ship.ShipHumanSmall0;
 import net.bfsr.server.entity.ship.ShipSaimonSmall0;
+import net.bfsr.server.entity.wreck.Wreck;
 import net.bfsr.server.network.packet.server.PacketOpenGui;
 import net.bfsr.server.player.PlayerServer;
 import net.bfsr.world.World;
@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class WorldServer extends World<Ship> {
+public class WorldServer extends World<Ship, Bullet> {
     public static final float PACKET_SPAWN_DISTANCE = 600;
     public static final float PACKET_UPDATE_DISTANCE = 400;
 
@@ -35,12 +35,12 @@ public class WorldServer extends World<Ship> {
     @Getter
     private final long seed;
     @Getter
-    private final List<WreckCommon> particles = new ArrayList<>();
+    private final List<Wreck> particles = new ArrayList<>();
 
     private float timer;
 
     public WorldServer(Profiler profiler) {
-        super(false, profiler);
+        super(profiler);
         this.seed = rand.nextLong();
     }
 
@@ -66,7 +66,7 @@ public class WorldServer extends World<Ship> {
             int count = maxCount;
 
             Vector2f pos = new Vector2f(-150, 0);
-            ShipCommon ship;
+            Ship ship;
             float angle = 0.1f;
             if (sameFaction && lastFaction == Faction.HUMAN) count = count - botCount;
             for (int i = 0; i < count; i++) {
@@ -142,7 +142,7 @@ public class WorldServer extends World<Ship> {
     @Override
     protected void updateParticles() {
         for (int i = 0; i < particles.size(); i++) {
-            WreckCommon wreck = particles.get(i);
+            Wreck wreck = particles.get(i);
             wreck.update();
             if (wreck.isDead()) {
                 removePhysicObject(wreck);
@@ -162,8 +162,7 @@ public class WorldServer extends World<Ship> {
                 CollisionObject lastAttacker = ship.getLastAttacker();
                 String attacker = "";
                 if (lastAttacker != null) {
-                    if (lastAttacker instanceof ShipCommon) {
-                        ShipCommon attackerShip = (ShipCommon) lastAttacker;
+                    if (lastAttacker instanceof Ship attackerShip) {
                         attacker = attackerShip.getName();
                     }
                 }
@@ -172,7 +171,7 @@ public class WorldServer extends World<Ship> {
         }
     }
 
-    public void addWreck(WreckCommon wreck) {
+    public void addWreck(Wreck wreck) {
         particles.add(wreck);
     }
 

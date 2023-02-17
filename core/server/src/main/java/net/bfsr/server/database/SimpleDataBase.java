@@ -5,11 +5,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.component.weapon.WeaponSlotCommon;
-import net.bfsr.entity.ship.ShipCommon;
 import net.bfsr.faction.Faction;
 import net.bfsr.server.MainServer;
-import net.bfsr.server.entity.Ship;
+import net.bfsr.server.component.weapon.WeaponSlot;
+import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.player.PlayerServer;
 import net.bfsr.server.world.WorldServer;
 
@@ -98,8 +97,8 @@ public class SimpleDataBase {
                         JsonObject weaponObject = weapons.get(i1).getAsJsonObject();
                         String weaponClassName = weaponObject.get("className").getAsString();
                         clazz = Class.forName(weaponClassName);
-                        constr = clazz.getConstructor(ShipCommon.class);
-                        WeaponSlotCommon weapon = (WeaponSlotCommon) constr.newInstance(ship);
+                        constr = clazz.getConstructor(Ship.class);
+                        WeaponSlot weapon = (WeaponSlot) constr.newInstance(ship);
                         ship.addWeaponToSlot(i1, weapon);
                     }
 
@@ -169,11 +168,11 @@ public class SimpleDataBase {
         if (playerShips.size() > 0) {
             JsonObject shipData = new JsonObject();
             JsonArray shipsArray = new JsonArray(playerShips.size());
-            for (ShipCommon ship : playerShips) {
+            for (Ship ship : playerShips) {
                 JsonObject shipJson = new JsonObject();
                 shipJson.addProperty("className", ship.getClass().getName());
                 JsonArray weapons = new JsonArray();
-                for (WeaponSlotCommon slot : ship.getWeaponSlots()) {
+                for (WeaponSlot slot : ship.getWeaponSlots()) {
                     JsonObject weaponSlot = new JsonObject();
                     weaponSlot.addProperty("className", slot.getClass().getName());
                     weapons.add(weaponSlot);

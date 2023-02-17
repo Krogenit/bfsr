@@ -6,7 +6,7 @@ import net.bfsr.math.MathUtils;
 import net.bfsr.server.component.weapon.WeaponGausSmall;
 import net.bfsr.server.component.weapon.WeaponLaserSmall;
 import net.bfsr.server.component.weapon.WeaponPlasmSmall;
-import net.bfsr.server.entity.Ship;
+import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.entity.ship.ShipEngiSmall0;
 import net.bfsr.server.entity.ship.ShipHumanSmall0;
 import net.bfsr.server.entity.ship.ShipSaimonSmall0;

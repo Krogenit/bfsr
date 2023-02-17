@@ -1,4 +1,4 @@
-package net.bfsr.entity.ship;
+package net.bfsr.server.entity.ship;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -8,16 +8,29 @@ import net.bfsr.component.cargo.Cargo;
 import net.bfsr.component.crew.Crew;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.component.reactor.Reactor;
-import net.bfsr.component.shield.ShieldCommon;
-import net.bfsr.component.weapon.WeaponSlotBeamCommon;
-import net.bfsr.component.weapon.WeaponSlotCommon;
-import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.bullet.BulletDamage;
-import net.bfsr.entity.wreck.WreckCommon;
+import net.bfsr.entity.ship.ShipType;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.Direction;
+import net.bfsr.math.MathUtils;
+import net.bfsr.math.RotationHelper;
+import net.bfsr.server.MainServer;
+import net.bfsr.server.ai.Ai;
+import net.bfsr.server.ai.AiAggressiveType;
+import net.bfsr.server.ai.task.AiAttackTarget;
+import net.bfsr.server.ai.task.AiSearchTarget;
+import net.bfsr.server.component.Shield;
+import net.bfsr.server.component.weapon.WeaponSlot;
+import net.bfsr.server.entity.CollisionObject;
+import net.bfsr.server.entity.wreck.Wreck;
+import net.bfsr.server.entity.wreck.WreckSpawner;
+import net.bfsr.server.network.packet.common.PacketObjectPosition;
+import net.bfsr.server.network.packet.common.PacketShipEngine;
+import net.bfsr.server.network.packet.server.*;
+import net.bfsr.server.player.PlayerServer;
+import net.bfsr.server.world.WorldServer;
+import net.bfsr.util.CollisionObjectUtils;
 import net.bfsr.util.TimeUtils;
-import net.bfsr.world.World;
 import org.dyn4j.TOITransformSavable;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.contact.Contact;
@@ -25,22 +38,26 @@ import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
-public abstract class ShipCommon extends CollisionObject implements TOITransformSavable {
+public abstract class Ship extends CollisionObject implements TOITransformSavable {
     @Getter
+    @Setter
     private Armor armor;
     @Getter
-    protected ShieldCommon shield;
+    @Setter
+    protected Shield shield;
     @Getter
+    @Setter
     protected Engine engine;
     @Getter
     @Setter
     private Faction faction;
     @Getter
+    @Setter
     private Reactor reactor;
     @Getter
     private Crew crew;
@@ -51,26 +68,29 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
     private Cargo cargo;
 
     @Getter
-    @Setter
     protected String name;
 
     private final List<Vector2f> weaponPositions = new ArrayList<>();
     @Getter
-    protected List<WeaponSlotCommon> weaponSlots;
+    protected List<WeaponSlot> weaponSlots;
     protected boolean spawned;
     protected final Vector2f jumpVelocity = new Vector2f();
     protected final Vector2f jumpPosition = new Vector2f();
     protected final float jumpSpeed = 25.0f;
-    protected final Vector3f effectsColor = new Vector3f();
     private int collisionTimer;
     protected int destroyingTimer;
     protected int sparksTimer;
     protected int maxDestroyingTimer, maxSparksTimer;
 
+    @Getter
+    @Setter
     protected boolean controlledByPlayer;
 
     @Getter
-    private CollisionObject lastAttacker, target;
+    private CollisionObject lastAttacker;
+    @Getter
+    @Setter
+    private CollisionObject target;
 
     /**
      * Saved transform before TOI solver
@@ -78,19 +98,49 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
     private final Transform savedTransform = new Transform();
     private boolean transformSaved;
 
-    protected ShipCommon(World world, int id, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, boolean spawned) {
-        super(world, id, x, y, rotation, scaleX, scaleY, r, g, b, 0.0f);
+    @Getter
+    @Setter
+    private PlayerServer owner;
+    @Getter
+    private final Ai ai;
+    @Getter
+    private Direction lastMoveDir = Direction.STOP;
+
+    protected Ship(WorldServer world, float x, float y, float rotation, float scaleX, float scaleY, boolean spawned) {
+        super(world, world.getNextId(), x, y, rotation, scaleX, scaleY);
+        RotationHelper.angleToVelocity(this.rotation + MathUtils.PI, -jumpSpeed * 6.0f, jumpVelocity);
+        this.jumpPosition.set(jumpVelocity.x / 60.0f * (64.0f + scale.x * 0.1f) * -0.5f + x, jumpVelocity.y / 60.0f * (64.0f + scale.y * 0.1f) * -0.5f + y);
+        setRotation(this.rotation);
         if (spawned) setSpawned();
+        this.ai = new Ai(this);
+        this.ai.setAggressiveType(AiAggressiveType.ATTACK);
+        this.ai.addTask(new AiSearchTarget(this, 4000.0f));
+        this.ai.addTask(new AiAttackTarget(this, 4000.0f));
+        world.addShip(this);
+        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     public abstract void init();
 
     protected void updateShip() {
-        Vector2f position = getPosition();
-        lastRotation = getRotation();
-        lastPosition.set(position.x, position.y);
-
         if (collisionTimer > 0) collisionTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+
+        if (!controlledByPlayer && destroyingTimer == 0 && ai != null) {
+            ai.update();
+        }
+
+        if (destroyingTimer > 0) {
+            sparksTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+            if (sparksTimer <= 0) {
+                createSpark();
+                sparksTimer = 25;
+            }
+
+            destroyingTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+            if (destroyingTimer <= 0) {
+                destroyShip();
+            }
+        }
     }
 
     private void move(Vector2 r, float speed) {
@@ -98,7 +148,7 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
         body.applyForce(f);
     }
 
-    public void move(ShipCommon ship, Direction dir) {
+    public void move(Ship ship, Direction dir) {
         Engine engine = ship.getEngine();
         Vector2 r = new Vector2(body.getTransform().getRotationAngle());
         Vector2f pos = getPosition();
@@ -126,12 +176,12 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
                 float y = -(float) body.getLinearVelocity().y;
 
                 if (Math.abs(x) > 10) {
-                    dir = calculateDirectionToOtherObject(x + pos.x, pos.y);
+                    dir = CollisionObjectUtils.calculateDirectionToOtherObject(this, x + pos.x, pos.y);
                     onStopMove(dir);
                 }
 
                 if (Math.abs(y) > 10) {
-                    dir = calculateDirectionToOtherObject(pos.x, y + pos.y);
+                    dir = CollisionObjectUtils.calculateDirectionToOtherObject(this, pos.x, y + pos.y);
                     onStopMove(dir);
                 }
 
@@ -141,13 +191,20 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
         onMove(dir);
     }
 
-    protected abstract void onMove(Direction direction);
-    protected abstract void onStopMove(Direction direction);
+    private void onMove(Direction direction) {
+        if (lastMoveDir != direction)
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipEngine(id, direction.ordinal()), getPosition(), WorldServer.PACKET_UPDATE_DISTANCE);
+        lastMoveDir = direction;
+    }
+
+    private void onStopMove(Direction direction) {
+        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipEngine(id, direction.ordinal()), getPosition(), WorldServer.PACKET_UPDATE_DISTANCE);
+    }
 
     public void checkCollision(Contact contact, Vector2 normal, Body body) {
         Object userData = body.getUserData();
         if (userData != null) {
-            if (userData instanceof ShipCommon otherShip) {
+            if (userData instanceof Ship otherShip) {
                 Vector2f velocityDif = new Vector2f((float) (body.getLinearVelocity().x - this.body.getLinearVelocity().x),
                         (float) (body.getLinearVelocity().y - this.body.getLinearVelocity().y));
                 float impactPowerForOther = (float) ((velocityDif.length()) *
@@ -155,18 +212,13 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
 
                 impactPowerForOther /= 400.0f;
 
-                if (impactPowerForOther > 0.25f) otherShip.damageByCollision(this, impactPowerForOther, contact, normal);
-            } else if (userData instanceof WreckCommon) {
+                if (impactPowerForOther > 0.25f) otherShip.damageByCollision(this, impactPowerForOther);
+            } else if (userData instanceof Wreck) {
                 if (collisionTimer <= 0) {
                     collisionTimer = 2;
-                    onCollidedWithWreck(contact, normal);
                 }
             }
         }
-    }
-
-    protected void onCollidedWithWreck(Contact contact, Vector2 normal) {
-
     }
 
     public void update() {
@@ -184,15 +236,9 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
                 || (jumpVelocity.y >= 0 && jumpPosition.y >= position.y))) {
             setSpawned();
             setVelocity(jumpVelocity.mul(0.26666668f));
-            onShipSpawned();
         } else {
             jumpPosition.add(jumpVelocity.x * TimeUtils.UPDATE_DELTA_TIME, jumpVelocity.y * TimeUtils.UPDATE_DELTA_TIME);
-            color.w += 1.5f * TimeUtils.UPDATE_DELTA_TIME;
         }
-    }
-
-    protected void onShipSpawned() {
-
     }
 
     @Override
@@ -213,6 +259,15 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
         }
 
         updateComponents();
+
+        PlayerServer player = world.getPlayer(name);
+        if (controlledByPlayer) {
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearbyExcept(new PacketObjectPosition(this), position, WorldServer.PACKET_SPAWN_DISTANCE, player);
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipInfo(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
+        } else {
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketObjectPosition(this), position, WorldServer.PACKET_SPAWN_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipInfo(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
+        }
     }
 
     @Override
@@ -221,28 +276,20 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
         transformSaved = true;
     }
 
-    protected void shoot() {
-        int size = weaponSlots.size();
-        for (int i = 0; i < size; i++) {
-            WeaponSlotCommon weaponSlot = weaponSlots.get(i);
-            if (weaponSlot != null) weaponSlot.tryShoot();
-        }
-    }
-
     protected void updateComponents() {
         if (shield != null) shield.update();
         if (armor != null) armor.update();
         if (reactor != null) reactor.update();
-        if (hull != null) hull.update();
+        if (hull != null) hull.regenHull(crew.getCrewRegen());
 
         int size = weaponSlots.size();
         for (int i = 0; i < size; i++) {
-            WeaponSlotCommon weaponSlot = weaponSlots.get(i);
+            WeaponSlot weaponSlot = weaponSlots.get(i);
             if (weaponSlot != null) weaponSlot.update();
         }
     }
 
-    private void damageByCollision(ShipCommon otherShip, float impactPower, Contact contact, Vector2 normal) {
+    private void damageByCollision(Ship otherShip, float impactPower) {
         if (collisionTimer > 0) {
             return;
         }
@@ -255,29 +302,27 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
         collisionTimer = 2;
 
         if (shield != null && shield.damage(impactPower)) {
-            onShieldDamageByCollision(contact, normal);
             return;
         }
 
         float hullDamage = impactPower;
         float armorDamage = impactPower;
         Vector2f otherPos = otherShip.getPosition();
-        Direction dir = calculateDirectionToOtherObject(otherPos.x, otherPos.y);
+        Direction dir = CollisionObjectUtils.calculateDirectionToOtherObject(this, otherPos.x, otherPos.y);
 
         float reducedHullDamage = armor.reduceDamageByArmor(armorDamage, hullDamage, dir);
         hull.damage(reducedHullDamage);
-        onHullDamageByCollision(contact, normal);
+        onHullDamageByCollision();
     }
 
-    protected void onShieldDamageByCollision(Contact contact, Vector2 normal) {
-
+    protected void onHullDamageByCollision() {
+        if (hull.getHull() <= 0) {
+            setDestroying();
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketDestroyingShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        }
     }
 
-    protected void onHullDamageByCollision(Contact contact, Vector2 normal) {
-
-    }
-
-    public boolean attackShip(BulletDamage damage, ShipCommon attacker, Vector2f contactPoint, float multiplayer) {
+    public boolean attackShip(BulletDamage damage, Ship attacker, Vector2f contactPoint, float multiplayer) {
         lastAttacker = attacker;
         float shieldDamage = damage.getBulletDamageShield() * multiplayer;
 
@@ -287,7 +332,7 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
 
         float hullDamage = damage.getBulletDamageHull() * multiplayer;
         float armorDamage = damage.getBulletDamageArmor() * multiplayer;
-        Direction dir = calculateDirectionToOtherObject(contactPoint.x, contactPoint.y);
+        Direction dir = CollisionObjectUtils.calculateDirectionToOtherObject(this, contactPoint.x, contactPoint.y);
 
         float reducedHullDamage = armor.reduceDamageByArmor(armorDamage, hullDamage, dir);
         hull.damage(reducedHullDamage);
@@ -296,7 +341,10 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
     }
 
     protected void onHullDamage() {
-
+        if (hull.getHull() <= 0) {
+            setDestroying();
+            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketDestroyingShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        }
     }
 
     public void setDestroying() {
@@ -307,12 +355,20 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
         return destroyingTimer != 0;
     }
 
-    protected abstract void createSpark();
+    private void createSpark() {
+        Random rand = world.getRand();
+        Vector2f position = getPosition();
+        Vector2f velocity = getVelocity();
+        WreckSpawner.spawnDamageDebris(world, 1, position.x - scale.x / 2.5f + rand.nextInt((int) (scale.x / 1.25f)),
+                position.y - scale.y / 2.5f + rand.nextInt((int) (scale.y / 1.25f)), velocity.x * 0.1f, velocity.y * 0.1f, 1.0f);
+    }
 
     protected abstract void createDestroyParticles();
 
     public void destroyShip() {
+        setDead(true);
         createDestroyParticles();
+        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     public void setHull(Hull hull) {
@@ -338,9 +394,9 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
         }
     }
 
-    public void addWeaponToSlot(int i, WeaponSlotCommon slot) {
+    public void addWeaponToSlot(int i, WeaponSlot slot) {
         if (i < weaponSlots.size()) {
-            WeaponSlotCommon oldSlot = weaponSlots.get(i);
+            WeaponSlot oldSlot = weaponSlots.get(i);
             if (oldSlot != null) {
                 oldSlot.clear();
             }
@@ -349,38 +405,18 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
         slot.init(i, getWeaponSlotPosition(i), this);
 
         weaponSlots.set(i, slot);
+        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipSetWeaponSlot(this, slot), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     public void recalculateMass() {
         body.setMass(MassType.NORMAL);
     }
 
-    public WeaponSlotCommon getWeaponSlot(int i) {
+    public WeaponSlot getWeaponSlot(int i) {
         return weaponSlots.get(i);
     }
 
-    public void setReactor(Reactor reactor) {
-        this.reactor = reactor;
-    }
-
-    public void setEngine(Engine engine) {
-        this.engine = engine;
-    }
-
-    public void setArmor(Armor armor) {
-        this.armor = armor;
-    }
-
-    public void setShield(ShieldCommon shield) {
-        this.shield = shield;
-    }
-
-    public void spawnEngineParticles(Direction dir) {
-
-    }
-
     public void setSpawned() {
-        color.w = 1.0f;
         spawned = true;
         world.spawnShip(this);
     }
@@ -393,46 +429,9 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
         body.setLinearVelocity(new Vector2(velocity.x, velocity.y));
     }
 
+    @Override
     public void setRotation(float rotation) {
         body.getTransform().setRotation(rotation);
-    }
-
-    public Vector3f getEffectsColor() {
-        return effectsColor;
-    }
-
-    public void clear() {
-        int size = weaponSlots.size();
-        for (int i = 0; i < size; i++) {
-            WeaponSlotCommon slot = weaponSlots.get(i);
-            if (slot instanceof WeaponSlotBeamCommon) slot.clear();
-        }
-    }
-
-    public void setControlledByPlayer(boolean controlledByPlayer) {
-        this.controlledByPlayer = controlledByPlayer;
-    }
-
-    public boolean isControlledByPlayer() {
-        return controlledByPlayer;
-    }
-
-    public void setTarget(CollisionObject target) {
-        this.target = target;
-    }
-
-    @Override
-    public void updateClientPositionFromPacket(Vector2f pos, float rot, Vector2f velocity, float angularVelocity) {
-        super.updateClientPositionFromPacket(pos, rot, velocity, angularVelocity);
-
-        sin = (float) body.getTransform().getRotation().getSint();
-        cos = (float) body.getTransform().getRotation().getCost();
-
-        int size = weaponSlots.size();
-        for (int i = 0; i < size; i++) {
-            WeaponSlotCommon weaponSlot = weaponSlots.get(i);
-            if (weaponSlot != null) weaponSlot.updatePos();
-        }
     }
 
     @Override
@@ -441,10 +440,33 @@ public abstract class ShipCommon extends CollisionObject implements TOITransform
 
         int size = weaponSlots.size();
         for (int i = 0; i < size; i++) {
-            WeaponSlotCommon weaponSlot = weaponSlots.get(i);
+            WeaponSlot weaponSlot = weaponSlots.get(i);
             if (weaponSlot != null) weaponSlot.updatePos();
         }
     }
 
+    public void setName(String name) {
+        this.name = name;
+        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipName(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+    }
+
+    public void setFaction(Faction faction) {
+        this.faction = faction;
+        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipFaction(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+    }
+
+    public boolean isBot() {
+        return owner == null;
+    }
+
     public abstract ShipType getType();
+
+    @Override
+    public void clear() {
+        int size = weaponSlots.size();
+        for (int i = 0; i < size; i++) {
+            WeaponSlot slot = weaponSlots.get(i);
+            if (slot != null) slot.clear();
+        }
+    }
 }

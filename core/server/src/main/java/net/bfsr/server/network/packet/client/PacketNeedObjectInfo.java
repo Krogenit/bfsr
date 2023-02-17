@@ -2,12 +2,12 @@ package net.bfsr.server.network.packet.client;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import net.bfsr.component.weapon.WeaponSlotCommon;
-import net.bfsr.entity.CollisionObject;
-import net.bfsr.entity.bullet.BulletCommon;
+import net.bfsr.entity.GameObject;
 import net.bfsr.math.Direction;
 import net.bfsr.network.PacketBuffer;
-import net.bfsr.server.entity.Ship;
+import net.bfsr.server.component.weapon.WeaponSlot;
+import net.bfsr.server.entity.bullet.Bullet;
+import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.entity.wreck.ShipWreck;
 import net.bfsr.server.entity.wreck.Wreck;
 import net.bfsr.server.network.NetworkManagerServer;
@@ -30,7 +30,7 @@ public class PacketNeedObjectInfo implements PacketIn {
 
     @Override
     public void processOnServerSide(NetworkManagerServer networkManager) {
-        CollisionObject obj = networkManager.getWorld().getEntityById(objectId);
+        GameObject obj = networkManager.getWorld().getEntityById(objectId);
         if (obj != null) {
             if (obj instanceof Ship ship) {
                 networkManager.scheduleOutboundPacket(new PacketSpawnShip(ship));
@@ -38,21 +38,21 @@ public class PacketNeedObjectInfo implements PacketIn {
                 networkManager.scheduleOutboundPacket(new PacketShipFaction(ship));
                 Direction dir = ship.getLastMoveDir();
                 if (dir != null) networkManager.scheduleOutboundPacket(new PacketShipEngine(objectId, dir.ordinal()));
-                List<WeaponSlotCommon> weaponSlots = ship.getWeaponSlots();
+                List<WeaponSlot> weaponSlots = ship.getWeaponSlots();
                 for (int i = 0; i < weaponSlots.size(); i++) {
-                    WeaponSlotCommon slot = weaponSlots.get(i);
+                    WeaponSlot slot = weaponSlots.get(i);
                     if (slot != null) networkManager.scheduleOutboundPacket(new PacketShipSetWeaponSlot(ship, slot));
                 }
 
                 if (ship.isControlledByPlayer() && ship.getOwner() == networkManager.getPlayer()) {
                     networkManager.scheduleOutboundPacket(new PacketSetPlayerShip(ship.getId()));
                 }
-            } else if (obj instanceof BulletCommon bullet) {
+            } else if (obj instanceof Bullet bullet) {
                 networkManager.scheduleOutboundPacket(new PacketSpawnBullet(bullet));
             } else if (obj instanceof ShipWreck shipWreck) {
-                networkManager.scheduleOutboundPacket(new PacketSpawnWreckCommon(shipWreck));
+                networkManager.scheduleOutboundPacket(new PacketSpawnWreck(shipWreck));
             } else if (obj instanceof Wreck wreck) {
-                networkManager.scheduleOutboundPacket(new PacketSpawnWreckCommon(wreck));
+                networkManager.scheduleOutboundPacket(new PacketSpawnWreck(wreck));
             }
         }
     }

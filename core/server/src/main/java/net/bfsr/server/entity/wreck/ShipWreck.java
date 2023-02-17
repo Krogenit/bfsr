@@ -1,36 +1,46 @@
 package net.bfsr.server.entity.wreck;
 
-import net.bfsr.entity.ship.ShipCommon;
-import net.bfsr.entity.wreck.ShipWreckCommon;
-import net.bfsr.server.MainServer;
-import net.bfsr.server.network.packet.server.PacketRemoveObject;
-import net.bfsr.server.world.WorldServer;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import net.bfsr.entity.wreck.RegisteredShipWreck;
+import net.bfsr.entity.wreck.WreckRegistry;
+import net.bfsr.entity.wreck.WreckType;
+import net.bfsr.physics.PhysicsUtils;
+import net.bfsr.server.collision.filter.WreckFilter;
+import net.bfsr.server.entity.ship.Ship;
+import net.bfsr.util.TimeUtils;
+import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Vector2;
 
-public class ShipWreck extends ShipWreckCommon {
-    public ShipWreck init(int id, int wreckIndex, ShipCommon ship, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
-                          float r, float g, float b, float a, float lifeTime) {
-        super.init(id, wreckIndex, ship, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, r, g, b, a, lifeTime);
+@NoArgsConstructor
+@Getter
+public class ShipWreck extends Wreck {
+    public ShipWreck init(int id, int wreckIndex, Ship ship, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity,
+                          float scaleX, float scaleY, float lifeTime) {
+        RegisteredShipWreck wreck = WreckRegistry.INSTANCE.getWrecks(ship.getType())[wreckIndex];
+        init(ship.getWorld(), id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, lifeTime, 0.0f, wreckIndex, true, true, true,
+                ship.getHull().getMaxHull() / 4.0f, ship.getId(), WreckType.SHIP, wreck);
         return this;
     }
 
     @Override
-    protected void addParticle() {
-        ((WorldServer) world).addWreck(this);
+    protected void setLinearAndAngularDamping() {
+        body.setLinearDamping(0.2f);
+        body.setAngularDamping(0.025f);
+    }
+
+    @Override
+    protected void createFixtures() {
+        BodyFixture bodyFixture = new BodyFixture(registeredShipWreck.getPolygon());
+        bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
+        bodyFixture.setFilter(new WreckFilter(this));
+        body.addFixture(bodyFixture);
     }
 
     @Override
     protected void updateLifeTime() {
-        super.updateLifeTime();
-        if (lifeTime <= 0) {
-            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
-            setDead(true);
-        }
-    }
-
-    @Override
-    protected void onHullDamage() {
-        if (hull <= 0) {
+        lifeTime += 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+        if (lifeTime >= maxLifeTime) {
             destroy();
         }
     }
@@ -38,10 +48,10 @@ public class ShipWreck extends ShipWreckCommon {
     @Override
     protected void destroy() {
         super.destroy();
-        if (color.w > 0.01f) {
+        if (lifeTime < maxLifeTime) {
             Vector2 worldPos = body.getLocalCenter().add(position.x, position.y);
-            WreckSpawner.spawnDamageDebris((WorldServer) world, random.nextInt(3), (float) worldPos.x, (float) worldPos.y, velocity.x, velocity.y, 1.0f);
-            WreckSpawner.spawnDamageWrecks((WorldServer) world, random.nextInt(2), (float) worldPos.x, (float) worldPos.y, velocity.x, velocity.y);
+            WreckSpawner.spawnDamageDebris(world, random.nextInt(3), (float) worldPos.x, (float) worldPos.y, velocity.x, velocity.y, 1.0f);
+            WreckSpawner.spawnDamageWrecks(world, random.nextInt(2), (float) worldPos.x, (float) worldPos.y, velocity.x, velocity.y);
         }
     }
 }

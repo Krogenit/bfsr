@@ -1,10 +1,11 @@
 package net.bfsr.server.ai.task;
 
-import net.bfsr.component.weapon.WeaponSlotBeamCommon;
-import net.bfsr.component.weapon.WeaponSlotCommon;
-import net.bfsr.entity.CollisionObject;
 import net.bfsr.math.Direction;
-import net.bfsr.server.entity.Ship;
+import net.bfsr.server.component.weapon.WeaponSlot;
+import net.bfsr.server.component.weapon.WeaponSlotBeam;
+import net.bfsr.server.entity.CollisionObject;
+import net.bfsr.server.entity.ship.Ship;
+import net.bfsr.util.CollisionObjectUtils;
 import net.bfsr.util.TimeUtils;
 import org.joml.Vector2f;
 
@@ -46,16 +47,16 @@ public class AiAttackTarget extends AiTask {
 
         Vector2f targetVelocity = target.getVelocity();
 
-        List<WeaponSlotCommon> slots = ship.getWeaponSlots();
+        List<WeaponSlot> slots = ship.getWeaponSlots();
         int size = slots.size();
         for (int i = 0; i < size; i++) {
-            WeaponSlotCommon slot = slots.get(i);
+            WeaponSlot slot = slots.get(i);
             if (slot != null) {
                 float bulletToShip;
                 Vector2f targetFinalPos;
 
-                if (slot instanceof WeaponSlotBeamCommon) {
-                    bulletToShip = ((WeaponSlotBeamCommon) slot).getBeamMaxRange();
+                if (slot instanceof WeaponSlotBeam) {
+                    bulletToShip = ((WeaponSlotBeam) slot).getBeamMaxRange();
                     targetFinalPos = new Vector2f(targetPos.x + 0, targetPos.y + 0);
                 } else {
                     Vector2f slotPos = slot.getAddPosition();
@@ -83,7 +84,7 @@ public class AiAttackTarget extends AiTask {
                 float targetToShip = targetFinalPos.distance(pos);
 
                 if (targetToShip <= bulletToShip) {
-                    if (Math.abs(ship.getRotationDifference(targetFinalPos)) <= 0.1f + shipSizeAverage / 25.0f) {
+                    if (Math.abs(CollisionObjectUtils.getRotationDifference(ship, targetFinalPos)) <= 0.1f + shipSizeAverage / 25.0f) {
                         slot.tryShoot();
                     }
                 }
@@ -98,14 +99,14 @@ public class AiAttackTarget extends AiTask {
             }
         }
 
-        ship.rotateToVector(Objects.requireNonNullElse(pointToRotate, targetPos), ship.getEngine().getRotationSpeed());
+        CollisionObjectUtils.rotateToVector(ship.getBody(), Objects.requireNonNullElse(pointToRotate, targetPos), ship.getEngine().getRotationSpeed());
 
-        Direction[] dirs = ship.calculateDirectionsToOtherObject(targetPos.x, targetPos.y);
+        Direction[] dirs = CollisionObjectUtils.calculateDirectionsToOtherObject(ship, targetPos.x, targetPos.y);
         if (minTargetToShip >= maxDistance - targetSizeAverage - shipSizeAverage) {
             if (dirs[0] != null) ship.move(ship, dirs[0]);
             if (dirs[1] != null) ship.move(ship, dirs[1]);
         } else if (distanceToTarget < maxDistance - targetSizeAverage - shipSizeAverage) {
-            Direction dir = ship.calculateDirectionToOtherObject(targetPos.x, targetPos.y);
+            Direction dir = CollisionObjectUtils.calculateDirectionToOtherObject(ship, targetPos.x, targetPos.y);
             if (dir == Direction.BACKWARD) {
                 dir = Direction.FORWARD;
             } else if (dir == Direction.FORWARD) {

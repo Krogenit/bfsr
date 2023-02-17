@@ -1,6 +1,5 @@
 package net.bfsr.server.entity.ship;
 
-import net.bfsr.collision.filter.ShipFilter;
 import net.bfsr.component.Armor;
 import net.bfsr.component.ArmorPlate;
 import net.bfsr.component.Engine;
@@ -13,8 +12,8 @@ import net.bfsr.config.component.ShieldConfig;
 import net.bfsr.entity.ship.ShipType;
 import net.bfsr.math.Direction;
 import net.bfsr.physics.PhysicsUtils;
+import net.bfsr.server.collision.filter.ShipFilter;
 import net.bfsr.server.component.Shield;
-import net.bfsr.server.entity.Ship;
 import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.world.WorldServer;
 import org.dyn4j.dynamics.BodyFixture;
@@ -24,7 +23,7 @@ import org.joml.Vector2f;
 
 public class ShipHumanSmall0 extends Ship {
     public ShipHumanSmall0(WorldServer world, float x, float y, float rotation, boolean spawned) {
-        super(world, x, y, rotation, 6.4f, 6.4f, 0.5f, 0.6f, 1.0f, spawned);
+        super(world, x, y, rotation, 6.4f, 6.4f, spawned);
     }
 
     @Override
@@ -33,7 +32,7 @@ public class ShipHumanSmall0 extends Ship {
 
         setReactor(new Reactor(30.0f, 9.0f));
 
-        setHull(new Hull(25.0f, 0.025f, this));
+        setHull(new Hull(25.0f, 0.025f));
 
         Armor armor = new Armor();
         armor.setArmorPlateByDir(Direction.FORWARD, new ArmorPlate(25.0f, 0.45f, 1.15f));

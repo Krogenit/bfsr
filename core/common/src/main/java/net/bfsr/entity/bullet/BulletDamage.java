@@ -15,24 +15,24 @@ public class BulletDamage {
         return bulletDamageArmor;
     }
 
-    public void setBulletDamageArmor(float bulletDamageArmor) {
-        this.bulletDamageArmor = bulletDamageArmor;
+    public void reduceBulletDamageArmor(float amount) {
+        this.bulletDamageArmor -= amount;
     }
 
     public float getBulletDamageHull() {
         return bulletDamageHull;
     }
 
-    public void setBulletDamageHull(float bulletDamageHull) {
-        this.bulletDamageHull = bulletDamageHull;
+    public void reduceBulletDamageHull(float amount) {
+        this.bulletDamageHull -= amount;
     }
 
     public float getBulletDamageShield() {
         return bulletDamageShield;
     }
 
-    public void setBulletDamageShield(float bulletDamageShield) {
-        this.bulletDamageShield = bulletDamageShield;
+    public void reduceBulletDamageShield(float amount) {
+        this.bulletDamageShield -= amount;
     }
 
     public float getAverageDamage() {

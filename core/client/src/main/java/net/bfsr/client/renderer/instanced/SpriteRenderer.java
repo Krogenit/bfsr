@@ -2,10 +2,10 @@ package net.bfsr.client.renderer.instanced;
 
 import lombok.Getter;
 import net.bfsr.client.core.Core;
+import net.bfsr.client.entity.TextureObject;
 import net.bfsr.client.renderer.font.string.GLString;
 import net.bfsr.client.renderer.primitive.VAO;
 import net.bfsr.client.renderer.texture.Texture;
-import net.bfsr.entity.TextureObject;
 import net.bfsr.math.LUT;
 import net.bfsr.math.MathUtils;
 import net.bfsr.util.MultithreadingUtils;

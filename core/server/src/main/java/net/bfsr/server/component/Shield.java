@@ -2,8 +2,8 @@ package net.bfsr.server.component;
 
 import net.bfsr.component.shield.ShieldCommon;
 import net.bfsr.config.component.ShieldConfig;
-import net.bfsr.entity.ship.ShipCommon;
 import net.bfsr.server.MainServer;
+import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.network.packet.server.PacketShieldRebuild;
 import net.bfsr.server.network.packet.server.PacketShieldRebuildingTime;
 import net.bfsr.server.network.packet.server.PacketShieldRemove;
@@ -11,8 +11,11 @@ import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.TimeUtils;
 
 public class Shield extends ShieldCommon {
-    public Shield(ShipCommon ship, ShieldConfig shieldConfig) {
-        super(ship, shieldConfig.getMaxShield(), shieldConfig.getShieldRegen(), shieldConfig.getRebuildTime());
+    private final Ship ship;
+
+    public Shield(Ship ship, ShieldConfig shieldConfig) {
+        super(ship.getBody(), shieldConfig.getMaxShield(), shieldConfig.getShieldRegen(), shieldConfig.getRebuildTime());
+        this.ship = ship;
     }
 
     @Override

@@ -1,6 +1,6 @@
 package net.bfsr.server.ai.task;
 
-import net.bfsr.server.entity.Ship;
+import net.bfsr.server.entity.ship.Ship;
 
 public abstract class AiTask {
     protected final Ship ship;

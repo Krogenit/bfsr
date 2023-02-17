@@ -1,13 +1,12 @@
 package net.bfsr.client.entity.ship;
 
+import net.bfsr.client.collision.filter.ShipFilter;
 import net.bfsr.client.component.Damage;
 import net.bfsr.client.component.Shield;
-import net.bfsr.client.entity.Ship;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.world.WorldClient;
-import net.bfsr.collision.filter.ShipFilter;
 import net.bfsr.component.Armor;
 import net.bfsr.component.ArmorPlate;
 import net.bfsr.component.Engine;
@@ -21,14 +20,15 @@ import net.bfsr.entity.ship.ShipType;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.physics.PhysicsUtils;
+import net.bfsr.util.CollisionObjectUtils;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
 public class ShipHumanSmall0 extends Ship {
-    public ShipHumanSmall0(WorldClient world, int id, float x, float y, float rotate) {
-        super(world, id, TextureRegister.shipHumanSmall0, TextureRegister.shipHumanSmall0Damage, x, y, rotate, 6.4f, 6.4f, 0.5f, 0.6f, 1.0f);
+    public ShipHumanSmall0(WorldClient world, int id, float x, float y, float rotation) {
+        super(world, id, x, y, rotation, 6.4f, 6.4f, 0.5f, 0.6f, 1.0f, TextureRegister.shipHumanSmall0, TextureRegister.shipHumanSmall0Damage);
         addDamage(new Damage(this, 0.8f, 0, new Vector2f(-0.5f, 1.5f), 0.08f));
         addDamage(new Damage(this, 0.6f, 0, new Vector2f(-1.8f, -0.8f), 0.08f));
         addDamage(new Damage(this, 0.4f, 1, new Vector2f(-0.5f, -1.5f), 0.055f));
@@ -41,7 +41,7 @@ public class ShipHumanSmall0 extends Ship {
 
         setReactor(new Reactor(30.0f, 9.0f));
 
-        setHull(new Hull(25.0f, 0.025f, this));
+        setHull(new Hull(25.0f, 0.025f));
 
         Armor armor = new Armor();
         armor.setArmorPlateByDir(Direction.FORWARD, new ArmorPlate(25.0f, 0.45f, 1.15f));
@@ -93,22 +93,25 @@ public class ShipHumanSmall0 extends Ship {
     public void spawnEngineParticles(Direction dir) {
         Vector2f shipPos = getPosition();
 
+        float rotation = getRotation();
         if (dir == Direction.FORWARD) {
-            RotationHelper.rotate(getRotation(), -2.3f, 0, rotateToVector);
+            RotationHelper.rotate(rotation, -2.3f, 0, CollisionObjectUtils.ROTATE_TO_VECTOR);
             Vector2 shipVelocity = body.getLinearVelocity();
-            ParticleSpawner.spawnEngineBack(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, (float) shipVelocity.x / 50.0f, (float) shipVelocity.y / 50.0f, getRotation(),
+            ParticleSpawner.spawnEngineBack(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y,
+                    (float) shipVelocity.x / 50.0f, (float) shipVelocity.y / 50.0f, rotation,
                     10.0f, 6.0F, 0.5f, 0.5f, 1.0f, 1.0f, true);
-            RotationHelper.rotate(getRotation(), -1.7f, 0, rotateToVector);
-            ParticleSpawner.spawnLight(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, 6.0f, 0.5f, 0.5f, 1.0f, 1.0f, RenderLayer.BACKGROUND_ADDITIVE);
+            RotationHelper.rotate(rotation, -1.7f, 0, CollisionObjectUtils.ROTATE_TO_VECTOR);
+            ParticleSpawner.spawnLight(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y, 6.0f, 0.5f, 0.5f, 1.0f, 1.0f,
+                    RenderLayer.BACKGROUND_ADDITIVE);
         } else if (dir == Direction.LEFT) {
-            RotationHelper.rotate(getRotation(), -0.5f, 3.0f, rotateToVector);
-            ParticleSpawner.spawnShipEngineSmoke(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y);
+            RotationHelper.rotate(rotation, -0.5f, 3.0f, CollisionObjectUtils.ROTATE_TO_VECTOR);
+            ParticleSpawner.spawnShipEngineSmoke(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y);
         } else if (dir == Direction.RIGHT) {
-            RotationHelper.rotate(getRotation(), -0.5f, -3.0f, rotateToVector);
-            ParticleSpawner.spawnShipEngineSmoke(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y);
+            RotationHelper.rotate(rotation, -0.5f, -3.0f, CollisionObjectUtils.ROTATE_TO_VECTOR);
+            ParticleSpawner.spawnShipEngineSmoke(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y);
         } else if (dir == Direction.BACKWARD) {
-            RotationHelper.rotate(getRotation(), 3.0f, 0, rotateToVector);
-            ParticleSpawner.spawnShipEngineSmoke(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y);
+            RotationHelper.rotate(rotation, 3.0f, 0, CollisionObjectUtils.ROTATE_TO_VECTOR);
+            ParticleSpawner.spawnShipEngineSmoke(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y);
         }
     }
 

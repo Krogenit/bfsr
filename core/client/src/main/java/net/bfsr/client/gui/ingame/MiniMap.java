@@ -1,7 +1,7 @@
 package net.bfsr.client.gui.ingame;
 
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.Ship;
+import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.renderer.instanced.BufferType;

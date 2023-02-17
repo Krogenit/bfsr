@@ -1,18 +1,18 @@
 package net.bfsr.client.particle;
 
+import net.bfsr.client.component.weapon.WeaponSlotBeam;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.Ship;
+import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.entity.wreck.ShipWreck;
 import net.bfsr.client.entity.wreck.Wreck;
 import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
-import net.bfsr.component.weapon.WeaponSlotBeamCommon;
+import net.bfsr.client.world.WorldClient;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.util.ObjectPool;
 import net.bfsr.util.RandomHelper;
-import net.bfsr.world.World;
 import org.dyn4j.collision.narrowphase.Raycast;
 import org.dyn4j.dynamics.contact.Contact;
 import org.dyn4j.geometry.Vector2;
@@ -34,9 +34,8 @@ public final class ParticleSpawner {
         Vector2f pos = ship.getPosition();
         Vector2f velocity = ship.getVelocity();
         float baseSize = 4.0f + scale.x * 0.25f;
-        World w = ship.getWorld();
+        WorldClient w = ship.getWorld();
         Random rand = w.getRand();
-        ship.setDead(true);
         Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion1, pos.x, pos.y));
         spawnShockwave(0, pos, baseSize + 3.0f);
         for (int i = 0; i < 8; i++) {
@@ -59,7 +58,7 @@ public final class ParticleSpawner {
                 alphaSpeed, false, RenderLayer.DEFAULT_ADDITIVE);
     }
 
-    public static ParticleBeamEffect spawnBeamEffect(WeaponSlotBeamCommon slot) {
+    public static ParticleBeamEffect spawnBeamEffect(WeaponSlotBeam slot) {
         return PARTICLE_BEAM_EFFECT_POOL.getOrCreate(ParticleBeamEffect::new).init(slot, TextureRegister.particleBeamEffect);
     }
 

@@ -1,9 +1,9 @@
 package net.bfsr.server.ai.task;
 
-import net.bfsr.entity.CollisionObject;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
-import net.bfsr.server.entity.Ship;
+import net.bfsr.server.entity.CollisionObject;
+import net.bfsr.server.entity.ship.Ship;
 import org.joml.Vector2f;
 
 public class AiFlyingAround extends AiTask {

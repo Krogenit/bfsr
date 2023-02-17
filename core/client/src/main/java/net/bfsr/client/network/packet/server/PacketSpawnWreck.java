@@ -1,18 +1,17 @@
 package net.bfsr.client.network.packet.server;
 
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.Ship;
+import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.entity.wreck.ShipWreck;
 import net.bfsr.client.entity.wreck.Wreck;
 import net.bfsr.client.network.NetworkManagerClient;
 import net.bfsr.client.network.packet.PacketIn;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.world.WorldClient;
-import net.bfsr.entity.CollisionObject;
+import net.bfsr.entity.GameObject;
 import net.bfsr.entity.wreck.WreckType;
 import net.bfsr.network.PacketBuffer;
 import org.joml.Vector2f;
-import org.joml.Vector4f;
 
 import java.io.IOException;
 
@@ -22,7 +21,6 @@ public class PacketSpawnWreck implements PacketIn {
     protected boolean isFire, isLight, isFireExplosion;
     protected float rot, alphaVelocity, rotationSpeed, wreckLifeTime, wreckMaxLifeTime;
     protected Vector2f pos, velocity, size;
-    protected Vector4f color;
     protected WreckType wreckType;
     private final WreckType[] values = WreckType.values();
 
@@ -49,7 +47,6 @@ public class PacketSpawnWreck implements PacketIn {
         rot = data.readFloat();
         rotationSpeed = data.readFloat();
         size = data.readVector2f();
-        color = data.readVector4f();
     }
 
     @Override
@@ -57,14 +54,14 @@ public class PacketSpawnWreck implements PacketIn {
         WorldClient world = Core.get().getWorld();
         if (world.getEntityById(id) == null) {
             if (wreckType == WreckType.SHIP) {
-                CollisionObject obj = world.getEntityById(destroyedShipId);
+                GameObject obj = world.getEntityById(destroyedShipId);
                 if (obj instanceof Ship ship) {
                     ParticleSpawner.PARTICLE_SHIP_WREAK_POOL.getOrCreate(ShipWreck::new).init(id, wreckIndex, ship, pos.x, pos.y, velocity.x, velocity.y,
-                            rot, rotationSpeed, size.x, size.y, color.x, color.y, color.z, color.w, wreckMaxLifeTime);
+                            rot, rotationSpeed, size.x, size.y, 0.5f, 0.5f, 0.5f, 1.0f, wreckMaxLifeTime);
                 }
             } else {
                 ParticleSpawner.PARTICLE_WREAK_POOL.getOrCreate(Wreck::new).init(wreckIndex, isLight, isFire, isFireExplosion, pos.x, pos.y, velocity.x, velocity.y,
-                        rot, rotationSpeed, size.x, size.y, color.x, color.y, color.z, color.w, alphaVelocity, id, wreckType);
+                        rot, rotationSpeed, size.x, size.y, 0.5f, 0.5f, 0.5f, 1.0f, alphaVelocity, id, wreckType);
             }
         }
     }

@@ -1,9 +1,9 @@
 package net.bfsr.client.renderer.debug;
 
+import net.bfsr.client.entity.CollisionObject;
 import net.bfsr.client.renderer.RenderUtils;
 import net.bfsr.client.renderer.primitive.DynamicVertexColorBuffer;
 import net.bfsr.client.renderer.primitive.VertexColorBuffer;
-import net.bfsr.entity.CollisionObject;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
 import org.dyn4j.dynamics.Body;

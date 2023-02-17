@@ -2,7 +2,7 @@ package net.bfsr.client.camera;
 
 import lombok.Getter;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.Ship;
+import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.network.packet.client.PacketCameraPosition;

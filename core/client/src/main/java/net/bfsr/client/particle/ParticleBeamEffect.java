@@ -1,22 +1,22 @@
 package net.bfsr.client.particle;
 
+import net.bfsr.client.component.weapon.WeaponSlotBeam;
 import net.bfsr.client.core.Core;
+import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.renderer.texture.TextureRegister;
-import net.bfsr.component.weapon.WeaponSlotBeamCommon;
-import net.bfsr.entity.ship.ShipCommon;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 import java.util.Random;
 
 public class ParticleBeamEffect extends Particle {
-    private WeaponSlotBeamCommon slot;
-    private ShipCommon ship;
+    private WeaponSlotBeam slot;
+    private Ship ship;
     private final Vector2f addPos = new Vector2f();
     private Random rand;
     private boolean changeColor;
 
-    public ParticleBeamEffect init(WeaponSlotBeamCommon slot, TextureRegister texture) {
+    public ParticleBeamEffect init(WeaponSlotBeam slot, TextureRegister texture) {
         init(texture, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 5.0f + 2.8f * slot.getShip().getWorld().getRand().nextFloat(),
                 slot.getScale().y / 2.0f + 0.4f * slot.getShip().getWorld().getRand().nextFloat(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, false, RenderLayer.DEFAULT_ADDITIVE);
         this.slot = slot;

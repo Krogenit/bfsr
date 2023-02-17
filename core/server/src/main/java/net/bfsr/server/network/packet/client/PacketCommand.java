@@ -2,13 +2,13 @@ package net.bfsr.server.network.packet.client;
 
 import lombok.NoArgsConstructor;
 import net.bfsr.command.Command;
-import net.bfsr.entity.ship.ShipCommon;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.MathUtils;
 import net.bfsr.network.PacketBuffer;
 import net.bfsr.server.component.weapon.WeaponGausSmall;
 import net.bfsr.server.component.weapon.WeaponLaserSmall;
 import net.bfsr.server.component.weapon.WeaponPlasmSmall;
+import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.entity.ship.ShipEngiSmall0;
 import net.bfsr.server.entity.ship.ShipHumanSmall0;
 import net.bfsr.server.entity.ship.ShipSaimonSmall0;
@@ -27,11 +27,6 @@ import java.util.Random;
 public class PacketCommand implements PacketIn {
     private int command;
     private String[] args;
-
-    public PacketCommand(Command command, String... args) {
-        this.command = command.ordinal();
-        this.args = args;
-    }
 
     @Override
     public void read(PacketBuffer data) throws IOException {
@@ -53,7 +48,7 @@ public class PacketCommand implements PacketIn {
                 Vector2f pos = new Vector2f(Float.parseFloat(args[0]), Float.parseFloat(args[1]));
 
                 Faction fact = Faction.values()[rand.nextInt(Faction.values().length)];
-                ShipCommon ship = null;
+                Ship ship = null;
                 switch (fact) {
                     case HUMAN:
                         ship = new ShipHumanSmall0(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, true);

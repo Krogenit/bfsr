@@ -2,9 +2,9 @@ package net.bfsr.server.network.packet.server;
 
 import lombok.NoArgsConstructor;
 import net.bfsr.component.ArmorPlate;
-import net.bfsr.entity.ship.ShipCommon;
 import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
+import net.bfsr.server.entity.ship.Ship;
 
 import java.io.IOException;
 
@@ -14,7 +14,7 @@ public class PacketArmorInfo implements PacketOut {
     private float armorValue;
     private int armorPlateId;
 
-    public PacketArmorInfo(ShipCommon ship, ArmorPlate plate) {
+    public PacketArmorInfo(Ship ship, ArmorPlate plate) {
         this.id = ship.getId();
         this.armorValue = plate.getArmor();
         this.armorPlateId = plate.getId();

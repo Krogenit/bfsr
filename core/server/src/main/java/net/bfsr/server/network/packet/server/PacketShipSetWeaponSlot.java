@@ -1,10 +1,10 @@
 package net.bfsr.server.network.packet.server;
 
 import lombok.NoArgsConstructor;
-import net.bfsr.component.weapon.WeaponSlotCommon;
-import net.bfsr.entity.ship.ShipCommon;
 import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
+import net.bfsr.server.component.weapon.WeaponSlot;
+import net.bfsr.server.entity.ship.Ship;
 
 import java.io.IOException;
 
@@ -14,7 +14,7 @@ public class PacketShipSetWeaponSlot implements PacketOut {
     private String slot;
     private int slotId;
 
-    public PacketShipSetWeaponSlot(ShipCommon ship, WeaponSlotCommon slot) {
+    public PacketShipSetWeaponSlot(Ship ship, WeaponSlot slot) {
         this.id = ship.getId();
         this.slot = slot.getClass().getSimpleName();
         this.slotId = slot.getId();

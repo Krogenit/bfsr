@@ -2,9 +2,9 @@ package net.bfsr.server.network.packet.server;
 
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.entity.ship.ShipCommon;
 import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
+import net.bfsr.server.entity.ship.Ship;
 import org.joml.Vector2f;
 
 import java.io.IOException;
@@ -18,7 +18,7 @@ public class PacketSpawnShip implements PacketOut {
     private float rot;
     private boolean isSpawned;
 
-    public PacketSpawnShip(ShipCommon ship) {
+    public PacketSpawnShip(Ship ship) {
         this.id = ship.getId();
         this.position = ship.getPosition();
         this.rot = ship.getRotation();

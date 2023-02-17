@@ -1,25 +1,27 @@
-package net.bfsr.component.weapon;
+package net.bfsr.server.component.weapon;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.entity.TextureObject;
-import net.bfsr.entity.ship.ShipCommon;
+import net.bfsr.entity.GameObject;
+import net.bfsr.server.MainServer;
+import net.bfsr.server.entity.ship.Ship;
+import net.bfsr.server.network.packet.common.PacketWeaponShoot;
+import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.TimeUtils;
-import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.joml.Vector2f;
 
 import java.util.List;
 
-public abstract class WeaponSlotCommon extends TextureObject {
+public abstract class WeaponSlot extends GameObject {
     @Getter
     @Setter
     protected int id;
-    protected World world;
+    protected WorldServer world;
     @Getter
     @Setter
-    protected ShipCommon ship;
+    protected Ship ship;
     protected float energyCost;
     @Getter
     private final float bulletSpeed;
@@ -31,7 +33,7 @@ public abstract class WeaponSlotCommon extends TextureObject {
     @Setter
     protected Vector2f addPosition;
 
-    protected WeaponSlotCommon(ShipCommon ship, float shootTimerMax, float energyCost, float bulletSpeed, float alphaReducer, float scaleX, float scaleY) {
+    protected WeaponSlot(Ship ship, float shootTimerMax, float energyCost, float bulletSpeed, float alphaReducer, float scaleX, float scaleY) {
         this.ship = ship;
         this.world = ship.getWorld();
         this.shootTimerMax = shootTimerMax;
@@ -41,18 +43,15 @@ public abstract class WeaponSlotCommon extends TextureObject {
         this.alphaReducer = alphaReducer;
     }
 
-    public void init(int id, Vector2f addPosition, ShipCommon ship) {
+    public void init(int id, Vector2f addPosition, Ship ship) {
         this.addPosition = addPosition;
         this.ship = ship;
         createBody();
         this.id = id;
         updatePos();
-        lastRotation = rotation;
-        lastPosition.set(position);
     }
 
     public abstract void createBody();
-    protected abstract void spawnShootParticles();
 
     public void tryShoot() {
         float energy = ship.getReactor().getEnergy();
@@ -61,18 +60,17 @@ public abstract class WeaponSlotCommon extends TextureObject {
         }
     }
 
-    protected abstract void shoot();
-
-    public void clientShoot() {
-
+    protected void shoot() {
+        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketWeaponShoot(ship.getId(), id), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        createBullet();
+        shootTimer = shootTimerMax;
+        ship.getReactor().consume(energyCost);
     }
 
     protected abstract void createBullet();
 
     @Override
     public void update() {
-        lastPosition.set(position);
-
         updatePos();
         if (shootTimer > 0) {
             shootTimer -= 50.0f * TimeUtils.UPDATE_DELTA_TIME;
@@ -91,7 +89,6 @@ public abstract class WeaponSlotCommon extends TextureObject {
         position.set(xPos + shipPos.x, yPos + shipPos.y);
     }
 
-    @Override
     public void clear() {
         Body shipBody = ship.getBody();
         List<BodyFixture> bodyFixtures = shipBody.getFixtures();

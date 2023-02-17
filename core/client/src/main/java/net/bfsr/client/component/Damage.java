@@ -1,5 +1,7 @@
 package net.bfsr.client.component;
 
+import net.bfsr.client.entity.TextureObject;
+import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.renderer.instanced.BufferType;
@@ -8,8 +10,6 @@ import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.component.hull.Hull;
-import net.bfsr.entity.TextureObject;
-import net.bfsr.entity.ship.ShipCommon;
 import net.bfsr.math.MathUtils;
 import net.bfsr.util.TimeUtils;
 import org.joml.Vector2f;
@@ -18,7 +18,7 @@ import org.joml.Vector4f;
 import java.util.Random;
 
 public class Damage extends TextureObject {
-    private final ShipCommon ship;
+    private final Ship ship;
     private final int type;
     private boolean holeCreated, fireFadingOut, lightFadingOut, damaged;
     private float addRotation;
@@ -28,7 +28,6 @@ public class Damage extends TextureObject {
     private float smokeTimer;
     private float sparkleFlickerTimer;
     private float sparkleActivationTimer;
-    private final Texture texture;
     private Texture textureLight;
     private final Texture textureFire;
     private final Texture textureFix;
@@ -38,9 +37,8 @@ public class Damage extends TextureObject {
     private final Vector4f colorLight = new Vector4f(1.0f, 1.0f, 1.0f, 0.0f);
     private final Random rand;
 
-    public Damage(ShipCommon ship, float damage, int type, Vector2f addPos, float size) {
-        super(ship.getPosition().x, ship.getPosition().y);
-        this.texture = TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipDamage0.ordinal() + type]);
+    public Damage(Ship ship, float damage, int type, Vector2f addPos, float size) {
+        super(TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipDamage0.ordinal() + type]), ship.getPosition().x, ship.getPosition().y);
         this.scale.set(texture.getWidth(), texture.getHeight());
         this.ship = ship;
         this.creationDamage = damage;

@@ -1,24 +1,64 @@
 package net.bfsr.client.entity.wreck;
 
 import lombok.Getter;
+import net.bfsr.client.collision.filter.WreckFilter;
 import net.bfsr.client.core.Core;
+import net.bfsr.client.entity.CollisionObject;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
+import net.bfsr.client.world.WorldClient;
 import net.bfsr.entity.wreck.RegisteredShipWreck;
-import net.bfsr.entity.wreck.WreckCommon;
 import net.bfsr.entity.wreck.WreckRegistry;
 import net.bfsr.entity.wreck.WreckType;
+import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.util.TimeUtils;
+import org.dyn4j.TOITransformSavable;
+import org.dyn4j.dynamics.BodyFixture;
+import org.dyn4j.geometry.Geometry;
+import org.dyn4j.geometry.MassType;
+import org.dyn4j.geometry.Polygon;
+import org.dyn4j.geometry.Transform;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-public class Wreck extends WreckCommon {
+import java.util.Random;
+
+public class Wreck extends CollisionObject implements TOITransformSavable {
     @Getter
-    private Texture texture, textureFire, textureLight;
+    protected float alphaVelocity;
+    @Getter
+    private int wreckIndex;
+
+    @Getter
+    protected boolean fire;
+    @Getter
+    protected boolean light;
+    @Getter
+    protected boolean fireExplosion;
+    protected boolean fireFadingOut;
+
+    @Getter
+    protected float explosionTimer, sparkleBlinkTimer, hull;
+
+    protected Random random;
+
+    @Getter
+    private int destroyedShipId;
+    /**
+     * Saved transform before TOI solver
+     */
+    private final Transform transform = new Transform();
+    private boolean transformSaved;
+    @Getter
+    private WreckType wreckType;
+    protected RegisteredShipWreck registeredShipWreck;
+
+    @Getter
+    private Texture textureFire, textureLight;
 
     @Getter
     protected final Vector4f colorFire = new Vector4f(), colorLight = new Vector4f();
@@ -28,26 +68,82 @@ public class Wreck extends WreckCommon {
     protected float sparkleActivationTimer;
     private boolean changeLight;
 
-    public Wreck init(int wreckIndex, boolean light, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity,
-                      float scaleX, float scaleY, float r, float g, float b, float a, float alphaVelocity, int id, WreckType wreckType) {
-        RegisteredShipWreck wreck = WreckRegistry.INSTANCE.getWreck(wreckType, wreckIndex);
-        init(Core.get().getWorld(), id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, r, g, b, a, alphaVelocity, wreckIndex, fire, light, fireExplosion, 10,
-                0, wreckType, wreck);
+    public Wreck init(WorldClient world, int id, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY, float r, float g, float b,
+                      float a, float alphaVelocity, int wreckIndex, boolean fire, boolean light, boolean fireExplosion, float hull, int destroyedShipId,
+                      WreckType wreckType, RegisteredShipWreck registeredShipWreck) {
+        this.world = world;
+        this.id = id;
+        this.position.set(x, y);
+        this.lastPosition.set(position);
+        this.velocity.set(velocityX, velocityY);
+        this.rotation = rotation;
+        this.lastRotation = rotation;
+        this.scale.set(scaleX, scaleY);
+        this.lastScale.set(scale);
+        this.color.set(r, g, b, a);
+        this.alphaVelocity = alphaVelocity;
+        this.wreckIndex = wreckIndex;
+        this.fireExplosion = fireExplosion;
+        this.fire = fire;
+        this.light = light;
+        this.hull = hull;
+        this.destroyedShipId = destroyedShipId;
+        this.random = world.getRand();
+        this.lifeTime = 0;
+        this.wreckType = wreckType;
+        this.registeredShipWreck = registeredShipWreck;
+        this.isDead = false;
         this.lastColor.set(color);
         this.colorFire.set(fire ? 1.0f : 0.0f);
         this.lastColorFire.set(colorFire);
         this.colorLight.set(1.0f, 1.0f, 1.0f, 0.0f);
         this.lastColorLight.set(colorLight);
-        this.texture = TextureLoader.getTexture(wreck.getTexture());
-        this.textureFire = TextureLoader.getTexture(wreck.getFireTexture());
-        this.textureLight = wreck.getSparkleTexture() != null ? TextureLoader.getTexture(wreck.getSparkleTexture()) : null;
+        this.texture = TextureLoader.getTexture(registeredShipWreck.getTexture());
+        this.textureFire = TextureLoader.getTexture(registeredShipWreck.getFireTexture());
+        this.textureLight = registeredShipWreck.getSparkleTexture() != null ? TextureLoader.getTexture(registeredShipWreck.getSparkleTexture()) : null;
         this.sparkleActivationTimer = light ? 200.0f + world.getRand().nextInt(200) : 0.0f;
+        createBody(x, y, angularVelocity);
+        createAABB();
+        world.getParticleManager().addParticle(this);
+        world.addPhysicObject(this);
         return this;
     }
 
+    public Wreck init(int wreckIndex, boolean light, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity,
+                      float scaleX, float scaleY, float r, float g, float b, float a, float alphaVelocity, int id, WreckType wreckType) {
+        RegisteredShipWreck wreck = WreckRegistry.INSTANCE.getWreck(wreckType, wreckIndex);
+        return init(Core.get().getWorld(), id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, r, g, b, a, alphaVelocity, wreckIndex, fire, light, fireExplosion, 10,
+                0, wreckType, wreck);
+    }
+
     @Override
-    protected void addParticle() {
-        Core.get().getWorld().getParticleManager().addParticle(this);
+    protected void createBody(float x, float y) {
+        createBody(x, y, 0.0f);
+    }
+
+    protected void createBody(float x, float y, float angularVelocity) {
+        while (body.getFixtures().size() > 0) body.removeFixture(0);
+        createFixtures();
+        body.translate(x, y);
+        body.setMass(MassType.NORMAL);
+        body.setUserData(this);
+        body.setLinearVelocity(velocity.x, velocity.y);
+        body.getTransform().setRotation(rotation);
+        body.setAngularVelocity(angularVelocity);
+        setLinearAndAngularDamping();
+    }
+
+    protected void setLinearAndAngularDamping() {
+        body.setLinearDamping(0.05f);
+        body.setAngularDamping(0.005f);
+    }
+
+    protected void createFixtures() {
+        Polygon p = Geometry.scale(registeredShipWreck.getPolygon(), scale.x);
+        BodyFixture bodyFixture = new BodyFixture(p);
+        bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
+        bodyFixture.setFilter(new WreckFilter(this));
+        body.addFixture(bodyFixture);
     }
 
     @Override
@@ -58,16 +154,22 @@ public class Wreck extends WreckCommon {
         lastSin = sin;
         lastCos = cos;
         lastPosition.set(getPosition());
-        super.update();
 
-        aliveTimer += 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-        if (aliveTimer > 120) {
-            destroy();
-            aliveTimer = 0;
-        }
-
+        updateLifeTime();
         updateFireAndExplosion();
         updateSparkle();
+    }
+
+    protected void updateLifeTime() {
+        if (color.w < 0.2f) {
+            color.w -= alphaVelocity * 0.05f;
+            if (color.w <= 0.0f) {
+                color.w = 0.0f;
+            }
+        } else {
+            color.w -= alphaVelocity * TimeUtils.UPDATE_DELTA_TIME;
+            if (color.w < 0.0f) color.w = 0.0f;
+        }
     }
 
     protected void updateFireAndExplosion() {
@@ -172,9 +274,28 @@ public class Wreck extends WreckCommon {
         }
     }
 
+    public void postPhysicsUpdate() {
+        if (transformSaved) {
+            body.setTransform(transform);
+            transformSaved = false;
+        }
+
+        super.postPhysicsUpdate();
+    }
+
+    public void damage(float damage) {
+        hull -= damage;
+    }
+
     @Override
-    protected void destroy() {
-        super.destroy();
+    public void saveTransform(Transform transform) {
+        this.transform.set(transform);
+        transformSaved = true;
+    }
+
+    @Override
+    public void setDead() {
+        super.setDead();
         Vector2f velocity = getVelocity();
         if (color.w > 0.01f) {
             Vector2f pos = getPosition();
@@ -186,14 +307,12 @@ public class Wreck extends WreckCommon {
         }
     }
 
-    @Override
     public void render() {
         Vector2f position = getPosition();
         SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
                 color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
     }
 
-    @Override
     public void renderAdditive() {
         if (colorFire.w > 0) {
             Vector2f position = getPosition();
@@ -208,7 +327,6 @@ public class Wreck extends WreckCommon {
         }
     }
 
-    @Override
     public void onRemoved() {
         ParticleSpawner.PARTICLE_WREAK_POOL.returnBack(this);
         Core.get().getWorld().removePhysicObject(this);

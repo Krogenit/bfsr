@@ -2,9 +2,9 @@ package net.bfsr.server.network.packet.server;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import net.bfsr.entity.ship.ShipCommon;
 import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
+import net.bfsr.server.entity.ship.Ship;
 
 import java.io.IOException;
 
@@ -14,7 +14,7 @@ public class PacketShieldInfo implements PacketOut {
     private int id;
     private float shieldValue;
 
-    public PacketShieldInfo(ShipCommon ship) {
+    public PacketShieldInfo(Ship ship) {
         this.id = ship.getId();
         this.shieldValue = ship.getShield().getShield();
     }

@@ -1,11 +1,13 @@
-package net.bfsr.component.weapon;
+package net.bfsr.server.component.weapon;
 
 import lombok.Getter;
-import net.bfsr.collision.filter.BeamFilter;
-import net.bfsr.entity.CollisionObject;
 import net.bfsr.entity.bullet.BulletDamage;
-import net.bfsr.entity.ship.ShipCommon;
-import net.bfsr.entity.wreck.WreckCommon;
+import net.bfsr.server.MainServer;
+import net.bfsr.server.collision.filter.BeamFilter;
+import net.bfsr.server.entity.ship.Ship;
+import net.bfsr.server.entity.wreck.Wreck;
+import net.bfsr.server.network.packet.common.PacketWeaponShoot;
+import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.TimeUtils;
 import org.dyn4j.collision.narrowphase.Raycast;
 import org.dyn4j.dynamics.Body;
@@ -20,7 +22,7 @@ import org.joml.Vector4f;
 
 import java.util.Random;
 
-public abstract class WeaponSlotBeamCommon extends WeaponSlotCommon {
+public abstract class WeaponSlotBeam extends WeaponSlot {
     private final Vector2 start = new Vector2();
     private final BeamFilter filter = new BeamFilter(null);
     @Getter
@@ -38,7 +40,7 @@ public abstract class WeaponSlotBeamCommon extends WeaponSlotCommon {
     private final DetectFilter<Body, BodyFixture> detectFilter = new DetectFilter<>(true, true, filter);
     private final Vector2 rayDirection = new Vector2();
 
-    protected WeaponSlotBeamCommon(ShipCommon ship, float beamMaxRange, BulletDamage damage, Vector4f beamColor, float shootTimerMax, float energyCost, float scaleX, float scaleY) {
+    protected WeaponSlotBeam(Ship ship, float beamMaxRange, BulletDamage damage, Vector4f beamColor, float shootTimerMax, float energyCost, float scaleX, float scaleY) {
         super(ship, shootTimerMax, energyCost, Float.MAX_VALUE, 0.0f, scaleX, scaleY);
         this.beamMaxRange = beamMaxRange;
         this.damage = damage;
@@ -47,14 +49,45 @@ public abstract class WeaponSlotBeamCommon extends WeaponSlotCommon {
         this.rand = world.getRand();
     }
 
-    public void tryShoot() {
-        float energy = ship.getReactor().getEnergy();
-        if (shootTimer <= 0 && energy >= energyCost) {
-            shoot();
+    @Override
+    public void update() {
+        super.update();
+
+        if (shootTimer > 0) {
+            if (shootTimer <= shootTimerMax / 3.0f) {
+                maxColor = false;
+                if (beamColor.w > 0.0f) {
+                    beamColor.w -= 3.5f * TimeUtils.UPDATE_DELTA_TIME;
+                    if (beamColor.w < 0) beamColor.w = 0;
+                }
+            } else {
+                if (!maxColor && beamColor.w < 1.0f) {
+                    beamColor.w += 3.5f * TimeUtils.UPDATE_DELTA_TIME;
+                    if (beamColor.w > 1.0f) beamColor.w = 1.0f;
+                } else {
+                    maxColor = true;
+                }
+
+                if (maxColor) {
+                    beamColor.w = world.getRand().nextFloat() / 3.0f + 0.66f;
+                }
+            }
+
+            rayCast();
+        } else {
+            if (beamColor.w > 0.0f) {
+                beamColor.w -= 3.5f * TimeUtils.UPDATE_DELTA_TIME;
+                if (beamColor.w < 0) beamColor.w = 0;
+            }
         }
     }
 
-    protected abstract void shoot();
+    @Override
+    protected void shoot() {
+        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketWeaponShoot(ship.getId(), id), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        shootTimer = shootTimerMax;
+        ship.getReactor().consume(energyCost);
+    }
 
     protected void rayCast() {
         World<Body> physicWorld = world.getPhysicWorld();
@@ -85,44 +118,16 @@ public abstract class WeaponSlotBeamCommon extends WeaponSlotCommon {
             Object userData = body.getUserData();
 
             if (userData != null) {
-                float sizeSpeed = 30.0f;
-                float posX = startX + cos * currentBeamRange;
-                float posY = startY + sin * currentBeamRange;
-                float hitX = position.x + posX;
-                float hitY = position.y + posY;
-                if (userData instanceof ShipCommon ship) {
+                if (userData instanceof Ship ship) {
                     ship.attackShip(damage, this.ship, collisionPoint, ship.getFaction() == this.ship.getFaction() ? beamColor.w / 2.0f * 60.0f * TimeUtils.UPDATE_DELTA_TIME :
                             beamColor.w * 60.0f * TimeUtils.UPDATE_DELTA_TIME);
-                    onDamageShip(raycast, hitX, hitY, sizeSpeed);
-                } else if (userData instanceof WreckCommon wreck) {
+                } else if (userData instanceof Wreck wreck) {
                     wreck.damage(damage.getBulletDamageHull() * beamColor.w);
-                    onDamageWreck(raycast, hitX, hitY, sizeSpeed, wreck);
-                } else if (userData instanceof CollisionObject collisionObject) {
-                    onDamageObject(raycast, hitX, hitY, sizeSpeed, collisionObject);
                 }
             }
         }
     }
 
-    protected void onDamageObject(Raycast raycast, float hitX, float hitY, float sizeSpeed, CollisionObject collisionObject) {
-
-    }
-
-    protected void onDamageWreck(Raycast raycast, float hitX, float hitY, float sizeSpeed, WreckCommon wreck) {
-
-    }
-
-    protected void onDamageShip(Raycast raycast, float hitX, float hitY, float sizeSpeed) {
-
-    }
-
     @Override
-    protected void createBullet() {
-
-    }
-
-    @Override
-    protected void spawnShootParticles() {
-
-    }
+    protected void createBullet() {}
 }

@@ -3,6 +3,7 @@ package net.bfsr.client.component;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.core.Core;
+import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.renderer.instanced.BufferType;
@@ -13,7 +14,6 @@ import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.component.shield.ShieldCommon;
 import net.bfsr.config.component.ShieldConfig;
-import net.bfsr.entity.ship.ShipCommon;
 import net.bfsr.util.TimeUtils;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -23,12 +23,14 @@ public class Shield extends ShieldCommon {
     @Setter
     private Texture texture;
     @Getter
-    protected final Vector4f color = new Vector4f();
+    private final Vector4f color;
+    private final Ship ship;
 
-    public Shield(ShipCommon ship, ShieldConfig shieldConfig, float r, float g, float b, float a) {
-        super(ship, shieldConfig.getMaxShield(), shieldConfig.getShieldRegen(), shieldConfig.getRebuildTime());
+    public Shield(Ship ship, ShieldConfig shieldConfig, float r, float g, float b, float a) {
+        super(ship.getBody(), shieldConfig.getMaxShield(), shieldConfig.getShieldRegen(), shieldConfig.getRebuildTime());
         this.texture = TextureLoader.getTexture(shieldConfig.getTexture());
-        this.color.set(r, g, b, a);
+        this.color = new Vector4f(r, g, b, a);
+        this.ship = ship;
     }
 
     @Override

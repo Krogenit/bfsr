@@ -1,9 +1,9 @@
 package net.bfsr.server.network.packet.server;
 
 import lombok.NoArgsConstructor;
-import net.bfsr.entity.bullet.BulletCommon;
 import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
+import net.bfsr.server.entity.bullet.Bullet;
 import org.joml.Vector2f;
 
 import java.io.IOException;
@@ -16,7 +16,7 @@ public class PacketSpawnBullet implements PacketOut {
     private float sin, cos;
     private int shipId;
 
-    public PacketSpawnBullet(BulletCommon bullet) {
+    public PacketSpawnBullet(Bullet bullet) {
         this.id = bullet.getId();
         this.className = bullet.getClass().getSimpleName();
         this.pos = bullet.getPosition();

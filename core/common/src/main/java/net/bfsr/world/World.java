@@ -3,9 +3,7 @@ package net.bfsr.world;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import net.bfsr.collision.ContactListener;
-import net.bfsr.entity.CollisionObject;
-import net.bfsr.entity.bullet.BulletCommon;
-import net.bfsr.entity.ship.ShipCommon;
+import net.bfsr.entity.GameObject;
 import net.bfsr.physics.CustomValueMixer;
 import net.bfsr.profiler.Profiler;
 import net.bfsr.util.TimeUtils;
@@ -17,18 +15,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public abstract class World<T extends ShipCommon> {
+public abstract class World<S extends GameObject, B extends GameObject> {
     protected org.dyn4j.world.World<Body> physicWorld;
-    protected final boolean isRemote;
     protected final Profiler profiler;
     protected final Random rand = new Random();
-    protected final List<T> ships = new ArrayList<>();
-    protected final List<BulletCommon> bullets = new ArrayList<>();
-    protected final TIntObjectMap<CollisionObject> entitiesById = new TIntObjectHashMap<>();
+    protected final List<S> ships = new ArrayList<>();
+    protected final List<B> bullets = new ArrayList<>();
+    protected final TIntObjectMap<GameObject> entitiesById = new TIntObjectHashMap<>();
     protected int nextId;
 
-    protected World(boolean isRemote, Profiler profiler) {
-        this.isRemote = isRemote;
+    protected World(Profiler profiler) {
         this.profiler = profiler;
         initPhysicWorld();
     }
@@ -54,29 +50,23 @@ public abstract class World<T extends ShipCommon> {
         physicWorld.step(1);
         profiler.endStartSection("postPhysicsUpdate");
         postPhysicsUpdate();
-        removeDeadShips();
     }
 
-    private void removeDeadShips() {
+    protected abstract void updateParticles();
+
+    protected void updateShips() {
         for (int i = 0; i < ships.size(); i++) {
-            T s = ships.get(i);
+            S s = ships.get(i);
+            s.update();
             if (s.isDead()) {
                 removeShip(s, i--);
             }
         }
     }
 
-    protected abstract void updateParticles();
-
-    protected void updateShips() {
-        for (int i = 0, size = ships.size(); i < size; i++) {
-            ships.get(i).update();
-        }
-    }
-
     private void updateBullets() {
         for (int i = 0; i < bullets.size(); i++) {
-            BulletCommon bullet = bullets.get(i);
+            GameObject bullet = bullets.get(i);
             bullet.update();
 
             if (bullet.isDead()) {
@@ -97,34 +87,34 @@ public abstract class World<T extends ShipCommon> {
         }
     }
 
-    protected void removeShip(T ship, int index) {
+    protected void removeShip(S ship, int index) {
         physicWorld.removeBody(ship.getBody());
         ship.clear();
         ships.remove(index);
         removeObjectById(ship.getId());
     }
 
-    public void addShip(T ship) {
+    public void addShip(S ship) {
         entitiesById.put(ship.getId(), ship);
         ships.add(ship);
     }
 
-    public void spawnShip(ShipCommon ship) {
+    public void spawnShip(S ship) {
         physicWorld.addBody(ship.getBody());
     }
 
-    public void addBullet(BulletCommon bullet) {
+    public void addBullet(B bullet) {
         entitiesById.put(bullet.getId(), bullet);
         bullets.add(bullet);
         physicWorld.addBody(bullet.getBody());
     }
 
-    public void addPhysicObject(CollisionObject collisionObject) {
+    public void addPhysicObject(GameObject collisionObject) {
         entitiesById.put(collisionObject.getId(), collisionObject);
         physicWorld.addBody(collisionObject.getBody());
     }
 
-    public void removePhysicObject(CollisionObject collisionObject) {
+    public void removePhysicObject(GameObject collisionObject) {
         removeObjectById(collisionObject.getId());
         physicWorld.removeBody(collisionObject.getBody());
     }
@@ -143,29 +133,25 @@ public abstract class World<T extends ShipCommon> {
 
     public void clear() {
         while (ships.size() > 0) {
-            ShipCommon s = ships.remove(0);
+            S s = ships.remove(0);
             s.clear();
         }
         bullets.clear();
     }
 
-    public List<BulletCommon> getBullets() {
+    public List<B> getBullets() {
         return bullets;
     }
 
-    public List<T> getShips() {
+    public List<S> getShips() {
         return ships;
     }
 
-    public boolean isRemote() {
-        return isRemote;
-    }
-
-    public CollisionObject getEntityById(int id) {
+    public GameObject getEntityById(int id) {
         return entitiesById.get(id);
     }
 
-    public ShipCommon getPlayerShip() {
+    public GameObject getPlayerShip() {
         return null;
     }
 

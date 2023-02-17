@@ -1,26 +1,24 @@
 package net.bfsr.client.particle;
 
-import net.bfsr.client.entity.Ship;
+import net.bfsr.client.component.weapon.WeaponSlotBeam;
+import net.bfsr.client.entity.TextureObject;
+import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
-import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.renderer.texture.TextureRegister;
-import net.bfsr.component.weapon.WeaponSlotBeamCommon;
-import net.bfsr.entity.TextureObject;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Beam extends TextureObject {
-    private final Texture texture;
-    private final WeaponSlotBeamCommon slot;
+    private final WeaponSlotBeam slot;
     private final Ship ship;
     private final List<ParticleBeamEffect> particlesEffects = new ArrayList<>();
 
-    public Beam(WeaponSlotBeamCommon slot, Ship ship) {
-        this.texture = TextureLoader.getTexture(TextureRegister.particleBeam);
+    public Beam(WeaponSlotBeam slot, Ship ship) {
+        super(TextureLoader.getTexture(TextureRegister.particleBeam));
         this.slot = slot;
         this.ship = ship;
     }

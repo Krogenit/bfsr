@@ -30,7 +30,7 @@ public enum EnumConnectionState {
         this.registerServerPacket(8, PacketShieldRebuild.class);
         this.registerServerPacket(9, PacketShieldRemove.class);
         this.registerServerPacket(10, PacketSetPlayerShip.class);
-        this.registerServerPacket(11, PacketObjectSetDead.class);
+//        this.registerServerPacket(11, PacketObjectSetDead.class);
         this.registerServerPacket(12, PacketShipFaction.class);
         this.registerServerPacket(13, PacketShipInfo.class);
         this.registerServerPacket(14, PacketShipSetWeaponSlot.class);
@@ -39,8 +39,8 @@ public enum EnumConnectionState {
         this.registerServerPacket(17, PacketShieldRebuildingTime.class);
         this.registerServerPacket(18, PacketChatMessage.class);
         this.registerServerPacket(19, PacketWeaponShoot.class);
-        this.registerServerPacket(20, PacketDestroingShip.class);
-        this.registerServerPacket(21, PacketSpawnWreckCommon.class);
+        this.registerServerPacket(20, PacketDestroyingShip.class);
+        this.registerServerPacket(21, PacketSpawnWreck.class);
         this.registerServerPacket(22, PacketShieldInfo.class);
         this.registerServerPacket(23, PacketArmorInfo.class);
         this.registerServerPacket(24, PacketHullInfo.class);
