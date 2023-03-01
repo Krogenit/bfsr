@@ -44,7 +44,7 @@ public abstract class Bullet extends CollisionObject {
         energy = damage.getAverageDamage();
         setBulletVelocityAndStartTransform(x, y);
         world.addBullet(this);
-        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnBullet(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnBullet(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     private void setBulletVelocityAndStartTransform(float x, float y) {

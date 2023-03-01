@@ -1,9 +1,8 @@
 package net.bfsr.server.network.packet.client;
 
-import lombok.NoArgsConstructor;
+import io.netty.buffer.ByteBuf;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.MathUtils;
-import net.bfsr.network.PacketBuffer;
 import net.bfsr.server.MainServer;
 import net.bfsr.server.component.weapon.WeaponGausSmall;
 import net.bfsr.server.component.weapon.WeaponLaserSmall;
@@ -12,29 +11,24 @@ import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.entity.ship.ShipEngiSmall0;
 import net.bfsr.server.entity.ship.ShipHumanSmall0;
 import net.bfsr.server.entity.ship.ShipSaimonSmall0;
-import net.bfsr.server.network.NetworkManagerServer;
-import net.bfsr.server.network.PacketIn;
+import net.bfsr.server.network.handler.PlayerNetworkHandler;
+import net.bfsr.server.network.packet.PacketIn;
 import net.bfsr.server.player.PlayerServer;
 import net.bfsr.server.world.WorldServer;
 
 import java.io.IOException;
 
-@NoArgsConstructor
 public class PacketFactionSelect implements PacketIn {
     private int faction;
 
-    public PacketFactionSelect(Faction faction) {
-        this.faction = faction.ordinal();
-    }
-
     @Override
-    public void read(PacketBuffer data) throws IOException {
+    public void read(ByteBuf data) throws IOException {
         faction = data.readInt();
     }
 
     @Override
-    public void processOnServerSide(NetworkManagerServer networkManager) {
-        WorldServer world = networkManager.getWorld();
+    public void processOnServerSide(PlayerNetworkHandler playerNetworkHandler) {
+        WorldServer world = playerNetworkHandler.getWorld();
         Faction faction = Faction.values()[this.faction];
         Ship playerShip = null;
         switch (faction) {
@@ -61,7 +55,7 @@ public class PacketFactionSelect implements PacketIn {
                 break;
         }
 
-        PlayerServer player = networkManager.getPlayer();
+        PlayerServer player = playerNetworkHandler.getPlayer();
         playerShip.setOwner(player);
         playerShip.setFaction(faction);
         playerShip.setName(player.getUserName());

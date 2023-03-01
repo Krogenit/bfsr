@@ -1,10 +1,11 @@
 package net.bfsr.server.network.packet.client;
 
+import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
 import net.bfsr.command.Command;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.MathUtils;
-import net.bfsr.network.PacketBuffer;
+import net.bfsr.network.util.ByteBufUtils;
 import net.bfsr.server.component.weapon.WeaponGausSmall;
 import net.bfsr.server.component.weapon.WeaponLaserSmall;
 import net.bfsr.server.component.weapon.WeaponPlasmSmall;
@@ -13,8 +14,8 @@ import net.bfsr.server.entity.ship.ShipEngiSmall0;
 import net.bfsr.server.entity.ship.ShipHumanSmall0;
 import net.bfsr.server.entity.ship.ShipSaimonSmall0;
 import net.bfsr.server.entity.wreck.WreckSpawner;
-import net.bfsr.server.network.NetworkManagerServer;
-import net.bfsr.server.network.PacketIn;
+import net.bfsr.server.network.handler.PlayerNetworkHandler;
+import net.bfsr.server.network.packet.PacketIn;
 import net.bfsr.server.player.PlayerServer;
 import net.bfsr.server.world.WorldServer;
 import org.dyn4j.geometry.Vector2;
@@ -29,19 +30,19 @@ public class PacketCommand implements PacketIn {
     private String[] args;
 
     @Override
-    public void read(PacketBuffer data) throws IOException {
+    public void read(ByteBuf data) throws IOException {
         command = data.readInt();
         int size = data.readInt();
         args = new String[size];
         for (int i = 0; i < size; i++) {
-            args[i] = data.readStringFromBuffer(256);
+            args[i] = ByteBufUtils.readString(data);
         }
     }
 
     @Override
-    public void processOnServerSide(NetworkManagerServer networkManager) {
+    public void processOnServerSide(PlayerNetworkHandler playerNetworkHandler) {
         Command cmd = Command.values()[command];
-        WorldServer world = networkManager.getWorld();
+        WorldServer world = playerNetworkHandler.getWorld();
         Random rand = world.getRand();
         switch (cmd) {
             case SPAWN_SHIP:
@@ -77,7 +78,7 @@ public class PacketCommand implements PacketIn {
                 ship.setName("[BOT] " + ship.getFaction().toString());
                 return;
             case SPAWN_PARTICLE:
-                PlayerServer player = networkManager.getPlayer();
+                PlayerServer player = playerNetworkHandler.getPlayer();
                 pos = new Vector2f(Float.parseFloat(args[0]), Float.parseFloat(args[1]));
                 Vector2 linearVelocity = player.getPlayerShip().getBody().getLinearVelocity();
                 float rot = player.getPlayerShip().getRotation();

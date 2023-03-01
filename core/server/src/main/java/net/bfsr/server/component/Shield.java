@@ -38,18 +38,18 @@ public class Shield extends ShieldCommon {
     @Override
     public void rebuildShield() {
         super.rebuildShield();
-        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRebuild(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShieldRebuild(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     @Override
     protected void onNoShieldDamage() {
         setRebuildingTime(0);
-        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRebuildingTime(ship.getId(), 0), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShieldRebuildingTime(ship.getId(), 0), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     @Override
     public void removeShield() {
         super.removeShield();
-        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShieldRemove(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShieldRemove(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 }

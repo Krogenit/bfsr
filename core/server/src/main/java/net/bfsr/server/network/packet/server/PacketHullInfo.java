@@ -1,14 +1,12 @@
 package net.bfsr.server.network.packet.server;
 
-import lombok.AllArgsConstructor;
+import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
-import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
 import net.bfsr.server.entity.ship.Ship;
 
 import java.io.IOException;
 
-@AllArgsConstructor
 @NoArgsConstructor
 public class PacketHullInfo implements PacketOut {
     private int id;
@@ -20,7 +18,7 @@ public class PacketHullInfo implements PacketOut {
     }
 
     @Override
-    public void write(PacketBuffer data) throws IOException {
+    public void write(ByteBuf data) throws IOException {
         data.writeInt(id);
         data.writeFloat(hull);
     }

@@ -1,0 +1,22 @@
+package net.bfsr.client.network.pipeline;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.MessageToByteEncoder;
+import lombok.AllArgsConstructor;
+import net.bfsr.client.network.NetworkSystem;
+import net.bfsr.network.PacketOut;
+
+import java.io.IOException;
+
+@AllArgsConstructor
+public class PacketEncoder extends MessageToByteEncoder<PacketOut> {
+    private final NetworkSystem networkSystem;
+
+    @Override
+    protected void encode(ChannelHandlerContext ctx, PacketOut msg, ByteBuf out) throws IOException {
+        int packetId = networkSystem.getPacketId(msg);
+        out.writeByte(packetId);
+        msg.write(out);
+    }
+}

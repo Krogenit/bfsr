@@ -1,8 +1,8 @@
 package net.bfsr.server.network.packet.server;
 
+import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
 import net.bfsr.component.ArmorPlate;
-import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
 import net.bfsr.server.entity.ship.Ship;
 
@@ -21,7 +21,7 @@ public class PacketArmorInfo implements PacketOut {
     }
 
     @Override
-    public void write(PacketBuffer data) throws IOException {
+    public void write(ByteBuf data) throws IOException {
         data.writeInt(id);
         data.writeFloat(armorValue);
         data.writeInt(armorPlateId);

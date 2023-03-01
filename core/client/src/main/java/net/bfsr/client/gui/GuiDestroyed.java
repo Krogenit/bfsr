@@ -25,7 +25,7 @@ public class GuiDestroyed extends Gui {
         int buttonsOffset = 160;
         registerGuiObject(new Button(TextureRegister.guiButtonBase, buttonWidth, buttonHeight, Lang.getString("gui.destroyed.respawn"), 16, () -> {
             Vector2f position = Core.get().getRenderer().getCamera().getPosition();
-            Core.get().sendPacket(new PacketRespawn(position.x, position.y));
+            Core.get().sendTCPPacket(new PacketRespawn(position.x, position.y));
             Core.get().setCurrentGui(null);
         }).atCenter(buttonsOffset - buttonWidth / 2, 72));
 

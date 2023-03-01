@@ -73,7 +73,7 @@ public class GuiInGame extends Gui {
         if (Option.IS_DEBUG.getBoolean()) debugInfoElement.render();
     }
 
-    public void setPing(long ping) {
+    public void setPing(float ping) {
         debugInfoElement.setPing(ping);
     }
 

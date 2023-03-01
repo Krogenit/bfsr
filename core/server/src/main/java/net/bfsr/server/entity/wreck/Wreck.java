@@ -119,7 +119,7 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
     @Override
     public void update() {
         updateLifeTime();
-        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketObjectPosition(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketObjectPosition(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     protected void updateLifeTime() {
@@ -165,6 +165,6 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
 
     protected void destroy() {
         setDead(true);
-        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 }

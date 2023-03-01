@@ -109,16 +109,16 @@ public class WorldClient extends World<Ship, Bullet> {
         ) {
             Vector2f pos = Mouse.getWorldPosition(Core.get().getRenderer().getCamera());
 
-            if (core.getNetworkManager() != null)
+            if (core.getNetworkSystem() != null)
 //					for(int i=0;i<1;i++) {
 //						Vector2f pos = new Vector2f(Core.getCore().getRenderer().getCamera().getPosition()).add(RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 5500 * rand.nextFloat()));
-                core.sendPacket(new PacketCommand(Command.SPAWN_SHIP, "" + pos.x, "" + pos.y));
+                core.sendTCPPacket(new PacketCommand(Command.SPAWN_SHIP, "" + pos.x, "" + pos.y));
 //					}
             spawnTimer = 60;
         } else if (key == GLFW.GLFW_KEY_G) {
             Vector2f pos = Mouse.getWorldPosition(Core.get().getRenderer().getCamera());
             Vector2f randomVector1 = new Vector2f(pos).add(-10 + rand.nextInt(21), -10 + rand.nextInt(21));
-            core.sendPacket(new PacketCommand(Command.SPAWN_PARTICLE, "" + randomVector1.x, "" + randomVector1.y));
+            core.sendTCPPacket(new PacketCommand(Command.SPAWN_PARTICLE, "" + randomVector1.x, "" + randomVector1.y));
 
 
 //				particleSystem.spawnMediumGarbage(rand.nextInt(2) + 1, randomVector1, new Vector2f(),  50f + rand.nextFloat() * 40f);
@@ -150,7 +150,7 @@ public class WorldClient extends World<Ship, Bullet> {
 
         } else if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_P) {
             Core.get().setPaused(!Core.get().isPaused());
-            Core.get().sendPacket(new PacketPauseGame());
+            Core.get().sendTCPPacket(new PacketPauseGame());
         } else if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_C) {
             Core.get().setCurrentGui(null);
         }

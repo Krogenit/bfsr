@@ -1,168 +1,170 @@
 package net.bfsr.server.network;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.timeout.ReadTimeoutHandler;
-import lombok.extern.log4j.Log4j2;
-import net.bfsr.network.Packet;
-import net.bfsr.network.PacketDecoder2;
-import net.bfsr.network.PacketEncoder2;
-import net.bfsr.network.PingResponseHandler;
+import gnu.trove.map.TMap;
+import gnu.trove.map.hash.THashMap;
+import lombok.RequiredArgsConstructor;
+import net.bfsr.network.PacketOut;
 import net.bfsr.server.MainServer;
-import net.bfsr.server.network.packet.server.PacketDisconnectPlay;
+import net.bfsr.server.network.handler.PlayerNetworkHandler;
+import net.bfsr.server.network.manager.NetworkManagerTCP;
+import net.bfsr.server.network.manager.NetworkManagerUDP;
+import net.bfsr.server.network.packet.PacketIn;
+import net.bfsr.server.network.packet.PacketRegistry;
 import net.bfsr.server.player.PlayerServer;
 import org.joml.Vector2f;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 
-@Log4j2
+@RequiredArgsConstructor
 public class NetworkSystem {
-    private static final NioEventLoopGroup eventLoops = new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty IO #%d").setDaemon(true).build());
-    public static final int READ_TIMEOUT = 30;
+    private final MainServer server;
 
-    private final MainServer mainServer;
+    private final NetworkManagerTCP networkManagerTCP = new NetworkManagerTCP();
+    private final NetworkManagerUDP networkManagerUDP = new NetworkManagerUDP();
 
-    public volatile boolean isAlive;
+    private final PacketRegistry packetRegistry = new PacketRegistry();
 
-    private final List<ChannelFuture> endpoints = Collections.synchronizedList(new ArrayList<>());
-    private final List<NetworkManager> networkManagers = Collections.synchronizedList(new ArrayList<>());
+    private final List<PlayerNetworkHandler> networkHandlers = new ArrayList<>();
+    private final TMap<String, PlayerNetworkHandler> networkHandlerMap = new THashMap<>();
 
-    public NetworkSystem(MainServer mainServer) {
-        this.mainServer = mainServer;
-        this.isAlive = true;
+    public void init() {
+        packetRegistry.registerPackets();
     }
 
-    public void addLanEndpoint(InetAddress address, int port) {
-        synchronized (this.endpoints) {
-            this.endpoints.add((new ServerBootstrap()).channel(NioServerSocketChannel.class).childHandler(new ChannelInitializer<>() {
+    public void startup(InetAddress address, int port) {
+        networkManagerTCP.startup(this, address, port);
+        networkManagerUDP.startup(this, address, port);
+    }
 
-                protected void initChannel(Channel channel) {
-                    try {
-                        channel.config().setOption(ChannelOption.IP_TOS, 24);
-                    } catch (ChannelException ignored) {
+    public void update() {
+        synchronized (networkHandlers) {
+            for (int i = 0; i < networkHandlers.size(); i++) {
+                PlayerNetworkHandler networkHandler = networkHandlers.get(i);
+                networkHandler.update();
+                if (networkHandler.isClosed()) {
+                    networkHandlers.remove(i--);
+
+                    if (networkHandler.getPlayer() != null) {
+                        networkHandlerMap.remove(networkHandler.getPlayer().getUserName());
                     }
 
-                    try {
-                        channel.config().setOption(ChannelOption.TCP_NODELAY, Boolean.FALSE);
-                    } catch (ChannelException ignored) {
-                    }
-
-                    channel.pipeline()
-                            .addLast("timeout", new ReadTimeoutHandler(READ_TIMEOUT))
-                            .addLast("legacy_query", new PingResponseHandler())
-                            .addLast("splitter", new PacketDecoder2())
-                            .addLast("decoder", new PacketDecoder(NetworkManager.statistics))
-                            .addLast("prepender", new PacketEncoder2())
-                            .addLast("encoder", new PacketEncoder(NetworkManager.statistics));
-                    NetworkManagerServer managerServer = new NetworkManagerServer(mainServer, mainServer.getWorld(), null);
-                    NetworkSystem.this.networkManagers.add(managerServer);
-                    channel.pipeline().addLast("packet_handler", managerServer);
+                    networkHandler.onDisconnected();
                 }
-            }).group(eventLoops).localAddress(address, port).bind().syncUninterruptibly());
+            }
         }
     }
 
-    public void terminateEndpoints() {
-        this.isAlive = false;
-
-        List<ChannelFuture> channelFutures = this.endpoints;
-        for (int i = 0, channelFuturesSize = channelFutures.size(); i < channelFuturesSize; i++) {
-            ChannelFuture channelfuture = channelFutures.get(i);
-            channelfuture.channel().close().syncUninterruptibly();
-        }
-
-        eventLoops.shutdownGracefully();
+    public void sendTCPPacketTo(PacketOut packet, PlayerServer player) {
+        player.getNetworkHandler().sendTCPPacket(packet);
     }
 
-    public void sendPacketToAllExcept(Packet packet, PlayerServer player) {
-        List<PlayerServer> players = mainServer.getWorld().getPlayers();
+    public void sendUDPPacketTo(PacketOut packet, PlayerServer player) {
+        player.getNetworkHandler().sendUDPPacket(packet);
+    }
+
+    public void sendTCPPacketToAllExcept(PacketOut packet, PlayerServer player) {
+        sendPacketToAllExcept(player, playerNetworkHandler -> playerNetworkHandler.sendTCPPacket(packet));
+    }
+
+    public void sendUDPPacketToAllExcept(PacketOut packet, PlayerServer player) {
+        sendPacketToAllExcept(player, playerNetworkHandler -> playerNetworkHandler.sendUDPPacket(packet));
+    }
+
+    private void sendPacketToAllExcept(PlayerServer player, Consumer<PlayerNetworkHandler> protocol) {
+        List<PlayerServer> players = server.getWorld().getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
             PlayerServer player1 = players.get(i);
-            if (player1 != player) player1.getNetworkManager().scheduleOutboundPacket(packet);
+            if (player1 != player) protocol.accept(player1.getNetworkHandler());
         }
     }
 
-    public void sendPacketToAllNearby(Packet packet, Vector2f pos, float dist) {
-        this.sendPacketToAllNearby(packet, pos.x, pos.y, dist);
+    public void sendTCPPacketToAllNearby(PacketOut packet, Vector2f pos, float dist) {
+        sendPacketToAllNearby(pos.x, pos.y, dist, playerNetworkHandler -> playerNetworkHandler.sendTCPPacket(packet));
     }
 
-    public void sendPacketToAllNearby(Packet packet, float x, float y, float dist) {
-        List<PlayerServer> players = mainServer.getWorld().getPlayers();
+    public void sendUDPPacketToAllNearby(PacketOut packet, Vector2f pos, float dist) {
+        sendPacketToAllNearby(pos.x, pos.y, dist, playerNetworkHandler -> playerNetworkHandler.sendUDPPacket(packet));
+    }
+
+    public void sendTCPPacketToAllNearby(PacketOut packet, float x, float y, float dist) {
+        sendPacketToAllNearby(x, y, dist, playerNetworkHandler -> playerNetworkHandler.sendTCPPacket(packet));
+    }
+
+    public void sendUDPPacketToAllNearby(PacketOut packet, float x, float y, float dist) {
+        sendPacketToAllNearby(x, y, dist, playerNetworkHandler -> playerNetworkHandler.sendUDPPacket(packet));
+    }
+
+    private void sendPacketToAllNearby(float x, float y, float dist, Consumer<PlayerNetworkHandler> protocol) {
+        List<PlayerServer> players = server.getWorld().getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
             PlayerServer player = players.get(i);
             if (player.getPosition().distance(x, y) <= dist) {
-                player.getNetworkManager().scheduleOutboundPacket(packet);
+                protocol.accept(player.getNetworkHandler());
             }
         }
     }
 
-    public void sendPacketToAllNearbyExcept(Packet packet, Vector2f pos, float dist, PlayerServer player1) {
-        this.sendPacketToAllNearbyExcept(packet, pos.x, pos.y, dist, player1);
+    public void sendTCPPacketToAllNearbyExcept(PacketOut packet, Vector2f pos, float dist, PlayerServer player1) {
+        this.sendPacketToAllNearbyExcept(pos.x, pos.y, dist, player1, playerNetworkHandler -> playerNetworkHandler.sendTCPPacket(packet));
     }
 
-    public void sendPacketToAllNearbyExcept(Packet packet, float x, float y, float dist, PlayerServer player1) {
-        List<PlayerServer> players = mainServer.getWorld().getPlayers();
+    public void sendUDPPacketToAllNearbyExcept(PacketOut packet, Vector2f pos, float dist, PlayerServer player1) {
+        this.sendPacketToAllNearbyExcept(pos.x, pos.y, dist, player1, playerNetworkHandler -> playerNetworkHandler.sendUDPPacket(packet));
+    }
+
+    private void sendPacketToAllNearbyExcept(float x, float y, float dist, PlayerServer player1, Consumer<PlayerNetworkHandler> protocol) {
+        List<PlayerServer> players = server.getWorld().getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
             PlayerServer player = players.get(i);
             if (player1 != player && player.getPosition().distance(x, y) <= dist) {
-                player.getNetworkManager().scheduleOutboundPacket(packet);
+                protocol.accept(player.getNetworkHandler());
             }
         }
     }
 
-    public void sendPacketTo(Packet packet, PlayerServer player) {
-        player.getNetworkManager().scheduleOutboundPacket(packet);
+    public void sendTCPPacketToAll(PacketOut packet) {
+        sendPacketToAll(playerNetworkHandler -> playerNetworkHandler.sendTCPPacket(packet));
     }
 
-    public void sendPacketToAll(Packet packet) {
-        List<PlayerServer> players = mainServer.getWorld().getPlayers();
+    public void sendUDPPacketToAll(PacketOut packet) {
+        sendPacketToAll(playerNetworkHandler -> playerNetworkHandler.sendUDPPacket(packet));
+    }
+
+    private void sendPacketToAll(Consumer<PlayerNetworkHandler> protocol) {
+        List<PlayerServer> players = server.getWorld().getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
-            PlayerServer player = players.get(i);
-            player.getNetworkManager().scheduleOutboundPacket(packet);
+            protocol.accept(players.get(i).getNetworkHandler());
         }
     }
 
-    public void networkTick() {
-        synchronized (this.networkManagers) {
-            Iterator<NetworkManager> iterator = this.networkManagers.iterator();
-
-            while (iterator.hasNext()) {
-                final NetworkManager networkmanager = iterator.next();
-
-                if (!networkmanager.isChannelOpen()) {
-                    iterator.remove();
-
-                    if (networkmanager.getExitMessage() != null) {
-                        networkmanager.onDisconnect(networkmanager.getExitMessage());
-                    } else {
-                        networkmanager.onDisconnect("Disconnected");
-                    }
-                } else {
-                    try {
-                        networkmanager.processReceivedPackets();
-                    } catch (Exception exception) {
-                        if (networkmanager.isLocalChannel()) {
-                            exception.printStackTrace();
-                        }
-
-                        log.warn("Failed to handle packet for " + networkmanager.getSocketAddress(), exception);
-                        final String errorString = "Internal server error";
-                        networkmanager.scheduleOutboundPacket(new PacketDisconnectPlay(errorString), future -> networkmanager.closeChannel(errorString));
-                        networkmanager.disableAutoRead();
-                    }
-                }
-            }
+    public void addHandler(PlayerNetworkHandler playerNetworkHandler) {
+        synchronized (networkHandlers) {
+            networkHandlers.add(playerNetworkHandler);
         }
     }
 
-    public MainServer getServer() {
-        return this.mainServer;
+    public void addHandler(String login, PlayerNetworkHandler playerNetworkHandler) {
+        networkHandlerMap.put(login, playerNetworkHandler);
+    }
+
+    public PlayerNetworkHandler getHandler(String login) {
+        return networkHandlerMap.get(login);
+    }
+
+    public PacketIn createPacket(int packetId) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        return packetRegistry.createPacket(packetId);
+    }
+
+    public int getPacketId(PacketOut packet) {
+        return packetRegistry.getPacketId(packet);
+    }
+
+    public void shutdown() {
+        networkManagerTCP.shutdown();
+        networkManagerUDP.shutdown();
     }
 }

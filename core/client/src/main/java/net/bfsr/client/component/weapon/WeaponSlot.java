@@ -77,7 +77,7 @@ public abstract class WeaponSlot extends TextureObject {
     }
 
     private void shoot() {
-        Core.get().sendPacket(new PacketWeaponShoot(ship.getId(), id));
+        Core.get().sendUDPPacket(new PacketWeaponShoot(ship.getId(), id));
     }
 
     public void clientShoot() {

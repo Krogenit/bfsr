@@ -1,13 +1,13 @@
 package net.bfsr.client.network.packet.server;
 
+import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.ship.Ship;
-import net.bfsr.client.network.NetworkManagerClient;
 import net.bfsr.client.network.packet.PacketIn;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.entity.GameObject;
-import net.bfsr.network.PacketBuffer;
+import net.bfsr.network.util.ByteBufUtils;
 import org.joml.Vector2f;
 
 import java.io.IOException;
@@ -23,17 +23,17 @@ public class PacketSpawnBullet implements PacketIn {
     private int shipId;
 
     @Override
-    public void read(PacketBuffer data) throws IOException {
+    public void read(ByteBuf data) throws IOException {
         id = data.readInt();
-        className = data.readStringFromBuffer(1024);
-        pos = data.readVector2f();
+        className = ByteBufUtils.readString(data);
+        ByteBufUtils.readVector(data, pos = new Vector2f());
         sin = data.readFloat();
         cos = data.readFloat();
         shipId = data.readInt();
     }
 
     @Override
-    public void processOnClientSide(NetworkManagerClient networkManager) {
+    public void processOnClientSide() {
         if (Core.get().getWorld().getEntityById(id) == null) {
             try {
                 WorldClient world = Core.get().getWorld();

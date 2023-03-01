@@ -3,7 +3,7 @@ package net.bfsr.server.world;
 import lombok.Getter;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.MathUtils;
-import net.bfsr.network.EnumGui;
+import net.bfsr.network.GuiType;
 import net.bfsr.profiler.Profiler;
 import net.bfsr.server.component.weapon.WeaponBeamSmall;
 import net.bfsr.server.component.weapon.WeaponGausSmall;
@@ -166,7 +166,7 @@ public class WorldServer extends World<Ship, Bullet> {
                         attacker = attackerShip.getName();
                     }
                 }
-                player.getNetworkManager().scheduleOutboundPacket(new PacketOpenGui(EnumGui.Destroyed, attacker));
+                player.getNetworkHandler().sendUDPPacket(new PacketOpenGui(GuiType.DESTROYED, attacker));
             }
         }
     }

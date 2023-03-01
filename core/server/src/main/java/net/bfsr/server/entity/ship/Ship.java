@@ -117,7 +117,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         this.ai.addTask(new AiSearchTarget(this, 4000.0f));
         this.ai.addTask(new AiAttackTarget(this, 4000.0f));
         world.addShip(this);
-        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketSpawnShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     public abstract void init();
@@ -193,12 +193,12 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     private void onMove(Direction direction) {
         if (lastMoveDir != direction)
-            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipEngine(id, direction.ordinal()), getPosition(), WorldServer.PACKET_UPDATE_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketShipEngine(id, direction.ordinal()), getPosition(), WorldServer.PACKET_UPDATE_DISTANCE);
         lastMoveDir = direction;
     }
 
     private void onStopMove(Direction direction) {
-        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipEngine(id, direction.ordinal()), getPosition(), WorldServer.PACKET_UPDATE_DISTANCE);
+        MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketShipEngine(id, direction.ordinal()), getPosition(), WorldServer.PACKET_UPDATE_DISTANCE);
     }
 
     public void checkCollision(Contact contact, Vector2 normal, Body body) {
@@ -262,11 +262,11 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
         PlayerServer player = world.getPlayer(name);
         if (controlledByPlayer) {
-            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearbyExcept(new PacketObjectPosition(this), position, WorldServer.PACKET_SPAWN_DISTANCE, player);
-            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipInfo(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearbyExcept(new PacketObjectPosition(this), position, WorldServer.PACKET_SPAWN_DISTANCE, player);
+            MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShipInfo(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
         } else {
-            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketObjectPosition(this), position, WorldServer.PACKET_SPAWN_DISTANCE);
-            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipInfo(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketObjectPosition(this), position, WorldServer.PACKET_SPAWN_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShipInfo(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
         }
     }
 
@@ -318,7 +318,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     protected void onHullDamageByCollision() {
         if (hull.getHull() <= 0) {
             setDestroying();
-            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketDestroyingShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketDestroyingShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         }
     }
 
@@ -343,7 +343,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     protected void onHullDamage() {
         if (hull.getHull() <= 0) {
             setDestroying();
-            MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketDestroyingShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketDestroyingShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         }
     }
 
@@ -368,7 +368,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     public void destroyShip() {
         setDead(true);
         createDestroyParticles();
-        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     public void setHull(Hull hull) {
@@ -405,7 +405,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         slot.init(i, getWeaponSlotPosition(i), this);
 
         weaponSlots.set(i, slot);
-        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipSetWeaponSlot(this, slot), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketShipSetWeaponSlot(this, slot), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     public void recalculateMass() {
@@ -447,12 +447,12 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     public void setName(String name) {
         this.name = name;
-        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipName(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketShipName(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     public void setFaction(Faction faction) {
         this.faction = faction;
-        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketShipFaction(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketShipFaction(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     public boolean isBot() {

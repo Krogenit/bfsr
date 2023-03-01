@@ -1,10 +1,11 @@
 package net.bfsr.server.network.packet.server;
 
+import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import net.bfsr.network.EnumGui;
-import net.bfsr.network.PacketBuffer;
+import net.bfsr.network.GuiType;
 import net.bfsr.network.PacketOut;
+import net.bfsr.network.util.ByteBufUtils;
 
 import java.io.IOException;
 
@@ -14,20 +15,20 @@ public class PacketOpenGui implements PacketOut {
     private int gui;
     private String destroyer;
 
-    public PacketOpenGui(EnumGui gui) {
+    public PacketOpenGui(GuiType gui) {
         this.gui = gui.ordinal();
     }
 
-    public PacketOpenGui(EnumGui gui, String destroyer) {
+    public PacketOpenGui(GuiType gui, String destroyer) {
         this.gui = gui.ordinal();
         this.destroyer = destroyer;
     }
 
     @Override
-    public void write(PacketBuffer data) throws IOException {
+    public void write(ByteBuf data) throws IOException {
         data.writeInt(gui);
         if (gui == 1) {
-            data.writeStringToBuffer(destroyer);
+            ByteBufUtils.writeString(data, destroyer);
         }
     }
 }

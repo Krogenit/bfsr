@@ -1,16 +1,16 @@
 package net.bfsr.client.network.packet.server;
 
+import io.netty.buffer.ByteBuf;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.entity.wreck.ShipWreck;
 import net.bfsr.client.entity.wreck.Wreck;
-import net.bfsr.client.network.NetworkManagerClient;
 import net.bfsr.client.network.packet.PacketIn;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.wreck.WreckType;
-import net.bfsr.network.PacketBuffer;
+import net.bfsr.network.util.ByteBufUtils;
 import org.joml.Vector2f;
 
 import java.io.IOException;
@@ -25,7 +25,7 @@ public class PacketSpawnWreck implements PacketIn {
     private final WreckType[] values = WreckType.values();
 
     @Override
-    public void read(PacketBuffer data) throws IOException {
+    public void read(ByteBuf data) throws IOException {
         id = data.readInt();
 
         wreckIndex = data.readInt();
@@ -42,15 +42,15 @@ public class PacketSpawnWreck implements PacketIn {
             alphaVelocity = data.readFloat();
         }
 
-        pos = data.readVector2f();
-        velocity = data.readVector2f();
+        ByteBufUtils.readVector(data, pos = new Vector2f());
+        ByteBufUtils.readVector(data, velocity = new Vector2f());
         rot = data.readFloat();
         rotationSpeed = data.readFloat();
-        size = data.readVector2f();
+        ByteBufUtils.readVector(data, size = new Vector2f());
     }
 
     @Override
-    public void processOnClientSide(NetworkManagerClient networkManager) {
+    public void processOnClientSide() {
         WorldClient world = Core.get().getWorld();
         if (world.getEntityById(id) == null) {
             if (wreckType == WreckType.SHIP) {

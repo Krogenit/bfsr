@@ -6,15 +6,9 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.component.shield.ShieldRegistry;
 import net.bfsr.core.Loop;
 import net.bfsr.entity.wreck.WreckRegistry;
-import net.bfsr.network.EnumGui;
-import net.bfsr.network.status.ServerStatusResponse;
 import net.bfsr.profiler.Profiler;
 import net.bfsr.server.database.SimpleDataBase;
-import net.bfsr.server.network.NetworkManagerServer;
 import net.bfsr.server.network.NetworkSystem;
-import net.bfsr.server.network.packet.server.PacketJoinGame;
-import net.bfsr.server.network.packet.server.PacketOpenGui;
-import net.bfsr.server.player.PlayerServer;
 import net.bfsr.server.util.PathHelper;
 import net.bfsr.server.world.WorldServer;
 
@@ -36,20 +30,26 @@ public class MainServer extends Loop {
     private int ups;
 
     @Getter
-    private WorldServer world;
+    private final WorldServer world;
     @Getter
-    private SimpleDataBase dataBase;
+    private final SimpleDataBase dataBase;
     @Getter
-    private NetworkSystem networkSystem;
+    private final NetworkSystem networkSystem;
     @Getter
-    private Profiler profiler;
+    private final Profiler profiler = new Profiler();
     private ServerSettings settings;
-    private PlayerManager playerManager;
+    @Getter
+    private final PlayerManager playerManager;
     @Getter
     @Setter
     private boolean pause;
 
     public MainServer(boolean singlePlayer) {
+        this.networkSystem = new NetworkSystem(this);
+        this.dataBase = new SimpleDataBase(this);
+        this.world = new WorldServer(profiler);
+        this.playerManager = new PlayerManager(world);
+
         instance = this;
         this.singlePlayer = singlePlayer;
         if (singlePlayer) {
@@ -69,14 +69,10 @@ public class MainServer extends Loop {
     }
 
     private void init() {
-        networkSystem = new NetworkSystem(this);
-        profiler = new Profiler();
         profiler.setEnable(true);
+        networkSystem.init();
         WreckRegistry.INSTANCE.init(PathHelper.CONFIG);
         ShieldRegistry.INSTANCE.init(PathHelper.CONFIG);
-        dataBase = new SimpleDataBase(this);
-        world = new WorldServer(profiler);
-        playerManager = new PlayerManager(world);
 //		world.spawnShips();
 
         String hostname;
@@ -111,24 +107,10 @@ public class MainServer extends Loop {
         InetAddress inetaddress;
         try {
             inetaddress = InetAddress.getByName(hostname);
-            networkSystem.addLanEndpoint(inetaddress, port);
+            networkSystem.startup(inetaddress, port);
             log.info("Set server address {}:{}", hostname, port);
         } catch (UnknownHostException e) {
             throw new IllegalStateException("Can't start server on address " + hostname + ":" + port, e);
-        }
-    }
-
-    public void initializeConnectionToPlayer(NetworkManagerServer networkManager, PlayerServer player) {
-        player.setNetworkManager(networkManager);
-        world.addNewPlayer(player);
-        networkManager.scheduleOutboundPacket(new PacketJoinGame(world.getSeed()));
-        if (player.getFaction() != null) {
-            dataBase.getPlayerShips(player);
-            if (player.getShips().isEmpty()) {
-                playerManager.respawnPlayer(player, 0, 0);
-            }
-        } else {
-            networkSystem.sendPacketTo(new PacketOpenGui(EnumGui.SelectFaction), player);
         }
     }
 
@@ -137,7 +119,7 @@ public class MainServer extends Loop {
         profiler.startSection("update");
         if (!singlePlayer || !pause) world.update();
         profiler.endStartSection("network");
-        networkSystem.networkTick();
+        networkSystem.update();
         profiler.endSection();
     }
 
@@ -149,25 +131,17 @@ public class MainServer extends Loop {
     @Override
     protected void clear() {
         log.info("Terminating network...");
-        if (networkSystem != null && !singlePlayer) {
-            networkSystem.terminateEndpoints();
-        }
-
+        networkSystem.shutdown();
         log.info("Save base data...");
         dataBase.save();
         log.info("Clearing world...");
         world.clear();
-        world = null;
         log.info("Stopped");
     }
 
     public void stop() {
         log.info("Stopping server...");
         super.stop();
-    }
-
-    public ServerStatusResponse getStatus() {
-        return new ServerStatusResponse(10, "0.0.4");
     }
 
     public static void main(String[] args) {

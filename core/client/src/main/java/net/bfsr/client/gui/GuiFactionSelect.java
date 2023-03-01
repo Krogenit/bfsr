@@ -34,15 +34,15 @@ public class GuiFactionSelect extends Gui {
         registerGuiObject(new TexturedGuiObject(TextureRegister.guiLogoBFSR).atCenter(-216 / 2, -200 - 216 / 2).setSize(216, 216));
         registerGuiObject(new TexturedGuiObject(TextureRegister.guiBfsrText2).atCenter(-860 / 2, -200 - 80 / 2).setSize(860, 80));
         registerGuiObject(new Button(Lang.getString("gui.selectFaction.human"), () -> {
-            Core.get().sendPacket(new PacketFactionSelect(Faction.HUMAN));
+            Core.get().sendTCPPacket(new PacketFactionSelect(Faction.HUMAN));
             Core.get().setCurrentGui(null);
         }).atCenter(-309 - 300 / 2, 230 - 50 / 2));
         registerGuiObject(new Button(Lang.getString("gui.selectFaction.saimon"), () -> {
-            Core.get().sendPacket(new PacketFactionSelect(Faction.SAIMON));
+            Core.get().sendTCPPacket(new PacketFactionSelect(Faction.SAIMON));
             Core.get().setCurrentGui(null);
         }).atCenter(-1 - 300 / 2, 230 - 50 / 2));
         registerGuiObject(new Button(Lang.getString("gui.selectFaction.engi"), () -> {
-            Core.get().sendPacket(new PacketFactionSelect(Faction.ENGI));
+            Core.get().sendTCPPacket(new PacketFactionSelect(Faction.ENGI));
             Core.get().setCurrentGui(null);
         }).atCenter(309 - 300 / 2, 230 - 50 / 2));
 

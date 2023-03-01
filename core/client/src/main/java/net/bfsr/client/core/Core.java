@@ -4,14 +4,15 @@ import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.ingame.GuiInGame;
 import net.bfsr.client.gui.menu.GuiMainMenu;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.network.EnumConnectionState;
-import net.bfsr.client.network.NetworkManagerClient;
+import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.network.packet.client.PacketHandshake;
-import net.bfsr.client.network.packet.client.PacketLoginStart;
+import net.bfsr.client.network.packet.client.PacketLoginTCP;
+import net.bfsr.client.network.packet.client.PacketLoginUDP;
 import net.bfsr.client.renderer.Renderer;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.client.settings.Option;
@@ -21,9 +22,10 @@ import net.bfsr.client.util.PathHelper;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.component.shield.ShieldRegistry;
 import net.bfsr.entity.wreck.WreckRegistry;
-import net.bfsr.network.Packet;
+import net.bfsr.network.PacketOut;
 import net.bfsr.profiler.Profiler;
 import net.bfsr.server.local.ThreadLocalServer;
+import net.bfsr.server.network.ConnectionState;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.openal.AL11;
@@ -33,6 +35,7 @@ import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
+@Log4j2
 public class Core {
     private static Core instance;
 
@@ -60,8 +63,7 @@ public class Core {
 
     private ThreadLocalServer localServer;
     @Getter
-    @Setter
-    private NetworkManagerClient networkManager;
+    private final NetworkSystem networkSystem = new NetworkSystem();
 
     @Getter
     private String playerName;
@@ -84,6 +86,7 @@ public class Core {
 
         Lang.load();
         this.settings.readSettings();
+        this.networkSystem.init();
         this.soundManager.init();
         this.soundManager.setAttenuationModel(AL11.AL_EXPONENT_DISTANCE);
         this.soundManager.setListener(new SoundListener(new Vector3f(0, 0, 0)));
@@ -114,17 +117,7 @@ public class Core {
         if (currentGui != null) currentGui.update();
 
         profiler.endStartSection("network");
-        if (networkManager != null) {
-            if (networkManager.isChannelOpen()) {
-                networkManager.processReceivedPackets();
-            } else if (networkManager.getExitMessage() != null) {
-                networkManager.onDisconnect(networkManager.getExitMessage());
-                clearNetwork();
-            } else {
-                networkManager.onDisconnect("Disconnected from server");
-                clearNetwork();
-            }
-        }
+        networkSystem.update();
     }
 
     public void render(float interpolation) {
@@ -137,7 +130,7 @@ public class Core {
 
     public void startSinglePlayer() {
         startLocalServer();
-        connectToLocalServer();
+        connectToLocalServerTCP();
         setCurrentGui(null);
     }
 
@@ -148,7 +141,7 @@ public class Core {
         localServer.start();
     }
 
-    public void connectToLocalServer() {
+    public void connectToLocalServerTCP() {
         while (!localServer.isRunning()) {
             try {
                 Thread.sleep(1);
@@ -160,11 +153,26 @@ public class Core {
 
         try {
             InetAddress inetaddress = InetAddress.getByName("127.0.0.1");
-            networkManager = NetworkManagerClient.provideLanClient(inetaddress, 34000, new GuiMainMenu());
-            networkManager.scheduleOutboundPacket(new PacketHandshake(5, inetaddress.toString(), 0, EnumConnectionState.LOGIN));
-            networkManager.scheduleOutboundPacket(new PacketLoginStart("Local Player", "local", false));
+            connectToServer(inetaddress, 34000);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Couldn't connect to local TCP server", e);
+        }
+    }
+
+    public void connectToServer(InetAddress inetaddress, int port) {
+        networkSystem.connectTCP(inetaddress, port);
+        networkSystem.setHandshakeTime(System.nanoTime());
+        networkSystem.sendPacketTCP(new PacketHandshake(5, networkSystem.getHandshakeTime()));
+        networkSystem.sendPacketTCP(new PacketLoginTCP("Local Player"));
+    }
+
+    public void establishUDPConnection(byte[] digest) {
+        try {
+            InetAddress inetaddress = InetAddress.getByName("127.0.0.1");
+            networkSystem.connectUDP(inetaddress, 34000);
+            networkSystem.sendPacketUDP(new PacketLoginUDP("Local Player", digest));
+        } catch (Exception e) {
+            log.error("Couldn't connect to local UDP server", e);
         }
     }
 
@@ -188,11 +196,10 @@ public class Core {
     }
 
     public void clearNetwork() {
-        if (networkManager != null) {
-            networkManager.closeChannel("Quitting");
-            networkManager.stop();
-            networkManager = null;
-        }
+        networkSystem.clear();
+        networkSystem.setConnectionState(ConnectionState.HANDSHAKE);
+        networkSystem.closeChannels();
+        networkSystem.shutdown();
     }
 
     void resize(int width, int height) {
@@ -209,8 +216,12 @@ public class Core {
         if (currentGui != null) currentGui.init();
     }
 
-    public void sendPacket(Packet packet) {
-        if (networkManager != null && networkManager.getConnectionState() == EnumConnectionState.PLAY) networkManager.scheduleOutboundPacket(packet);
+    public void sendTCPPacket(PacketOut packet) {
+        networkSystem.sendPacketTCP(packet);
+    }
+
+    public void sendUDPPacket(PacketOut packet) {
+        networkSystem.sendPacketUDP(packet);
     }
 
     public void addFutureTask(Runnable runnable) {

@@ -61,7 +61,7 @@ public abstract class WeaponSlot extends GameObject {
     }
 
     protected void shoot() {
-        MainServer.getInstance().getNetworkSystem().sendPacketToAllNearby(new PacketWeaponShoot(ship.getId(), id), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), id), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         createBullet();
         shootTimer = shootTimerMax;
         ship.getReactor().consume(energyCost);

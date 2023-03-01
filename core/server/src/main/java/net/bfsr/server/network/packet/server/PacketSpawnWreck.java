@@ -1,9 +1,10 @@
 package net.bfsr.server.network.packet.server;
 
+import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
 import net.bfsr.entity.wreck.WreckType;
-import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
+import net.bfsr.network.util.ByteBufUtils;
 import net.bfsr.server.entity.wreck.Wreck;
 import org.joml.Vector2f;
 
@@ -35,7 +36,7 @@ public class PacketSpawnWreck implements PacketOut {
     }
 
     @Override
-    public void write(PacketBuffer data) throws IOException {
+    public void write(ByteBuf data) throws IOException {
         data.writeInt(id);
 
         data.writeInt(wreckIndex);
@@ -52,10 +53,10 @@ public class PacketSpawnWreck implements PacketOut {
             data.writeFloat(alphaVelocity);
         }
 
-        data.writeVector2f(pos);
-        data.writeVector2f(velocity);
+        ByteBufUtils.writeVector(data, pos);
+        ByteBufUtils.writeVector(data, velocity);
         data.writeFloat(rot);
         data.writeFloat(rotationSpeed);
-        data.writeVector2f(size);
+        ByteBufUtils.writeVector(data, size);
     }
 }

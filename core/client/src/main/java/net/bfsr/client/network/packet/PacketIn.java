@@ -1,12 +1,16 @@
 package net.bfsr.client.network.packet;
 
-import net.bfsr.client.network.NetworkManagerClient;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.network.Packet;
-import net.bfsr.network.PacketBuffer;
 
 import java.io.IOException;
 
 public interface PacketIn extends Packet {
-    void read(PacketBuffer data) throws IOException;
-    void processOnClientSide(NetworkManagerClient networkManager);
+    void read(ByteBuf data) throws IOException;
+    void processOnClientSide();
+    default void handle(NetworkSystem networkSystem, ChannelHandlerContext ctx) {
+        networkSystem.addPacketToInboundQueue(this);
+    }
 }

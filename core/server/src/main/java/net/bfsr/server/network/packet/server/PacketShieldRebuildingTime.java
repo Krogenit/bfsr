@@ -1,8 +1,8 @@
 package net.bfsr.server.network.packet.server;
 
+import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
 
 import java.io.IOException;
@@ -14,7 +14,7 @@ public class PacketShieldRebuildingTime implements PacketOut {
     private int time;
 
     @Override
-    public void write(PacketBuffer data) throws IOException {
+    public void write(ByteBuf data) throws IOException {
         data.writeInt(id);
         data.writeInt(time);
     }

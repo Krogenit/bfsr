@@ -1,12 +1,12 @@
 package net.bfsr.client.network.packet.server;
 
+import io.netty.buffer.ByteBuf;
 import net.bfsr.client.component.weapon.WeaponSlot;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.ship.Ship;
-import net.bfsr.client.network.NetworkManagerClient;
 import net.bfsr.client.network.packet.PacketIn;
 import net.bfsr.entity.GameObject;
-import net.bfsr.network.PacketBuffer;
+import net.bfsr.network.util.ByteBufUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -18,14 +18,14 @@ public class PacketShipSetWeaponSlot implements PacketIn {
     private int slotId;
 
     @Override
-    public void read(PacketBuffer data) throws IOException {
+    public void read(ByteBuf data) throws IOException {
         id = data.readInt();
-        slot = data.readStringFromBuffer(2048);
+        slot = ByteBufUtils.readString(data);
         slotId = data.readInt();
     }
 
     @Override
-    public void processOnClientSide(NetworkManagerClient networkManager) {
+    public void processOnClientSide() {
         GameObject obj = Core.get().getWorld().getEntityById(id);
         if (obj instanceof Ship ship) {
             try {

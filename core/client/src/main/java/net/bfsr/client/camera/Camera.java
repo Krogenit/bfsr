@@ -205,7 +205,7 @@ public class Camera {
 
                 long time = System.currentTimeMillis();
                 if (time - lastSendTime > 500) {
-                    Core.get().sendPacket(new PacketCameraPosition(position.x, position.y));
+                    Core.get().sendUDPPacket(new PacketCameraPosition(position.x, position.y));
                     lastSendTime = time;
                 }
             }

@@ -1,12 +1,13 @@
 package net.bfsr.server.network.packet.common;
 
+import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
+import net.bfsr.network.util.ByteBufUtils;
 import net.bfsr.server.MainServer;
-import net.bfsr.server.network.NetworkManagerServer;
-import net.bfsr.server.network.PacketIn;
+import net.bfsr.server.network.handler.PlayerNetworkHandler;
+import net.bfsr.server.network.packet.PacketIn;
 
 import java.io.IOException;
 
@@ -16,17 +17,17 @@ public class PacketChatMessage implements PacketIn, PacketOut {
     private String message;
 
     @Override
-    public void read(PacketBuffer data) throws IOException {
-        message = data.readStringFromBuffer(2048);
+    public void read(ByteBuf data) throws IOException {
+        message = ByteBufUtils.readString(data);
     }
 
     @Override
-    public void write(PacketBuffer data) throws IOException {
-        data.writeStringToBuffer(message);
+    public void write(ByteBuf data) throws IOException {
+        ByteBufUtils.writeString(data, message);
     }
 
     @Override
-    public void processOnServerSide(NetworkManagerServer networkManager) {
-        MainServer.getInstance().getNetworkSystem().sendPacketToAll(new PacketChatMessage(message));
+    public void processOnServerSide(PlayerNetworkHandler playerNetworkHandler) {
+        MainServer.getInstance().getNetworkSystem().sendTCPPacketToAll(new PacketChatMessage(message));
     }
 }

@@ -1,9 +1,10 @@
 package net.bfsr.server.network.packet.server;
 
+import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
+import net.bfsr.network.util.ByteBufUtils;
 
 import java.io.IOException;
 
@@ -13,12 +14,7 @@ public class PacketDisconnectLogin implements PacketOut {
     private String message;
 
     @Override
-    public void write(PacketBuffer data) throws IOException {
-        data.writeStringToBuffer(this.message);
-    }
-
-    @Override
-    public boolean hasPriority() {
-        return true;
+    public void write(ByteBuf data) throws IOException {
+        ByteBufUtils.writeString(data, message);
     }
 }

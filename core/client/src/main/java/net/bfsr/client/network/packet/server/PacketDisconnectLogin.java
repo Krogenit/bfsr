@@ -1,30 +1,28 @@
 package net.bfsr.client.network.packet.server;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import net.bfsr.client.network.NetworkManagerClient;
-import net.bfsr.client.network.packet.PacketIn;
-import net.bfsr.network.PacketBuffer;
+import net.bfsr.client.core.Core;
+import net.bfsr.client.network.packet.AsyncPacketIn;
+import net.bfsr.network.util.ByteBufUtils;
 
 import java.io.IOException;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public class PacketDisconnectLogin implements PacketIn {
+public class PacketDisconnectLogin implements AsyncPacketIn {
     private String message;
 
     @Override
-    public void read(PacketBuffer data) throws IOException {
-        this.message = data.readStringFromBuffer(32767);
+    public void read(ByteBuf data) throws IOException {
+        message = ByteBufUtils.readString(data);
     }
 
     @Override
-    public void processOnClientSide(NetworkManagerClient networkManager) {
-        networkManager.closeChannel(message);
-    }
-
-    @Override
-    public boolean hasPriority() {
-        return true;
+    public void processOnClientSide(ChannelHandlerContext ctx) {
+        Core.get().getNetworkSystem().closeChannels();
+        Core.get().getNetworkSystem().onDisconnect(message);
     }
 }

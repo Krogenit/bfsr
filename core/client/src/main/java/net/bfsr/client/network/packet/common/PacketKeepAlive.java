@@ -1,34 +1,19 @@
 package net.bfsr.client.network.packet.common;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import net.bfsr.client.network.NetworkManagerClient;
-import net.bfsr.client.network.packet.PacketIn;
-import net.bfsr.network.PacketBuffer;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import net.bfsr.client.network.packet.AsyncPacketIn;
 import net.bfsr.network.PacketOut;
 
-@NoArgsConstructor
-@AllArgsConstructor
-public class PacketKeepAlive implements PacketIn, PacketOut {
-    private int time;
+public class PacketKeepAlive implements AsyncPacketIn, PacketOut {
+    @Override
+    public void read(ByteBuf data) {}
 
     @Override
-    public void read(PacketBuffer data) {
-        this.time = data.readInt();
-    }
+    public void write(ByteBuf data) {}
 
     @Override
-    public void write(PacketBuffer data) {
-        data.writeInt(this.time);
-    }
-
-    @Override
-    public void processOnClientSide(NetworkManagerClient networkManager) {
-        networkManager.scheduleOutboundPacket(new PacketKeepAlive(time));
-    }
-
-    @Override
-    public boolean hasPriority() {
-        return true;
+    public void processOnClientSide(ChannelHandlerContext ctx) {
+        ctx.writeAndFlush(new PacketKeepAlive());
     }
 }

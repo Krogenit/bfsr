@@ -6,10 +6,6 @@ import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.input.InputBox;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.network.EnumConnectionState;
-import net.bfsr.client.network.NetworkManagerClient;
-import net.bfsr.client.network.packet.client.PacketHandshake;
-import net.bfsr.client.network.packet.client.PacketLoginStart;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.font.string.StringObject;
@@ -75,12 +71,8 @@ public class GuiConnect extends Gui {
                         }
 
                         try {
-                            Core.get().clearNetwork();
                             inetaddress = InetAddress.getByName(host);
-                            NetworkManagerClient networkManager = NetworkManagerClient.provideLanClient(inetaddress, port, parentGui);
-                            networkManager.scheduleOutboundPacket(new PacketHandshake(5, inetaddress.toString(), port, EnumConnectionState.LOGIN));
-                            networkManager.scheduleOutboundPacket(new PacketLoginStart(playerName, password, false));
-                            Core.get().setNetworkManager(networkManager);
+                            Core.get().connectToServer(inetaddress, port);
                         } catch (UnknownHostException unknownhostexception) {
                             log.error("Couldn't connect to server", unknownhostexception);
                             Core.get().addFutureTask(() -> setErrorMessage(Lang.getString("connect.failed") + " Unknown Host"));

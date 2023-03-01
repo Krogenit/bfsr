@@ -1,21 +1,19 @@
 package net.bfsr.server.network.packet.client;
 
-import net.bfsr.network.PacketBuffer;
-import net.bfsr.server.network.NetworkManagerServer;
-import net.bfsr.server.network.PacketIn;
+import io.netty.buffer.ByteBuf;
+import net.bfsr.server.network.handler.PlayerNetworkHandler;
+import net.bfsr.server.network.packet.PacketIn;
 
 import java.io.IOException;
 
 public class PacketPauseGame implements PacketIn {
     @Override
-    public void read(PacketBuffer data) throws IOException {
-
-    }
+    public void read(ByteBuf data) throws IOException {}
 
     @Override
-    public void processOnServerSide(NetworkManagerServer networkManager) {
-        if (networkManager.getServer().isSinglePlayer()) {
-            networkManager.getServer().setPause(!networkManager.getServer().isPause());
+    public void processOnServerSide(PlayerNetworkHandler playerNetworkHandler) {
+        if (playerNetworkHandler.getServer().isSinglePlayer()) {
+            playerNetworkHandler.getServer().setPause(!playerNetworkHandler.getServer().isPause());
         }
     }
 }

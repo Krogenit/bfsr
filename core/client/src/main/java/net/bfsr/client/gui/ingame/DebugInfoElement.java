@@ -23,7 +23,7 @@ public class DebugInfoElement {
     private final String openGlVersion = GL11.glGetString(GL11.GL_VERSION);
     private final String openGlRenderer = GL11.glGetString(GL11.GL_RENDERER);
     @Setter
-    private long ping;
+    private float ping;
     private final StringObject upperText = new StringObject(FontType.CONSOLA);
     private final StringObject worldText = new StringObject(FontType.CONSOLA);
     private final StringObject shipText = new StringObject(FontType.CONSOLA);
@@ -101,7 +101,7 @@ public class DebugInfoElement {
         stringBuilder.append(DecimalUtils.formatWithToDigits(sNetworkTime));
         stringBuilder.append("ms ");
         stringBuilder.append("\nPing: ");
-        stringBuilder.append(ping);
+        stringBuilder.append(DecimalUtils.formatWithToDigits(ping));
         stringBuilder.append("ms");
         upperText.update(stringBuilder.toString());
         upperText.setPosition(x, y);

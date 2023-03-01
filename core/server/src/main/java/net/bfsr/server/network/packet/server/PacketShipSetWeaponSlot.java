@@ -1,8 +1,9 @@
 package net.bfsr.server.network.packet.server;
 
+import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
-import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
+import net.bfsr.network.util.ByteBufUtils;
 import net.bfsr.server.component.weapon.WeaponSlot;
 import net.bfsr.server.entity.ship.Ship;
 
@@ -21,9 +22,9 @@ public class PacketShipSetWeaponSlot implements PacketOut {
     }
 
     @Override
-    public void write(PacketBuffer data) throws IOException {
+    public void write(ByteBuf data) throws IOException {
         data.writeInt(id);
-        data.writeStringToBuffer(slot);
+        ByteBufUtils.writeString(data, slot);
         data.writeInt(slotId);
     }
 }

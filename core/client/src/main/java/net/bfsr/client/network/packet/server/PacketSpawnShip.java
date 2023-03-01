@@ -1,11 +1,11 @@
 package net.bfsr.client.network.packet.server;
 
+import io.netty.buffer.ByteBuf;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.ship.Ship;
-import net.bfsr.client.network.NetworkManagerClient;
 import net.bfsr.client.network.packet.PacketIn;
 import net.bfsr.client.world.WorldClient;
-import net.bfsr.network.PacketBuffer;
+import net.bfsr.network.util.ByteBufUtils;
 import org.joml.Vector2f;
 
 import java.io.IOException;
@@ -20,16 +20,16 @@ public class PacketSpawnShip implements PacketIn {
     private boolean isSpawned;
 
     @Override
-    public void read(PacketBuffer data) throws IOException {
+    public void read(ByteBuf data) throws IOException {
         this.id = data.readInt();
-        this.position = data.readVector2f();
+        ByteBufUtils.readVector(data, position = new Vector2f());
         this.rot = data.readFloat();
-        this.shipClassName = data.readStringFromBuffer(256);
+        this.shipClassName = ByteBufUtils.readString(data);
         this.isSpawned = data.readBoolean();
     }
 
     @Override
-    public void processOnClientSide(NetworkManagerClient networkManager) {
+    public void processOnClientSide() {
         WorldClient world = Core.get().getWorld();
         if (world.getEntityById(id) == null) {
             try {

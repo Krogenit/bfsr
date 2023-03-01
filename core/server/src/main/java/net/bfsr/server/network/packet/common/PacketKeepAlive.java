@@ -1,39 +1,21 @@
 package net.bfsr.server.network.packet.common;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import net.bfsr.network.PacketBuffer;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
 import net.bfsr.network.PacketOut;
-import net.bfsr.server.network.NetworkManagerServer;
-import net.bfsr.server.network.PacketIn;
+import net.bfsr.server.network.handler.PlayerNetworkHandler;
+import net.bfsr.server.network.packet.AsyncPacketIn;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
-@NoArgsConstructor
-@AllArgsConstructor
-public class PacketKeepAlive implements PacketIn, PacketOut {
-    private int time;
+public class PacketKeepAlive implements AsyncPacketIn, PacketOut {
+    @Override
+    public void read(ByteBuf data) throws IOException {}
 
     @Override
-    public void read(PacketBuffer data) throws IOException {
-        this.time = data.readInt();
-    }
+    public void write(ByteBuf data) throws IOException {}
 
     @Override
-    public void write(PacketBuffer data) throws IOException {
-        data.writeInt(this.time);
-    }
-
-    @Override
-    public void processOnServerSide(NetworkManagerServer networkManager) {
-        if (time == networkManager.getCurrentTimeInt()) {
-            int var2 = (int) (System.nanoTime() / 1000000L - networkManager.getCurrentTime());
-            networkManager.getPlayer().setPing((networkManager.getPlayer().getPing() * 3 + var2) / 4);
-        }
-    }
-
-    @Override
-    public boolean hasPriority() {
-        return true;
-    }
+    public void processOnServerSide(PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {}
 }

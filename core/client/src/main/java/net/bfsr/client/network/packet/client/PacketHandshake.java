@@ -1,33 +1,21 @@
 package net.bfsr.client.network.packet.client;
 
+import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.bfsr.client.network.EnumConnectionState;
-import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
 
 import java.io.IOException;
 
-@Getter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class PacketHandshake implements PacketOut {
     private int version;
-    private String host;
-    private int port;
-    private EnumConnectionState connectionState;
+    private long handshakeClientTime;
 
     @Override
-    public void write(PacketBuffer data) throws IOException {
-        data.writeVarIntToBuffer(this.version);
-        data.writeStringToBuffer(this.host);
-        data.writeShort(this.port);
-        data.writeVarIntToBuffer(this.connectionState.getInt());
-    }
-
-    @Override
-    public boolean hasPriority() {
-        return true;
+    public void write(ByteBuf data) throws IOException {
+        data.writeByte(version);
+        data.writeLong(handshakeClientTime);
     }
 }

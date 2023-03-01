@@ -1,8 +1,8 @@
 package net.bfsr.client.network.packet.client;
 
+import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
 import net.bfsr.faction.Faction;
-import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
 
 import java.io.IOException;
@@ -16,7 +16,7 @@ public class PacketFactionSelect implements PacketOut {
     }
 
     @Override
-    public void write(PacketBuffer data) throws IOException {
+    public void write(ByteBuf data) throws IOException {
         data.writeInt(faction);
     }
 }

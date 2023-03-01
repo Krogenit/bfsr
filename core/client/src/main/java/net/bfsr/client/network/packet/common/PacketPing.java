@@ -1,37 +1,32 @@
 package net.bfsr.client.network.packet.common;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.network.NetworkManagerClient;
-import net.bfsr.client.network.packet.PacketIn;
-import net.bfsr.network.PacketBuffer;
+import net.bfsr.client.network.packet.AsyncPacketIn;
 import net.bfsr.network.PacketOut;
 
 import java.io.IOException;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public class PacketPing implements PacketIn, PacketOut {
+public class PacketPing implements AsyncPacketIn, PacketOut {
     private long time;
 
     @Override
-    public void read(PacketBuffer data) throws IOException {
+    public void read(ByteBuf data) throws IOException {
         this.time = data.readLong();
     }
 
     @Override
-    public void write(PacketBuffer data) throws IOException {
-        data.writeLong(this.time);
+    public void write(ByteBuf data) throws IOException {
+        data.writeLong(System.nanoTime() - Core.get().getNetworkSystem().getHandshakeTime());
     }
 
     @Override
-    public void processOnClientSide(NetworkManagerClient networkManager) {
-        Core.get().getGuiInGame().setPing(time);
-    }
-
-    @Override
-    public boolean hasPriority() {
-        return true;
+    public void processOnClientSide(ChannelHandlerContext ctx) {
+        Core.get().getGuiInGame().setPing(time / 1_000_000.0f);
     }
 }

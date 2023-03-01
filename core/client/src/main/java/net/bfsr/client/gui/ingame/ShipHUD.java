@@ -65,14 +65,14 @@ public class ShipHUD {
             WorldClient w = Core.get().getWorld();
             Ship playerControlledShip = w.getPlayerShip();
             if (playerControlledShip != null) {
-                Core.get().sendPacket(new PacketShipControl(playerControlledShip.getId(), false));
+                Core.get().sendTCPPacket(new PacketShipControl(playerControlledShip.getId(), false));
                 Core.get().getWorld().setPlayerShip(null);
                 Core.get().getWorld().disableShipDeselection();
                 selectShip(playerControlledShip);
                 onShipControlCanceled();
             } else if (currentShip != null && canControlShip(currentShip)) {
                 Core.get().getWorld().setPlayerShip(currentShip);
-                Core.get().sendPacket(new PacketShipControl(currentShip.getId(), true));
+                Core.get().sendTCPPacket(new PacketShipControl(currentShip.getId(), true));
             }
         });
         buttonControl.setSize(256, 40);

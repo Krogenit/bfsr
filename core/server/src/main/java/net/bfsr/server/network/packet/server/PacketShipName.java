@@ -1,8 +1,9 @@
 package net.bfsr.server.network.packet.server;
 
+import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
-import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
+import net.bfsr.network.util.ByteBufUtils;
 import net.bfsr.server.entity.ship.Ship;
 
 import java.io.IOException;
@@ -18,8 +19,8 @@ public class PacketShipName implements PacketOut {
     }
 
     @Override
-    public void write(PacketBuffer data) throws IOException {
+    public void write(ByteBuf data) throws IOException {
         data.writeInt(id);
-        data.writeStringToBuffer(name);
+        ByteBufUtils.writeString(data, name);
     }
 }

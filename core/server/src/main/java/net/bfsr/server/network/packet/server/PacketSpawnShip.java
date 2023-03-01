@@ -1,9 +1,10 @@
 package net.bfsr.server.network.packet.server;
 
+import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
+import net.bfsr.network.util.ByteBufUtils;
 import net.bfsr.server.entity.ship.Ship;
 import org.joml.Vector2f;
 
@@ -27,11 +28,11 @@ public class PacketSpawnShip implements PacketOut {
     }
 
     @Override
-    public void write(PacketBuffer data) throws IOException {
+    public void write(ByteBuf data) throws IOException {
         data.writeInt(id);
-        data.writeVector2f(position);
+        ByteBufUtils.writeVector(data, position);
         data.writeFloat(rot);
-        data.writeStringToBuffer(shipClassName);
+        ByteBufUtils.writeString(data, shipClassName);
         data.writeBoolean(isSpawned);
     }
 }

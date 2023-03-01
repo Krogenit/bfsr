@@ -34,7 +34,7 @@ public class InputChat extends InputBox {
         if (key == GLFW.GLFW_KEY_ENTER) {
             String input = stringObject.getString().trim();
             if (input.length() > 0) {
-                Core.get().sendPacket(new PacketChatMessage(Core.get().getPlayerName() + ": " + input));
+                Core.get().sendTCPPacket(new PacketChatMessage(Core.get().getPlayerName() + ": " + input));
             }
             stringObject.update("");
             resetCursorPosition();

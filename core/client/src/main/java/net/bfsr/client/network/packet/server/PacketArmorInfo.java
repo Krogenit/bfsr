@@ -1,33 +1,30 @@
 package net.bfsr.client.network.packet.server;
 
-import lombok.NoArgsConstructor;
+import io.netty.buffer.ByteBuf;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.ship.Ship;
-import net.bfsr.client.network.NetworkManagerClient;
 import net.bfsr.client.network.packet.PacketIn;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.component.Armor;
 import net.bfsr.component.ArmorPlate;
 import net.bfsr.entity.GameObject;
-import net.bfsr.network.PacketBuffer;
 
 import java.io.IOException;
 
-@NoArgsConstructor
 public class PacketArmorInfo implements PacketIn {
     private int id;
     private float armorValue;
     private int armorPlateId;
 
     @Override
-    public void read(PacketBuffer data) throws IOException {
+    public void read(ByteBuf data) throws IOException {
         id = data.readInt();
         armorValue = data.readFloat();
         armorPlateId = data.readInt();
     }
 
     @Override
-    public void processOnClientSide(NetworkManagerClient networkManager) {
+    public void processOnClientSide() {
         WorldClient world = Core.get().getWorld();
         GameObject obj = world.getEntityById(id);
         if (obj instanceof Ship ship) {

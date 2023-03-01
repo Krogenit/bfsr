@@ -1,8 +1,8 @@
 package net.bfsr.client.network.packet.client;
 
+import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import net.bfsr.network.PacketBuffer;
 import net.bfsr.network.PacketOut;
 
 import java.io.IOException;
@@ -14,7 +14,7 @@ public class PacketShipControl implements PacketOut {
     private boolean control;
 
     @Override
-    public void write(PacketBuffer data) throws IOException {
+    public void write(ByteBuf data) throws IOException {
         data.writeInt(id);
         data.writeBoolean(control);
     }

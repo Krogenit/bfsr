@@ -218,13 +218,13 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     private void onMove(Direction direction) {
         spawnEngineParticles(direction);
-        if (this == world.getPlayerShip()) Core.get().sendPacket(new PacketShipEngine(id, direction.ordinal()));
+        if (this == world.getPlayerShip()) Core.get().sendUDPPacket(new PacketShipEngine(id, direction.ordinal()));
     }
 
     private void onStopMove(Direction direction) {
         spawnEngineParticles(direction);
         if (this == world.getPlayerShip()) {
-            Core.get().sendPacket(new PacketShipEngine(id, direction.ordinal()));
+            Core.get().sendUDPPacket(new PacketShipEngine(id, direction.ordinal()));
         }
     }
 
@@ -276,7 +276,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         if (collisionTimer > 0) collisionTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
 
         if (this == world.getPlayerShip()) {
-            Core.get().sendPacket(new PacketObjectPosition(this));
+            Core.get().sendUDPPacket(new PacketObjectPosition(this));
             lifeTime = 0;
         } else {
             if (remoteMoveDirectionForEngineParticles != null) {

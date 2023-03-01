@@ -41,7 +41,7 @@ public class SimpleDataBase {
         player.setId(nextUserId);
         loadedPlayersMap.put(playerName, player);
         loadedPlayers.add(player);
-        log.info("Registered new player " + playerName + " with id " + nextUserId);
+        log.info("Registered new player {} with id {}", playerName, nextUserId);
         nextUserId++;
         return player;
     }
@@ -63,10 +63,10 @@ public class SimpleDataBase {
         }
 
         if (player.getPassword().equals(password)) {
-            log.info("User " + playerName + " successful autorized");
+            log.info("User {} successful autorized", playerName);
             return null;
         } else {
-            log.info("User " + playerName + " entered wrong password " + password);
+            log.info("User {} entered wrong password {}", playerName, password);
             return "Wrong password";
         }
     }
