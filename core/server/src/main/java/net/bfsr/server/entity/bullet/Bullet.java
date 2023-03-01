@@ -3,6 +3,7 @@ package net.bfsr.server.entity.bullet;
 import lombok.Getter;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.component.shield.ShieldCommon;
+import net.bfsr.entity.GameObject;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.math.LUT;
 import net.bfsr.math.MathUtils;
@@ -75,6 +76,7 @@ public abstract class Bullet extends CollisionObject {
         updateWorldAABB();
     }
 
+    @Override
     public void checkCollision(Contact contact, Vector2 normal, Body body) {
         Object userData = body.getUserData();
         if (userData != null) {
@@ -154,6 +156,11 @@ public abstract class Bullet extends CollisionObject {
 
     public boolean canDamageShip(Ship ship) {
         return this.ship != ship && previousAObject != ship;
+    }
+
+    @Override
+    public boolean canCollideWith(GameObject gameObject) {
+        return ship != gameObject && previousAObject != gameObject;
     }
 
     private boolean damageShip(Ship ship) {
