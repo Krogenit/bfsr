@@ -49,7 +49,8 @@ public class Camera {
     private long lastSendTime;
     private Ship followShip;
 
-    private int projectionMatrixUBO;
+    private int worldProjectionMatrixUBO;
+    private int GUIProjectionMatrixUBO;
     private int projectionViewMatrixUBO;
 
     public void init(int width, int height) {
@@ -59,13 +60,15 @@ public class Camera {
         origin.set(-width / 2.0f, -height / 2.0f);
         boundingBox.set(position.x + origin.x, position.y + origin.y, position.x - origin.x, position.y - origin.y);
 
-        projectionMatrixUBO = GL45.glCreateBuffers();
+        worldProjectionMatrixUBO = GL45.glCreateBuffers();
+        GUIProjectionMatrixUBO = GL45.glCreateBuffers();
         projectionViewMatrixUBO = GL45.glCreateBuffers();
 
-        orthographicMatrix.setOrtho(0.0f, width, height, 0.0f, Z_NEAR, Z_FAR);
-        GL45.glNamedBufferStorage(projectionMatrixUBO, orthographicMatrix.get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
+        GL45.glNamedBufferStorage(GUIProjectionMatrixUBO, orthographicMatrix.setOrtho(0.0f, width, height, 0.0f, Z_NEAR, Z_FAR)
+                .get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
+        GL45.glNamedBufferStorage(worldProjectionMatrixUBO, orthographicMatrix.setOrtho(-width / 2.0f, width / 2.0f, height / 2.0f, -height / 2.0f, Z_NEAR, Z_FAR)
+                .get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
 
-        MatrixUtils.translateIdentity(viewMatrix, -origin.x, -origin.y);
         MatrixUtils.scale(viewMatrix, zoom, zoom);
         GL45.glNamedBufferStorage(projectionViewMatrixUBO, orthographicMatrix.mul(viewMatrix, projectionViewMatrix).get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
     }
@@ -74,11 +77,10 @@ public class Camera {
     public void setupOpenGLMatrix() {
         GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glLoadIdentity();
-        GL11.glOrtho(0, width, height, 0, Z_NEAR, Z_FAR);
+        GL11.glOrtho(-width / 2.0f, width / 2.0f, height / 2.0f, -height / 2.0f, Z_NEAR, Z_FAR);
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
         GL11.glLoadIdentity();
 
-        GL11.glTranslatef(-origin.x, -origin.y, 0.0f);
         GL11.glScalef(zoom, zoom, 1.0f);
         GL11.glTranslatef(-position.x, -position.y, 0.0f);
     }
@@ -234,7 +236,7 @@ public class Camera {
     }
 
     public void bindGUI() {
-        GL30.glBindBufferBase(GL31.GL_UNIFORM_BUFFER, UBO_CAMERA_MATRIX, projectionMatrixUBO);
+        GL30.glBindBufferBase(GL31.GL_UNIFORM_BUFFER, UBO_CAMERA_MATRIX, GUIProjectionMatrixUBO);
     }
 
     public void resize(int width, int height) {
@@ -244,7 +246,9 @@ public class Camera {
         origin.x = -width / 2.0f;
         origin.y = -height / 2.0f;
 
-        GL45.glNamedBufferSubData(projectionMatrixUBO, 0, orthographicMatrix.setOrtho(0.0f, width, height, 0.0f, Z_NEAR, Z_FAR).get(MatrixBufferUtils.MATRIX_BUFFER));
+        GL45.glNamedBufferSubData(GUIProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(0.0f, width, height, 0.0f, Z_NEAR, Z_FAR).get(MatrixBufferUtils.MATRIX_BUFFER));
+        GL45.glNamedBufferSubData(worldProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(-width / 2.0f, width / 2.0f, height / 2.0f, -height / 2.0f, Z_NEAR, Z_FAR)
+                .get(MatrixBufferUtils.MATRIX_BUFFER));
     }
 
     public Vector2f getWorldVector(Vector2f pos) {
@@ -268,8 +272,7 @@ public class Camera {
         float cameraY = lastPosition.y + (position.y - lastPosition.y) * interpolation;
         float interpolatedZoom = lastZoom + (zoom - lastZoom) * interpolation;
 
-        MatrixUtils.translateIdentity(viewMatrix.identity(), -origin.x, -origin.y);
-        MatrixUtils.scale(viewMatrix, interpolatedZoom, interpolatedZoom);
+        MatrixUtils.scale(viewMatrix.identity(), interpolatedZoom, interpolatedZoom);
         MatrixUtils.translate(viewMatrix, -cameraX, -cameraY);
         GL45.glNamedBufferSubData(projectionViewMatrixUBO, 0, orthographicMatrix.mul(viewMatrix, projectionViewMatrix).get(MatrixBufferUtils.MATRIX_BUFFER));
     }
