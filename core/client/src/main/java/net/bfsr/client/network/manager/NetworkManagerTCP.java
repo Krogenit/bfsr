@@ -53,7 +53,9 @@ public class NetworkManagerTCP {
     }
 
     public void closeChannel() {
-        channel.close();
+        if (channel != null) {
+            channel.close();
+        }
     }
 
     public void shutdown() {
