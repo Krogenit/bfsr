@@ -19,6 +19,7 @@ public class GuiInGame extends Gui {
         shipHUD.init(this);
         miniMap.init(this);
         chat.init(this);
+        debugInfoElement.init(6, miniMap.getHeight() + 6);
     }
 
     public void addChatMessage(String message) {
@@ -60,7 +61,7 @@ public class GuiInGame extends Gui {
     public void update() {
         super.update();
         shipHUD.update();
-        if (Option.IS_DEBUG.getBoolean()) debugInfoElement.update(6, miniMap.getHeight() + 6);
+        if (Option.IS_DEBUG.getBoolean()) debugInfoElement.update();
     }
 
     @Override
