@@ -1,17 +1,21 @@
 package net.bfsr.client.network.packet.server;
 
 import io.netty.buffer.ByteBuf;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.network.packet.PacketIn;
+import net.bfsr.client.world.WorldClient;
+import net.bfsr.network.PacketOut;
+import net.bfsr.server.network.ConnectionState;
 
 import java.io.IOException;
 
-@AllArgsConstructor
-@NoArgsConstructor
-public class PacketJoinGame implements PacketIn {
+public class PacketJoinGame implements PacketIn, PacketOut {
     private long seed;
+
+    @Override
+    public void write(ByteBuf data) throws IOException {
+
+    }
 
     @Override
     public void read(ByteBuf data) throws IOException {
@@ -21,7 +25,10 @@ public class PacketJoinGame implements PacketIn {
     @Override
     public void processOnClientSide() {
         Core core = Core.get();
+        WorldClient world = new WorldClient();
+        core.setWorld(world);
+        world.setSeed(seed);
         core.setCurrentGui(null);
-        core.getWorld().setSeed(seed);
+        core.getNetworkSystem().setConnectionState(ConnectionState.PLAY);
     }
 }

@@ -161,7 +161,9 @@ public class PlayerNetworkHandler {
         this.remoteAddress = remoteAddress;
         ((MessageHandlerUDP) datagramChannel.pipeline().get("handler")).setPlayerNetworkHandler(this);
         ctx.writeAndFlush(new DefaultAddressedEnvelope<PacketOut, SocketAddress>(new PacketLoginUDPSuccess(), remoteAddress)).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+    }
 
+    public void joinGame() {
         connectionState = ConnectionState.PLAY;
         player.setNetworkHandler(this);
         world.addNewPlayer(player);
