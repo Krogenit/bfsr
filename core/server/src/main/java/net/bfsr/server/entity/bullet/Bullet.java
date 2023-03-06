@@ -20,7 +20,6 @@ import net.bfsr.util.TimeUtils;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.contact.Contact;
 import org.dyn4j.geometry.Vector2;
-import org.joml.Vector2f;
 
 import java.util.Random;
 
@@ -83,7 +82,6 @@ public abstract class Bullet extends CollisionObject {
             if (userData instanceof Ship ship) {
                 if (canDamageShip(ship)) {
                     previousAObject = ship;
-                    Vector2f position = getPosition();
                     if (damageShip(ship)) {
                         //Hull damage
                         destroyBullet(ship, contact, normal);

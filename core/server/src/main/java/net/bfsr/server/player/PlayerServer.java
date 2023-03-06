@@ -59,7 +59,7 @@ public class PlayerServer {
         return ships.get(i);
     }
 
-    public void removeShip(Ship s) {
-        ships.remove(s);
+    public void removeShip(Ship ship) {
+        ships.remove(ship);
     }
 }

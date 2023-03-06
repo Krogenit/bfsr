@@ -56,10 +56,10 @@ public abstract class World<S extends GameObject, B extends GameObject> {
 
     protected void updateShips() {
         for (int i = 0; i < ships.size(); i++) {
-            S s = ships.get(i);
-            s.update();
-            if (s.isDead()) {
-                removeShip(s, i--);
+            S ship = ships.get(i);
+            ship.update();
+            if (ship.isDead()) {
+                removeShip(ship, i--);
             }
         }
     }

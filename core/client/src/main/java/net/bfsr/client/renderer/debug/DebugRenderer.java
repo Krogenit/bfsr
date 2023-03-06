@@ -43,9 +43,12 @@ public class DebugRenderer {
     }
 
     public void render(CollisionObject collisionObject) {
-        Body body = collisionObject.getBody();
+        Vector2f position = collisionObject.getPosition();
+        render(collisionObject.getBody(), position.x, position.y);
+    }
+
+    public void render(Body body, float x, float y) {
         org.dyn4j.geometry.AABB aabb = body.createAABB();
-        Vector2f center = collisionObject.getPosition();
         double rot = Math.toDegrees(body.getTransform().getRotationAngle());
 
         GL11.glBegin(GL11.GL_LINE_LOOP);
@@ -56,10 +59,10 @@ public class DebugRenderer {
         GL11.glEnd();
 
         GL11.glBegin(GL11.GL_LINE_LOOP);
-        float x = (float) body.getLinearVelocity().x;
-        float y = (float) body.getLinearVelocity().y;
-        GL11.glVertex2d(center.x, center.y);
-        GL11.glVertex2d(x / 5.0f + center.x, y / 5.0f + center.y);
+        float velocityX = (float) body.getLinearVelocity().x;
+        float velocityY = (float) body.getLinearVelocity().y;
+        GL11.glVertex2d(x, y);
+        GL11.glVertex2d(velocityX / 5.0f + x, velocityY / 5.0f + y);
         GL11.glEnd();
 
         List<BodyFixture> fixtures = body.getFixtures();
@@ -67,7 +70,7 @@ public class DebugRenderer {
             Convex convex = bodyFixture.getShape();
             if (convex instanceof Rectangle rect) {
                 GL11.glPushMatrix();
-                GL11.glTranslated(center.x, center.y, 0);
+                GL11.glTranslated(x, y, 0);
                 GL11.glRotated(rot, 0, 0, 1);
                 GL11.glBegin(GL11.GL_LINE_LOOP);
                 for (int i = 0; i < rect.getVertices().length; i++) {
@@ -78,7 +81,7 @@ public class DebugRenderer {
                 GL11.glPopMatrix();
             } else if (convex instanceof Polygon polygon) {
                 GL11.glPushMatrix();
-                GL11.glTranslated(center.x, center.y, 0);
+                GL11.glTranslated(x, y, 0);
                 GL11.glRotated(rot, 0, 0, 1);
                 GL11.glBegin(GL11.GL_LINE_LOOP);
                 for (int i = 0; i < polygon.getVertices().length; i++) {
@@ -89,7 +92,7 @@ public class DebugRenderer {
                 GL11.glPopMatrix();
             } else if (convex instanceof Circle circle) {
                 GL11.glPushMatrix();
-                GL11.glTranslated(center.x, center.y, 0);
+                GL11.glTranslated(x, y, 0);
                 GL11.glBegin(GL11.GL_LINE_LOOP);
                 float count = 10.0f;
                 float angleAdd = MathUtils.TWO_PI / count;

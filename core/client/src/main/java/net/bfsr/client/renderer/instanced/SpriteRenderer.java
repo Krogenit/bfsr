@@ -192,14 +192,6 @@ public class SpriteRenderer {
         buffersHolder.addObjectCount(objectCount);
     }
 
-    public void addToRenderPipeLine(TextureObject textureObject, BufferType bufferType) {
-//        BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
-//        putVertices(textureObject, Core.get().getRenderer().getInterpolation(), buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
-//        putColor(textureObject.getColor(), buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
-//        putTextureHandle(textureObject.getTexture().getTextureHandle(), buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
-//        buffersHolder.incrementObjectCount();
-    }
-
     public void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin, float cos, float lastScaleX, float lastScaleY, float scaleX,
                                           float scaleY, float r, float g, float b, float a, Texture texture, BufferType bufferType) {
         BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
