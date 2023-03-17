@@ -29,7 +29,6 @@ public class BulletPlasmSmall extends Bullet {
         bodyFixture.setRestitution(1.0f);
         bodyFixture.setFilter(new BulletFilter(this));
         body.addFixture(bodyFixture);
-        body.translate(x, y);
         body.setMass(MassType.FIXED_ANGULAR_VELOCITY);
         body.setUserData(this);
         body.setBullet(true);

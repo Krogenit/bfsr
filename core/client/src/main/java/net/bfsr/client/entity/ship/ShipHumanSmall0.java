@@ -84,8 +84,7 @@ public class ShipHumanSmall0 extends Ship {
         fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         fixture.setFilter(new ShipFilter(this));
         body.addFixture(fixture);
-        recalculateMass();
-        body.translate(x, y);
+        body.setMass(MassType.NORMAL);
         body.setUserData(this);
         body.setLinearDamping(0.05f);
         body.setAngularDamping(0.005f);

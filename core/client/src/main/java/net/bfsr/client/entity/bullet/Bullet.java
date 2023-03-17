@@ -51,6 +51,7 @@ public abstract class Bullet extends CollisionObject {
         this.ship = ship;
         this.bulletSpeed = bulletSpeed;
         energy = damage.getAverageDamage();
+        init();
         setBulletVelocityAndStartTransform(x, y);
         world.addBullet(this);
     }

@@ -77,8 +77,7 @@ public class ShipEngiSmall0 extends Ship {
         fixture.setFilter(new ShipFilter(this));
         fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         body.addFixture(fixture);
-        recalculateMass();
-        body.translate(x, y);
+        body.setMass(MassType.NORMAL);
         body.setUserData(this);
         body.setLinearDamping(0.05f);
         body.setAngularDamping(0.005f);
