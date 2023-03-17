@@ -8,9 +8,9 @@ import net.bfsr.client.input.Mouse;
 import net.bfsr.client.network.packet.client.PacketCameraPosition;
 import net.bfsr.client.settings.Option;
 import net.bfsr.client.util.MatrixBufferUtils;
-import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.math.MatrixUtils;
 import net.bfsr.util.TimeUtils;
+import org.dyn4j.geometry.AABB;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.lwjgl.opengl.*;
@@ -29,7 +29,7 @@ public class Camera {
     private final Matrix4f viewMatrix = new Matrix4f();
     private final Matrix4f projectionViewMatrix = new Matrix4f();
     @Getter
-    private final AxisAlignedBoundingBox boundingBox = new AxisAlignedBoundingBox();
+    private final AABB boundingBox = new AABB(0, 0, 0, 0);
 
     @Getter
     private final Vector2f position = new Vector2f();
@@ -200,10 +200,7 @@ public class Camera {
             if (Option.CAMERA_FOLLOW_PLAYER.getBoolean()) followShip();
 
             if (position.x != lastPosition.x || position.y != lastPosition.y || lastZoom != zoom) {
-                boundingBox.setMinX(position.x + origin.x / zoom);
-                boundingBox.setMinY(position.y + origin.y / zoom);
-                boundingBox.setMaxX(position.x - origin.x / zoom);
-                boundingBox.setMaxY(position.y - origin.y / zoom);
+                boundingBox.set(position.x + origin.x / zoom, position.y + origin.y / zoom, position.x - origin.x / zoom, position.y - origin.y / zoom);
 
                 long time = System.currentTimeMillis();
                 if (time - lastSendTime > 500) {

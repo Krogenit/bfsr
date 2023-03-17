@@ -17,12 +17,15 @@ import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureGenerator;
-import net.bfsr.collision.AxisAlignedBoundingBox;
+import net.bfsr.client.renderer.texture.TextureLoader;
+import net.bfsr.client.settings.Option;
 import net.bfsr.command.Command;
 import net.bfsr.faction.Faction;
 import net.bfsr.texture.TextureRegister;
 import net.bfsr.util.DecimalUtils;
 import net.bfsr.world.World;
+import org.dyn4j.dynamics.BodyFixture;
+import org.dyn4j.geometry.AABB;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
@@ -60,10 +63,11 @@ public class WorldClient extends World<Ship, Bullet> {
                 disableLeftClickShipSelection = false;
             } else {
                 core.getGuiInGame().selectShip(null);
+                Vector2f mousePosition = Mouse.getWorldPosition(core.getRenderer().getCamera());
                 int size = ships.size();
                 for (int i = 0; i < size; i++) {
                     Ship ship = ships.get(i);
-                    if (ship.getWorldAABB().isIntersects(Mouse.getWorldPosition(core.getRenderer().getCamera()))) {
+                    if (ship.getAabb().contains(mousePosition.x, mousePosition.y)) {
                         core.getGuiInGame().selectShip(ship);
                     }
                 }
@@ -78,10 +82,11 @@ public class WorldClient extends World<Ship, Bullet> {
 
     public void onMouseRightClicked() {
         core.getGuiInGame().selectShipSecondary(null);
+        Vector2f mousePosition = Mouse.getWorldPosition(core.getRenderer().getCamera());
         int size = ships.size();
         for (int i = 0; i < size; i++) {
             Ship ship = ships.get(i);
-            if (ship.getWorldAABB().isIntersects(Mouse.getWorldPosition(core.getRenderer().getCamera()))) {
+            if (ship.getAabb().contains(mousePosition.x, mousePosition.y)) {
                 core.getGuiInGame().selectShipSecondary(ship);
             }
         }
@@ -206,11 +211,11 @@ public class WorldClient extends World<Ship, Bullet> {
 
     public void prepareEntities() {
         SpriteRenderer.INSTANCE.addTask(() -> {
-            AxisAlignedBoundingBox cameraAABB = core.getRenderer().getCamera().getBoundingBox();
+            AABB cameraAABB = core.getRenderer().getCamera().getBoundingBox();
 
             for (int i = 0, size = ships.size(); i < size; i++) {
                 Ship s = ships.get(i);
-                if (s.getWorldAABB().isIntersects(cameraAABB)) {
+                if (s.getAabb().overlaps(cameraAABB)) {
                     s.render();
                 }
             }
@@ -218,11 +223,11 @@ public class WorldClient extends World<Ship, Bullet> {
             particleManager.render();
         }, BufferType.ENTITIES_ALPHA);
         SpriteRenderer.INSTANCE.addTask(() -> {
-            AxisAlignedBoundingBox cameraAABB = core.getRenderer().getCamera().getBoundingBox();
+            AABB cameraAABB = core.getRenderer().getCamera().getBoundingBox();
 
             for (int i = 0, size = ships.size(); i < size; i++) {
                 Ship s = ships.get(i);
-                if (s.getWorldAABB().isIntersects(cameraAABB)) {
+                if (s.getAabb().overlaps(cameraAABB)) {
                     s.renderAdditive();
                 }
             }
@@ -231,7 +236,7 @@ public class WorldClient extends World<Ship, Bullet> {
 
             for (int i = 0, size = bullets.size(); i < size; i++) {
                 Bullet b = bullets.get(i);
-                if (b.getWorldAABB().isIntersects(cameraAABB)) {
+                if (b.getAabb().overlaps(cameraAABB)) {
                     b.render();
                 }
             }

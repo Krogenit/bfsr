@@ -5,7 +5,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.world.WorldClient;
-import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.util.CollisionObjectUtils;
 import net.bfsr.util.TimeUtils;
 import org.dyn4j.dynamics.Body;
@@ -33,9 +32,8 @@ public class CollisionObject extends TextureObject {
     @Setter
     protected int id;
     protected Vector2f velocity = new Vector2f();
-    protected AxisAlignedBoundingBox aabb;
     @Getter
-    protected AxisAlignedBoundingBox worldAABB;
+    protected AABB aabb = new AABB(0, 0, 0, 0);
     protected float lifeTime;
     @Getter
     protected float lastSin, lastCos;

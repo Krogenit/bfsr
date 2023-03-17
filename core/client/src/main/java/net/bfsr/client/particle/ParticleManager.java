@@ -3,7 +3,7 @@ package net.bfsr.client.particle;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.wreck.Wreck;
 import net.bfsr.client.renderer.debug.DebugRenderer;
-import net.bfsr.collision.AxisAlignedBoundingBox;
+import org.dyn4j.geometry.AABB;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,22 +45,22 @@ public class ParticleManager {
     }
 
     public void render() {
-        AxisAlignedBoundingBox cameraAABB = Core.get().getRenderer().getCamera().getBoundingBox();
+        AABB aabb = Core.get().getRenderer().getCamera().getBoundingBox();
 
         for (int i = 0, size = particlesWrecks.size(); i < size; i++) {
             Wreck wreck = particlesWrecks.get(i);
-            if (wreck.getWorldAABB().isIntersects(cameraAABB)) {
+            if (wreck.getAabb().overlaps(aabb)) {
                 wreck.render();
             }
         }
     }
 
     public void renderAdditive() {
-        AxisAlignedBoundingBox cameraAABB = Core.get().getRenderer().getCamera().getBoundingBox();
+        AABB aabb = Core.get().getRenderer().getCamera().getBoundingBox();
 
         for (int i = 0, size = particlesWrecks.size(); i < size; i++) {
             Wreck wreck = particlesWrecks.get(i);
-            if (wreck.getWorldAABB().isIntersects(cameraAABB)) {
+            if (wreck.getAabb().overlaps(aabb)) {
                 wreck.renderAdditive();
             }
         }
