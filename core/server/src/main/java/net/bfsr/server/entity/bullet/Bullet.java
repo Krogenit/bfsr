@@ -110,7 +110,6 @@ public abstract class Bullet extends CollisionObject {
                 }
             } else if (userData instanceof Wreck wreck) {
                 wreck.damage(damage.getBulletDamageHull());
-                destroyBullet(wreck, contact, normal);
             } else if (userData instanceof ShipWreckDamagable shipWreckDamagable) {
                 shipWreckDamagable.attackFromBullet(this, contact, normal);
                 setDead();
