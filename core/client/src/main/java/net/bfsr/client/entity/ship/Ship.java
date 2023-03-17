@@ -82,7 +82,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     @Getter
     protected String name;
-    private StringObject stringObject;
+    private final StringObject stringObject = new StringObject(FontType.XOLONIUM, 14, StringOffsetType.CENTERED);
 
     private final List<Vector2f> weaponPositions = new ArrayList<>();
     @Getter
@@ -411,8 +411,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     protected void createName() {
         if (name != null) {
-            stringObject = new StringObject(FontType.XOLONIUM, name, 14, StringOffsetType.CENTERED);
-            stringObject.compile();
+            stringObject.update(name);
         }
     }
 
