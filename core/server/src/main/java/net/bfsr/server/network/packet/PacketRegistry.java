@@ -8,6 +8,9 @@ import net.bfsr.network.Packet;
 import net.bfsr.server.network.packet.client.*;
 import net.bfsr.server.network.packet.common.*;
 import net.bfsr.server.network.packet.server.*;
+import net.bfsr.server.network.packet.server.entity.ship.PacketShipSetSpawned;
+import net.bfsr.server.network.packet.server.entity.wreck.PacketShipWreck;
+import net.bfsr.server.network.packet.server.entity.wreck.PacketSyncDamage;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -51,6 +54,9 @@ public class PacketRegistry {
         registerPacket(PacketSpawnBullet.class);
         registerPacket(PacketSpawnShip.class);
         registerPacket(PacketSpawnWreck.class);
+        registerPacket(PacketShipWreck.class);
+        registerPacket(PacketSyncDamage.class);
+        registerPacket(PacketShipSetSpawned.class);
     }
 
     private void registerPacket(Class<? extends Packet> packetClass) {

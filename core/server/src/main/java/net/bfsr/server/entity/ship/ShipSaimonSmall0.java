@@ -1,5 +1,7 @@
 package net.bfsr.server.entity.ship;
 
+import clipper2.core.PathD;
+import clipper2.core.PointD;
 import net.bfsr.component.Armor;
 import net.bfsr.component.ArmorPlate;
 import net.bfsr.component.Engine;
@@ -11,19 +13,23 @@ import net.bfsr.component.shield.ShieldRegistry;
 import net.bfsr.config.component.ShieldConfig;
 import net.bfsr.entity.ship.ShipType;
 import net.bfsr.math.Direction;
-import net.bfsr.physics.PhysicsUtils;
-import net.bfsr.server.collision.filter.ShipFilter;
 import net.bfsr.server.component.Shield;
+import net.bfsr.server.damage.DamageMask;
 import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.world.WorldServer;
+import net.bfsr.texture.TextureRegister;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.Polygon;
+import org.dyn4j.geometry.Convex;
+import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.geometry.decompose.SweepLine;
 import org.joml.Vector2f;
+
+import java.util.List;
 
 public class ShipSaimonSmall0 extends Ship {
     public ShipSaimonSmall0(WorldServer world, float x, float y, float rotation, boolean spawned) {
-        super(world, x, y, rotation, 10, 10, spawned);
+        super(world, x, y, rotation, 12.8f, 12.8f, spawned, TextureRegister.shipSaimonSmall0.ordinal());
     }
 
     @Override
@@ -87,27 +93,14 @@ public class ShipSaimonSmall0 extends Ship {
         vertices[19] = new Vector2(-4.90f, 1.65f);
         vertices[20] = new Vector2(-3.23f, 1.28f);
 
-        vertices = new Vector2[6];
-        vertices[0] = new Vector2(-3.3f, -0.9f);
-        vertices[1] = new Vector2(4.0f, -0.9f);
-        vertices[2] = new Vector2(5.06f, -0.05f);
-        vertices[3] = new Vector2(4.0f, 0.74f);
-        vertices[4] = new Vector2(-3.3f, 0.74f);
-        vertices[5] = new Vector2(-3.9f, -0.05f);
-        fixture = new BodyFixture(new Polygon(vertices));
-        fixture.setFilter(new ShipFilter(this));
-        fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-        body.addFixture(fixture);
+        PathD pathD = new PathD(vertices.length);
+        for (int i = 0; i < vertices.length; i++) {
+            Vector2 vector2 = vertices[i];
+            pathD.add(new PointD(vector2.x, vector2.y));
+        }
+        contours.add(pathD);
 
-        vertices = new Vector2[4];
-        vertices[0] = new Vector2(-0.4f, -0.9f);
-        vertices[1] = new Vector2(-0.9f, -3.1f);
-        vertices[2] = new Vector2(1.4f, -3.1f);
-        vertices[3] = new Vector2(1.4f, -0.9f);
-        fixture = new BodyFixture(new Polygon(vertices));
-        fixture.setFilter(new ShipFilter(this));
-        fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-        body.addFixture(fixture);
+        mask = new DamageMask(128, 128);
 
         SweepLine sweepLine = new SweepLine();
         List<Convex> convexes = sweepLine.decompose(vertices);

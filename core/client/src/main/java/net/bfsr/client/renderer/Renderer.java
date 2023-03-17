@@ -91,6 +91,7 @@ public class Renderer {
         GL11.glEnable(GL11.GL_CULL_FACE);
         GL11.glCullFace(GL11.GL_BACK);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
 
         GL11.glClearColor(0.05F, 0.1F, 0.2F, 1.0F);
     }
@@ -176,11 +177,17 @@ public class Renderer {
         particleRenderer.onExitToMainMenu();
     }
 
-    public void clear() {
-        spriteRenderer.clear();
-    }
-
     public void increaseDrawCalls() {
         drawCalls++;
+    }
+
+    public void reloadShaders() {
+        shader.delete();
+        shader.load();
+        shader.init();
+    }
+
+    public void clear() {
+        spriteRenderer.clear();
     }
 }

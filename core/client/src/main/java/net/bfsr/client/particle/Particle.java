@@ -111,6 +111,7 @@ public class Particle extends TextureObject {
                 interpolation, vertexBuffer, vertexBufferIndex);
         SpriteRenderer.INSTANCE.putColor(lastColor, color, materialBuffer, materialBufferIndex, interpolation);
         SpriteRenderer.INSTANCE.putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
+        SpriteRenderer.INSTANCE.putMaterialData(0, 0.0f, 0.0f, materialBuffer, materialBufferIndex);
     }
 
     public void onRemoved() {

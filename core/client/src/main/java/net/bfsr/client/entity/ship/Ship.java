@@ -1,11 +1,14 @@
 package net.bfsr.client.entity.ship;
 
+import clipper2.core.PathsD;
 import lombok.Getter;
 import lombok.Setter;
+import net.bfsr.client.collision.filter.ShipFilter;
 import net.bfsr.client.component.Damage;
 import net.bfsr.client.component.Shield;
 import net.bfsr.client.component.weapon.WeaponSlot;
 import net.bfsr.client.core.Core;
+import net.bfsr.client.damage.Damagable;
 import net.bfsr.client.entity.CollisionObject;
 import net.bfsr.client.entity.wreck.Wreck;
 import net.bfsr.client.input.Keyboard;
@@ -19,6 +22,7 @@ import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.font.string.StringObject;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
+import net.bfsr.client.renderer.texture.DamageMaskTexture;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.settings.Option;
@@ -54,7 +58,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public abstract class Ship extends CollisionObject implements TOITransformSavable {
+public abstract class Ship extends CollisionObject implements Damagable {
     private static final Texture JUMP_TEXTURE = TextureLoader.getTexture(TextureRegister.particleJump);
 
     @Getter
@@ -107,6 +111,13 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     private final List<Damage> damages;
 
     private Direction remoteMoveDirectionForEngineParticles;
+    @Getter
+    @Setter
+    protected PathsD contours = new PathsD();
+    @Getter
+    protected DamageMaskTexture maskTexture;
+    @Getter
+    protected List<BodyFixture> fixturesToAdd = new ArrayList<>();
 
     protected Ship(WorldClient world, int id, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b,
                    TextureRegister texture, TextureRegister textureDamage) {
@@ -263,6 +274,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         Vector2f position = getPosition();
         lastRotation = getRotation();
         lastPosition.set(position.x, position.y);
+        maskTexture.updateEffects();
 
         if (collisionTimer > 0) collisionTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
 
@@ -280,6 +292,14 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
             if (sparksTimer <= 0) {
                 createSpark();
                 sparksTimer = 25;
+            }
+        } else {
+            if (fixturesToAdd.size() > 0) {
+                body.removeAllFixtures();
+                for (int i = 0; i < fixturesToAdd.size(); i++) {
+                    body.addFixture(fixturesToAdd.get(i));
+                }
+                fixturesToAdd.clear();
             }
         }
     }
@@ -405,8 +425,12 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         return true;
     }
 
-    protected void onHullDamage() {
+    public void onHullDamage() {}
 
+    @Override
+    public void setupFixture(BodyFixture bodyFixture) {
+        bodyFixture.setFilter(new ShipFilter(this));
+        bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
     }
 
     protected void createName() {
@@ -436,12 +460,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     public void renderAdditive() {
         if (spawned) {
-            int size = damages.size();
-            for (int i = 0; i < size; i++) {
-                Damage damage = damages.get(i);
-                damage.renderEffects();
-            }
-
             renderGunSlotsAdditive();
             renderShield();
         } else {
@@ -456,18 +474,12 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
             Vector2f position = getPosition();
 
             SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
-                    color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
+                    color.x, color.y, color.z, color.w, texture, maskTexture, BufferType.ENTITIES_ALPHA);
 
             if (hull.getHull() < hull.getMaxHull()) {
                 float hp = hull.getHull() / hull.getMaxHull();
                 SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
-                        1.0f, 1.0f, 1.0f, 1.0f - hp, textureDamage, BufferType.ENTITIES_ALPHA);
-            }
-
-            int size = damages.size();
-            for (int i = 0; i < size; i++) {
-                Damage damage = damages.get(i);
-                damage.render();
+                        1.0f, 1.0f, 1.0f, 1.0f - hp, textureDamage, maskTexture, BufferType.ENTITIES_ALPHA);
             }
 
             renderGunSlots();
@@ -598,9 +610,17 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     }
 
     @Override
+    public void destroy() {
+
+    }
+
+    @Override
     public void setDead() {
         super.setDead();
         createDestroyParticles();
+        if (maskTexture != null) {
+            maskTexture.delete();
+        }
     }
 
     @Override

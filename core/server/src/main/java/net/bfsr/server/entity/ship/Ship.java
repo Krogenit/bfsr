@@ -1,5 +1,7 @@
 package net.bfsr.server.entity.ship;
 
+import clipper2.core.Path64;
+import clipper2.core.PathsD;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.component.Armor;
@@ -14,28 +16,34 @@ import net.bfsr.faction.Faction;
 import net.bfsr.math.Direction;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
+import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.server.MainServer;
 import net.bfsr.server.ai.Ai;
 import net.bfsr.server.ai.AiAggressiveType;
 import net.bfsr.server.ai.task.AiAttackTarget;
 import net.bfsr.server.ai.task.AiSearchTarget;
+import net.bfsr.server.collision.filter.ShipFilter;
 import net.bfsr.server.component.Shield;
 import net.bfsr.server.component.weapon.WeaponSlot;
+import net.bfsr.server.damage.Damagable;
+import net.bfsr.server.damage.DamageMask;
+import net.bfsr.server.damage.DamageUtils;
 import net.bfsr.server.entity.CollisionObject;
 import net.bfsr.server.entity.wreck.Wreck;
 import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.network.packet.common.PacketObjectPosition;
 import net.bfsr.server.network.packet.common.PacketShipEngine;
-import net.bfsr.server.network.packet.server.*;
+import net.bfsr.server.network.packet.server.PacketDestroyingShip;
+import net.bfsr.server.network.packet.server.PacketRemoveObject;
+import net.bfsr.server.network.packet.server.PacketShipInfo;
+import net.bfsr.server.network.packet.server.PacketSpawnShip;
 import net.bfsr.server.player.PlayerServer;
 import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.CollisionObjectUtils;
 import net.bfsr.util.TimeUtils;
-import org.dyn4j.TOITransformSavable;
 import org.dyn4j.dynamics.Body;
+import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.contact.Contact;
-import org.dyn4j.geometry.MassType;
-import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
@@ -43,7 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public abstract class Ship extends CollisionObject implements TOITransformSavable {
+public abstract class Ship extends CollisionObject implements Damagable {
     @Getter
     @Setter
     private Armor armor;
@@ -68,6 +76,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     private Cargo cargo;
 
     @Getter
+    @Setter
     protected String name;
 
     private final List<Vector2f> weaponPositions = new ArrayList<>();
@@ -99,8 +108,17 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     private final Ai ai;
     @Getter
     private Direction lastMoveDir = Direction.STOP;
+    @Getter
+    @Setter
+    protected PathsD contours = new PathsD();
+    @Getter
+    protected DamageMask mask;
+    @Getter
+    protected List<BodyFixture> fixturesToAdd = new ArrayList<>();
+    @Getter
+    private final int textureIndex;
 
-    protected Ship(WorldServer world, float x, float y, float rotation, float scaleX, float scaleY, boolean spawned) {
+    protected Ship(WorldServer world, float x, float y, float rotation, float scaleX, float scaleY, boolean spawned, int textureIndex) {
         super(world, world.getNextId(), x, y, rotation, scaleX, scaleY);
         RotationHelper.angleToVelocity(this.rotation + MathUtils.PI, -jumpSpeed * 6.0f, jumpVelocity);
         this.jumpPosition.set(jumpVelocity.x / 60.0f * (64.0f + scale.x * 0.1f) * -0.5f + x, jumpVelocity.y / 60.0f * (64.0f + scale.y * 0.1f) * -0.5f + y);
@@ -339,14 +357,26 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
         float reducedHullDamage = armor.reduceDamageByArmor(armorDamage, hullDamage, dir);
         hull.damage(reducedHullDamage);
-        onHullDamage();
+        onHullDamage(contactPoint);
         return true;
     }
 
-    protected void onHullDamage() {
+    protected void onHullDamage(Vector2f contactPoint) {
         if (hull.getHull() <= 0) {
             setDestroying();
             MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketDestroyingShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        } else {
+            float polygonRadius = 1.25f;
+            float radius = 3.0f;
+
+            double x = body.getTransform().getTranslationX();
+            double y = body.getTransform().getTranslationY();
+            double sin = body.getTransform().getSint();
+            double cos = body.getTransform().getCost();
+
+            Path64 clip = DamageUtils.createCirclePath(contactPoint.x - x, contactPoint.y - y, -sin, cos, 12, polygonRadius);
+
+            DamageUtils.damage(this, contactPoint.x, contactPoint.y, clip, radius);
         }
     }
 

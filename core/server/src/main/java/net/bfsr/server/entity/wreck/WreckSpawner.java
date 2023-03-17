@@ -8,7 +8,6 @@ import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.network.packet.server.PacketSpawnWreck;
 import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.ObjectPool;
-import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
 import java.util.Random;
@@ -27,15 +26,15 @@ public final class WreckSpawner {
         Random rand = w.getRand();
         spawnDamageDebris(w, rand.nextInt(3), pos.x, pos.y, velocity.x * 0.025f, velocity.y * 0.025f, 1.0f);
         spawnDamageWrecks(w, rand.nextInt(2), pos.x, pos.y, velocity.x * 0.25f, velocity.y * 0.25f);
-        Vector2 bodyVelocity = ship.getBody().getLinearVelocity();
-        float rot = ship.getRotation();
-        if (rand.nextInt(2) == 0) {
-            spawnShipWreck(ship, 0, pos.x, pos.y, rot, -rot * 3.0f + (float) bodyVelocity.x * 0.4f, -rot * 3.0f + (float) bodyVelocity.y * 0.4f, 750.0f);
-        }
-
-        if (rand.nextInt(2) == 0) {
-            spawnShipWreck(ship, 1, pos.x, pos.y, rot, rot * 3.0f - (float) bodyVelocity.x * 0.4f, rot * 3.0f - (float) bodyVelocity.y * 0.4f, 750.0f);
-        }
+//        Vector2 bodyVelocity = ship.getBody().getLinearVelocity();
+//        float rot = ship.getRotation();
+//        if (rand.nextInt(2) == 0) {
+//            spawnShipWreck(ship, 0, pos.x, pos.y, rot, -rot * 3.0f + (float) bodyVelocity.x * 0.4f, -rot * 3.0f + (float) bodyVelocity.y * 0.4f, 750.0f);
+//        }
+//
+//        if (rand.nextInt(2) == 0) {
+//            spawnShipWreck(ship, 1, pos.x, pos.y, rot, rot * 3.0f - (float) bodyVelocity.x * 0.4f, rot * 3.0f - (float) bodyVelocity.y * 0.4f, 750.0f);
+//        }
     }
 
     public static void spawnShipWreck(Ship s, int wreckIndex, float x, float y, float angle, float velocityX, float velocityY, float lifeTime) {

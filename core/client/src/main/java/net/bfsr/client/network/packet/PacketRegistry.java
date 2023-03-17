@@ -7,6 +7,9 @@ import gnu.trove.map.hash.TObjectIntHashMap;
 import net.bfsr.client.network.packet.client.*;
 import net.bfsr.client.network.packet.common.*;
 import net.bfsr.client.network.packet.server.*;
+import net.bfsr.client.network.packet.server.entity.ship.PacketShipSetSpawned;
+import net.bfsr.client.network.packet.server.entity.wreck.PacketShipWreck;
+import net.bfsr.client.network.packet.server.entity.wreck.PacketSyncDamage;
 import net.bfsr.network.Packet;
 
 import java.lang.reflect.InvocationTargetException;
@@ -51,6 +54,9 @@ public class PacketRegistry {
         registerPacket(PacketSpawnBullet.class);
         registerPacket(PacketSpawnShip.class);
         registerPacket(PacketSpawnWreck.class);
+        registerPacket(PacketShipWreck.class);
+        registerPacket(PacketSyncDamage.class);
+        registerPacket(PacketShipSetSpawned.class);
     }
 
     private void registerPacket(Class<? extends Packet> packetClass) {

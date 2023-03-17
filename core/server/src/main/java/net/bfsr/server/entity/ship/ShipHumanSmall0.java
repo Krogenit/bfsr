@@ -1,5 +1,7 @@
 package net.bfsr.server.entity.ship;
 
+import clipper2.core.PathD;
+import clipper2.core.PointD;
 import net.bfsr.component.Armor;
 import net.bfsr.component.ArmorPlate;
 import net.bfsr.component.Engine;
@@ -11,19 +13,20 @@ import net.bfsr.component.shield.ShieldRegistry;
 import net.bfsr.config.component.ShieldConfig;
 import net.bfsr.entity.ship.ShipType;
 import net.bfsr.math.Direction;
-import net.bfsr.physics.PhysicsUtils;
-import net.bfsr.server.collision.filter.ShipFilter;
 import net.bfsr.server.component.Shield;
+import net.bfsr.server.damage.DamageMask;
 import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.world.WorldServer;
+import net.bfsr.texture.TextureRegister;
 import org.dyn4j.dynamics.BodyFixture;
+import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
 public class ShipHumanSmall0 extends Ship {
     public ShipHumanSmall0(WorldServer world, float x, float y, float rotation, boolean spawned) {
-        super(world, x, y, rotation, 6.4f, 6.4f, spawned);
+        super(world, x, y, rotation, 6.9423f, 6.9423f, spawned, TextureRegister.shipHumanSmall0.ordinal());
     }
 
     @Override
@@ -70,6 +73,16 @@ public class ShipHumanSmall0 extends Ship {
         vertices[4] = new Vector2(2.7f, 0.1f);
         vertices[5] = new Vector2(0.6f, 3.1f);
         vertices[6] = new Vector2(-1.0f, 3.1f);
+
+        PathD pathD = new PathD(vertices.length);
+        for (int i = 0; i < vertices.length; i++) {
+            Vector2 vector2 = vertices[i];
+            pathD.add(new PointD(vector2.x, vector2.y));
+        }
+        contours.add(pathD);
+
+        mask = new DamageMask(128, 128);
+
         BodyFixture fixture = new BodyFixture(new Polygon(vertices));
         setupFixture(fixture);
         body.addFixture(fixture);

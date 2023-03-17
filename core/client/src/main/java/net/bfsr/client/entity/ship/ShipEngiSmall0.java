@@ -1,11 +1,13 @@
 package net.bfsr.client.entity.ship;
 
+import clipper2.core.PathD;
+import clipper2.core.PointD;
 import net.bfsr.client.collision.filter.ShipFilter;
 import net.bfsr.client.component.Damage;
 import net.bfsr.client.component.Shield;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
-import net.bfsr.client.renderer.texture.TextureRegister;
+import net.bfsr.client.renderer.texture.DamageMaskTexture;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.component.Armor;
 import net.bfsr.component.ArmorPlate;
@@ -23,13 +25,15 @@ import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.texture.TextureRegister;
 import net.bfsr.util.CollisionObjectUtils;
 import org.dyn4j.dynamics.BodyFixture;
+import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
+import org.lwjgl.BufferUtils;
 
 public class ShipEngiSmall0 extends Ship {
     public ShipEngiSmall0(WorldClient world, int id, float x, float y, float rotation) {
-        super(world, id, x, y, rotation, 7.5f, 7.5f, 0.8f, 1.0f, 0.5f, TextureRegister.shipEngiSmall0, TextureRegister.shipEngiSmall0Damage);
+        super(world, id, x, y, rotation, 13.913f, 13.913f, 0.8f, 1.0f, 0.5f, TextureRegister.shipEngiSmall0, TextureRegister.shipEngiSmall0Damage);
         addDamage(new Damage(this, 0.8f, 0, new Vector2f(-1.0f, 1.5f), 0.08f));
         addDamage(new Damage(this, 0.6f, 0, new Vector2f(0.5f, -1.2f), 0.08f));
         addDamage(new Damage(this, 0.4f, 1, new Vector2f(-1.5f, -0), 0.055f));
@@ -73,6 +77,17 @@ public class ShipEngiSmall0 extends Ship {
         vertices[4] = new Vector2(3.6f, 0.55f);
         vertices[5] = new Vector2(1.0f, 2.0f);
         vertices[6] = new Vector2(-1.7f, 2.0f);
+
+        PathD pathD = new PathD(vertices.length);
+        for (int i = 0; i < vertices.length; i++) {
+            Vector2 vector2 = vertices[i];
+            pathD.add(new PointD(vector2.x, vector2.y));
+        }
+        contours.add(pathD);
+
+        maskTexture = new DamageMaskTexture(texture.getWidth(), texture.getHeight(), BufferUtils.createByteBuffer(texture.getWidth() * texture.getHeight()));
+        maskTexture.createWhiteMask();
+
         BodyFixture fixture = new BodyFixture(new Polygon(vertices));
         fixture.setFilter(new ShipFilter(this));
         fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);

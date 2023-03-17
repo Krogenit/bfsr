@@ -8,6 +8,10 @@ out Data {
     vec4 color;
     flat uvec2 textureHandle;
     flat bool useTexture;
+    flat bool useMask;
+    flat uvec2 maskTextureHandle;
+    flat float fireAmount;
+    flat float fireUVAnimation;
 } out_Data;
 
 layout(std140, binding = UBO_CAMERA_MATRIX) uniform ProjectionViewMatrix {
@@ -25,4 +29,8 @@ void main() {
     out_Data.textureCoords = in_PositionUV.zw;
     out_Data.textureHandle = material.textureHandle;
     out_Data.useTexture = material.useTexture;
+    out_Data.useMask = material.useMask;
+    out_Data.maskTextureHandle = material.maskTextureHandle;
+    out_Data.fireAmount = material.fireAmount;
+    out_Data.fireUVAnimation = material.fireUVAnimation;
 }

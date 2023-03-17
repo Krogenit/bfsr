@@ -15,15 +15,15 @@ import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.entity.ship.ShipEngiSmall0;
 import net.bfsr.server.entity.ship.ShipHumanSmall0;
 import net.bfsr.server.entity.ship.ShipSaimonSmall0;
+import net.bfsr.server.entity.wreck.ShipWreckDamagable;
 import net.bfsr.server.entity.wreck.Wreck;
 import net.bfsr.server.network.packet.server.PacketOpenGui;
 import net.bfsr.server.player.PlayerServer;
 import net.bfsr.world.World;
+import org.dyn4j.dynamics.BodyFixture;
 import org.joml.Vector2f;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class WorldServer extends World<Ship, Bullet> {
     public static final float PACKET_SPAWN_DISTANCE = 600;
@@ -36,6 +36,8 @@ public class WorldServer extends World<Ship, Bullet> {
     private final long seed;
     @Getter
     private final List<Wreck> particles = new ArrayList<>();
+    private final List<ShipWreckDamagable> shipWrecks = new ArrayList<>();
+    private final Queue<ShipWreckDamagable> damagesToAdd = new LinkedList<>();
 
     private float timer;
 
@@ -58,21 +60,19 @@ public class WorldServer extends World<Ship, Bullet> {
             lastFaction = s.getFaction();
         }
 
-        if (botCount < 2 || sameFaction
+        if (botCount < 3 || sameFaction
 //				|| --timer <= 0
         ) {
             timer = 600;
-            int maxCount = 20;
+            int maxCount = 1;
             int count = maxCount;
 
-            Vector2f pos = new Vector2f(-150, 0);
+            Vector2f pos = new Vector2f(-50, 0);
             Ship ship;
-            float angle = 0.1f;
             if (sameFaction && lastFaction == Faction.HUMAN) count = count - botCount;
             for (int i = 0; i < count; i++) {
-                pos.x = rand.nextInt(1) - 250;
+                pos.x = rand.nextInt(1) - 150;
                 pos.y = rand.nextInt(100) - 50;
-//				pos = RotationHelper.rotate(angle, pos.x, pos.y);
                 ship = new ShipHumanSmall0(this, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, false);
                 ship.init();
                 ship.setFaction(Faction.HUMAN);
@@ -87,14 +87,11 @@ public class WorldServer extends World<Ship, Bullet> {
                 ship.sendSpawnPacket();
             }
 
-//			pos = RotationHelper.rotate((float) (Math.PI * 2f / 3f), pos.x, pos.y);
-            pos = new Vector2f(0, 0);
             count = maxCount;
             if (sameFaction && lastFaction == Faction.SAIMON) count = count - botCount;
             for (int i = 0; i < count; i++) {
-                pos.y = rand.nextInt(1) - 350;
+                pos.y = rand.nextInt(1) - 50;
                 pos.x = rand.nextInt(100) - 50;
-//				pos = RotationHelper.rotate(angle, pos.x, pos.y);
                 ship = new ShipSaimonSmall0(this, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, false);
                 ship.init();
                 ship.setFaction(Faction.SAIMON);
@@ -109,14 +106,11 @@ public class WorldServer extends World<Ship, Bullet> {
                 ship.sendSpawnPacket();
             }
 
-//			pos = RotationHelper.rotate((float) (Math.PI * 2f / 3f), pos.x, pos.y);
-            pos = new Vector2f(150, 0);
             count = maxCount;
             if (sameFaction && lastFaction == Faction.ENGI) count = count - botCount;
             for (int i = 0; i < count; i++) {
-                pos.x = rand.nextInt(1) + 250;
+                pos.x = rand.nextInt(1) + 50;
                 pos.y = rand.nextInt(100) - 50;
-//				pos = RotationHelper.rotate(angle, pos.x, pos.y);
                 ship = new ShipEngiSmall0(this, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, false);
                 ship.init();
                 ship.setFaction(Faction.ENGI);
@@ -135,8 +129,40 @@ public class WorldServer extends World<Ship, Bullet> {
 
     @Override
     public void update() {
-        super.update();
         spawnShips();
+
+        while (damagesToAdd.size() > 0) {
+            ShipWreckDamagable shipWreckDamagable = damagesToAdd.poll();
+            shipWrecks.add(shipWreckDamagable);
+            addPhysicObject(shipWreckDamagable);
+        }
+
+        for (int i = 0; i < shipWrecks.size(); i++) {
+            ShipWreckDamagable shipWreckDamagable = shipWrecks.get(i);
+            shipWreckDamagable.update();
+            if (shipWreckDamagable.isDead()) {
+                shipWrecks.remove(i--);
+                removePhysicObject(shipWreckDamagable);
+            } else if (shipWreckDamagable.getFixturesToAdd().size() > 0) {
+                shipWreckDamagable.getBody().removeAllFixtures();
+                List<BodyFixture> fixturesToAdd = shipWreckDamagable.getFixturesToAdd();
+                while (fixturesToAdd.size() > 0) {
+                    shipWreckDamagable.getBody().addFixture(fixturesToAdd.remove(0));
+                }
+
+                shipWreckDamagable.getBody().updateMass();
+            }
+        }
+
+        super.update();
+    }
+
+    @Override
+    protected void postPhysicsUpdate() {
+        super.postPhysicsUpdate();
+        for (int i = 0; i < shipWrecks.size(); i++) {
+            shipWrecks.get(i).postPhysicsUpdate();
+        }
     }
 
     @Override
@@ -169,6 +195,10 @@ public class WorldServer extends World<Ship, Bullet> {
                 player.getNetworkHandler().sendUDPPacket(new PacketOpenGui(GuiType.DESTROYED, attacker));
             }
         }
+    }
+
+    public void addDamage(ShipWreckDamagable shipWreckDamagable) {
+        damagesToAdd.add(shipWreckDamagable);
     }
 
     public void addWreck(Wreck wreck) {

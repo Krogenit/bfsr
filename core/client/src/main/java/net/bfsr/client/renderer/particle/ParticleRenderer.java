@@ -36,8 +36,8 @@ public class ParticleRenderer {
 
     public ParticleRenderer() {
         for (int i = 0; i < RENDER_LAYERS.length; i++) {
-            materialBuffers[RENDER_LAYERS[i].ordinal()] = BufferUtils.createByteBuffer(START_PARTICLE_COUNT << 5);
-            vertexBuffers[RENDER_LAYERS[i].ordinal()] = BufferUtils.createFloatBuffer(START_PARTICLE_COUNT << 4);
+            materialBuffers[RENDER_LAYERS[i].ordinal()] = BufferUtils.createByteBuffer(START_PARTICLE_COUNT * SpriteRenderer.MATERIAL_DATA_SIZE);
+            vertexBuffers[RENDER_LAYERS[i].ordinal()] = BufferUtils.createFloatBuffer(START_PARTICLE_COUNT * SpriteRenderer.VERTEX_DATA_SIZE);
             particlesByRenderLayer[RENDER_LAYERS[i].ordinal()] = new ArrayList<>(256);
         }
 
@@ -64,7 +64,7 @@ public class ParticleRenderer {
             int newDataSize = particles.size();
 
             ByteBuffer materialBuffer = materialBuffers[renderLayer.ordinal()];
-            while (materialBuffer.capacity() < newDataSize << 5) {
+            while (materialBuffer.capacity() < newDataSize * SpriteRenderer.MATERIAL_DATA_SIZE) {
                 materialBuffer = BufferUtils.createByteBuffer(materialBuffer.capacity() << 1);
                 materialBuffers[renderLayer.ordinal()] = materialBuffer;
                 resized = true;
@@ -73,7 +73,7 @@ public class ParticleRenderer {
             materialBuffer.clear();
 
             FloatBuffer vertexBuffer = vertexBuffers[renderLayer.ordinal()];
-            while (vertexBuffer.capacity() < newDataSize << 4) {
+            while (vertexBuffer.capacity() < newDataSize * SpriteRenderer.VERTEX_DATA_SIZE) {
                 vertexBuffer = BufferUtils.createFloatBuffer(vertexBuffer.capacity() << 1);
                 vertexBuffers[renderLayer.ordinal()] = vertexBuffer;
                 resized = true;
@@ -112,19 +112,21 @@ public class ParticleRenderer {
             for (int i = 0; i < taskCount; i++) {
                 ParticlesStoreTask backgroundParticlesStoreTask = backgroundParticlesStoreTasks[i];
 
-                backgroundParticlesStoreTask.update(backgroundAlphaBufferIndex, backgroundAdditiveBufferIndex, backgroundAlphaParticlesStartIndex, backgroundAlphaParticlesEndIndex,
-                        backgroundAdditiveParticlesStartIndex, backgroundAdditiveParticlesEndIndex);
+                backgroundParticlesStoreTask.update(backgroundAlphaBufferIndex, backgroundAdditiveBufferIndex, backgroundAlphaParticlesStartIndex,
+                        backgroundAlphaParticlesEndIndex, backgroundAdditiveParticlesStartIndex, backgroundAdditiveParticlesEndIndex);
 
                 backgroundTaskFutures[i] = SpriteRenderer.INSTANCE.addTask(backgroundParticlesStoreTask);
 
-                backgroundAlphaBufferIndex += backgroundAlphaParticlesPerTask << 4;
-                backgroundAdditiveBufferIndex += backgroundAdditiveParticlesPerTask << 4;
+                backgroundAlphaBufferIndex += backgroundAlphaParticlesPerTask * SpriteRenderer.VERTEX_DATA_SIZE;
+                backgroundAdditiveBufferIndex += backgroundAdditiveParticlesPerTask * SpriteRenderer.VERTEX_DATA_SIZE;
 
                 backgroundAlphaParticlesStartIndex += backgroundAlphaParticlesPerTask;
-                backgroundAlphaParticlesEndIndex = Math.min(backgroundAlphaParticlesEndIndex + backgroundAlphaParticlesPerTask, getParticles(RenderLayer.BACKGROUND_ALPHA_BLENDED).size());
+                backgroundAlphaParticlesEndIndex = Math.min(backgroundAlphaParticlesEndIndex + backgroundAlphaParticlesPerTask,
+                        getParticles(RenderLayer.BACKGROUND_ALPHA_BLENDED).size());
 
                 backgroundAdditiveParticlesStartIndex += backgroundAdditiveParticlesPerTask;
-                backgroundAdditiveParticlesEndIndex = Math.min(backgroundAdditiveParticlesEndIndex + backgroundAdditiveParticlesPerTask, getParticles(RenderLayer.BACKGROUND_ADDITIVE).size());
+                backgroundAdditiveParticlesEndIndex = Math.min(backgroundAdditiveParticlesEndIndex + backgroundAdditiveParticlesPerTask,
+                        getParticles(RenderLayer.BACKGROUND_ADDITIVE).size());
             }
         } else {
             ParticlesStoreTask backgroundParticlesStoreTask = backgroundParticlesStoreTasks[0];
@@ -147,12 +149,13 @@ public class ParticleRenderer {
             for (int i = 0; i < taskCount; i++) {
                 ParticlesStoreTask particlesStoreTask = particlesStoreTasks[i];
 
-                particlesStoreTask.update(alphaBufferIndex, additiveBufferIndex, alphaParticlesStartIndex, alphaParticlesEndIndex, additiveParticlesStartIndex, additiveParticlesEndIndex);
+                particlesStoreTask.update(alphaBufferIndex, additiveBufferIndex, alphaParticlesStartIndex, alphaParticlesEndIndex, additiveParticlesStartIndex,
+                        additiveParticlesEndIndex);
 
                 taskFutures[i] = SpriteRenderer.INSTANCE.addTask(particlesStoreTasks[i]);
 
-                alphaBufferIndex += alphaParticlesPerTask << 4;
-                additiveBufferIndex += additiveParticlesPerTask << 4;
+                alphaBufferIndex += alphaParticlesPerTask * SpriteRenderer.VERTEX_DATA_SIZE;
+                additiveBufferIndex += additiveParticlesPerTask * SpriteRenderer.VERTEX_DATA_SIZE;
 
                 alphaParticlesStartIndex += alphaParticlesPerTask;
                 alphaParticlesEndIndex = Math.min(alphaParticlesEndIndex + alphaParticlesPerTask, getParticles(RenderLayer.DEFAULT_ALPHA_BLENDED).size());
@@ -162,7 +165,8 @@ public class ParticleRenderer {
             }
         } else {
             ParticlesStoreTask particlesStoreTask = particlesStoreTasks[0];
-            particlesStoreTask.update(alphaBufferIndex, additiveBufferIndex, alphaParticlesStartIndex, alphaParticlesEndIndex, additiveParticlesStartIndex, additiveParticlesEndIndex);
+            particlesStoreTask.update(alphaBufferIndex, additiveBufferIndex, alphaParticlesStartIndex, alphaParticlesEndIndex, additiveParticlesStartIndex,
+                    additiveParticlesEndIndex);
             particlesStoreTask.run();
         }
     }
