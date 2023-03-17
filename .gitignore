@@ -8,5 +8,8 @@ gradlew
 gradlew.bat
 /gradle/
 /core/client/out/
+/core/client/build/
 /core/common/out/
+/core/common/build/
 /core/server/out/
+/core/server/build/
