@@ -15,6 +15,7 @@ allprojects {
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'java-library'
 
     compileJava.options.encoding = compileTestJava.options.encoding = "UTF-8"
     sourceCompatibility = targetCompatibility = JavaVersion.VERSION_18
