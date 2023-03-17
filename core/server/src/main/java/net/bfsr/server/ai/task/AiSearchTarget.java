@@ -1,5 +1,6 @@
 package net.bfsr.server.ai.task;
 
+import net.bfsr.math.Direction;
 import net.bfsr.server.ai.AiAggressiveType;
 import net.bfsr.server.entity.CollisionObject;
 import net.bfsr.server.entity.ship.Ship;
@@ -29,6 +30,8 @@ public class AiSearchTarget extends AiTask {
             if (attacker != null && !attacker.isDead() && attacker instanceof Ship && isEnemy((Ship) attacker)) {
                 ship.setTarget(attacker);
             }
+        } else if (type == AiAggressiveType.NOTHING) {
+            ship.move(Direction.STOP);
         }
     }
 
