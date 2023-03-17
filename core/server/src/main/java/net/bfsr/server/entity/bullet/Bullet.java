@@ -11,6 +11,7 @@ import net.bfsr.math.RotationHelper;
 import net.bfsr.server.MainServer;
 import net.bfsr.server.entity.CollisionObject;
 import net.bfsr.server.entity.ship.Ship;
+import net.bfsr.server.entity.wreck.ShipWreckDamagable;
 import net.bfsr.server.entity.wreck.Wreck;
 import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.network.packet.server.PacketSpawnBullet;
@@ -90,6 +91,7 @@ public abstract class Bullet extends CollisionObject {
                         //Shield reflection
                         destroyBullet(ship, contact, normal);
                         damage(this);
+                        reflect();
                     }
                 } else if (previousAObject != null && previousAObject != ship && this.ship == ship) {
                     previousAObject = ship;
@@ -103,12 +105,25 @@ public abstract class Bullet extends CollisionObject {
 
                 if (bullet.isDead()) {
                     bullet.destroyBullet(this, contact, normal);
+                } else {
+                    reflect();
                 }
             } else if (userData instanceof Wreck wreck) {
                 wreck.damage(damage.getBulletDamageHull());
                 destroyBullet(wreck, contact, normal);
+            } else if (userData instanceof ShipWreckDamagable shipWreckDamagable) {
+                shipWreckDamagable.attackFromBullet(this, contact, normal);
+                setDead();
             }
         }
+    }
+
+    private void reflect() {
+        Vector2 velocity = body.getLinearVelocity();
+        float rotateToVector = (float) Math.atan2(-velocity.x, velocity.y) + MathUtils.HALF_PI;
+        sin = LUT.sin(rotateToVector);
+        cos = LUT.cos(rotateToVector);
+        body.getTransform().setRotation(sin, cos);
     }
 
     private void damage(Bullet bullet) {

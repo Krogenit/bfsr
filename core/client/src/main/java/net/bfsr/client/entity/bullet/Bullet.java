@@ -65,8 +65,6 @@ public abstract class Bullet extends CollisionObject {
 
     @Override
     public void update() {
-        lastSin = sin;
-        lastCos = cos;
         lastPosition.set(getPosition());
 
         color.w -= alphaReducer * TimeUtils.UPDATE_DELTA_TIME;
@@ -78,14 +76,9 @@ public abstract class Bullet extends CollisionObject {
 
     @Override
     public void postPhysicsUpdate() {
-        Vector2 velocity = body.getLinearVelocity();
-        float rotateToVector = (float) Math.atan2(-velocity.x, velocity.y) + MathUtils.HALF_PI;
-        sin = LUT.sin(rotateToVector);
-        cos = LUT.cos(rotateToVector);
-        lastSin = sin;
-        lastCos = cos;
-        body.getTransform().setRotation(sin, cos);
-        updateWorldAABB();
+        position.x = (float) body.getTransform().getTranslationX();
+        position.y = (float) body.getTransform().getTranslationY();
+        updateAABB();
     }
 
     @Override
@@ -95,7 +88,6 @@ public abstract class Bullet extends CollisionObject {
             if (userData instanceof Ship ship) {
                 if (canDamageShip(ship)) {
                     previousAObject = ship;
-                    Vector2f position = getPosition();
                     if (damageShip(ship)) {
                         //Hull damage
                         destroyBullet(ship, contact, normal);
@@ -106,6 +98,7 @@ public abstract class Bullet extends CollisionObject {
                         destroyBullet(ship, contact, normal);
                         damage(this);
                         onDamageShipWithShield();
+                        reflect();
                     }
                 } else if (previousAObject != null && previousAObject != ship && this.ship == ship) {
                     previousAObject = ship;
@@ -119,12 +112,24 @@ public abstract class Bullet extends CollisionObject {
 
                 if (bullet.isDead()) {
                     bullet.destroyBullet(this, contact, normal);
+                } else {
+                    reflect();
                 }
             } else if (userData instanceof Wreck wreck) {
                 wreck.damage(damage.getBulletDamageHull());
                 destroyBullet(wreck, contact, normal);
             }
         }
+    }
+
+    private void reflect() {
+        Vector2 velocity = body.getLinearVelocity();
+        float rotateToVector = (float) Math.atan2(-velocity.x, velocity.y) + MathUtils.HALF_PI;
+        sin = LUT.sin(rotateToVector);
+        cos = LUT.cos(rotateToVector);
+        lastSin = sin;
+        lastCos = cos;
+        body.getTransform().setRotation(sin, cos);
     }
 
     private void onDamageShipWithNoShield() {
@@ -215,11 +220,10 @@ public abstract class Bullet extends CollisionObject {
     }
 
     public void render() {
-        float size = 6.0f;
-        Vector2f pos = getPosition();
-        SpriteRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, pos.x, pos.y, size, size,
+        float lightSize = 6.0f;
+        SpriteRenderer.INSTANCE.addToRenderPipeLine(lastPosition.x, lastPosition.y, position.x, position.y, lightSize, lightSize,
                 color.x / 1.5f, color.y / 1.5f, color.z / 1.5f, color.w / 4.0f, LIGHT_TEXTURE, BufferType.ENTITIES_ADDITIVE);
-        SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, pos.x, pos.y, sin, cos, scale.x, scale.y, color.x, color.y, color.z, color.w,
+        SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, sin, cos, scale.x, scale.y, color.x, color.y, color.z, color.w,
                 texture, BufferType.ENTITIES_ADDITIVE);
     }
 }
