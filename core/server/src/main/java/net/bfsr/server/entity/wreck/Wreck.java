@@ -12,16 +12,14 @@ import net.bfsr.server.network.packet.common.PacketObjectPosition;
 import net.bfsr.server.network.packet.server.PacketRemoveObject;
 import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.TimeUtils;
-import org.dyn4j.TOITransformSavable;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Polygon;
-import org.dyn4j.geometry.Transform;
 
 import java.util.Random;
 
-public class Wreck extends CollisionObject implements TOITransformSavable {
+public class Wreck extends CollisionObject {
     protected float maxLifeTime;
     @Getter
     protected float lifeTimeVelocity;
@@ -42,11 +40,7 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
 
     @Getter
     private int destroyedShipId;
-    /**
-     * Saved transform before TOI solver
-     */
-    private final Transform transform = new Transform();
-    private boolean transformSaved;
+
     @Getter
     private WreckType wreckType;
     protected RegisteredShipWreck registeredShipWreck;
@@ -136,15 +130,6 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
         destroy();
     }
 
-    public void postPhysicsUpdate() {
-        if (transformSaved) {
-            body.setTransform(transform);
-            transformSaved = false;
-        }
-
-        super.postPhysicsUpdate();
-    }
-
     public void damage(float damage) {
         hull -= damage;
         onHullDamage();
@@ -154,12 +139,6 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
         if (hull <= 0) {
             destroy();
         }
-    }
-
-    @Override
-    public void saveTransform(Transform transform) {
-        this.transform.set(transform);
-        transformSaved = true;
     }
 
     protected void destroy() {

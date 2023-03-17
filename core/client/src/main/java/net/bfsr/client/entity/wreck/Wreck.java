@@ -16,18 +16,16 @@ import net.bfsr.entity.wreck.WreckRegistry;
 import net.bfsr.entity.wreck.WreckType;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.util.TimeUtils;
-import org.dyn4j.TOITransformSavable;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Polygon;
-import org.dyn4j.geometry.Transform;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 import java.util.Random;
 
-public class Wreck extends CollisionObject implements TOITransformSavable {
+public class Wreck extends CollisionObject {
     @Getter
     protected float alphaVelocity;
     @Getter
@@ -48,11 +46,7 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
 
     @Getter
     private int destroyedShipId;
-    /**
-     * Saved transform before TOI solver
-     */
-    private final Transform transform = new Transform();
-    private boolean transformSaved;
+
     @Getter
     private WreckType wreckType;
     protected RegisteredShipWreck registeredShipWreck;
@@ -273,23 +267,8 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
         }
     }
 
-    public void postPhysicsUpdate() {
-        if (transformSaved) {
-            body.setTransform(transform);
-            transformSaved = false;
-        }
-
-        super.postPhysicsUpdate();
-    }
-
     public void damage(float damage) {
         hull -= damage;
-    }
-
-    @Override
-    public void saveTransform(Transform transform) {
-        this.transform.set(transform);
-        transformSaved = true;
     }
 
     @Override

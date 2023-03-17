@@ -39,6 +39,7 @@ public class CollisionObject extends TextureObject {
     protected float lastSin, lastCos;
     @Getter
     protected float sin, cos;
+    protected final Transform savedTransform = new Transform();
 
     protected CollisionObject(WorldClient world, int id, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b, float a,
                               Texture texture) {
@@ -127,16 +128,44 @@ public class CollisionObject extends TextureObject {
     }
 
     @Override
-    public float getRotation() {
-        return (float) body.getTransform().getRotationAngle();
+    public void saveTransform(Transform transform) {
+        savedTransform.set(transform);
+    }
+
+    @Override
+    public void restoreTransform() {
+        body.setTransform(savedTransform);
+    }
+
+    @Override
+    public void setDead() {
+        isDead = true;
+    }
+
+    @Override
+    public void setPosition(float x, float y) {
+        super.setPosition(x, y);
+        body.getTransform().setTranslation(x, y);
     }
 
     @Override
     public Vector2f getPosition() {
-        Vector2 pos = body.getTransform().getTranslation();
-        position.x = (float) pos.x;
-        position.y = (float) pos.y;
+        position.x = (float) body.getTransform().getTranslationX();
+        position.y = (float) body.getTransform().getTranslationY();
         return position;
+    }
+
+    public float getX() {
+        return (float) body.getTransform().getTranslationX();
+    }
+
+    public float getY() {
+        return (float) body.getTransform().getTranslationY();
+    }
+
+    @Override
+    public float getRotation() {
+        return (float) body.getTransform().getRotationAngle();
     }
 
     public Vector2f getVelocity() {
@@ -148,10 +177,5 @@ public class CollisionObject extends TextureObject {
 
     public float getAngularVelocity() {
         return (float) body.getAngularVelocity();
-    }
-
-    @Override
-    public void setDead() {
-        isDead = true;
     }
 }

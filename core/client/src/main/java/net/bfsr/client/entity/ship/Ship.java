@@ -41,11 +41,9 @@ import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.texture.TextureRegister;
 import net.bfsr.util.CollisionObjectUtils;
 import net.bfsr.util.TimeUtils;
-import org.dyn4j.TOITransformSavable;
 import org.dyn4j.dynamics.Body;
+import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.contact.Contact;
-import org.dyn4j.geometry.MassType;
-import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -104,12 +102,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     @Getter
     private CollisionObject lastAttacker;
-
-    /**
-     * Saved transform before TOI solver
-     */
-    private final Transform savedTransform = new Transform();
-    private boolean transformSaved;
 
     protected Texture textureDamage;
     private final List<Damage> damages;
@@ -315,11 +307,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     @Override
     public void postPhysicsUpdate() {
-        if (transformSaved) {
-            body.setTransform(savedTransform);
-            transformSaved = false;
-        }
-
         super.postPhysicsUpdate();
 
         float maxForwardSpeed = engine.getMaxForwardSpeed();
@@ -331,12 +318,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         }
 
         updateComponents();
-    }
-
-    @Override
-    public void saveTransform(Transform transform) {
-        this.savedTransform.set(transform);
-        transformSaved = true;
     }
 
     protected void shoot() {
@@ -552,10 +533,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         slot.init(i, getWeaponSlotPosition(i), this);
 
         weaponSlots.set(i, slot);
-    }
-
-    public void recalculateMass() {
-        body.setMass(MassType.NORMAL);
     }
 
     public WeaponSlot getWeaponSlot(int i) {

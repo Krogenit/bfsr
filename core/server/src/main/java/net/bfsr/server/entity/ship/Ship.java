@@ -92,12 +92,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     @Setter
     private CollisionObject target;
 
-    /**
-     * Saved transform before TOI solver
-     */
-    private final Transform savedTransform = new Transform();
-    private boolean transformSaved;
-
     @Getter
     @Setter
     private PlayerServer owner;
@@ -263,11 +257,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     @Override
     public void postPhysicsUpdate() {
-        if (transformSaved) {
-            body.setTransform(savedTransform);
-            transformSaved = false;
-        }
-
         super.postPhysicsUpdate();
 
         float maxForwardSpeed = engine.getMaxForwardSpeed();
@@ -288,12 +277,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
             MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketObjectPosition(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
             MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShipInfo(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
         }
-    }
-
-    @Override
-    public void saveTransform(Transform transform) {
-        this.savedTransform.set(transform);
-        transformSaved = true;
     }
 
     protected void updateComponents() {

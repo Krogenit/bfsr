@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.contact.Contact;
+import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
@@ -40,6 +41,10 @@ public class GameObject {
     }
 
     public void checkCollision(Contact contact, Vector2 normal, Body body) {}
+
+    public void saveTransform(Transform transform) {}
+
+    public void restoreTransform() {}
 
     public boolean canCollideWith(GameObject gameObject) {
         return this != gameObject;

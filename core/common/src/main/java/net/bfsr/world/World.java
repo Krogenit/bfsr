@@ -2,6 +2,7 @@ package net.bfsr.world;
 
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
+import net.bfsr.collision.CCDTransformHandler;
 import net.bfsr.collision.ContactListener;
 import net.bfsr.entity.GameObject;
 import net.bfsr.physics.CustomValueMixer;
@@ -23,6 +24,7 @@ public abstract class World<S extends GameObject, B extends GameObject> {
     protected final List<B> bullets = new ArrayList<>();
     protected final TIntObjectMap<GameObject> entitiesById = new TIntObjectHashMap<>();
     protected int nextId;
+    private final CCDTransformHandler ccdTransformHandler = new CCDTransformHandler();
 
     protected World(Profiler profiler) {
         this.profiler = profiler;
@@ -38,6 +40,7 @@ public abstract class World<S extends GameObject, B extends GameObject> {
         physicWorld.getSettings().setStepFrequency(TimeUtils.UPDATE_DELTA_TIME);
         physicWorld.getSettings().setContinuousDetectionMode(ContinuousDetectionMode.BULLETS_ONLY);
         physicWorld.addContactListener(new ContactListener());
+        physicWorld.addTimeOfImpactListener(ccdTransformHandler);
         physicWorld.setValueMixer(new CustomValueMixer());
     }
 
@@ -47,7 +50,9 @@ public abstract class World<S extends GameObject, B extends GameObject> {
         updateParticles();
 
         profiler.endStartSection("physics");
+        ccdTransformHandler.clear();
         physicWorld.step(1);
+        ccdTransformHandler.restoreTransforms();
         profiler.endStartSection("postPhysicsUpdate");
         postPhysicsUpdate();
     }

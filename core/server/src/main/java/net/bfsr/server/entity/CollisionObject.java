@@ -3,13 +3,10 @@ package net.bfsr.server.entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.entity.GameObject;
 import net.bfsr.server.world.WorldServer;
-import net.bfsr.util.CollisionObjectUtils;
 import org.dyn4j.dynamics.Body;
-import org.dyn4j.geometry.AABB;
-import org.dyn4j.geometry.Geometry;
+import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
@@ -26,12 +23,10 @@ public class CollisionObject extends GameObject {
     @Setter
     protected int id;
     protected Vector2f velocity = new Vector2f();
-    protected AxisAlignedBoundingBox aabb;
-    @Getter
-    protected AxisAlignedBoundingBox worldAABB;
     protected float lifeTime;
     @Getter
     protected float sin, cos;
+    protected final Transform savedTransform = new Transform();
 
     protected CollisionObject(WorldServer world, int id, float x, float y, float rotation, float scaleX, float scaleY) {
         super(x, y, rotation, scaleX, scaleY);
@@ -77,51 +72,45 @@ public class CollisionObject extends GameObject {
         body.setAngularVelocity(angularVelocity);
     }
 
-    private void updateVelocity(Vector2f velocity) {
-        body.setLinearVelocity(velocity.x, velocity.y);
+    @Override
+    public void saveTransform(Transform transform) {
+        savedTransform.set(transform);
     }
 
-    private void updatePos(Vector2f newPos) {
-        Vector2f pos = getPosition();
+    @Override
+    public void restoreTransform() {
+        body.setTransform(savedTransform);
+    }
 
-        float dist = pos.distance(newPos);
+    @Override
+    public void setDead() {
+        isDead = true;
+    }
 
-        float alpha = dist > 10 ? 1.0f : 0.05f;
-        double x = pos.x + alpha * (newPos.x - pos.x);
-        double y = pos.y + alpha * (newPos.y - pos.y);
-
+    @Override
+    public void setPosition(float x, float y) {
+        super.setPosition(x, y);
         body.getTransform().setTranslation(x, y);
     }
 
-    private void updateRot(float re) {
-        double rs = body.getTransform().getRotationAngle();
-
-        double diff = re - rs;
-        if (diff < -Math.PI) diff += Geometry.TWO_PI;
-        if (diff > Math.PI) diff -= Geometry.TWO_PI;
-
-        float alpha = (float) (Math.max(Math.abs(diff) / 10.0f, 0.1f));
-
-        double a = diff * alpha + rs;
-
-        body.getTransform().setRotation(a);
+    @Override
+    public Vector2f getPosition() {
+        position.x = (float) body.getTransform().getTranslationX();
+        position.y = (float) body.getTransform().getTranslationY();
+        return position;
     }
 
-    private void updateAngularVelocity(float re) {
-        body.setAngularVelocity(re);
+    public float getX() {
+        return (float) body.getTransform().getTranslationX();
+    }
+
+    public float getY() {
+        return (float) body.getTransform().getTranslationY();
     }
 
     @Override
     public float getRotation() {
         return (float) body.getTransform().getRotationAngle();
-    }
-
-    @Override
-    public Vector2f getPosition() {
-        Vector2 pos = body.getTransform().getTranslation();
-        position.x = (float) pos.x;
-        position.y = (float) pos.y;
-        return position;
     }
 
     public Vector2f getVelocity() {
