@@ -1,5 +1,6 @@
 package net.bfsr.client.gui.ingame;
 
+import lombok.Getter;
 import net.bfsr.client.component.Shield;
 import net.bfsr.client.component.weapon.WeaponSlot;
 import net.bfsr.client.core.Core;
@@ -39,6 +40,7 @@ public class ShipHUD {
 
     private final StringObject controlText = new StringObject(FontType.XOLONIUM, Lang.getString("gui.control"), 16);
     private Ship currentShip;
+    @Getter
     private Ship otherShip;
 
     private final Vector2f rotationVector = new Vector2f();

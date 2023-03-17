@@ -86,6 +86,10 @@ public class GuiInGame extends Gui {
         shipHUD.selectShipSecondary(ship);
     }
 
+    public Ship getSelectedShip() {
+        return shipHUD.getOtherShip();
+    }
+
     public void onShipControlStarted() {
         shipHUD.onShipControlStarted();
     }

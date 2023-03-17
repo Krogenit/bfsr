@@ -102,6 +102,7 @@ public class DebugInfoElement {
             int sShipsCount = sWorld != null ? sWorld.getShips().size() : 0;
             int sParticlesCount = sWorld != null ? sWorld.getParticles().size() : 0;
             stringBuilder.append("\n\n---World--- ");
+            stringBuilder.append("\nPhysic body count: ").append(world.getPhysicWorld().getBodies().size());
             stringBuilder.append("\nShips count: ").append(shipsCount).append("/").append(sShipsCount);
             stringBuilder.append(" \nBullets count: ").append(bulletsCount).append("/").append(sBulletsCount);
             stringBuilder.append(" \nParticles count: ").append(particlesCount);
@@ -115,13 +116,19 @@ public class DebugInfoElement {
                 ShieldCommon shield = playerShip.getShield();
                 Reactor reactor = playerShip.getReactor();
                 stringBuilder.append("\n\n---Player Ship--- ");
-                stringBuilder.append("\nShip = ").append(playerShip.getClass().getSimpleName());
+                stringBuilder.append("\nShip: ").append(playerShip.getClass().getSimpleName());
                 stringBuilder.append("\nPos: ").append(DecimalUtils.formatWithToDigits(pos.x)).append(", ").append(DecimalUtils.formatWithToDigits(pos.y));
                 stringBuilder.append("\nVelocity: ").append(DecimalUtils.formatWithToDigits(velocity.x)).append(", ").append(DecimalUtils.formatWithToDigits(velocity.y));
                 stringBuilder.append("\nMass: ").append(DecimalUtils.formatWithToDigits(playerShip.getBody().getMass().getMass()));
                 stringBuilder.append("\nHull: ").append(DecimalUtils.formatWithToDigits(hull.getHull())).append("/").append(DecimalUtils.formatWithToDigits(hull.getMaxHull()));
                 stringBuilder.append("\nShield: ").append(DecimalUtils.formatWithToDigits(shield.getShield())).append("/").append(DecimalUtils.formatWithToDigits(shield.getMaxShield()));
                 stringBuilder.append("\nReactor: ").append(DecimalUtils.formatWithToDigits(reactor.getEnergy())).append("/").append(DecimalUtils.formatWithToDigits(reactor.getMaxEnergy()));
+            }
+
+            Ship ship = core.getGuiInGame().getSelectedShip();
+            if (ship != null) {
+                stringBuilder.append("\n\n---Selected Ship--- ");
+                stringBuilder.append("\nId: ").append(ship.getId());
             }
         }
 
