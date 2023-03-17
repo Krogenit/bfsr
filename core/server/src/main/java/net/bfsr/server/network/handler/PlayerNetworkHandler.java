@@ -49,6 +49,7 @@ public class PlayerNetworkHandler {
     private PlayerServer player;
     @Setter
     private ConnectionState connectionState = ConnectionState.HANDSHAKE;
+    private ConnectionState connectionStateBeforeDisconnect;
 
     private final Queue<PacketIn> inboundPacketQueue = Queues.newConcurrentLinkedQueue();
 
@@ -61,18 +62,20 @@ public class PlayerNetworkHandler {
     private String terminationReason;
 
     public void update() {
-        processReceivedPackets();
+        if (connectionState != ConnectionState.NOT_CONNECTED) {
+            processReceivedPackets();
 
-        if (connectionState == ConnectionState.PLAY) {
-            long now = System.currentTimeMillis();
-            if (now - lastKeepAlivePacketTime > KEEP_ALIVE_PERIOD_IN_MILLS) {
-                sendUDPPacket(new PacketKeepAlive());
-                lastKeepAlivePacketTime = now;
-            }
-        } else if (connectionState == ConnectionState.LOGIN) {
-            long now = System.currentTimeMillis();
-            if (now - loginStartTime >= LOGIN_TIMEOUT_IN_MILLS) {
-                disconnect("login timeout");
+            if (connectionState == ConnectionState.PLAY) {
+                long now = System.currentTimeMillis();
+                if (now - lastKeepAlivePacketTime > KEEP_ALIVE_PERIOD_IN_MILLS) {
+                    sendUDPPacket(new PacketKeepAlive());
+                    lastKeepAlivePacketTime = now;
+                }
+            } else if (connectionState == ConnectionState.LOGIN) {
+                long now = System.currentTimeMillis();
+                if (now - loginStartTime >= LOGIN_TIMEOUT_IN_MILLS) {
+                    disconnect("login timeout");
+                }
             }
         }
     }
@@ -96,7 +99,11 @@ public class PlayerNetworkHandler {
         if (socketChannel.eventLoop().inEventLoop()) {
             socketChannel.writeAndFlush(packet).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         } else {
-            socketChannel.eventLoop().execute(() -> socketChannel.writeAndFlush(packet).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE));
+            socketChannel.eventLoop().execute(() -> {
+                if (connectionState != ConnectionState.NOT_CONNECTED) {
+                    socketChannel.writeAndFlush(packet).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+                }
+            });
         }
     }
 
@@ -104,8 +111,12 @@ public class PlayerNetworkHandler {
         if (datagramChannel.eventLoop().inEventLoop()) {
             datagramChannel.writeAndFlush(new DefaultAddressedEnvelope<PacketOut, SocketAddress>(packet, remoteAddress)).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         } else {
-            datagramChannel.eventLoop().execute(() -> datagramChannel.writeAndFlush(new DefaultAddressedEnvelope<PacketOut, SocketAddress>(packet, remoteAddress))
-                    .addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE));
+            datagramChannel.eventLoop().execute(() -> {
+                if (connectionState != ConnectionState.NOT_CONNECTED) {
+                    datagramChannel.writeAndFlush(new DefaultAddressedEnvelope<PacketOut, SocketAddress>(packet, remoteAddress))
+                            .addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+                }
+            });
         }
     }
 
@@ -189,7 +200,7 @@ public class PlayerNetworkHandler {
     }
 
     public void onDisconnected() {
-        if (connectionState == ConnectionState.PLAY) {
+        if (connectionStateBeforeDisconnect == ConnectionState.PLAY) {
             log.info("{} lost connection: {}", player, terminationReason);
             server.getWorld().removePlayer(player);
             server.getDataBase().saveUser(player);
@@ -213,6 +224,8 @@ public class PlayerNetworkHandler {
     public void closeChannel(String reason) {
         socketChannel.close();
         terminationReason = reason;
+        connectionStateBeforeDisconnect = connectionState;
+        connectionState = ConnectionState.NOT_CONNECTED;
     }
 
     public boolean isClosed() {
