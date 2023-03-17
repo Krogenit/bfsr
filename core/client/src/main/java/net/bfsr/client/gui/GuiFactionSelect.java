@@ -12,16 +12,17 @@ import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
-import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.MathUtils;
 import net.bfsr.texture.TextureRegister;
+import org.dyn4j.geometry.AABB;
+import org.joml.Vector2f;
 
 public class GuiFactionSelect extends Gui {
     private final TextureObject shipHuman = new TextureObject();
     private final TextureObject shipSaimon = new TextureObject();
     private final TextureObject shipEngi = new TextureObject();
-    private AxisAlignedBoundingBox aabbHuman, aabbSaimon, aabbEngi;
+    private AABB aabbHuman, aabbSaimon, aabbEngi;
     private Texture textureShipHuman, textureShipSaimon, textureShipEngi;
 
     @Override
@@ -61,9 +62,9 @@ public class GuiFactionSelect extends Gui {
         shipEngi.getLastScale().set(90);
         shipEngi.setScale(90, 90);
 
-        aabbHuman = new AxisAlignedBoundingBox(center.x - 460, center.y - 88, center.x - 160, center.y + 260);
-        aabbSaimon = new AxisAlignedBoundingBox(center.x - 150, center.y - 88, center.x + 150, center.y + 260);
-        aabbEngi = new AxisAlignedBoundingBox(center.x + 160, center.y - 88, center.x + 460, center.y + 260);
+        aabbHuman = new AABB(center.x - 460, center.y - 88, center.x - 160, center.y + 260);
+        aabbSaimon = new AABB(center.x - 150, center.y - 88, center.x + 150, center.y + 260);
+        aabbEngi = new AABB(center.x + 160, center.y - 88, center.x + 460, center.y + 260);
 
         StringObject stringObject = new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.maintext"), 24).compile();
         registerGuiObject(stringObject.atCenter(-stringObject.getStringWidth() / 2, -96));
@@ -74,11 +75,12 @@ public class GuiFactionSelect extends Gui {
         registerGuiObject(new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.engiDisc"), discFontSize).compile().atCenter(166, -64));
     }
 
-    private void updateRot(TextureObject ship, AxisAlignedBoundingBox aabb) {
+    private void updateRot(TextureObject ship, AABB aabb) {
         float rotSpeed = 0.04f;
 
         ship.setLastRotation(ship.getRotation());
-        if (aabb.isIntersects(Mouse.getPosition())) {
+        Vector2f position = Mouse.getPosition();
+        if (aabb.contains(position.x, position.y)) {
             ship.setRotation(ship.getRotation() + rotSpeed);
 
             if (ship.getRotation() > MathUtils.TWO_PI) {
