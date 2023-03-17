@@ -125,8 +125,7 @@ public final class CollisionObjectUtils {
         if (diff > MathUtils.PI) diff -= MathUtils.TWO_PI;
 
         float diffAbs = Math.abs(diff);
-        float alpha = diffAbs >= 0.2f ? 1.0f : Math.max(diffAbs / 0.2f, 0.1f);
+        float alpha = diffAbs >= 0.03f ? 1.0f : Math.max(diffAbs / 0.03f, 0.1f);
         body.getTransform().setRotation(currentRotation + diff * alpha);
-//        body.getTransform().setRotation(newRotation);
     }
 }
