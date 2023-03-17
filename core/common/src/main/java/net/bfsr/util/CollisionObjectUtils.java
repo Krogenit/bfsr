@@ -50,38 +50,14 @@ public final class CollisionObjectUtils {
 
         RotationHelper.angleToVelocity(rot, 1.0f, ANGLE_TO_VELOCITY);
         float diffRad = ANGLE_TO_VELOCITY.angle(ROTATE_TO_VECTOR);
-        double diff = Math.toDegrees(diffRad);
-        double diffAbs = Math.abs(diff);
-        double addRot = 0;
+        double diffAbs = Math.abs(diffRad);
+        double addRot = Math.min(diffAbs, rotationSpeed * TimeUtils.UPDATE_DELTA_TIME);
 
-        if (diff > 0) {
-            if (diffAbs <= 5) {
-                if (diffAbs <= 1) {
-                    body.setAngularVelocity(0);
-                } else addRot = rotationSpeed / 4.0 * TimeUtils.UPDATE_DELTA_TIME;
-            } else addRot = rotationSpeed * TimeUtils.UPDATE_DELTA_TIME;
-
-            if (addRot >= diffRad) {
-                transform.setRotation(Math.atan2(ROTATE_TO_VECTOR.x, -ROTATE_TO_VECTOR.y) - Math.PI / 2.0);
-                body.setAngularVelocity(0);
-            } else {
-                transform.setRotation(rot + addRot);
-                body.setAngularVelocity(body.getAngularVelocity() * 0.99f);
-            }
+        if (addRot >= diffAbs) {
+            transform.setRotation(Math.atan2(ROTATE_TO_VECTOR.x, -ROTATE_TO_VECTOR.y) - Math.PI / 2.0);
         } else {
-            if (diffAbs <= 5) {
-                if (diffAbs <= 1) {
-                    body.setAngularVelocity(0);
-                } else addRot = -rotationSpeed / 4.0 * TimeUtils.UPDATE_DELTA_TIME;
-            } else addRot = -rotationSpeed * TimeUtils.UPDATE_DELTA_TIME;
-
-            if (addRot <= diffRad) {
-                transform.setRotation(Math.atan2(ROTATE_TO_VECTOR.x, -ROTATE_TO_VECTOR.y) - Math.PI / 2.0);
-                body.setAngularVelocity(0);
-            } else {
-                transform.setRotation(rot + addRot);
-                body.setAngularVelocity(body.getAngularVelocity() * 0.99f);
-            }
+            transform.setRotation(rot + (diffRad > 0 ? addRot : -addRot));
+            body.setAngularVelocity(body.getAngularVelocity() * 0.99f);
         }
     }
 
@@ -134,11 +110,11 @@ public final class CollisionObjectUtils {
 
         float dist = pos.distance(newPos);
 
-        float alpha = dist > 10 ? 1.0f : 0.05f;
-        double x = pos.x + alpha * (newPos.x - pos.x);
-        double y = pos.y + alpha * (newPos.y - pos.y);
+        float alpha = dist >= 10 ? 1.0f : Math.max(dist / 10, 0.01f);
+        float x = pos.x + alpha * (newPos.x - pos.x);
+        float y = pos.y + alpha * (newPos.y - pos.y);
 
-        gameObject.getBody().getTransform().setTranslation(x, y);
+        gameObject.setPosition(x, y);
     }
 
     public static void updateRot(Body body, float newRotation) {
@@ -148,7 +124,9 @@ public final class CollisionObjectUtils {
         if (diff < -MathUtils.PI) diff += MathUtils.TWO_PI;
         if (diff > MathUtils.PI) diff -= MathUtils.TWO_PI;
 
-        float alpha = Math.max(Math.abs(diff) / 10.0f, 0.1f);
+        float diffAbs = Math.abs(diff);
+        float alpha = diffAbs >= 0.2f ? 1.0f : Math.max(diffAbs / 0.2f, 0.1f);
         body.getTransform().setRotation(currentRotation + diff * alpha);
+//        body.getTransform().setRotation(newRotation);
     }
 }
