@@ -32,7 +32,7 @@ public final class TextureGenerator {
             data[r * 3 + 2] = c;
         }
 
-        Texture texture = new Texture(width, height);
+        Texture texture = new Texture(width, height).create();
         GL45C.glTextureStorage2D(texture.getId(), 1, GL11.GL_RGB8, width, height);
 
         ByteBuffer byteBuffer = MemoryUtil.memAlloc(width * height * 3);
@@ -50,7 +50,7 @@ public final class TextureGenerator {
     }
 
     private static Texture generateNoiseTexture(Random random, int size) {
-        Texture texture = new Texture(size, size);
+        Texture texture = new Texture(size, size).create();
         int l = size * size;
         byte[] data = new byte[(l << 1)];
         for (int i = 0; i < l; i++) {

@@ -19,6 +19,8 @@ import java.nio.IntBuffer;
 public final class TextureLoader {
     private static final TMap<String, Texture> LOADED_TEXTURES = new THashMap<>();
     public static Texture dummyTexture;
+    private static final int DEFAULT_WRAP = GL12C.GL_CLAMP_TO_EDGE;
+    private static final int DEFAULT_FILTER = GL11.GL_NEAREST;
 
     public static void init() {
         createDummyTexture();
@@ -43,19 +45,27 @@ public final class TextureLoader {
     }
 
     public static Texture getTexture(TextureRegister texture) {
-        return getTexture(texture.getPath());
+        return getTexture(texture.getPath(), DEFAULT_WRAP, DEFAULT_FILTER);
+    }
+
+    public static Texture getTexture(TextureRegister texture, int wrap, int filter) {
+        return getTexture(texture.getPath(), wrap, filter);
     }
 
     public static Texture getTexture(String path) {
-        return getTexture(path, true);
+        return getTexture(path, true, DEFAULT_WRAP, DEFAULT_FILTER);
     }
 
-    public static Texture getTexture(TextureRegister texture, boolean createMips) {
-        return getTexture(texture.getPath(), createMips);
+    public static Texture getTexture(String path, int wrap, int filter) {
+        return getTexture(path, true, wrap, filter);
     }
 
-    public static Texture getTexture(String path, boolean createMips) {
-        return LOADED_TEXTURES.computeIfAbsent(path, s -> loadPngTexture(path, createMips));
+    public static Texture getTexture(TextureRegister texture, boolean createMips, int wrap, int filter) {
+        return getTexture(texture.getPath(), createMips, wrap, filter);
+    }
+
+    public static Texture getTexture(String path, boolean createMips, int wrap, int filter) {
+        return LOADED_TEXTURES.computeIfAbsent(path, s -> loadPngTexture(path, createMips, wrap, filter));
     }
 
     private static void loadDDSTexture(TextureRegister name) {
@@ -79,7 +89,7 @@ public final class TextureLoader {
         LOADED_TEXTURES.put(name.getPath(), texture);
     }
 
-    private static Texture loadPngTexture(String path, boolean createMips) {
+    private static Texture loadPngTexture(String path, boolean createMips, int wrap, int filter) {
         ByteBuffer image;
         int width, height, channels;
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -98,11 +108,11 @@ public final class TextureLoader {
             height = h.get();
         }
 
-        return createTexture(width, height, image, channels, createMips);
+        return createTexture(width, height, image, channels, createMips, wrap, filter);
     }
 
     private static Texture generateTexture(DDSFile dds) {
-        Texture texture = new Texture(dds.getWidth(), dds.getHeight());
+        Texture texture = new Texture(dds.getWidth(), dds.getHeight()).create();
 
         GL45C.glTextureStorage2D(texture.getId(), dds.getMipMapCount() + 1, dds.getDXTFormat(), dds.getWidth(), dds.getHeight());
         GL45C.glCompressedTextureSubImage2D(texture.getId(), 0, 0, 0, dds.getWidth(), dds.getHeight(), dds.getDXTFormat(), dds.getBuffer());
@@ -135,7 +145,11 @@ public final class TextureLoader {
     }
 
     private static Texture createTexture(int width, int height, ByteBuffer image, int channels, boolean createMips) {
-        Texture texture = new Texture(width, height);
+        return createTexture(width, height, image, channels, createMips, DEFAULT_WRAP, DEFAULT_FILTER);
+    }
+
+    private static Texture createTexture(int width, int height, ByteBuffer image, int channels, boolean createMips, int wrap, int filter) {
+        Texture texture = new Texture(width, height).create();
 
         int internalFormat;
         int format;
@@ -160,11 +174,13 @@ public final class TextureLoader {
 
         if (createMips) GL45C.glGenerateTextureMipmap(texture.getId());
 
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MIN_FILTER, createMips ? GL11.GL_LINEAR_MIPMAP_LINEAR : GL11.GL_LINEAR);
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-        GL45C.glTextureParameterf(texture.getId(), EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
+        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_WRAP_S, wrap);
+        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_WRAP_T, wrap);
+        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MIN_FILTER, createMips ? (filter == GL11.GL_NEAREST ? GL11.GL_NEAREST_MIPMAP_NEAREST :
+                GL11.GL_LINEAR_MIPMAP_LINEAR) : filter);
+        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MAG_FILTER, filter);
+        GL45C.glTextureParameterf(texture.getId(), EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
         long textureHandle = ARBBindlessTexture.glGetTextureHandleARB(texture.getId());
         ARBBindlessTexture.glMakeTextureHandleResidentARB(textureHandle);
         texture.setTextureHandle(textureHandle);

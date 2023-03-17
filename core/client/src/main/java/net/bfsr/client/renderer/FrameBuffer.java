@@ -35,7 +35,7 @@ public class FrameBuffer {
     }
 
     private Texture getTexture(int i, int width, int height) {
-        Texture texture = new Texture(width, height);
+        Texture texture = new Texture(width, height).create();
         GL45C.glTextureStorage2D(texture.getId(), 1, GL11.GL_RGB8, width, height);
         GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
         GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
