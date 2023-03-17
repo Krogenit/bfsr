@@ -84,7 +84,7 @@ public class WorldServer extends World<Ship, Bullet> {
                     ship.addWeaponToSlot(1, new WeaponPlasmSmall(ship));
                 }
                 ship.setName("[BOT] " + ship.getFaction().toString());
-                pos.y += ship.getScale().x;
+                ship.sendSpawnPacket();
             }
 
 //			pos = RotationHelper.rotate((float) (Math.PI * 2f / 3f), pos.x, pos.y);
@@ -106,7 +106,7 @@ public class WorldServer extends World<Ship, Bullet> {
                     ship.addWeaponToSlot(1, new WeaponLaserSmall(ship));
                 }
                 ship.setName("[BOT] " + ship.getFaction().toString());
-                pos.y += ship.getScale().x;
+                ship.sendSpawnPacket();
             }
 
 //			pos = RotationHelper.rotate((float) (Math.PI * 2f / 3f), pos.x, pos.y);
@@ -128,7 +128,7 @@ public class WorldServer extends World<Ship, Bullet> {
                     ship.addWeaponToSlot(1, new WeaponGausSmall(ship));
                 }
                 ship.setName("[BOT] " + ship.getFaction().toString());
-                pos.y += ship.getScale().x;
+                ship.sendSpawnPacket();
             }
         }
     }

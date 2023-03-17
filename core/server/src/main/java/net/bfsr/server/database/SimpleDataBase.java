@@ -106,6 +106,7 @@ public class SimpleDataBase {
                     ship.setOwner(player);
                     ship.setFaction(player.getFaction());
                     ship.setName(player.getUserName());
+                    ship.sendSpawnPacket();
                     player.setPlayerShip(ship);
                 }
             }

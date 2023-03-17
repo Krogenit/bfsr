@@ -76,6 +76,7 @@ public class PacketCommand implements PacketIn {
 
                 ship.setFaction(fact);
                 ship.setName("[BOT] " + ship.getFaction().toString());
+                ship.sendSpawnPacket();
                 return;
             case SPAWN_PARTICLE:
                 PlayerServer player = playerNetworkHandler.getPlayer();

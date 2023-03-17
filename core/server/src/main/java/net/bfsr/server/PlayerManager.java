@@ -50,6 +50,7 @@ public class PlayerManager {
         playerShip.setOwner(player);
         playerShip.setFaction(faction);
         playerShip.setName(player.getUserName());
+        playerShip.sendSpawnPacket();
         player.addShip(playerShip);
         player.setPlayerShip(playerShip);
     }

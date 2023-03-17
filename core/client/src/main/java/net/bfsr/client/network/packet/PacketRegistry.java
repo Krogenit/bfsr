@@ -47,10 +47,7 @@ public class PacketRegistry {
         registerPacket(PacketShieldRebuild.class);
         registerPacket(PacketShieldRebuildingTime.class);
         registerPacket(PacketShieldRemove.class);
-        registerPacket(PacketShipFaction.class);
         registerPacket(PacketShipInfo.class);
-        registerPacket(PacketShipName.class);
-        registerPacket(PacketShipSetWeaponSlot.class);
         registerPacket(PacketSpawnBullet.class);
         registerPacket(PacketSpawnShip.class);
         registerPacket(PacketSpawnWreck.class);

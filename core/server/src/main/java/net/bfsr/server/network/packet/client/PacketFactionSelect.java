@@ -37,21 +37,18 @@ public class PacketFactionSelect implements PacketIn {
                 playerShip.init();
                 playerShip.addWeaponToSlot(0, new WeaponPlasmSmall(playerShip));
                 playerShip.addWeaponToSlot(1, new WeaponPlasmSmall(playerShip));
-
                 break;
             case SAIMON:
                 playerShip = new ShipSaimonSmall0(world, 0, 0, world.getRand().nextFloat() * MathUtils.TWO_PI, false);
                 playerShip.init();
                 playerShip.addWeaponToSlot(0, new WeaponLaserSmall(playerShip));
                 playerShip.addWeaponToSlot(1, new WeaponLaserSmall(playerShip));
-
                 break;
             case ENGI:
                 playerShip = new ShipEngiSmall0(world, 0, 0, world.getRand().nextFloat() * MathUtils.TWO_PI, false);
                 playerShip.init();
                 playerShip.addWeaponToSlot(0, new WeaponGausSmall(playerShip));
                 playerShip.addWeaponToSlot(1, new WeaponGausSmall(playerShip));
-
                 break;
         }
 
@@ -59,6 +56,7 @@ public class PacketFactionSelect implements PacketIn {
         playerShip.setOwner(player);
         playerShip.setFaction(faction);
         playerShip.setName(player.getUserName());
+        playerShip.sendSpawnPacket();
         player.setFaction(faction);
         player.addShip(playerShip);
         player.setPlayerShip(playerShip);

@@ -461,16 +461,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         }
     }
 
-    public void setName(String name) {
-        this.name = name;
-        MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketShipName(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
-    }
-
-    public void setFaction(Faction faction) {
-        this.faction = faction;
-        MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketShipFaction(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
-    }
-
     public boolean isBot() {
         return owner == null;
     }
