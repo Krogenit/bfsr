@@ -7,7 +7,7 @@ import net.bfsr.client.network.packet.PacketIn;
 import java.io.IOException;
 
 public final class PacketDecodeUtils {
-    public static PacketIn decodePacket(ByteBuf buffer) {
+    public static PacketIn decodePacket(ByteBuf buffer) throws IOException {
         int packetId = buffer.readByte();
 
         try {
@@ -15,9 +15,9 @@ public final class PacketDecodeUtils {
             packet.read(buffer);
             return packet;
         } catch (IOException e) {
-            throw new RuntimeException("Can't read packet with id " + packetId, e);
+            throw new IOException("Can't read packet with id " + packetId, e);
         } catch (Exception e) {
-            throw new RuntimeException("Can't create packet with id " + packetId, e);
+            throw new IOException("Can't create packet with id " + packetId, e);
         }
     }
 }

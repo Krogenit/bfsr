@@ -14,9 +14,8 @@ public class MessageHandlerUDP extends SimpleChannelInboundHandler<PacketIn> {
     private final NetworkSystem networkSystem;
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) {
-        networkSystem.closeChannels();
-        networkSystem.onDisconnect("UDPChannelInactive");
+    protected void channelRead0(ChannelHandlerContext ctx, PacketIn msg) {
+        msg.handle(networkSystem, ctx);
     }
 
     @Override
@@ -27,7 +26,7 @@ public class MessageHandlerUDP extends SimpleChannelInboundHandler<PacketIn> {
             reason = "timeout";
         } else {
             reason = "other";
-            cause.printStackTrace();
+            log.error("Error during handling UDP packet on client", cause);
         }
 
         networkSystem.closeChannels();
@@ -35,7 +34,8 @@ public class MessageHandlerUDP extends SimpleChannelInboundHandler<PacketIn> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, PacketIn msg) {
-        msg.handle(networkSystem, ctx);
+    public void channelInactive(ChannelHandlerContext ctx) {
+        networkSystem.closeChannels();
+        networkSystem.onDisconnect("UDPChannelInactive");
     }
 }

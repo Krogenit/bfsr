@@ -59,7 +59,9 @@ public class NetworkManagerTCP {
     }
 
     public void shutdown() {
-        workGroup.shutdownGracefully();
+        if (workGroup != null) {
+            workGroup.shutdownGracefully();
+        }
     }
 
     public boolean isChannelOpen() {

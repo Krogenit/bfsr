@@ -33,7 +33,7 @@ public class PacketWeaponShoot implements PacketIn, PacketOut {
         GameObject obj = Core.get().getWorld().getEntityById(id);
         if (obj instanceof Ship ship) {
             WeaponSlot weaponSlot = ship.getWeaponSlot(slot);
-            weaponSlot.clientShoot();
+            if (weaponSlot != null) weaponSlot.clientShoot();
         }
     }
 }

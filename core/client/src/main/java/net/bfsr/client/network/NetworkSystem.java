@@ -29,7 +29,7 @@ public class NetworkSystem {
 
     @Getter
     @Setter
-    private ConnectionState connectionState = ConnectionState.HANDSHAKE;
+    private ConnectionState connectionState = ConnectionState.NOT_CONNECTED;
 
     @Setter
     @Getter
@@ -42,6 +42,7 @@ public class NetworkSystem {
 
     public void connectTCP(InetAddress address, int port) {
         networkManagerTCP.connect(this, address, port);
+        connectionState = ConnectionState.HANDSHAKE;
     }
 
     public void connectUDP(InetAddress address, int port) {
@@ -49,13 +50,15 @@ public class NetworkSystem {
     }
 
     public void update() {
-        processReceivedPackets();
+        if (connectionState != ConnectionState.NOT_CONNECTED) {
+            processReceivedPackets();
 
-        if (connectionState == ConnectionState.PLAY) {
-            long now = System.currentTimeMillis();
-            if (now - lastPingCheck > 1000) {
-                sendPacketUDP(new PacketPing());
-                lastPingCheck = now;
+            if (connectionState == ConnectionState.PLAY) {
+                long now = System.currentTimeMillis();
+                if (now - lastPingCheck > 1000) {
+                    sendPacketUDP(new PacketPing());
+                    lastPingCheck = now;
+                }
             }
         }
     }
@@ -81,12 +84,20 @@ public class NetworkSystem {
 
     public void onDisconnect(String reason) {
         if (connectionState == ConnectionState.PLAY) {
-            Core.get().addFutureTask(() -> Core.get().setCurrentGui(new GuiDisconnected(new GuiMainMenu(), "disconnect.lost", reason)));
+            Core.get().addFutureTask(() -> {
+                Core.get().setWorld(null);
+                Core.get().setCurrentGui(new GuiDisconnected(new GuiMainMenu(), "disconnect.lost", reason));
+            });
         } else if (connectionState == ConnectionState.LOGIN) {
-            Core.get().addFutureTask(() -> Core.get().setCurrentGui(new GuiDisconnected(new GuiMainMenu(), "connect.failed", reason)));
+            Core.get().addFutureTask(() -> {
+                Core.get().setCurrentGui(new GuiDisconnected(new GuiMainMenu(), "connect.failed", reason));
+            });
         }
 
+        connectionState = ConnectionState.NOT_CONNECTED;
+
         shutdown();
+        clear();
     }
 
     public void addPacketToInboundQueue(PacketIn packet) {

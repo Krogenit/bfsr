@@ -48,11 +48,15 @@ public class NetworkManagerUDP {
     }
 
     public void closeChannel() {
-        channel.close();
+        if (channel != null) {
+            channel.close();
+        }
     }
 
     public void shutdown() {
-        workGroup.shutdownGracefully();
+        if (workGroup != null) {
+            workGroup.shutdownGracefully();
+        }
     }
 
     public boolean isChannelOpen() {

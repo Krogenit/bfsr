@@ -19,6 +19,12 @@ public class MessageHandlerTCP extends SimpleChannelInboundHandler<PacketIn> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("Error during handling TCP packet", cause);
+        log.error("Error during handling TCP packet on server", cause);
+        playerNetworkHandler.closeChannel("Channel exception");
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) {
+        playerNetworkHandler.closeChannel("Channel inactive");
     }
 }

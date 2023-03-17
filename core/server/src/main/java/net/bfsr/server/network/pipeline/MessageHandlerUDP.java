@@ -22,6 +22,7 @@ public class MessageHandlerUDP extends SimpleChannelInboundHandler<DefaultAddres
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("Error during handling UDP packet", cause);
+        log.error("Error during handling UDP packet on server", cause);
+        playerNetworkHandler.closeChannel("Channel exception");
     }
 }
