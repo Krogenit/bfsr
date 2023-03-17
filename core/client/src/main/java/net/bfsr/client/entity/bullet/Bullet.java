@@ -4,6 +4,7 @@ import lombok.Getter;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.CollisionObject;
 import net.bfsr.client.entity.ship.Ship;
+import net.bfsr.client.entity.wreck.ShipWreckDamagable;
 import net.bfsr.client.entity.wreck.Wreck;
 import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
@@ -118,6 +119,10 @@ public abstract class Bullet extends CollisionObject {
             } else if (userData instanceof Wreck wreck) {
                 wreck.damage(damage.getBulletDamageHull());
                 destroyBullet(wreck, contact, normal);
+                setDead();
+            } else if (userData instanceof ShipWreckDamagable wreck) {
+                destroyBullet(wreck, contact, normal);
+                setDead();
             }
         }
     }
