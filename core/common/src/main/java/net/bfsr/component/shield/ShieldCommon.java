@@ -73,7 +73,6 @@ public class ShieldCommon {
         shieldFixture.setRestitution(0.1f);
         shieldFixture.setFilter(body.getFixture(0).getFilter());
         body.addFixture(shieldFixture);
-        body.setMass(MassType.NORMAL);
         diameter.x += 0.1f;
         diameter.y += 0.1f;
         alive = true;
@@ -122,7 +121,6 @@ public class ShieldCommon {
     public void removeShield() {
         body.removeFixture(shieldFixture);
         shieldFixture = null;
-        body.setMass(MassType.NORMAL);
         rebuildingTime = 0;
         size = 0.0f;
         shield = 0;
