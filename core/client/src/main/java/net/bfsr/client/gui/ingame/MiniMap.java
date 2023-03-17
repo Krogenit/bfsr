@@ -6,10 +6,10 @@ import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
-import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.faction.Faction;
 import net.bfsr.texture.TextureRegister;
 import net.bfsr.world.World;
+import org.dyn4j.geometry.AABB;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
@@ -19,8 +19,8 @@ import java.util.List;
 public class MiniMap {
     private final TexturedGuiObject map = new TexturedGuiObject(TextureRegister.guiHudShip);
 
-    private final AxisAlignedBoundingBox boundingBox = new AxisAlignedBoundingBox();
-    private final AxisAlignedBoundingBox shipAABB = new AxisAlignedBoundingBox();
+    private final AABB boundingBox = new AABB(0);
+    private final AABB shipAABB = new AABB(0);
     private final Vector4f color = new Vector4f();
 
     public void init(Gui gui) {
@@ -54,7 +54,7 @@ public class MiniMap {
             float sX = scale.x * shipSize / 2.0f;
             float sY = scale.y * shipSize / 2.0f;
             shipAABB.set(pos.x - sX, pos.y - sY, pos.x + sX, pos.y + sY);
-            if (boundingBox.isIntersects(shipAABB)) {
+            if (boundingBox.overlaps(shipAABB)) {
                 Faction faction = s.getFaction();
                 if (faction == Faction.ENGI) {
                     color.x = 0.5f;
