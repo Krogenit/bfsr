@@ -161,10 +161,6 @@ public abstract class World<S extends GameObject, B extends GameObject> {
     }
 
     public int getNextId() {
-        while (entitiesById.containsKey(nextId)) {
-            nextId++;
-        }
-
-        return nextId;
+        return nextId++;
     }
 }
