@@ -5,7 +5,7 @@ import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
-import net.bfsr.client.renderer.texture.TextureRegister;
+import net.bfsr.texture.TextureRegister;
 
 public class TexturedGuiObject extends SimpleGuiObject {
     @Getter

@@ -97,7 +97,7 @@ public abstract class WeaponSlot extends GameObject {
             Object userData = bodyFixture.getUserData();
             if (userData == this) {
                 shipBody.removeFixture(bodyFixture);
-                ship.recalculateMass();
+                shipBody.updateMass();
                 break;
             }
         }

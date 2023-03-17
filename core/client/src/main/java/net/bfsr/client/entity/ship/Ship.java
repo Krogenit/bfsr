@@ -21,7 +21,6 @@ import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
-import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.settings.Option;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
@@ -38,6 +37,8 @@ import net.bfsr.faction.Faction;
 import net.bfsr.math.Direction;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
+import net.bfsr.physics.PhysicsUtils;
+import net.bfsr.texture.TextureRegister;
 import net.bfsr.util.CollisionObjectUtils;
 import net.bfsr.util.TimeUtils;
 import org.dyn4j.TOITransformSavable;
@@ -126,8 +127,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         setRotation(this.rotation);
         world.addShip(this);
     }
-
-    public abstract void init();
 
     public void control() {
         if (destroyingTimer == 0) {

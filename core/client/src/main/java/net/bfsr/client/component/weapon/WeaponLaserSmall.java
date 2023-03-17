@@ -3,9 +3,9 @@ package net.bfsr.client.component.weapon;
 import net.bfsr.client.collision.filter.ShipFilter;
 import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.particle.ParticleSpawner;
-import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.math.RotationHelper;
+import net.bfsr.texture.TextureRegister;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Polygon;
@@ -37,7 +37,7 @@ public class WeaponLaserSmall extends WeaponSlot {
         bodyFixture.setFilter(new ShipFilter(ship));
         bodyFixture.setDensity(0.0001f);
         ship.getBody().addFixture(bodyFixture);
-        ship.recalculateMass();
+        ship.getBody().updateMass();
     }
 
     @Override

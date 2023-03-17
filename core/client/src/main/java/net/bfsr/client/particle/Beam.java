@@ -6,7 +6,7 @@ import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.TextureLoader;
-import net.bfsr.client.renderer.texture.TextureRegister;
+import net.bfsr.texture.TextureRegister;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;

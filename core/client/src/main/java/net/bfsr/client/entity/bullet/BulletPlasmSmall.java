@@ -2,12 +2,11 @@ package net.bfsr.client.entity.bullet;
 
 import net.bfsr.client.collision.filter.BulletFilter;
 import net.bfsr.client.entity.ship.Ship;
-import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.physics.PhysicsUtils;
+import net.bfsr.texture.TextureRegister;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
@@ -18,14 +17,13 @@ public class BulletPlasmSmall extends Bullet {
     }
 
     @Override
-    protected void createBody(float x, float y) {
+    protected void initBody() {
         Vector2[] vertices = new Vector2[4];
         vertices[0] = new Vector2(-0.6f, -0.2f);
         vertices[1] = new Vector2(0.6f, -0.2f);
         vertices[2] = new Vector2(0.6f, 0.2f);
         vertices[3] = new Vector2(-0.6f, 0.2f);
-        Polygon polygon = Geometry.createPolygon(vertices);
-        BodyFixture bodyFixture = new BodyFixture(polygon);
+        BodyFixture bodyFixture = new BodyFixture(new Polygon(vertices));
         bodyFixture.setDensity(PhysicsUtils.BULLET_FIXTURE_DENSITY);
         bodyFixture.setFriction(0.0f);
         bodyFixture.setRestitution(1.0f);

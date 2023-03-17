@@ -4,6 +4,7 @@ import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import net.bfsr.client.renderer.texture.dds.DDSFile;
 import net.bfsr.client.util.PathHelper;
+import net.bfsr.texture.TextureRegister;
 import org.lwjgl.opengl.*;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;

@@ -6,7 +6,7 @@ import net.bfsr.client.language.Lang;
 import net.bfsr.client.network.packet.client.PacketRespawn;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.string.StringObject;
-import net.bfsr.client.renderer.texture.TextureRegister;
+import net.bfsr.texture.TextureRegister;
 import org.joml.Vector2f;
 
 public class GuiDestroyed extends Gui {

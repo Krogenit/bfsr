@@ -1,4 +1,4 @@
-package net.bfsr.client.renderer.texture;
+package net.bfsr.texture;
 
 import lombok.Getter;
 
@@ -124,7 +124,9 @@ public enum TextureRegister {
     particleSockwaveMedium("particle/bigshockwave"),
     particleSockwaveLarge("particle/shockwave"),
 
-    particleLighting("particle/lighting");
+    particleLighting("particle/lighting"),
+
+    damageFire("effect/fire");
 
     @Getter
     private final String path;

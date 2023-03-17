@@ -14,7 +14,6 @@ import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
-import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.component.Armor;
 import net.bfsr.component.ArmorPlate;
@@ -22,6 +21,7 @@ import net.bfsr.component.reactor.Reactor;
 import net.bfsr.component.shield.ShieldCommon;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
+import net.bfsr.texture.TextureRegister;
 import org.joml.Vector2f;
 
 public class ShipHUD {

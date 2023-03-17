@@ -34,7 +34,7 @@ public class WeaponLaserSmall extends WeaponSlot {
         bodyFixture.setFilter(new ShipFilter(ship));
         bodyFixture.setDensity(0.0001f);
         ship.getBody().addFixture(bodyFixture);
-        ship.recalculateMass();
+        ship.getBody().updateMass();
     }
 
     @Override

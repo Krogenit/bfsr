@@ -2,7 +2,7 @@ package net.bfsr.client.gui.ingame;
 
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.input.InputChat;
-import net.bfsr.client.renderer.texture.TextureRegister;
+import net.bfsr.texture.TextureRegister;
 
 public class Chat {
     private final TexturedGuiObject chat = new TexturedGuiObject(TextureRegister.guiChat);

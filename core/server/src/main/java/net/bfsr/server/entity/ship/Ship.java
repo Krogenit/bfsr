@@ -116,11 +116,24 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         this.ai.setAggressiveType(AiAggressiveType.ATTACK);
         this.ai.addTask(new AiSearchTarget(this, 4000.0f));
         this.ai.addTask(new AiAttackTarget(this, 4000.0f));
-        world.addShip(this);
-        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        this.textureIndex = textureIndex;
     }
 
-    public abstract void init();
+    @Override
+    public void init() {
+        super.init();
+        world.addShip(this);
+    }
+
+    @Override
+    public void setupFixture(BodyFixture bodyFixture) {
+        bodyFixture.setFilter(new ShipFilter(this));
+        bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
+    }
+
+    public void sendSpawnPacket() {
+        MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketSpawnShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+    }
 
     protected void updateShip() {
         if (collisionTimer > 0) collisionTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
@@ -138,7 +151,15 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
             destroyingTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (destroyingTimer <= 0) {
-                destroyShip();
+                destroy();
+            }
+        } else {
+            if (fixturesToAdd.size() > 0) {
+                body.removeAllFixtures();
+                for (int i = 0; i < fixturesToAdd.size(); i++) {
+                    body.addFixture(fixturesToAdd.get(i));
+                }
+                fixturesToAdd.clear();
             }
         }
     }
@@ -148,8 +169,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         body.applyForce(f);
     }
 
-    public void move(Ship ship, Direction dir) {
-        Engine engine = ship.getEngine();
+    public void move(Direction dir) {
         Vector2 r = new Vector2(body.getTransform().getRotationAngle());
         Vector2f pos = getPosition();
 
@@ -232,8 +252,8 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     }
 
     protected void updateJump() {
-        if (((jumpVelocity.x < 0 && jumpPosition.x <= position.x) || (jumpVelocity.x >= 0 && jumpPosition.x >= position.x)) && ((jumpVelocity.y < 0 && jumpPosition.y <= position.y)
-                || (jumpVelocity.y >= 0 && jumpPosition.y >= position.y))) {
+        if ((jumpVelocity.x < 0 && jumpPosition.x <= position.x || jumpVelocity.x >= 0 && jumpPosition.x >= position.x) && (jumpVelocity.y < 0 && jumpPosition.y <= position.y
+                || jumpVelocity.y >= 0 && jumpPosition.y >= position.y)) {
             setSpawned();
             setVelocity(jumpVelocity.mul(0.26666668f));
         } else {
@@ -262,10 +282,10 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
         PlayerServer player = world.getPlayer(name);
         if (controlledByPlayer) {
-            MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearbyExcept(new PacketObjectPosition(this), position, WorldServer.PACKET_SPAWN_DISTANCE, player);
+            MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearbyExcept(new PacketObjectPosition(this), position, WorldServer.PACKET_UPDATE_DISTANCE, player);
             MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShipInfo(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
         } else {
-            MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketObjectPosition(this), position, WorldServer.PACKET_SPAWN_DISTANCE);
+            MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketObjectPosition(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
             MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShipInfo(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
         }
     }
@@ -365,7 +385,8 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
 
     protected abstract void createDestroyParticles();
 
-    public void destroyShip() {
+    @Override
+    public void destroy() {
         setDead(true);
         createDestroyParticles();
         MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
@@ -405,11 +426,6 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
         slot.init(i, getWeaponSlotPosition(i), this);
 
         weaponSlots.set(i, slot);
-        MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketShipSetWeaponSlot(this, slot), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
-    }
-
-    public void recalculateMass() {
-        body.setMass(MassType.NORMAL);
     }
 
     public WeaponSlot getWeaponSlot(int i) {
@@ -426,7 +442,7 @@ public abstract class Ship extends CollisionObject implements TOITransformSavabl
     }
 
     public void setVelocity(Vector2f velocity) {
-        body.setLinearVelocity(new Vector2(velocity.x, velocity.y));
+        body.setLinearVelocity(velocity.x, velocity.y);
     }
 
     @Override

@@ -102,8 +102,7 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
         this.textureFire = TextureLoader.getTexture(registeredShipWreck.getFireTexture());
         this.textureLight = registeredShipWreck.getSparkleTexture() != null ? TextureLoader.getTexture(registeredShipWreck.getSparkleTexture()) : null;
         this.sparkleActivationTimer = light ? 200.0f + world.getRand().nextInt(200) : 0.0f;
-        createBody(x, y, angularVelocity);
-        createAABB();
+        createFixtures(angularVelocity);
         world.getParticleManager().addParticle(this);
         world.addPhysicObject(this);
         return this;
@@ -117,14 +116,14 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
     }
 
     @Override
-    protected void createBody(float x, float y) {
-        createBody(x, y, 0.0f);
+    protected void initBody() {
+        createFixtures(0.0f);
     }
 
-    protected void createBody(float x, float y, float angularVelocity) {
+    protected void createFixtures(float angularVelocity) {
         while (body.getFixtures().size() > 0) body.removeFixture(0);
-        createFixtures();
-        body.translate(x, y);
+        createFixture();
+        body.translate(position.x, position.y);
         body.setMass(MassType.NORMAL);
         body.setUserData(this);
         body.setLinearVelocity(velocity.x, velocity.y);
@@ -138,7 +137,7 @@ public class Wreck extends CollisionObject implements TOITransformSavable {
         body.setAngularDamping(0.005f);
     }
 
-    protected void createFixtures() {
+    protected void createFixture() {
         Polygon p = Geometry.scale(registeredShipWreck.getPolygon(), scale.x);
         BodyFixture bodyFixture = new BodyFixture(p);
         bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);

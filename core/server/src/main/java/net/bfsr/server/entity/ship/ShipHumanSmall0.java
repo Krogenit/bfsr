@@ -28,6 +28,7 @@ public class ShipHumanSmall0 extends Ship {
 
     @Override
     public void init() {
+        super.init();
         setEngine(new Engine(1.2f, 1.0f, 1.0f, 30.0f, 0.99f, 2.5f));
 
         setReactor(new Reactor(30.0f, 9.0f));
@@ -60,7 +61,7 @@ public class ShipHumanSmall0 extends Ship {
     }
 
     @Override
-    protected void createBody(float x, float y) {
+    protected void initBody() {
         Vector2[] vertices = new Vector2[7];
         vertices[0] = new Vector2(-2.9f, 0.2f);
         vertices[1] = new Vector2(-2.9f, -0.2f);
@@ -70,11 +71,9 @@ public class ShipHumanSmall0 extends Ship {
         vertices[5] = new Vector2(0.6f, 3.1f);
         vertices[6] = new Vector2(-1.0f, 3.1f);
         BodyFixture fixture = new BodyFixture(new Polygon(vertices));
-        fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-        fixture.setFilter(new ShipFilter(this));
+        setupFixture(fixture);
         body.addFixture(fixture);
-        recalculateMass();
-        body.translate(x, y);
+        body.setMass(MassType.NORMAL);
         body.setUserData(this);
         body.setLinearDamping(0.05f);
         body.setAngularDamping(0.005f);

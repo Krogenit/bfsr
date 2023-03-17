@@ -10,10 +10,10 @@ import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.font.string.StringObject;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
-import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.settings.Option;
 import net.bfsr.settings.SettingsCategory;
 import net.bfsr.settings.option.SettingsOption;
+import net.bfsr.texture.TextureRegister;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11C;
 

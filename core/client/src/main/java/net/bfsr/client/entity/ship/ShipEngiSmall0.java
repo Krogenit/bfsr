@@ -20,6 +20,7 @@ import net.bfsr.entity.ship.ShipType;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.physics.PhysicsUtils;
+import net.bfsr.texture.TextureRegister;
 import net.bfsr.util.CollisionObjectUtils;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Polygon;
@@ -37,6 +38,7 @@ public class ShipEngiSmall0 extends Ship {
 
     @Override
     public void init() {
+        super.init();
         setEngine(new Engine(1.2f, 1.0f, 1.0f, 30.0f, 0.99f, 2.5f));
         setReactor(new Reactor(30.0f, 9.0f));
         setHull(new Hull(22.5f, 0.0225f));
@@ -62,7 +64,7 @@ public class ShipEngiSmall0 extends Ship {
     }
 
     @Override
-    protected void createBody(float x, float y) {
+    protected void initBody() {
         Vector2[] vertices = new Vector2[7];
         vertices[0] = new Vector2(-3.6f, 0.0f);
         vertices[1] = new Vector2(-1.7f, -2.0f);

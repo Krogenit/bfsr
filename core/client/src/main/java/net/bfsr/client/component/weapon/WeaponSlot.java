@@ -9,10 +9,10 @@ import net.bfsr.client.network.packet.common.PacketWeaponShoot;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.TextureLoader;
-import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.client.world.WorldClient;
+import net.bfsr.texture.TextureRegister;
 import net.bfsr.util.TimeUtils;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
@@ -137,7 +137,7 @@ public abstract class WeaponSlot extends TextureObject {
             Object userData = bodyFixture.getUserData();
             if (userData == this) {
                 shipBody.removeFixture(bodyFixture);
-                ship.recalculateMass();
+                shipBody.updateMass();
                 break;
             }
         }

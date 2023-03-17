@@ -19,7 +19,7 @@ import net.bfsr.config.component.ShieldConfig;
 import net.bfsr.entity.ship.ShipType;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RotationHelper;
-import net.bfsr.physics.PhysicsUtils;
+import net.bfsr.texture.TextureRegister;
 import net.bfsr.util.CollisionObjectUtils;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Polygon;
@@ -37,6 +37,7 @@ public class ShipSaimonSmall0 extends Ship {
 
     @Override
     public void init() {
+        super.init();
         setEngine(new Engine(1.2f, 1.0f, 1.0f, 30.0f, 0.99f, 2.6f));
 
         setReactor(new Reactor(30.0f, 9.75f));
@@ -69,26 +70,30 @@ public class ShipSaimonSmall0 extends Ship {
     }
 
     @Override
-    protected void createBody(float x, float y) {
-        Vector2[] vertices = new Vector2[4];
-        vertices[0] = new Vector2(-5.05f, -1.75f);
-        vertices[1] = new Vector2(-3.45f, -1.75f);
-        vertices[2] = new Vector2(-0.57f, -0.95f);
-        vertices[3] = new Vector2(-1.5f, -0.0f);
-        BodyFixture fixture = new BodyFixture(new Polygon(vertices));
-        fixture.setFilter(new ShipFilter(this));
-        fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-        body.addFixture(fixture);
+    protected void initBody() {
+        Vector2[] vertices = new Vector2[21];
+        vertices[0] = new Vector2(-3.83f, -0.0f);
+        vertices[1] = new Vector2(-3.23f, -1.33f);
+        vertices[2] = new Vector2(-4.90f, -1.8f);
+        vertices[3] = new Vector2(-3.17f, -1.77f);
+        vertices[4] = new Vector2(-0.33f, -0.93f);
+        vertices[5] = new Vector2(-1.13f, -2.37f);
+        vertices[6] = new Vector2(-1.03f, -3.20f);
+        vertices[7] = new Vector2(1.35f, -3.20f);
+        vertices[8] = new Vector2(1.75f, -1.0f);
+        vertices[9] = new Vector2(3.63f, -1.0f);
+        vertices[10] = new Vector2(4.9f, -0.30f);
 
-        vertices = new Vector2[4];
-        vertices[0] = new Vector2(-1.5f, 0.0f);
-        vertices[1] = new Vector2(-0.57f, 0.85f);
-        vertices[2] = new Vector2(-3.1f, 1.65f);
-        vertices[3] = new Vector2(-5.05f, 1.65f);
-        fixture = new BodyFixture(new Polygon(vertices));
-        fixture.setFilter(new ShipFilter(this));
-        fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-        body.addFixture(fixture);
+        vertices[11] = new Vector2(4.9f, 0.22f);
+        vertices[12] = new Vector2(3.63f, 0.92f);
+        vertices[13] = new Vector2(1.75f, 0.92f);
+        vertices[14] = new Vector2(1.35f, 3.16f);
+        vertices[15] = new Vector2(-1.03f, 3.16f);
+        vertices[16] = new Vector2(-1.13f, 2.37f);
+        vertices[17] = new Vector2(-0.33f, 0.93f);
+        vertices[18] = new Vector2(-3.17f, 1.65f);
+        vertices[19] = new Vector2(-4.90f, 1.65f);
+        vertices[20] = new Vector2(-3.23f, 1.28f);
 
         vertices = new Vector2[6];
         vertices[0] = new Vector2(-3.3f, -0.9f);
@@ -112,15 +117,14 @@ public class ShipSaimonSmall0 extends Ship {
         fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         body.addFixture(fixture);
 
-        vertices = new Vector2[4];
-        vertices[0] = new Vector2(-0.9f, 3.05f);
-        vertices[1] = new Vector2(-0.4f, 0.75f);
-        vertices[2] = new Vector2(1.4f, 0.75f);
-        vertices[3] = new Vector2(1.4f, 3.05f);
-        fixture = new BodyFixture(new Polygon(vertices));
-        fixture.setFilter(new ShipFilter(this));
-        fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-        body.addFixture(fixture);
+        SweepLine sweepLine = new SweepLine();
+        List<Convex> convexes = sweepLine.decompose(vertices);
+        for (int i = 0; i < convexes.size(); i++) {
+            Convex convex = convexes.get(i);
+            BodyFixture fixture = new BodyFixture(convex);
+            setupFixture(fixture);
+            body.addFixture(fixture);
+        }
 
 
         recalculateMass();

@@ -42,6 +42,7 @@ public abstract class Bullet extends CollisionObject {
         this.ship = ship;
         this.bulletSpeed = bulletSpeed;
         energy = damage.getAverageDamage();
+        init();
         setBulletVelocityAndStartTransform(x, y);
         world.addBullet(this);
         MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnBullet(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
@@ -72,7 +73,6 @@ public abstract class Bullet extends CollisionObject {
         sin = LUT.sin(rotateToVector);
         cos = LUT.cos(rotateToVector);
         body.getTransform().setRotation(sin, cos);
-        updateWorldAABB();
     }
 
     @Override
@@ -85,7 +85,7 @@ public abstract class Bullet extends CollisionObject {
                     if (damageShip(ship)) {
                         //Hull damage
                         destroyBullet(ship, contact, normal);
-                        setDead(true);
+                        setDead();
                     } else {
                         //Shield reflection
                         destroyBullet(ship, contact, normal);

@@ -8,7 +8,7 @@ import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
-import net.bfsr.client.renderer.texture.TextureRegister;
+import net.bfsr.texture.TextureRegister;
 import org.lwjgl.glfw.GLFW;
 
 public class GuiInGameMenu extends Gui {

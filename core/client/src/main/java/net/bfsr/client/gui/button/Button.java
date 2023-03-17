@@ -7,9 +7,9 @@ import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringCache;
 import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.font.string.StringObject;
-import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.client.sound.GuiSoundSource;
 import net.bfsr.client.sound.SoundRegistry;
+import net.bfsr.texture.TextureRegister;
 import net.bfsr.util.RunnableUtils;
 
 public class Button extends TexturedGuiObject {

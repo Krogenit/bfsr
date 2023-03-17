@@ -20,6 +20,7 @@ import net.bfsr.client.renderer.texture.TextureGenerator;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.command.Command;
 import net.bfsr.faction.Faction;
+import net.bfsr.texture.TextureRegister;
 import net.bfsr.util.DecimalUtils;
 import net.bfsr.world.World;
 import org.joml.Vector2f;

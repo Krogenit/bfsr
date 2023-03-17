@@ -9,7 +9,7 @@ import net.bfsr.client.language.Lang;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.font.string.StringObject;
-import net.bfsr.client.renderer.texture.TextureRegister;
+import net.bfsr.texture.TextureRegister;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

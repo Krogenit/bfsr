@@ -12,10 +12,10 @@ import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
-import net.bfsr.client.renderer.texture.TextureRegister;
 import net.bfsr.collision.AxisAlignedBoundingBox;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.MathUtils;
+import net.bfsr.texture.TextureRegister;
 
 public class GuiFactionSelect extends Gui {
     private final TextureObject shipHuman = new TextureObject();

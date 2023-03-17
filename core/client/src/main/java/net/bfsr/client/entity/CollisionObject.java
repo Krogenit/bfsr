@@ -18,7 +18,7 @@ import org.joml.Vector2f;
 import java.util.List;
 
 @NoArgsConstructor
-public abstract class CollisionObject extends TextureObject {
+public class CollisionObject extends TextureObject {
     private static final Transform IDENTITY_TRANSFORM = new Transform();
     private static final AABB CACHED_AABB_0 = new AABB(0, 0, 0, 0);
     private static final AABB CACHED_AABB_1 = new AABB(0, 0, 0, 0);
@@ -47,8 +47,7 @@ public abstract class CollisionObject extends TextureObject {
         super(texture, x, y, rotation, scaleX, scaleY, r, g, b, a);
         this.world = world;
         this.id = id;
-        createBody(x, y);
-        createAABB();
+        this.body.getTransform().setTranslation(x, y);
     }
 
     protected CollisionObject(WorldClient world, int id, float x, float y, float rotation, float scaleX, float scaleY, Texture texture) {
@@ -60,6 +59,7 @@ public abstract class CollisionObject extends TextureObject {
         this(world, id, x, y, 0, scaleX, scaleY, r, g, b, a, texture);
         this.sin = sin;
         this.cos = cos;
+        this.body.getTransform().setRotation(sin, cos);
     }
 
     protected CollisionObject(WorldClient world, int id, float x, float y, float scaleX, float scaleY, float r, float g, float b, float a, Texture texture) {
@@ -74,18 +74,11 @@ public abstract class CollisionObject extends TextureObject {
         this.world = world;
     }
 
-    protected abstract void createBody(float x, float y);
-
-    protected void createAABB() {
-        AABB aabb = computeAABB();
-
-        if (this.aabb != null) {
-            this.aabb.set((float) aabb.getMinX(), (float) aabb.getMinY(), (float) aabb.getMaxX(), (float) aabb.getMaxY());
-        } else {
-            this.aabb = new AxisAlignedBoundingBox((float) aabb.getMinX(), (float) aabb.getMinY(), (float) aabb.getMaxX(), (float) aabb.getMaxY());
-            this.worldAABB = new AxisAlignedBoundingBox(this.aabb);
-        }
+    public void init() {
+        initBody();
     }
+
+    protected void initBody() {}
 
     protected AABB computeAABB() {
         List<BodyFixture> fixtures = body.getFixtures();
@@ -99,9 +92,8 @@ public abstract class CollisionObject extends TextureObject {
         return CACHED_AABB_0;
     }
 
-    protected void updateWorldAABB() {
-        Vector2f position = getPosition();
-        worldAABB.set(aabb.getMin().x + position.x, aabb.getMin().y + position.y, aabb.getMax().x + position.x, aabb.getMax().y + position.y);
+    protected void updateAABB() {
+        body.computeAABB(aabb);
     }
 
     @Override
@@ -118,7 +110,9 @@ public abstract class CollisionObject extends TextureObject {
     public void postPhysicsUpdate() {
         sin = (float) body.getTransform().getSint();
         cos = (float) body.getTransform().getCost();
-        updateWorldAABB();
+        position.x = (float) body.getTransform().getTranslationX();
+        position.y = (float) body.getTransform().getTranslationY();
+        updateAABB();
     }
 
     public void updateClientPositionFromPacket(Vector2f position, float rotation, Vector2f velocity, float angularVelocity) {

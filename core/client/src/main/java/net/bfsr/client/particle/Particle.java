@@ -7,7 +7,7 @@ import net.bfsr.client.entity.TextureObject;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
-import net.bfsr.client.renderer.texture.TextureRegister;
+import net.bfsr.texture.TextureRegister;
 import net.bfsr.util.MutableInt;
 import net.bfsr.util.TimeUtils;
 import org.joml.Vector2f;

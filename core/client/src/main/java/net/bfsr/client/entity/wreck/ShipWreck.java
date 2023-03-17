@@ -39,7 +39,7 @@ public class ShipWreck extends Wreck {
     }
 
     @Override
-    protected void createFixtures() {
+    protected void createFixture() {
         if (body.getFixtures().size() > 0) body.removeFixture(0);
         BodyFixture bodyFixture = new BodyFixture(registeredShipWreck.getPolygon());
         bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);

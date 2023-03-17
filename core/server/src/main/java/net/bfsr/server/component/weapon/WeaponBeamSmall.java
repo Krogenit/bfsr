@@ -36,6 +36,6 @@ public class WeaponBeamSmall extends WeaponSlotBeam {
         bodyFixture.setFilter(new ShipFilter(ship));
         bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         ship.getBody().addFixture(bodyFixture);
-        ship.recalculateMass();
+        ship.getBody().updateMass();
     }
 }

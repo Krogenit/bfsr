@@ -103,8 +103,8 @@ public class AiAttackTarget extends AiTask {
 
         Direction[] dirs = CollisionObjectUtils.calculateDirectionsToOtherObject(ship, targetPos.x, targetPos.y);
         if (minTargetToShip >= maxDistance - targetSizeAverage - shipSizeAverage) {
-            if (dirs[0] != null) ship.move(ship, dirs[0]);
-            if (dirs[1] != null) ship.move(ship, dirs[1]);
+            if (dirs[0] != null) ship.move(dirs[0]);
+            if (dirs[1] != null) ship.move(dirs[1]);
         } else if (distanceToTarget < maxDistance - targetSizeAverage - shipSizeAverage) {
             Direction dir = CollisionObjectUtils.calculateDirectionToOtherObject(ship, targetPos.x, targetPos.y);
             if (dir == Direction.BACKWARD) {
@@ -116,10 +116,10 @@ public class AiAttackTarget extends AiTask {
             } else if (dir == Direction.RIGHT) {
                 dir = Direction.LEFT;
             }
-            ship.move(ship, dir);
+            ship.move(dir);
             if (curDir != null && changeDirTimer > 0) {
                 changeDirTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-                ship.move(ship, curDir);
+                ship.move(curDir);
             } else {
                 Random rand = ship.getWorld().getRand();
                 if (rand.nextInt(2) == 0)
@@ -131,7 +131,7 @@ public class AiAttackTarget extends AiTask {
         } else {
             if (curDir != null && changeDirTimer > 0) {
                 changeDirTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-                ship.move(ship, curDir);
+                ship.move(curDir);
             } else {
                 Random rand = ship.getWorld().getRand();
                 if (rand.nextInt(2) == 0)

@@ -4,7 +4,7 @@ import net.bfsr.client.core.Core;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.string.StringObject;
-import net.bfsr.client.renderer.texture.TextureRegister;
+import net.bfsr.texture.TextureRegister;
 
 public class GuiDisconnected extends Gui {
     private final String errorMessage;

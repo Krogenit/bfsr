@@ -14,7 +14,7 @@ import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
 @NoArgsConstructor
-public abstract class CollisionObject extends GameObject {
+public class CollisionObject extends GameObject {
     @Getter
     protected WorldServer world;
     @Getter
@@ -37,14 +37,14 @@ public abstract class CollisionObject extends GameObject {
         super(x, y, rotation, scaleX, scaleY);
         this.world = world;
         this.id = id;
-        createBody(x, y);
-        createAABB();
+        this.body.getTransform().setTranslation(x, y);
     }
 
     protected CollisionObject(WorldServer world, int id, float x, float y, float sin, float cos, float scaleX, float scaleY) {
         this(world, id, x, y, 0, scaleX, scaleY);
         this.sin = sin;
         this.cos = cos;
+        this.body.getTransform().setRotation(sin, cos);
     }
 
     protected CollisionObject(WorldServer world, int id, float x, float y, float scaleX, float scaleY) {
@@ -55,29 +55,17 @@ public abstract class CollisionObject extends GameObject {
         this.world = world;
     }
 
-    protected abstract void createBody(float x, float y);
-
-    protected void createAABB() {
-        AABB aabb = CollisionObjectUtils.computeAABB(body);
-
-        if (this.aabb != null) {
-            this.aabb.set((float) aabb.getMinX(), (float) aabb.getMinY(), (float) aabb.getMaxX(), (float) aabb.getMaxY());
-        } else {
-            this.aabb = new AxisAlignedBoundingBox((float) aabb.getMinX(), (float) aabb.getMinY(), (float) aabb.getMaxX(), (float) aabb.getMaxY());
-            this.worldAABB = new AxisAlignedBoundingBox(this.aabb);
-        }
+    public void init() {
+        initBody();
     }
 
-
-    protected void updateWorldAABB() {
-        Vector2f position = getPosition();
-        worldAABB.set(aabb.getMin().x + position.x, aabb.getMin().y + position.y, aabb.getMax().x + position.x, aabb.getMax().y + position.y);
-    }
+    protected void initBody() {}
 
     public void postPhysicsUpdate() {
         sin = (float) body.getTransform().getSint();
         cos = (float) body.getTransform().getCost();
-        updateWorldAABB();
+        position.x = (float) body.getTransform().getTranslationX();
+        position.y = (float) body.getTransform().getTranslationY();
     }
 
     public void updateServerPositionFromPacket(Vector2f pos, float rot, Vector2f velocity, float angularVelocity) {

@@ -132,7 +132,7 @@ public class MainServer extends Loop {
     protected void clear() {
         log.info("Terminating network...");
         networkSystem.shutdown();
-        log.info("Save base data...");
+        log.info("Saving database...");
         dataBase.save();
         log.info("Clearing world...");
         world.clear();

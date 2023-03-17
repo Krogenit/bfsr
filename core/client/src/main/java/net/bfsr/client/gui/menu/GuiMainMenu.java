@@ -7,7 +7,7 @@ import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.multiplayer.GuiConnect;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.renderer.texture.TextureRegister;
+import net.bfsr.texture.TextureRegister;
 
 public class GuiMainMenu extends Gui {
     @Override

@@ -3,7 +3,7 @@ package net.bfsr.client.particle;
 import net.bfsr.client.component.weapon.WeaponSlotBeam;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.ship.Ship;
-import net.bfsr.client.renderer.texture.TextureRegister;
+import net.bfsr.texture.TextureRegister;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
