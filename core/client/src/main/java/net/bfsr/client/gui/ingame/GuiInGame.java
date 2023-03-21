@@ -74,6 +74,12 @@ public class GuiInGame extends Gui {
         if (Option.IS_DEBUG.getBoolean()) debugInfoElement.render();
     }
 
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        shipHUD.resize();
+    }
+
     public void setPing(float ping) {
         debugInfoElement.setPing(ping);
     }

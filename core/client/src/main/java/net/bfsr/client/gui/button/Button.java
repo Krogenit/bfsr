@@ -24,8 +24,8 @@ public class Button extends TexturedGuiObject {
         super(texture, x, y, width, height);
         FontType font = FontType.XOLONIUM;
         StringCache stringCache = font.getStringCache();
-        this.stringObject = new StringObject(font, string, fontSize, StringOffsetType.CENTERED);
-        this.stringObject.setPosition(x + width / 2, (int) (y + (height - stringCache.getHeight(string, fontSize)) / 2.0f + stringCache.getAscent(string, fontSize)));
+        this.stringObject = new StringObject(font, string, x + width / 2, (int) (y + (height - stringCache.getHeight(string, fontSize)) / 2.0f + stringCache.getAscent(string, fontSize)),
+                fontSize, StringOffsetType.CENTERED);
         this.stringObject.compile();
         this.clickSound = SoundRegistry.buttonClick;
         this.collideSound = SoundRegistry.buttonCollide;
@@ -66,6 +66,9 @@ public class Button extends TexturedGuiObject {
 
     @Override
     public void update() {
+        super.update();
+        stringObject.update();
+
         if (collideSound != null) {
             if (isIntersects()) {
                 if (!collided) {
@@ -110,6 +113,7 @@ public class Button extends TexturedGuiObject {
         StringCache stringCache = stringObject.getStringCache();
         stringObject.setPosition(x + width / 2, (int) (y + (height - stringCache.getHeight(stringObject.getString(), stringObject.getFontSize())) / 2.0f +
                 stringCache.getAscent(stringObject.getString(), stringObject.getFontSize())));
+        stringObject.update();
         return this;
     }
 
@@ -132,7 +136,7 @@ public class Button extends TexturedGuiObject {
     }
 
     public void setString(String string) {
-        stringObject.update(string);
+        stringObject.setString(string);
     }
 
     @Override

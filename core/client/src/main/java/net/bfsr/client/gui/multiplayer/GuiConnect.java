@@ -117,7 +117,7 @@ public class GuiConnect extends Gui {
 
     private void setErrorMessage(String text) {
         connectingText.getColor().w = 1.0f;
-        connectingText.update(text);
+        connectingText.setString(text);
     }
 
     @Override

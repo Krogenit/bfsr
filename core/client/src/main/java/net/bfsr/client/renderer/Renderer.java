@@ -8,9 +8,10 @@ import net.bfsr.client.core.Core;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.ingame.GuiInGame;
 import net.bfsr.client.renderer.debug.OpenGLDebugUtils;
-import net.bfsr.client.renderer.font.StringRenderer;
+import net.bfsr.client.renderer.font.StringGeometryBuilder;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
+import net.bfsr.client.renderer.instanced.StringRenderer;
 import net.bfsr.client.renderer.particle.ParticleRenderer;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.settings.Option;
@@ -31,6 +32,8 @@ public class Renderer {
     private final Camera camera = new Camera();
     @Getter
     private final BaseShader shader = new BaseShader();
+    @Getter
+    private final StringGeometryBuilder stringGeometryBuilder = new StringGeometryBuilder();
     @Getter
     private final StringRenderer stringRenderer = new StringRenderer();
     @Getter
@@ -59,8 +62,8 @@ public class Renderer {
         TextureLoader.init();
 
         camera.init(core.getScreenWidth(), core.getScreenHeight());
-        stringRenderer.init();
         spriteRenderer.init();
+        stringRenderer.init(stringGeometryBuilder);
         shader.load();
         shader.init();
 

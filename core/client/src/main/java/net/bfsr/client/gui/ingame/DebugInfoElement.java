@@ -132,10 +132,10 @@ public class DebugInfoElement {
             }
         }
 
-        stringObject.update(stringBuilder.toString());
+        stringObject.setString(stringBuilder.toString());
     }
 
     public void render() {
-        stringObject.render();
+        stringObject.renderNoInterpolation();
     }
 }

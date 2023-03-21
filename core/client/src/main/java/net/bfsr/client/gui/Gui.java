@@ -23,7 +23,6 @@ public abstract class Gui {
         height = Core.get().getScreenHeight();
         updateCenter();
         initElements();
-        resize(width, height);
     }
 
     private void updateCenter() {
@@ -34,6 +33,8 @@ public abstract class Gui {
     protected abstract void initElements();
 
     public void registerGuiObject(IGuiObject guiObject) {
+        guiObject.resize(width, height);
+        guiObject.update();
         guiObjects.add(guiObject);
     }
 

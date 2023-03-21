@@ -433,7 +433,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
     protected void createName() {
         if (name != null) {
-            stringObject.update(name);
+            stringObject.setString(name);
         }
     }
 
@@ -462,7 +462,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
             renderShield();
         } else {
             float size = 40.0f * color.w;
-            SpriteRenderer.INSTANCE.addToRenderPipeLine(lastJumpPosition.x, lastJumpPosition.y, jumpPosition.x, jumpPosition.y, rotation, size, size,
+            SpriteRenderer.INSTANCE.add(lastJumpPosition.x, lastJumpPosition.y, jumpPosition.x, jumpPosition.y, rotation, size, size,
                     effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, JUMP_TEXTURE, BufferType.ENTITIES_ADDITIVE);
         }
     }

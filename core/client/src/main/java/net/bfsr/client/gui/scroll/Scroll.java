@@ -5,8 +5,7 @@ import lombok.Setter;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.gui.SimpleGuiObject;
 import net.bfsr.client.input.Mouse;
-import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.SpriteRenderer;
+import net.bfsr.client.renderer.instanced.GUIRenderer;
 import net.bfsr.client.sound.GuiSoundSource;
 import net.bfsr.client.sound.SoundRegistry;
 
@@ -31,6 +30,7 @@ public class Scroll extends SimpleGuiObject {
     private BiFunction<Integer, Integer, Integer> viewHeightResizeFunction = (width, height) -> viewHeight;
     @Setter
     private float scrollModifier = 20.0f;
+    private float accumulator;
 
     public Scroll() {
         super(0, 0, 0, 0);
@@ -42,7 +42,7 @@ public class Scroll extends SimpleGuiObject {
 
     @Override
     public void scroll(float y) {
-        updatePositionAndSize((int) (scroll - y * scrollModifier));
+        accumulator -= y * scrollModifier;
     }
 
     public void scrollBottom() {
@@ -51,6 +51,13 @@ public class Scroll extends SimpleGuiObject {
 
     @Override
     public void update() {
+        super.update();
+
+        if (accumulator != 0) {
+            updatePositionAndSize(scroll + (int) accumulator);
+            accumulator = 0;
+        }
+
         if (movingByMouse) {
             updatePositionAndSize((int) (clickStartScroll + (Mouse.getPosition().y - mouseStartClickY) / (scrollHeight / (float) totalHeight)));
         }
@@ -119,7 +126,7 @@ public class Scroll extends SimpleGuiObject {
 
     @Override
     public void render() {
-        SpriteRenderer.INSTANCE.addGUIElementToRenderPipeLine(x, y, width, height, color.x, color.y, color.z, color.w, 0, BufferType.GUI);
+        GUIRenderer.addGUIElementToRenderPipeLine(lastX, lastY, x, y, width, height, color.x, color.y, color.z, color.w);
     }
 
     @Override

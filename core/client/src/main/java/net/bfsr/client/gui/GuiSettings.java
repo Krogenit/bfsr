@@ -9,6 +9,7 @@ import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.font.string.StringObject;
 import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.GUIRenderer;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.settings.Option;
 import net.bfsr.settings.SettingsCategory;
@@ -145,7 +146,7 @@ public class GuiSettings extends Gui {
     @Override
     public void render(float interpolation) {
         if (isInGame) {
-            SpriteRenderer.INSTANCE.addGUIElementToRenderPipeLine(0, 0, width, height, 0.0f, 0.0f, 0.0f, 0.5f, 0, BufferType.GUI);
+            GUIRenderer.addGUIElementToRenderPipeLine(0, 0, width, height, 0.0f, 0.0f, 0.0f, 0.5f);
         }
 
         backgroundTop.render();

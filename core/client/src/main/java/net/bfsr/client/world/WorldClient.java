@@ -240,7 +240,7 @@ public class WorldClient extends World<Ship, Bullet> {
         float zoom = (float) (0.5f + Math.log(cameraZoom) * 0.01f);
         float scaleX = scale.x / cameraZoom * zoom;
         float scaleY = scale.y / cameraZoom * zoom;
-        SpriteRenderer.INSTANCE.addToRenderPipeLine(lastX, lastY, x, y, 0, 0, scaleX, scaleY, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f, backgroundTexture, BufferType.BACKGROUND);
+        SpriteRenderer.INSTANCE.add(lastX, lastY, x, y, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f, backgroundTexture, BufferType.BACKGROUND);
     }
 
     public void renderAmbient() {

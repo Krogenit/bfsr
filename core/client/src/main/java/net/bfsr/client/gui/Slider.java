@@ -46,6 +46,10 @@ public class Slider extends TexturedGuiObject {
 
     @Override
     public void update() {
+        super.update();
+        slider.update();
+        stringObject.update();
+
         if (movingByMouse) {
             int sliderX = (int) Mouse.getPosition().x - slider.width / 2;
 
@@ -61,7 +65,7 @@ public class Slider extends TexturedGuiObject {
 
             option.changeValue(value);
 
-            stringObject.update(Lang.getString("settings." + option.getOptionName()) + ": " + DecimalUtils.formatWithToDigits(option.getFloat()));
+            stringObject.setString(Lang.getString("settings." + option.getOptionName()) + ": " + DecimalUtils.formatWithToDigits(option.getFloat()));
         }
 
         if (isIntersects()) {

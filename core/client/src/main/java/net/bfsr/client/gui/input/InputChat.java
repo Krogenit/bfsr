@@ -7,6 +7,7 @@ import net.bfsr.client.network.packet.common.PacketChatMessage;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
+import net.bfsr.client.renderer.instanced.StringRenderer;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
@@ -36,7 +37,7 @@ public class InputChat extends InputBox {
             if (input.length() > 0) {
                 Core.get().sendTCPPacket(new PacketChatMessage(Core.get().getPlayerName() + ": " + input));
             }
-            stringObject.update("");
+            stringObject.setString("");
             resetCursorPosition();
         }
     }
@@ -71,7 +72,7 @@ public class InputChat extends InputBox {
             String string = lines.get(i);
             int stringHeight = FontType.DEFAULT.getStringCache().getStringHeight(string, fontSize, width - 40, -1);
             if (lineY >= chatTop && lineY < chatBottom || lineY + stringHeight >= chatTop && lineY + stringHeight < chatBottom) {
-                Core.get().getRenderer().getStringRenderer().render(string, FontType.DEFAULT.getStringCache(), fontSize, x + lineX, y + lineY, textColor.x, textColor.y,
+                StringRenderer.get().render(string, FontType.DEFAULT.getStringCache(), fontSize, x + lineX, y + lineY, textColor.x, textColor.y,
                         textColor.z, textColor.w, width - 40, -1, BufferType.GUI);
             }
 

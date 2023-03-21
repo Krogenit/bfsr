@@ -1,16 +1,12 @@
 package net.bfsr.client.renderer.font;
 
 import net.bfsr.client.renderer.font.string.GLString;
-import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import org.joml.Vector3f;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
-public class StringRenderer {
-    private static final int INITIAL_QUADS_COUNT = 128;
-
+public class StringGeometryBuilder {
     private final String newLineString = "\n";
     private final char newLineChar = '\n';
     private final IStringXOffsetSupplier[] offsetFunctions = new IStringXOffsetSupplier[3];
@@ -18,16 +14,10 @@ public class StringRenderer {
 
     private final int defaultIndent = 0;
 
-    private final GLString glString = new GLString();
-
-    public StringRenderer() {
+    public StringGeometryBuilder() {
         offsetFunctions[StringOffsetType.DEFAULT.ordinal()] = (string, stringCache) -> 0.0f;
         offsetFunctions[StringOffsetType.CENTERED.ordinal()] = (string, stringCache) -> -stringCache.getStringWidth(string) / 2.0f;
         offsetFunctions[StringOffsetType.RIGHT.ordinal()] = (string, stringCache) -> -stringCache.getStringWidth(string);
-    }
-
-    public void init() {
-        glString.init(INITIAL_QUADS_COUNT);
     }
 
     private void begin(GLString glString) {
@@ -46,7 +36,7 @@ public class StringRenderer {
         createString(glString, stringCache, string, x, y, fontSize, r, g, b, a, StringOffsetType.DEFAULT);
     }
 
-    private void createString(GLString glString, StringCache stringCache, String text, float x, float y, int fontSize, float r, float g, float b, float a, int maxWidth) {
+    public void createString(GLString glString, StringCache stringCache, String text, float x, float y, int fontSize, float r, float g, float b, float a, int maxWidth) {
         createString(glString, stringCache, text, x, y, fontSize, r, g, b, a, maxWidth, StringOffsetType.DEFAULT);
     }
 
@@ -55,7 +45,7 @@ public class StringRenderer {
         createString(glString, stringCache, text, x, y, fontSize, r, g, b, a, maxWidth, offsetType, defaultIndent);
     }
 
-    private void createString(GLString glString, StringCache stringCache, String text, float x, float y, int fontSize, float r, float g, float b, float a, int maxWidth, int indent) {
+    public void createString(GLString glString, StringCache stringCache, String text, float x, float y, int fontSize, float r, float g, float b, float a, int maxWidth, int indent) {
         createString(glString, stringCache, text, x, y, fontSize, r, g, b, a, maxWidth, StringOffsetType.DEFAULT, indent);
     }
 
@@ -126,31 +116,6 @@ public class StringRenderer {
         glString.setWidth(entry.advance / 2);
         stringParams.addHeight(height);
         stringParams.setY(stringParams.getY() + height);
-    }
-
-    public void render(GLString glString, BufferType bufferType) {
-        SpriteRenderer.INSTANCE.addToRenderPipeLine(glString, bufferType);
-    }
-
-    public void render(String string, StringCache stringCache, int fontSize, float x, float y, BufferType bufferType) {
-        render(string, stringCache, fontSize, x, y, 1.0f, 1.0f, 1.0f, 1.0f, bufferType);
-    }
-
-    public void render(String string, StringCache stringCache, int fontSize, float x, float y, float r, float g, float b, float a, BufferType bufferType) {
-        createString(glString, stringCache, string, x, y, fontSize, r, g, b, a);
-        render(glString, bufferType);
-    }
-
-    public int render(String string, StringCache stringCache, int fontSize, float x, float y, float r, float g, float b, float a, int maxWidth, BufferType bufferType) {
-        createString(glString, stringCache, string, x, y, fontSize, r, g, b, a, maxWidth);
-        render(glString, bufferType);
-        return glString.getHeight();
-    }
-
-    public int render(String string, StringCache stringCache, int fontSize, float x, float y, float r, float g, float b, float a, int maxWidth, int indent, BufferType bufferType) {
-        createString(glString, stringCache, string, x, y, fontSize, r, g, b, a, maxWidth, indent);
-        render(glString, bufferType);
-        return glString.getHeight();
     }
 
     private void addGlyph(Glyph glyph, float startX, float startY, float r, float g, float b, float a, GLString glString) {

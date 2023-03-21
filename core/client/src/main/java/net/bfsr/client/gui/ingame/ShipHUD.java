@@ -81,11 +81,11 @@ public class ShipHUD {
         buttonControl.atBottomRightCorner(-128 - hudShip.getWidth() / 2, -hudShip.getHeight() - 26);
 
         if (Core.get().getWorld() != null && Core.get().getWorld().getPlayerShip() == null) {
-            controlText.update(Lang.getString("gui.control"));
+            controlText.setString(Lang.getString("gui.control"));
         } else {
-            controlText.update(Lang.getString("gui.cancelControl"));
+            controlText.setString(Lang.getString("gui.cancelControl"));
         }
-        gui.registerGuiObject(controlText.atBottomRightCorner(-hudShip.getWidth() / 2 - controlText.getStringWidth() / 2, -hudShip.getHeight() - 1));
+        gui.registerGuiObject(controlText.atBottomRightCorner(-hudShip.getWidth() / 2 - controlText.getWidth() / 2, -hudShip.getHeight() - 1));
         gui.registerGuiObject(buttonControl);
     }
 
@@ -111,17 +111,15 @@ public class ShipHUD {
     }
 
     private void renderHullValue(Ship ship, int x, int y) {
-        textHull.update(Math.round(ship.getHull().getHull()) + "");
-        textHull.setPosition(x - textHull.getStringWidth() / 2, y + 16);
-        SpriteRenderer.INSTANCE.addToRenderPipeLine(x, y + 12, textHull.getStringWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, BufferType.GUI);
-        textHull.render();
+        textHull.setString(Math.round(ship.getHull().getHull()) + "");
+        SpriteRenderer.INSTANCE.add(x, y + 12, textHull.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, BufferType.GUI);
+        textHull.renderNoInterpolation();
     }
 
     private void renderShieldValue(ShieldCommon shield, int x, int y) {
-        textShield.update(Math.round(shield.getShield()) + "");
-        textShield.setPosition(x - textShield.getStringWidth() / 2, y + 74);
-        SpriteRenderer.INSTANCE.addToRenderPipeLine(x, y + 70, textShield.getStringWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, BufferType.GUI);
-        textShield.render();
+        textShield.setString(Math.round(shield.getShield()) + "");
+        SpriteRenderer.INSTANCE.add(x, y + 70, textShield.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, BufferType.GUI);
+        textShield.renderNoInterpolation();
     }
 
     private void renderArmorPlates(Ship ship, int x, int y) {
@@ -189,13 +187,11 @@ public class ShipHUD {
             }
         }
 
-        shipCargo.setPosition(hudShipAdd0.getX() + 16, hudShipAdd0.getY() + 26);
-        shipCargo.update(Lang.getString(Lang.getString("gui.shipCargo") + ": " + currentShip.getCargo().getCapacity() + "/" + currentShip.getCargo().getMaxCapacity()));
-        shipCargo.render();
+        shipCargo.setString(Lang.getString(Lang.getString("gui.shipCargo") + ": " + currentShip.getCargo().getCapacity() + "/" + currentShip.getCargo().getMaxCapacity()));
+        shipCargo.renderNoInterpolation();
 
-        shipCrew.setPosition(hudShipAdd0.getX() + 16, hudShipAdd0.getY() + 40);
-        shipCrew.update(Lang.getString(Lang.getString("gui.shipCrew") + ": " + currentShip.getCrew().getCrewSize() + "/" + currentShip.getCrew().getMaxCrewSize()));
-        shipCrew.render();
+        shipCrew.setString(Lang.getString(Lang.getString("gui.shipCrew") + ": " + currentShip.getCrew().getCrewSize() + "/" + currentShip.getCrew().getMaxCrewSize()));
+        shipCrew.renderNoInterpolation();
 
         renderWeaponSlots(currentShip, x, y, shipSize);
     }
@@ -236,11 +232,11 @@ public class ShipHUD {
     }
 
     public void onShipControlStarted() {
-        controlText.update(Lang.getString("gui.cancelControl"));
+        controlText.setString(Lang.getString("gui.cancelControl"));
     }
 
     private void onShipControlCanceled() {
-        controlText.update(Lang.getString("gui.control"));
+        controlText.setString(Lang.getString("gui.control"));
     }
 
     public void render() {
@@ -249,10 +245,21 @@ public class ShipHUD {
     }
 
     private void renderQuad(int x, int y, float rot, int width, int height, float r, float g, float b, float a, Texture texture) {
-        SpriteRenderer.INSTANCE.addToRenderPipeLine(x, y, rot, width, height, r, g, b, a, texture, BufferType.GUI);
+        SpriteRenderer.INSTANCE.add(x, y, rot, width, height, r, g, b, a, texture, BufferType.GUI);
     }
 
     private void renderQuad(int x, int y, int width, int height, float r, float g, float b, float a, Texture texture) {
-        SpriteRenderer.INSTANCE.addToRenderPipeLine(x, y, width, height, r, g, b, a, texture, BufferType.GUI);
+        SpriteRenderer.INSTANCE.add(x, y, width, height, r, g, b, a, texture, BufferType.GUI);
+    }
+
+    public void resize() {
+        shipCargo.setPosition(hudShipAdd0.getX() + 16, hudShipAdd0.getY() + 26);
+        shipCrew.setPosition(hudShipAdd0.getX() + 16, hudShipAdd0.getY() + 40);
+
+        int x = hudShip.getX() + hudShip.getWidth() / 2;
+        int y = hudShip.getY() + hudShip.getHeight() / 2;
+
+        textHull.setPosition(x - textHull.getWidth() / 2, y + 16);
+        textShield.setPosition(x - textShield.getWidth() / 2, y + 74);
     }
 }
