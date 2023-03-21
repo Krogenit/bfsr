@@ -6,6 +6,6 @@ import net.bfsr.collision.filter.CollisionFilter;
 
 public class BulletFilter extends CollisionFilter<Bullet> {
     public BulletFilter(Bullet userData) {
-        super(userData, Categories.BULLET_CATEGORY, Categories.SHIP_CATEGORY | Categories.WRECK_CATEGORY | Categories.BULLET_CATEGORY);
+        super(userData, Categories.BULLET_CATEGORY, 0);
     }
 }

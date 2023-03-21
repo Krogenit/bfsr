@@ -6,10 +6,23 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import net.bfsr.client.network.packet.client.*;
 import net.bfsr.client.network.packet.common.*;
-import net.bfsr.client.network.packet.server.*;
+import net.bfsr.client.network.packet.server.component.*;
+import net.bfsr.client.network.packet.server.effect.PacketSpawnParticleEffect;
+import net.bfsr.client.network.packet.server.entity.PacketRemoveObject;
+import net.bfsr.client.network.packet.server.entity.bullet.PacketSpawnBullet;
+import net.bfsr.client.network.packet.server.entity.ship.PacketDestroyingShip;
+import net.bfsr.client.network.packet.server.entity.ship.PacketShipInfo;
 import net.bfsr.client.network.packet.server.entity.ship.PacketShipSetSpawned;
+import net.bfsr.client.network.packet.server.entity.ship.PacketSpawnShip;
 import net.bfsr.client.network.packet.server.entity.wreck.PacketShipWreck;
+import net.bfsr.client.network.packet.server.entity.wreck.PacketSpawnWreck;
 import net.bfsr.client.network.packet.server.entity.wreck.PacketSyncDamage;
+import net.bfsr.client.network.packet.server.gui.PacketOpenGui;
+import net.bfsr.client.network.packet.server.login.PacketDisconnectLogin;
+import net.bfsr.client.network.packet.server.login.PacketJoinGame;
+import net.bfsr.client.network.packet.server.login.PacketLoginTCPSuccess;
+import net.bfsr.client.network.packet.server.login.PacketLoginUDPSuccess;
+import net.bfsr.client.network.packet.server.player.PacketSetPlayerShip;
 import net.bfsr.network.Packet;
 
 import java.lang.reflect.InvocationTargetException;
@@ -57,6 +70,7 @@ public class PacketRegistry {
         registerPacket(PacketShipWreck.class);
         registerPacket(PacketSyncDamage.class);
         registerPacket(PacketShipSetSpawned.class);
+        registerPacket(PacketSpawnParticleEffect.class);
     }
 
     private void registerPacket(Class<? extends Packet> packetClass) {

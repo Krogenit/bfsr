@@ -7,12 +7,13 @@ import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 @Getter
 public class BuffersHolder {
     @Setter
-    private Future<?> future;
+    private Future<?> future = CompletableFuture.completedFuture(null);
     private FloatBuffer vertexBuffer;
     private ByteBuffer materialBuffer;
     private final MutableInt vertexBufferIndex = new MutableInt();

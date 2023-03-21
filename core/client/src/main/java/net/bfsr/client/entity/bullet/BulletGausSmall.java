@@ -4,10 +4,8 @@ import net.bfsr.client.collision.filter.BulletFilter;
 import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.entity.bullet.BulletDamage;
-import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.texture.TextureRegister;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
 
@@ -24,14 +22,9 @@ public class BulletGausSmall extends Bullet {
         vertices[2] = new Vector2(0.6f, 0.2f);
         vertices[3] = new Vector2(-0.6f, 0.2f);
         BodyFixture bodyFixture = new BodyFixture(new Polygon(vertices));
-        bodyFixture.setDensity(PhysicsUtils.BULLET_FIXTURE_DENSITY);
-        bodyFixture.setFriction(0.0f);
-        bodyFixture.setRestitution(1.0f);
+        bodyFixture.setSensor(true);
         bodyFixture.setFilter(new BulletFilter(this));
         body.addFixture(bodyFixture);
-        body.setMass(MassType.FIXED_ANGULAR_VELOCITY);
         body.setUserData(this);
-        body.setBullet(true);
-        body.setAngularDamping(Double.MAX_VALUE);
     }
 }

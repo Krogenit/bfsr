@@ -17,7 +17,7 @@ import net.bfsr.server.entity.ship.ShipHumanSmall0;
 import net.bfsr.server.entity.ship.ShipSaimonSmall0;
 import net.bfsr.server.entity.wreck.ShipWreckDamagable;
 import net.bfsr.server.entity.wreck.Wreck;
-import net.bfsr.server.network.packet.server.PacketOpenGui;
+import net.bfsr.server.network.packet.server.gui.PacketOpenGui;
 import net.bfsr.server.player.PlayerServer;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.BodyFixture;

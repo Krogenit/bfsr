@@ -33,18 +33,18 @@ import net.bfsr.server.entity.wreck.Wreck;
 import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.network.packet.common.PacketObjectPosition;
 import net.bfsr.server.network.packet.common.PacketShipEngine;
-import net.bfsr.server.network.packet.server.PacketDestroyingShip;
-import net.bfsr.server.network.packet.server.PacketRemoveObject;
-import net.bfsr.server.network.packet.server.PacketShipInfo;
-import net.bfsr.server.network.packet.server.PacketSpawnShip;
+import net.bfsr.server.network.packet.server.entity.PacketRemoveObject;
+import net.bfsr.server.network.packet.server.entity.ship.PacketDestroyingShip;
+import net.bfsr.server.network.packet.server.entity.ship.PacketShipInfo;
+import net.bfsr.server.network.packet.server.entity.ship.PacketSpawnShip;
 import net.bfsr.server.player.PlayerServer;
 import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.CollisionObjectUtils;
 import net.bfsr.util.TimeUtils;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.dynamics.contact.Contact;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.world.ContactCollisionData;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;
@@ -182,42 +182,39 @@ public abstract class Ship extends CollisionObject implements Damagable {
     }
 
     public void move(Direction dir) {
-        Vector2 r = new Vector2(body.getTransform().getRotationAngle());
+        double sin = body.getTransform().getSint();
+        double cos = body.getTransform().getCost();
+        Vector2 r = new Vector2(cos, sin);
         Vector2f pos = getPosition();
 
-        switch (dir) {
-            case FORWARD:
-                move(r, engine.getForwardSpeed());
-                break;
-            case BACKWARD:
-                r.negate();
-                move(r, engine.getBackwardSpeed());
-                break;
-            case LEFT:
-                r.left();
-                move(r, engine.getSideSpeed());
-                break;
-            case RIGHT:
-                r.right();
-                move(r, engine.getSideSpeed());
-                break;
-            case STOP:
-                body.getLinearVelocity().multiply(engine.getManeuverability() / 1.02f);
+        if (dir == Direction.FORWARD) {
+            move(r, engine.getForwardSpeed());
+        } else if (dir == Direction.BACKWARD) {
+            r.negate();
+            move(r, engine.getBackwardSpeed());
+        } else if (dir == Direction.LEFT) {
+            r.left();
+            move(r, engine.getSideSpeed());
+        } else if (dir == Direction.RIGHT) {
+            r.right();
+            move(r, engine.getSideSpeed());
+        } else if (dir == Direction.STOP) {
+            body.getLinearVelocity().multiply(engine.getManeuverability() / 1.02f);
 
-                float x = -(float) body.getLinearVelocity().x;
-                float y = -(float) body.getLinearVelocity().y;
+            float x = -(float) body.getLinearVelocity().x;
+            float y = -(float) body.getLinearVelocity().y;
 
-                if (Math.abs(x) > 10) {
-                    dir = CollisionObjectUtils.calculateDirectionToOtherObject(this, x + pos.x, pos.y);
-                    onStopMove(dir);
-                }
+            if (Math.abs(x) > 10) {
+                dir = CollisionObjectUtils.calculateDirectionToOtherObject(this, x + pos.x, pos.y);
+                onStopMove(dir);
+            }
 
-                if (Math.abs(y) > 10) {
-                    dir = CollisionObjectUtils.calculateDirectionToOtherObject(this, pos.x, y + pos.y);
-                    onStopMove(dir);
-                }
+            if (Math.abs(y) > 10) {
+                dir = CollisionObjectUtils.calculateDirectionToOtherObject(this, pos.x, y + pos.y);
+                onStopMove(dir);
+            }
 
-                return;
+            return;
         }
 
         onMove(dir);
@@ -233,7 +230,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
         MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketShipEngine(id, direction.ordinal()), getPosition(), WorldServer.PACKET_UPDATE_DISTANCE);
     }
 
-    public void checkCollision(Contact contact, Vector2 normal, Body body) {
+    public void collision(Body body, float contactX, float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
         Object userData = body.getUserData();
         if (userData != null) {
             if (userData instanceof Ship otherShip) {
@@ -343,7 +340,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
         }
     }
 
-    public boolean attackShip(BulletDamage damage, Ship attacker, Vector2f contactPoint, float multiplayer) {
+    public boolean attackShip(BulletDamage damage, Ship attacker, float contactX, float contactY, float multiplayer) {
         lastAttacker = attacker;
         float shieldDamage = damage.getBulletDamageShield() * multiplayer;
 
@@ -353,30 +350,30 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
         float hullDamage = damage.getBulletDamageHull() * multiplayer;
         float armorDamage = damage.getBulletDamageArmor() * multiplayer;
-        Direction dir = CollisionObjectUtils.calculateDirectionToOtherObject(this, contactPoint.x, contactPoint.y);
+        Direction dir = CollisionObjectUtils.calculateDirectionToOtherObject(this, contactX, contactY);
 
         float reducedHullDamage = armor.reduceDamageByArmor(armorDamage, hullDamage, dir);
         hull.damage(reducedHullDamage);
-        onHullDamage(contactPoint);
+        onHullDamage(contactX, contactY);
         return true;
     }
 
-    protected void onHullDamage(Vector2f contactPoint) {
+    protected void onHullDamage(float contactX, float contactY) {
         if (hull.getHull() <= 0) {
             setDestroying();
             MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketDestroyingShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         } else {
-            float polygonRadius = 1.25f;
-            float radius = 3.0f;
+            float polygonRadius = 0.75f;
+            float radius = 2.0f;
 
             double x = body.getTransform().getTranslationX();
             double y = body.getTransform().getTranslationY();
             double sin = body.getTransform().getSint();
             double cos = body.getTransform().getCost();
 
-            Path64 clip = DamageUtils.createCirclePath(contactPoint.x - x, contactPoint.y - y, -sin, cos, 12, polygonRadius);
+            Path64 clip = DamageUtils.createCirclePath(contactX - x, contactY - y, -sin, cos, 12, polygonRadius);
 
-            DamageUtils.damage(this, contactPoint.x, contactPoint.y, clip, radius);
+            DamageUtils.damage(this, contactX, contactY, clip, radius);
         }
     }
 
@@ -459,13 +456,8 @@ public abstract class Ship extends CollisionObject implements Damagable {
     }
 
     @Override
-    public void setRotation(float rotation) {
-        body.getTransform().setRotation(rotation);
-    }
-
-    @Override
-    public void updateServerPositionFromPacket(Vector2f pos, float rot, Vector2f velocity, float angularVelocity) {
-        super.updateServerPositionFromPacket(pos, rot, velocity, angularVelocity);
+    public void updateServerPositionFromPacket(Vector2f pos, float angle, Vector2f velocity, float angularVelocity) {
+        super.updateServerPositionFromPacket(pos, angle, velocity, angularVelocity);
 
         int size = weaponSlots.size();
         for (int i = 0; i < size; i++) {

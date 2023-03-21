@@ -9,7 +9,7 @@ import net.bfsr.server.MainServer;
 import net.bfsr.server.collision.filter.WreckFilter;
 import net.bfsr.server.entity.CollisionObject;
 import net.bfsr.server.network.packet.common.PacketObjectPosition;
-import net.bfsr.server.network.packet.server.PacketRemoveObject;
+import net.bfsr.server.network.packet.server.entity.PacketRemoveObject;
 import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.TimeUtils;
 import org.dyn4j.dynamics.BodyFixture;

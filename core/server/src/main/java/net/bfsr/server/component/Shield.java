@@ -4,9 +4,9 @@ import net.bfsr.component.shield.ShieldCommon;
 import net.bfsr.config.component.ShieldConfig;
 import net.bfsr.server.MainServer;
 import net.bfsr.server.entity.ship.Ship;
-import net.bfsr.server.network.packet.server.PacketShieldRebuild;
-import net.bfsr.server.network.packet.server.PacketShieldRebuildingTime;
-import net.bfsr.server.network.packet.server.PacketShieldRemove;
+import net.bfsr.server.network.packet.server.component.PacketShieldRebuild;
+import net.bfsr.server.network.packet.server.component.PacketShieldRebuildingTime;
+import net.bfsr.server.network.packet.server.component.PacketShieldRemove;
 import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.TimeUtils;
 

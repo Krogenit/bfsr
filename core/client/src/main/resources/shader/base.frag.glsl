@@ -16,6 +16,16 @@ in Data {
 
 sampler2D fireTexture;
 
+vec2 rotateUV(vec2 uv, float rotation) {
+    float mid = 0.5;
+    float cosAngle = cos(rotation);
+    float sinAngle = sin(rotation);
+    return vec2(
+    cosAngle * (uv.x - mid) + sinAngle * (uv.y - mid) + mid,
+    cosAngle * (uv.y - mid) - sinAngle * (uv.x - mid) + mid
+    );
+}
+
 void main() {
     if (!in_Data.useTexture) {
         out_Color = in_Data.color;
@@ -50,7 +60,7 @@ void main() {
     }
     fireMask *= in_Data.fireAmount;
 
-    float fireAmount = texture(fireTexture, vec2(in_Data.textureCoords.x + cos(in_Data.fireUVAnimation), in_Data.textureCoords.y + sin(in_Data.fireUVAnimation))).r;
+    float fireAmount = texture(fireTexture, rotateUV(in_Data.textureCoords, in_Data.fireUVAnimation)).r;
     vec3 fireColor = vec3(fireAmount * 1.0, fireAmount * 0.45, fireAmount * 0.2);
     out_Color = vec4(albedo.rgb * in_Data.color.rgb * colorMask + fireColor * fireMask, albedo.a * clamp(maskAlpha * 4.0, 0.0, 1.0));
 }

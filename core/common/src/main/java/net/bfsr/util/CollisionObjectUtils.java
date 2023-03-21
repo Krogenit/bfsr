@@ -34,29 +34,25 @@ public final class CollisionObjectUtils {
     }
 
     public static float getRotationDifference(GameObject gameObject, Vector2f vector) {
-        Transform transform = gameObject.getBody().getTransform();
-        ROTATE_TO_VECTOR.x = (float) (vector.x - transform.getTranslationX());
-        ROTATE_TO_VECTOR.y = (float) (vector.y - transform.getTranslationY());
+        Vector2f position = gameObject.getPosition();
+        ROTATE_TO_VECTOR.x = vector.x - position.x;
+        ROTATE_TO_VECTOR.y = vector.y - position.y;
 
-        RotationHelper.angleToVelocity(gameObject.getRotation(), 1.0f, ANGLE_TO_VELOCITY);
+        RotationHelper.angleToVelocity(gameObject.getSin(), gameObject.getCos(), 1.0f, ANGLE_TO_VELOCITY);
         return ANGLE_TO_VELOCITY.angle(ROTATE_TO_VECTOR);
     }
 
-    public static void rotateToVector(Body body, Vector2f vector, float rotationSpeed) {
-        Transform transform = body.getTransform();
-        float rot = (float) transform.getRotationAngle();
-        ROTATE_TO_VECTOR.x = (float) (vector.x - transform.getTranslationX());
-        ROTATE_TO_VECTOR.y = (float) (vector.y - transform.getTranslationY());
+    public static void rotateToVector(GameObject gameObject, Vector2f vector, float rotationSpeed) {
+        Body body = gameObject.getBody();
 
-        RotationHelper.angleToVelocity(rot, 1.0f, ANGLE_TO_VELOCITY);
-        float diffRad = ANGLE_TO_VELOCITY.angle(ROTATE_TO_VECTOR);
-        double diffAbs = Math.abs(diffRad);
-        double addRot = Math.min(diffAbs, rotationSpeed * TimeUtils.UPDATE_DELTA_TIME);
+        float diffRad = getRotationDifference(gameObject, vector);
+        float diffAbs = Math.abs(diffRad);
+        float addRot = Math.min(diffAbs, rotationSpeed * TimeUtils.UPDATE_DELTA_TIME);
 
         if (addRot >= diffAbs) {
-            transform.setRotation(Math.atan2(ROTATE_TO_VECTOR.x, -ROTATE_TO_VECTOR.y) - Math.PI / 2.0);
+            gameObject.setRotation(gameObject.getRotation() + diffRad);
         } else {
-            transform.setRotation(rot + (diffRad > 0 ? addRot : -addRot));
+            gameObject.setRotation(gameObject.getRotation() + (diffRad > 0 ? addRot : -addRot));
             body.setAngularVelocity(body.getAngularVelocity() * 0.99f);
         }
     }
@@ -110,22 +106,33 @@ public final class CollisionObjectUtils {
 
         float dist = pos.distance(newPos);
 
-        float alpha = dist >= 10 ? 1.0f : Math.max(dist / 10, 0.01f);
-        float x = pos.x + alpha * (newPos.x - pos.x);
-        float y = pos.y + alpha * (newPos.y - pos.y);
+        float interpolationAmount = 1.0f;
+        if (dist >= 20) {
+            float x = pos.x + (newPos.x - pos.x) * interpolationAmount;
+            float y = pos.y + (newPos.y - pos.y) * interpolationAmount;
+            gameObject.setPosition(x, y);
+        } else {
+            float alpha = Math.max(dist / 20, 0.0f) * interpolationAmount;
+            float x = pos.x + (newPos.x - pos.x) * alpha;
+            float y = pos.y + (newPos.y - pos.y) * alpha;
 
-        gameObject.setPosition(x, y);
+            gameObject.setPosition(x, y);
+        }
     }
 
-    public static void updateRot(Body body, float newRotation) {
-        float currentRotation = (float) body.getTransform().getRotationAngle();
-
-        float diff = newRotation - currentRotation;
-        if (diff < -MathUtils.PI) diff += MathUtils.TWO_PI;
+    public static void updateRot(GameObject gameObject, float angle) {
+        float currentRotation = gameObject.getRotation();
+        float diff = angle - currentRotation;
+        if (diff < MathUtils.MINUS_PI) diff += MathUtils.TWO_PI;
         if (diff > MathUtils.PI) diff -= MathUtils.TWO_PI;
-
         float diffAbs = Math.abs(diff);
-        float alpha = diffAbs >= 0.03f ? 1.0f : Math.max(diffAbs / 0.03f, 0.1f);
-        body.getTransform().setRotation(currentRotation + diff * alpha);
+        if (diffAbs > 0.06f) {
+            float interpolationAmount = 0.5f;
+            gameObject.setRotation(currentRotation + diff * interpolationAmount);
+        } else {
+            float interpolationAmount = 0.25f;
+            float alpha = Math.max(diffAbs / 0.06f, 0.0f) * interpolationAmount;
+            gameObject.setRotation(currentRotation + diff * alpha);
+        }
     }
 }

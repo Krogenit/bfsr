@@ -99,7 +99,7 @@ public class AiAttackTarget extends AiTask {
             }
         }
 
-        CollisionObjectUtils.rotateToVector(ship.getBody(), Objects.requireNonNullElse(pointToRotate, targetPos), ship.getEngine().getRotationSpeed());
+        CollisionObjectUtils.rotateToVector(ship, Objects.requireNonNullElse(pointToRotate, targetPos), ship.getEngine().getRotationSpeed());
 
         Direction[] dirs = CollisionObjectUtils.calculateDirectionsToOtherObject(ship, targetPos.x, targetPos.y);
         if (minTargetToShip >= maxDistance - targetSizeAverage - shipSizeAverage) {

@@ -4,9 +4,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.contact.Contact;
 import org.dyn4j.geometry.Transform;
-import org.dyn4j.geometry.Vector2;
+import org.dyn4j.world.ContactCollisionData;
 import org.joml.Vector2f;
 
 @Getter
@@ -35,12 +34,11 @@ public class GameObject {
 
     public void postPhysicsUpdate() {}
 
-    public void updateClientPositionFromPacket(Vector2f position, float rotation, Vector2f velocity, float angularVelocity) {
+    public void updateClientPositionFromPacket(Vector2f position, float angle, Vector2f velocity, float angularVelocity) {
         this.position.set(position);
-        this.rotation = rotation;
     }
 
-    public void checkCollision(Contact contact, Vector2 normal, Body body) {}
+    public void collision(Body body, float contactX, float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {}
 
     public void saveTransform(Transform transform) {}
 
@@ -60,6 +58,14 @@ public class GameObject {
 
     public Body getBody() {
         return null;
+    }
+
+    public float getSin() {
+        return 0.0f;
+    }
+
+    public float getCos() {
+        return 0.0f;
     }
 
     public void setDead() {}

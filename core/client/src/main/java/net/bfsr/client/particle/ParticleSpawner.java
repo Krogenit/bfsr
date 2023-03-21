@@ -165,12 +165,10 @@ public final class ParticleSpawner {
 
     public static void spawnSmallGarbage(int count, float x, float y, float velocityX, float velocityY, float size, float sizeVel, float alphaVel) {
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.2f + rand.nextFloat() / 3.0f * 6.0f, CACHED_VECTOR);
-            CACHED_VECTOR.add(velocityX * 0.6f, velocityY * 0.6f);
             float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = RandomHelper.randomFloat(rand, -0.001f, 0.001f) * 60.0f;
             float color = 0.7f;
-            PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleGarbage0, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, 1.0f + size, 1.0f + size, sizeVel,
+            PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleGarbage0, x, y, velocityX, velocityY, angle, angleVel, size, size, sizeVel,
                     color, color, color, 1.0f, alphaVel, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
         }
     }
@@ -301,19 +299,17 @@ public final class ParticleSpawner {
                 color.x, color.y, color.z, color.w, alphaSpeed, false, RenderLayer.DEFAULT_ADDITIVE);
     }
 
-    public static void spawnDirectedSpark(Contact contact, Vector2 normal, float size, float r, float g, float b, float a) {
-        Vector2 point = contact.getPoint();
-        float rot = (float) Math.atan2(normal.x, -normal.y);
-        rot += Math.PI / 2.0;
+    public static void spawnDirectedSpark(float contactX, float contactY, float normalX, float normalY, float size, float r, float g, float b, float a) {
+        float rot = (float) Math.atan2(normalX, -normalY) - MathUtils.HALF_PI;
         float alphaSpeed = 6.0f;
-        PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleDirectedSpark, (float) point.x, (float) point.y, 0, 0, rot, 0, size, size, 0.0f,
+        PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleDirectedSpark, contactX, contactY, 0, 0, rot, 0, size, size, 0.0f,
                 r, g, b, a, alphaSpeed, false, RenderLayer.DEFAULT_ADDITIVE);
     }
 
     public static void spawnDirectedSplat(Contact contact, Vector2 normal, float size, float r, float g, float b, float a) {
         Vector2 point = contact.getPoint();
         float rot = (float) Math.atan2(normal.x, -normal.y);
-        rot += Math.PI / 2.0;
+        rot += MathUtils.HALF_PI;
         float alphaSpeed = 6.0f;
         PARTICLE_POOL.getOrCreate(Particle::new).init(TextureRegister.particleDirectedSplat, (float) point.x, (float) point.y, 0, 0, rot, 0, size, size, 0.0f,
                 r, g, b, a, alphaSpeed, false, RenderLayer.DEFAULT_ADDITIVE);

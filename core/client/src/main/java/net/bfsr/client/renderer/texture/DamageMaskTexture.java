@@ -3,6 +3,7 @@ package net.bfsr.client.renderer.texture;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.math.MathUtils;
+import net.bfsr.util.TimeUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 
@@ -77,16 +78,16 @@ public class DamageMaskTexture extends Texture {
     }
 
     public void updateEffects() {
-        float speed = 0.004f;
-        float uvAnimationSpeed = 0.0002f;
+        float speed = 0.24f * TimeUtils.UPDATE_DELTA_TIME;
+        float uvAnimationSpeed = 0.12f * TimeUtils.UPDATE_DELTA_TIME;
 
         lastFireAmount = fireAmount;
         lastFireUVAnimation = fireUVAnimation;
 
         if (changeFire) {
             fireAmount -= speed;
-            if (fireAmount < 0.4f) {
-                fireAmount = 0.4f;
+            if (fireAmount < 0.6f) {
+                fireAmount = 0.6f;
                 changeFire = false;
             }
         } else {
@@ -99,7 +100,7 @@ public class DamageMaskTexture extends Texture {
 
         fireUVAnimation += uvAnimationSpeed;
         if (fireUVAnimation > MathUtils.TWO_PI) {
-            fireUVAnimation = 0.0f;
+            fireUVAnimation -= MathUtils.TWO_PI;
         }
     }
 

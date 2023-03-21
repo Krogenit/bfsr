@@ -35,7 +35,9 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import static org.lwjgl.opengl.GL11.GL_LINEAR;
 import static org.lwjgl.opengl.GL11.GL_REPEAT;
@@ -51,7 +53,6 @@ public class WorldClient extends World<Ship, Bullet> {
     private final ParticleManager particleManager = new ParticleManager();
 
     private final List<ShipWreckDamagable> shipWrecks = new ArrayList<>();
-    private final Queue<ShipWreckDamagable> damagesToAdd = new LinkedList<>();
 
     public WorldClient() {
         super(Core.get().getProfiler());
@@ -199,12 +200,6 @@ public class WorldClient extends World<Ship, Bullet> {
         if (playerShip != null) {
             if (core.canControlShip() && playerShip.isSpawned())
                 playerShip.control();
-        }
-
-        while (damagesToAdd.size() > 0) {
-            ShipWreckDamagable shipWreckDamagable = damagesToAdd.poll();
-            shipWrecks.add(shipWreckDamagable);
-            addPhysicObject(shipWreckDamagable);
         }
 
         for (int i = 0; i < shipWrecks.size(); i++) {
@@ -403,7 +398,8 @@ public class WorldClient extends World<Ship, Bullet> {
     }
 
     public void addDamage(ShipWreckDamagable shipWreckDamagable) {
-        damagesToAdd.add(shipWreckDamagable);
+        shipWrecks.add(shipWreckDamagable);
+        addPhysicObject(shipWreckDamagable);
     }
 
     private void debugClick() {

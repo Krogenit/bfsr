@@ -15,8 +15,6 @@ import net.bfsr.server.entity.bullet.Bullet;
 import net.bfsr.server.network.packet.server.entity.wreck.PacketShipWreck;
 import net.bfsr.server.world.WorldServer;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.dynamics.contact.Contact;
-import org.dyn4j.geometry.Vector2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +39,7 @@ public class ShipWreckDamagable extends CollisionObject implements Damagable {
         this.contours = contours;
     }
 
-    public void attackFromBullet(Bullet bullet, Contact contact, Vector2 normal) {
+    public void attackFromBullet(Bullet bullet, float contactX, float contactY, float normalX, float normalY) {
         float polygonRadius = 1.75f;
         float radius = 4.0f;
 
@@ -50,9 +48,9 @@ public class ShipWreckDamagable extends CollisionObject implements Damagable {
         double sin = body.getTransform().getSint();
         double cos = body.getTransform().getCost();
 
-        Path64 clip = DamageUtils.createCirclePath(contact.getPoint().x - x, contact.getPoint().y - y, -sin, cos, 12, polygonRadius);
+        Path64 clip = DamageUtils.createCirclePath(contactX - x, contactY - y, -sin, cos, 12, polygonRadius);
 
-        DamageUtils.damage(this, contact.getPoint().x, contact.getPoint().y, clip, radius);
+        DamageUtils.damage(this, contactX, contactY, clip, radius);
     }
 
     @Override

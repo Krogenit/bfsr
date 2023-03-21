@@ -6,7 +6,10 @@ import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.util.TimeUtils;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.*;
+import org.dyn4j.geometry.Convex;
+import org.dyn4j.geometry.Geometry;
+import org.dyn4j.geometry.Polygon;
+import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
 import java.util.List;
@@ -49,7 +52,9 @@ public class ShieldCommon {
             BodyFixture bodyFixture = fixtures.get(i);
             Convex convex = bodyFixture.getShape();
             if (convex instanceof Polygon polygon) {
-                for (Vector2 vertex : polygon.getVertices()) {
+                Vector2[] vertices = polygon.getVertices();
+                for (int j = 0, verticesLength = vertices.length; j < verticesLength; j++) {
+                    Vector2 vertex = vertices[j];
                     float x1 = (float) Math.abs(vertex.x);
                     if (x1 > radius.x) {
                         radius.x = x1;
@@ -65,7 +70,7 @@ public class ShieldCommon {
         float offset = 1.4f;
         diameter.set(radius.x * 2.0f + offset, radius.y * 2.0f + offset);
 
-        Ellipse ellipse = Geometry.createEllipse(diameter.x, diameter.y);
+        Polygon ellipse = Geometry.createPolygonalEllipse(12, diameter.x, diameter.y);
         shieldFixture = new BodyFixture(ellipse);
         shieldFixture.setUserData(this);
         shieldFixture.setDensity(PhysicsUtils.SHIELD_FIXTURE_DENSITY);

@@ -15,14 +15,14 @@ import org.joml.Vector2f;
 public class PacketObjectPosition implements PacketIn, PacketOut {
     private int id;
     private Vector2f position;
-    private float rotation;
+    private float angle;
     private Vector2f velocity;
     private float angularVelocity;
 
     public PacketObjectPosition(CollisionObject obj) {
         this.id = obj.getId();
         this.position = obj.getPosition();
-        this.rotation = obj.getRotation();
+        this.angle = obj.getRotation();
         this.velocity = obj.getVelocity();
         this.angularVelocity = obj.getAngularVelocity();
     }
@@ -31,7 +31,7 @@ public class PacketObjectPosition implements PacketIn, PacketOut {
     public void read(ByteBuf data) {
         id = data.readInt();
         ByteBufUtils.readVector(data, position = new Vector2f());
-        rotation = data.readFloat();
+        angle = data.readFloat();
         ByteBufUtils.readVector(data, velocity = new Vector2f());
         angularVelocity = data.readFloat();
     }
@@ -40,7 +40,7 @@ public class PacketObjectPosition implements PacketIn, PacketOut {
     public void write(ByteBuf data) {
         data.writeInt(id);
         ByteBufUtils.writeVector(data, position);
-        data.writeFloat(rotation);
+        data.writeFloat(angle);
         ByteBufUtils.writeVector(data, velocity);
         data.writeFloat(angularVelocity);
     }
@@ -50,7 +50,7 @@ public class PacketObjectPosition implements PacketIn, PacketOut {
         Core core = Core.get();
         GameObject obj = core.getWorld().getEntityById(id);
         if (obj != null) {
-            obj.updateClientPositionFromPacket(position, rotation, velocity, angularVelocity);
+            obj.updateClientPositionFromPacket(position, angle, velocity, angularVelocity);
         } else {
             core.sendUDPPacket(new PacketNeedObjectInfo(id));
         }

@@ -12,10 +12,10 @@ import net.bfsr.server.entity.wreck.Wreck;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.PacketIn;
 import net.bfsr.server.network.packet.common.PacketShipEngine;
-import net.bfsr.server.network.packet.server.PacketSetPlayerShip;
-import net.bfsr.server.network.packet.server.PacketSpawnBullet;
-import net.bfsr.server.network.packet.server.PacketSpawnShip;
-import net.bfsr.server.network.packet.server.PacketSpawnWreck;
+import net.bfsr.server.network.packet.server.entity.bullet.PacketSpawnBullet;
+import net.bfsr.server.network.packet.server.entity.ship.PacketSpawnShip;
+import net.bfsr.server.network.packet.server.entity.wreck.PacketSpawnWreck;
+import net.bfsr.server.network.packet.server.player.PacketSetPlayerShip;
 
 import java.io.IOException;
 

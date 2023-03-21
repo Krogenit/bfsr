@@ -3,7 +3,7 @@ package net.bfsr.math;
 import org.joml.Vector2f;
 
 public final class RotationHelper {
-    public static Vector2f rotate(float cos, float sin, float x, float y) {
+    public static Vector2f rotate(float sin, float cos, float x, float y) {
         return new Vector2f(cos * x - sin * y, sin * x + cos * y);
     }
 
@@ -27,5 +27,10 @@ public final class RotationHelper {
     public static void angleToVelocity(float angle, float length, Vector2f dest) {
         dest.x = LUT.cos(angle) * length;
         dest.y = LUT.sin(angle) * length;
+    }
+
+    public static void angleToVelocity(float sin, float cos, float length, Vector2f dest) {
+        dest.x = cos * length;
+        dest.y = sin * length;
     }
 }

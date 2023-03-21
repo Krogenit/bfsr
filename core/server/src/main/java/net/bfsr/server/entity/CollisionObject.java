@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.bfsr.entity.GameObject;
+import net.bfsr.math.LUT;
 import net.bfsr.server.world.WorldServer;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.geometry.Transform;
@@ -63,12 +64,12 @@ public class CollisionObject extends GameObject {
         position.y = (float) body.getTransform().getTranslationY();
     }
 
-    public void updateServerPositionFromPacket(Vector2f pos, float rot, Vector2f velocity, float angularVelocity) {
+    public void updateServerPositionFromPacket(Vector2f pos, float angle, Vector2f velocity, float angularVelocity) {
         lifeTime = 0;
         body.setAtRest(false);
-        body.getTransform().setTranslation(pos.x, pos.y);
+        setPosition(pos.x, pos.y);
+        setRotation(angle);
         body.setLinearVelocity(velocity.x, velocity.y);
-        body.getTransform().setRotation(rot);
         body.setAngularVelocity(angularVelocity);
     }
 
@@ -91,6 +92,22 @@ public class CollisionObject extends GameObject {
     public void setPosition(float x, float y) {
         super.setPosition(x, y);
         body.getTransform().setTranslation(x, y);
+    }
+
+    public void setRotation(float sin, float cos) {
+        this.sin = sin;
+        this.cos = cos;
+        body.getTransform().setRotation(sin, cos);
+    }
+
+    @Override
+    public void setRotation(float rotation) {
+        super.setRotation(rotation);
+        double sin = LUT.sin(rotation);
+        double cos = LUT.cos(rotation);
+        this.sin = (float) sin;
+        this.cos = (float) cos;
+        body.getTransform().setRotation(sin, cos);
     }
 
     @Override

@@ -47,8 +47,8 @@ import net.bfsr.util.CollisionObjectUtils;
 import net.bfsr.util.TimeUtils;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.dynamics.contact.Contact;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.world.ContactCollisionData;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -135,7 +135,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
         if (destroyingTimer == 0) {
             if (body.isAtRest()) body.setAtRest(false);
 
-            CollisionObjectUtils.rotateToVector(body, Mouse.getWorldPosition(Core.get().getRenderer().getCamera()), engine.getRotationSpeed());
+            CollisionObjectUtils.rotateToVector(this, Mouse.getWorldPosition(Core.get().getRenderer().getCamera()), engine.getRotationSpeed());
 
             if (Keyboard.isKeyDown(GLFW.GLFW_KEY_W)) {
                 move(this, Direction.FORWARD);
@@ -230,7 +230,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
         }
     }
 
-    public void checkCollision(Contact contact, Vector2 normal, Body body) {
+    public void collision(Body body, float contactX, float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
         Object userData = body.getUserData();
         if (userData != null) {
             if (userData instanceof Ship otherShip) {
@@ -241,22 +241,22 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
                 impactPowerForOther /= 400.0f;
 
-                if (impactPowerForOther > 0.25f) otherShip.damageByCollision(this, impactPowerForOther, contact, normal);
+                if (impactPowerForOther > 0.25f) otherShip.damageByCollision(this, impactPowerForOther, contactX, contactY, normalX, normalY);
             } else if (userData instanceof Wreck) {
                 if (collisionTimer <= 0) {
                     collisionTimer = 2;
-                    onCollidedWithWreck(contact, normal);
+                    onCollidedWithWreck(contactX, contactY, normalX, normalY);
                 }
             }
         }
     }
 
-    private void onCollidedWithWreck(Contact contact, Vector2 normal) {
+    private void onCollidedWithWreck(float contactX, float contactY, float normalX, float normalY) {
         if (shield != null) {
             Vector4f color = shield.getColor();
-            ParticleSpawner.spawnDirectedSpark(contact, normal, 4.5f, color.x, color.y, color.z, color.w);
+            ParticleSpawner.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
         } else {
-            ParticleSpawner.spawnDirectedSpark(contact, normal, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
+            ParticleSpawner.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
         }
     }
 
@@ -272,7 +272,6 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
     protected void updateShip() {
         Vector2f position = getPosition();
-        lastRotation = getRotation();
         lastPosition.set(position.x, position.y);
         maskTexture.updateEffects();
 
@@ -367,7 +366,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
         }
     }
 
-    private void damageByCollision(Ship otherShip, float impactPower, Contact contact, Vector2 normal) {
+    private void damageByCollision(Ship otherShip, float impactPower, float contactX, float contactY, float normalX, float normalY) {
         if (collisionTimer > 0) {
             return;
         }
@@ -380,7 +379,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
         collisionTimer = 2;
 
         if (shield != null && shield.damage(impactPower)) {
-            onShieldDamageByCollision(contact, normal);
+            onShieldDamageByCollision(contactX, contactY, normalX, normalY);
             return;
         }
 
@@ -391,20 +390,19 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
         float reducedHullDamage = armor.reduceDamageByArmor(armorDamage, hullDamage, dir);
         hull.damage(reducedHullDamage);
-        onHullDamageByCollision(contact, normal);
+        onHullDamageByCollision(contactX, contactY, normalX, normalY);
     }
 
-    private void onShieldDamageByCollision(Contact contact, Vector2 normal) {
+    private void onShieldDamageByCollision(float contactX, float contactY, float normalX, float normalY) {
         Vector4f color = shield.getColor();
-        ParticleSpawner.spawnDirectedSpark(contact, normal, 4.5f, color.x, color.y, color.z, color.w);
+        ParticleSpawner.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
     }
 
-    protected void onHullDamageByCollision(Contact contact, Vector2 normal) {
+    protected void onHullDamageByCollision(float contactX, float contactY, float normalX, float normalY) {
         Random rand = world.getRand();
-        ParticleSpawner.spawnDirectedSpark(contact, normal, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
+        ParticleSpawner.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
         Vector2f angletovel = RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.15f);
-        Vector2 point = contact.getPoint();
-        ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), (float) point.x, (float) point.y, velocity.x * 0.25f + angletovel.x, velocity.y * 0.25f + angletovel.y, 2.0f * rand.nextFloat());
+        ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), contactX, contactY, velocity.x * 0.25f + angletovel.x, velocity.y * 0.25f + angletovel.y, 2.0f * rand.nextFloat());
     }
 
     public boolean attackShip(BulletDamage damage, Ship attacker, Vector2f contactPoint, float multiplayer) {
@@ -471,8 +469,6 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
     public void render() {
         if (spawned) {
-            Vector2f position = getPosition();
-
             SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
                     color.x, color.y, color.z, color.w, texture, maskTexture, BufferType.ENTITIES_ALPHA);
 
@@ -579,16 +575,8 @@ public abstract class Ship extends CollisionObject implements Damagable {
     }
 
     @Override
-    public void setRotation(float rotation) {
-        body.getTransform().setRotation(rotation);
-    }
-
-    @Override
-    public void updateClientPositionFromPacket(Vector2f position, float rotation, Vector2f velocity, float angularVelocity) {
-        super.updateClientPositionFromPacket(position, rotation, velocity, angularVelocity);
-
-        sin = (float) body.getTransform().getRotation().getSint();
-        cos = (float) body.getTransform().getRotation().getCost();
+    public void updateClientPositionFromPacket(Vector2f position, float angle, Vector2f velocity, float angularVelocity) {
+        super.updateClientPositionFromPacket(position, angle, velocity, angularVelocity);
 
         int size = weaponSlots.size();
         for (int i = 0; i < size; i++) {

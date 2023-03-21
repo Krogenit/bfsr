@@ -3,6 +3,7 @@ package net.bfsr.server.entity.bullet;
 import lombok.Getter;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.component.shield.ShieldCommon;
+import net.bfsr.effect.ParticleEffect;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.math.LUT;
@@ -14,13 +15,16 @@ import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.entity.wreck.ShipWreckDamagable;
 import net.bfsr.server.entity.wreck.Wreck;
 import net.bfsr.server.entity.wreck.WreckSpawner;
-import net.bfsr.server.network.packet.server.PacketSpawnBullet;
+import net.bfsr.server.network.packet.common.PacketObjectPosition;
+import net.bfsr.server.network.packet.server.effect.PacketSpawnParticleEffect;
+import net.bfsr.server.network.packet.server.entity.PacketRemoveObject;
+import net.bfsr.server.network.packet.server.entity.bullet.PacketSpawnBullet;
 import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.CollisionObjectUtils;
 import net.bfsr.util.TimeUtils;
 import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.contact.Contact;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.world.ContactCollisionData;
 
 import java.util.Random;
 
@@ -77,26 +81,31 @@ public abstract class Bullet extends CollisionObject {
     }
 
     @Override
-    public void checkCollision(Contact contact, Vector2 normal, Body body) {
+    public void collision(Body body, float contactX, float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
+        collision.getContactConstraint().setEnabled(false);
         Object userData = body.getUserData();
         if (userData != null) {
             if (userData instanceof Ship ship) {
                 if (canDamageShip(ship)) {
                     previousAObject = ship;
-                    if (damageShip(ship)) {
+                    if (damageShip(ship, contactX, contactY)) {
                         //Hull damage
-                        destroyBullet(ship, contact, normal);
+                        destroyBullet(ship, contactX, contactY);
                         setDead();
                     } else {
                         //Shield reflection
-                        destroyBullet(ship, contact, normal);
+                        destroyBullet(ship, contactX, contactY);
                         damage(this);
-                        reflect();
+                        reflect(normalX, normalY);
                     }
+
+                    MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnParticleEffect(ParticleEffect.SMALL_BULLET_DAMAGE_TO_SHIP,
+                            this, ship, contactX, contactY, normalX, normalY), getX(), getY(), WorldServer.PACKET_UPDATE_DISTANCE);
                 } else if (previousAObject != null && previousAObject != ship && this.ship == ship) {
                     previousAObject = ship;
                     //We can damage ship after some collission with other object
-                    destroyBullet(ship, contact, normal);
+                    destroyBullet(ship, contactX, contactY);
+                    reflect(normalX, normalY);
                 }
             } else if (userData instanceof Bullet bullet) {
                 //Bullet vs bullet
@@ -104,25 +113,29 @@ public abstract class Bullet extends CollisionObject {
                 previousAObject = bullet;
 
                 if (bullet.isDead()) {
-                    bullet.destroyBullet(this, contact, normal);
+                    bullet.destroyBullet(this, contactX, contactY);
                 } else {
-                    reflect();
+                    reflect(normalX, normalY);
                 }
             } else if (userData instanceof Wreck wreck) {
                 wreck.damage(damage.getBulletDamageHull());
             } else if (userData instanceof ShipWreckDamagable shipWreckDamagable) {
-                shipWreckDamagable.attackFromBullet(this, contact, normal);
+                shipWreckDamagable.attackFromBullet(this, contactX, contactY, normalX, normalY);
                 setDead();
             }
         }
     }
 
-    private void reflect() {
+    private void reflect(float normalX, float normalY) {
         Vector2 velocity = body.getLinearVelocity();
+        double dot = velocity.dot(normalX, normalY);
+        velocity.x = velocity.x - 2 * dot * normalX;
+        velocity.y = velocity.y - 2 * dot * normalY;
         float rotateToVector = (float) Math.atan2(-velocity.x, velocity.y) + MathUtils.HALF_PI;
         sin = LUT.sin(rotateToVector);
         cos = LUT.cos(rotateToVector);
         body.getTransform().setRotation(sin, cos);
+        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketObjectPosition(this), position.x, position.y, WorldServer.PACKET_UPDATE_DISTANCE);
     }
 
     private void damage(Bullet bullet) {
@@ -133,32 +146,31 @@ public abstract class Bullet extends CollisionObject {
         this.damage.reduceBulletDamageHull(damage);
         this.damage.reduceBulletDamageShield(damage);
 
-        if (this.damage.getBulletDamageArmor() < 0) setDead(true);
-        else if (this.damage.getBulletDamageHull() < 0) setDead(true);
-        else if (this.damage.getBulletDamageShield() < 0) setDead(true);
+        if (this.damage.getBulletDamageArmor() < 0) setDead();
+        else if (this.damage.getBulletDamageHull() < 0) setDead();
+        else if (this.damage.getBulletDamageShield() < 0) setDead();
 
         if (bullet != this) {
             energy -= damage;
 
             if (energy <= 0) {
-                setDead(true);
+                setDead();
             }
         }
     }
 
-    private void destroyBullet(CollisionObject destroyer, Contact contact, Vector2 normal) {
+    private void destroyBullet(CollisionObject destroyer, float contactX, float contactY) {
         if (destroyer != null) {
             if (destroyer instanceof Ship s) {
                 ShieldCommon shield = s.getShield();
                 if (shield == null || shield.getShield() <= 0) {
                     Hull hull = s.getHull();
-                    Vector2 pos1 = contact.getPoint();
                     float velocityX = destroyer.getVelocity().x * 0.005f;
                     float velocityY = destroyer.getVelocity().y * 0.005f;
                     Random rand = world.getRand();
                     if (hull.getHull() / hull.getMaxHull() < 0.25f && rand.nextInt(2) == 0) {
                         RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.5f, CollisionObjectUtils.ANGLE_TO_VELOCITY);
-                        WreckSpawner.spawnDamageDebris(world, rand.nextInt(2), (float) pos1.x, (float) pos1.y,
+                        WreckSpawner.spawnDamageDebris(world, rand.nextInt(2), contactX, contactY,
                                 velocityX + CollisionObjectUtils.ANGLE_TO_VELOCITY.x, velocityY + CollisionObjectUtils.ANGLE_TO_VELOCITY.y, 0.75f);
                     }
                 }
@@ -175,7 +187,13 @@ public abstract class Bullet extends CollisionObject {
         return ship != gameObject && previousAObject != gameObject;
     }
 
-    private boolean damageShip(Ship ship) {
-        return ship.attackShip(damage, ship, getPosition(), ship.getFaction() == ship.getFaction() ? 0.5f : 1.0f);
+    private boolean damageShip(Ship ship, float contactX, float contactY) {
+        return ship.attackShip(damage, ship, contactX, contactY, ship.getFaction() == ship.getFaction() ? 0.5f : 1.0f);
+    }
+
+    @Override
+    public void setDead() {
+        super.setDead();
+        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketRemoveObject(this), position.x, position.y, WorldServer.PACKET_UPDATE_DISTANCE);
     }
 }

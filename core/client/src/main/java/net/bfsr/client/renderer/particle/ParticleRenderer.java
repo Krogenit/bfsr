@@ -41,17 +41,18 @@ public class ParticleRenderer {
             particlesByRenderLayer[RENDER_LAYERS[i].ordinal()] = new ArrayList<>(256);
         }
 
+        particlesStoreTasks = new ParticlesStoreTask[MultithreadingUtils.PARALLELISM];
+        backgroundParticlesStoreTasks = new ParticlesStoreTask[MultithreadingUtils.PARALLELISM];
+        for (int i = 0; i < particlesStoreTasks.length; i++) {
+            particlesStoreTasks[i] = new ParticlesStoreTask(particlesByRenderLayer, RenderLayer.DEFAULT_ALPHA_BLENDED);
+            particlesStoreTasks[i].init(vertexBuffers, materialBuffers);
+            backgroundParticlesStoreTasks[i] = new ParticlesStoreTask(particlesByRenderLayer, RenderLayer.BACKGROUND_ALPHA_BLENDED);
+            backgroundParticlesStoreTasks[i].init(vertexBuffers, materialBuffers);
+        }
+
         if (MultithreadingUtils.MULTITHREADING_SUPPORTED) {
             backgroundTaskFutures = new Future[MultithreadingUtils.PARALLELISM];
             taskFutures = new Future[MultithreadingUtils.PARALLELISM];
-            particlesStoreTasks = new ParticlesStoreTask[MultithreadingUtils.PARALLELISM];
-            backgroundParticlesStoreTasks = new ParticlesStoreTask[MultithreadingUtils.PARALLELISM];
-            for (int i = 0; i < particlesStoreTasks.length; i++) {
-                particlesStoreTasks[i] = new ParticlesStoreTask(particlesByRenderLayer, RenderLayer.DEFAULT_ALPHA_BLENDED);
-                particlesStoreTasks[i].init(vertexBuffers, materialBuffers);
-                backgroundParticlesStoreTasks[i] = new ParticlesStoreTask(particlesByRenderLayer, RenderLayer.BACKGROUND_ALPHA_BLENDED);
-                backgroundParticlesStoreTasks[i].init(vertexBuffers, materialBuffers);
-            }
         }
     }
 

@@ -19,6 +19,7 @@ import org.lwjgl.opengl.GL44C;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.concurrent.*;
+import java.util.function.BiConsumer;
 
 public class SpriteRenderer {
     public static SpriteRenderer INSTANCE;
@@ -30,6 +31,7 @@ public class SpriteRenderer {
     private ExecutorService executorService;
     @Getter
     private final BuffersHolder[] buffersHolders = new BuffersHolder[BufferType.values().length];
+    private final BiConsumer<Runnable, BufferType> addTaskConsumer;
 
     public SpriteRenderer() {
         INSTANCE = this;
@@ -41,11 +43,14 @@ public class SpriteRenderer {
 
         if (MultithreadingUtils.MULTITHREADING_SUPPORTED) {
             executorService = Executors.newFixedThreadPool(MultithreadingUtils.PARALLELISM);
+            addTaskConsumer = (runnable, bufferType) -> buffersHolders[bufferType.ordinal()].setFuture(executorService.submit(runnable));
+        } else {
+            addTaskConsumer = (runnable, bufferType) -> runnable.run();
         }
     }
 
     public void addTask(Runnable runnable, BufferType bufferType) {
-        buffersHolders[bufferType.ordinal()].setFuture(executorService.submit(runnable));
+        addTaskConsumer.accept(runnable, bufferType);
     }
 
     public Future<?> addTask(Runnable runnable) {
@@ -244,6 +249,7 @@ public class SpriteRenderer {
     public void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float sin, float cos, float scaleX, float scaleY,
                                           float r, float g, float b, float a, Texture texture, BufferType bufferType) {
         BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
+        buffersHolder.checkBuffersSize(1);
         addToRenderPipeLineSinCos(lastX, lastY, x, y, sin, cos, scaleX, scaleY, r, g, b, a, texture, Core.get().getRenderer().getInterpolation(),
                 buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex(), buffersHolder.getMaterialBuffer(),
                 buffersHolder.getMaterialBufferIndex());

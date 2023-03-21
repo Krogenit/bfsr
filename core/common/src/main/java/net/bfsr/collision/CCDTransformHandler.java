@@ -11,8 +11,8 @@ public class CCDTransformHandler extends TimeOfImpactListenerAdapter<Body> {
 
     @Override
     public boolean collision(Body body1, Body body2, TimeOfImpact toi) {
-        saveTransform(((GameObject) body1.getUserData()), body1);
-        saveTransform(((GameObject) body2.getUserData()), body2);
+        if (!body1.isBullet()) saveTransform(((GameObject) body1.getUserData()), body1);
+        if (!body2.isBullet()) saveTransform(((GameObject) body2.getUserData()), body2);
         return true;
     }
 

@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.world.WorldClient;
+import net.bfsr.math.LUT;
 import net.bfsr.util.CollisionObjectUtils;
 import net.bfsr.util.TimeUtils;
 import org.dyn4j.dynamics.Body;
@@ -106,6 +107,7 @@ public class CollisionObject extends TextureObject {
         }
     }
 
+    @Override
     public void postPhysicsUpdate() {
         sin = (float) body.getTransform().getSint();
         cos = (float) body.getTransform().getCost();
@@ -114,11 +116,12 @@ public class CollisionObject extends TextureObject {
         updateAABB();
     }
 
-    public void updateClientPositionFromPacket(Vector2f position, float rotation, Vector2f velocity, float angularVelocity) {
+    @Override
+    public void updateClientPositionFromPacket(Vector2f position, float angle, Vector2f velocity, float angularVelocity) {
         lifeTime = 0;
         body.setAtRest(false);
         CollisionObjectUtils.updatePos(this, position);
-        CollisionObjectUtils.updateRot(body, rotation);
+        CollisionObjectUtils.updateRot(this, angle);
         body.setLinearVelocity(velocity.x, velocity.y);
         updateAngularVelocity(angularVelocity);
     }
@@ -146,6 +149,22 @@ public class CollisionObject extends TextureObject {
     public void setPosition(float x, float y) {
         super.setPosition(x, y);
         body.getTransform().setTranslation(x, y);
+    }
+
+    public void setRotation(float sin, float cos) {
+        this.sin = sin;
+        this.cos = cos;
+        body.getTransform().setRotation(sin, cos);
+    }
+
+    @Override
+    public void setRotation(float rotation) {
+        super.setRotation(rotation);
+        double sin = LUT.sin(rotation);
+        double cos = LUT.cos(rotation);
+        this.sin = (float) sin;
+        this.cos = (float) cos;
+        body.getTransform().setRotation(sin, cos);
     }
 
     @Override

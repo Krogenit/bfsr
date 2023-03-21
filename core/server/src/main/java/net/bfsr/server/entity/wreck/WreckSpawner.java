@@ -5,7 +5,7 @@ import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.server.MainServer;
 import net.bfsr.server.entity.ship.Ship;
-import net.bfsr.server.network.packet.server.PacketSpawnWreck;
+import net.bfsr.server.network.packet.server.entity.wreck.PacketSpawnWreck;
 import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.ObjectPool;
 import org.joml.Vector2f;
