@@ -3,8 +3,7 @@ package net.bfsr.client.gui.ingame;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.gui.Gui;
-import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.SpriteRenderer;
+import net.bfsr.client.renderer.instanced.GUIRenderer;
 import net.bfsr.client.settings.Option;
 import org.lwjgl.glfw.GLFW;
 
@@ -67,7 +66,7 @@ public class GuiInGame extends Gui {
     @Override
     public void render(float interpolation) {
         super.render(interpolation);
-        SpriteRenderer.INSTANCE.render(BufferType.GUI);
+        GUIRenderer.get().render();
         miniMap.render(Core.get().getWorld());
         shipHUD.render();
 

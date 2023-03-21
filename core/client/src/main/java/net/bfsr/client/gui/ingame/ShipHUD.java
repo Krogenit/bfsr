@@ -11,8 +11,7 @@ import net.bfsr.client.language.Lang;
 import net.bfsr.client.network.packet.client.PacketShipControl;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.string.StringObject;
-import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.SpriteRenderer;
+import net.bfsr.client.renderer.instanced.GUIRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.world.WorldClient;
@@ -112,13 +111,13 @@ public class ShipHUD {
 
     private void renderHullValue(Ship ship, int x, int y) {
         textHull.setString(Math.round(ship.getHull().getHull()) + "");
-        SpriteRenderer.INSTANCE.add(x, y + 12, textHull.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, BufferType.GUI);
+        GUIRenderer.get().add(x, y + 12, textHull.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture);
         textHull.renderNoInterpolation();
     }
 
     private void renderShieldValue(ShieldCommon shield, int x, int y) {
         textShield.setString(Math.round(shield.getShield()) + "");
-        SpriteRenderer.INSTANCE.add(x, y + 70, textShield.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture, BufferType.GUI);
+        GUIRenderer.get().add(x, y + 70, textShield.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture);
         textShield.renderNoInterpolation();
     }
 
@@ -245,11 +244,11 @@ public class ShipHUD {
     }
 
     private void renderQuad(int x, int y, float rot, int width, int height, float r, float g, float b, float a, Texture texture) {
-        SpriteRenderer.INSTANCE.add(x, y, rot, width, height, r, g, b, a, texture, BufferType.GUI);
+        GUIRenderer.get().add(x, y, rot, width, height, r, g, b, a, texture);
     }
 
     private void renderQuad(int x, int y, int width, int height, float r, float g, float b, float a, Texture texture) {
-        SpriteRenderer.INSTANCE.add(x, y, width, height, r, g, b, a, texture, BufferType.GUI);
+        GUIRenderer.get().add(x, y, width, height, r, g, b, a, texture);
     }
 
     public void resize() {

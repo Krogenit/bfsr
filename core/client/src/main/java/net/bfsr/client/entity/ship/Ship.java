@@ -462,19 +462,19 @@ public abstract class Ship extends CollisionObject implements Damagable {
             renderShield();
         } else {
             float size = 40.0f * color.w;
-            SpriteRenderer.INSTANCE.add(lastJumpPosition.x, lastJumpPosition.y, jumpPosition.x, jumpPosition.y, rotation, size, size,
+            SpriteRenderer.get().add(lastJumpPosition.x, lastJumpPosition.y, jumpPosition.x, jumpPosition.y, rotation, size, size,
                     effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, JUMP_TEXTURE, BufferType.ENTITIES_ADDITIVE);
         }
     }
 
     public void render() {
         if (spawned) {
-            SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
+            SpriteRenderer.get().addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
                     color.x, color.y, color.z, color.w, texture, maskTexture, BufferType.ENTITIES_ALPHA);
 
             if (hull.getHull() < hull.getMaxHull()) {
                 float hp = hull.getHull() / hull.getMaxHull();
-                SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
+                SpriteRenderer.get().addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
                         1.0f, 1.0f, 1.0f, 1.0f - hp, textureDamage, maskTexture, BufferType.ENTITIES_ALPHA);
             }
 

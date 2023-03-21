@@ -6,79 +6,113 @@ import net.bfsr.math.LUT;
 import net.bfsr.math.MathUtils;
 
 public final class GUIRenderer {
-    public static void addGUIElementToRenderPipeLine(float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, Texture texture) {
-        addGUIElementToRenderPipeLine(x, y, sizeX, sizeY, r, g, b, a, texture.getTextureHandle(), BufferType.GUI);
+    private SpriteRenderer spriteRenderer;
+    private BuffersHolder buffersHolder;
+
+    public void init(SpriteRenderer spriteRenderer) {
+        this.spriteRenderer = spriteRenderer;
+        this.buffersHolder = spriteRenderer.buffersHolders[BufferType.GUI.ordinal()];
     }
 
-    public static void addGUIElementToRenderPipeLine(float lastX, float lastY, float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, Texture texture) {
-        addGUIElementToRenderPipeLine(lastX, lastY, x, y, sizeX, sizeY, r, g, b, a, texture.getTextureHandle(), BufferType.GUI);
+    public void render() {
+        if (buffersHolder.getObjectCount() > 0) {
+            spriteRenderer.render(buffersHolder.getObjectCount(), buffersHolder.getVertexBuffer(), buffersHolder.getMaterialBuffer());
+            buffersHolder.reset();
+        }
     }
 
-    public static void addGUIElementToRenderPipeLine(float lastX, float lastY, float x, float y, float sizeX, float sizeY, float r, float g, float b, float a) {
-        addGUIElementToRenderPipeLine(lastX, lastY, x, y, sizeX, sizeY, r, g, b, a, 0, BufferType.GUI);
+    public void add(float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, Texture texture) {
+        add(x, y, sizeX, sizeY, r, g, b, a, texture.getTextureHandle());
     }
 
-    public static void addGUIElementToRenderPipeLine(float x, float y, float sizeX, float sizeY, float r, float g, float b, float a) {
-        addGUIElementToRenderPipeLine(x, y, sizeX, sizeY, r, g, b, a, 0);
+    public void add(float lastX, float lastY, float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, Texture texture) {
+        add(lastX, lastY, x, y, sizeX, sizeY, r, g, b, a, texture.getTextureHandle());
     }
 
-    public static void addGUIElementToRenderPipeLine(float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, long textureHandle) {
-        addGUIElementToRenderPipeLine(x, y, sizeX, sizeY, r, g, b, a, textureHandle, BufferType.GUI);
+    public void add(float lastX, float lastY, float x, float y, float sizeX, float sizeY, float r, float g, float b, float a) {
+        add(lastX, lastY, x, y, sizeX, sizeY, r, g, b, a, 0);
     }
 
-    public static void addGUIElementToRenderPipeLine(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float sizeX, float sizeY, float r, float g, float b, float a) {
-        addGUIElementToRenderPipeLine(lastX, lastY, x, y, lastRotation, rotation, sizeX, sizeY, r, g, b, a, BufferType.GUI);
+    public void add(float x, float y, float sizeX, float sizeY, float r, float g, float b, float a) {
+        add(x, y, sizeX, sizeY, r, g, b, a, 0);
     }
 
-    public static void addGUIElementToRenderPipeLine(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float sizeX, float sizeY, float r, float g, float b, float a,
-                                                     BufferType bufferType) {
-        addGUIElementToRenderPipeLine(lastX, lastY, x, y, lastRotation, rotation, sizeX, sizeY, r, g, b, a, 0, bufferType);
+    public void add(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float sizeX, float sizeY, float r, float g, float b, float a) {
+        add(lastX, lastY, x, y, lastRotation, rotation, sizeX, sizeY, r, g, b, a, 0);
     }
 
-    public static void addGUIElementToRenderPipeLine(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float sizeX, float sizeY, float r, float g, float b, float a,
-                                                     Texture texture) {
-        addGUIElementToRenderPipeLine(lastX, lastY, x, y, lastRotation, rotation, sizeX, sizeY, r, g, b, a, texture.getTextureHandle(), BufferType.GUI);
+    public void add(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float sizeX, float sizeY, float r, float g, float b, float a,
+                    Texture texture) {
+        add(lastX, lastY, x, y, lastRotation, rotation, sizeX, sizeY, r, g, b, a, texture.getTextureHandle());
     }
 
-    public static void addGUIElementToRenderPipeLine(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float sizeX, float sizeY, float r, float g, float b, float a,
-                                                     Texture texture, BufferType bufferType) {
-        addGUIElementToRenderPipeLine(lastX, lastY, x, y, lastRotation, rotation, sizeX, sizeY, r, g, b, a, texture.getTextureHandle(), bufferType);
+    public void add(float x, float y, float rotation, float sizeX, float sizeY, float r, float g, float b, float a, Texture texture) {
+        add(x, y, rotation, sizeX, sizeY, r, g, b, a, texture.getTextureHandle());
     }
 
-    public static void addGUIElementToRenderPipeLine(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float sizeX, float sizeY, float r, float g, float b, float a,
-                                                     long textureHandle, BufferType bufferType) {
-        BuffersHolder buffersHolder = SpriteRenderer.INSTANCE.buffersHolders[bufferType.ordinal()];
+    public void add(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin, float cos, float sizeX, float sizeY, float r, float g, float b, float a,
+                    Texture texture) {
+        add(lastX, lastY, x, y, lastSin, lastCos, sin, cos, sizeX, sizeY, r, g, b, a, texture.getTextureHandle());
+    }
+
+    public void add(float x, float y, float rotation, float sizeX, float sizeY, float r, float g, float b, float a,
+                    long textureHandle) {
+        float sin = LUT.sin(rotation);
+        float cos = LUT.cos(rotation);
+        spriteRenderer.putVertices(x, y, sin, cos, sizeX * 0.5f, sizeY * 0.5f, buffersHolder.getVertexBuffer(),
+                buffersHolder.getVertexBufferIndex());
+        spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        buffersHolder.incrementObjectCount();
+    }
+
+    public void add(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin, float cos, float sizeX, float sizeY, float r, float g, float b, float a,
+                    long textureHandle) {
+        float interpolation = Core.get().getRenderer().getInterpolation();
+        spriteRenderer.putVertices(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, lastSin + (sin - lastSin) * interpolation, lastCos + (cos - lastCos) * interpolation, sizeX * 0.5f, sizeY * 0.5f, buffersHolder.getVertexBuffer(),
+                buffersHolder.getVertexBufferIndex());
+        spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        buffersHolder.incrementObjectCount();
+    }
+
+    public void add(float lastX, float lastY, float x, float y, float lastRotation, float rotation, float sizeX, float sizeY, float r, float g, float b, float a,
+                    long textureHandle) {
         float interpolation = Core.get().getRenderer().getInterpolation();
         float interpolatedRotation = lastRotation + MathUtils.lerpAngle(lastRotation, rotation) * interpolation;
         float sin = LUT.sin(interpolatedRotation);
         float cos = LUT.cos(interpolatedRotation);
-        SpriteRenderer.INSTANCE.putVertices(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, sin, cos, sizeX * 0.5f, sizeY * 0.5f, buffersHolder.getVertexBuffer(),
+        spriteRenderer.putVertices(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, sin, cos, sizeX * 0.5f, sizeY * 0.5f, buffersHolder.getVertexBuffer(),
                 buffersHolder.getVertexBufferIndex());
-        SpriteRenderer.INSTANCE.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
-        SpriteRenderer.INSTANCE.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
-        SpriteRenderer.INSTANCE.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         buffersHolder.incrementObjectCount();
     }
 
-    public static void addGUIElementToRenderPipeLine(float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, long textureHandle, BufferType bufferType) {
-        BuffersHolder buffersHolder = SpriteRenderer.INSTANCE.buffersHolders[bufferType.ordinal()];
-        SpriteRenderer.INSTANCE.putVertices(x, sizeY + y, sizeX + x, sizeY + y, sizeX + x, y, x, y, buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
-        SpriteRenderer.INSTANCE.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
-        SpriteRenderer.INSTANCE.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
-        SpriteRenderer.INSTANCE.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+    public void add(float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, long textureHandle) {
+        spriteRenderer.putVertices(x, sizeY + y, sizeX + x, sizeY + y, sizeX + x, y, x, y, buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
+        spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         buffersHolder.incrementObjectCount();
     }
 
-    public static void addGUIElementToRenderPipeLine(float lastX, float lastY, float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, long textureHandle, BufferType bufferType) {
-        BuffersHolder buffersHolder = SpriteRenderer.INSTANCE.buffersHolders[bufferType.ordinal()];
+    public void add(float lastX, float lastY, float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, long textureHandle) {
         float interpolation = Core.get().getRenderer().getInterpolation();
         float interpolatedX = lastX + (x - lastX) * interpolation;
         float interpolatedY = lastY + (y - lastY) * interpolation;
-        SpriteRenderer.INSTANCE.putVertices(interpolatedX, sizeY + interpolatedY, sizeX + interpolatedX, sizeY + interpolatedY, sizeX + interpolatedX, interpolatedY,
+        spriteRenderer.putVertices(interpolatedX, sizeY + interpolatedY, sizeX + interpolatedX, sizeY + interpolatedY, sizeX + interpolatedX, interpolatedY,
                 interpolatedX, interpolatedY, buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
-        SpriteRenderer.INSTANCE.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
-        SpriteRenderer.INSTANCE.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
-        SpriteRenderer.INSTANCE.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         buffersHolder.incrementObjectCount();
+    }
+
+    public static GUIRenderer get() {
+        return Core.get().getRenderer().getGuiRenderer();
     }
 }

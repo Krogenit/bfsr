@@ -240,7 +240,7 @@ public class InputBox extends TexturedGuiObject {
             if (cursorPositionEnd != cursorPosition) {
                 int leftStringWidth = stringObject.getStringCache().getStringWidth(stringObject.getString().substring(0, cursorPosition), fontSize);
                 int rightStringWidth = stringObject.getStringCache().getStringWidth(stringObject.getString().substring(cursorPosition, cursorPositionEnd), fontSize);
-                GUIRenderer.addGUIElementToRenderPipeLine(x + leftStringWidth + stringOffset.x, cursorY, rightStringWidth, cursorHeight, selectionColor.x, selectionColor.y,
+                GUIRenderer.get().add(x + leftStringWidth + stringOffset.x, cursorY, rightStringWidth, cursorHeight, selectionColor.x, selectionColor.y,
                         selectionColor.z, selectionColor.w);
                 if (leftToRightSelection) {
                     lineWidth = leftStringWidth + rightStringWidth;
@@ -255,7 +255,7 @@ public class InputBox extends TexturedGuiObject {
         }
 
         if (renderCursor) {
-            GUIRenderer.addGUIElementToRenderPipeLine(x + stringOffset.x + lineWidth, cursorY, 1, cursorHeight, color.x, color.y, color.z, color.w);
+            GUIRenderer.get().add(x + stringOffset.x + lineWidth, cursorY, 1, cursorHeight, color.x, color.y, color.z, color.w);
         }
     }
 

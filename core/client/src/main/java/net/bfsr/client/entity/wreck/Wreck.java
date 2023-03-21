@@ -287,20 +287,20 @@ public class Wreck extends CollisionObject {
 
     public void render() {
         Vector2f position = getPosition();
-        SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
+        SpriteRenderer.get().addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
                 color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
     }
 
     public void renderAdditive() {
         if (colorFire.w > 0) {
             Vector2f position = getPosition();
-            SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
+            SpriteRenderer.get().addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
                     lastColorFire, colorFire, textureFire, BufferType.ENTITIES_ADDITIVE);
         }
 
         if (colorLight.w > 0) {
             Vector2f position = getPosition();
-            SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
+            SpriteRenderer.get().addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos, scale.x, scale.y,
                     lastColorLight, colorLight, textureLight, BufferType.ENTITIES_ADDITIVE);
         }
     }

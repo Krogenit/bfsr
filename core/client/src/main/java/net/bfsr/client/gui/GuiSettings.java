@@ -8,9 +8,7 @@ import net.bfsr.client.language.Lang;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.font.string.StringObject;
-import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.GUIRenderer;
-import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.settings.Option;
 import net.bfsr.settings.SettingsCategory;
 import net.bfsr.settings.option.SettingsOption;
@@ -146,14 +144,14 @@ public class GuiSettings extends Gui {
     @Override
     public void render(float interpolation) {
         if (isInGame) {
-            GUIRenderer.addGUIElementToRenderPipeLine(0, 0, width, height, 0.0f, 0.0f, 0.0f, 0.5f);
+            GUIRenderer.get().add(0, 0, width, height, 0.0f, 0.0f, 0.0f, 0.5f);
         }
 
         backgroundTop.render();
         backgroundDown.render();
         mainText.render();
 
-        SpriteRenderer.INSTANCE.render(BufferType.GUI);
+        GUIRenderer.get().render();
 
         GL11C.glEnable(GL11C.GL_SCISSOR_TEST);
         GL11C.glScissor(0, 60, width, Math.max(height - 120, 0));
@@ -167,7 +165,7 @@ public class GuiSettings extends Gui {
             scissorAffected.get(i).render();
         }
 
-        SpriteRenderer.INSTANCE.render(BufferType.GUI);
+        GUIRenderer.get().render();
         GL11C.glDisable(GL11C.GL_SCISSOR_TEST);
 
         saveButton.render();

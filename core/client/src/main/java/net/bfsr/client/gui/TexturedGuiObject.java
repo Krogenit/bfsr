@@ -28,14 +28,14 @@ public class TexturedGuiObject extends SimpleGuiObject {
     @Override
     public void render() {
         if (rotation != 0) {
-            GUIRenderer.addGUIElementToRenderPipeLine(lastX, lastY, x, y, lastRotation, rotation, width, height, color.x, color.y, color.z, color.w, texture);
+            GUIRenderer.get().add(lastX, lastY, x, y, lastRotation, rotation, width, height, color.x, color.y, color.z, color.w, texture);
         } else {
-            GUIRenderer.addGUIElementToRenderPipeLine(lastX, lastY, x, y, width, height, color.x, color.y, color.z, color.w, texture);
+            GUIRenderer.get().add(lastX, lastY, x, y, width, height, color.x, color.y, color.z, color.w, texture);
         }
     }
 
     @Override
     public void renderNoInterpolation() {
-        GUIRenderer.addGUIElementToRenderPipeLine(x, y, width, height, color.x, color.y, color.z, color.w, texture);
+        GUIRenderer.get().add(x, y, width, height, color.x, color.y, color.z, color.w, texture);
     }
 }

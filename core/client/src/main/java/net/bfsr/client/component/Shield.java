@@ -69,7 +69,7 @@ public class Shield extends ShieldCommon {
 
     public void render() {
         if (isShieldAlive()) {
-            SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(ship.getLastPosition().x, ship.getLastPosition().y, ship.getPosition().x, ship.getPosition().y, ship.getLastSin(), ship.getLastCos(),
+            SpriteRenderer.get().addToRenderPipeLineSinCos(ship.getLastPosition().x, ship.getLastPosition().y, ship.getPosition().x, ship.getPosition().y, ship.getLastSin(), ship.getLastCos(),
                     ship.getSin(), ship.getCos(), diameter.x * size, diameter.y * size, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ADDITIVE);
         }
     }

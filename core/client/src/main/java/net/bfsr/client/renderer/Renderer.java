@@ -10,6 +10,7 @@ import net.bfsr.client.gui.ingame.GuiInGame;
 import net.bfsr.client.renderer.debug.OpenGLDebugUtils;
 import net.bfsr.client.renderer.font.StringGeometryBuilder;
 import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.GUIRenderer;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.instanced.StringRenderer;
 import net.bfsr.client.renderer.particle.ParticleRenderer;
@@ -38,7 +39,10 @@ public class Renderer {
     private final StringRenderer stringRenderer = new StringRenderer();
     @Getter
     private final ParticleRenderer particleRenderer = new ParticleRenderer();
+    @Getter
     private final SpriteRenderer spriteRenderer = new SpriteRenderer();
+    @Getter
+    private final GUIRenderer guiRenderer = new GUIRenderer();
     @Getter
     private GuiInGame guiInGame;
     @Getter
@@ -63,7 +67,9 @@ public class Renderer {
 
         camera.init(core.getScreenWidth(), core.getScreenHeight());
         spriteRenderer.init();
-        stringRenderer.init(stringGeometryBuilder);
+        stringRenderer.init(stringGeometryBuilder, spriteRenderer);
+        guiRenderer.init(spriteRenderer);
+        particleRenderer.init(spriteRenderer);
         shader.load();
         shader.init();
 
@@ -157,7 +163,7 @@ public class Renderer {
             gui.render(interpolation);
         }
 
-        SpriteRenderer.INSTANCE.render(BufferType.GUI);
+        spriteRenderer.render(BufferType.GUI);
     }
 
     private void resetDrawCalls() {

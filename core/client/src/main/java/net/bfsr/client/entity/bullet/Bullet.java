@@ -118,9 +118,9 @@ public abstract class Bullet extends CollisionObject {
 
     public void render() {
         float lightSize = 6.0f;
-        SpriteRenderer.INSTANCE.add(lastPosition.x, lastPosition.y, position.x, position.y, lightSize, lightSize,
+        SpriteRenderer.get().add(lastPosition.x, lastPosition.y, position.x, position.y, lightSize, lightSize,
                 color.x / 1.5f, color.y / 1.5f, color.z / 1.5f, color.w / 4.0f, LIGHT_TEXTURE, BufferType.ENTITIES_ADDITIVE);
-        SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, sin, cos, scale.x, scale.y, color.x, color.y, color.z, color.w,
+        SpriteRenderer.get().addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, sin, cos, scale.x, scale.y, color.x, color.y, color.z, color.w,
                 texture, BufferType.ENTITIES_ADDITIVE);
     }
 }

@@ -20,8 +20,6 @@ import java.util.concurrent.*;
 import java.util.function.BiConsumer;
 
 public class SpriteRenderer {
-    public static SpriteRenderer INSTANCE;
-
     public static final int VERTEX_DATA_SIZE = 16;
     public static final int MATERIAL_DATA_SIZE = 48;
 
@@ -32,8 +30,6 @@ public class SpriteRenderer {
     private final BiConsumer<Runnable, BufferType> addTaskConsumer;
 
     public SpriteRenderer() {
-        INSTANCE = this;
-
         buffersHolders[BufferType.BACKGROUND.ordinal()] = new BuffersHolder(1);
         buffersHolders[BufferType.ENTITIES_ALPHA.ordinal()] = new BuffersHolder(512);
         buffersHolders[BufferType.ENTITIES_ADDITIVE.ordinal()] = new BuffersHolder(512);
@@ -384,6 +380,10 @@ public class SpriteRenderer {
         byteBuffer.putLong(bufferIndex.getAndAdd(8), maskTextureHandle);
         byteBuffer.putFloat(bufferIndex.getAndAdd(4), fireAmount);
         byteBuffer.putFloat(bufferIndex.getAndAdd(4), fireUVAnimation);
+    }
+
+    public static SpriteRenderer get() {
+        return Core.get().getRenderer().getSpriteRenderer();
     }
 
     public void clear() {

@@ -3,6 +3,7 @@ package net.bfsr.client.renderer.particle;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.particle.Particle;
 import net.bfsr.client.particle.RenderLayer;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.util.MutableInt;
 
 import java.nio.ByteBuffer;
@@ -20,13 +21,19 @@ public class ParticlesStoreTask implements Runnable {
     private final Runnable[] runnables = new Runnable[2];
     private final List<Particle>[] particlesByRenderLayer;
     private final RenderLayer renderLayer;
+    private SpriteRenderer spriteRenderer;
 
     public ParticlesStoreTask(List<Particle>[] particlesByRenderLayer, RenderLayer renderLayer) {
         this.particlesByRenderLayer = particlesByRenderLayer;
         this.renderLayer = renderLayer;
     }
 
-    public void init(FloatBuffer[] vertexBuffers, ByteBuffer[] materialBuffers) {
+    public void init(SpriteRenderer spriteRenderer, FloatBuffer[] vertexBuffers, ByteBuffer[] materialBuffers) {
+        this.spriteRenderer = spriteRenderer;
+        initRunnable(vertexBuffers, materialBuffers);
+    }
+
+    public void initRunnable(FloatBuffer[] vertexBuffers, ByteBuffer[] materialBuffers) {
         FloatBuffer defaultAlphaBlendedVertexBuffer = vertexBuffers[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()];
         FloatBuffer defaultAdditiveBlendedVertexBuffer = vertexBuffers[RenderLayer.DEFAULT_ADDITIVE.ordinal()];
         FloatBuffer backgroundAlphaBlendedVertexBuffer = vertexBuffers[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()];
@@ -71,7 +78,7 @@ public class ParticlesStoreTask implements Runnable {
     private void storeParticles(List<Particle> particles, FloatBuffer vertexBuffer, ByteBuffer materialBuffer, float interpolation, int start, int end, MutableInt vertexBufferIndex,
                                 MutableInt materialBufferIndex) {
         for (int i = start; i < end; i++) {
-            particles.get(i).putToBuffer(vertexBuffer, materialBuffer, interpolation, vertexBufferIndex, materialBufferIndex);
+            particles.get(i).putToBuffer(spriteRenderer, vertexBuffer, materialBuffer, interpolation, vertexBufferIndex, materialBufferIndex);
         }
     }
 }

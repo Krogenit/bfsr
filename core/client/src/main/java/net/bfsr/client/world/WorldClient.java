@@ -240,15 +240,15 @@ public class WorldClient extends World<Ship, Bullet> {
         float zoom = (float) (0.5f + Math.log(cameraZoom) * 0.01f);
         float scaleX = scale.x / cameraZoom * zoom;
         float scaleY = scale.y / cameraZoom * zoom;
-        SpriteRenderer.INSTANCE.add(lastX, lastY, x, y, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f, backgroundTexture, BufferType.BACKGROUND);
+        SpriteRenderer.get().add(lastX, lastY, x, y, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f, backgroundTexture, BufferType.BACKGROUND);
     }
 
     public void renderAmbient() {
-        SpriteRenderer.INSTANCE.render(BufferType.BACKGROUND);
+        SpriteRenderer.get().render(BufferType.BACKGROUND);
     }
 
     public void prepareEntities() {
-        SpriteRenderer.INSTANCE.addTask(() -> {
+        SpriteRenderer.get().addTask(() -> {
             AABB cameraAABB = core.getRenderer().getCamera().getBoundingBox();
 
             for (int i = 0, size = ships.size(); i < size; i++) {
@@ -267,7 +267,7 @@ public class WorldClient extends World<Ship, Bullet> {
 
             particleManager.render();
         }, BufferType.ENTITIES_ALPHA);
-        SpriteRenderer.INSTANCE.addTask(() -> {
+        SpriteRenderer.get().addTask(() -> {
             AABB cameraAABB = core.getRenderer().getCamera().getBoundingBox();
 
             for (int i = 0, size = ships.size(); i < size; i++) {
@@ -420,9 +420,9 @@ public class WorldClient extends World<Ship, Bullet> {
 
     public void renderEntities() {
         OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        SpriteRenderer.INSTANCE.syncAndRender(BufferType.ENTITIES_ALPHA);
+        SpriteRenderer.get().syncAndRender(BufferType.ENTITIES_ALPHA);
         OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
-        SpriteRenderer.INSTANCE.syncAndRender(BufferType.ENTITIES_ADDITIVE);
+        SpriteRenderer.get().syncAndRender(BufferType.ENTITIES_ADDITIVE);
     }
 
     public void renderDebug() {

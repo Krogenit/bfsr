@@ -43,7 +43,7 @@ public class GuiInGameMenu extends Gui {
 
     @Override
     public void render(float interpolation) {
-        GUIRenderer.addGUIElementToRenderPipeLine(0, 0, width, height, 0.0f, 0.0f, 0.0f, 0.5f);
+        GUIRenderer.get().add(0, 0, width, height, 0.0f, 0.0f, 0.0f, 0.5f);
         super.render(interpolation);
     }
 }

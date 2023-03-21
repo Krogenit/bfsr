@@ -58,7 +58,7 @@ public class ShipWreckDamagable extends CollisionObject implements Damagable {
     public void render() {
         float x = (float) body.getTransform().getTranslationX();
         float y = (float) body.getTransform().getTranslationY();
-        SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, x, y, lastSin, lastCos, sin, cos, scale.x, scale.y, scale.x, scale.y,
+        SpriteRenderer.get().addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, x, y, lastSin, lastCos, sin, cos, scale.x, scale.y, scale.x, scale.y,
                 0.25f, 0.25f, 0.25f, 1.0f, texture, maskTexture, BufferType.ENTITIES_ALPHA);
     }
 

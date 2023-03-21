@@ -23,6 +23,7 @@ public class ParticleRenderer {
     public static final RenderLayer[] RENDER_LAYERS = RenderLayer.values();
     private static final int START_PARTICLE_COUNT = 8192;
 
+    private SpriteRenderer spriteRenderer = new SpriteRenderer();
     private final List<Particle>[] particlesByRenderLayer = new List[4];
     private final ByteBuffer[] materialBuffers = new ByteBuffer[4];
     private final FloatBuffer[] vertexBuffers = new FloatBuffer[4];
@@ -45,14 +46,21 @@ public class ParticleRenderer {
         backgroundParticlesStoreTasks = new ParticlesStoreTask[MultithreadingUtils.PARALLELISM];
         for (int i = 0; i < particlesStoreTasks.length; i++) {
             particlesStoreTasks[i] = new ParticlesStoreTask(particlesByRenderLayer, RenderLayer.DEFAULT_ALPHA_BLENDED);
-            particlesStoreTasks[i].init(vertexBuffers, materialBuffers);
             backgroundParticlesStoreTasks[i] = new ParticlesStoreTask(particlesByRenderLayer, RenderLayer.BACKGROUND_ALPHA_BLENDED);
-            backgroundParticlesStoreTasks[i].init(vertexBuffers, materialBuffers);
         }
 
         if (MultithreadingUtils.MULTITHREADING_SUPPORTED) {
             backgroundTaskFutures = new Future[MultithreadingUtils.PARALLELISM];
             taskFutures = new Future[MultithreadingUtils.PARALLELISM];
+        }
+    }
+
+    public void init(SpriteRenderer spriteRenderer) {
+        this.spriteRenderer = spriteRenderer;
+
+        for (int i = 0; i < particlesStoreTasks.length; i++) {
+            particlesStoreTasks[i].init(spriteRenderer, vertexBuffers, materialBuffers);
+            backgroundParticlesStoreTasks[i].init(spriteRenderer, vertexBuffers, materialBuffers);
         }
     }
 
@@ -85,8 +93,8 @@ public class ParticleRenderer {
 
         if (resized && MultithreadingUtils.MULTITHREADING_SUPPORTED) {
             for (int i = 0; i < particlesStoreTasks.length; i++) {
-                particlesStoreTasks[i].init(vertexBuffers, materialBuffers);
-                backgroundParticlesStoreTasks[i].init(vertexBuffers, materialBuffers);
+                particlesStoreTasks[i].initRunnable(vertexBuffers, materialBuffers);
+                backgroundParticlesStoreTasks[i].initRunnable(vertexBuffers, materialBuffers);
             }
         }
     }
@@ -116,7 +124,7 @@ public class ParticleRenderer {
                 backgroundParticlesStoreTask.update(backgroundAlphaBufferIndex, backgroundAdditiveBufferIndex, backgroundAlphaParticlesStartIndex,
                         backgroundAlphaParticlesEndIndex, backgroundAdditiveParticlesStartIndex, backgroundAdditiveParticlesEndIndex);
 
-                backgroundTaskFutures[i] = SpriteRenderer.INSTANCE.addTask(backgroundParticlesStoreTask);
+                backgroundTaskFutures[i] = spriteRenderer.addTask(backgroundParticlesStoreTask);
 
                 backgroundAlphaBufferIndex += backgroundAlphaParticlesPerTask * SpriteRenderer.VERTEX_DATA_SIZE;
                 backgroundAdditiveBufferIndex += backgroundAdditiveParticlesPerTask * SpriteRenderer.VERTEX_DATA_SIZE;
@@ -153,7 +161,7 @@ public class ParticleRenderer {
                 particlesStoreTask.update(alphaBufferIndex, additiveBufferIndex, alphaParticlesStartIndex, alphaParticlesEndIndex, additiveParticlesStartIndex,
                         additiveParticlesEndIndex);
 
-                taskFutures[i] = SpriteRenderer.INSTANCE.addTask(particlesStoreTasks[i]);
+                taskFutures[i] = spriteRenderer.addTask(particlesStoreTasks[i]);
 
                 alphaBufferIndex += alphaParticlesPerTask * SpriteRenderer.VERTEX_DATA_SIZE;
                 additiveBufferIndex += additiveParticlesPerTask * SpriteRenderer.VERTEX_DATA_SIZE;
@@ -201,7 +209,7 @@ public class ParticleRenderer {
 
         if (count > 0) {
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-            render(count, vertexBuffer, materialBuffer);
+            spriteRenderer.render(count, vertexBuffer, materialBuffer);
         }
 
         vertexBuffer = vertexBuffers[additiveLayer.ordinal()];
@@ -210,12 +218,8 @@ public class ParticleRenderer {
 
         if (count > 0) {
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
-            render(count, vertexBuffer, materialBuffer);
+            spriteRenderer.render(count, vertexBuffer, materialBuffer);
         }
-    }
-
-    private void render(int count, FloatBuffer vertexBuffer, ByteBuffer materialBuffer) {
-        SpriteRenderer.INSTANCE.render(count, vertexBuffer, materialBuffer);
     }
 
     public void addParticleToRenderLayer(Particle particle, RenderLayer renderLayer) {

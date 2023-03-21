@@ -4,8 +4,7 @@ import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.TexturedGuiObject;
-import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.SpriteRenderer;
+import net.bfsr.client.renderer.instanced.GUIRenderer;
 import net.bfsr.faction.Faction;
 import net.bfsr.texture.TextureRegister;
 import net.bfsr.world.World;
@@ -70,16 +69,18 @@ public class MiniMap {
                     color.z = 0.5f;
                 }
 
+                Vector2f lastPosition = s.getLastPosition();
+                int lastX = (int) (miniMapX + (lastPosition.x - camPos.x) / mapScaleX);
+                int lastY = (int) (miniMapY + (lastPosition.y - camPos.y) / mapScaleY);
                 int x = (int) (miniMapX + (pos.x - camPos.x) / mapScaleX);
                 int y = (int) (miniMapY + (pos.y - camPos.y) / mapScaleY);
                 int sizeX = (int) (scale.x * shipSize);
                 int sizeY = (int) (scale.y * shipSize);
-                SpriteRenderer.INSTANCE.addToRenderPipeLineSinCos(x, y, x, y, s.getLastSin(), s.getLastCos(), s.getSin(), s.getCos(), sizeX, sizeY, color.x, color.y, color.z, 1.0f,
-                        s.getTexture(), BufferType.GUI);
+                GUIRenderer.get().add(lastX, lastY, x, y, s.getLastSin(), s.getLastCos(), s.getSin(), s.getCos(), sizeX, sizeY, color.x, color.y, color.z, 1.0f, s.getTexture());
             }
         }
 
-        SpriteRenderer.INSTANCE.render(BufferType.GUI);
+        GUIRenderer.get().render();
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 

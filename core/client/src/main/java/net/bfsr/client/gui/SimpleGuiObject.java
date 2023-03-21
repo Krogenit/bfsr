@@ -44,14 +44,14 @@ public class SimpleGuiObject extends AbstractGuiObject {
     @Override
     public void render() {
         if (rotation != 0.0f) {
-            GUIRenderer.addGUIElementToRenderPipeLine(lastX, lastY, x, y, lastRotation, rotation, width, height, color.x, color.y, color.z, color.w);
+            GUIRenderer.get().add(lastX, lastY, x, y, lastRotation, rotation, width, height, color.x, color.y, color.z, color.w);
         } else {
-            GUIRenderer.addGUIElementToRenderPipeLine(lastX, lastY, x, y, width, height, color.x, color.y, color.z, color.w);
+            GUIRenderer.get().add(lastX, lastY, x, y, width, height, color.x, color.y, color.z, color.w);
         }
     }
 
     public void renderNoInterpolation() {
-        GUIRenderer.addGUIElementToRenderPipeLine(x, y, width, height, color.x, color.y, color.z, color.w);
+        GUIRenderer.get().add(x, y, width, height, color.x, color.y, color.z, color.w);
     }
 
     public void setPositionAndSize(int x, int y, int width, int height) {

@@ -106,12 +106,12 @@ public class Particle extends TextureObject {
         }
     }
 
-    public void putToBuffer(FloatBuffer vertexBuffer, ByteBuffer materialBuffer, float interpolation, MutableInt vertexBufferIndex, MutableInt materialBufferIndex) {
-        SpriteRenderer.INSTANCE.putVertices(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, lastScale.x, lastScale.y, scale.x, scale.y,
+    public void putToBuffer(SpriteRenderer spriteRenderer, FloatBuffer vertexBuffer, ByteBuffer materialBuffer, float interpolation, MutableInt vertexBufferIndex, MutableInt materialBufferIndex) {
+        spriteRenderer.putVertices(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, lastScale.x, lastScale.y, scale.x, scale.y,
                 interpolation, vertexBuffer, vertexBufferIndex);
-        SpriteRenderer.INSTANCE.putColor(lastColor, color, materialBuffer, materialBufferIndex, interpolation);
-        SpriteRenderer.INSTANCE.putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
-        SpriteRenderer.INSTANCE.putMaterialData(0, 0.0f, 0.0f, materialBuffer, materialBufferIndex);
+        spriteRenderer.putColor(lastColor, color, materialBuffer, materialBufferIndex, interpolation);
+        spriteRenderer.putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, materialBuffer, materialBufferIndex);
     }
 
     public void onRemoved() {
