@@ -13,6 +13,7 @@ import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.network.packet.client.PacketHandshake;
 import net.bfsr.client.network.packet.client.PacketLoginTCP;
 import net.bfsr.client.network.packet.client.PacketLoginUDP;
+import net.bfsr.client.particle.ParticleEffectsRegistry;
 import net.bfsr.client.renderer.Renderer;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.client.settings.Option;
@@ -96,6 +97,7 @@ public class Core {
         profiler.setEnable(Option.IS_PROFILING.getBoolean());
         WreckRegistry.INSTANCE.init(PathHelper.CONFIG);
         ShieldRegistry.INSTANCE.init(PathHelper.CONFIG);
+        ParticleEffectsRegistry.INSTANCE.init();
     }
 
     public void update() {
