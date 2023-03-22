@@ -86,6 +86,9 @@ public class ShipHUD {
         }
         gui.registerGuiObject(controlText.atBottomRightCorner(-hudShip.getWidth() / 2 - controlText.getWidth() / 2, -hudShip.getHeight() - 1));
         gui.registerGuiObject(buttonControl);
+
+        shipCargo.setPosition(hudShipAdd0.getX() + 16, hudShipAdd0.getY() + 26);
+        shipCrew.setPosition(hudShipAdd0.getX() + 16, hudShipAdd0.getY() + 40);
     }
 
     public void update() {
