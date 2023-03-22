@@ -111,13 +111,15 @@ public class ShipHUD {
 
     private void renderHullValue(Ship ship, int x, int y) {
         textHull.setString(Math.round(ship.getHull().getHull()) + "");
-        GUIRenderer.get().add(x, y + 12, textHull.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture);
+        textHull.setPosition(x - textHull.getWidth() / 2, y + 16);
+        GUIRenderer.get().addCentered(x, y + 12, textHull.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture);
         textHull.renderNoInterpolation();
     }
 
     private void renderShieldValue(ShieldCommon shield, int x, int y) {
         textShield.setString(Math.round(shield.getShield()) + "");
-        GUIRenderer.get().add(x, y + 70, textShield.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture);
+        textShield.setPosition(x - textShield.getWidth() / 2, y + 74);
+        GUIRenderer.get().addCentered(x, y + 70, textShield.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture);
         textShield.renderNoInterpolation();
     }
 
@@ -248,17 +250,11 @@ public class ShipHUD {
     }
 
     private void renderQuad(int x, int y, int width, int height, float r, float g, float b, float a, Texture texture) {
-        GUIRenderer.get().add(x, y, width, height, r, g, b, a, texture);
+        GUIRenderer.get().addCentered(x, y, width, height, r, g, b, a, texture);
     }
 
     public void resize() {
         shipCargo.setPosition(hudShipAdd0.getX() + 16, hudShipAdd0.getY() + 26);
         shipCrew.setPosition(hudShipAdd0.getX() + 16, hudShipAdd0.getY() + 40);
-
-        int x = hudShip.getX() + hudShip.getWidth() / 2;
-        int y = hudShip.getY() + hudShip.getHeight() / 2;
-
-        textHull.setPosition(x - textHull.getWidth() / 2, y + 16);
-        textShield.setPosition(x - textShield.getWidth() / 2, y + 74);
     }
 }

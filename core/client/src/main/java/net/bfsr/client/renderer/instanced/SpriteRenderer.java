@@ -190,7 +190,7 @@ public class SpriteRenderer {
     public void add(float lastX, float lastY, float x, float y, float scaleX, float scaleY,
                     float r, float g, float b, float a, Texture texture, float interpolation, FloatBuffer vertexBuffer, MutableInt vertexBufferIndex,
                     ByteBuffer materialBuffer, MutableInt materialBufferIndex) {
-        putVertices(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, 0.5f * scaleX, 0.5f * scaleY, vertexBuffer, vertexBufferIndex);
+        putVerticesCentered(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, 0.5f * scaleX, 0.5f * scaleY, vertexBuffer, vertexBufferIndex);
         putColor(r, g, b, a, materialBuffer, materialBufferIndex);
         putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
         putMaterialData(0, 0.0f, 0.0f, materialBuffer, materialBufferIndex);
@@ -269,7 +269,7 @@ public class SpriteRenderer {
 
     public void add(float x, float y, float scaleX, float scaleY, float r, float g, float b, float a, Texture texture, BufferType bufferType) {
         BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
-        putVertices(x, y, scaleX * 0.5f, scaleY * 0.5f, buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
+        putVerticesCentered(x, y, scaleX * 0.5f, scaleY * 0.5f, buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
         putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         putTextureHandle(texture.getTextureHandle(), buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
@@ -292,27 +292,27 @@ public class SpriteRenderer {
                 0.5f * (lastScaleX + (scaleX - lastScaleX) * interpolation), 0.5f * (lastScaleY + (scaleY - lastScaleY) * interpolation), floatBuffer, bufferIndex);
     }
 
-    private void putVertices(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
+    void putVerticesCentered(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
         putVertices(-sizeX + x, sizeY + y, sizeX + x, sizeY + y, sizeX + x, -sizeY + y, -sizeX + x, -sizeY + y, floatBuffer, bufferIndex);
     }
 
-    void putVertices(float x, float y, float sin, float cos, float sizeX, float sizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
-        final float sinSizeX = sin * sizeX;
-        final float cosSizeX = cos * sizeX;
-        final float sinSizeY = sin * sizeY;
-        final float cosSizeY = cos * sizeY;
+    void putVertices(float x, float y, float sin, float cos, float halfSizeX, float halfSizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
+        final float sinSizeX = sin * halfSizeX;
+        final float cosSizeX = cos * halfSizeX;
+        final float sinSizeY = sin * halfSizeY;
+        final float cosSizeY = cos * halfSizeY;
 
-        final float x1 = -cosSizeX - sinSizeY + x + sizeX;
-        final float x2 = cosSizeX - sinSizeY + x + sizeX;
-        final float x3 = cosSizeX + sinSizeY + x + sizeX;
-        final float y3 = sinSizeX - cosSizeY + y + sizeY;
-        final float y1 = -sinSizeX + cosSizeY + y + sizeY;
-        final float y2 = sinSizeX + cosSizeY + y + sizeY;
+        final float x1 = -cosSizeX - sinSizeY + x + halfSizeX;
+        final float x2 = cosSizeX - sinSizeY + x + halfSizeX;
+        final float x3 = cosSizeX + sinSizeY + x + halfSizeX;
+        final float y3 = sinSizeX - cosSizeY + y + halfSizeY;
+        final float y1 = -sinSizeX + cosSizeY + y + halfSizeY;
+        final float y2 = sinSizeX + cosSizeY + y + halfSizeY;
 
         putVertices(x1, y1, x2, y2, x3, y3, x1 + (x3 - x2), y3 - (y2 - y1), floatBuffer, bufferIndex);
     }
 
-    private void putVerticesCentered(float x, float y, float sin, float cos, float halfSizeX, float halfSizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
+    void putVerticesCentered(float x, float y, float sin, float cos, float halfSizeX, float halfSizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
         final float sinSizeX = sin * halfSizeX;
         final float cosSizeX = cos * halfSizeX;
         final float sinSizeY = sin * halfSizeY;

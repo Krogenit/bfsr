@@ -25,6 +25,10 @@ public final class GUIRenderer {
         add(x, y, sizeX, sizeY, r, g, b, a, texture.getTextureHandle());
     }
 
+    public void addCentered(float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, Texture texture) {
+        addCentered(x, y, sizeX, sizeY, r, g, b, a, texture.getTextureHandle());
+    }
+
     public void add(float lastX, float lastY, float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, Texture texture) {
         add(lastX, lastY, x, y, sizeX, sizeY, r, g, b, a, texture.getTextureHandle());
     }
@@ -59,7 +63,7 @@ public final class GUIRenderer {
                     long textureHandle) {
         float sin = LUT.sin(rotation);
         float cos = LUT.cos(rotation);
-        spriteRenderer.putVertices(x, y, sin, cos, sizeX * 0.5f, sizeY * 0.5f, buffersHolder.getVertexBuffer(),
+        spriteRenderer.putVerticesCentered(x, y, sin, cos, sizeX * 0.5f, sizeY * 0.5f, buffersHolder.getVertexBuffer(),
                 buffersHolder.getVertexBufferIndex());
         spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
@@ -70,8 +74,8 @@ public final class GUIRenderer {
     public void add(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin, float cos, float sizeX, float sizeY, float r, float g, float b, float a,
                     long textureHandle) {
         float interpolation = Core.get().getRenderer().getInterpolation();
-        spriteRenderer.putVertices(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, lastSin + (sin - lastSin) * interpolation, lastCos + (cos - lastCos) * interpolation, sizeX * 0.5f, sizeY * 0.5f, buffersHolder.getVertexBuffer(),
-                buffersHolder.getVertexBufferIndex());
+        spriteRenderer.putVerticesCentered(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, lastSin + (sin - lastSin) * interpolation,
+                lastCos + (cos - lastCos) * interpolation, sizeX * 0.5f, sizeY * 0.5f, buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
         spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
@@ -84,7 +88,7 @@ public final class GUIRenderer {
         float interpolatedRotation = lastRotation + MathUtils.lerpAngle(lastRotation, rotation) * interpolation;
         float sin = LUT.sin(interpolatedRotation);
         float cos = LUT.cos(interpolatedRotation);
-        spriteRenderer.putVertices(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, sin, cos, sizeX * 0.5f, sizeY * 0.5f, buffersHolder.getVertexBuffer(),
+        spriteRenderer.putVerticesCentered(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, sin, cos, sizeX * 0.5f, sizeY * 0.5f, buffersHolder.getVertexBuffer(),
                 buffersHolder.getVertexBufferIndex());
         spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
@@ -94,6 +98,14 @@ public final class GUIRenderer {
 
     public void add(float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, long textureHandle) {
         spriteRenderer.putVertices(x, sizeY + y, sizeX + x, sizeY + y, sizeX + x, y, x, y, buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
+        spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        buffersHolder.incrementObjectCount();
+    }
+
+    public void addCentered(float x, float y, float sizeX, float sizeY, float r, float g, float b, float a, long textureHandle) {
+        spriteRenderer.putVerticesCentered(x, y, sizeX * 0.5f, sizeY * 0.5f, buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
         spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
