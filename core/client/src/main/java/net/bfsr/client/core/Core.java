@@ -56,6 +56,8 @@ public class Core {
     @Getter
     private Gui currentGui;
     @Getter
+    private GuiInGame guiInGame;
+    @Getter
     private final Renderer renderer;
     @Getter
     private final ClientSettings settings;
@@ -80,7 +82,7 @@ public class Core {
         this.profiler = new Profiler();
     }
 
-    public void init(long window, int width, int height) {
+    public void init(long window, int width, int height, Gui startGui) {
         this.window = window;
         this.screenWidth = width;
         this.screenHeight = height;
@@ -92,7 +94,9 @@ public class Core {
         this.soundManager.setAttenuationModel(AL11.AL_EXPONENT_DISTANCE);
         this.soundManager.setListener(new SoundListener(new Vector3f(0, 0, 0)));
         this.renderer.init(window, width, height);
-        this.currentGui = new GuiMainMenu();
+        this.guiInGame = new GuiInGame();
+        this.guiInGame.init();
+        this.currentGui = startGui;
         this.currentGui.init();
         profiler.setEnable(Option.IS_PROFILING.getBoolean());
         WreckRegistry.INSTANCE.init(PathHelper.CONFIG);
@@ -113,7 +117,7 @@ public class Core {
             renderer.updateCamera();
             soundManager.updateListenerPosition(renderer.getCamera());
             if (!paused) world.update();
-            renderer.update();
+            guiInGame.update();
         }
 
         if (currentGui != null) currentGui.update();
@@ -205,16 +209,16 @@ public class Core {
     }
 
     void resize(int width, int height) {
-        this.screenWidth = width;
-        this.screenHeight = height;
-        this.renderer.resize(width, height);
-
+        screenWidth = width;
+        screenHeight = height;
+        renderer.resize(width, height);
+        if (guiInGame != null) guiInGame.resize(width, height);
         if (currentGui != null) currentGui.resize(width, height);
     }
 
     public void setCurrentGui(Gui gui) {
         if (currentGui != null) currentGui.clear();
-        this.currentGui = gui;
+        currentGui = gui;
         if (currentGui != null) currentGui.init();
     }
 
@@ -238,16 +242,12 @@ public class Core {
         }
     }
 
-    public GuiInGame getGuiInGame() {
-        return renderer.getGuiInGame();
-    }
-
     public static Core get() {
         return instance;
     }
 
     public boolean canControlShip() {
-        return !renderer.getGuiInGame().isActive() && currentGui == null;
+        return !guiInGame.isActive() && currentGui == null;
     }
 
     public void stop() {

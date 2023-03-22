@@ -6,7 +6,6 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.camera.Camera;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.gui.Gui;
-import net.bfsr.client.gui.ingame.GuiInGame;
 import net.bfsr.client.renderer.debug.OpenGLDebugUtils;
 import net.bfsr.client.renderer.font.StringGeometryBuilder;
 import net.bfsr.client.renderer.instanced.BufferType;
@@ -44,8 +43,6 @@ public class Renderer {
     @Getter
     private final GUIRenderer guiRenderer = new GUIRenderer();
     @Getter
-    private GuiInGame guiInGame;
-    @Getter
     private int drawCalls;
     @Getter
     private int lastFrameDrawCalls;
@@ -72,9 +69,6 @@ public class Renderer {
         particleRenderer.init(spriteRenderer);
         shader.load();
         shader.init();
-
-        guiInGame = new GuiInGame();
-        guiInGame.init();
 
         if (Option.IS_DEBUG.getBoolean()) {
             GLFW.glfwRestoreWindow(window);
@@ -110,7 +104,6 @@ public class Renderer {
     }
 
     public void update() {
-        guiInGame.update();
     }
 
     public void prepareRender(float interpolation) {
@@ -155,7 +148,7 @@ public class Renderer {
         camera.bindGUI();
 
         if (world != null) {
-            guiInGame.render(interpolation);
+            core.getGuiInGame().render(interpolation);
         }
 
         Gui gui = core.getCurrentGui();
@@ -174,7 +167,6 @@ public class Renderer {
     public void resize(int width, int height) {
         GL11.glViewport(0, 0, width, height);
         camera.resize(width, height);
-        guiInGame.resize(width, height);
     }
 
     public void setVSync(boolean value) {

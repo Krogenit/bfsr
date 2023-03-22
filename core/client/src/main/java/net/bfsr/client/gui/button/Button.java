@@ -138,9 +138,4 @@ public class Button extends TexturedGuiObject {
     public void setString(String string) {
         stringObject.setString(string);
     }
-
-    @Override
-    public void clear() {
-        stringObject.clear();
-    }
 }

@@ -126,11 +126,6 @@ public class Slider extends TexturedGuiObject {
     }
 
     @Override
-    public void clear() {
-        stringObject.clear();
-    }
-
-    @Override
     public void onMouseLeftClick() {
         if (isIntersects()) {
             movingByMouse = true;

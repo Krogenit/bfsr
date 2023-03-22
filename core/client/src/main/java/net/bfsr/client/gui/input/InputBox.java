@@ -279,7 +279,6 @@ public class InputBox extends TexturedGuiObject {
 
     @Override
     public void clear() {
-        stringObject.clear();
         resetCursorPosition();
     }
 

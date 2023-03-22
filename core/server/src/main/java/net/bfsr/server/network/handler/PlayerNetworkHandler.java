@@ -163,13 +163,15 @@ public class PlayerNetworkHandler {
     public void loginUDP(String login, byte[] digest, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
         if (player == null) {
             log.error("Player object not found for login {} {}", login, remoteAddress);
-            ctx.channel().close();
+            sendTCPPacket(new PacketDisconnectLogin("Player object not found"));
+            closeChannel("Player object not found");
             return;
         }
 
         if (!Arrays.equals(digest, player.getDigest())) {
             log.error("Player {} sent wrong digest", login);
-            ctx.channel().close();
+            sendTCPPacket(new PacketDisconnectLogin("Wrong digest"));
+            closeChannel("Wrong digest");
             return;
         }
 
