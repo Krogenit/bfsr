@@ -106,11 +106,11 @@ public class ShipHumanSmall0 extends Ship {
     }
 
     @Override
-    public void spawnEngineParticles(Direction dir) {
+    public void spawnEngineParticles(Direction direction) {
         Vector2f shipPos = getPosition();
 
         float rotation = getRotation();
-        if (dir == Direction.FORWARD) {
+        if (direction == Direction.FORWARD) {
             RotationHelper.rotate(rotation, -2.3f, 0, CollisionObjectUtils.ROTATE_TO_VECTOR);
             Vector2 shipVelocity = body.getLinearVelocity();
             ParticleSpawner.spawnEngineBack(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y,
@@ -119,13 +119,13 @@ public class ShipHumanSmall0 extends Ship {
             RotationHelper.rotate(rotation, -1.7f, 0, CollisionObjectUtils.ROTATE_TO_VECTOR);
             ParticleSpawner.spawnLight(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y, 6.0f, 0.5f, 0.5f, 1.0f, 1.0f,
                     RenderLayer.BACKGROUND_ADDITIVE);
-        } else if (dir == Direction.LEFT) {
+        } else if (direction == Direction.LEFT) {
             RotationHelper.rotate(rotation, -0.5f, 3.0f, CollisionObjectUtils.ROTATE_TO_VECTOR);
             ParticleSpawner.spawnShipEngineSmoke(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y);
-        } else if (dir == Direction.RIGHT) {
+        } else if (direction == Direction.RIGHT) {
             RotationHelper.rotate(rotation, -0.5f, -3.0f, CollisionObjectUtils.ROTATE_TO_VECTOR);
             ParticleSpawner.spawnShipEngineSmoke(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y);
-        } else if (dir == Direction.BACKWARD) {
+        } else if (direction == Direction.BACKWARD) {
             RotationHelper.rotate(rotation, 3.0f, 0, CollisionObjectUtils.ROTATE_TO_VECTOR);
             ParticleSpawner.spawnShipEngineSmoke(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y);
         }

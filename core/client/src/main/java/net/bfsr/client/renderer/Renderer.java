@@ -115,6 +115,7 @@ public class Renderer {
 
         WorldClient world = core.getWorld();
         if (world != null) {
+            world.preRender();
             particleRenderer.putBackgroundParticlesToBuffers();
             world.prepareAmbient();
             world.prepareEntities();
@@ -126,7 +127,7 @@ public class Renderer {
         resetDrawCalls();
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
         camera.calculateInterpolatedViewMatrix(interpolation);
-        camera.bind();
+        camera.bindWorldViewMatrix();
         spriteRenderer.bind();
         shader.enable();
         OpenGLHelper.alphaGreater(0.0001f);
@@ -148,12 +149,12 @@ public class Renderer {
         camera.bindGUI();
 
         if (world != null) {
-            core.getGuiInGame().render(interpolation);
+            core.getGuiInGame().render();
         }
 
         Gui gui = core.getCurrentGui();
         if (gui != null) {
-            gui.render(interpolation);
+            gui.render();
         }
 
         spriteRenderer.render(BufferType.GUI);

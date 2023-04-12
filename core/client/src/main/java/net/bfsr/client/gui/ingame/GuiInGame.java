@@ -26,9 +26,11 @@ public class GuiInGame extends Gui {
     }
 
     @Override
-    public void onMouseLeftClicked() {
-        super.onMouseLeftClicked();
-        chat.onMouseLeftClick();
+    public boolean onMouseLeftClick() {
+        if (super.onMouseLeftClick()) {
+            return true;
+        }
+        return chat.onMouseLeftClick();
     }
 
     public boolean isActive() {
@@ -64,8 +66,8 @@ public class GuiInGame extends Gui {
     }
 
     @Override
-    public void render(float interpolation) {
-        super.render(interpolation);
+    public void render() {
+        super.render();
         GUIRenderer.get().render();
         miniMap.render(Core.get().getWorld());
         shipHUD.render();
@@ -74,8 +76,8 @@ public class GuiInGame extends Gui {
     }
 
     @Override
-    public void resize(int width, int height) {
-        super.resize(width, height);
+    public void onScreenResize(int width, int height) {
+        super.onScreenResize(width, height);
         shipHUD.resize();
     }
 

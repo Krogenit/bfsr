@@ -25,22 +25,22 @@ public final class StringRenderer {
         addString(glString, bufferType);
     }
 
-    public void render(String string, StringCache stringCache, int fontSize, float x, float y, BufferType bufferType) {
+    public void render(String string, StringCache stringCache, int fontSize, int x, int y, BufferType bufferType) {
         render(string, stringCache, fontSize, x, y, 1.0f, 1.0f, 1.0f, 1.0f, bufferType);
     }
 
-    public void render(String string, StringCache stringCache, int fontSize, float x, float y, float r, float g, float b, float a, BufferType bufferType) {
+    public void render(String string, StringCache stringCache, int fontSize, int x, int y, float r, float g, float b, float a, BufferType bufferType) {
         Core.get().getRenderer().getStringGeometryBuilder().createString(glString, stringCache, string, x, y, fontSize, r, g, b, a);
         render(glString, bufferType);
     }
 
-    public int render(String string, StringCache stringCache, int fontSize, float x, float y, float r, float g, float b, float a, int maxWidth, BufferType bufferType) {
+    public int render(String string, StringCache stringCache, int fontSize, int x, int y, float r, float g, float b, float a, int maxWidth, BufferType bufferType) {
         stringGeometryBuilder.createString(glString, stringCache, string, x, y, fontSize, r, g, b, a, maxWidth);
         render(glString, bufferType);
         return glString.getHeight();
     }
 
-    public int render(String string, StringCache stringCache, int fontSize, float x, float y, float r, float g, float b, float a, int maxWidth, int indent, BufferType bufferType) {
+    public int render(String string, StringCache stringCache, int fontSize, int x, int y, float r, float g, float b, float a, int maxWidth, int indent, BufferType bufferType) {
         stringGeometryBuilder.createString(glString, stringCache, string, x, y, fontSize, r, g, b, a, maxWidth, indent);
         render(glString, bufferType);
         return glString.getHeight();

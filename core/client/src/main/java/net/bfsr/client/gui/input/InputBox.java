@@ -3,6 +3,8 @@ package net.bfsr.client.gui.input;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.core.Core;
+import net.bfsr.client.gui.GuiObject;
+import net.bfsr.client.gui.GuiObjectsHandler;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
@@ -13,284 +15,525 @@ import net.bfsr.client.renderer.instanced.GUIRenderer;
 import net.bfsr.client.sound.GuiSoundSource;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.texture.TextureRegister;
+import net.bfsr.util.RunnableUtils;
 import org.joml.Vector2i;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11C;
+
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 
 public class InputBox extends TexturedGuiObject {
     protected final StringObject stringObject;
     private final StringObject emptyStringObject;
     @Getter
     protected boolean typing;
-    private boolean collided, renderCursor;
+    private boolean renderCursor;
     private int cursorTimer;
-    private final int cursorMaxTimer = 25;
-    private int cursorPosition, cursorPositionEnd, startSelectionCursor;
-    private boolean leftToRightSelection;
-    protected final FontType font = FontType.XOLONIUM;
+    private final int cursorMaxTimer = 30;
+    private int cursorPosition, cursorPositionEnd;
+    protected final StringCache stringCache;
+    @Getter
     protected int fontSize;
-    private float maxLineSize;
+    @Setter
+    private int maxLineSize;
+    @Getter
     protected final Vector2i stringOffset;
+    @Getter
     protected final Vector4f textColor = new Vector4f(1.0f);
     private final Vector4f selectionColor = new Vector4f(0.7f, 0.8f, 1.0f, 0.5f);
     @Setter
     private int cursorHeight;
+    @Setter
+    private SoundRegistry collideSound;
+    private final int maxStringOffsetX;
+    private long lastSelectTime;
+    private final long doubleClickTime = 400;
+    private long lastDoubleClickTime;
+    private final long timeBeforeSelectionAvailable = 500;
+    private final int stringOffsetMovingThreshold = 2;
+    @Setter
+    private Runnable onUnselectedRunnable = RunnableUtils.EMPTY_RUNNABLE;
 
-    InputBox(TextureRegister texture, int x, int y, int width, int height, String string, int fontSize, int stringOffsetX, int stringOffsetY) {
-        super(texture, x, y, width, height);
+    public InputBox(TextureRegister texture, int width, int height, String string, StringCache stringCache, int fontSize, int stringOffsetX, int stringOffsetY, int maxLineSize) {
+        super(texture, width, height);
+        this.stringCache = stringCache;
         this.fontSize = fontSize;
-        this.stringOffset = new Vector2i(stringOffsetX, stringOffsetY);
+        this.stringOffset = new Vector2i(stringOffsetX, stringCache.getCenteredYOffset(string, height, fontSize) + stringOffsetY);
 
-        int stringX = x + stringOffsetX;
-        int stringY = (int) (y + (height - font.getStringCache().getHeight(string, fontSize)) / 2.0f + font.getStringCache().getAscent(string, fontSize)) + stringOffsetY;
+        this.maxStringOffsetX = stringOffset.x;
+        int stringX = x + stringOffset.x;
+        int stringY = y + stringOffset.y;
 
-        this.stringObject = new StringObject(font, fontSize, textColor.x, textColor.y, textColor.z, textColor.w);
-        this.stringObject.setPosition(stringX, stringY);
-        this.emptyStringObject = new StringObject(font, string, fontSize, textColor.x, textColor.y, textColor.z, textColor.w);
-        this.emptyStringObject.setPosition(stringX, stringY);
-        this.emptyStringObject.compile();
+        this.stringObject = new StringObject(stringCache, fontSize, textColor.x, textColor.y, textColor.z, textColor.w).setPosition(stringX, stringY);
+        this.emptyStringObject = new StringObject(stringCache, string, fontSize, textColor.x, textColor.y, textColor.z, textColor.w).setPosition(stringX, stringY).compile();
 
-        maxLineSize = width / 1.2f;
-        cursorHeight = (int) (height / 1.7f);
+        this.maxLineSize = maxLineSize;
+        this.cursorHeight = (int) (height / 1.7f);
+    }
+
+    public InputBox(int width, int height, String string, StringCache stringCache, int fontSize, int stringOffsetX, int stringOffsetY, int maxLineSize) {
+        this(null, width, height, string, stringCache, fontSize, stringOffsetX, stringOffsetY, maxLineSize);
+    }
+
+    public InputBox(int width, int height, String string, FontType fontType, int fontSize, int stringOffsetX, int stringOffsetY, int maxLineSize) {
+        this(null, width, height, string, fontType.getStringCache(), fontSize, stringOffsetX, stringOffsetY, maxLineSize);
+    }
+
+    public InputBox(TextureRegister texture, int width, int height, String string, FontType fontType, int fontSize, int stringOffsetX, int stringOffsetY) {
+        this(texture, width, height, string, fontType.getStringCache(), fontSize, stringOffsetX, stringOffsetY, (int) (width / 1.2f));
+    }
+
+    public InputBox(TextureRegister texture, int width, int height, String string, StringCache stringCache, int fontSize, int stringOffsetX, int stringOffsetY) {
+        this(texture, width, height, string, stringCache, fontSize, stringOffsetX, stringOffsetY, (int) (width / 1.2f));
+    }
+
+    public InputBox(TextureRegister texture, int width, int height, String string, int fontSize, int stringOffsetX, int stringOffsetY) {
+        this(texture, width, height, string, FontType.XOLONIUM, fontSize, stringOffsetX, stringOffsetY);
+    }
+
+    public InputBox(int width, int height, String string, FontType fontType, int fontSize, int stringOffsetX, int stringOffsetY) {
+        this(null, width, height, string, fontType, fontSize, stringOffsetX, stringOffsetY);
+    }
+
+    public InputBox(int width, int height, String string, StringCache stringCache, int fontSize, int stringOffsetX, int stringOffsetY) {
+        this(null, width, height, string, stringCache, fontSize, stringOffsetX, stringOffsetY);
+    }
+
+    public InputBox(int width, int height, String string, int fontSize, int stringOffsetX, int stringOffsetY) {
+        this(width, height, string, FontType.XOLONIUM, fontSize, stringOffsetX, stringOffsetY);
     }
 
     public InputBox(TextureRegister texture, String string, int fontSize, int stringOffsetX, int stringOffsetY) {
-        this(texture, 0, 0, 300, 50, string, fontSize, stringOffsetX, stringOffsetY);
+        this(texture, 300, 50, string, fontSize, stringOffsetX, stringOffsetY);
     }
 
     @Override
-    public InputBox setPosition(int x, int y) {
-        super.setPosition(x, y);
-        StringCache stringCache = font.getStringCache();
-        int stringX = x + stringOffset.x;
-        int stringY = (int) (y + (height - stringCache.getHeight(stringObject.getString(), fontSize)) / 2.0f + stringCache.getAscent(stringObject.getString(), fontSize)) + stringOffset.y;
-        this.stringObject.setPosition(stringX, stringY);
-        this.emptyStringObject.setPosition(stringX, stringY);
-        return this;
+    public boolean onMouseLeftClick() {
+        boolean mouseHover = isMouseHover();
+
+        if (mouseHover) {
+            long now = System.currentTimeMillis();
+            if (now - lastSelectTime <= doubleClickTime) {
+                selectAll();
+                lastDoubleClickTime = now;
+            } else {
+                setTyping(true);
+            }
+            lastSelectTime = now;
+        } else {
+            if (typing) {
+                onUnselected();
+            }
+        }
+
+        return mouseHover;
     }
 
     @Override
-    public void onMouseLeftClick() {
-        setTyping(isIntersects());
+    public void onOtherGuiObjectMouseLeftClick(GuiObject guiObject) {
+        if (typing) {
+            onUnselected();
+        }
+
+        setTyping(false);
+    }
+
+    @Override
+    public void onOtherGuiObjectMouseRightClick(GuiObject guiObject) {
+        if (typing) {
+            onUnselected();
+        }
+
+        setTyping(false);
+    }
+
+    private void onUnselected() {
+        onUnselectedRunnable.run();
     }
 
     @Override
     public void input(int key) {
-        if (typing) {
-            if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_A) {
-                startSelectionCursor = cursorPosition = 0;
-                cursorPositionEnd = stringObject.getString().length();
-                leftToRightSelection = true;
-            }
+        if (!typing) return;
 
-            if (key == GLFW.GLFW_KEY_LEFT) {
-                if (leftToRightSelection) cursorPosition = cursorPositionEnd;
-                cursorPosition--;
-                if (cursorPosition < 0) cursorPosition = 0;
-                if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT)) {
-                    leftToRightSelection = false;
-                } else {
-                    cursorPositionEnd = cursorPosition;
+        if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL)) {
+            if (key == GLFW.GLFW_KEY_A) {
+                selectAll();
+            } else if (key == GLFW.GLFW_KEY_C) {
+                if (cursorPositionEnd != cursorPosition) {
+                    String string;
+                    if (cursorPosition < cursorPositionEnd) {
+                        string = stringObject.getString().substring(cursorPosition, cursorPositionEnd);
+                    } else {
+                        string = stringObject.getString().substring(cursorPositionEnd, cursorPosition);
+                    }
+                    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(string), null);
                 }
-            } else if (key == GLFW.GLFW_KEY_RIGHT) {
-                if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT)) {
-                    if (!leftToRightSelection) cursorPositionEnd = cursorPosition;
-                    cursorPositionEnd++;
-                    int lineWidth = stringObject.getString().length();
-                    if (cursorPositionEnd > lineWidth) cursorPositionEnd = lineWidth;
-                    leftToRightSelection = true;
+            } else if (key == GLFW.GLFW_KEY_V) {
+                Transferable transferable = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
+                if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                    try {
+                        insertString((String) transferable.getTransferData(DataFlavor.stringFlavor));
+                    } catch (UnsupportedFlavorException | IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+
+        if (key == GLFW.GLFW_KEY_LEFT) {
+            if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT)) {
+                cursorPositionEnd--;
+                if (cursorPositionEnd < 0) cursorPositionEnd = 0;
+                checkCursorOutOfBoundsPosition(cursorPositionEnd);
+            } else {
+                if (cursorPosition != cursorPositionEnd) {
+                    cursorPosition = cursorPositionEnd;
+                } else {
+                    cursorPosition--;
+                    if (cursorPosition < 0) cursorPosition = 0;
+                    cursorPositionEnd = cursorPosition;
+                    checkCursorOutOfBoundsPosition(cursorPosition);
+                }
+                showCursor();
+            }
+        } else if (key == GLFW.GLFW_KEY_RIGHT) {
+            if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT)) {
+                cursorPositionEnd++;
+                int lineWidth = stringObject.getString().length();
+                if (cursorPositionEnd > lineWidth) cursorPositionEnd = lineWidth;
+                checkCursorOutOfBoundsPosition(cursorPositionEnd);
+            } else {
+                if (cursorPosition != cursorPositionEnd) {
+                    cursorPosition = cursorPositionEnd;
                 } else {
                     cursorPosition++;
                     int lineWidth = stringObject.getString().length();
                     if (cursorPosition > lineWidth) cursorPosition = lineWidth;
                     cursorPositionEnd = cursorPosition;
+                    checkCursorOutOfBoundsPosition(cursorPosition);
                 }
+                showCursor();
             }
+        } else if (key == GLFW.GLFW_KEY_BACKSPACE) {
+            String prevString = stringObject.getString();
 
-            if (key == GLFW.GLFW_KEY_BACKSPACE) {
-                String prevString = stringObject.getString();
-
-                if (prevString.length() > 0) {
-                    String newString;
-                    if (cursorPositionEnd != cursorPosition) {
+            if (prevString.length() > 0) {
+                String newString;
+                if (cursorPositionEnd != cursorPosition) {
+                    if (cursorPosition < cursorPositionEnd) {
                         newString = prevString.substring(0, cursorPosition) + prevString.substring(cursorPositionEnd);
                         cursorPositionEnd = cursorPosition;
                     } else {
-                        if (cursorPosition == prevString.length()) {
-                            newString = prevString.substring(0, cursorPosition - 1);
-                            cursorPosition--;
-                            cursorPositionEnd--;
-                        } else if (cursorPosition > 0) {
-                            newString = prevString.substring(0, cursorPosition - 1) + prevString.substring(cursorPosition);
-                            cursorPosition--;
-                            cursorPositionEnd--;
-                        } else newString = prevString;
+                        newString = prevString.substring(0, cursorPositionEnd) + prevString.substring(cursorPosition);
+                        cursorPosition = cursorPositionEnd;
                     }
-                    stringObject.setString(newString);
+                } else {
+                    if (cursorPosition == prevString.length()) {
+                        newString = prevString.substring(0, cursorPosition - 1);
+                        cursorPosition--;
+                        cursorPositionEnd--;
+                    } else if (cursorPosition > 0) {
+                        newString = prevString.substring(0, cursorPosition - 1) + prevString.substring(cursorPosition);
+                        cursorPosition--;
+                        cursorPositionEnd--;
+                    } else newString = prevString;
                 }
-            } else if (key == GLFW.GLFW_KEY_DELETE) {
-                String prevString = stringObject.getString();
+                stringObject.setString(newString);
+                checkCursorOutOfBoundsPosition(cursorPosition);
+            }
+        } else if (key == GLFW.GLFW_KEY_DELETE) {
+            String prevString = stringObject.getString();
 
-                if (prevString.length() > 0) {
-                    int sl = prevString.length();
-                    String newString;
-                    if (cursorPositionEnd != cursorPosition) {
+            if (prevString.length() > 0) {
+                int sl = prevString.length();
+                String newString;
+                if (cursorPositionEnd != cursorPosition) {
+                    if (cursorPosition < cursorPositionEnd) {
                         newString = prevString.substring(0, cursorPosition) + prevString.substring(cursorPositionEnd);
                         cursorPositionEnd = cursorPosition;
                     } else {
-                        if (cursorPosition < sl) // If we have chars after cursor
-                            newString = prevString.substring(0, cursorPosition) + prevString.substring(cursorPosition + 1);
-                        else newString = prevString;// Else save string
+                        newString = prevString.substring(0, cursorPositionEnd) + prevString.substring(cursorPosition);
+                        cursorPosition = cursorPositionEnd;
                     }
-                    stringObject.setString(newString);
+                } else {
+                    if (cursorPosition < sl) // If we have chars after cursor
+                        newString = prevString.substring(0, cursorPosition) + prevString.substring(cursorPosition + 1);
+                    else newString = prevString;// Else save string
                 }
+                stringObject.setString(newString);
+            }
+        } else if (key == GLFW.GLFW_KEY_ENTER) {
+            onUnselected();
+        }
+    }
+
+    private void checkCursorOutOfBoundsPosition(int cursorPosition) {
+        checkCursorOutOfBoundsPosition(stringObject.getStringCache().getStringWidth(stringObject.getString().substring(0, cursorPosition), stringObject.getFontSize()),
+                stringOffsetMovingThreshold);
+    }
+
+    private void checkCursorOutOfBoundsPosition(int localPosX, int viewOffsetX) {
+        int cursorPositionX = x + localPosX + stringOffset.x;
+        int minCursorPositionX = x + viewOffsetX;
+        int maxCursorPosition = x + width - viewOffsetX;
+        int stringPosition = x + stringOffset.x;
+
+        if (cursorPositionX < minCursorPositionX && stringPosition < minCursorPositionX) {
+            int diff = minCursorPositionX - cursorPositionX;
+            stringOffset.x += diff;
+            stringObject.setPosition(stringObject.getX() + diff, stringObject.getYForScroll());
+
+            int maxStringOffset = x + maxStringOffsetX;
+            if (stringPosition + diff > maxStringOffset) {
+                diff = stringPosition + diff - maxStringOffset;
+                stringOffset.x -= diff;
+                stringObject.setPosition(stringObject.getX() - diff, stringObject.getYForScroll());
+            }
+        }
+
+        if (cursorPositionX > maxCursorPosition && stringPosition <= x + stringOffset.x) {
+            int diff = cursorPositionX - maxCursorPosition;
+
+            stringOffset.x -= diff;
+            stringObject.setPosition(stringObject.getX() - diff, stringObject.getYForScroll());
+
+            int maxStringOffset = x + width - maxStringOffsetX;
+            if (stringPosition + stringObject.getWidth() - diff < maxStringOffset) {
+                diff = maxStringOffset - (stringPosition + stringObject.getWidth() - diff);
+                stringOffset.x += diff;
+                stringObject.setPosition(stringObject.getX() + diff, stringObject.getYForScroll());
             }
         }
     }
 
+    private void selectAll() {
+        cursorPosition = 0;
+        cursorPositionEnd = stringObject.getString().length();
+    }
+
     private void setCursorPositionByMouse() {
-        startSelectionCursor = cursorPosition = cursorPositionEnd = stringObject.getCursorPositionInLine(Mouse.getPosition().x - x - stringOffset.x);
+        cursorPosition = cursorPositionEnd = stringObject.getCursorPositionInLine(Mouse.getPosition().x - x - stringOffset.x);
     }
 
     @Override
     public void textInput(int key) {
-        if (typing) {
-            char keyName = (char) key;
-            String prevString = "";
-            if (stringObject.getString().length() > 0) {
-                prevString = stringObject.getString();
-            }
+        if (!typing) return;
 
-            if (cursorPosition != cursorPositionEnd) {
-                String newString = prevString.substring(0, cursorPosition) + keyName + prevString.substring(cursorPositionEnd);
-                if (stringObject.getStringCache().getStringWidth(newString, stringObject.getFontSize()) < maxLineSize) {
-                    stringObject.setString(newString);
+        char keyName = (char) key;
+        insertString(String.valueOf(keyName));
+    }
 
-                    cursorPositionEnd = cursorPosition;
-                    cursorPosition++;
-                    cursorPositionEnd++;
-                }
+    private void insertString(String string) {
+        String prevString = "";
+        if (stringObject.getString().length() > 0) {
+            prevString = stringObject.getString();
+        }
+
+        if (cursorPosition != cursorPositionEnd) {
+            String newString;
+            if (cursorPosition < cursorPositionEnd) {
+                newString = prevString.substring(0, cursorPosition) + string + prevString.substring(cursorPositionEnd);
+                cursorPositionEnd = cursorPosition;
             } else {
-                String newString = prevString.substring(0, cursorPosition) + keyName + prevString.substring(cursorPosition);
-                if (stringObject.getStringCache().getStringWidth(newString, stringObject.getFontSize()) < maxLineSize) {
-                    stringObject.setString(newString);
+                newString = prevString.substring(0, cursorPositionEnd) + string + prevString.substring(cursorPosition);
+                cursorPosition = cursorPositionEnd;
+            }
+            if (stringObject.getStringCache().getStringWidth(newString, stringObject.getFontSize()) < maxLineSize) {
+                stringObject.setString(newString);
+                cursorPosition = cursorPositionEnd += string.length();
+                checkCursorOutOfBoundsPosition(cursorPosition);
+            }
+        } else {
+            String newString = prevString.substring(0, cursorPosition) + string + prevString.substring(cursorPosition);
+            if (stringObject.getStringCache().getStringWidth(newString, stringObject.getFontSize()) < maxLineSize) {
+                stringObject.setString(newString);
 
-                    cursorPosition++;
-                    cursorPositionEnd++;
-                }
+                cursorPosition = cursorPositionEnd += string.length();
+                checkCursorOutOfBoundsPosition(cursorPosition);
             }
         }
     }
 
     @Override
-    public void update() {
-        if (typing && isIntersects()) {
-            if (Mouse.isLeftDown()) {
-                int endPos = stringObject.getCursorPositionInLine(Mouse.getPosition().x - x - stringOffset.x);
-                if (endPos <= startSelectionCursor) {
-                    cursorPosition = endPos;
-                    leftToRightSelection = false;
-                } else {
-                    cursorPositionEnd = endPos;
-                    leftToRightSelection = true;
-                }
-            }
+    public void onMouseHover() {
+        Mouse.changeCursor(Mouse.INPUT_CURSOR);
+        if (collideSound != null) {
+            Core.get().getSoundManager().play(new GuiSoundSource(collideSound));
         }
+    }
 
-        if (isIntersects()) {
-            if (!collided) {
-                collided = true;
-                Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonCollide));
-            }
-        } else {
-            collided = false;
-        }
+    @Override
+    public void onMouseStopHover() {
+        Mouse.changeCursor(Mouse.DEFAULT_CURSOR);
+    }
+
+    @Override
+    public void onUnregistered(GuiObjectsHandler gui) {
+        super.onUnregistered(gui);
+        Mouse.changeCursor(Mouse.DEFAULT_CURSOR);
+    }
+
+    @Override
+    public void update() {
+        super.update();
+        emptyStringObject.update();
+        stringObject.update();
 
         if (typing) {
-            if (cursorTimer > 0) {
-                cursorTimer--;
+            if (mouseHover && Mouse.isLeftDown() && System.currentTimeMillis() - lastDoubleClickTime > timeBeforeSelectionAvailable) {
+                float selectionPositionX = Mouse.getPosition().x - x - stringOffset.x;
+                cursorPositionEnd = stringObject.getCursorPositionInLine(selectionPositionX);
+                checkCursorOutOfBoundsPosition((int) selectionPositionX, 10);
             }
 
-            if (cursorTimer == 0) {
-                renderCursor = !renderCursor;
-                cursorTimer = 25;
+            if (cursorPositionEnd == cursorPosition) {
+                if (cursorTimer > 0) {
+                    cursorTimer--;
+                }
+
+                if (cursorTimer == 0) {
+                    renderCursor = !renderCursor;
+                    cursorTimer = cursorMaxTimer;
+                }
+            } else {
+                renderCursor = false;
             }
         }
     }
 
     @Override
     public void render() {
-        renderNoInterpolation();
+        super.render();
+
+        if (stringOffset.x < 0) {
+            GUIRenderer.get().render();
+            GL11C.glEnable(GL11C.GL_SCISSOR_TEST);
+            GL11C.glScissor(x + 1, Core.get().getScreenHeight() - y - height, width - 2, height);
+        }
+
         renderString();
         renderSelectionAndCursor();
+
+        if (stringOffset.x < 0) {
+            GUIRenderer.get().render();
+            GL11C.glDisable(GL11C.GL_SCISSOR_TEST);
+        }
     }
 
     void renderString() {
         if (stringObject.getString().isEmpty()) {
-            emptyStringObject.renderNoInterpolation();
+            emptyStringObject.render();
         } else {
-            stringObject.renderNoInterpolation();
+            stringObject.render();
         }
     }
 
     void renderSelectionAndCursor() {
         float lineWidth;
-        int cursorY = y + stringOffset.y + height / 2 - cursorHeight / 2;
+        int lastCursorY = lastY + height / 2 - cursorHeight / 2;
+        int cursorY = y + height / 2 - cursorHeight / 2;
         if (stringObject.getString().length() > 0) {
             if (cursorPositionEnd != cursorPosition) {
-                int leftStringWidth = stringObject.getStringCache().getStringWidth(stringObject.getString().substring(0, cursorPosition), fontSize);
-                int rightStringWidth = stringObject.getStringCache().getStringWidth(stringObject.getString().substring(cursorPosition, cursorPositionEnd), fontSize);
-                GUIRenderer.get().add(x + leftStringWidth + stringOffset.x, cursorY, rightStringWidth, cursorHeight, selectionColor.x, selectionColor.y,
-                        selectionColor.z, selectionColor.w);
-                if (leftToRightSelection) {
-                    lineWidth = leftStringWidth + rightStringWidth;
+                int leftStringWidth;
+                int rightStringWidth;
+                if (cursorPosition < cursorPositionEnd) {
+                    leftStringWidth = stringObject.getStringCache().getStringWidth(stringObject.getString().substring(0, cursorPosition), fontSize);
+                    rightStringWidth = stringObject.getStringCache().getStringWidth(stringObject.getString().substring(cursorPosition, cursorPositionEnd), fontSize);
                 } else {
-                    lineWidth = leftStringWidth;
+                    leftStringWidth = stringObject.getStringCache().getStringWidth(stringObject.getString().substring(0, cursorPositionEnd), fontSize);
+                    rightStringWidth = stringObject.getStringCache().getStringWidth(stringObject.getString().substring(cursorPositionEnd, cursorPosition), fontSize);
                 }
+                GUIRenderer.get().add(lastX + stringOffset.x + leftStringWidth, lastCursorY, x + leftStringWidth + stringOffset.x, cursorY, rightStringWidth,
+                        cursorHeight, selectionColor.x, selectionColor.y, selectionColor.z, selectionColor.w);
+                return;
             } else {
-                lineWidth = font.getStringCache().getStringWidth(stringObject.getString().substring(0, cursorPosition), fontSize);
+                lineWidth = stringCache.getStringWidth(stringObject.getString().substring(0, cursorPosition), fontSize);
             }
         } else {
             lineWidth = 0;
         }
 
         if (renderCursor) {
-            GUIRenderer.get().add(x + stringOffset.x + lineWidth, cursorY, 1, cursorHeight, color.x, color.y, color.z, color.w);
+            Vector4f stringColor = stringObject.getColor();
+            GUIRenderer.get().add(lastX + stringOffset.x + lineWidth, lastCursorY, x + stringOffset.x + lineWidth, cursorY, 1, cursorHeight,
+                    stringColor.x, stringColor.y, stringColor.z, stringColor.w);
         }
     }
 
-    public InputBox setStringObject(String stringObject) {
-        this.stringObject.setString(stringObject);
+    private void showCursor() {
+        renderCursor = true;
+        cursorTimer = cursorMaxTimer;
+    }
+
+    private void hideCursor() {
+        renderCursor = false;
+        cursorTimer = cursorMaxTimer;
+    }
+
+    public InputBox setString(String string) {
+        this.stringObject.setString(string);
         return this;
     }
 
-    private void setTyping(boolean value) {
+    public void setTyping(boolean value) {
         if (value) {
             setCursorPositionByMouse();
+            showCursor();
             Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
         } else {
-            renderCursor = false;
-            cursorTimer = cursorMaxTimer;
-            cursorPosition = cursorPositionEnd = startSelectionCursor = 0;
+            hideCursor();
+            cursorPosition = cursorPositionEnd = 0;
         }
 
         this.typing = value;
     }
 
     @Override
-    public void clear() {
-        resetCursorPosition();
+    public InputBox setPosition(int x, int y) {
+        super.setPosition(x, y);
+        int stringX = x + stringOffset.x;
+        int stringY = y + stringOffset.y;
+        this.stringObject.setPosition(stringX, stringY);
+        this.emptyStringObject.setPosition(stringX, stringY);
+        return this;
+    }
+
+    @Override
+    public void setY(int y) {
+        super.setY(y);
+        int stringY = y + stringOffset.y;
+        this.stringObject.setY(stringY);
+        this.emptyStringObject.setY(stringY);
+    }
+
+    public InputBox setTextColor(float r, float g, float b, float a) {
+        emptyStringObject.setColor(r, g, b, a);
+        stringObject.setColor(r, g, b, a);
+        return this;
+    }
+
+    public InputBox setTextColor(Vector4f color) {
+        emptyStringObject.setColor(color);
+        stringObject.setColor(color);
+        return this;
     }
 
     void resetCursorPosition() {
-        cursorPosition = cursorPositionEnd = startSelectionCursor = 0;
+        cursorPosition = cursorPositionEnd = 0;
     }
 
     public String getString() {
         return stringObject.getString();
     }
 
-    void setMaxLineSize(float maxLineSize) {
-        this.maxLineSize = maxLineSize;
+    @Override
+    public void clear() {
+        resetCursorPosition();
     }
 }

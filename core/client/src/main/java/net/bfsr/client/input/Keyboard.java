@@ -16,10 +16,15 @@ public final class Keyboard {
 
         glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
             if (action != GLFW_RELEASE) {
-                WorldClient world = Core.get().getWorld();
-                if (world != null) world.input(key);
+                Gui currentGui = Core.get().getCurrentGui();
+                if (currentGui != null) {
+                    currentGui.input(key);
+                } else {
+                    WorldClient world = Core.get().getWorld();
+                    if (world != null) world.input(key);
 
-                guiInput(gui -> gui.input(key));
+                    Core.get().getGuiInGame().input(key);
+                }
             }
         });
 
@@ -30,9 +35,9 @@ public final class Keyboard {
         Gui gui = Core.get().getCurrentGui();
         if (gui != null) {
             guiConsumer.accept(gui);
+        } else {
+            guiConsumer.accept(Core.get().getGuiInGame());
         }
-
-        guiConsumer.accept(Core.get().getGuiInGame());
     }
 
     public static boolean isKeyDown(int keyCode) {

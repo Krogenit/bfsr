@@ -10,6 +10,7 @@ import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
+import net.bfsr.client.util.PathHelper;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.entity.wreck.RegisteredShipWreck;
 import net.bfsr.entity.wreck.WreckRegistry;
@@ -92,9 +93,9 @@ public class Wreck extends CollisionObject {
         this.lastColorFire.set(colorFire);
         this.colorLight.set(1.0f, 1.0f, 1.0f, 0.0f);
         this.lastColorLight.set(colorLight);
-        this.texture = TextureLoader.getTexture(registeredShipWreck.getTexture());
-        this.textureFire = TextureLoader.getTexture(registeredShipWreck.getFireTexture());
-        this.textureLight = registeredShipWreck.getSparkleTexture() != null ? TextureLoader.getTexture(registeredShipWreck.getSparkleTexture()) : null;
+        this.texture = TextureLoader.getTexture(PathHelper.convertPath(registeredShipWreck.getTexture()));
+        this.textureFire = TextureLoader.getTexture(PathHelper.convertPath(registeredShipWreck.getFireTexture()));
+        this.textureLight = registeredShipWreck.getSparkleTexture() != null ? TextureLoader.getTexture(PathHelper.convertPath(registeredShipWreck.getSparkleTexture())) : null;
         this.sparkleActivationTimer = light ? 200.0f + world.getRand().nextInt(200) : 0.0f;
         createFixtures(angularVelocity);
         world.getParticleManager().addParticle(this);
@@ -278,7 +279,7 @@ public class Wreck extends CollisionObject {
         if (color.w > 0.01f) {
             Vector2f pos = getPosition();
             ParticleSpawner.spawnLight(pos.x, pos.y, getScale().x * 2.0f, 1.0f, 0.8f, 0.6f, 1.0f, RenderLayer.DEFAULT_ADDITIVE);
-            ParticleSpawner.spawnSpark(pos.x, pos.y, getScale().x);
+            ParticleSpawner.spawnShipDestroy(pos.x, pos.y, getScale().x);
             ParticleSpawner.spawnExplosion(pos.x, pos.y, getScale().x);
             ParticleSpawner.spawnSmallGarbage(random.nextInt(10), pos.x, pos.y, 2.0f, 5.0f + getScale().x);
             ParticleSpawner.spawnShipOst(random.nextInt(3), pos.x, pos.y, velocity.x * 0.06f, velocity.y * 0.06f, 0.25f + 0.75f * random.nextFloat());

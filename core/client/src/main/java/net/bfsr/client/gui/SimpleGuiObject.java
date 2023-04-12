@@ -23,17 +23,33 @@ public class SimpleGuiObject extends AbstractGuiObject {
     @Getter
     @Setter
     protected float rotation;
-    protected Vector4f color = new Vector4f(1.0f);
+    @Getter
+    protected final Vector4f color = new Vector4f(1.0f);
+    protected final Vector4f outlineColor = new Vector4f(1.0f);
+    protected final Vector4f hoverColor = new Vector4f(1.0f);
+    protected final Vector4f outlineHoverColor = new Vector4f(1.0f);
     @Setter
     private Supplier<Boolean> intersectsCheckMethod = () -> isIntersects(Mouse.getPosition().x, Mouse.getPosition().y);
 
     protected SimpleGuiObject(int x, int y, int width, int height) {
-        setPositionAndSize(x, y, width, height);
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+
+    protected SimpleGuiObject(int width, int height) {
+        this.width = width;
+        this.height = height;
     }
 
     @Override
     public void update() {
         updateLastPosition();
+
+        if (!mouseWasHover && mouseHover) {
+            onMouseHover();
+        }
     }
 
     protected void updateLastPosition() {
@@ -42,23 +58,42 @@ public class SimpleGuiObject extends AbstractGuiObject {
     }
 
     @Override
+    public void updateMouseHover() {
+        boolean mouseHover = isIntersectsWithMouse();
+        setMouseHover(mouseHover);
+        if (mouseWasHover && !mouseHover) {
+            onMouseStopHover();
+        }
+    }
+
+    @Override
     public void render() {
         if (rotation != 0.0f) {
             GUIRenderer.get().add(lastX, lastY, x, y, lastRotation, rotation, width, height, color.x, color.y, color.z, color.w);
+            if (isMouseHover()) {
+                GUIRenderer.get().add(lastX + 1, lastY + 1, x + 1, y + 1, lastRotation, rotation, width - 2, height - 2, hoverColor.x, hoverColor.y, hoverColor.z, hoverColor.w);
+            } else {
+                GUIRenderer.get().add(lastX + 1, lastY + 1, x + 1, y + 1, lastRotation, rotation, width - 2, height - 2, color.x, color.y, color.z, color.w);
+            }
         } else {
-            GUIRenderer.get().add(lastX, lastY, x, y, width, height, color.x, color.y, color.z, color.w);
+            if (isMouseHover()) {
+                GUIRenderer.get().add(lastX, lastY, x, y, width, height, outlineHoverColor.x, outlineHoverColor.y, outlineHoverColor.z, outlineHoverColor.w);
+                GUIRenderer.get().add(lastX + 1, lastY + 1, x + 1, y + 1, width - 2, height - 2, hoverColor.x, hoverColor.y, hoverColor.z, hoverColor.w);
+            } else {
+                GUIRenderer.get().add(lastX, lastY, x, y, width, height, outlineColor.x, outlineColor.y, outlineColor.z, outlineColor.w);
+                GUIRenderer.get().add(lastX + 1, lastY + 1, x + 1, y + 1, width - 2, height - 2, color.x, color.y, color.z, color.w);
+            }
         }
     }
 
     public void renderNoInterpolation() {
-        GUIRenderer.get().add(x, y, width, height, color.x, color.y, color.z, color.w);
-    }
-
-    public void setPositionAndSize(int x, int y, int width, int height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
+        if (isMouseHover()) {
+            GUIRenderer.get().add(x, y, width, height, outlineHoverColor.x, outlineHoverColor.y, outlineHoverColor.z, outlineHoverColor.w);
+            GUIRenderer.get().add(x + 1, y + 1, width - 2, height - 2, hoverColor.x, hoverColor.y, hoverColor.z, hoverColor.w);
+        } else {
+            GUIRenderer.get().add(x, y, width, height, outlineColor.x, outlineColor.y, outlineColor.z, outlineColor.w);
+            GUIRenderer.get().add(x + 1, y + 1, width - 2, height - 2, color.x, color.y, color.z, color.w);
+        }
     }
 
     @Override
@@ -97,17 +132,61 @@ public class SimpleGuiObject extends AbstractGuiObject {
         return this;
     }
 
+    @Override
     public SimpleGuiObject setColor(float r, float g, float b, float a) {
         color.set(r, g, b, a);
         return this;
     }
 
-    public boolean isIntersects() {
+    public SimpleGuiObject setColor(Vector4f color) {
+        this.color.set(color);
+        return this;
+    }
+
+    @Override
+    public SimpleGuiObject setOutlineColor(float r, float g, float b, float a) {
+        outlineColor.set(r, g, b, a);
+        return this;
+    }
+
+    public SimpleGuiObject setOutlineColor(Vector4f color) {
+        outlineColor.set(color);
+        return this;
+    }
+
+    @Override
+    public SimpleGuiObject setOutlineHoverColor(float r, float g, float b, float a) {
+        outlineHoverColor.set(r, g, b, a);
+        return this;
+    }
+
+    public SimpleGuiObject setOutlineHoverColor(Vector4f color) {
+        outlineHoverColor.set(color);
+        return this;
+    }
+
+    @Override
+    public SimpleGuiObject setHoverColor(float r, float g, float b, float a) {
+        hoverColor.set(r, g, b, a);
+        return this;
+    }
+
+    public SimpleGuiObject setHoverColor(Vector4f color) {
+        hoverColor.set(color);
+        return this;
+    }
+
+    @Override
+    public SimpleGuiObject setTextColor(float r, float g, float b, float a) {
+        return this;
+    }
+
+    public boolean isIntersectsWithMouse() {
         return intersectsCheckMethod.get();
     }
 
     public boolean isIntersects(float x, float y) {
-        return x >= this.x && y >= this.y && x <= this.x + width && y <= this.y + height;
+        return x >= this.x && y >= this.y && x < this.x + width && y < this.y + height;
     }
 
     public boolean isIntersects(Vector2f vector) {

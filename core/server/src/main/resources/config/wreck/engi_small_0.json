@@ -2,9 +2,9 @@
   "shipType": "ENGI_SMALL_0",
   "wrecks": [
     {
-      "texturePath": "particle/wreck/small/engi_small0_wreck0",
-      "fireTexturePath": "particle/wreck/small/engi_small0_wreckfire0",
-      "sparkleTexturePath": "particle/wreck/small/engi_small0_wrecklight0",
+      "texturePath": "texture/particle/wreck/small/engi_small0_wreck0.png",
+      "fireTexturePath": "texture/particle/wreck/small/engi_small0_wreckfire0.png",
+      "sparkleTexturePath": "texture/particle/wreck/small/engi_small0_wrecklight0.png",
       "vertices": [
         {
           "x": -1.68,
@@ -33,9 +33,9 @@
       ]
     },
     {
-      "texturePath": "particle/wreck/small/engi_small0_wreck1",
-      "fireTexturePath": "particle/wreck/small/engi_small0_wreckfire1",
-      "sparkleTexturePath": "particle/wreck/small/engi_small0_wrecklight1",
+      "texturePath": "texture/particle/wreck/small/engi_small0_wreck1.png",
+      "fireTexturePath": "texture/particle/wreck/small/engi_small0_wreckfire1.png",
+      "sparkleTexturePath": "texture/particle/wreck/small/engi_small0_wrecklight1.png",
       "vertices": [
         {
           "x": 1.4,

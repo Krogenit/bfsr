@@ -3,6 +3,7 @@ package net.bfsr.client.camera;
 import lombok.Getter;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.ship.Ship;
+import net.bfsr.client.gui.Gui;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.network.packet.client.PacketCameraPosition;
@@ -157,7 +158,8 @@ public class Camera {
     }
 
     public void scroll(float y) {
-        if (Core.get().getCurrentGui() == null) {
+        Gui currentGui = Core.get().getCurrentGui();
+        if (currentGui == null || currentGui.isAllowCameraZoom()) {
             zoomAccumulator += y * Option.CAMERA_ZOOM_SPEED.getFloat() * (zoom + zoomAccumulator);
         }
     }
@@ -185,16 +187,19 @@ public class Camera {
 
             boolean noShip = Core.get().getWorld().getPlayerShip() == null;
             float keyMoveSpeed = Option.CAMERA_MOVE_BY_KEY_SPEED.getFloat();
-            if (Keyboard.isKeyDown(GLFW_KEY_LEFT) || (noShip && Keyboard.isKeyDown(GLFW_KEY_A))) {
-                position.x -= keyMoveSpeed * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-            } else if (Keyboard.isKeyDown(GLFW_KEY_RIGHT) || (noShip && Keyboard.isKeyDown(GLFW_KEY_D))) {
-                position.x += keyMoveSpeed * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-            }
+            boolean noScreen = Core.get().getCurrentGui() == null;
+            if (noScreen) {
+                if (Keyboard.isKeyDown(GLFW_KEY_LEFT) || (noShip && Keyboard.isKeyDown(GLFW_KEY_A))) {
+                    position.x -= keyMoveSpeed * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+                } else if (Keyboard.isKeyDown(GLFW_KEY_RIGHT) || (noShip && Keyboard.isKeyDown(GLFW_KEY_D))) {
+                    position.x += keyMoveSpeed * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+                }
 
-            if (Keyboard.isKeyDown(GLFW_KEY_UP) || (noShip && Keyboard.isKeyDown(GLFW_KEY_W))) {
-                position.y -= keyMoveSpeed * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-            } else if (Keyboard.isKeyDown(GLFW_KEY_DOWN) || (noShip && Keyboard.isKeyDown(GLFW_KEY_S))) {
-                position.y += keyMoveSpeed * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+                if (Keyboard.isKeyDown(GLFW_KEY_UP) || (noShip && Keyboard.isKeyDown(GLFW_KEY_W))) {
+                    position.y -= keyMoveSpeed * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+                } else if (Keyboard.isKeyDown(GLFW_KEY_DOWN) || (noShip && Keyboard.isKeyDown(GLFW_KEY_S))) {
+                    position.y += keyMoveSpeed * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+                }
             }
 
             if (Option.CAMERA_FOLLOW_PLAYER.getBoolean()) followShip();
@@ -228,7 +233,7 @@ public class Camera {
         zoomAccumulator = 0;
     }
 
-    public void bind() {
+    public void bindWorldViewMatrix() {
         GL30.glBindBufferBase(GL31.GL_UNIFORM_BUFFER, UBO_CAMERA_MATRIX, projectionViewMatrixUBO);
     }
 
@@ -249,8 +254,12 @@ public class Camera {
     }
 
     public Vector2f getWorldVector(Vector2f pos) {
-        vectorInCamSpace.x = (pos.x + origin.x) / zoom + position.x;
-        vectorInCamSpace.y = (pos.y + origin.y) / zoom + position.y;
+        return getWorldVector(pos.x, pos.y);
+    }
+
+    public Vector2f getWorldVector(float x, float y) {
+        vectorInCamSpace.x = (x + origin.x) / zoom + position.x;
+        vectorInCamSpace.y = (y + origin.y) / zoom + position.y;
         return vectorInCamSpace;
     }
 

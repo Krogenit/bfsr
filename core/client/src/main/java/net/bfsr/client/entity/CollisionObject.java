@@ -35,6 +35,7 @@ public class CollisionObject extends TextureObject {
     protected Vector2f velocity = new Vector2f();
     @Getter
     protected AABB aabb = new AABB(0, 0, 0, 0);
+    @Setter
     protected float lifeTime;
     @Getter
     protected float lastSin, lastCos;

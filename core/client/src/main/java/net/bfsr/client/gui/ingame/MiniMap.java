@@ -26,7 +26,7 @@ public class MiniMap {
         int scaleX = 280;
         int scaleY = 220;
 
-        map.setSize(scaleX, scaleY).atUpperLeftCorner(0, 0);
+        map.setSize(scaleX, scaleY).atTopLeftCorner(0, 0);
         gui.registerGuiObject(map);
     }
 

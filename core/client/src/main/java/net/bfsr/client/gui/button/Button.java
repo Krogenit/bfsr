@@ -2,6 +2,7 @@ package net.bfsr.client.gui.button;
 
 import lombok.Setter;
 import net.bfsr.client.core.Core;
+import net.bfsr.client.gui.SimpleGuiObject;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringCache;
@@ -11,97 +12,114 @@ import net.bfsr.client.sound.GuiSoundSource;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.texture.TextureRegister;
 import net.bfsr.util.RunnableUtils;
+import org.joml.Vector4f;
 
 public class Button extends TexturedGuiObject {
     private final StringObject stringObject;
-    private final SoundRegistry collideSound;
-    private final SoundRegistry clickSound;
-    private boolean collided;
     @Setter
-    private Runnable onMouseClickedRunnable;
+    private SoundRegistry collideSound;
+    @Setter
+    private SoundRegistry clickSound;
+    @Setter
+    private Runnable onMouseClickRunnable;
+    @Setter
+    private Runnable onMouseRightClickRunnable = RunnableUtils.EMPTY_RUNNABLE;
+    @Setter
+    private int stringXOffset;
+    private final int stringYOffset;
 
-    public Button(TextureRegister texture, int x, int y, int width, int height, String string, int fontSize, Runnable onMouseClickedRunnable) {
+    public Button(TextureRegister texture, int x, int y, int width, int height, String string, FontType fontType, int fontSize, int stringXOffset, int stringYOffset,
+                  StringOffsetType stringOffsetType, Runnable onMouseClickRunnable) {
         super(texture, x, y, width, height);
-        FontType font = FontType.XOLONIUM;
-        StringCache stringCache = font.getStringCache();
-        this.stringObject = new StringObject(font, string, x + width / 2, (int) (y + (height - stringCache.getHeight(string, fontSize)) / 2.0f + stringCache.getAscent(string, fontSize)),
-                fontSize, StringOffsetType.CENTERED);
-        this.stringObject.compile();
-        this.clickSound = SoundRegistry.buttonClick;
-        this.collideSound = SoundRegistry.buttonCollide;
-        this.onMouseClickedRunnable = onMouseClickedRunnable;
+        StringCache stringCache = fontType.getStringCache();
+        this.stringXOffset = stringXOffset;
+        this.stringObject = new StringObject(fontType, string, x + stringXOffset, y + stringCache.getCenteredYOffset(string, height, fontSize) + stringYOffset, fontSize, stringOffsetType)
+                .compile();
+        this.onMouseClickRunnable = onMouseClickRunnable;
+        this.stringYOffset = stringYOffset;
     }
 
-    public Button(TextureRegister texture, int width, int height, String string, int fontSize, Runnable onMouseClickedRunnable) {
-        this(texture, 0, 0, width, height, string, fontSize, onMouseClickedRunnable);
+    public Button(TextureRegister texture, int x, int y, int width, int height, String string, FontType fontType, int fontSize, int stringYOffset, Runnable onMouseClickRunnable) {
+        this(texture, x, y, width, height, string, fontType, fontSize, width / 2, stringYOffset, StringOffsetType.CENTERED, onMouseClickRunnable);
     }
 
-    public Button(String string, int fontSize, Runnable onMouseClickedRunnable) {
-        this(TextureRegister.guiButtonBase, 0, 0, 300, 50, string, fontSize, onMouseClickedRunnable);
+    public Button(TextureRegister texture, int x, int y, int width, int height, String string, FontType fontType, int fontSize, Runnable onMouseClickRunnable) {
+        this(texture, x, y, width, height, string, fontType, fontSize, 0, onMouseClickRunnable);
     }
 
-    public Button(int x, int y, String string, Runnable onMouseClickedRunnable) {
-        this(TextureRegister.guiButtonBase, x, y, 300, 50, string, 20, onMouseClickedRunnable);
+    public Button(TextureRegister texture, int x, int y, int width, int height, String string, int fontSize, Runnable onMouseClickRunnable) {
+        this(texture, x, y, width, height, string, FontType.XOLONIUM, fontSize, onMouseClickRunnable);
+    }
+
+    public Button(TextureRegister texture, int width, int height, String string, int fontSize, Runnable onMouseClickRunnable) {
+        this(texture, 0, 0, width, height, string, fontSize, onMouseClickRunnable);
+    }
+
+    public Button(TextureRegister texture, int width, int height, String string, FontType fontType, int fontSize, int stringYOffset, Runnable onMouseClickRunnable) {
+        this(texture, 0, 0, width, height, string, fontType, fontSize, stringYOffset, onMouseClickRunnable);
+    }
+
+    public Button(int width, int height, String string, FontType fontType, int fontSize, int stringYOffset, Runnable onMouseClickRunnable) {
+        this(null, 0, 0, width, height, string, fontType, fontSize, stringYOffset, onMouseClickRunnable);
+    }
+
+    public Button(String string, int fontSize, Runnable onMouseClickRunnable) {
+        this(TextureRegister.guiButtonBase, 0, 0, 300, 50, string, fontSize, onMouseClickRunnable);
     }
 
     public Button(TextureRegister texture, int x, int y, int width, int height, String string, int fontSize) {
         this(texture, x, y, width, height, string, fontSize, RunnableUtils.EMPTY_RUNNABLE);
     }
 
-    private Button(TextureRegister texture, int x, int y, int width, int height, String string) {
-        this(texture, x, y, width, height, string, 18);
+    public Button(String string, Runnable onMouseClickRunnable) {
+        this(TextureRegister.guiButtonBase, 0, 0, 300, 50, string, 20, onMouseClickRunnable);
     }
 
-    public Button(TextureRegister texture, int x, int y, int width, int height) {
-        this(texture, x, y, width, height, "");
+    public Button(TextureRegister texture, Runnable onMouseClickRunnable) {
+        this(texture, 0, 0, 300, 50, "", 20, onMouseClickRunnable);
     }
 
-    public Button(String string, Runnable onMouseClickedRunnable) {
-        this(TextureRegister.guiButtonBase, 0, 0, 300, 50, string, 20, onMouseClickedRunnable);
+    public Button(int width, int height, Runnable onMouseClickRunnable) {
+        this(null, 0, 0, width, height, "", 20, onMouseClickRunnable);
     }
 
-    public Button(TextureRegister texture, Runnable onMouseClickedRunnable) {
-        this(texture, 0, 0, 300, 50, "", 20, onMouseClickedRunnable);
+    @Override
+    public void onMouseHover() {
+        if (collideSound != null) {
+            Core.get().getSoundManager().play(new GuiSoundSource(collideSound));
+        }
     }
 
     @Override
     public void update() {
         super.update();
         stringObject.update();
-
-        if (collideSound != null) {
-            if (isIntersects()) {
-                if (!collided) {
-                    collided = true;
-                    Core.get().getSoundManager().play(new GuiSoundSource(collideSound));
-                }
-            } else {
-                collided = false;
-            }
-        }
     }
 
     @Override
-    public void onMouseLeftClick() {
-        if (isIntersects()) {
-            onMouseClickedRunnable.run();
+    public boolean onMouseLeftClick() {
+        if (!isMouseHover()) return false;
 
-            if (clickSound != null) {
-                Core.get().getSoundManager().play(new GuiSoundSource(clickSound));
-            }
-        }
-    }
+        onMouseClickRunnable.run();
 
-    @Override
-    public void onMouseRightClick() {
-        if (isIntersects() && clickSound != null) {
+        if (clickSound != null) {
             Core.get().getSoundManager().play(new GuiSoundSource(clickSound));
         }
+
+        return true;
+    }
+
+    @Override
+    public boolean onMouseRightClick() {
+        if (!isMouseHover()) return false;
+        onMouseRightClickRunnable.run();
+        return true;
     }
 
     @Override
     public void render() {
         super.render();
+
         if (stringObject.getString().length() > 0) {
             stringObject.render();
         }
@@ -111,8 +129,7 @@ public class Button extends TexturedGuiObject {
     public Button setPosition(int x, int y) {
         super.setPosition(x, y);
         StringCache stringCache = stringObject.getStringCache();
-        stringObject.setPosition(x + width / 2, (int) (y + (height - stringCache.getHeight(stringObject.getString(), stringObject.getFontSize())) / 2.0f +
-                stringCache.getAscent(stringObject.getString(), stringObject.getFontSize())));
+        stringObject.setPosition(x + stringXOffset, y + stringCache.getCenteredYOffset(stringObject.getString(), height, stringObject.getFontSize()) + stringYOffset);
         stringObject.update();
         return this;
     }
@@ -127,15 +144,29 @@ public class Button extends TexturedGuiObject {
     public void setY(int y) {
         super.setY(y);
         StringCache stringCache = stringObject.getStringCache();
-        stringObject.setY((int) (y + (height - stringCache.getHeight(stringObject.getString(), stringObject.getFontSize())) / 2.0f + stringCache.getAscent(stringObject.getString(),
-                stringObject.getFontSize())));
+        stringObject.setY(y + stringCache.getCenteredYOffset(stringObject.getString(), height, stringObject.getFontSize()) + stringYOffset);
     }
 
-    public void setTextColor(float r, float g, float b, float a) {
-        stringObject.setColor(r, g, b, a);
+    @Override
+    public SimpleGuiObject setWidth(int width) {
+        stringObject.setX(x + stringXOffset);
+        return super.setWidth(width);
+    }
+
+    public Button setTextColor(float r, float g, float b, float a) {
+        stringObject.setColor(r, g, b, a).compile();
+        return this;
+    }
+
+    public Button setTextColor(Vector4f color) {
+        return setTextColor(color.x, color.y, color.z, color.w);
     }
 
     public void setString(String string) {
         stringObject.setString(string);
+    }
+
+    public String getString() {
+        return stringObject.getString();
     }
 }

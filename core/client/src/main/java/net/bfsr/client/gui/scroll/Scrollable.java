@@ -1,6 +1,7 @@
 package net.bfsr.client.gui.scroll;
 
 public interface Scrollable {
-    int getY();
+    int getYForScroll();
+    int getHeight();
     void setY(int y);
 }

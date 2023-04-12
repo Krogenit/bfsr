@@ -60,6 +60,8 @@ public class GlyphCache {
      */
     private static final int GLYPH_BORDER = 1;
 
+    private static final int GLYPH_OFFSET = 16;
+
     /**
      * Transparent (alpha zero) white background color for use with BufferedImage.clearRect().
      */
@@ -159,7 +161,7 @@ public class GlyphCache {
      * texture is allocated to keep storing additional glyphs, and the original texture remains allocated for the lifetime of
      * the application.
      */
-    private int cachePosY = GLYPH_BORDER;
+    private int cachePosY;
 
     /**
      * The height in pixels of the current line of glyphs getting written into the texture. This value determines by how much
@@ -403,6 +405,8 @@ public class GlyphCache {
                  * horizontal bearing (e.g. U+0423 Cyrillic uppercase letter U on Windows 7).
                  */
                 vectorBounds = vector.getPixelBounds(fontRenderContext, 0, 0);
+                vectorBounds.width += GLYPH_OFFSET << 1;
+                vectorBounds.height += GLYPH_OFFSET << 1;
 
                 /* Enlage the stringImage if it is too small to store the entire rendered string */
                 if (stringImage == null || vectorBounds.width > stringImage.getWidth() || vectorBounds.height > stringImage.getHeight()) {
@@ -428,7 +432,7 @@ public class GlyphCache {
 
             /* If the current line in cache image is full, then advance to the next line */
             if (cachePosX + rect.width + GLYPH_BORDER > TEXTURE_WIDTH) {
-                cachePosX = GLYPH_BORDER;
+                cachePosX = 0;
                 cachePosY += cacheLineHeight + GLYPH_BORDER;
                 cacheLineHeight = 0;
             }
@@ -444,7 +448,8 @@ public class GlyphCache {
 
                 /* Note that allocateAndSetupTexture() will leave the GL texture already bound */
                 allocateGlyphCacheTexture();
-                cachePosY = cachePosX = GLYPH_BORDER;
+                cachePosY = 0;
+                cachePosX = 0;
                 cacheLineHeight = 0;
             }
 
@@ -581,8 +586,8 @@ public class GlyphCache {
         GL45C.glTextureParameteri(textureName, GL11C.GL_TEXTURE_WRAP_S, GL13C.GL_CLAMP_TO_BORDER);
         GL45C.glTextureParameteri(textureName, GL11C.GL_TEXTURE_WRAP_T, GL13C.GL_CLAMP_TO_BORDER);
         /* Explicitely disable mipmap support becuase updateTexture() will only update the base level 0 */
-        GL45C.glTextureParameteri(textureName, GL11C.GL_TEXTURE_MIN_FILTER, GL11C.GL_LINEAR);
-        GL45C.glTextureParameteri(textureName, GL11C.GL_TEXTURE_MAG_FILTER, GL11C.GL_LINEAR);
+        GL45C.glTextureParameteri(textureName, GL11C.GL_TEXTURE_MIN_FILTER, GL11C.GL_NEAREST);
+        GL45C.glTextureParameteri(textureName, GL11C.GL_TEXTURE_MAG_FILTER, GL11C.GL_NEAREST);
 
         textureHandle = ARBBindlessTexture.glGetTextureHandleARB(textureName);
         ARBBindlessTexture.glMakeTextureHandleResidentARB(textureHandle);

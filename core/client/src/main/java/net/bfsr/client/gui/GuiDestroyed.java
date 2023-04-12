@@ -2,12 +2,15 @@ package net.bfsr.client.gui;
 
 import net.bfsr.client.core.Core;
 import net.bfsr.client.gui.button.Button;
+import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.network.packet.client.PacketRespawn;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.string.StringObject;
+import net.bfsr.client.settings.Option;
 import net.bfsr.texture.TextureRegister;
 import org.joml.Vector2f;
+import org.lwjgl.glfw.GLFW;
 
 public class GuiDestroyed extends Gui {
     private final String destroyedBy;
@@ -33,5 +36,14 @@ public class GuiDestroyed extends Gui {
                 16, () -> Core.get().quitToMainMenu()).atCenter(-buttonsOffset - buttonWidth / 2, 72));
         registerGuiObject(new StringObject(FontType.XOLONIUM, Lang.getString("gui.destroyed.shipWasDestroyed"), 20).compile().atCenter(-286, -104));
         registerGuiObject(new StringObject(FontType.CONSOLA, Lang.getString("gui.destroyed.destroyedBy") + ": " + destroyedBy, 16).compile().atCenter(-286, -64));
+    }
+
+    @Override
+    public void input(int key) {
+        super.input(key);
+
+        if (Option.IS_DEBUG.getBoolean() && Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_C) {
+            Core.get().setCurrentGui(null);
+        }
     }
 }

@@ -109,8 +109,7 @@ public class StringCache {
     }
 
     public void setFontSize(int fontSize) {
-        fontSize <<= 1;
-        this.fontSize = fontSize;
+        this.fontSize = fontSize << 1;
     }
 
     public int getStringWidth(String str, int fontSize) {
@@ -138,39 +137,22 @@ public class StringCache {
         return entry.advance / 2;
     }
 
-    public int getCursorPositionInLine(String str, float mouseX) {
-        return getCursorPositionInLine(str, mouseX, true);
-    }
-
-    private int getCursorPositionInLine(String str, float mouseX, boolean breakAtSpaces) {
+    public int getCursorPositionInLine(String str, float mouseX, int fontSize) {
         /* Check for invalid arguments */
         if (str.isEmpty()) {
             return 0;
         }
 
+        setFontSize(fontSize);
         mouseX += mouseX;
 
         /* The glyph array for a string is sorted by the string's logical character position */
         Glyph[] glyphs = cacheString(str).glyphs;
 
-        /* Index of the last whitespace found in the string; used if breakAtSpaces is true */
-        int wsIndex = -1;
-
         /* Add up the individual advance of each glyph until it exceeds the specified width */
         float advance = 0.0f;
         int index = 0;
         while (index < glyphs.length && advance <= mouseX) {
-            /* Keep track of spaces if breakAtSpaces it set */
-            if (breakAtSpaces) {
-                char c = str.charAt(glyphs[index].stringIndex);
-                if (c == SPACE) {
-                    wsIndex = index;
-                } else if (c == NEW_LINE) {
-                    wsIndex = index;
-                    break;
-                }
-            }
-
             float halfAdvance = glyphs[index].advance / 2.0f;
             float nextAdvance = advance + halfAdvance;
             if (nextAdvance <= mouseX) {
@@ -179,11 +161,6 @@ public class StringCache {
             } else {
                 break;
             }
-        }
-
-        /* Avoid splitting individual words if breakAtSpaces set; same test condition as in Minecraft's FontRenderer */
-        if (index < glyphs.length && wsIndex != -1 && wsIndex < index) {
-            index = wsIndex;
         }
 
         /* The string index of the last glyph that wouldn't fit gives the total desired length of the string in characters */
@@ -725,6 +702,8 @@ public class StringCache {
 
         return height;
     }
+
+    public int getCenteredYOffset(String string, int height, int fontSize) {
+        return (int) ((height - getHeight(string, fontSize)) / 2.0f + getAscent(string, fontSize));
+    }
 }
-
-

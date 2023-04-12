@@ -13,8 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SoundManager {
-    private static SoundManager instance;
-
     private long device;
     private long context;
     private SoundListener listener;
@@ -24,10 +22,6 @@ public class SoundManager {
     private final List<SoundSource> playingSounds = new ArrayList<>();
 
     private float lastSoundVolume;
-
-    public SoundManager() {
-        instance = this;
-    }
 
     public void init() {
         this.device = ALC10.alcOpenDevice((ByteBuffer) null);
@@ -44,8 +38,7 @@ public class SoundManager {
     }
 
     public void play(SoundRegistry sound, boolean loop, boolean relative) {
-        SoundSource source = new SoundSource(sound, loop, relative);
-        play(source);
+        play(new SoundSource(sound, loop, relative));
     }
 
     public void play(SoundSource source) {
@@ -115,9 +108,5 @@ public class SoundManager {
         if (device != MemoryUtil.NULL) {
             ALC10.alcCloseDevice(device);
         }
-    }
-
-    public static SoundManager getInstance() {
-        return instance;
     }
 }

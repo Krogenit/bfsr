@@ -75,7 +75,14 @@ public class ShipHUD {
                 Core.get().getWorld().setPlayerShip(currentShip);
                 Core.get().sendTCPPacket(new PacketShipControl(currentShip.getId(), true));
             }
-        });
+        }) {
+            @Override
+            public void updateMouseHover() {
+                if (Core.get().getCurrentGui() == null) {
+                    super.updateMouseHover();
+                }
+            }
+        };
         buttonControl.setSize(256, 40);
         buttonControl.atBottomRightCorner(-128 - hudShip.getWidth() / 2, -hudShip.getHeight() - 26);
 

@@ -26,8 +26,6 @@ public class GuiSettings extends Gui {
     private final List<StringObject> sections = new ArrayList<>();
     private final Scroll scroll = new Scroll();
     private final StringObject mainText = new StringObject(FontType.XOLONIUM, Lang.getString("gui.settings.mainText"));
-    private final SimpleGuiObject backgroundTop = new SimpleGuiObject();
-    private final SimpleGuiObject backgroundDown = new SimpleGuiObject();
     private final List<SimpleGuiObject> scissorAffected = new ArrayList<>();
     private Button saveButton;
     private final Option[] options = Option.values();
@@ -45,8 +43,6 @@ public class GuiSettings extends Gui {
     @Override
     protected void initElements() {
         int backgroundHeight = 60;
-        registerGuiObject(backgroundTop.setColor(0.1f, 0.2f, 0.4f, 1.0f).atUpperLeftCorner(0, 0).setFullScreenWidth().setHeight(backgroundHeight));
-        registerGuiObject(backgroundDown.setColor(0.1f, 0.2f, 0.4f, 1.0f).atBottomLeftCorner(0, -backgroundHeight).setFullScreenWidth().setHeight(backgroundHeight));
         registerGuiObject(mainText.setFontSize(24).atTop(0, 40));
         mainText.compile();
 
@@ -100,7 +96,7 @@ public class GuiSettings extends Gui {
                 } else {
                     Button button = new Button(TextureRegister.guiButtonBase, x, y - 35, buttonWidth, buttonHeight, Lang.getString("settings." + option.getOptionName()) + ": " + option.getValue(), 20);
                     button.atTop(x, y - 35);
-                    button.setOnMouseClickedRunnable(() -> {
+                    button.setOnMouseClickRunnable(() -> {
                         option.changeValue();
                         button.setString(Lang.getString("settings." + option.getOptionName()) + ": " + option.getValue());
                     });
@@ -116,7 +112,7 @@ public class GuiSettings extends Gui {
 
         scroll.setTotalHeight(y - baseY).setViewHeightResizeFunction((width, height) -> height - halfBackgroundHeight)
                 .setRepositionConsumer((width, height) -> scroll.setPosition(width - 25, height / 2 - (height - halfBackgroundHeight) / 2))
-                .setWidth(25).setHeightResizeConsumer((width, height) -> height - halfBackgroundHeight);
+                .setWidth(25).setHeightResizeFunction((width, height) -> height - halfBackgroundHeight);
         registerGuiObject(scroll);
         saveButton = new Button(Lang.getString("gui.settings.save"), 20, () -> {
             Core.get().getSettings().saveSettings();
@@ -142,13 +138,14 @@ public class GuiSettings extends Gui {
     }
 
     @Override
-    public void render(float interpolation) {
+    public void render() {
         if (isInGame) {
             GUIRenderer.get().add(0, 0, width, height, 0.0f, 0.0f, 0.0f, 0.5f);
         }
 
-        backgroundTop.render();
-        backgroundDown.render();
+        int backgroundHeight = 60;
+        GUIRenderer.get().add(0, 0, width, backgroundHeight, 0.1f, 0.2f, 0.4f, 1.0f);
+        GUIRenderer.get().add(0, height - backgroundHeight, width, backgroundHeight, 0.1f, 0.2f, 0.4f, 1.0f);
         mainText.render();
 
         GUIRenderer.get().render();

@@ -42,8 +42,8 @@ public class GuiInGameMenu extends Gui {
     }
 
     @Override
-    public void render(float interpolation) {
+    public void render() {
         GUIRenderer.get().add(0, 0, width, height, 0.0f, 0.0f, 0.0f, 0.5f);
-        super.render(interpolation);
+        super.render();
     }
 }

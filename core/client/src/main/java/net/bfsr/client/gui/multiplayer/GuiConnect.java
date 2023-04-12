@@ -30,13 +30,13 @@ public class GuiConnect extends Gui {
         int offsetX = 24;
 
         InputBox hostInputBox = new InputBox(TextureRegister.guiButtonBase, Lang.getString("gui.connect.host"),
-                fontSize, offsetX, 0).setStringObject("127.0.0.1:25565");
+                fontSize, offsetX, 0).setString("127.0.0.1:25565");
         registerGuiObject(hostInputBox.atCenter(buttonOffsetX, -100));
         InputBox usernameInputBox = new InputBox(TextureRegister.guiButtonBase, Lang.getString("gui.connect.username"),
-                fontSize, offsetX, 0).setStringObject("Krogenit");
+                fontSize, offsetX, 0).setString("Krogenit");
         registerGuiObject(usernameInputBox.atCenter(buttonOffsetX, -50));
         InputBox passwordInputBox = new InputBox(TextureRegister.guiButtonBase, Lang.getString("gui.connect.password"),
-                fontSize, offsetX, 0).setStringObject("test");
+                fontSize, offsetX, 0).setString("test");
         registerGuiObject(passwordInputBox.atCenter(buttonOffsetX, 0));
 
         registerGuiObject(new Button(Lang.getString("gui.connect.connect"), () -> {

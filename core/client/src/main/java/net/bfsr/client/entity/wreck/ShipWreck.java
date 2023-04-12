@@ -96,12 +96,12 @@ public class ShipWreck extends Wreck {
             Vector2 worldPos = body.getLocalCenter().add(position.x, position.y);
             Vector2f scale = getScale();
             ParticleSpawner.spawnLight((float) worldPos.x, (float) worldPos.y, getScale().x * 2.0f, 1.0f, 0.8f, 0.6f, 1.0f, RenderLayer.DEFAULT_ADDITIVE);
-            ParticleSpawner.spawnSpark((float) worldPos.x, (float) worldPos.y, getScale().x);
+            ParticleSpawner.spawnShipDestroy((float) worldPos.x, (float) worldPos.y, getScale().x);
             ParticleSpawner.spawnExplosion((float) worldPos.x, (float) worldPos.y, getScale().x);
             ParticleSpawner.spawnSmallGarbage(random.nextInt(10), (float) worldPos.x, (float) worldPos.y, 2.0f, 5.0f + getScale().x);
             ParticleSpawner.spawnShipOst(random.nextInt(3), (float) worldPos.x, (float) worldPos.y, velocity.x * 0.06f, velocity.y * 0.06f, 0.25f + 0.75f * random.nextFloat());
 
-            ParticleSpawner.spawnMediumGarbage(3, (float) worldPos.x, (float) worldPos.y, velocity.x * 0.1f, velocity.y * 0.1f, scale.x / 2.0f);
+            ParticleSpawner.spawnMediumGarbage(3, (float) worldPos.x, (float) worldPos.y, velocity.x * 0.035f, velocity.y * 0.035f, scale.x / 2.0f);
             Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion0, (float) worldPos.x, (float) worldPos.y));
         }
     }

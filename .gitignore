@@ -13,3 +13,5 @@ gradlew.bat
 /core/common/build/
 /core/server/out/
 /core/server/build/
+/editor/build/
+/editor/out/

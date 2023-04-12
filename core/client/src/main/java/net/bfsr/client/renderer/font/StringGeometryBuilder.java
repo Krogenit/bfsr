@@ -15,8 +15,8 @@ public class StringGeometryBuilder {
     private final int defaultIndent = 0;
 
     public StringGeometryBuilder() {
-        offsetFunctions[StringOffsetType.DEFAULT.ordinal()] = (string, stringCache) -> 0.0f;
-        offsetFunctions[StringOffsetType.CENTERED.ordinal()] = (string, stringCache) -> -stringCache.getStringWidth(string) / 2.0f;
+        offsetFunctions[StringOffsetType.DEFAULT.ordinal()] = (string, stringCache) -> 0;
+        offsetFunctions[StringOffsetType.CENTERED.ordinal()] = (string, stringCache) -> -stringCache.getStringWidth(string) / 2;
         offsetFunctions[StringOffsetType.RIGHT.ordinal()] = (string, stringCache) -> -stringCache.getStringWidth(string);
     }
 
@@ -28,28 +28,28 @@ public class StringGeometryBuilder {
         glString.flipBuffers();
     }
 
-    public void createString(GLString glString, StringCache stringCache, String string, float x, float y, int fontSize) {
+    public void createString(GLString glString, StringCache stringCache, String string, int x, int y, int fontSize) {
         createString(glString, stringCache, string, x, y, fontSize, 1.0f, 1.0f, 1.0f, 1.0f, StringOffsetType.DEFAULT);
     }
 
-    public void createString(GLString glString, StringCache stringCache, String string, float x, float y, int fontSize, float r, float g, float b, float a) {
+    public void createString(GLString glString, StringCache stringCache, String string, int x, int y, int fontSize, float r, float g, float b, float a) {
         createString(glString, stringCache, string, x, y, fontSize, r, g, b, a, StringOffsetType.DEFAULT);
     }
 
-    public void createString(GLString glString, StringCache stringCache, String text, float x, float y, int fontSize, float r, float g, float b, float a, int maxWidth) {
+    public void createString(GLString glString, StringCache stringCache, String text, int x, int y, int fontSize, float r, float g, float b, float a, int maxWidth) {
         createString(glString, stringCache, text, x, y, fontSize, r, g, b, a, maxWidth, StringOffsetType.DEFAULT);
     }
 
-    private void createString(GLString glString, StringCache stringCache, String text, float x, float y, int fontSize, float r, float g, float b, float a, int maxWidth,
+    private void createString(GLString glString, StringCache stringCache, String text, int x, int y, int fontSize, float r, float g, float b, float a, int maxWidth,
                               StringOffsetType offsetType) {
         createString(glString, stringCache, text, x, y, fontSize, r, g, b, a, maxWidth, offsetType, defaultIndent);
     }
 
-    public void createString(GLString glString, StringCache stringCache, String text, float x, float y, int fontSize, float r, float g, float b, float a, int maxWidth, int indent) {
+    public void createString(GLString glString, StringCache stringCache, String text, int x, int y, int fontSize, float r, float g, float b, float a, int maxWidth, int indent) {
         createString(glString, stringCache, text, x, y, fontSize, r, g, b, a, maxWidth, StringOffsetType.DEFAULT, indent);
     }
 
-    private void createString(GLString glString, StringCache stringCache, String text, float x, float y, int fontSize, float r, float g, float b, float a, int maxWidth,
+    private void createString(GLString glString, StringCache stringCache, String text, int x, int y, int fontSize, float r, float g, float b, float a, int maxWidth,
                               StringOffsetType offsetType, int indent) {
         stringCache.setFontSize(fontSize);
         stringParams.getColor().set(r, g, b, a);
@@ -61,7 +61,7 @@ public class StringGeometryBuilder {
         glString.setHeight(stringParams.getHeight());
     }
 
-    private void trimAndCreateString(GLString glString, StringCache stringCache, String string, float startX, StringParams stringParams, int maxWidth,
+    private void trimAndCreateString(GLString glString, StringCache stringCache, String string, int startX, StringParams stringParams, int maxWidth,
                                      StringOffsetType offsetType, int indent) {
         do {
             int trimSize = stringCache.sizeString(string, maxWidth, true);
@@ -72,11 +72,11 @@ public class StringGeometryBuilder {
         } while (!string.isEmpty());
     }
 
-    public void createString(GLString glString, StringCache stringCache, String string, float x, float y, int fontSize, float r, float g, float b, float a, StringOffsetType offsetType) {
+    public void createString(GLString glString, StringCache stringCache, String string, int x, int y, int fontSize, float r, float g, float b, float a, StringOffsetType offsetType) {
         createString(glString, stringCache, string, x, y, fontSize, r, g, b, a, offsetType, defaultIndent);
     }
 
-    private void createString(GLString glString, StringCache stringCache, String string, float x, float y, int fontSize, float r, float g, float b, float a, StringOffsetType offsetType, int indent) {
+    private void createString(GLString glString, StringCache stringCache, String string, int x, int y, int fontSize, float r, float g, float b, float a, StringOffsetType offsetType, int indent) {
         stringCache.setFontSize(fontSize);
         stringParams.getColor().set(r, g, b, a);
         stringParams.setX(x + offsetFunctions[offsetType.ordinal()].get(string, stringCache));
@@ -118,11 +118,11 @@ public class StringGeometryBuilder {
         stringParams.setY(stringParams.getY() + height);
     }
 
-    private void addGlyph(Glyph glyph, float startX, float startY, float r, float g, float b, float a, GLString glString) {
-        float x1 = startX + glyph.x / 2.0f;
-        float x2 = startX + (glyph.x + glyph.texture.width) / 2.0f;
-        float y1 = startY + glyph.y / 2.0f;
-        float y2 = startY + (glyph.y + glyph.texture.height) / 2.0f;
+    private void addGlyph(Glyph glyph, int startX, int startY, float r, float g, float b, float a, GLString glString) {
+        int x1 = startX + glyph.x / 2;
+        int x2 = startX + (glyph.x + glyph.texture.width) / 2;
+        int y1 = startY + glyph.y / 2;
+        int y2 = startY + (glyph.y + glyph.texture.height) / 2;
         addVertex(x1, y1, glyph.texture.u1, glyph.texture.v1, glString.getVertexBuffer());
         addVertex(x1, y2, glyph.texture.u1, glyph.texture.v2, glString.getVertexBuffer());
         addVertex(x2, y2, glyph.texture.u2, glyph.texture.v2, glString.getVertexBuffer());

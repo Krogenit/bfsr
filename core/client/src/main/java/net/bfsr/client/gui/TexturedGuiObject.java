@@ -11,7 +11,12 @@ public class TexturedGuiObject extends SimpleGuiObject {
     protected Texture texture;
 
     public TexturedGuiObject(TextureRegister texture) {
-        this(texture, 0, 0, 0, 0);
+        this(texture, 0, 0);
+    }
+
+    public TexturedGuiObject(TextureRegister texture, int width, int height) {
+        super(width, height);
+        if (texture != null) this.texture = TextureLoader.getTexture(texture);
     }
 
     public TexturedGuiObject(TextureRegister texture, int x, int y, int width, int height) {
@@ -27,15 +32,23 @@ public class TexturedGuiObject extends SimpleGuiObject {
 
     @Override
     public void render() {
-        if (rotation != 0) {
-            GUIRenderer.get().add(lastX, lastY, x, y, lastRotation, rotation, width, height, color.x, color.y, color.z, color.w, texture);
+        if (texture != null) {
+            if (rotation != 0.0f) {
+                GUIRenderer.get().add(lastX, lastY, x, y, lastRotation, rotation, width, height, color.x, color.y, color.z, color.w, texture);
+            } else {
+                GUIRenderer.get().add(lastX, lastY, x, y, width, height, color.x, color.y, color.z, color.w, texture);
+            }
         } else {
-            GUIRenderer.get().add(lastX, lastY, x, y, width, height, color.x, color.y, color.z, color.w, texture);
+            super.render();
         }
     }
 
     @Override
     public void renderNoInterpolation() {
-        GUIRenderer.get().add(x, y, width, height, color.x, color.y, color.z, color.w, texture);
+        if (texture != null) {
+            GUIRenderer.get().add(x, y, width, height, color.x, color.y, color.z, color.w, texture);
+        } else {
+            super.renderNoInterpolation();
+        }
     }
 }

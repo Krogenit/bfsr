@@ -1,14 +1,30 @@
 package net.bfsr.client.gui;
 
+import lombok.Getter;
+import lombok.Setter;
+import net.bfsr.client.core.Core;
+
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
-public abstract class AbstractGuiObject implements IGuiObject {
+public abstract class AbstractGuiObject implements GuiObject {
     protected BiConsumer<Integer, Integer> repositionConsumer = (width, height) -> {};
-    protected BiConsumer<Integer, Integer> widthResizeConsumer = (width, height) -> {};
-    protected BiFunction<Integer, Integer, Integer> heightResizeConsumer = (width, height) -> getHeight();
+    protected BiFunction<Integer, Integer, Integer> widthResizeFunction = (width, height) -> getWidth();
+    protected BiFunction<Integer, Integer, Integer> heightResizeFunction = (width, height) -> getHeight();
+    @Getter
+    protected boolean mouseHover;
+    @Getter
+    protected boolean mouseWasHover;
+    @Setter
+    protected Supplier<Boolean> onLeftClickSupplier = () -> false;
+    @Setter
+    protected Supplier<Boolean> onRightClickSupplier = () -> false;
+    @Setter
+    @Getter
+    protected boolean visible = true;
 
-    public AbstractGuiObject atUpperLeftCorner(int x, int y) {
+    public AbstractGuiObject atTopLeftCorner(int x, int y) {
         repositionConsumer = (width, height) -> setPosition(x, y);
         return this;
     }
@@ -49,12 +65,12 @@ public abstract class AbstractGuiObject implements IGuiObject {
     }
 
     public AbstractGuiObject setFullScreenWidth() {
-        widthResizeConsumer = (width, height) -> setWidth(width);
+        widthResizeFunction = (width, height) -> width;
         return this;
     }
 
-    public AbstractGuiObject setHeightResizeConsumer(BiFunction<Integer, Integer, Integer> resizeHeightConsumer) {
-        this.heightResizeConsumer = resizeHeightConsumer;
+    public AbstractGuiObject setHeightResizeFunction(BiFunction<Integer, Integer, Integer> resizeHeightFunction) {
+        this.heightResizeFunction = resizeHeightFunction;
         return this;
     }
 
@@ -64,35 +80,80 @@ public abstract class AbstractGuiObject implements IGuiObject {
     }
 
     @Override
-    public void resize(int width, int height) {
-        repositionConsumer.accept(width, height);
-        widthResizeConsumer.accept(width, height);
-        setHeight(heightResizeConsumer.apply(width, height));
+    public void onScreenResize(int width, int height) {
+        updatePositionAndSize(width, height);
     }
+
+    public void updatePositionAndSize() {
+        updatePositionAndSize(Core.get().getScreenWidth(), Core.get().getScreenHeight());
+    }
+
+    public void updatePositionAndSize(int width, int height) {
+        repositionConsumer.accept(width, height);
+        setWidth(widthResizeFunction.apply(width, height));
+        setHeight(heightResizeFunction.apply(width, height));
+        update();
+    }
+
+    @Override
+    public void onRegistered(GuiObjectsHandler gui) {
+        updatePositionAndSize();
+    }
+
+    @Override
+    public void onUnregistered(GuiObjectsHandler gui) {}
 
     @Override
     public void update() {}
 
     @Override
+    public void updateMouseHover() {}
+
+    @Override
     public void render() {}
 
     @Override
-    public void onMouseLeftClick() {}
+    public boolean onMouseLeftClick() {
+        return onLeftClickSupplier.get();
+    }
 
     @Override
     public void onMouseLeftRelease() {}
 
     @Override
-    public void onMouseRightClick() {}
+    public boolean onMouseRightClick() {
+        return onRightClickSupplier.get();
+    }
 
     @Override
-    public void scroll(float y) {}
+    public void onMouseScroll(float y) {}
+
+    @Override
+    public void onOtherGuiObjectMouseLeftClick(GuiObject guiObject) {}
+
+    @Override
+    public void onOtherGuiObjectMouseRightClick(GuiObject guiObject) {}
 
     @Override
     public void input(int key) {}
 
     @Override
     public void textInput(int key) {}
+
+    @Override
+    public void onMouseHover() {}
+
+    @Override
+    public void onMouseStopHover() {}
+
+    @Override
+    public void onContextMenuClosed() {}
+
+    @Override
+    public void setMouseHover(boolean value) {
+        this.mouseWasHover = this.mouseHover;
+        this.mouseHover = value;
+    }
 
     public abstract AbstractGuiObject setPosition(int x, int y);
 
@@ -114,8 +175,21 @@ public abstract class AbstractGuiObject implements IGuiObject {
         return this;
     }
 
+    public int getX() {
+        return 0;
+    }
+
     @Override
     public int getY() {
+        return 0;
+    }
+
+    @Override
+    public int getYForScroll() {
+        return getY();
+    }
+
+    public int getWidth() {
         return 0;
     }
 

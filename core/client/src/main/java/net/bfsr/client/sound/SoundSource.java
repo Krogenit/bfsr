@@ -7,12 +7,16 @@ import org.lwjgl.openal.AL10;
 public class SoundSource {
     private final int sourceId;
 
-    public SoundSource(SoundRegistry soundName, boolean loop, boolean relative, float x, float y) {
-        this(soundName, loop, relative);
+    public SoundSource(SoundBuffer soundBuffer, float volume, boolean loop, boolean relative, float x, float y) {
+        this(soundBuffer, volume, loop, relative);
         setPosition(x, y);
     }
 
     public SoundSource(SoundRegistry soundName, boolean loop, boolean relative) {
+        this(SoundLoader.getBuffer(soundName), soundName.getVolume(), loop, relative);
+    }
+
+    public SoundSource(SoundBuffer soundBuffer, float volume, boolean loop, boolean relative) {
         this.sourceId = AL10.alGenSources();
         if (loop) {
             AL10.alSourcei(sourceId, AL10.AL_LOOPING, AL10.AL_TRUE);
@@ -20,10 +24,10 @@ public class SoundSource {
         if (relative) {
             AL10.alSourcei(sourceId, AL10.AL_SOURCE_RELATIVE, AL10.AL_TRUE);
         }
-        setBuffer(SoundLoader.getBufferId(soundName));
-        setGain(soundName.getVolume());
-        setRolloffFactor(3f);
-        setReferenceDistance(90f);
+        setBuffer(soundBuffer.getBufferId());
+        setGain(volume);
+        setRolloffFactor(3.0f);
+        setReferenceDistance(90.0f);
     }
 
     public void setBuffer(int bufferId) {

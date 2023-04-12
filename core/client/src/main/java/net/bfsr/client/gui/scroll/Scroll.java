@@ -3,6 +3,7 @@ package net.bfsr.client.gui.scroll;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.core.Core;
+import net.bfsr.client.gui.GuiObject;
 import net.bfsr.client.gui.SimpleGuiObject;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.renderer.instanced.GUIRenderer;
@@ -21,7 +22,6 @@ public class Scroll extends SimpleGuiObject {
     @Getter
     private int totalHeight;
     private int viewHeight;
-    private boolean collided;
     @Getter
     private boolean movingByMouse;
     private int scrollHeight;
@@ -29,20 +29,46 @@ public class Scroll extends SimpleGuiObject {
     private final List<ScrollableGuiObject> scrollableElements = new ArrayList<>();
     private BiFunction<Integer, Integer, Integer> viewHeightResizeFunction = (width, height) -> viewHeight;
     @Setter
-    private float scrollModifier = 20.0f;
-    private float accumulator;
+    private int scrollAmount = 40;
+    private int accumulator;
+    @Setter
+    private SoundRegistry collideSound;
+    private int minObjectY = Integer.MAX_VALUE, maxObjectY = Integer.MIN_VALUE;
 
-    public Scroll() {
-        super(0, 0, 0, 0);
+    public void registerGuiObject(GuiObject guiObject) {
+        ScrollableGuiObject scrollableGuiObject = new ScrollableGuiObject(guiObject);
+        scrollableElements.add(scrollableGuiObject);
+        guiObject.setY(scrollableGuiObject.getY() - scroll);
+        minObjectY = Math.min(guiObject.getY(), minObjectY);
+        maxObjectY = Math.max(guiObject.getY() + guiObject.getHeight(), maxObjectY);
+        totalHeight = maxObjectY - minObjectY;
     }
 
-    public void registerGuiObject(Scrollable scrollable) {
-        scrollableElements.add(new ScrollableGuiObject(scrollable));
+    public void unregisterGuiObject(GuiObject guiObject) {
+        if (scrollableElements.remove(new ScrollableGuiObject(guiObject))) {
+            updateTotalHeight();
+        }
+    }
+
+    private void updateTotalHeight() {
+        if (scrollableElements.size() > 0) {
+            ScrollableGuiObject guiObject = scrollableElements.get(0);
+            minObjectY = guiObject.getGuiObject().getY();
+            maxObjectY = guiObject.getGuiObject().getY() + guiObject.getGuiObject().getHeight();
+            for (int i = 0; i < scrollableElements.size(); i++) {
+                guiObject = scrollableElements.get(i);
+                minObjectY = Math.min(guiObject.getGuiObject().getY(), minObjectY);
+                maxObjectY = Math.max(guiObject.getGuiObject().getY() + guiObject.getGuiObject().getHeight(), maxObjectY);
+            }
+            totalHeight = maxObjectY - minObjectY;
+        } else {
+            totalHeight = 0;
+        }
     }
 
     @Override
-    public void scroll(float y) {
-        accumulator -= y * scrollModifier;
+    public void onMouseScroll(float y) {
+        accumulator -= y * scrollAmount;
     }
 
     public void scrollBottom() {
@@ -50,26 +76,28 @@ public class Scroll extends SimpleGuiObject {
     }
 
     @Override
+    public void onMouseHover() {
+        if (collideSound != null) {
+            Core.get().getSoundManager().play(new GuiSoundSource(collideSound));
+        }
+    }
+
+    @Override
     public void update() {
         super.update();
 
         if (accumulator != 0) {
-            updatePositionAndSize(scroll + (int) accumulator);
+            updatePositionAndSize(scroll + accumulator);
             accumulator = 0;
         }
 
         if (movingByMouse) {
             updatePositionAndSize((int) (clickStartScroll + (Mouse.getPosition().y - mouseStartClickY) / (scrollHeight / (float) totalHeight)));
         }
+    }
 
-        if (isIntersects()) {
-            if (!collided) {
-                collided = true;
-                Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonCollide));
-            }
-        } else {
-            collided = false;
-        }
+    public void updateScroll() {
+        updatePositionAndSize(scroll);
     }
 
     private void updatePositionAndSize(int newValue) {
@@ -83,7 +111,7 @@ public class Scroll extends SimpleGuiObject {
 
         for (int i = 0; i < scrollableElements.size(); i++) {
             ScrollableGuiObject scrollableGuiObject = scrollableElements.get(i);
-            Scrollable scrollable = scrollableGuiObject.getScrollable();
+            Scrollable scrollable = scrollableGuiObject.getGuiObject();
             scrollable.setY(scrollableGuiObject.getY() - scroll);
         }
 
@@ -98,25 +126,23 @@ public class Scroll extends SimpleGuiObject {
     }
 
     @Override
-    public void resize(int width, int height) {
-        for (int i = 0; i < scrollableElements.size(); i++) {
-            ScrollableGuiObject scrollableGuiObject = scrollableElements.get(i);
-            scrollableGuiObject.updateY();
-        }
-
-        super.resize(width, height);
+    public void updatePositionAndSize(int width, int height) {
+        updateScrollableObjectsY();
+        super.updatePositionAndSize(width, height);
         viewHeight = viewHeightResizeFunction.apply(width, height);
+        updateTotalHeight();
         updatePositionAndSize(scroll);
     }
 
     @Override
-    public void onMouseLeftClick() {
-        if (isIntersects()) {
-            movingByMouse = true;
-            mouseStartClickY = (int) Mouse.getPosition().y;
-            clickStartScroll = scroll;
-            Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
-        }
+    public boolean onMouseLeftClick() {
+        if (!isMouseHover()) return false;
+
+        movingByMouse = true;
+        mouseStartClickY = (int) Mouse.getPosition().y;
+        clickStartScroll = scroll;
+        Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
+        return true;
     }
 
     @Override
@@ -126,7 +152,22 @@ public class Scroll extends SimpleGuiObject {
 
     @Override
     public void render() {
-        GUIRenderer.get().add(lastX, lastY, x, y, width, height, color.x, color.y, color.z, color.w);
+        if (isMouseHover()) {
+            GUIRenderer.get().add(lastX, lastY, x, y, width, height, hoverColor.x, hoverColor.y, hoverColor.z, hoverColor.w);
+        } else {
+            GUIRenderer.get().add(lastX, lastY, x, y, width, height, color.x, color.y, color.z, color.w);
+        }
+    }
+
+    public void updateScrollableObjectsY() {
+        for (int i = 0; i < scrollableElements.size(); i++) {
+            ScrollableGuiObject scrollableGuiObject = scrollableElements.get(i);
+            scrollableGuiObject.updateY();
+        }
+    }
+
+    public void resetScroll() {
+        scroll = 0;
     }
 
     @Override
@@ -150,5 +191,14 @@ public class Scroll extends SimpleGuiObject {
     public Scroll setTotalHeight(int totalHeight) {
         this.totalHeight = totalHeight;
         return this;
+    }
+
+    public boolean isScrollNeeded() {
+        return totalHeight > viewHeight;
+    }
+
+    public void removeAllRegisteredObjects() {
+        totalHeight = 0;
+        scrollableElements.clear();
     }
 }

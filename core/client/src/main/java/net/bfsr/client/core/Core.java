@@ -1,6 +1,5 @@
 package net.bfsr.client.core;
 
-import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,6 +33,7 @@ import org.lwjgl.openal.AL11;
 import java.net.InetAddress;
 import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 
 @Log4j2
@@ -50,6 +50,16 @@ public class Core {
 
     @Getter
     private final SoundManager soundManager;
+    @Getter
+    private final Renderer renderer;
+    @Getter
+    private final NetworkSystem networkSystem = new NetworkSystem();
+    @Getter
+    private final Profiler profiler;
+
+    @Getter
+    private final ClientSettings settings;
+
     @Setter
     @Getter
     private WorldClient world;
@@ -58,20 +68,11 @@ public class Core {
     @Getter
     private GuiInGame guiInGame;
     @Getter
-    private final Renderer renderer;
-    @Getter
-    private final ClientSettings settings;
-    @Getter
-    private final Profiler profiler;
-
-    private ThreadLocalServer localServer;
-    @Getter
-    private final NetworkSystem networkSystem = new NetworkSystem();
-
-    @Getter
     private String playerName;
 
-    private final Queue<ListenableFutureTask<?>> futureTasks = Queues.newArrayDeque();
+    private ThreadLocalServer localServer;
+
+    private final Queue<ListenableFutureTask<?>> futureTasks = new ConcurrentLinkedQueue<>();
 
     public Core() {
         instance = this;
@@ -82,7 +83,7 @@ public class Core {
         this.profiler = new Profiler();
     }
 
-    public void init(long window, int width, int height, Gui startGui) {
+    public void init(long window, int width, int height, Gui startGui, GuiInGame guiInGame) {
         this.window = window;
         this.screenWidth = width;
         this.screenHeight = height;
@@ -94,7 +95,7 @@ public class Core {
         this.soundManager.setAttenuationModel(AL11.AL_EXPONENT_DISTANCE);
         this.soundManager.setListener(new SoundListener(new Vector3f(0, 0, 0)));
         this.renderer.init(window, width, height);
-        this.guiInGame = new GuiInGame();
+        this.guiInGame = guiInGame;
         this.guiInGame.init();
         this.currentGui = startGui;
         this.currentGui.init();
@@ -106,10 +107,8 @@ public class Core {
 
     public void update() {
         profiler.endStartSection("tasks");
-        synchronized (this.futureTasks) {
-            while (!this.futureTasks.isEmpty()) {
-                this.futureTasks.poll().run();
-            }
+        while (!this.futureTasks.isEmpty()) {
+            this.futureTasks.poll().run();
         }
 
         profiler.endStartSection("update");
@@ -212,8 +211,8 @@ public class Core {
         screenWidth = width;
         screenHeight = height;
         renderer.resize(width, height);
-        if (guiInGame != null) guiInGame.resize(width, height);
-        if (currentGui != null) currentGui.resize(width, height);
+        if (guiInGame != null) guiInGame.onScreenResize(width, height);
+        if (currentGui != null) currentGui.onScreenResize(width, height);
     }
 
     public void setCurrentGui(Gui gui) {
@@ -235,11 +234,7 @@ public class Core {
     }
 
     private void addFutureTask(Callable<?> callable) {
-        ListenableFutureTask<?> futureTask = ListenableFutureTask.create(callable);
-
-        synchronized (futureTasks) {
-            futureTasks.add(futureTask);
-        }
+        futureTasks.add(ListenableFutureTask.create(callable));
     }
 
     public static Core get() {

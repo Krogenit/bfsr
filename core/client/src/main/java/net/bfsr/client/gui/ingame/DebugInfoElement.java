@@ -58,7 +58,7 @@ public class DebugInfoElement {
         stringBuilder.append((int) mousePosition.x).append(", ").append((int) mousePosition.y);
         Camera camera = renderer.getCamera();
         Vector2f mouseWorldPosition = Mouse.getWorldPosition(camera);
-        stringBuilder.append("\nMouse world pos: ").append(DecimalUtils.formatWithToDigits(mouseWorldPosition.x)).append(", ").append(DecimalUtils.formatWithToDigits(mouseWorldPosition.y));
+        stringBuilder.append("\nMouse world pos: ").append(DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.x)).append(", ").append(DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.y));
         stringBuilder.append("\n\n---Profiler---");
         Profiler profiler = core.getProfiler();
         float updateTime = profiler.getResult("update");
@@ -74,18 +74,18 @@ public class DebugInfoElement {
             sPhysicsTime = MainServer.getInstance().getProfiler().getResult("physics");
             sNetworkTime = MainServer.getInstance().getProfiler().getResult("network");
         }
-        stringBuilder.append("\nUpdate: ").append(DecimalUtils.formatWithToDigits(updateTime)).append("ms / ").append(DecimalUtils.formatWithToDigits(sUpdateTime)).append("ms ");
-        stringBuilder.append("\nPhysics: ").append(DecimalUtils.formatWithToDigits(physicsTime)).append("ms / ").append(DecimalUtils.formatWithToDigits(sPhysicsTime)).append("ms ");
-        stringBuilder.append("\nRender: ").append(DecimalUtils.formatWithToDigits(renderTime)).append("ms ");
-        stringBuilder.append("\nNetwork: ").append(DecimalUtils.formatWithToDigits(netTime)).append("ms / ").append(DecimalUtils.formatWithToDigits(sNetworkTime)).append("ms ");
-        stringBuilder.append("\nPing: ").append(DecimalUtils.formatWithToDigits(ping)).append("ms");
+        stringBuilder.append("\nUpdate: ").append(DecimalUtils.strictFormatWithToDigits(updateTime)).append("ms / ").append(DecimalUtils.strictFormatWithToDigits(sUpdateTime)).append("ms ");
+        stringBuilder.append("\nPhysics: ").append(DecimalUtils.strictFormatWithToDigits(physicsTime)).append("ms / ").append(DecimalUtils.strictFormatWithToDigits(sPhysicsTime)).append("ms ");
+        stringBuilder.append("\nRender: ").append(DecimalUtils.strictFormatWithToDigits(renderTime)).append("ms ");
+        stringBuilder.append("\nNetwork: ").append(DecimalUtils.strictFormatWithToDigits(netTime)).append("ms / ").append(DecimalUtils.strictFormatWithToDigits(sNetworkTime)).append("ms ");
+        stringBuilder.append("\nPing: ").append(DecimalUtils.strictFormatWithToDigits(ping)).append("ms");
 
         stringBuilder.append("\n\n---Render---");
         stringBuilder.append("\nGPU: ").append(openGlRenderer);
         stringBuilder.append(" \nDrivers version ").append(openGlVersion);
         Vector2f camPos = camera.getPosition();
         stringBuilder.append("\nCamera pos: ");
-        stringBuilder.append(DecimalUtils.formatWithToDigits(camPos.x)).append(", ").append(DecimalUtils.formatWithToDigits(camPos.y));
+        stringBuilder.append(DecimalUtils.strictFormatWithToDigits(camPos.x)).append(", ").append(DecimalUtils.strictFormatWithToDigits(camPos.y));
         stringBuilder.append("\nDraw calls: ").append(drawCalls);
         stringBuilder.append("\nParticle Renderer: ");
         stringBuilder.append(particleRenderer.getTaskCount() > 1 ? particleRenderer.getTaskCount() + " active threads" : "single-threaded");
@@ -117,12 +117,12 @@ public class DebugInfoElement {
                 Reactor reactor = playerShip.getReactor();
                 stringBuilder.append("\n\n---Player Ship--- ");
                 stringBuilder.append("\nShip: ").append(playerShip.getClass().getSimpleName());
-                stringBuilder.append("\nPos: ").append(DecimalUtils.formatWithToDigits(pos.x)).append(", ").append(DecimalUtils.formatWithToDigits(pos.y));
-                stringBuilder.append("\nVelocity: ").append(DecimalUtils.formatWithToDigits(velocity.x)).append(", ").append(DecimalUtils.formatWithToDigits(velocity.y));
-                stringBuilder.append("\nMass: ").append(DecimalUtils.formatWithToDigits(playerShip.getBody().getMass().getMass()));
-                stringBuilder.append("\nHull: ").append(DecimalUtils.formatWithToDigits(hull.getHull())).append("/").append(DecimalUtils.formatWithToDigits(hull.getMaxHull()));
-                stringBuilder.append("\nShield: ").append(DecimalUtils.formatWithToDigits(shield.getShield())).append("/").append(DecimalUtils.formatWithToDigits(shield.getMaxShield()));
-                stringBuilder.append("\nReactor: ").append(DecimalUtils.formatWithToDigits(reactor.getEnergy())).append("/").append(DecimalUtils.formatWithToDigits(reactor.getMaxEnergy()));
+                stringBuilder.append("\nPos: ").append(DecimalUtils.strictFormatWithToDigits(pos.x)).append(", ").append(DecimalUtils.strictFormatWithToDigits(pos.y));
+                stringBuilder.append("\nVelocity: ").append(DecimalUtils.strictFormatWithToDigits(velocity.x)).append(", ").append(DecimalUtils.strictFormatWithToDigits(velocity.y));
+                stringBuilder.append("\nMass: ").append(DecimalUtils.strictFormatWithToDigits(playerShip.getBody().getMass().getMass()));
+                stringBuilder.append("\nHull: ").append(DecimalUtils.strictFormatWithToDigits(hull.getHull())).append("/").append(DecimalUtils.strictFormatWithToDigits(hull.getMaxHull()));
+                stringBuilder.append("\nShield: ").append(DecimalUtils.strictFormatWithToDigits(shield.getShield())).append("/").append(DecimalUtils.strictFormatWithToDigits(shield.getMaxShield()));
+                stringBuilder.append("\nReactor: ").append(DecimalUtils.strictFormatWithToDigits(reactor.getEnergy())).append("/").append(DecimalUtils.strictFormatWithToDigits(reactor.getMaxEnergy()));
             }
 
             Ship ship = core.getGuiInGame().getSelectedShip();

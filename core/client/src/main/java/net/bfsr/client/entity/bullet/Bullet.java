@@ -91,7 +91,7 @@ public abstract class Bullet extends CollisionObject {
 
         if (destroyer != null) {
             if (destroyer instanceof Bullet) {
-                ParticleSpawner.spawnLight(position.x, position.y, getScale().x * 5.0f, 7.0f * 6.0f, color.x, color.y, color.z, 0.5f, 0.25f * 60.0f, true, RenderLayer.DEFAULT_ADDITIVE);
+                ParticleSpawner.spawnLight(position.x, position.y, getScale().x * 5.0f, 42.0f, color.x, color.y, color.z, 0.5f, 15.0f, true, RenderLayer.DEFAULT_ADDITIVE);
             } else if (destroyer instanceof Wreck) {
                 ParticleSpawner.spawnDirectedSpark((float) pos1.x, (float) pos1.y, (float) normal.x, (float) normal.y, getScale().x * 1.5f, color.x, color.y, color.z, color.w);
                 Random rand = world.getRand();
@@ -108,7 +108,7 @@ public abstract class Bullet extends CollisionObject {
         } else {
             ParticleSpawner.spawnDirectedSpark((float) pos1.x, (float) pos1.y, (float) normal.x, (float) normal.y, getScale().x * 1.5f, color.x, color.y, color.z, color.w);
         }
-        ParticleSpawner.spawnLight(position.x, position.y, getScale().x * 3.0f, 3.0f * 6.0f, color.x, color.y, color.z, 0.4f, 0.5f * 60.0f, true, RenderLayer.DEFAULT_ADDITIVE);
+        ParticleSpawner.spawnLight(position.x, position.y, getScale().x * 3.0f, 18.0f, color.x, color.y, color.z, 0.4f, 30.0f, true, RenderLayer.DEFAULT_ADDITIVE);
     }
 
     @Override

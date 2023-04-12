@@ -9,11 +9,12 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("TransientFieldInNonSerializableClass")
 @Getter
 @Setter
 @Log4j2
 public class ClientSettings {
-    private final Option[] values = Option.values();
+    private final transient Option[] values = Option.values();
     private Map<Option, Object> options = new HashMap<>();
 
     public void saveSettings() {

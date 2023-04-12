@@ -1,22 +1,80 @@
 package net.bfsr.client.particle;
 
+import gnu.trove.map.TMap;
+import gnu.trove.map.hash.THashMap;
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.entity.bullet.Bullet;
 import net.bfsr.client.entity.ship.Ship;
+import net.bfsr.client.util.PathHelper;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.component.shield.ShieldCommon;
+import net.bfsr.config.ConfigLoader;
 import net.bfsr.effect.ParticleEffect;
 import net.bfsr.entity.GameObject;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Collection;
 import java.util.Random;
 
+@Log4j2
 public class ParticleEffectsRegistry {
     public static final ParticleEffectsRegistry INSTANCE = new ParticleEffectsRegistry();
 
+    @Getter
+    private final File effectsFolder = new File(PathHelper.CONFIG, "particleeffect");
     private final ParticleSpawnFunction[] spawnFunctions = new ParticleSpawnFunction[ParticleEffect.values().length];
+    private final TMap<String, net.bfsr.client.particle.ParticleEffect> registry = new THashMap<>();
+
+    public void load() {
+        ConfigLoader.loadFromFiles(effectsFolder, net.bfsr.client.particle.ParticleEffect.class, particleEffect -> {
+            particleEffect.processDeprecated();
+            add(particleEffect);
+        });
+    }
+
+    public void add(net.bfsr.client.particle.ParticleEffect particleEffect) {
+        if (particleEffect.getEditorPath().isEmpty()) {
+            registry.put(particleEffect.getName(), particleEffect);
+        } else {
+            registry.put(particleEffect.getEditorPath() + "/" + particleEffect.getName(), particleEffect);
+        }
+    }
+
+    public void remove(String name) {
+        registry.remove(name);
+    }
+
+    public void delete(String name) {
+        remove(name);
+
+        File file = new File(effectsFolder, name + ".json");
+
+        if (file.exists()) {
+            try {
+                Files.delete(file.toPath());
+            } catch (IOException e) {
+                log.error("Failed to delete particle effect {}", name, e);
+            }
+        }
+    }
+
+    public Collection<net.bfsr.client.particle.ParticleEffect> getAllEffects() {
+        return registry.values();
+    }
 
     public void init() {
+        load();
+
+        registry.forEachValue(object -> {
+            object.init();
+            return true;
+        });
+
         spawnFunctions[ParticleEffect.SMALL_BULLET_DAMAGE_TO_SHIP.ordinal()] = (initiator, affected, contactX, contactY, normalX, normalY) -> {
             Ship ship = (Ship) affected;
             Bullet bullet = (Bullet) initiator;
@@ -48,5 +106,9 @@ public class ParticleEffectsRegistry {
 
     public interface ParticleSpawnFunction {
         void emit(GameObject initiator, GameObject affected, float contactX, float contactY, float normalX, float normalY);
+    }
+
+    public net.bfsr.client.particle.ParticleEffect getEffect(String name) {
+        return registry.get(name);
     }
 }

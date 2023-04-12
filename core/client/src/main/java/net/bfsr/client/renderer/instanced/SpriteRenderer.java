@@ -63,6 +63,10 @@ public class SpriteRenderer {
     }
 
     public void syncAndRender(BufferType bufferType) {
+        syncAndRender(GL11C.GL_QUADS, bufferType);
+    }
+
+    public void syncAndRender(int type, BufferType bufferType) {
         BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
 
         try {
@@ -72,24 +76,32 @@ public class SpriteRenderer {
         }
 
         if (buffersHolder.getObjectCount() > 0) {
-            render(buffersHolder.getObjectCount(), buffersHolder.getVertexBuffer(), buffersHolder.getMaterialBuffer());
+            render(type, buffersHolder.getObjectCount(), buffersHolder.getVertexBuffer(), buffersHolder.getMaterialBuffer());
             buffersHolder.reset();
         }
     }
 
     public void render(BufferType bufferType) {
+        render(GL11C.GL_QUADS, bufferType);
+    }
+
+    public void render(int type, BufferType bufferType) {
         BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
         if (buffersHolder.getObjectCount() > 0) {
-            render(buffersHolder.getObjectCount(), buffersHolder.getVertexBuffer(), buffersHolder.getMaterialBuffer());
+            render(type, buffersHolder.getObjectCount(), buffersHolder.getVertexBuffer(), buffersHolder.getMaterialBuffer());
             buffersHolder.reset();
         }
     }
 
     public void render(int count, FloatBuffer vertexBuffer, ByteBuffer materialBuffer) {
+        render(GL11C.GL_QUADS, count, vertexBuffer, materialBuffer);
+    }
+
+    public void render(int type, int count, FloatBuffer vertexBuffer, ByteBuffer materialBuffer) {
         vao.updateVertexBuffer(0, vertexBuffer.limit(count * VERTEX_DATA_SIZE), GL44C.GL_DYNAMIC_STORAGE_BIT, VERTEX_DATA_SIZE);
         vao.updateBuffer(1, materialBuffer.limit(count * MATERIAL_DATA_SIZE), GL44C.GL_DYNAMIC_STORAGE_BIT);
         vao.bindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 0, 1);
-        GL11C.glDrawArrays(GL11C.GL_QUADS, 0, count << 2);
+        GL11C.glDrawArrays(type, 0, count << 2);
         Core.get().getRenderer().increaseDrawCalls();
     }
 

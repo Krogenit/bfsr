@@ -2,9 +2,9 @@
   "wrecks": [
     {
       "type": "DEFAULT",
-      "texturePath": "particle/wreck/wreck0",
-      "fireTexturePath": "particle/wreck/wreckfire0",
-      "sparkleTexturePath": "particle/wreck/wrecklight0",
+      "texturePath": "texture/particle/wreck/wreck0.png",
+      "fireTexturePath": "texture/particle/wreck/wreckfire0.png",
+      "sparkleTexturePath": "texture/particle/wreck/wrecklight0.png",
       "vertices": [
         {
           "x": 0.2773,
@@ -26,9 +26,9 @@
     },
     {
       "type": "DEFAULT",
-      "texturePath": "particle/wreck/wreck1",
-      "fireTexturePath": "particle/wreck/wreckfire1",
-      "sparkleTexturePath": "particle/wreck/wrecklight1",
+      "texturePath": "texture/particle/wreck/wreck1.png",
+      "fireTexturePath": "texture/particle/wreck/wreckfire1.png",
+      "sparkleTexturePath": "texture/particle/wreck/wrecklight1.png",
       "vertices": [
         {
           "x": -0.0304,
@@ -50,9 +50,9 @@
     },
     {
       "type": "DEFAULT",
-      "texturePath": "particle/wreck/wreck2",
-      "fireTexturePath": "particle/wreck/wreckfire2",
-      "sparkleTexturePath": "particle/wreck/wrecklight2",
+      "texturePath": "texture/particle/wreck/wreck2.png",
+      "fireTexturePath": "texture/particle/wreck/wreckfire2.png",
+      "sparkleTexturePath": "texture/particle/wreck/wrecklight2.png",
       "vertices": [
         {
           "x": -0.1985,
@@ -78,8 +78,8 @@
     },
     {
       "type": "SMALL",
-      "texturePath": "particle/wreck/ship_debris_01",
-      "fireTexturePath": "particle/wreck/ship_debris_ember_01",
+      "texturePath": "texture/particle/wreck/ship_debris_01.png",
+      "fireTexturePath": "texture/particle/wreck/ship_debris_ember_01.png",
       "vertices": [
         {
           "x": 0.1133,
@@ -101,8 +101,8 @@
     },
     {
       "type": "SMALL",
-      "texturePath": "particle/wreck/ship_debris_02",
-      "fireTexturePath": "particle/wreck/ship_debris_ember_02",
+      "texturePath": "texture/particle/wreck/ship_debris_02.png",
+      "fireTexturePath": "texture/particle/wreck/ship_debris_ember_02.png",
       "vertices": [
         {
           "x": 0.2647,
@@ -124,8 +124,8 @@
     },
     {
       "type": "SMALL",
-      "texturePath": "particle/wreck/ship_debris_03",
-      "fireTexturePath": "particle/wreck/ship_debris_ember_03",
+      "texturePath": "texture/particle/wreck/ship_debris_03.png",
+      "fireTexturePath": "texture/particle/wreck/ship_debris_ember_03.png",
       "vertices": [
         {
           "x": -0.1203,
@@ -151,8 +151,8 @@
     },
     {
       "type": "SMALL",
-      "texturePath": "particle/wreck/ship_debris_04",
-      "fireTexturePath": "particle/wreck/ship_debris_ember_04",
+      "texturePath": "texture/particle/wreck/ship_debris_04.png",
+      "fireTexturePath": "texture/particle/wreck/ship_debris_ember_04.png",
       "vertices": [
         {
           "x": -0.2293,
@@ -174,8 +174,8 @@
     },
     {
       "type": "SMALL",
-      "texturePath": "particle/wreck/ship_debris_05",
-      "fireTexturePath": "particle/wreck/ship_debris_ember_05",
+      "texturePath": "texture/particle/wreck/ship_debris_05.png",
+      "fireTexturePath": "texture/particle/wreck/ship_debris_ember_05.png",
       "vertices": [
         {
           "x": -0.0827,
@@ -201,8 +201,8 @@
     },
     {
       "type": "SMALL",
-      "texturePath": "particle/wreck/ship_debris_06",
-      "fireTexturePath": "particle/wreck/ship_debris_ember_06",
+      "texturePath": "texture/particle/wreck/ship_debris_06.png",
+      "fireTexturePath": "texture/particle/wreck/ship_debris_ember_06.png",
       "vertices": [
         {
           "x": -0.2293,

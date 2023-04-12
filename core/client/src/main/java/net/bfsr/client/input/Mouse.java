@@ -14,12 +14,15 @@ public final class Mouse {
     private static final Vector2f position = new Vector2f(), lastPosition = new Vector2f();
     private static final MouseConsumer[][] mouseConsumers = new MouseConsumer[2][2];
 
+    public static final long INPUT_CURSOR = GLFW.glfwCreateStandardCursor(GLFW.GLFW_IBEAM_CURSOR);
+    public static final long DEFAULT_CURSOR = GLFW.glfwCreateStandardCursor(GLFW.GLFW_ARROW_CURSOR);
+
     public static void init(long window) {
         Mouse.window = window;
 
-        mouseConsumers[0][1] = action -> guiAndWorldInput(Gui::onMouseLeftClicked, WorldClient::onMouseLeftClicked);
+        mouseConsumers[0][1] = action -> guiAndWorldInput(Gui::onMouseLeftClick, WorldClient::onMouseLeftClicked);
         mouseConsumers[0][0] = action -> guiAndWorldInput(Gui::onMouseLeftRelease, WorldClient::onMouseLeftRelease);
-        mouseConsumers[1][1] = action -> guiAndWorldInput(Gui::onMouseRightClicked, WorldClient::onMouseRightClicked);
+        mouseConsumers[1][1] = action -> guiAndWorldInput(Gui::onMouseRightClick, WorldClient::onMouseRightClicked);
         mouseConsumers[1][0] = action -> guiInput(Gui::onMouseRightRelease);
 
         GLFW.glfwSetCursorPosCallback(window, (windowHandle, xpos, ypos) -> {
@@ -44,15 +47,19 @@ public final class Mouse {
         Gui gui = Core.get().getCurrentGui();
         if (gui != null) {
             consumer.accept(gui);
+        } else {
+            consumer.accept(Core.get().getGuiInGame());
         }
-
-        consumer.accept(Core.get().getGuiInGame());
     }
 
     private static void guiAndWorldInput(Consumer<Gui> guiConsumer, Consumer<WorldClient> worldConsumer) {
         guiInput(guiConsumer);
         WorldClient world = Core.get().getWorld();
         if (world != null) worldConsumer.accept(world);
+    }
+
+    public static void changeCursor(long cursor) {
+        GLFW.glfwSetCursor(window, cursor);
     }
 
     public static boolean isLeftDown() {

@@ -91,7 +91,7 @@ public class WorldClient extends World<Ship, Bullet> {
 
     public void onMouseLeftRelease() {
         Vector2f mpos = Mouse.getWorldPosition(core.getRenderer().getCamera());
-        System.out.println("vertecies[0] = new Vector2(" + DecimalUtils.formatWithToDigits(mpos.x) + "f, " + DecimalUtils.formatWithToDigits(mpos.y) + "f);");
+        System.out.println("vertecies[0] = new Vector2(" + DecimalUtils.strictFormatWithToDigits(mpos.x) + "f, " + DecimalUtils.strictFormatWithToDigits(mpos.y) + "f);");
     }
 
     public void onMouseRightClicked() {
@@ -107,38 +107,39 @@ public class WorldClient extends World<Ship, Bullet> {
     }
 
     public void input(int key) {
-        int bots = 0;
-        boolean sameFaction = true;
-        Faction lastFaction = null;
-        for (Ship s : ships) {
+        if (Core.get().getCurrentGui() == null && !Core.get().getGuiInGame().isActive()) {
+            int bots = 0;
+            boolean sameFaction = true;
+            Faction lastFaction = null;
+            for (Ship s : ships) {
 //            if (s.isBot()) {
 //                bots++;
 //            }
 
-            if (lastFaction != null && lastFaction != s.getFaction()) {
-                sameFaction = false;
+                if (lastFaction != null && lastFaction != s.getFaction()) {
+                    sameFaction = false;
+                }
+
+                lastFaction = s.getFaction();
             }
 
-            lastFaction = s.getFaction();
-        }
-
-        //		if(Core.getCore().canControlShip()) {
-        if (key == GLFW.GLFW_KEY_F
+            //		if(Core.getCore().canControlShip()) {
+            if (key == GLFW.GLFW_KEY_F
 //					|| --spawnTimer <= 0
 //					|| ((bots == 0 || sameFaction) && --spawnTimer <= 0)
-        ) {
-            Vector2f pos = Mouse.getWorldPosition(Core.get().getRenderer().getCamera());
+            ) {
+                Vector2f pos = Mouse.getWorldPosition(Core.get().getRenderer().getCamera());
 
-            if (core.getNetworkSystem() != null)
+                if (core.getNetworkSystem() != null)
 //					for(int i=0;i<1;i++) {
 //						Vector2f pos = new Vector2f(Core.getCore().getRenderer().getCamera().getPosition()).add(RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 5500 * rand.nextFloat()));
-                core.sendTCPPacket(new PacketCommand(Command.SPAWN_SHIP, "" + pos.x, "" + pos.y));
+                    core.sendTCPPacket(new PacketCommand(Command.SPAWN_SHIP, "" + pos.x, "" + pos.y));
 //					}
-            spawnTimer = 60;
-        } else if (key == GLFW.GLFW_KEY_G) {
-            Vector2f pos = Mouse.getWorldPosition(Core.get().getRenderer().getCamera());
-            Vector2f randomVector1 = new Vector2f(pos).add(-10 + rand.nextInt(21), -10 + rand.nextInt(21));
-            core.sendTCPPacket(new PacketCommand(Command.SPAWN_PARTICLE, "" + randomVector1.x, "" + randomVector1.y));
+                spawnTimer = 60;
+            } else if (key == GLFW.GLFW_KEY_G) {
+                Vector2f pos = Mouse.getWorldPosition(Core.get().getRenderer().getCamera());
+                Vector2f randomVector1 = new Vector2f(pos).add(-10 + rand.nextInt(21), -10 + rand.nextInt(21));
+                core.sendTCPPacket(new PacketCommand(Command.SPAWN_PARTICLE, "" + randomVector1.x, "" + randomVector1.y));
 
 
 //				particleSystem.spawnMediumGarbage(rand.nextInt(2) + 1, randomVector1, new Vector2f(),  50f + rand.nextFloat() * 40f);
@@ -148,35 +149,34 @@ public class WorldClient extends World<Ship, Bullet> {
 //				particleSystem.spawnLight(randomVector1, 5f, new Vector4f(1.0f, 0.5f, 0.5f, 0.7f), 0.04f, false, EnumParticlePositionType.Default);
 //				particleSystem.spawnSpark(randomVector1, 0.5f);
 //				particleSystem.spawnExplosion(randomVector1, 0.125F);
-        } else if (key == GLFW.GLFW_KEY_J) {
-            if (playerShip != null) {
+            } else if (key == GLFW.GLFW_KEY_J) {
+                if (playerShip != null) {
 //				playerShip.getDamages().clear();
-                //saimon
+                    //saimon
 //				playerShip.addDamage(new Damage(playerShip, 0.2f, 0, new Vector2f(10, -4), 0.8f));
 //				playerShip.addDamage(new Damage(playerShip, 0.4f, 0, new Vector2f(5, -18), 1f));
 //				playerShip.addDamage(new Damage(playerShip, 0.6f, 1, new Vector2f(5, 15), 0.55f));
 //				playerShip.addDamage(new Damage(playerShip, 0.8f, 3, new Vector2f(-19, 0), 0.6f));
-                //engi
+                    //engi
 //				playerShip.addDamage(new Damage(playerShip, 0.2f, 0, new Vector2f(-10, 15), 0.8f));
 //				playerShip.addDamage(new Damage(playerShip, 0.4f, 0, new Vector2f(5, -12), 0.8f));
 //				playerShip.addDamage(new Damage(playerShip, 0.6f, 1, new Vector2f(-15, -0), 0.55f));
 //				playerShip.addDamage(new Damage(playerShip, 0.8f, 2, new Vector2f(12, 5), 0.5f));
-                //human
+                    //human
 //				playerShip.addDamage(new Damage(playerShip, 0.2f, 0, new Vector2f(-5, 15), 0.8f));
 //				playerShip.addDamage(new Damage(playerShip, 0.4f, 0, new Vector2f(-18, -8), 0.8f));
 //				playerShip.addDamage(new Damage(playerShip, 0.6f, 1, new Vector2f(-5, -15), 0.55f));
 //				playerShip.addDamage(new Damage(playerShip, 0.8f, 2, new Vector2f(8, -2), 0.5f));
-            }
+                }
 
-        } else if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_P) {
-            Core.get().setPaused(!Core.get().isPaused());
-            Core.get().sendTCPPacket(new PacketPauseGame());
-        } else if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_C) {
-            Core.get().setCurrentGui(null);
-        } else if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_R) {
-            Core.get().getRenderer().reloadShaders();
-        } else if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_B) {
-            Option.SHOW_DEBUG_BOXES.setValue(!Option.SHOW_DEBUG_BOXES.getBoolean());
+            } else if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_P) {
+                Core.get().setPaused(!Core.get().isPaused());
+                Core.get().sendTCPPacket(new PacketPauseGame());
+            } else if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_R) {
+                Core.get().getRenderer().reloadShaders();
+            } else if (Keyboard.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL) && key == GLFW.GLFW_KEY_B) {
+                Option.SHOW_DEBUG_BOXES.setValue(!Option.SHOW_DEBUG_BOXES.getBoolean());
+            }
         }
     }
 
@@ -228,6 +228,17 @@ public class WorldClient extends World<Ship, Bullet> {
             playerShip = null;
     }
 
+    public void preRender() {
+        AABB cameraAABB = core.getRenderer().getCamera().getBoundingBox();
+
+        for (int i = 0, size = ships.size(); i < size; i++) {
+            Ship s = ships.get(i);
+            if (s.getAabb().overlaps(cameraAABB)) {
+                s.emitParticles();
+            }
+        }
+    }
+
     public void prepareAmbient() {
         Vector2f scale = background.getScale();
         float moveFactor = 0.005f;
@@ -248,9 +259,9 @@ public class WorldClient extends World<Ship, Bullet> {
     }
 
     public void prepareEntities() {
-        SpriteRenderer.get().addTask(() -> {
-            AABB cameraAABB = core.getRenderer().getCamera().getBoundingBox();
+        AABB cameraAABB = core.getRenderer().getCamera().getBoundingBox();
 
+        SpriteRenderer.get().addTask(() -> {
             for (int i = 0, size = ships.size(); i < size; i++) {
                 Ship s = ships.get(i);
                 if (s.getAabb().overlaps(cameraAABB)) {
@@ -268,8 +279,6 @@ public class WorldClient extends World<Ship, Bullet> {
             particleManager.render();
         }, BufferType.ENTITIES_ALPHA);
         SpriteRenderer.get().addTask(() -> {
-            AABB cameraAABB = core.getRenderer().getCamera().getBoundingBox();
-
             for (int i = 0, size = ships.size(); i < size; i++) {
                 Ship s = ships.get(i);
                 if (s.getAabb().overlaps(cameraAABB)) {

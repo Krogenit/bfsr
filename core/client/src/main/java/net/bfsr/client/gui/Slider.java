@@ -17,7 +17,6 @@ public class Slider extends TexturedGuiObject {
     private final Option option;
     private float value;
     private boolean movingByMouse;
-    private boolean collided;
     private final int indent;
     private final StringObject stringObject;
     private final SimpleGuiObject slider;
@@ -33,7 +32,7 @@ public class Slider extends TexturedGuiObject {
         this.option = option;
         this.indent = 28;
 
-        String string = Lang.getString("settings." + option.getOptionName()) + ": " + DecimalUtils.formatWithToDigits(baseValue);
+        String string = Lang.getString("settings." + option.getOptionName()) + ": " + DecimalUtils.strictFormatWithToDigits(baseValue);
         FontType font = FontType.XOLONIUM;
         StringCache stringCache = font.getStringCache();
         stringObject = new StringObject(font, string, 0, 0, fontSize, StringOffsetType.CENTERED);
@@ -42,6 +41,11 @@ public class Slider extends TexturedGuiObject {
 
         slider = new TexturedGuiObject(TextureRegister.guiSlider, x, y, 29, 50);
         slider.setX(calculateSliderXPos());
+    }
+
+    @Override
+    public void onMouseHover() {
+        Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonCollide));
     }
 
     @Override
@@ -65,16 +69,7 @@ public class Slider extends TexturedGuiObject {
 
             option.changeValue(value);
 
-            stringObject.setString(Lang.getString("settings." + option.getOptionName()) + ": " + DecimalUtils.formatWithToDigits(option.getFloat()));
-        }
-
-        if (isIntersects()) {
-            if (!collided) {
-                collided = true;
-                Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonCollide));
-            }
-        } else {
-            collided = false;
+            stringObject.setString(Lang.getString("settings." + option.getOptionName()) + ": " + DecimalUtils.strictFormatWithToDigits(option.getFloat()));
         }
     }
 
@@ -126,11 +121,11 @@ public class Slider extends TexturedGuiObject {
     }
 
     @Override
-    public void onMouseLeftClick() {
-        if (isIntersects()) {
-            movingByMouse = true;
-            Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
-        }
+    public boolean onMouseLeftClick() {
+        if (!isMouseHover()) return false;
+        movingByMouse = true;
+        Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
+        return true;
     }
 
     @Override

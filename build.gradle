@@ -10,6 +10,7 @@ dependencies {
 allprojects {
     repositories {
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 }
 
@@ -20,6 +21,8 @@ subprojects {
     compileJava.options.encoding = compileTestJava.options.encoding = "UTF-8"
     sourceCompatibility = targetCompatibility = JavaVersion.VERSION_18
 
+    project.ext.lwjglVersion = "3.3.1"
+    project.ext.lwjglNatives = "natives-windows"
     project.ext.jomlVersion = "1.10.5"
 
     dependencies {

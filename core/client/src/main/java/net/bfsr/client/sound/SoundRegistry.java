@@ -1,35 +1,35 @@
 package net.bfsr.client.sound;
 
 public enum SoundRegistry {
-    buttonCollide("gui/buttonCollide", 0.275f),
-    buttonClick("gui/buttonClick", 2.0f),
+    buttonCollide("sound/gui/buttonCollide.ogg", 0.275f),
+    buttonClick("sound/gui/buttonClick.ogg", 2.0f),
 
-    weaponShootPlasm0("weapon/plasm0", 1.0f),
-    weaponShootPlasm1("weapon/plasm1", 1.0f),
-    weaponShootPlasm2("weapon/plasm2", 1.0f),
-    weaponShootLaser0("weapon/laser0", 1.0f),
-    weaponShootLaser1("weapon/laser1", 1.0f),
-    weaponShootGaus0("weapon/gaus0", 1.0f),
-    weaponShootGaus1("weapon/gaus1", 1.0f),
-    weaponShootGaus2("weapon/gaus2", 1.0f),
+    weaponShootPlasm0("sound/weapon/plasm0.ogg", 1.0f),
+    weaponShootPlasm1("sound/weapon/plasm1.ogg", 1.0f),
+    weaponShootPlasm2("sound/weapon/plasm2.ogg", 1.0f),
+    weaponShootLaser0("sound/weapon/laser0.ogg", 1.0f),
+    weaponShootLaser1("sound/weapon/laser1.ogg", 1.0f),
+    weaponShootGaus0("sound/weapon/gaus0.ogg", 1.0f),
+    weaponShootGaus1("sound/weapon/gaus1.ogg", 1.0f),
+    weaponShootGaus2("sound/weapon/gaus2.ogg", 1.0f),
 
-    weaponShootBeam0("weapon/beam0", 1.0f),
-    weaponShootBeam1("weapon/beam1", 1.0f),
-    weaponShootBeam2("weapon/beam2", 1.0f),
-    weaponShootBeamLarge("weapon/beamlarge", 1.0f),
+    weaponShootBeam0("sound/weapon/beam0.ogg", 1.0f),
+    weaponShootBeam1("sound/weapon/beam1.ogg", 1.0f),
+    weaponShootBeam2("sound/weapon/beam2.ogg", 1.0f),
+    weaponShootBeamLarge("sound/weapon/beamlarge.ogg", 1.0f),
 
-    explosion0("explosion/explosion0", 1.0f),
-    explosion1("explosion/explosion1", 1.0f),
-    explosion2("explosion/explosion2", 1.0f),
+    explosion0("sound/explosion/explosion0.ogg", 1.0f),
+    explosion1("sound/explosion/explosion1.ogg", 1.0f),
+    explosion2("sound/explosion/explosion2.ogg", 1.0f),
 
-    damage("explosion/damage", 1.0f),
-    damageNoShield("explosion/damagenoshield", 1.0f),
+    damage("sound/explosion/damage.ogg", 1.0f),
+    damageNoShield("sound/explosion/damagenoshield.ogg", 1.0f),
 
-    jump("jump/jump", 1.0f),
+    jump("sound/jump/jump.ogg", 1.0f),
 
-    shieldDown("shield/shielddown", 1.0f),
-    shieldUp0("shield/shieldup0", 1.0f),
-    shieldUp1("shield/shieldup1", 1.0f);
+    shieldDown("sound/shield/shielddown.ogg", 1.0f),
+    shieldUp0("sound/shield/shieldup0.ogg", 1.0f),
+    shieldUp1("sound/shield/shieldup1.ogg", 1.0f);
 
     private final String path;
     private final float volume;

@@ -4,6 +4,7 @@ import net.bfsr.client.core.Core;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.math.LUT;
 import net.bfsr.math.MathUtils;
+import org.lwjgl.opengl.GL11C;
 
 public final class GUIRenderer {
     private SpriteRenderer spriteRenderer;
@@ -15,8 +16,12 @@ public final class GUIRenderer {
     }
 
     public void render() {
+        render(GL11C.GL_QUADS);
+    }
+
+    public void render(int type) {
         if (buffersHolder.getObjectCount() > 0) {
-            spriteRenderer.render(buffersHolder.getObjectCount(), buffersHolder.getVertexBuffer(), buffersHolder.getMaterialBuffer());
+            spriteRenderer.render(type, buffersHolder.getObjectCount(), buffersHolder.getVertexBuffer(), buffersHolder.getMaterialBuffer());
             buffersHolder.reset();
         }
     }
@@ -118,6 +123,14 @@ public final class GUIRenderer {
         float interpolatedY = lastY + (y - lastY) * interpolation;
         spriteRenderer.putVertices(interpolatedX, sizeY + interpolatedY, sizeX + interpolatedX, sizeY + interpolatedY, sizeX + interpolatedX, interpolatedY,
                 interpolatedX, interpolatedY, buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
+        spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        buffersHolder.incrementObjectCount();
+    }
+
+    public void addPrimitive(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float r, float g, float b, float a, long textureHandle) {
+        spriteRenderer.putVertices(x1, y1, x2, y2, x3, y3, x4, y4, buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
         spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());

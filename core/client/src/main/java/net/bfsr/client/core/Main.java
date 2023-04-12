@@ -2,6 +2,7 @@ package net.bfsr.client.core;
 
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.gui.Gui;
+import net.bfsr.client.gui.ingame.GuiInGame;
 import net.bfsr.client.gui.menu.GuiMainMenu;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
@@ -44,11 +45,15 @@ public class Main extends Loop {
     protected void init() {
         Vector2i windowSize = initGLFW();
         initInput();
-        core.init(window, windowSize.x, windowSize.y, getStartGui());
+        core.init(window, windowSize.x, windowSize.y, getStartGui(), getGuiInGame());
     }
 
     protected Gui getStartGui() {
         return new GuiMainMenu();
+    }
+
+    protected GuiInGame getGuiInGame() {
+        return new GuiInGame();
     }
 
     private Vector2i initGLFW() {

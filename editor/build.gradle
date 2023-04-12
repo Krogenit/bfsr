@@ -1,0 +1,10 @@
+jar {
+    archiveBaseName = 'bfsr-editor'
+    archiveVersion = '0.0.1-SNAPSHOT'
+}
+
+dependencies {
+    implementation project(':core:client')
+    implementation "org.lwjgl:lwjgl-tinyfd"
+    runtimeOnly "org.lwjgl:lwjgl-tinyfd::$lwjglNatives"
+}

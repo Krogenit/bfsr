@@ -5,7 +5,6 @@ import lombok.Setter;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.TextureObject;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
-import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.texture.TextureRegister;
 import net.bfsr.util.MutableInt;
@@ -16,7 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 public class Particle extends TextureObject {
-    private Texture texture;
+    private long textureHandle;
     @Getter
     protected float sizeVelocity, alphaVelocity, angularVelocity, maxAlpha;
     protected boolean isAlphaFromZero, zeroVelocity;
@@ -29,7 +28,12 @@ public class Particle extends TextureObject {
 
     public Particle init(TextureRegister texture, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
                          float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero, RenderLayer renderLayer) {
-        this.texture = TextureLoader.getTexture(texture);
+        return init(TextureLoader.getTexture(texture).getTextureHandle(), x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, isAlphaFromZero, renderLayer);
+    }
+
+    public Particle init(long textureHandle, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
+                         float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero, RenderLayer renderLayer) {
+        this.textureHandle = textureHandle;
         this.position.set(x, y);
         this.lastPosition.set(position);
         this.velocity.set(velocityX, velocityY);
@@ -110,12 +114,17 @@ public class Particle extends TextureObject {
         spriteRenderer.putVertices(lastPosition.x, lastPosition.y, position.x, position.y, lastRotation, rotation, lastScale.x, lastScale.y, scale.x, scale.y,
                 interpolation, vertexBuffer, vertexBufferIndex);
         spriteRenderer.putColor(lastColor, color, materialBuffer, materialBufferIndex, interpolation);
-        spriteRenderer.putTextureHandle(texture.getTextureHandle(), materialBuffer, materialBufferIndex);
+        spriteRenderer.putTextureHandle(textureHandle, materialBuffer, materialBufferIndex);
         spriteRenderer.putMaterialData(0, 0.0f, 0.0f, materialBuffer, materialBufferIndex);
     }
 
     public void onRemoved() {
         ParticleSpawner.PARTICLE_POOL.returnBack(this);
         Core.get().getRenderer().getParticleRenderer().removeParticleFromRenderLayer(this, renderLayer);
+    }
+
+    @Override
+    public void setDead() {
+        setDead(true);
     }
 }

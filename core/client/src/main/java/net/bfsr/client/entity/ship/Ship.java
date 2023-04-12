@@ -25,7 +25,6 @@ import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.DamageMaskTexture;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
-import net.bfsr.client.settings.Option;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.client.world.WorldClient;
@@ -110,7 +109,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
     protected Texture textureDamage;
     private final List<Damage> damages;
 
-    private Direction remoteMoveDirectionForEngineParticles;
+    private Direction moveDirection;
     @Getter
     @Setter
     protected PathsD contours = new PathsD();
@@ -132,6 +131,8 @@ public abstract class Ship extends CollisionObject implements Damagable {
     }
 
     public void control() {
+        moveDirection = null;
+
         if (destroyingTimer == 0) {
             if (body.isAtRest()) body.setAtRest(false);
 
@@ -139,41 +140,27 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
             if (Keyboard.isKeyDown(GLFW.GLFW_KEY_W)) {
                 move(this, Direction.FORWARD);
+                moveDirection = Direction.FORWARD;
             }
             if (Keyboard.isKeyDown(GLFW.GLFW_KEY_S)) {
                 move(this, Direction.BACKWARD);
+                moveDirection = Direction.BACKWARD;
             }
             if (Keyboard.isKeyDown(GLFW.GLFW_KEY_A)) {
                 move(this, Direction.LEFT);
+                moveDirection = Direction.LEFT;
             }
             if (Keyboard.isKeyDown(GLFW.GLFW_KEY_D)) {
                 move(this, Direction.RIGHT);
+                moveDirection = Direction.RIGHT;
             }
             if (Keyboard.isKeyDown(GLFW.GLFW_KEY_X)) {
                 move(this, Direction.STOP);
+                moveDirection = Direction.STOP;
             }
 
             if (Mouse.isLeftDown()) {
                 shoot();
-            }
-
-            if (Option.IS_DEBUG.getBoolean() && Keyboard.isKeyDown(GLFW.GLFW_KEY_R)) {
-                float baseSize = 4.0f + scale.x * 0.25f;
-                Random rand = world.getRand();
-                Vector2f position = getPosition();
-                Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion1, position.x, position.y));
-                ParticleSpawner.spawnShockwave(0, position, baseSize + 3.0f);
-                for (int i = 0; i < 8; i++) {
-                    Vector2f velocity = getVelocity();
-                    RotationHelper.angleToVelocity(rand.nextFloat() * MathUtils.TWO_PI, scale.x, CollisionObjectUtils.ANGLE_TO_VELOCITY);
-                    ParticleSpawner.spawnMediumGarbage(1, position.x + -scale.x / 2.25f + rand.nextInt((int) (scale.x / 1.25f)),
-                            position.y + -scale.y / 2.25f + rand.nextInt((int) (scale.y / 1.25f)),
-                            velocity.x + CollisionObjectUtils.ANGLE_TO_VELOCITY.x, velocity.y + CollisionObjectUtils.ANGLE_TO_VELOCITY.y, baseSize);
-                }
-                float size = (scale.x + scale.y) * 1.1f;
-                ParticleSpawner.spawnSpark(position.x, position.y, size);
-                ParticleSpawner.spawnLight(position.x, position.y, size, 4.0f * 6.0f, 1, 0.5f, 0.4f, 1.0f, 0.05f * 60.0f, true, RenderLayer.DEFAULT_ADDITIVE);
-                ParticleSpawner.spawnRocketShoot(position.x, position.y, size);
             }
         }
     }
@@ -208,28 +195,21 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
             if (Math.abs(x) > 10) {
                 dir = CollisionObjectUtils.calculateDirectionToOtherObject(this, x + pos.x, pos.y);
-                onStopMove(dir);
+                onMove(dir);
             }
 
             if (Math.abs(y) > 10) {
                 dir = CollisionObjectUtils.calculateDirectionToOtherObject(this, pos.x, y + pos.y);
-                onStopMove(dir);
+                onMove(dir);
             }
         }
     }
 
     private void onMove(Direction direction) {
-        spawnEngineParticles(direction);
-        if (this == world.getPlayerShip()) Core.get().sendUDPPacket(new PacketShipEngine(id, direction.ordinal()));
+        Core.get().sendUDPPacket(new PacketShipEngine(id, direction.ordinal()));
     }
 
-    private void onStopMove(Direction direction) {
-        spawnEngineParticles(direction);
-        if (this == world.getPlayerShip()) {
-            Core.get().sendUDPPacket(new PacketShipEngine(id, direction.ordinal()));
-        }
-    }
-
+    @Override
     public void collision(Body body, float contactX, float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
         Object userData = body.getUserData();
         if (userData != null) {
@@ -280,10 +260,6 @@ public abstract class Ship extends CollisionObject implements Damagable {
         if (this == world.getPlayerShip()) {
             Core.get().sendUDPPacket(new PacketObjectPosition(this));
             lifeTime = 0;
-        } else {
-            if (remoteMoveDirectionForEngineParticles != null) {
-                spawnEngineParticles(remoteMoveDirectionForEngineParticles);
-            }
         }
 
         if (destroyingTimer > 0) {
@@ -307,7 +283,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
         if (((jumpVelocity.x < 0 && jumpPosition.x <= position.x) || (jumpVelocity.x >= 0 && jumpPosition.x >= position.x)) && ((jumpVelocity.y < 0 && jumpPosition.y <= position.y)
                 || (jumpVelocity.y >= 0 && jumpPosition.y >= position.y))) {
             setSpawned();
-            setVelocity(jumpVelocity.mul(0.26666668f));
+            setVelocity(jumpVelocity.x * 0.26666668f, jumpVelocity.y * 0.26666668f);
             onShipSpawned();
         } else {
             lastJumpPosition.set(jumpPosition);
@@ -444,12 +420,12 @@ public abstract class Ship extends CollisionObject implements Damagable {
         float randomVectorX = position.x + -scale.x / 2.25f + rand.nextInt((int) (scale.x / 1.25f));
         float randomVectorY = position.y + -scale.y / 2.25f + rand.nextInt((int) (scale.y / 1.25f));
         float baseSize = 4.0f + scale.x * 0.25f;
-        ParticleSpawner.spawnMediumGarbage(rand.nextInt(2) + 1, randomVectorX, randomVectorY, velocity.x * 0.02f, velocity.y * 0.02f, baseSize - rand.nextFloat() * 2.5f);
+        ParticleSpawner.spawnMediumGarbage(rand.nextInt(2) + 1, randomVectorX, randomVectorY, velocity.x * 0.007f, velocity.y * 0.007f, baseSize - rand.nextFloat() * 2.5f);
         ParticleSpawner.spawnSmallGarbage(4, position.x - scale.x / 2.5f + rand.nextInt((int) (scale.x / 1.25f)), position.y - scale.y / 2.5f + rand.nextInt((int) (scale.y / 1.25f)),
                 velocity.x * 0.001f, velocity.y * 0.001f, baseSize);
         ParticleSpawner.spawnShipOst(1 + rand.nextInt(3), randomVectorX, randomVectorY, velocity.x * 0.02f, velocity.y * 0.02f, 1.0f);
-        ParticleSpawner.spawnLight(randomVectorX, randomVectorY, baseSize + rand.nextFloat() * 2.0f, 60.0f, 1.0f, 0.5f, 0.5f, 0.7f, 0.03f * 60.0f, false, RenderLayer.DEFAULT_ADDITIVE);
-        ParticleSpawner.spawnSpark(randomVectorX, randomVectorY, baseSize + rand.nextFloat() * 2.0f);
+        ParticleSpawner.spawnLight(randomVectorX, randomVectorY, baseSize + rand.nextFloat() * 2.0f, 60.0f, 1.0f, 0.5f, 0.5f, 0.7f, 1.8f, false, RenderLayer.DEFAULT_ADDITIVE);
+        ParticleSpawner.spawnShipDestroy(randomVectorX, randomVectorY, baseSize + rand.nextFloat() * 2.0f);
         ParticleSpawner.spawnExplosion(randomVectorX, randomVectorY, baseSize + rand.nextFloat() * 2.0f);
         Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion0, randomVectorX, randomVectorY));
     }
@@ -546,7 +522,11 @@ public abstract class Ship extends CollisionObject implements Damagable {
         return weaponSlots.get(i);
     }
 
-    public void spawnEngineParticles(Direction dir) {
+    public void emitParticles() {
+        spawnEngineParticles(moveDirection);
+    }
+
+    public void spawnEngineParticles(Direction direction) {
 
     }
 
@@ -555,7 +535,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
     }
 
     public void setMoveDirection(Direction dir) {
-        remoteMoveDirectionForEngineParticles = dir;
+        moveDirection = dir;
     }
 
     public void setSpawned() {
@@ -570,8 +550,8 @@ public abstract class Ship extends CollisionObject implements Damagable {
         if (spawned) createName();
     }
 
-    public void setVelocity(Vector2f velocity) {
-        body.setLinearVelocity(new Vector2(velocity.x, velocity.y));
+    public void setVelocity(float x, float y) {
+        body.setLinearVelocity(x, y);
     }
 
     @Override
