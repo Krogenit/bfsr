@@ -33,6 +33,7 @@ public class InspectionMinimizableGuiObject<T extends PropertiesHolder> extends 
         super(width, height, name, fontType, fontSize, stringYOffset);
         this.inspectionPanel = inspectionPanel;
         setupColors(this);
+        setCanMaximize(false);
     }
 
     @Override
@@ -63,7 +64,7 @@ public class InspectionMinimizableGuiObject<T extends PropertiesHolder> extends 
         if (inspectionPanel.isIntersectsWithMouse()) {
             InspectionMinimizableGuiObject<T> inspectionGuiObject = inspectionPanel.getMouseHoverObject();
             if (inspectionGuiObject != null) {
-                if (inspectionGuiObject != this && inspectionGuiObject.isCanMaximize() && !inspectionPanel.isInHierarchy(this, inspectionGuiObject)) {
+                if (inspectionGuiObject != this && !inspectionPanel.isInHierarchy(this, inspectionGuiObject)) {
                     parent.removeSubObject(this);
                     inspectionGuiObject.addSubObject(this);
                     inspectionGuiObject.maximize();
@@ -95,16 +96,12 @@ public class InspectionMinimizableGuiObject<T extends PropertiesHolder> extends 
 
     protected void onSelected() {}
 
-    protected void onUnselected() {}
-
     private void select() {
         selected = true;
-        onSelected();
     }
 
     private void unselect() {
         selected = false;
-        onUnselected();
     }
 
     @Override
@@ -161,19 +158,25 @@ public class InspectionMinimizableGuiObject<T extends PropertiesHolder> extends 
             } else {
                 maximize();
             }
-        } else if (wasSelected && selected && mouseX >= x + selectOffsetX && mouseX < x + width) {
-            inputBox = new InputBox(width - selectOffsetX, height, "", stringObject.getStringCache(), fontSize, 3, stringYOffset, 300);
-            inputBox.setOnUnselectedRunnable(() -> {
-                gui.unregisterGuiObject(inputBox);
-                onNameChanged(inputBox.getString());
-                inputBox = null;
-            });
-            ColorScheme.setupInputBoxColors(inputBox);
-            inputBox.setString(getName());
-            subObjectsRepositionConsumer.setup(inputBox, selectOffsetX, 0);
-            gui.registerGuiObject(inputBox);
-            inputBox.setTyping(true);
-            selected = false;
+        } else if (selected) {
+            if (mouseX >= x + selectOffsetX && mouseX < x + width) {
+                if (wasSelected) {
+                    inputBox = new InputBox(width - selectOffsetX, height, "", stringObject.getStringCache(), fontSize, 3, stringYOffset, 300);
+                    inputBox.setOnUnselectedRunnable(() -> {
+                        gui.unregisterGuiObject(inputBox);
+                        onNameChanged(inputBox.getString());
+                        inputBox = null;
+                    });
+                    ColorScheme.setupInputBoxColors(inputBox);
+                    inputBox.setString(getName());
+                    subObjectsRepositionConsumer.setup(inputBox, selectOffsetX, 0);
+                    gui.registerGuiObject(inputBox);
+                    inputBox.setTyping(true);
+                    selected = false;
+                } else {
+                    onSelected();
+                }
+            }
         }
     }
 
@@ -195,7 +198,7 @@ public class InspectionMinimizableGuiObject<T extends PropertiesHolder> extends 
         if (!selected && inputBox == null) {
             int selectOffsetX = canMaximize ? MINIMIZABLE_STRING_X_OFFSET : 0;
             if (mouseX >= x + selectOffsetX && mouseX < x + width) {
-                select();
+                selected = true;
             }
         }
 
@@ -205,8 +208,17 @@ public class InspectionMinimizableGuiObject<T extends PropertiesHolder> extends 
     @Override
     public void addSubObject(AbstractGuiObject guiObject) {
         super.addSubObject(guiObject);
+        setCanMaximize(true);
         if (guiObject instanceof InspectionMinimizableGuiObject<?> inspectionMinimizableGuiObject) {
             inspectionMinimizableGuiObject.setParent(this);
+        }
+    }
+
+    @Override
+    public void removeSubObject(AbstractGuiObject guiObject) {
+        super.removeSubObject(guiObject);
+        if (subObjects.size() == 0) {
+            setCanMaximize(false);
         }
     }
 

@@ -149,6 +149,10 @@ public class PropertiesPanel {
         return propertiesContainer.isMouseHover();
     }
 
+    public boolean hasComponents() {
+        return minimizableProperties.size() > 0;
+    }
+
     public void close() {
         if (rightSideGuiObjects.size() > 0) {
             for (int i = 0; i < rightSideGuiObjects.size(); i++) {

@@ -33,7 +33,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
     private final int elementHeight = 20;
 
     @Setter
-    private InspectionHolder<T> wantSelectObject;
+    private InspectionEntry<T> wantSelectObject;
     @Setter
     private boolean wantUnselect;
     @Setter
@@ -43,9 +43,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
     @Setter
     private Function<InspectionEntry<T>, Boolean> entryRightClickSupplier = (minimizableGuiObject) -> false;
     @Setter
-    private Function<InspectionHolder<T>, Boolean> holderRightClickSupplier = (minimizableGuiObject) -> false;
-    @Setter
-    private Consumer<InspectionHolder<T>> onSelectConsumer = t -> {};
+    private Consumer<InspectionEntry<T>> onSelectConsumer = t -> {};
 
     private Button saveAllButton, addButton;
     private MinimizableGuiObject lastHoverObject, hoverObject;
@@ -60,7 +58,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
         this.stringYOffset = stringYOffset;
     }
 
-    public void initElements(int x, int y, Runnable saveAllRunnable, Supplier<InspectionHolder<T>> objectSupplier) {
+    public void initElements(int x, int y, Runnable saveAllRunnable, Supplier<InspectionEntry<T>> objectSupplier) {
         gui.registerGuiObject(new StringObject(fontType, name, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w).compile().atTopLeftCorner(x,
                 y + fontType.getStringCache().getCenteredYOffset(name, elementHeight, fontSize) + stringYOffset));
         gui.registerGuiObject(objectsContainer.atTopLeftCorner(x, elementHeight).setHeightResizeFunction((width, height) -> Core.get().getScreenHeight() - elementHeight * 3));
@@ -70,24 +68,46 @@ public class InspectionPanel<T extends PropertiesHolder> {
         gui.registerGuiObject(setupButtonColors(saveAllButton).atBottomLeftCorner(x, y));
         y -= elementHeight;
         addButton = new Button(objectsContainer.getWidth(), elementHeight, "Add", fontType, fontSize, stringYOffset, () -> {
-            InspectionHolder<T> minimizableHolder = objectSupplier.get();
+            InspectionEntry<T> minimizableHolder = objectSupplier.get();
             addSubObject(minimizableHolder);
             updatePositions();
         });
         gui.registerGuiObject(setupButtonColors(addButton).atBottomLeftCorner(x, y));
     }
 
-    public InspectionEntry<T> createEntry() {
-        InspectionEntry<T> minimizableGuiObject = new InspectionEntry<>(this, objectsContainer.getWidth() - objectsContainer.getScrollWidth(), elementHeight, fontType, fontSize, stringYOffset);
-        minimizableGuiObject.setOnRightClickSupplier(() -> entryRightClickSupplier.apply(minimizableGuiObject));
-        return minimizableGuiObject;
+    public InspectionEntry<T> createEntry(String name) {
+        InspectionEntry<T> entry = new InspectionEntry<>(this, objectsContainer.getWidth() - objectsContainer.getScrollWidth(), elementHeight, name, fontType, fontSize, stringYOffset);
+        entry.setOnRightClickSupplier(() -> entryRightClickSupplier.apply(entry));
+        return entry;
     }
 
-    public InspectionHolder<T> createObjectHolder(T object) {
-        InspectionHolder<T> particleEffectHolder = new InspectionHolder<>(this, objectsContainer.getWidth() - objectsContainer.getScrollWidth(), elementHeight, fontType, fontSize,
-                stringYOffset, object);
-        particleEffectHolder.setOnRightClickSupplier(() -> holderRightClickSupplier.apply(particleEffectHolder));
-        return particleEffectHolder;
+    public InspectionEntry<T> createEntry() {
+        return createEntry("Entry");
+    }
+
+    public InspectionEntry<T> createEntry(String name, T... objects) {
+        InspectionEntry<T> entry = createEntry(name);
+        for (int i = 0; i < objects.length; i++) {
+            entry.addObject(objects[i]);
+        }
+        return entry;
+    }
+
+    public InspectionEntry<T> createEntry(T... objects) {
+        return createEntry("Entry", objects);
+    }
+
+    public void onMouseLeftClick() {
+        List<GuiObject> guiObjects = objectsContainer.getGuiObjects();
+        for (int i = 0; i < guiObjects.size(); i++) {
+            if (guiObjects.get(i).isMouseHover()) {
+                return;
+            }
+        }
+
+        if (isMouseHover()) {
+            wantUnselect = true;
+        }
     }
 
     public void update() {
@@ -105,11 +125,11 @@ public class InspectionPanel<T extends PropertiesHolder> {
             lastHoverObject = hoverObject;
             hoverObject = null;
 
-            findHoverObject(gui.getGuiObjects());
+            findHoverObjectToMaximize(gui.getGuiObjects());
         }
     }
 
-    private <T extends GuiObject> void findHoverObject(List<T> guiObjects) {
+    private <T extends GuiObject> void findHoverObjectToMaximize(List<T> guiObjects) {
         for (int i = 0; i < guiObjects.size(); i++) {
             T guiObject = guiObjects.get(i);
             if (guiObject.isMouseHover() && guiObject instanceof MinimizableGuiObject minimizableGuiObject && !minimizableGuiObject.isMaximized() && minimizableGuiObject.isCanMaximize()) {
@@ -127,7 +147,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
             }
 
             if (guiObject instanceof GuiObjectWithSubObjects guiObjectWithSubObjects1) {
-                findHoverObject(guiObjectWithSubObjects1.getSubObjects());
+                findHoverObjectToMaximize(guiObjectWithSubObjects1.getSubObjects());
             }
         }
     }

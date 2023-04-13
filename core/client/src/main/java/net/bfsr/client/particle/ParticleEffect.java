@@ -326,6 +326,10 @@ public class ParticleEffect implements PropertiesHolder {
         return aliveParticles.size() > 0;
     }
 
+    public String getPath() {
+        return editorPath.isEmpty() ? name : editorPath + "/" + name;
+    }
+
     public void clear() {
         for (int i = 0; i < aliveParticles.size(); i++) {
             aliveParticles.get(i).setDead();

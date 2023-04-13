@@ -9,11 +9,12 @@ import java.util.List;
 
 @SuppressWarnings("TransientFieldInNonSerializableClass")
 public abstract class SimplePropertiesHolder implements PropertiesHolder {
-    private final transient List<ChangeNameEventListener> listeners = new ArrayList<>();
     @Configurable
     @Property(elementType = PropertyGuiElementType.MAIN_NAME_INPUT_BOX)
     @Getter
     private String name;
+
+    private final transient List<ChangeNameEventListener> listeners = new ArrayList<>();
 
     @Override
     public void registerChangeNameEventListener(ChangeNameEventListener listener) {

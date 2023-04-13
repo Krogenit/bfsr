@@ -1,5 +1,6 @@
 package net.bfsr.client.gui;
 
+import lombok.Getter;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.gui.scroll.Scroll;
 import net.bfsr.client.renderer.instanced.GUIRenderer;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GuiObjectsContainer extends GuiObjectWithSubObjects implements GuiObjectsHandler {
+    @Getter
     private final List<GuiObject> guiObjects = new ArrayList<>();
     private final Scroll scroll = new Scroll();
 
