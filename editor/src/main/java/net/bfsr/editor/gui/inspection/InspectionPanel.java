@@ -168,6 +168,19 @@ public class InspectionPanel<T extends PropertiesHolder> {
     }
 
     public void updatePositions() {
+        int x = 0;
+        int y = elementHeight;
+
+        List<AbstractGuiObject> guiObjects = objectsContainer.getSubObjects();
+        for (int i = 0; i < guiObjects.size(); i++) {
+            AbstractGuiObject guiObject = guiObjects.get(i);
+            guiObject.atTopLeftCorner(x, y);
+            guiObject.updatePositionAndSize();
+            y += guiObject.getHeight();
+        }
+
+        objectsContainer.updateScrollObjectsY();
+
         MutableInt width = new MutableInt(0);
         calculateMinWidth(width, objectsContainer);
         int smallOffsetX = 10;
@@ -178,24 +191,16 @@ public class InspectionPanel<T extends PropertiesHolder> {
         saveAllButton.setStringXOffset(panelWidth / 2);
         saveAllButton.setWidth(panelWidth);
 
-        int x = 0;
-        int y = elementHeight;
+        int maxContainerX = objectsContainer.getX() + objectsContainer.getWidth() - objectsContainer.getScrollWidth();
 
-        List<AbstractGuiObject> guiObjects = objectsContainer.getSubObjects();
         for (int i = 0; i < guiObjects.size(); i++) {
             AbstractGuiObject guiObject = guiObjects.get(i);
-            guiObject.atTopLeftCorner(x, y);
-            guiObject.updatePositionAndSize();
-            updateWidth(guiObject);
-            y += guiObject.getHeight();
+            updateWidth(guiObject, maxContainerX);
         }
-
-        objectsContainer.updateScrollObjectsY();
     }
 
-    private void updateWidth(AbstractGuiObject guiObject) {
+    private void updateWidth(AbstractGuiObject guiObject, int maxContainerX) {
         int objectRightPosX = guiObject.getX() + guiObject.getWidth();
-        int maxContainerX = objectsContainer.getX() + objectsContainer.getWidth() - objectsContainer.getScrollWidth();
         if (objectRightPosX > maxContainerX) {
             guiObject.setWidth(guiObject.getWidth() - (objectRightPosX - maxContainerX));
         } else if (objectRightPosX < maxContainerX) {
@@ -205,7 +210,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
         if (guiObject instanceof GuiObjectWithSubObjects guiObjectWithSubObjects) {
             List<AbstractGuiObject> subObjects = guiObjectWithSubObjects.getSubObjects();
             for (int i = 0; i < subObjects.size(); i++) {
-                updateWidth(subObjects.get(i));
+                updateWidth(subObjects.get(i), maxContainerX);
             }
         }
     }
