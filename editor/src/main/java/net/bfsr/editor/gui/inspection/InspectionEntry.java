@@ -1,7 +1,6 @@
 package net.bfsr.editor.gui.inspection;
 
 import net.bfsr.client.renderer.font.FontType;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
 import net.bfsr.property.PropertiesHolder;
 
 public class InspectionEntry<T extends PropertiesHolder> extends InspectionMinimizableGuiObject<T> {
@@ -20,13 +19,6 @@ public class InspectionEntry<T extends PropertiesHolder> extends InspectionMinim
     public void minimize() {
         if (inspectionPanel.getMovableObject() == null) {
             super.minimize();
-        }
-    }
-
-    @Override
-    protected void renderBase() {
-        if (isMouseHover()) {
-            GUIRenderer.get().add(lastX, lastY, x, y, width, height, hoverColor.x, hoverColor.y, hoverColor.z, hoverColor.w);
         }
     }
 }
