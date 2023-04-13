@@ -246,7 +246,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
                     return FileVisitResult.CONTINUE;
                 }
             });
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error("Failed to delete particle effects", e);
         }
     }
