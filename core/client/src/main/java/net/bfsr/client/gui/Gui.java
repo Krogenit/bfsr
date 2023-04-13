@@ -14,6 +14,7 @@ public abstract class Gui implements GuiObjectsHandler {
     @Getter
     protected int width, height;
     protected final Vector2i center = new Vector2i();
+    @Getter
     protected final List<GuiObject> guiObjects = new ArrayList<>();
     private final List<GuiObject> contextMenu = new ArrayList<>();
 
