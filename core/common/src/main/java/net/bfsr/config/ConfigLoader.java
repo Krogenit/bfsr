@@ -13,11 +13,12 @@ import java.util.function.Consumer;
 @Log4j2
 public final class ConfigLoader {
     private static final Moshi MOSHI = new Moshi.Builder().build();
+    private static final String INDENT = "    ";
 
     @Nullable
     public static <T> T load(File file, Class<T> type) {
         try {
-            return MOSHI.adapter(type).indent("    ").fromJson(Files.readString(file.toPath()));
+            return MOSHI.adapter(type).indent(INDENT).fromJson(Files.readString(file.toPath()));
         } catch (IOException | JsonDataException e) {
             log.error("Error during loading json file {}", file, e);
         }
@@ -41,7 +42,7 @@ public final class ConfigLoader {
     }
 
     public static <T> void save(File file, T object, Class<T> objectClass) {
-        String json = MOSHI.adapter(objectClass).indent("    ").toJson(object);
+        String json = MOSHI.adapter(objectClass).indent(INDENT).toJson(object);
 
         try {
             Files.writeString(file.toPath(), json);
