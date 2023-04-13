@@ -5,47 +5,47 @@
     {
       "maxSpawnCount": 1,
       "minSpawnCount": 1,
-      "name": "ship_destroy/small/child_effects/shockwave",
-      "scale": 1.0
+      "name": "ship_destroy/destroying/child_effects/garbage_medium",
+      "scale": 0.5,
+      "velocityScale": 0.0
     },
     {
-      "maxSpawnCount": 9,
-      "minSpawnCount": 6,
-      "name": "garbage/garbage_medium",
-      "scale": 1.0
+      "maxSpawnCount": 4,
+      "minSpawnCount": 2,
+      "name": "ship_destroy/destroying/child_effects/garbage_small",
+      "scale": 0.5,
+      "velocityScale": 1.0
+    },
+    {
+      "maxSpawnCount": 3,
+      "minSpawnCount": 1,
+      "name": "garbage/ost",
+      "scale": 1.0,
+      "velocityScale": 1.0
     },
     {
       "maxSpawnCount": 1,
       "minSpawnCount": 1,
-      "name": "ship_destroy/small/child_effects/explosion",
-      "scale": 1.0
+      "name": "ship_destroy/destroying/child_effects/light",
+      "scale": 0.5,
+      "velocityScale": 1.0
     },
     {
       "maxSpawnCount": 1,
       "minSpawnCount": 1,
-      "name": "ship_destroy/small/child_effects/spark",
-      "scale": 1.0
+      "name": "ship_destroy/destroying/child_effects/explosion",
+      "scale": 1.0,
+      "velocityScale": 1.0
     },
     {
       "maxSpawnCount": 1,
       "minSpawnCount": 1,
-      "name": "ship_destroy/small/child_effects/light",
-      "scale": 1.0
-    },
-    {
-      "maxSpawnCount": 1,
-      "minSpawnCount": 1,
-      "name": "ship_destroy/small/child_effects/smoke",
-      "scale": 1.0
-    },
-    {
-      "maxSpawnCount": 12,
-      "minSpawnCount": 8,
-      "name": "garbage/garbage_small",
-      "scale": 1.0
+      "name": "ship_destroy/destroying/child_effects/spark",
+      "scale": 1.0,
+      "velocityScale": 1.0
     }
   ],
-  "editorPath": "ship_destroy/small",
+  "editorPath": "explosion/small",
   "g": 1.0,
   "isAlphaFromZero": false,
   "maxAlphaVelocity": 0.5,
@@ -70,16 +70,10 @@
   "minSpawnCount": 0,
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
-  "name": "ship_destroy",
+  "name": "effect",
   "r": 1.0,
   "renderLayer": "DEFAULT_ADDITIVE",
-  "soundEffects": [
-    {
-      "name": "explostion",
-      "path": "sound/explosion/explosion1.ogg",
-      "volume": 1.0
-    }
-  ],
+  "soundEffects": [],
   "sourceSizeXMultiplier": 1.0,
   "sourceSizeYMultiplier": 1.0,
   "sourceVelocityXMultiplier": 1.0,

@@ -2,7 +2,7 @@
   "a": 1.0,
   "b": 0.2,
   "childEffects": [],
-  "editorPath": "ship_destroy/small/child_effects",
+  "editorPath": "explosion/ship_small/child_effects",
   "g": 0.5,
   "isAlphaFromZero": true,
   "maxAlphaVelocity": 1.2,
