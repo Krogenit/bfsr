@@ -74,6 +74,9 @@ public class InspectionEntry<T extends PropertiesHolder> extends InspectionMinim
     @Override
     protected void onNameChanged(String name) {
         super.onNameChanged(name);
+        for (int i = 0; i < objects.size(); i++) {
+            objects.get(i).setName(name);
+        }
     }
 
     @Override
