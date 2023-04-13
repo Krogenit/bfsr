@@ -2,6 +2,7 @@ package net.bfsr.client.renderer.texture;
 
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
+import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.renderer.texture.dds.DDSFile;
 import net.bfsr.client.util.PathHelper;
 import net.bfsr.texture.TextureRegister;
@@ -15,6 +16,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
+@Log4j2
 public final class TextureLoader {
     private static final TMap<String, Texture> LOADED_TEXTURES = new THashMap<>();
     public static Texture dummyTexture;
@@ -99,7 +101,8 @@ public final class TextureLoader {
             STBImage.stbi_set_flip_vertically_on_load(false);
             image = STBImage.stbi_load(path, w, h, comp, 0);
             if (image == null) {
-                throw new RuntimeException("Failed to load a texture file " + path + "!" + System.lineSeparator() + STBImage.stbi_failure_reason());
+                log.error("Failed to load a texture file {}!{}{}", path, System.lineSeparator(), STBImage.stbi_failure_reason());
+                return null;
             }
 
             channels = comp.get();
