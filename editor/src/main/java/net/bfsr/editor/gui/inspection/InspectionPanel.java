@@ -169,6 +169,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
             movableObject.update();
             movableObject.render();
             movableObject.setPosition(x, y);
+            movableObject.update();
         }
     }
 
