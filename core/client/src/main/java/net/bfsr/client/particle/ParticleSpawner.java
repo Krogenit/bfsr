@@ -28,9 +28,9 @@ public final class ParticleSpawner {
     public static final Supplier<Particle> PARTICLE_SUPPLIER = Particle::new;
 
     private static final ParticleEffect garbageMedium = ParticleEffectsRegistry.INSTANCE.getEffect("garbage/garbage_medium");
-    private static final ParticleEffect shipDestroyExplosion = ParticleEffectsRegistry.INSTANCE.getEffect("ship_destroy/small/child_effects/explosion");
-    private static final ParticleEffect shipDestroySpark = ParticleEffectsRegistry.INSTANCE.getEffect("ship_destroy/small/child_effects/spark");
-    private static final ParticleEffect shipDestroySmall = ParticleEffectsRegistry.INSTANCE.getEffect("ship_destroy/small/ship_destroy");
+    private static final ParticleEffect shipDestroyExplosion = ParticleEffectsRegistry.INSTANCE.getEffect("explosion/ship_small/explosion");
+    private static final ParticleEffect shipDestroySpark = ParticleEffectsRegistry.INSTANCE.getEffect("explosion/ship_small/spark");
+    private static final ParticleEffect shipDestroySmall = ParticleEffectsRegistry.INSTANCE.getEffect("explosion/ship_small");
 
     public static void spawnDestroyShipSmall(Ship ship) {
         Vector2f scale = ship.getScale();
