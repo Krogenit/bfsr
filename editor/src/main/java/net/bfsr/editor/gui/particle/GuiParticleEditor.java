@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.entity.ship.ShipHumanSmall0;
+import net.bfsr.client.gui.AbstractGuiObject;
 import net.bfsr.client.gui.GuiObjectWithSubObjects;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.input.Mouse;
@@ -147,6 +148,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
             removeButton.setOnMouseClickRunnable(() -> {
                 GuiObjectWithSubObjects parent = inspectionEntry.getParent();
                 parent.removeSubObject(inspectionEntry);
+                remove(inspectionEntry);
                 inspectionPanel.updatePositions();
             });
 
@@ -160,44 +162,62 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     private void initParticleEffects() {
         Collection<ParticleEffect> allEffects = ParticleEffectsRegistry.INSTANCE.getAllEffects();
         for (ParticleEffect particleEffect : allEffects) {
-            InspectionEntry<ParticleEffect> particleEffectHolder = createParticleEffectEntry(particleEffect);
-
             String editorPath = particleEffect.getEditorPath();
-            InspectionEntry<ParticleEffect> parent = null;
             if (editorPath != null && !editorPath.isEmpty()) {
-                String[] strings = editorPath.split("/");
-                for (int i = 0; i < strings.length; i++) {
-                    String path = strings[i];
-                    InspectionEntry<ParticleEffect> inspectionEntry;
-
-                    if (parent == null) {
-                        inspectionEntry = inspectionPanel.findEntry(path);
-                    } else {
-                        inspectionEntry = inspectionPanel.findEntry(parent, path);
-                    }
-
-                    if (inspectionEntry == null) {
-                        inspectionEntry = inspectionPanel.createEntry();
-                        inspectionEntry.setName(path);
-                        if (parent == null) {
-                            inspectionPanel.addSubObject(inspectionEntry);
-                        } else {
-                            parent.addSubObject(inspectionEntry);
-                        }
-                    }
-
-                    parent = inspectionEntry;
-                }
-
-                if (parent != null) {
-                    parent.addSubObject(particleEffectHolder);
-                }
+                addParticleEffectToEntry(buildEntryPath(editorPath), particleEffect);
             } else {
-                inspectionPanel.addSubObject(particleEffectHolder);
+                inspectionPanel.addSubObject(createParticleEffectEntry(particleEffect));
             }
         }
 
         inspectionPanel.updatePositions();
+    }
+
+    private InspectionEntry<ParticleEffect> buildEntryPath(String editorPath) {
+        InspectionEntry<ParticleEffect> parent = null;
+        String[] strings = editorPath.split("/");
+        for (int i = 0; i < strings.length; i++) {
+            String path = strings[i];
+            InspectionEntry<ParticleEffect> inspectionEntry;
+
+            if (parent == null) {
+                inspectionEntry = inspectionPanel.findEntry(path);
+            } else {
+                inspectionEntry = inspectionPanel.findEntry(parent, path);
+            }
+
+            if (inspectionEntry == null) {
+                inspectionEntry = inspectionPanel.createEntry();
+                inspectionEntry.setName(path);
+                if (parent == null) {
+                    inspectionPanel.addSubObject(inspectionEntry);
+                } else {
+                    parent.addSubObject(inspectionEntry);
+                }
+            }
+
+            parent = inspectionEntry;
+        }
+
+        return parent;
+    }
+
+    private void addParticleEffectToEntry(InspectionEntry<ParticleEffect> parent, ParticleEffect particleEffect) {
+        boolean findEntry = false;
+        List<AbstractGuiObject> subObjects = parent.getSubObjects();
+        for (int i = 0; i < subObjects.size(); i++) {
+            InspectionEntry<ParticleEffect> inspectionEntry = (InspectionEntry<ParticleEffect>) subObjects.get(i);
+            if (inspectionEntry.getName().equals(particleEffect.getName())) {
+                findEntry = true;
+                inspectionEntry.addObject(particleEffect);
+                particleEffects.add(inspectionEntry);
+                break;
+            }
+        }
+
+        if (!findEntry) {
+            parent.addSubObject(createParticleEffectEntry(particleEffect));
+        }
     }
 
     private InspectionEntry<ParticleEffect> createParticleEffectEntry() {
