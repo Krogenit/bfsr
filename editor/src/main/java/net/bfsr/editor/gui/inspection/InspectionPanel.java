@@ -3,14 +3,12 @@ package net.bfsr.editor.gui.inspection;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.gui.AbstractGuiObject;
-import net.bfsr.client.gui.Gui;
-import net.bfsr.client.gui.GuiObjectWithSubObjects;
-import net.bfsr.client.gui.GuiObjectsContainer;
+import net.bfsr.client.gui.*;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.string.StringObject;
+import net.bfsr.editor.gui.component.MinimizableGuiObject;
 import net.bfsr.property.PropertiesHolder;
 import net.bfsr.util.MutableInt;
 import org.joml.Vector2f;
@@ -24,6 +22,8 @@ import static net.bfsr.editor.gui.ColorScheme.TEXT_COLOR;
 import static net.bfsr.editor.gui.ColorScheme.setupButtonColors;
 
 public class InspectionPanel<T extends PropertiesHolder> {
+    private static final long HOVER_TIME_FOR_MAXIMIZE = 500L;
+
     private final Gui gui;
     private final String name;
     private final GuiObjectsContainer objectsContainer;
@@ -48,6 +48,8 @@ public class InspectionPanel<T extends PropertiesHolder> {
     private Consumer<InspectionHolder<T>> onSelectConsumer = t -> {};
 
     private Button saveAllButton, addButton;
+    private MinimizableGuiObject lastHoverObject, hoverObject;
+    private long hoverTime;
 
     public InspectionPanel(Gui gui, String name, int width, FontType fontType, int fontSize, int stringYOffset) {
         this.gui = gui;
@@ -97,6 +99,36 @@ public class InspectionPanel<T extends PropertiesHolder> {
         } else if (wantSelectObject != null) {
             onSelectConsumer.accept(wantSelectObject);
             wantSelectObject = null;
+        }
+
+        if (movableObject != null) {
+            lastHoverObject = hoverObject;
+            hoverObject = null;
+
+            findHoverObject(gui.getGuiObjects());
+        }
+    }
+
+    private <T extends GuiObject> void findHoverObject(List<T> guiObjects) {
+        for (int i = 0; i < guiObjects.size(); i++) {
+            T guiObject = guiObjects.get(i);
+            if (guiObject.isMouseHover() && guiObject instanceof MinimizableGuiObject minimizableGuiObject && !minimizableGuiObject.isMaximized() && minimizableGuiObject.isCanMaximize()) {
+                hoverObject = minimizableGuiObject;
+
+                if (lastHoverObject != hoverObject) {
+                    hoverTime = System.currentTimeMillis();
+                }
+
+                if (System.currentTimeMillis() - hoverTime > HOVER_TIME_FOR_MAXIMIZE) {
+                    hoverObject.maximize();
+                }
+
+                return;
+            }
+
+            if (guiObject instanceof GuiObjectWithSubObjects guiObjectWithSubObjects1) {
+                findHoverObject(guiObjectWithSubObjects1.getSubObjects());
+            }
         }
     }
 
