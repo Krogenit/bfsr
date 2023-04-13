@@ -10,7 +10,13 @@ public final class PathHelper {
     public static final File FONT = new File(CONTENT, "font");
     public static final File CONFIG = new File(CONTENT, "config");
 
+    private static final char FILE_NAME_TYPE_SEPARATOR = '.';
+
     public static String convertPath(String simplePath) {
         return CONTENT + File.separator + simplePath.replace("/", File.separator);
+    }
+
+    public static String getFileNameWithoutExtension(String fileName) {
+        return fileName.substring(0, fileName.indexOf(FILE_NAME_TYPE_SEPARATOR));
     }
 }

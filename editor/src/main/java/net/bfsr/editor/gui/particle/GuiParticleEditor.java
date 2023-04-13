@@ -12,6 +12,7 @@ import net.bfsr.client.particle.ParticleEffectsRegistry;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.util.PathHelper;
 import net.bfsr.config.ConfigLoader;
 import net.bfsr.editor.ConfigurableGameObject;
 import net.bfsr.editor.gui.GuiEditor;
@@ -28,7 +29,9 @@ import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.File;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -204,9 +207,9 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     }
 
     private InspectionEntry<ParticleEffect> createParticleEffectEntry(ParticleEffect particleEffect) {
-        InspectionEntry<ParticleEffect> objectHolder = inspectionPanel.createEntry(particleEffect.getName(), particleEffect);
-        particleEffects.add(objectHolder);
-        return objectHolder;
+        InspectionEntry<ParticleEffect> entry = inspectionPanel.createEntry(particleEffect.getName(), particleEffect);
+        particleEffects.add(entry);
+        return entry;
     }
 
     private void saveAll() {
@@ -218,40 +221,33 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
             log.error("Failed to save particle effects", e);
         }
 
-        List<String> removeList = new ArrayList<>();
-
         File folder = ParticleEffectsRegistry.INSTANCE.getEffectsFolder();
-
         try {
-            findEffectsToRemove(removeList, "", folder.listFiles());
-
-            for (int i = 0; i < removeList.size(); i++) {
-                ParticleEffectsRegistry.INSTANCE.delete(removeList.get(i));
-            }
-        } catch (Exception e) {
-            log.error("Failed to delete particle effects", e);
-        }
-    }
-
-    private void findEffectsToRemove(List<String> removeList, String path, File[] listFiles) {
-        if (listFiles != null) {
-            char fileNameTypeSeparator = '.';
-
-            for (int i = 0; i < listFiles.length; i++) {
-                File file = listFiles[i];
-                if (file.isDirectory()) {
-                    findEffectsToRemove(removeList, path.isEmpty() ? file.getName() : path + "/" + file.getName(), file.listFiles());
-                } else {
-                    String fileName = file.getName();
-                    String filePath = (path.isEmpty() ? "" : path + "/") + fileName.substring(0, fileName.indexOf(fileNameTypeSeparator));
+            Files.walkFileTree(folder.toPath(), new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    String filePath = PathHelper.getFileNameWithoutExtension(file.toString().replace(folder.getPath(), "").replace(File.separator, "/").substring(1));
                     if (particleEffects.stream().noneMatch(inspectionHolder -> {
                         ParticleEffect particleEffect = inspectionHolder.getComponentByType(ParticleEffect.class);
                         return particleEffect.getPath().equals(filePath);
                     })) {
-                        removeList.add(filePath);
+                        Files.delete(file);
+                        ParticleEffectsRegistry.INSTANCE.remove(filePath);
                     }
+                    return FileVisitResult.CONTINUE;
                 }
-            }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    File[] listFiles = dir.toFile().listFiles();
+                    if (listFiles == null || listFiles.length == 0) {
+                        Files.delete(dir);
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (Exception e) {
+            log.error("Failed to delete particle effects", e);
         }
     }
 
