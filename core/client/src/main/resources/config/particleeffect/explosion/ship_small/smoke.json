@@ -5,12 +5,11 @@
     {
       "maxSpawnCount": 1,
       "minSpawnCount": 1,
-      "name": "ship_destroy/small/child_effects/rocket_effect",
-      "scale": 1.0,
-      "velocityScale": 1.0
+      "name": "explosion/ship_small/rocket_effect",
+      "scale": 1.0
     }
   ],
-  "editorPath": "explosion/ship_small/child_effects",
+  "editorPath": "explosion/ship_small",
   "g": 0.3,
   "isAlphaFromZero": true,
   "maxAlphaVelocity": 0.7,

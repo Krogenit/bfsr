@@ -5,47 +5,41 @@
     {
       "maxSpawnCount": 1,
       "minSpawnCount": 1,
-      "name": "ship_destroy/destroying/child_effects/garbage_medium",
-      "scale": 0.5,
-      "velocityScale": 0.0
+      "name": "explosion/small/garbage_medium",
+      "scale": 0.5
     },
     {
       "maxSpawnCount": 4,
       "minSpawnCount": 2,
-      "name": "ship_destroy/destroying/child_effects/garbage_small",
-      "scale": 0.5,
-      "velocityScale": 1.0
+      "name": "explosion/small/garbage_small",
+      "scale": 0.5
     },
     {
       "maxSpawnCount": 3,
       "minSpawnCount": 1,
       "name": "garbage/ost",
-      "scale": 1.0,
-      "velocityScale": 1.0
+      "scale": 1.0
     },
     {
       "maxSpawnCount": 1,
       "minSpawnCount": 1,
-      "name": "ship_destroy/destroying/child_effects/light",
-      "scale": 0.5,
-      "velocityScale": 1.0
+      "name": "explosion/small/light",
+      "scale": 0.5
     },
     {
       "maxSpawnCount": 1,
       "minSpawnCount": 1,
-      "name": "ship_destroy/destroying/child_effects/explosion",
-      "scale": 1.0,
-      "velocityScale": 1.0
+      "name": "explosion/small/explosion",
+      "scale": 1.0
     },
     {
       "maxSpawnCount": 1,
       "minSpawnCount": 1,
-      "name": "ship_destroy/destroying/child_effects/spark",
-      "scale": 1.0,
-      "velocityScale": 1.0
+      "name": "explosion/small/spark",
+      "scale": 1.0
     }
   ],
-  "editorPath": "explosion/small",
+  "editorPath": "explosion",
   "g": 1.0,
   "isAlphaFromZero": false,
   "maxAlphaVelocity": 0.5,
@@ -70,7 +64,7 @@
   "minSpawnCount": 0,
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
-  "name": "effect",
+  "name": "small",
   "r": 1.0,
   "renderLayer": "DEFAULT_ADDITIVE",
   "soundEffects": [],

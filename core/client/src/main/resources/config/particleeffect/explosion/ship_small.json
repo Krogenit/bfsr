@@ -5,61 +5,53 @@
     {
       "maxSpawnCount": 1,
       "minSpawnCount": 1,
-      "name": "ship_destroy/small/child_effects/shockwave",
-      "scale": 1.0,
-      "velocityScale": 1.0
+      "name": "explosion/ship_small/shockwave",
+      "scale": 1.0
     },
     {
       "maxSpawnCount": 9,
       "minSpawnCount": 6,
       "name": "garbage/garbage_medium",
-      "scale": 1.0,
-      "velocityScale": 1.0
+      "scale": 1.0
     },
     {
       "maxSpawnCount": 1,
       "minSpawnCount": 1,
-      "name": "ship_destroy/small/child_effects/explosion",
-      "scale": 1.0,
-      "velocityScale": 1.0
+      "name": "explosion/ship_small/explosion",
+      "scale": 1.0
     },
     {
       "maxSpawnCount": 1,
       "minSpawnCount": 1,
-      "name": "ship_destroy/small/child_effects/spark",
-      "scale": 1.0,
-      "velocityScale": 1.0
+      "name": "explosion/ship_small/spark",
+      "scale": 1.0
     },
     {
       "maxSpawnCount": 1,
       "minSpawnCount": 1,
-      "name": "ship_destroy/small/child_effects/light",
-      "scale": 1.0,
-      "velocityScale": 1.0
+      "name": "explosion/ship_small/light",
+      "scale": 1.0
     },
     {
       "maxSpawnCount": 1,
       "minSpawnCount": 1,
-      "name": "ship_destroy/small/child_effects/smoke",
-      "scale": 1.0,
-      "velocityScale": 1.0
+      "name": "explosion/ship_small/smoke",
+      "scale": 1.0
     },
     {
       "maxSpawnCount": 12,
       "minSpawnCount": 8,
       "name": "garbage/garbage_small",
-      "scale": 1.0,
-      "velocityScale": 1.0
+      "scale": 1.0
     },
     {
       "maxSpawnCount": 6,
       "minSpawnCount": 2,
       "name": "garbage/ost",
-      "scale": 1.0,
-      "velocityScale": 1.0
+      "scale": 1.0
     }
   ],
-  "editorPath": "explosion/ship_small",
+  "editorPath": "explosion",
   "g": 1.0,
   "isAlphaFromZero": false,
   "maxAlphaVelocity": 0.5,
@@ -84,7 +76,7 @@
   "minSpawnCount": 0,
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
-  "name": "effect",
+  "name": "ship_small",
   "r": 1.0,
   "renderLayer": "DEFAULT_ADDITIVE",
   "soundEffects": [
