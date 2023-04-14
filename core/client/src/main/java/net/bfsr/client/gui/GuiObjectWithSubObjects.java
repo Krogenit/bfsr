@@ -100,4 +100,9 @@ public class GuiObjectWithSubObjects extends TexturedGuiObject {
             subObjects.get(i).updatePositionAndSize(width, height);
         }
     }
+
+    public void removeAllSubObjects() {
+        unregisterSubElements(gui);
+        subObjects.clear();
+    }
 }
