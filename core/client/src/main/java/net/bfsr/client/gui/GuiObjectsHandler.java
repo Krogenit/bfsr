@@ -1,5 +1,7 @@
 package net.bfsr.client.gui;
 
+import java.util.List;
+
 public interface GuiObjectsHandler {
     void registerGuiObject(GuiObject guiObject);
     void unregisterGuiObject(GuiObject guiObject);
@@ -17,5 +19,6 @@ public interface GuiObjectsHandler {
     void textInput(int key);
     void openContextMenu(GuiObject... objects);
     boolean isContextMenuOpened();
+    List<GuiObject> getGuiObjects();
     void clear();
 }

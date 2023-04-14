@@ -3,14 +3,15 @@ package net.bfsr.editor.gui.inspection;
 import lombok.Getter;
 import net.bfsr.client.gui.GuiObject;
 import net.bfsr.client.renderer.font.FontType;
+import net.bfsr.property.ComponentHolder;
 import net.bfsr.property.PropertiesHolder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class InspectionEntry<T extends PropertiesHolder> extends InspectionMinimizableGuiObject<T> {
+public class InspectionEntry<T extends PropertiesHolder> extends InspectionMinimizableGuiObject<T> implements ComponentHolder<T> {
     @Getter
-    protected final List<T> objects = new ArrayList<>();
+    protected final List<T> components = new ArrayList<>();
 
     public InspectionEntry(InspectionPanel<T> inspectionPanel, int width, int height, String name, FontType fontType, int fontSize, int stringYOffset) {
         super(inspectionPanel, width, height, name, fontType, fontSize, stringYOffset);
@@ -19,19 +20,20 @@ public class InspectionEntry<T extends PropertiesHolder> extends InspectionMinim
     }
 
     public void addObject(T object) {
-        for (int i = 0; i < objects.size(); i++) {
-            T t = objects.get(i);
+        for (int i = 0; i < components.size(); i++) {
+            T t = components.get(i);
             if (t.getClass() == object.getClass()) {
                 return;
             }
         }
 
-        objects.add(object);
+        components.add(object);
     }
 
+    @Override
     public T getComponentByType(Class<T> type) {
-        for (int i = 0; i < objects.size(); i++) {
-            T t = objects.get(i);
+        for (int i = 0; i < components.size(); i++) {
+            T t = components.get(i);
             if (t.getClass() == type) {
                 return t;
             }
@@ -74,8 +76,8 @@ public class InspectionEntry<T extends PropertiesHolder> extends InspectionMinim
     @Override
     protected void onNameChanged(String name) {
         super.onNameChanged(name);
-        for (int i = 0; i < objects.size(); i++) {
-            objects.get(i).setName(name);
+        for (int i = 0; i < components.size(); i++) {
+            components.get(i).setName(name);
         }
     }
 

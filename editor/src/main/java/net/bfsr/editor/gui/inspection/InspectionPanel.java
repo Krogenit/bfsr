@@ -8,6 +8,7 @@ import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.string.StringObject;
+import net.bfsr.editor.gui.component.DragTarget;
 import net.bfsr.editor.gui.component.MinimizableGuiObject;
 import net.bfsr.property.PropertiesHolder;
 import net.bfsr.util.MutableInt;
@@ -38,7 +39,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
     private boolean wantUnselect;
     @Setter
     @Getter
-    private AbstractGuiObject movableObject;
+    private InspectionEntry<T> movableObject;
 
     @Setter
     private Function<InspectionEntry<T>, Boolean> entryRightClickSupplier = (minimizableGuiObject) -> false;
@@ -107,6 +108,17 @@ public class InspectionPanel<T extends PropertiesHolder> {
 
         if (isMouseHover()) {
             wantUnselect = true;
+        }
+    }
+
+    public void onMouseLeftRelease() {
+        if (movableObject != null) {
+            GuiObject hoveredGuiObject = gui.getHoveredGuiObject();
+            if (hoveredGuiObject instanceof DragTarget dragTarget) {
+                if (dragTarget.canAcceptDraggable(movableObject)) {
+                    dragTarget.acceptDraggable(movableObject);
+                }
+            }
         }
     }
 

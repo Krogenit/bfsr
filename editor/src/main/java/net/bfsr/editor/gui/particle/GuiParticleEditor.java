@@ -347,6 +347,12 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     }
 
     @Override
+    public void onMouseLeftRelease() {
+        inspectionPanel.onMouseLeftRelease();
+        super.onMouseLeftRelease();
+    }
+
+    @Override
     public void update() {
         super.update();
         inspectionPanel.update();

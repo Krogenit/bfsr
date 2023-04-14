@@ -123,11 +123,12 @@ public class InputBox extends TexturedGuiObject {
                 selectAll();
                 lastDoubleClickTime = now;
             } else {
-                setTyping(true);
+                enableTyping();
             }
             lastSelectTime = now;
         } else {
             if (typing) {
+                disableTyping();
                 onUnselected();
             }
         }
@@ -138,19 +139,17 @@ public class InputBox extends TexturedGuiObject {
     @Override
     public void onOtherGuiObjectMouseLeftClick(GuiObject guiObject) {
         if (typing) {
+            disableTyping();
             onUnselected();
         }
-
-        setTyping(false);
     }
 
     @Override
     public void onOtherGuiObjectMouseRightClick(GuiObject guiObject) {
         if (typing) {
+            disableTyping();
             onUnselected();
         }
-
-        setTyping(false);
     }
 
     private void onUnselected() {
@@ -269,6 +268,7 @@ public class InputBox extends TexturedGuiObject {
                 stringObject.setString(newString);
             }
         } else if (key == GLFW.GLFW_KEY_ENTER) {
+            disableTyping();
             onUnselected();
         }
     }
@@ -386,7 +386,7 @@ public class InputBox extends TexturedGuiObject {
         stringObject.update();
 
         if (typing) {
-            if (mouseHover && Mouse.isLeftDown() && System.currentTimeMillis() - lastDoubleClickTime > timeBeforeSelectionAvailable) {
+            if (Mouse.isLeftDown() && System.currentTimeMillis() - lastDoubleClickTime > timeBeforeSelectionAvailable) {
                 float selectionPositionX = Mouse.getPosition().x - x - stringOffset.x;
                 cursorPositionEnd = stringObject.getCursorPositionInLine(selectionPositionX);
                 checkCursorOutOfBoundsPosition((int) selectionPositionX, 10);
@@ -481,17 +481,17 @@ public class InputBox extends TexturedGuiObject {
         return this;
     }
 
-    public void setTyping(boolean value) {
-        if (value) {
-            setCursorPositionByMouse();
-            showCursor();
-            Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
-        } else {
-            hideCursor();
-            cursorPosition = cursorPositionEnd = 0;
-        }
+    public void enableTyping() {
+        setCursorPositionByMouse();
+        showCursor();
+        Core.get().getSoundManager().play(new GuiSoundSource(SoundRegistry.buttonClick));
+        typing = true;
+    }
 
-        this.typing = value;
+    private void disableTyping() {
+        hideCursor();
+        cursorPosition = cursorPositionEnd = 0;
+        typing = false;
     }
 
     @Override

@@ -17,6 +17,8 @@ public abstract class Gui implements GuiObjectsHandler {
     @Getter
     protected final List<GuiObject> guiObjects = new ArrayList<>();
     private final List<GuiObject> contextMenu = new ArrayList<>();
+    @Getter
+    private GuiObject hoveredGuiObject;
 
     protected Gui(Gui parentGui) {
         this.parentGui = parentGui;
@@ -52,9 +54,9 @@ public abstract class Gui implements GuiObjectsHandler {
     public void update() {
         if (isContextMenuOpened()) {
             GuiUpdateUtils.setGuiObjectsHover(guiObjects, false);
-            GuiUpdateUtils.updateGuiObjectsHover(contextMenu);
+            hoveredGuiObject = GuiUpdateUtils.updateGuiObjectsHover(contextMenu);
         } else {
-            GuiUpdateUtils.updateGuiObjectsHover(guiObjects);
+            hoveredGuiObject = GuiUpdateUtils.updateGuiObjectsHover(guiObjects);
         }
 
         int size = guiObjects.size();

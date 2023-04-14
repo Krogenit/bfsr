@@ -14,7 +14,7 @@ import java.util.List;
 @SuppressWarnings("TransientFieldInNonSerializableClass")
 public class ChildParticleEffect implements PropertiesHolder {
     @Configurable
-    @Property(elementType = PropertyGuiElementType.MAIN_NAME_INPUT_BOX)
+    @Property(elementType = PropertyGuiElementType.MAIN_NAME_INPUT_BOX, receiveHandler = ParticleEffectReceiver.class)
     @Getter
     private String name;
     @Configurable

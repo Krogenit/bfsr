@@ -3,16 +3,19 @@ package net.bfsr.editor.gui.component;
 import net.bfsr.client.gui.SimpleGuiObject;
 import net.bfsr.client.gui.input.InputBox;
 import net.bfsr.client.renderer.font.FontType;
+import net.bfsr.editor.gui.ColorScheme;
 import net.bfsr.editor.property.ConverterUtils;
 import net.bfsr.editor.property.PropertyConverter;
+import net.bfsr.property.ComponentHolder;
 import net.bfsr.property.PropertiesHolder;
+import net.bfsr.property.Property;
+import net.bfsr.property.event.PropertyReceiver;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-
-import static net.bfsr.editor.gui.ColorScheme.*;
 
 public class PropertyInputBox<P extends PropertiesHolder> extends PropertyComponent<P> {
     protected final List<InputBox> inputBoxes = new ArrayList<>();
@@ -26,29 +29,43 @@ public class PropertyInputBox<P extends PropertiesHolder> extends PropertyCompon
         for (int i = 0; i < values.length; i++) {
             PropertyConverter converter = ConverterUtils.getConverter(types.get(i));
             String value = converter.toString(values[i]);
+            Field field = fields.get(i);
+            Property annotation = field.getAnnotation(Property.class);
+            Class<? extends PropertyReceiver> receiveHandler = annotation.receiveHandler();
+            try {
+                PropertyReceiver propertyReceiver = receiveHandler.getConstructor().newInstance();
 
-            InputBox inputBox = new InputBox(inputBoxWidth, height, "", FontType.CONSOLA, fontSize, 3, stringOffsetY, MAX_LINE_SIZE) {
-                @Override
-                public void onMouseScroll(float y) {
-                    if (isMouseHover()) {
-                        String string = getString();
-                        if (string.contains(".")) {
-                            setString((Float.parseFloat(string.isEmpty() ? "0" : string) + y) + "");
-                        } else {
-                            setString((Integer.parseInt(string.isEmpty() ? "0" : string) + (int) y) + "");
+                InputBoxPropertyReceiver inputBox = new InputBoxPropertyReceiver(inputBoxWidth, height, "", FontType.CONSOLA, fontSize, 3, stringOffsetY, MAX_LINE_SIZE) {
+                    @Override
+                    public void onMouseScroll(float y) {
+                        if (isMouseHover()) {
+                            String string = getString();
+                            if (string.contains(".")) {
+                                setString((Float.parseFloat(string.isEmpty() ? "0" : string) + y) + "");
+                            } else {
+                                setString((Integer.parseInt(string.isEmpty() ? "0" : string) + (int) y) + "");
+                            }
                         }
                     }
-                }
-            };
-            inputBox.setOnUnselectedRunnable(() -> unselectedConsumer.accept(inputBox.getString()));
-            inputBox.setColor(INPUT_COLOR_GRAY, INPUT_COLOR_GRAY, INPUT_COLOR_GRAY, 1.0f);
-            inputBox.setHoverColor(INPUT_COLOR_GRAY, INPUT_COLOR_GRAY, INPUT_COLOR_GRAY, 1.0f);
-            inputBox.setOutlineColor(INPUT_OUTLINE_COLOR_GRAY, INPUT_OUTLINE_COLOR_GRAY, INPUT_OUTLINE_COLOR_GRAY, 1.0f);
-            inputBox.setOutlineHoverColor(INPUT_OUTLINE_HOVER_COLOR_GRAY, INPUT_OUTLINE_HOVER_COLOR_GRAY, INPUT_OUTLINE_HOVER_COLOR_GRAY, 1.0f);
-            inputBox.setTextColor(TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, 1.0f);
-            inputBox.setString(value == null ? "" : value);
-            addSubObject(inputBox);
-            inputBoxes.add(inputBox);
+
+                    @Override
+                    public boolean canAcceptDraggable(ComponentHolder<? extends PropertiesHolder> componentHolder) {
+                        return propertyReceiver.canInsert(componentHolder);
+                    }
+
+                    @Override
+                    public void acceptDraggable(ComponentHolder<? extends PropertiesHolder> componentHolder) {
+                        setString(propertyReceiver.getValueForInputBox(componentHolder));
+                    }
+                };
+                inputBox.setOnUnselectedRunnable(() -> unselectedConsumer.accept(inputBox.getString()));
+                ColorScheme.setupInputBoxColors(inputBox);
+                inputBox.setString(value == null ? "" : value);
+                addSubObject(inputBox);
+                inputBoxes.add(inputBox);
+            } catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

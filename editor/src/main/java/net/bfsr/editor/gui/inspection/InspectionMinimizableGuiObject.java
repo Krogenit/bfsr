@@ -21,7 +21,7 @@ import static net.bfsr.editor.gui.ColorScheme.setupColors;
 public class InspectionMinimizableGuiObject<T extends PropertiesHolder> extends MinimizableGuiObject {
     protected final InspectionPanel<T> inspectionPanel;
 
-    private boolean moving;
+    private boolean moving, clicked;
     private boolean selected, wasSelected;
     protected final Vector2i selectPosition = new Vector2i();
     private InputBox inputBox;
@@ -84,7 +84,7 @@ public class InspectionMinimizableGuiObject<T extends PropertiesHolder> extends 
     public void update() {
         super.update();
 
-        if (selected && Mouse.isLeftDown() && selectPosition.lengthSquared() > 0 && !gui.isContextMenuOpened()) {
+        if (clicked && Mouse.isLeftDown() && selectPosition.lengthSquared() > 0) {
             Vector2f mousePosition = Mouse.getPosition();
             float moveThreshold = 40;
             if (mousePosition.distanceSquared(selectPosition.x, selectPosition.y) > moveThreshold) {
@@ -105,12 +105,6 @@ public class InspectionMinimizableGuiObject<T extends PropertiesHolder> extends 
     }
 
     @Override
-    public void onContextMenuClosed() {
-        Vector2f mousePosition = Mouse.getPosition();
-        selectPosition.set((int) mousePosition.x, (int) mousePosition.y);
-    }
-
-    @Override
     public boolean onMouseLeftClick() {
         wasSelected = selected;
 
@@ -124,8 +118,8 @@ public class InspectionMinimizableGuiObject<T extends PropertiesHolder> extends 
 
         Vector2f mousePosition = Mouse.getPosition();
         int mouseX = (int) mousePosition.x;
-        int mouseY = (int) mousePosition.y;
-        selectPosition.set(mouseX, mouseY);
+        selectPosition.set(mouseX, (int) mousePosition.y);
+        clicked = true;
 
         if (!selected && inputBox == null) {
             int selectOffsetX = canMaximize ? MINIMIZABLE_STRING_X_OFFSET : 0;
@@ -139,13 +133,13 @@ public class InspectionMinimizableGuiObject<T extends PropertiesHolder> extends 
 
     @Override
     public void onMouseLeftRelease() {
+        clicked = false;
+
         if (moving) {
             onMoved();
             moving = false;
             return;
         }
-
-        selectPosition.set(0, 0);
 
         if (!isMouseHover()) return;
 
@@ -171,7 +165,7 @@ public class InspectionMinimizableGuiObject<T extends PropertiesHolder> extends 
                     inputBox.setString(getName());
                     subObjectsRepositionConsumer.setup(inputBox, selectOffsetX, 0);
                     gui.registerGuiObject(inputBox);
-                    inputBox.setTyping(true);
+                    inputBox.enableTyping();
                     selected = false;
                 } else {
                     onSelected();

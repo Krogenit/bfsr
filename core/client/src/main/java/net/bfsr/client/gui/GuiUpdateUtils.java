@@ -8,10 +8,14 @@ public final class GuiUpdateUtils {
             T guiObject = guiObjects.get(i);
             guiObject.updateMouseHover();
             guiObject.setMouseHover(value);
+
+            if (guiObject instanceof GuiObjectsHandler guiObjectsHandler) {
+                setGuiObjectsHover(guiObjectsHandler.getGuiObjects(), value);
+            }
         }
     }
 
-    public static <T extends GuiObject> void updateGuiObjectsHover(List<T> guiObjects) {
+    public static <T extends GuiObject> T updateGuiObjectsHover(List<T> guiObjects) {
         int size = guiObjects.size();
 
         T hoverObject = null;
@@ -23,7 +27,13 @@ public final class GuiUpdateUtils {
                     hoverObject.setMouseHover(false);
                 }
                 hoverObject = guiObject;
+
+                if (guiObject instanceof GuiObjectsHandler guiObjectsHandler) {
+                    hoverObject = (T) updateGuiObjectsHover(guiObjectsHandler.getGuiObjects());
+                }
             }
         }
+
+        return hoverObject;
     }
 }

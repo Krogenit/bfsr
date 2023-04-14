@@ -40,10 +40,8 @@ public class GuiObjectsContainer extends GuiObjectWithSubObjects implements GuiO
         super.updateMouseHover();
 
         if (isContextMenuOpened() || !isMouseHover()) {
-            GuiUpdateUtils.setGuiObjectsHover(guiObjects, false);
             scroll.setMouseHover(false);
         } else {
-            GuiUpdateUtils.updateGuiObjectsHover(guiObjects);
             scroll.updateMouseHover();
         }
     }
