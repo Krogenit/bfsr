@@ -191,7 +191,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
             lastHoverObject = hoverObject;
             hoverObject = null;
 
-            findHoverObjectToMaximize(gui.getGuiObjects());
+            findHoverObjectToMaximize(gui.getGuiObjects(), (int) Mouse.getPosition().y);
             disableCurrentGuiObjectHover();
         }
     }
@@ -205,10 +205,11 @@ public class InspectionPanel<T extends PropertiesHolder> {
         }
     }
 
-    private <T extends GuiObject> void findHoverObjectToMaximize(List<T> guiObjects) {
+    private <T extends GuiObject> void findHoverObjectToMaximize(List<T> guiObjects, int mouseY) {
         for (int i = 0; i < guiObjects.size(); i++) {
             T guiObject = guiObjects.get(i);
-            if (guiObject.isMouseHover() && guiObject instanceof MinimizableGuiObject minimizableGuiObject && !minimizableGuiObject.isMaximized() && minimizableGuiObject.isCanMaximize()) {
+            if (guiObject.isMouseHover() && guiObject instanceof MinimizableGuiObject minimizableGuiObject && !minimizableGuiObject.isMaximized() && minimizableGuiObject.isCanMaximize()
+                    && mouseY >= guiObject.getY() + exactObjectSelectionOffsetY && mouseY < guiObject.getY() + elementHeight - exactObjectSelectionOffsetY) {
                 hoverObject = minimizableGuiObject;
 
                 if (lastHoverObject != hoverObject) {
@@ -223,7 +224,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
             }
 
             if (guiObject instanceof GuiObjectWithSubObjects guiObjectWithSubObjects1) {
-                findHoverObjectToMaximize(guiObjectWithSubObjects1.getSubObjects());
+                findHoverObjectToMaximize(guiObjectWithSubObjects1.getSubObjects(), mouseY);
             }
         }
     }
