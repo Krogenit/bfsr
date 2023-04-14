@@ -73,9 +73,6 @@ public class ParticleEffect implements PropertiesHolder {
     @Property(elementType = PropertyGuiElementType.ARRAY)
     private List<ParticleSoundEffect> soundEffects;
     @Configurable
-    @Property(elementType = PropertyGuiElementType.ARRAY)
-    private List<ChildParticleEffect> childEffects;
-    @Configurable
     @Property(name = "srcSizeMultiplayer", fieldsAmount = 2)
     private float sourceSizeXMultiplier, sourceSizeYMultiplier;
     @Configurable
@@ -111,7 +108,6 @@ public class ParticleEffect implements PropertiesHolder {
         setName("Particle Effect");
         texturePaths = new ArrayList<>();
         texturePaths.add(TextureRegister.particleShipEngineBack.getPath());
-        childEffects = new ArrayList<>();
         minSpawnCount = maxSpawnCount = 1;
         setColor(1.0f, 1.0f, 1.0f, 1.0f);
         setMinAlphaVelocity(0.5f);
@@ -196,41 +192,11 @@ public class ParticleEffect implements PropertiesHolder {
             }
         }
 
-        childEffectsInstances.clear();
-        if (childEffects == null) childEffects = new ArrayList<>();
-        if (childEffects.size() > 0) {
-            for (int i = 0; i < childEffects.size(); i++) {
-                ChildParticleEffect childParticleEffect = childEffects.get(i);
-                ParticleEffect effect = ParticleEffectsRegistry.INSTANCE.getEffect(childParticleEffect.getName());
-                if (effect != null) {
-                    childEffectsInstances.add(effect);
-                    int minSpawnCount = childParticleEffect.getMinSpawnCount();
-                    int maxSpawnCount = childParticleEffect.getMaxSpawnCount();
-                    float scale = childParticleEffect.getScale();
-                    if (maxSpawnCount > minSpawnCount) {
-                        spawnRunnables.add((x, y, sizeX, sizeY, velocityX, velocityY) -> {
-                            int spawnCount = rand.nextInt(maxSpawnCount - minSpawnCount + 1) + minSpawnCount;
-                            for (int j = 0; j < spawnCount; j++) {
-                                effect.play(x + localXSupplier.get(), y + localYSupplier.get(), sizeXFunc.apply(sizeX) * scale,
-                                        sizeYFunc.apply(sizeY) * scale, velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY));
-                            }
-                        });
-                    } else {
-                        if (minSpawnCount > 1) {
-                            spawnRunnables.add((x, y, sizeX, sizeY, velocityX, velocityY) -> {
-                                for (int j = 0; j < minSpawnCount; j++) {
-                                    effect.play(x + localXSupplier.get(), y + localYSupplier.get(), sizeXFunc.apply(sizeX) * scale,
-                                            sizeYFunc.apply(sizeY) * scale, velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY));
-                                }
-                            });
-                        } else if (minSpawnCount > 0) {
-                            spawnRunnables.add((x, y, sizeX, sizeY, velocityX, velocityY) -> effect.play(x + localXSupplier.get(), y + localYSupplier.get(), sizeXFunc.apply(sizeX) * scale,
-                                    sizeYFunc.apply(sizeY) * scale, velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY)));
-                        }
-                    }
-                } else {
-                    log.error("Couldn't find particle effect {}", childParticleEffect.getName());
-                }
+        if (childEffectsInstances.size() > 0) {
+            for (int i = 0; i < childEffectsInstances.size(); i++) {
+                ParticleEffect effect = childEffectsInstances.get(i);
+                spawnRunnables.add((x, y, sizeX, sizeY, velocityX, velocityY) -> effect.play(x + localXSupplier.get(), y + localYSupplier.get(), sizeXFunc.apply(sizeX),
+                        sizeYFunc.apply(sizeY), velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY)));
             }
         }
     }
@@ -314,6 +280,10 @@ public class ParticleEffect implements PropertiesHolder {
 
     }
 
+    public void addChild(ParticleEffect particleEffect) {
+        childEffectsInstances.add(particleEffect);
+    }
+
     public boolean isAlive() {
         for (int i = 0; i < childEffectsInstances.size(); i++) {
             ParticleEffect effect = childEffectsInstances.get(i);
@@ -328,6 +298,10 @@ public class ParticleEffect implements PropertiesHolder {
 
     public String getPath() {
         return editorPath.isEmpty() ? name : editorPath + "/" + name;
+    }
+
+    public void clearChildEffects() {
+        childEffectsInstances.clear();
     }
 
     public void clear() {

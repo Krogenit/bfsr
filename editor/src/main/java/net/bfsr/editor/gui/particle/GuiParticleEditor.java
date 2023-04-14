@@ -41,7 +41,7 @@ import static net.bfsr.editor.gui.ColorScheme.*;
 
 @Log4j2
 public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
-    private ParticleEffect selectedParticleEffect;
+    private InspectionEntry<ParticleEffect> selectedEntry;
     private final ConfigurableGameObject gameObject = new ConfigurableGameObject();
 
     private final int leftPanelWidth = 300;
@@ -291,7 +291,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
 
     private void remove(InspectionEntry<ParticleEffect> buttonObjectHolder) {
         propertiesPanel.close();
-        selectedParticleEffect = null;
+        selectedEntry = null;
         particleEffects.remove(buttonObjectHolder);
         ParticleEffect particleEffect = buttonObjectHolder.getComponentByType(ParticleEffect.class);
         if (particleEffect != null) {
@@ -301,9 +301,9 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
 
     private void selectEntry(InspectionEntry<ParticleEffect> buttonObjectHolder) {
         if (buttonObjectHolder == null) {
-            if (selectedParticleEffect != null) {
+            if (selectedEntry != null) {
                 propertiesPanel.applyProperties();
-                selectedParticleEffect = null;
+                selectedEntry = null;
             }
 
             propertiesPanel.close();
@@ -313,13 +313,13 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
 
         ParticleEffect particleEffect = buttonObjectHolder.getComponentByType(ParticleEffect.class);
 
-        if (selectedParticleEffect != null) {
+        if (selectedEntry != null) {
             propertiesPanel.applyProperties();
         }
 
         propertiesPanel.close();
 
-        selectedParticleEffect = particleEffect;
+        selectedEntry = buttonObjectHolder;
 
         propertiesPanel.initElements(() -> save(buttonObjectHolder), () -> remove(buttonObjectHolder));
         propertiesPanel.add(gameObject, gameObject.getName());
@@ -357,6 +357,32 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
         super.update();
         inspectionPanel.update();
         testShip.setLifeTime(0);
+
+        if (selectedEntry != null && playing && !Core.get().isPaused()) {
+            testShip.setPosition(gameObject.getPosX(), gameObject.getPosY());
+            testShip.setScale(gameObject.getSizeX(), gameObject.getSizeY());
+            testShip.setVelocity(gameObject.getVelocityX(), gameObject.getVelocityY());
+            propertiesPanel.applyProperties();
+            ParticleEffect particleEffect = selectedEntry.getComponentByType(ParticleEffect.class);
+            if (particleEffect != null) {
+                findChild(particleEffect, selectedEntry);
+                particleEffect.init();
+                particleEffect.emit(gameObject.getPosX(), gameObject.getPosY(), gameObject.getSizeX(), gameObject.getSizeY(), gameObject.getVelocityX(), gameObject.getVelocityY());
+            }
+        }
+    }
+
+    private void findChild(ParticleEffect particleEffect, InspectionEntry<ParticleEffect> inspectionEntry) {
+        particleEffect.clearChildEffects();
+        List<AbstractGuiObject> subObjects = inspectionEntry.getSubObjects();
+        for (int i = 0; i < subObjects.size(); i++) {
+            InspectionEntry<ParticleEffect> childEntry = (InspectionEntry<ParticleEffect>) subObjects.get(i);
+            ParticleEffect componentByType = childEntry.getComponentByType(ParticleEffect.class);
+            if (componentByType != null) {
+                particleEffect.addChild(componentByType);
+                findChild(componentByType, childEntry);
+            }
+        }
     }
 
     @Override
@@ -368,14 +394,6 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     @Override
     public void render() {
         if (propertiesPanel.hasComponents()) {
-            if (selectedParticleEffect != null && playing && !Core.get().isPaused()) {
-                testShip.setPosition(gameObject.getPosX(), gameObject.getPosY());
-                testShip.setScale(gameObject.getSizeX(), gameObject.getSizeY());
-                testShip.setVelocity(gameObject.getVelocityX(), gameObject.getVelocityY());
-                propertiesPanel.applyProperties();
-                selectedParticleEffect.init();
-                selectedParticleEffect.emit(gameObject.getPosX(), gameObject.getPosY(), gameObject.getSizeX(), gameObject.getSizeY(), gameObject.getVelocityX(), gameObject.getVelocityY());
-            }
             propertiesPanel.render();
             GUIRenderer.get().add(inspectionPanel.getWidth(), 0, width, topPanelHeight, BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
         } else {
@@ -389,11 +407,14 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
 
     @Override
     public void setPlaying(boolean value) {
-        if (selectedParticleEffect != null) {
-            if (playing) {
-                selectedParticleEffect.clear();
-            } else {
-                selectedParticleEffect.create();
+        if (selectedEntry != null) {
+            ParticleEffect particleEffect = selectedEntry.getComponentByType(ParticleEffect.class);
+            if (particleEffect != null) {
+                if (playing) {
+                    particleEffect.clear();
+                } else {
+                    particleEffect.create();
+                }
             }
         }
 
@@ -407,7 +428,12 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
 
     @Override
     public void setPause(boolean value) {
-        if (selectedParticleEffect != null && Core.get().isPaused()) selectedParticleEffect.create();
+        if (selectedEntry != null && Core.get().isPaused()) {
+            ParticleEffect particleEffect = selectedEntry.getComponentByType(ParticleEffect.class);
+            if (particleEffect != null) {
+                particleEffect.create();
+            }
+        }
         Core.get().setPaused(value);
     }
 
