@@ -23,7 +23,6 @@ import net.bfsr.editor.gui.control.PauseButton;
 import net.bfsr.editor.gui.control.PlayButton;
 import net.bfsr.editor.gui.control.Playble;
 import net.bfsr.editor.gui.inspection.InspectionEntry;
-import net.bfsr.editor.gui.inspection.InspectionMinimizableGuiObject;
 import net.bfsr.editor.gui.inspection.InspectionPanel;
 import net.bfsr.editor.gui.property.PropertiesPanel;
 import net.bfsr.util.RunnableUtils;
@@ -211,7 +210,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
             InspectionEntry<ParticleEffect> inspectionEntry = (InspectionEntry<ParticleEffect>) subObjects.get(i);
             if (inspectionEntry.getName().equals(particleEffect.getName())) {
                 findEntry = true;
-                inspectionEntry.addObject(particleEffect);
+                inspectionEntry.addComponent(particleEffect);
                 particleEffects.add(inspectionEntry);
                 break;
             }
@@ -276,7 +275,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     private void save(InspectionEntry<ParticleEffect> buttonObjectHolder) {
         GuiObjectWithSubObjects parent = buttonObjectHolder.getParent();
         String editorPath = "";
-        while (parent instanceof InspectionMinimizableGuiObject<?> minimizableGuiObject) {
+        while (parent instanceof InspectionEntry<?> minimizableGuiObject) {
             editorPath = minimizableGuiObject.getName() + (editorPath.isEmpty() ? editorPath : "/" + editorPath);
             parent = minimizableGuiObject.getParent();
         }

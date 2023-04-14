@@ -89,7 +89,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
     public InspectionEntry<T> createEntry(String name, T... objects) {
         InspectionEntry<T> entry = createEntry(name);
         for (int i = 0; i < objects.length; i++) {
-            entry.addObject(objects[i]);
+            entry.addComponent(objects[i]);
         }
         return entry;
     }
@@ -169,7 +169,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
         for (int i = 0; i < guiObjects.size(); i++) {
             AbstractGuiObject guiObject = guiObjects.get(i);
 
-            if (guiObject instanceof InspectionMinimizableGuiObject<?> inspectionGuiObject) {
+            if (guiObject instanceof InspectionEntry<?> inspectionGuiObject) {
                 width.set(Math.max(width.get(), inspectionGuiObject.getStringObject().getX() + inspectionGuiObject.getStringObject().getWidth() - objectsContainer.getX()));
             }
 
@@ -265,12 +265,12 @@ public class InspectionPanel<T extends PropertiesHolder> {
         return null;
     }
 
-    public boolean isInHierarchy(GuiObjectWithSubObjects hierarchy, InspectionMinimizableGuiObject<T> guiObject) {
+    public boolean isInHierarchy(GuiObjectWithSubObjects hierarchy, InspectionEntry<T> guiObject) {
         GuiObjectWithSubObjects parent = guiObject.getParent();
         while (parent != null) {
             if (parent == hierarchy) return true;
 
-            if (parent instanceof InspectionMinimizableGuiObject<?> inspectionMinimizableGuiObject) {
+            if (parent instanceof InspectionEntry<?> inspectionMinimizableGuiObject) {
                 parent = inspectionMinimizableGuiObject.getParent();
             } else {
                 return false;
@@ -280,22 +280,22 @@ public class InspectionPanel<T extends PropertiesHolder> {
         return false;
     }
 
-    public InspectionMinimizableGuiObject<T> getMouseHoverObject() {
+    public InspectionEntry<T> getMouseHoverObject() {
         return getMouseHoverObject(objectsContainer);
     }
 
-    private InspectionMinimizableGuiObject<T> getMouseHoverObject(GuiObjectWithSubObjects guiObjectWithSubObjects) {
+    private InspectionEntry<T> getMouseHoverObject(GuiObjectWithSubObjects guiObjectWithSubObjects) {
         List<AbstractGuiObject> subObjects = guiObjectWithSubObjects.getSubObjects();
         for (int i = 0; i < subObjects.size(); i++) {
             AbstractGuiObject guiObject = subObjects.get(i);
 
-            if (guiObject instanceof InspectionMinimizableGuiObject<?> inspectionHolder) {
+            if (guiObject instanceof InspectionEntry<?> inspectionHolder) {
                 if (inspectionHolder.isIntersectsWithMouse()) {
-                    return (InspectionMinimizableGuiObject<T>) inspectionHolder;
+                    return (InspectionEntry<T>) inspectionHolder;
                 }
 
                 if (guiObject instanceof InspectionEntry<?> inspectionEntry && inspectionEntry.isMaximized()) {
-                    InspectionMinimizableGuiObject<T> objectWithSubObjects = getMouseHoverObject(inspectionEntry);
+                    InspectionEntry<T> objectWithSubObjects = getMouseHoverObject(inspectionEntry);
                     if (objectWithSubObjects != null) {
                         return objectWithSubObjects;
                     }
@@ -306,7 +306,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
         return null;
     }
 
-    public void addSubObject(InspectionMinimizableGuiObject<T> object) {
+    public void addSubObject(InspectionEntry<T> object) {
         object.setParent(objectsContainer);
         objectsContainer.addSubObject(object);
     }
