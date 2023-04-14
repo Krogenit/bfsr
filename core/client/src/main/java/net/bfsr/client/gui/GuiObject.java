@@ -24,7 +24,6 @@ public interface GuiObject extends Scrollable {
     void onUnregistered(GuiObjectsHandler gui);
     boolean isIntersectsWithMouse();
     void updatePositionAndSize(int width, int height);
-    boolean isMouseWasHover();
     boolean isMouseHover();
     void setMouseHover(boolean value);
     void onMouseStopHover();

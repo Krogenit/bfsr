@@ -46,10 +46,6 @@ public class SimpleGuiObject extends AbstractGuiObject {
     @Override
     public void update() {
         updateLastPosition();
-
-        if (!mouseWasHover && mouseHover) {
-            onMouseHover();
-        }
     }
 
     protected void updateLastPosition() {
@@ -59,11 +55,7 @@ public class SimpleGuiObject extends AbstractGuiObject {
 
     @Override
     public void updateMouseHover() {
-        boolean mouseHover = isIntersectsWithMouse();
-        setMouseHover(mouseHover);
-        if (mouseWasHover && !mouseHover) {
-            onMouseStopHover();
-        }
+        setMouseHover(isIntersectsWithMouse());
     }
 
     @Override

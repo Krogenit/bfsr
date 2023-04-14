@@ -13,9 +13,8 @@ public abstract class AbstractGuiObject implements GuiObject {
     protected BiFunction<Integer, Integer, Integer> widthResizeFunction = (width, height) -> getWidth();
     protected BiFunction<Integer, Integer, Integer> heightResizeFunction = (width, height) -> getHeight();
     @Getter
+    @Setter
     protected boolean mouseHover;
-    @Getter
-    protected boolean mouseWasHover;
     @Setter
     protected Supplier<Boolean> onLeftClickSupplier = () -> false;
     @Setter
@@ -148,12 +147,6 @@ public abstract class AbstractGuiObject implements GuiObject {
 
     @Override
     public void onContextMenuClosed() {}
-
-    @Override
-    public void setMouseHover(boolean value) {
-        this.mouseWasHover = this.mouseHover;
-        this.mouseHover = value;
-    }
 
     public abstract AbstractGuiObject setPosition(int x, int y);
 

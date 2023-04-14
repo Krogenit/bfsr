@@ -52,11 +52,20 @@ public abstract class Gui implements GuiObjectsHandler {
 
     @Override
     public void update() {
+        GuiObject hoveredObject;
         if (isContextMenuOpened()) {
-            GuiUpdateUtils.setGuiObjectsHover(guiObjects, false);
-            hoveredGuiObject = GuiUpdateUtils.updateGuiObjectsHover(hoveredGuiObject, contextMenu);
+            hoveredObject = GuiUpdateUtils.updateGuiObjectsHover(hoveredGuiObject, contextMenu);
         } else {
-            hoveredGuiObject = GuiUpdateUtils.updateGuiObjectsHover(hoveredGuiObject, guiObjects);
+            hoveredObject = GuiUpdateUtils.updateGuiObjectsHover(hoveredGuiObject, guiObjects);
+        }
+
+        if (hoveredObject != hoveredGuiObject) {
+            if (hoveredGuiObject != null) {
+                hoveredGuiObject.onMouseStopHover();
+            }
+
+            hoveredGuiObject = hoveredObject;
+            hoveredGuiObject.onMouseHover();
         }
 
         int size = guiObjects.size();
