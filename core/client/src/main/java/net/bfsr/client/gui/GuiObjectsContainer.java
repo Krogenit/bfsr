@@ -127,7 +127,7 @@ public class GuiObjectsContainer extends GuiObjectWithSubObjects implements GuiO
 
     @Override
     public void onMouseScroll(float y) {
-        if (isMouseHover()) {
+        if (isIntersectsWithMouse()) {
             scroll.onMouseScroll(y);
             for (int i = 0; i < guiObjects.size(); i++) {
                 guiObjects.get(i).onMouseScroll(y);

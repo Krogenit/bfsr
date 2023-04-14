@@ -15,25 +15,30 @@ public final class GuiUpdateUtils {
         }
     }
 
-    public static <T extends GuiObject> T updateGuiObjectsHover(List<T> guiObjects) {
+    public static <T extends GuiObject> T updateGuiObjectsHover(T hoveredObject, List<T> guiObjects) {
         int size = guiObjects.size();
 
-        T hoverObject = null;
         for (int i = 0; i < size; i++) {
             T guiObject = guiObjects.get(i);
-            guiObject.updateMouseHover();
-            if (guiObject.isMouseHover()) {
-                if (hoverObject != null) {
-                    hoverObject.setMouseHover(false);
-                }
-                hoverObject = guiObject;
 
-                if (guiObject instanceof GuiObjectsHandler guiObjectsHandler) {
-                    hoverObject = (T) updateGuiObjectsHover(guiObjectsHandler.getGuiObjects());
+            boolean hoveredUpdated = false;
+            if (guiObject instanceof GuiObjectsHandler guiObjectsHandler) {
+                GuiObject newHoveredObject = updateGuiObjectsHover(hoveredObject, guiObjectsHandler.getGuiObjects());
+                if (newHoveredObject != guiObject) {
+                    hoveredObject = guiObject;
+                    hoveredUpdated = true;
                 }
+            }
+
+            guiObject.updateMouseHover();
+            if (!hoveredUpdated && guiObject.isMouseHover()) {
+                if (hoveredObject != null && hoveredObject != guiObject) {
+                    hoveredObject.setMouseHover(false);
+                }
+                hoveredObject = guiObject;
             }
         }
 
-        return hoverObject;
+        return hoveredObject;
     }
 }

@@ -54,9 +54,9 @@ public abstract class Gui implements GuiObjectsHandler {
     public void update() {
         if (isContextMenuOpened()) {
             GuiUpdateUtils.setGuiObjectsHover(guiObjects, false);
-            hoveredGuiObject = GuiUpdateUtils.updateGuiObjectsHover(contextMenu);
+            hoveredGuiObject = GuiUpdateUtils.updateGuiObjectsHover(hoveredGuiObject, contextMenu);
         } else {
-            hoveredGuiObject = GuiUpdateUtils.updateGuiObjectsHover(guiObjects);
+            hoveredGuiObject = GuiUpdateUtils.updateGuiObjectsHover(hoveredGuiObject, guiObjects);
         }
 
         int size = guiObjects.size();
