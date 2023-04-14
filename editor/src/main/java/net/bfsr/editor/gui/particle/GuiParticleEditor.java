@@ -35,6 +35,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 import static net.bfsr.editor.gui.ColorScheme.*;
@@ -162,14 +163,14 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
 
     private void initParticleEffects() {
         Collection<ParticleEffect> allEffects = ParticleEffectsRegistry.INSTANCE.getAllEffects();
-        for (ParticleEffect particleEffect : allEffects) {
+        allEffects.stream().sorted(Comparator.comparingInt(ParticleEffect::getTreeIndex)).forEach(particleEffect -> {
             String editorPath = particleEffect.getEditorPath();
             if (editorPath != null && !editorPath.isEmpty()) {
                 addParticleEffectToEntry(buildEntryPath(editorPath), particleEffect);
             } else {
                 inspectionPanel.addSubObject(createParticleEffectEntry(particleEffect));
             }
-        }
+        });
 
         inspectionPanel.updatePositions();
     }
@@ -283,6 +284,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
         propertiesPanel.applyProperties();
         ParticleEffect particleEffect = buttonObjectHolder.getComponentByType(ParticleEffect.class);
         particleEffect.setEditorPath(editorPath);
+        particleEffect.setTreeIndex(buttonObjectHolder.getParent().getSubObjects().indexOf(buttonObjectHolder));
         ParticleEffectsRegistry.INSTANCE.add(particleEffect);
         File folder = ParticleEffectsRegistry.INSTANCE.getEffectsFolder();
         File effectFolder = new File(folder, Paths.get(editorPath).toString());

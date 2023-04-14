@@ -80,6 +80,10 @@ public class ParticleEffect implements PropertiesHolder {
     private float sourceVelocityXMultiplier, sourceVelocityYMultiplier;
     @Configurable
     private String editorPath;
+    @Configurable
+    @Getter
+    @Setter
+    private int treeIndex;
 
     private transient Texture[] textures;
     private transient float spawnTime;
