@@ -54,21 +54,21 @@ public class InspectionEntry<T extends PropertiesHolder> extends InspectionMinim
 
     @Override
     public void onOtherGuiObjectMouseLeftClick(GuiObject guiObject) {
-        if (!inspectionPanel.isMouseHover()) return;
+        if (!inspectionPanel.isIntersectsWithMouse()) return;
 
         super.onOtherGuiObjectMouseLeftClick(guiObject);
     }
 
     @Override
     public void onOtherGuiObjectMouseRightClick(GuiObject guiObject) {
-        if (!inspectionPanel.isMouseHover()) return;
+        if (!inspectionPanel.isIntersectsWithMouse()) return;
 
         super.onOtherGuiObjectMouseRightClick(guiObject);
     }
 
     @Override
     public boolean onMouseLeftClick() {
-        if (!inspectionPanel.isMouseHover()) return false;
+        if (!inspectionPanel.isIntersectsWithMouse()) return false;
 
         return super.onMouseLeftClick();
     }
