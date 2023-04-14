@@ -13,6 +13,7 @@ import net.bfsr.client.particle.ParticleEffectsRegistry;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.settings.Option;
 import net.bfsr.client.util.PathHelper;
 import net.bfsr.config.ConfigLoader;
 import net.bfsr.editor.ConfigurableGameObject;
@@ -56,7 +57,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     private final List<InspectionEntry<ParticleEffect>> particleEffects = new ArrayList<>();
     private final int contextMenuStringXOffset = 8;
     private final InspectionPanel<ParticleEffect> inspectionPanel = new InspectionPanel<>(this, "Particle Effects", leftPanelWidth, fontType, fontSize, stringYOffset);
-    private final PropertiesPanel propertiesPanel = new PropertiesPanel(this, propertiesContainerWidth, fontType, fontSize, stringYOffset);
+    private final PropertiesPanel propertiesPanel = new PropertiesPanel(this, propertiesContainerWidth, fontType, fontSize, stringXOffset, stringYOffset, contextMenuStringXOffset);
     private final Ship testShip = new ShipHumanSmall0(Core.get().getWorld(), -1, 0, 0, 0);
 
     @Override
@@ -74,6 +75,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
         y = 0;
 
         initInspectionPanel(x, y);
+        propertiesPanel.initElements();
 
         gameObject.setDefaultValues();
         testShip.init();
@@ -321,7 +323,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
 
         selectedEntry = buttonObjectHolder;
 
-        propertiesPanel.initElements(() -> save(buttonObjectHolder), () -> remove(buttonObjectHolder));
+        propertiesPanel.open(() -> save(buttonObjectHolder), () -> remove(buttonObjectHolder));
         propertiesPanel.add(gameObject, gameObject.getName());
 
         if (particleEffect != null) {
@@ -416,6 +418,11 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
                     particleEffect.create();
                 }
             }
+        }
+
+        if (value) {
+            Option.CAMERA_FOLLOW_PLAYER.setValue(false);
+            Core.get().getRenderer().getCamera().getPosition().set(0);
         }
 
         this.playing = value;
