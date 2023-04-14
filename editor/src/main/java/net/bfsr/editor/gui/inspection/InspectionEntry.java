@@ -31,7 +31,7 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
     @Getter
     protected GuiObjectWithSubObjects parent;
 
-    private boolean moving, clicked;
+    private boolean clicked;
     private boolean selected, wasSelected;
     protected final Vector2i selectPosition = new Vector2i();
     private InputBox inputBox;
@@ -44,7 +44,6 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
         setOnMaximizeRunnable(inspectionPanel::updatePositions);
         setOnMinimizeRunnable(inspectionPanel::updatePositions);
     }
-
 
     @Override
     public void onUnregistered(GuiObjectsHandler gui) {
@@ -76,23 +75,7 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
 
     @Override
     protected void onMoved() {
-        if (inspectionPanel.isIntersectsWithMouse()) {
-            InspectionEntry<T> inspectionGuiObject = inspectionPanel.getMouseHoverObject();
-            if (inspectionGuiObject != null) {
-                if (inspectionGuiObject != this && !inspectionPanel.isInHierarchy(this, inspectionGuiObject)) {
-                    parent.removeSubObject(this);
-                    inspectionGuiObject.addSubObject(this);
-                    inspectionGuiObject.maximize();
-                    inspectionPanel.updatePositions();
-                }
-            } else {
-                parent.removeSubObject(this);
-                inspectionPanel.addSubObject(this);
-                inspectionPanel.updatePositions();
-            }
-        }
-
-        inspectionPanel.setMovableObject(null);
+        inspectionPanel.onEntryMoved(this);
     }
 
     @Override
@@ -104,7 +87,6 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
             float moveThreshold = 40;
             if (mousePosition.distanceSquared(selectPosition.x, selectPosition.y) > moveThreshold) {
                 onStartMoving();
-                moving = true;
             }
         }
     }
@@ -160,12 +142,6 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
     @Override
     public void onMouseLeftRelease() {
         clicked = false;
-
-        if (moving) {
-            onMoved();
-            moving = false;
-            return;
-        }
 
         if (!isMouseHover()) return;
 

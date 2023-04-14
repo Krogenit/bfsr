@@ -113,12 +113,34 @@ public class InspectionPanel<T extends PropertiesHolder> {
 
     public void onMouseLeftRelease() {
         if (movableObject != null) {
-            GuiObject hoveredGuiObject = gui.getHoveredGuiObject();
-            if (hoveredGuiObject instanceof DragTarget dragTarget) {
-                if (dragTarget.canAcceptDraggable(movableObject)) {
-                    dragTarget.acceptDraggable(movableObject);
+            if (isIntersectsWithMouse()) {
+                onEntryMoved(movableObject);
+            } else {
+                GuiObject hoveredGuiObject = gui.getHoveredGuiObject();
+                if (hoveredGuiObject instanceof DragTarget dragTarget) {
+                    if (dragTarget.canAcceptDraggable(movableObject)) {
+                        dragTarget.acceptDraggable(movableObject);
+                    }
                 }
             }
+
+            setMovableObject(null);
+        }
+    }
+
+    public void onEntryMoved(InspectionEntry<T> entry) {
+        InspectionEntry<T> inspectionGuiObject = getMouseHoverObject();
+        if (inspectionGuiObject != null) {
+            if (inspectionGuiObject != entry && !isInHierarchy(entry, inspectionGuiObject)) {
+                entry.getParent().removeSubObject(entry);
+                inspectionGuiObject.addSubObject(entry);
+                inspectionGuiObject.maximize();
+                updatePositions();
+            }
+        } else {
+            entry.getParent().removeSubObject(entry);
+            addSubObject(entry);
+            updatePositions();
         }
     }
 
