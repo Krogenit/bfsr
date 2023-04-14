@@ -29,6 +29,8 @@ public final class ColorScheme {
 
     public static final Vector4f MINIMIZABLE_COLOR = new Vector4f(0.3f, 0.3f, 0.3f, 0.5f);
 
+    public static final Vector4f SELECTION_BLUE_COLOR = new Vector4f(35 / 255.0f, 74 / 255.0f, 108 / 255.0f, 1.0f);
+
     public static MinimizableGuiObject setupColors(MinimizableGuiObject object) {
         object.setTextColor(TEXT_COLOR).setHoverColor(MINIMIZABLE_COLOR);
         return object;

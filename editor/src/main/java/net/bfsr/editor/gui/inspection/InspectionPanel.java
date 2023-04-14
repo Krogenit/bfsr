@@ -20,8 +20,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static net.bfsr.editor.gui.ColorScheme.TEXT_COLOR;
-import static net.bfsr.editor.gui.ColorScheme.setupButtonColors;
+import static net.bfsr.editor.gui.ColorScheme.*;
 
 public class InspectionPanel<T extends PropertiesHolder> {
     private static final long HOVER_TIME_FOR_MAXIMIZE = 500L;
@@ -146,7 +145,12 @@ public class InspectionPanel<T extends PropertiesHolder> {
                 }
                 updatePositions();
             } else if (mouseY >= inspectionGuiObject.getY() + elementHeight - exactObjectSelectionOffsetY) {
-                GuiObjectWithSubObjects parent = inspectionGuiObject.getParent();
+                GuiObjectWithSubObjects parent;
+                if (inspectionGuiObject.isMaximized()) {
+                    parent = inspectionGuiObject;
+                } else {
+                    parent = inspectionGuiObject.getParent();
+                }
                 List<AbstractGuiObject> subObjects = parent.getSubObjects();
                 int index = subObjects.indexOf(inspectionGuiObject) + 1;
                 entry.getParent().removeSubObject(entry);
@@ -289,56 +293,72 @@ public class InspectionPanel<T extends PropertiesHolder> {
 
     public void render() {
         if (movableObject != null) {
+            renderMovableObject();
+        }
+    }
+
+    private void renderMovableObject() {
+        int x = movableObject.getX();
+        int y = movableObject.getY();
+
+        Vector2f position = Mouse.getPosition();
+        int mouseX = (int) position.x;
+        int mouseY = (int) position.y;
+
+        if (isIntersectsWithMouse()) {
+            renderInsertingPreview(mouseY);
+        }
+
+        movableObject.setPosition(mouseX, mouseY);
+        movableObject.update();
+        movableObject.render();
+        movableObject.setPosition(x, y);
+        movableObject.update();
+    }
+
+    private void renderInsertingPreview(int mouseY) {
+        InspectionEntry<T> inspectionGuiObject = getMouseHoverObject();
+        if (inspectionGuiObject != null) {
+            if (mouseY < inspectionGuiObject.getY() + exactObjectSelectionOffsetY) {
+                renderSelection(inspectionGuiObject.getX(), inspectionGuiObject.getY() - betweenObjectsLineHeight / 2, inspectionGuiObject.getWidth(), betweenObjectsLineHeight);
+            } else if (mouseY >= inspectionGuiObject.getY() + elementHeight - exactObjectSelectionOffsetY) {
+                if (inspectionGuiObject.isMaximized()) {
+                    AbstractGuiObject guiObject = inspectionGuiObject.getSubObjects().get(0);
+                    renderSelection(guiObject.getX(), inspectionGuiObject.getY() + elementHeight - betweenObjectsLineHeight / 2,
+                            guiObject.getWidth(), betweenObjectsLineHeight);
+                } else {
+                    renderSelection(inspectionGuiObject.getX(), inspectionGuiObject.getY() + elementHeight - betweenObjectsLineHeight / 2,
+                            inspectionGuiObject.getWidth(), betweenObjectsLineHeight);
+                }
+            } else if (inspectionGuiObject != movableObject && !isInHierarchy(movableObject, inspectionGuiObject)) {
+                renderSelection(inspectionGuiObject.getX(), inspectionGuiObject.getY(), inspectionGuiObject.getWidth());
+                inspectionGuiObject.setMouseHover(false);
+                inspectionGuiObject.render();
+            }
+        } else {
+            int height = 0;
+            List<AbstractGuiObject> subObjects = objectsContainer.getSubObjects();
+            for (int i = 0; i < subObjects.size(); i++) {
+                height += subObjects.get(i).getHeight();
+            }
+            int x1 = objectsContainer.getX();
+            int y1 = objectsContainer.getY() + height;
             int x = movableObject.getX();
             int y = movableObject.getY();
-
-            Vector2f position = Mouse.getPosition();
-            int mouseX = (int) position.x;
-            int mouseY = (int) position.y;
-
-            if (isIntersectsWithMouse()) {
-                InspectionEntry<T> inspectionGuiObject = getMouseHoverObject();
-                if (inspectionGuiObject != null) {
-                    if (mouseY < inspectionGuiObject.getY() + exactObjectSelectionOffsetY) {
-                        GUIRenderer.get().add(inspectionGuiObject.getX(), inspectionGuiObject.getY() - betweenObjectsLineHeight / 2, inspectionGuiObject.getWidth(), betweenObjectsLineHeight,
-                                35 / 255.0f, 74 / 255.0f, 108 / 255.0f, 1.0f);
-                    } else if (mouseY >= inspectionGuiObject.getY() + elementHeight - exactObjectSelectionOffsetY) {
-                        if (inspectionGuiObject.isMaximized()) {
-                            AbstractGuiObject guiObject = inspectionGuiObject.getSubObjects().get(0);
-                            GUIRenderer.get().add(guiObject.getX(), inspectionGuiObject.getY() + elementHeight - betweenObjectsLineHeight / 2,
-                                    guiObject.getWidth(), betweenObjectsLineHeight, 35 / 255.0f, 74 / 255.0f, 108 / 255.0f, 1.0f);
-                        } else {
-                            GUIRenderer.get().add(inspectionGuiObject.getX(), inspectionGuiObject.getY() + elementHeight - betweenObjectsLineHeight / 2,
-                                    inspectionGuiObject.getWidth(), betweenObjectsLineHeight, 35 / 255.0f, 74 / 255.0f, 108 / 255.0f, 1.0f);
-                        }
-                    } else if (inspectionGuiObject != movableObject && !isInHierarchy(movableObject, inspectionGuiObject)) {
-                        GUIRenderer.get().add(inspectionGuiObject.getX(), inspectionGuiObject.getY(), inspectionGuiObject.getWidth(), elementHeight,
-                                35 / 255.0f, 74 / 255.0f, 108 / 255.0f, 1.0f);
-                        inspectionGuiObject.setMouseHover(false);
-                        inspectionGuiObject.render();
-                    }
-                } else {
-                    int height = 0;
-                    List<AbstractGuiObject> subObjects = objectsContainer.getSubObjects();
-                    for (int i = 0; i < subObjects.size(); i++) {
-                        height += subObjects.get(i).getHeight();
-                    }
-                    int x1 = objectsContainer.getX();
-                    int y1 = objectsContainer.getY() + height;
-                    movableObject.setPosition(x1, y1);
-                    movableObject.update();
-                    movableObject.render();
-                    movableObject.setPosition(x, y);
-                    movableObject.update();
-                }
-            }
-
-            movableObject.setPosition(mouseX, mouseY);
+            movableObject.setPosition(x1, y1);
             movableObject.update();
             movableObject.render();
             movableObject.setPosition(x, y);
             movableObject.update();
         }
+    }
+
+    private void renderSelection(int x, int y, int width) {
+        renderSelection(x, y, width, elementHeight);
+    }
+
+    private void renderSelection(int x, int y, int width, int height) {
+        GUIRenderer.get().add(x, y, width, height, SELECTION_BLUE_COLOR.x, SELECTION_BLUE_COLOR.y, SELECTION_BLUE_COLOR.z, SELECTION_BLUE_COLOR.w);
     }
 
     public InspectionEntry<T> findEntry(String path) {
