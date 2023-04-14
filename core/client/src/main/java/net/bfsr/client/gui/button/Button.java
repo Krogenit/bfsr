@@ -2,7 +2,6 @@ package net.bfsr.client.gui.button;
 
 import lombok.Setter;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.gui.SimpleGuiObject;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringCache;
@@ -24,7 +23,6 @@ public class Button extends TexturedGuiObject {
     private Runnable onMouseClickRunnable;
     @Setter
     private Runnable onMouseRightClickRunnable = RunnableUtils.EMPTY_RUNNABLE;
-    @Setter
     private int stringXOffset;
     private final int stringYOffset;
 
@@ -141,7 +139,7 @@ public class Button extends TexturedGuiObject {
     @Override
     public void setX(int x) {
         super.setX(x);
-        stringObject.setX(x + width / 2);
+        stringObject.setX(x + stringXOffset);
     }
 
     @Override
@@ -151,10 +149,9 @@ public class Button extends TexturedGuiObject {
         stringObject.setY(y + stringCache.getCenteredYOffset(stringObject.getString(), height, stringObject.getFontSize()) + stringYOffset);
     }
 
-    @Override
-    public SimpleGuiObject setWidth(int width) {
+    public void setStringXOffset(int stringXOffset) {
+        this.stringXOffset = stringXOffset;
         stringObject.setX(x + stringXOffset);
-        return super.setWidth(width);
     }
 
     public Button setTextColor(float r, float g, float b, float a) {

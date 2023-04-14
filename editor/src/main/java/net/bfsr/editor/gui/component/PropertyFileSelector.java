@@ -54,7 +54,8 @@ public class PropertyFileSelector<P extends PropertiesHolder> extends PropertyCo
 
     @Override
     public SimpleGuiObject setWidth(int width) {
-        subObjects.get(0).setWidth(width - propertyOffsetX);
+        button.setWidth(width - propertyOffsetX);
+        button.setStringXOffset(button.getWidth() / 2);
         return super.setWidth(width);
     }
 }
