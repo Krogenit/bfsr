@@ -222,17 +222,26 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
     }
 
     @Override
-    public void addSubObject(AbstractGuiObject guiObject) {
-        super.addSubObject(guiObject);
+    public void addSubObject(AbstractGuiObject object) {
+        super.addSubObject(object);
         setCanMaximize(true);
-        if (guiObject instanceof InspectionEntry<?> inspectionMinimizableGuiObject) {
+        if (object instanceof InspectionEntry<?> inspectionMinimizableGuiObject) {
             inspectionMinimizableGuiObject.setParent(this);
         }
     }
 
     @Override
-    public void removeSubObject(AbstractGuiObject guiObject) {
-        super.removeSubObject(guiObject);
+    public void addSubObject(int index, AbstractGuiObject object) {
+        super.addSubObject(index, object);
+        setCanMaximize(true);
+        if (object instanceof InspectionEntry<?> inspectionMinimizableGuiObject) {
+            inspectionMinimizableGuiObject.setParent(this);
+        }
+    }
+
+    @Override
+    public void removeSubObject(AbstractGuiObject object) {
+        super.removeSubObject(object);
         if (subObjects.size() == 0) {
             setCanMaximize(false);
         }

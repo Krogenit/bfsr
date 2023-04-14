@@ -177,6 +177,12 @@ public class GuiObjectsContainer extends GuiObjectWithSubObjects implements GuiO
     }
 
     @Override
+    public void addSubObject(int index, AbstractGuiObject object) {
+        subObjects.add(index, object);
+        registerGuiObject(object);
+    }
+
+    @Override
     public void removeSubObject(AbstractGuiObject object) {
         subObjects.remove(object);
         unregisterGuiObject(object);

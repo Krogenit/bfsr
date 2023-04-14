@@ -128,10 +128,18 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
     }
 
     @Override
-    public void addSubObject(AbstractGuiObject guiObject) {
-        subObjects.add(guiObject);
+    public void addSubObject(AbstractGuiObject object) {
+        subObjects.add(object);
         if (gui != null && maximized) {
-            gui.registerGuiObject(guiObject);
+            gui.registerGuiObject(object);
+        }
+    }
+
+    @Override
+    public void addSubObject(int index, AbstractGuiObject object) {
+        subObjects.add(index, object);
+        if (gui != null && maximized) {
+            gui.registerGuiObject(object);
         }
     }
 

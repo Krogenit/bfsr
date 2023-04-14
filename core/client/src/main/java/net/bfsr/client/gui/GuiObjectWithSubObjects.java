@@ -22,17 +22,24 @@ public class GuiObjectWithSubObjects extends TexturedGuiObject {
         setSize(width, height);
     }
 
-    public void addSubObject(AbstractGuiObject guiObject) {
-        subObjects.add(guiObject);
+    public void addSubObject(AbstractGuiObject object) {
+        subObjects.add(object);
         if (gui != null) {
-            gui.registerGuiObject(guiObject);
+            gui.registerGuiObject(object);
         }
     }
 
-    public void removeSubObject(AbstractGuiObject guiObject) {
-        subObjects.remove(guiObject);
+    public void addSubObject(int index, AbstractGuiObject object) {
+        subObjects.add(index, object);
         if (gui != null) {
-            gui.unregisterGuiObject(guiObject);
+            gui.registerGuiObject(object);
+        }
+    }
+
+    public void removeSubObject(AbstractGuiObject object) {
+        subObjects.remove(object);
+        if (gui != null) {
+            gui.unregisterGuiObject(object);
         }
     }
 
