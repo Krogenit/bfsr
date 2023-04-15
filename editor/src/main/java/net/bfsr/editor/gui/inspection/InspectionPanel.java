@@ -15,6 +15,7 @@ import net.bfsr.property.PropertiesHolder;
 import net.bfsr.util.MutableInt;
 import org.joml.Vector2f;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -409,12 +410,12 @@ public class InspectionPanel<T extends PropertiesHolder> {
         for (int i = 0; i < subObjects.size(); i++) {
             AbstractGuiObject guiObject = subObjects.get(i);
 
-            if (guiObject instanceof InspectionEntry<?> inspectionHolder) {
-                if (inspectionHolder.isIntersectsWithMouse()) {
-                    return (InspectionEntry<T>) inspectionHolder;
+            if (guiObject instanceof InspectionEntry<?> inspectionEntry) {
+                if (inspectionEntry.isIntersectsWithMouse()) {
+                    return (InspectionEntry<T>) inspectionEntry;
                 }
 
-                if (guiObject instanceof InspectionEntry<?> inspectionEntry && inspectionEntry.isMaximized()) {
+                if (inspectionEntry.isMaximized()) {
                     InspectionEntry<T> objectWithSubObjects = getMouseHoverObject(inspectionEntry);
                     if (objectWithSubObjects != null) {
                         return objectWithSubObjects;
@@ -429,6 +430,10 @@ public class InspectionPanel<T extends PropertiesHolder> {
     public void addSubObject(InspectionEntry<T> object) {
         object.setParent(objectsContainer);
         objectsContainer.addSubObject(object);
+    }
+
+    public void sortFolders() {
+        objectsContainer.getSubObjects().sort(Comparator.comparing(o -> ((MinimizableGuiObject) o).getName()));
     }
 
     public void setRightClickSupplier(Supplier<Boolean> supplier) {

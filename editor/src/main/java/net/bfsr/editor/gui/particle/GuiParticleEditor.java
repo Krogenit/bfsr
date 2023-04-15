@@ -177,6 +177,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
             }
         });
 
+        inspectionPanel.sortFolders();
         inspectionPanel.updatePositions();
     }
 
