@@ -1,56 +1,6 @@
 {
   "a": 1.0,
   "b": 1.0,
-  "childEffects": [
-    {
-      "maxSpawnCount": 1,
-      "minSpawnCount": 1,
-      "name": "explosion/ship_small/shockwave",
-      "scale": 1.0
-    },
-    {
-      "maxSpawnCount": 9,
-      "minSpawnCount": 6,
-      "name": "garbage/garbage_medium",
-      "scale": 1.0
-    },
-    {
-      "maxSpawnCount": 1,
-      "minSpawnCount": 1,
-      "name": "explosion/ship_small/explosion",
-      "scale": 1.0
-    },
-    {
-      "maxSpawnCount": 1,
-      "minSpawnCount": 1,
-      "name": "explosion/ship_small/spark",
-      "scale": 1.0
-    },
-    {
-      "maxSpawnCount": 1,
-      "minSpawnCount": 1,
-      "name": "explosion/ship_small/light",
-      "scale": 1.0
-    },
-    {
-      "maxSpawnCount": 1,
-      "minSpawnCount": 1,
-      "name": "explosion/ship_small/smoke",
-      "scale": 1.0
-    },
-    {
-      "maxSpawnCount": 12,
-      "minSpawnCount": 8,
-      "name": "garbage/garbage_small",
-      "scale": 1.0
-    },
-    {
-      "maxSpawnCount": 6,
-      "minSpawnCount": 2,
-      "name": "garbage/ost",
-      "scale": 1.0
-    }
-  ],
   "editorPath": "explosion",
   "g": 1.0,
   "isAlphaFromZero": false,
@@ -91,5 +41,6 @@
   "sourceVelocityXMultiplier": 1.0,
   "sourceVelocityYMultiplier": 1.0,
   "spawnOverTime": 0.0,
-  "texturePaths": []
+  "texturePaths": [],
+  "treeIndex": 1
 }

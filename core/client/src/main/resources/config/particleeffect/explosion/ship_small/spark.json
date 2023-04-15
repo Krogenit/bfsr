@@ -1,7 +1,6 @@
 {
   "a": 1.0,
   "b": 0.0,
-  "childEffects": [],
   "editorPath": "explosion/ship_small",
   "g": 0.5,
   "isAlphaFromZero": true,
@@ -41,5 +40,6 @@
     "texture/particle/spark1.png",
     "texture/particle/spark2.png",
     "texture/particle/spark3.png"
-  ]
+  ],
+  "treeIndex": 6
 }

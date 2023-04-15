@@ -1,14 +1,6 @@
 {
   "a": 0.9,
   "b": 0.3,
-  "childEffects": [
-    {
-      "maxSpawnCount": 1,
-      "minSpawnCount": 1,
-      "name": "explosion/ship_small/rocket_effect",
-      "scale": 1.0
-    }
-  ],
   "editorPath": "explosion/ship_small",
   "g": 0.3,
   "isAlphaFromZero": true,
@@ -45,5 +37,6 @@
   "spawnOverTime": 0.0,
   "texturePaths": [
     "texture/particle/rocketsmoke.png"
-  ]
+  ],
+  "treeIndex": 2
 }

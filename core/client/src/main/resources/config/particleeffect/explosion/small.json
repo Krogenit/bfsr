@@ -1,44 +1,6 @@
 {
   "a": 1.0,
   "b": 1.0,
-  "childEffects": [
-    {
-      "maxSpawnCount": 1,
-      "minSpawnCount": 1,
-      "name": "explosion/small/garbage_medium",
-      "scale": 0.5
-    },
-    {
-      "maxSpawnCount": 4,
-      "minSpawnCount": 2,
-      "name": "explosion/small/garbage_small",
-      "scale": 0.5
-    },
-    {
-      "maxSpawnCount": 3,
-      "minSpawnCount": 1,
-      "name": "garbage/ost",
-      "scale": 1.0
-    },
-    {
-      "maxSpawnCount": 1,
-      "minSpawnCount": 1,
-      "name": "explosion/small/light",
-      "scale": 0.5
-    },
-    {
-      "maxSpawnCount": 1,
-      "minSpawnCount": 1,
-      "name": "explosion/small/explosion",
-      "scale": 1.0
-    },
-    {
-      "maxSpawnCount": 1,
-      "minSpawnCount": 1,
-      "name": "explosion/small/spark",
-      "scale": 1.0
-    }
-  ],
   "editorPath": "explosion",
   "g": 1.0,
   "isAlphaFromZero": false,
@@ -67,11 +29,18 @@
   "name": "small",
   "r": 1.0,
   "renderLayer": "DEFAULT_ADDITIVE",
-  "soundEffects": [],
+  "soundEffects": [
+    {
+      "name": "explosion",
+      "path": "sound/explosion/explosion0.ogg",
+      "volume": 1.0
+    }
+  ],
   "sourceSizeXMultiplier": 1.0,
   "sourceSizeYMultiplier": 1.0,
   "sourceVelocityXMultiplier": 1.0,
   "sourceVelocityYMultiplier": 1.0,
   "spawnOverTime": 0.0,
-  "texturePaths": []
+  "texturePaths": [],
+  "treeIndex": 0
 }

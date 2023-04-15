@@ -1,7 +1,6 @@
 {
   "a": 1.0,
   "b": 0.5,
-  "childEffects": [],
   "editorPath": "explosion/ship_small",
   "g": 0.5,
   "isAlphaFromZero": false,
@@ -38,5 +37,6 @@
   "spawnOverTime": 0.0,
   "texturePaths": [
     "texture/particle/basicshockwave.png"
-  ]
+  ],
+  "treeIndex": 4
 }

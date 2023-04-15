@@ -1,7 +1,6 @@
 {
   "a": 1.0,
   "b": 0.2,
-  "childEffects": [],
   "editorPath": "explosion/ship_small",
   "g": 0.5,
   "isAlphaFromZero": true,
@@ -38,5 +37,6 @@
   "spawnOverTime": 0.0,
   "texturePaths": [
     "texture/particle/rocketeffect.png"
-  ]
+  ],
+  "treeIndex": 3
 }

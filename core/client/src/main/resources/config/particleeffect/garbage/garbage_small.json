@@ -1,7 +1,6 @@
 {
   "a": 1.0,
   "b": 0.4,
-  "childEffects": [],
   "editorPath": "garbage",
   "g": 0.4,
   "isAlphaFromZero": false,
@@ -38,5 +37,6 @@
   "spawnOverTime": 0.0,
   "texturePaths": [
     "texture/particle/derbis0.png"
-  ]
+  ],
+  "treeIndex": 0
 }
