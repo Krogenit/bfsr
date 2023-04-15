@@ -6,7 +6,9 @@ import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.entity.wreck.Wreck;
 import net.bfsr.client.particle.Beam;
 import net.bfsr.client.particle.ParticleSpawner;
-import net.bfsr.client.particle.RenderLayer;
+import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
+import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.component.shield.ShieldCommon;
@@ -83,8 +85,7 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                     beamColor.w = rand.nextFloat() / 3.0f + 0.66f;
                 }
 
-                ParticleSpawner.spawnLight(position.x, position.y, scale.x * 2.5f, beamColor.x, beamColor.y, beamColor.z, 0.6f * beamColor.w, RenderLayer.DEFAULT_ADDITIVE);
-                ParticleSpawner.spawnBeam(position.x, position.y, rotation, 2.0f, beamColor.x, beamColor.y, beamColor.z, beamColor.w);
+                ParticleSpawner.spawnBeam(position.x, position.y, ship.getRotation(), 2.0f, beamColor.x, beamColor.y, beamColor.z, beamColor.w);
             }
 
             rayCast();
@@ -223,6 +224,12 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
     public void renderAdditive() {
         if (shootTimer > 0 && beamColor.w > 0) {
             beam.render();
+
+            if (shootTimer > shootTimerMax / 3.0f) {
+                SpriteRenderer.get().addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, ship.getLastSin(), ship.getLastCos(), ship.getSin(), ship.getCos(),
+                        lastScale.x * 2.5f, lastScale.y * 2.5f, scale.x * 2.5f, scale.y * 2.5f, beamColor.x, beamColor.y, beamColor.z, 0.6f * beamColor.w,
+                        TextureLoader.getTexture(TextureRegister.particleLight), BufferType.ENTITIES_ADDITIVE);
+            }
         }
     }
 }
