@@ -25,8 +25,7 @@ public class PacketJoinGame implements PacketIn, PacketOut {
     @Override
     public void processOnClientSide() {
         Core core = Core.get();
-        WorldClient world = new WorldClient();
-        core.setWorld(world);
+        WorldClient world = core.createWorld();
         world.setSeed(seed);
         core.setCurrentGui(null);
         core.getNetworkSystem().setConnectionState(ConnectionState.PLAY);

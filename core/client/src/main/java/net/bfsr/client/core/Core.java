@@ -35,6 +35,7 @@ import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
+import java.util.function.Supplier;
 
 @Log4j2
 public class Core {
@@ -73,6 +74,8 @@ public class Core {
     private ThreadLocalServer localServer;
 
     private final Queue<ListenableFutureTask<?>> futureTasks = new ConcurrentLinkedQueue<>();
+    @Setter
+    private Supplier<WorldClient> worldSupplier = WorldClient::new;
 
     public Core() {
         instance = this;
@@ -213,6 +216,11 @@ public class Core {
         renderer.resize(width, height);
         if (guiInGame != null) guiInGame.onScreenResize(width, height);
         if (currentGui != null) currentGui.onScreenResize(width, height);
+    }
+
+    public WorldClient createWorld() {
+        this.world = worldSupplier.get();
+        return world;
     }
 
     public void setCurrentGui(Gui gui) {

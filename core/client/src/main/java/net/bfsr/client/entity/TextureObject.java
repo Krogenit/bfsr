@@ -10,6 +10,7 @@ import org.joml.Vector4f;
 
 @Getter
 public class TextureObject extends GameObject {
+    @Setter
     protected Texture texture;
     protected final Vector2f lastScale = new Vector2f();
     protected final Vector2f lastPosition = new Vector2f();

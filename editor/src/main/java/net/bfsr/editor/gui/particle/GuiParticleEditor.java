@@ -2,8 +2,7 @@ package net.bfsr.editor.gui.particle;
 
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.ship.Ship;
-import net.bfsr.client.entity.ship.ShipHumanSmall0;
+import net.bfsr.client.entity.TextureObject;
 import net.bfsr.client.gui.AbstractGuiObject;
 import net.bfsr.client.gui.GuiObjectWithSubObjects;
 import net.bfsr.client.gui.button.Button;
@@ -25,6 +24,7 @@ import net.bfsr.editor.gui.control.Playble;
 import net.bfsr.editor.gui.inspection.InspectionEntry;
 import net.bfsr.editor.gui.inspection.InspectionPanel;
 import net.bfsr.editor.gui.property.PropertiesPanel;
+import net.bfsr.editor.world.EditorWorld;
 import net.bfsr.util.RunnableUtils;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -44,6 +44,7 @@ import static net.bfsr.editor.gui.ColorScheme.*;
 public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     private InspectionEntry<ParticleEffect> selectedEntry;
     private final ConfigurableGameObject gameObject = new ConfigurableGameObject();
+    private final TextureObject textureObject = new TextureObject();
 
     private final int leftPanelWidth = 300;
     private final int topPanelHeight = 28;
@@ -58,7 +59,6 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     private final int contextMenuStringXOffset = 8;
     private final InspectionPanel<ParticleEffect> inspectionPanel = new InspectionPanel<>(this, "Particle Effects", leftPanelWidth, fontType, fontSize, stringYOffset);
     private final PropertiesPanel propertiesPanel = new PropertiesPanel(this, propertiesContainerWidth, fontType, fontSize, stringXOffset, stringYOffset, contextMenuStringXOffset);
-    private final Ship testShip = new ShipHumanSmall0(Core.get().getWorld(), -1, 0, 0, 0);
 
     @Override
     protected void initElements() {
@@ -76,13 +76,13 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
 
         initInspectionPanel(x, y);
         propertiesPanel.initElements();
-
-        gameObject.setDefaultValues();
-        testShip.init();
-        testShip.setSpawned();
-        gameObject.setSizeX(testShip.getScale().x);
-        gameObject.setSizeY(testShip.getScale().y);
+        initGameObject();
         initParticleEffects();
+    }
+
+    private void initGameObject() {
+        gameObject.setDefaultValues();
+        gameObject.init();
     }
 
     private void initInspectionPanel(int x, int y) {
@@ -359,12 +359,13 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     public void update() {
         super.update();
         inspectionPanel.update();
-        testShip.setLifeTime(0);
 
         if (selectedEntry != null && playing && !Core.get().isPaused()) {
-            testShip.setPosition(gameObject.getPosX(), gameObject.getPosY());
-            testShip.setScale(gameObject.getSizeX(), gameObject.getSizeY());
-            testShip.setVelocity(gameObject.getVelocityX(), gameObject.getVelocityY());
+            ((EditorWorld) Core.get().getWorld()).setTestObject(textureObject);
+            gameObject.init();
+            textureObject.setPosition(gameObject.getPosX(), gameObject.getPosY());
+            textureObject.setScale(gameObject.getSizeX(), gameObject.getSizeY());
+            textureObject.setTexture(gameObject.getTexture());
             propertiesPanel.applyProperties();
             ParticleEffect particleEffect = selectedEntry.getComponentByType(ParticleEffect.class);
             if (particleEffect != null) {
@@ -458,6 +459,6 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     @Override
     public void clear() {
         super.clear();
-        testShip.setDead();
+        ((EditorWorld) Core.get().getWorld()).setTestObject(null);
     }
 }
