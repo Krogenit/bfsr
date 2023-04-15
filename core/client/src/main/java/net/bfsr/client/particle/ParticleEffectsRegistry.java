@@ -56,11 +56,7 @@ public class ParticleEffectsRegistry {
     }
 
     public void add(net.bfsr.client.particle.ParticleEffect particleEffect) {
-        if (particleEffect.getEditorPath().isEmpty()) {
-            registry.put(particleEffect.getName(), particleEffect);
-        } else {
-            registry.put(particleEffect.getEditorPath() + "/" + particleEffect.getName(), particleEffect);
-        }
+        registry.put(particleEffect.getPath(), particleEffect);
     }
 
     public void remove(String path) {
@@ -113,7 +109,7 @@ public class ParticleEffectsRegistry {
         void emit(GameObject initiator, GameObject affected, float contactX, float contactY, float normalX, float normalY);
     }
 
-    public net.bfsr.client.particle.ParticleEffect getEffect(String name) {
-        return registry.get(name);
+    public net.bfsr.client.particle.ParticleEffect getEffectByPath(String path) {
+        return registry.get(path);
     }
 }
