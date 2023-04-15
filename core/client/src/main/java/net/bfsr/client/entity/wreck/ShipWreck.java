@@ -6,9 +6,6 @@ import net.bfsr.client.collision.filter.WreckFilter;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.particle.ParticleSpawner;
-import net.bfsr.client.particle.RenderLayer;
-import net.bfsr.client.sound.SoundRegistry;
-import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.entity.wreck.RegisteredShipWreck;
 import net.bfsr.entity.wreck.WreckRegistry;
 import net.bfsr.entity.wreck.WreckType;
@@ -16,7 +13,6 @@ import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.util.TimeUtils;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Vector2;
-import org.joml.Vector2f;
 
 @NoArgsConstructor
 @Getter
@@ -92,17 +88,8 @@ public class ShipWreck extends Wreck {
     public void setDead() {
         this.isDead = true;
         if (color.w > 0.01f) {
-            Vector2f velocity = getVelocity();
             Vector2 worldPos = body.getLocalCenter().add(position.x, position.y);
-            Vector2f scale = getScale();
-            ParticleSpawner.spawnLight((float) worldPos.x, (float) worldPos.y, getScale().x * 2.0f, 1.0f, 0.8f, 0.6f, 1.0f, RenderLayer.DEFAULT_ADDITIVE);
-            ParticleSpawner.spawnShipDestroy((float) worldPos.x, (float) worldPos.y, getScale().x);
-            ParticleSpawner.spawnExplosion((float) worldPos.x, (float) worldPos.y, getScale().x);
-            ParticleSpawner.spawnSmallGarbage(random.nextInt(10), (float) worldPos.x, (float) worldPos.y, 2.0f, 5.0f + getScale().x);
-            ParticleSpawner.spawnShipOst(random.nextInt(3), (float) worldPos.x, (float) worldPos.y, velocity.x * 0.06f, velocity.y * 0.06f, 0.25f + 0.75f * random.nextFloat());
-
-            ParticleSpawner.spawnMediumGarbage(3, (float) worldPos.x, (float) worldPos.y, velocity.x * 0.035f, velocity.y * 0.035f, scale.x / 2.0f);
-            Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion0, (float) worldPos.x, (float) worldPos.y));
+            ParticleSpawner.spawnSmallExplosion((float) worldPos.x, (float) worldPos.y, getScale().x);
         }
     }
 

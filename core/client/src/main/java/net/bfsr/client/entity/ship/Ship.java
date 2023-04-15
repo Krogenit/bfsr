@@ -265,7 +265,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
         if (destroyingTimer > 0) {
             sparksTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (sparksTimer <= 0) {
-                createSpark();
+                spawnSmallExplosion();
                 sparksTimer = 25;
             }
         } else {
@@ -413,21 +413,12 @@ public abstract class Ship extends CollisionObject implements Damagable {
         }
     }
 
-    private void createSpark() {
+    private void spawnSmallExplosion() {
         Random rand = world.getRand();
         Vector2f position = getPosition();
-        Vector2f velocity = getVelocity();
-        float randomVectorX = position.x + -scale.x / 2.25f + rand.nextInt((int) (scale.x / 1.25f));
-        float randomVectorY = position.y + -scale.y / 2.25f + rand.nextInt((int) (scale.y / 1.25f));
-        float baseSize = 4.0f + scale.x * 0.25f;
-        ParticleSpawner.spawnMediumGarbage(rand.nextInt(2) + 1, randomVectorX, randomVectorY, velocity.x * 0.007f, velocity.y * 0.007f, baseSize - rand.nextFloat() * 2.5f);
-        ParticleSpawner.spawnSmallGarbage(4, position.x - scale.x / 2.5f + rand.nextInt((int) (scale.x / 1.25f)), position.y - scale.y / 2.5f + rand.nextInt((int) (scale.y / 1.25f)),
-                velocity.x * 0.001f, velocity.y * 0.001f, baseSize);
-        ParticleSpawner.spawnShipOst(1 + rand.nextInt(3), randomVectorX, randomVectorY, velocity.x * 0.02f, velocity.y * 0.02f, 1.0f);
-        ParticleSpawner.spawnLight(randomVectorX, randomVectorY, baseSize + rand.nextFloat() * 2.0f, 60.0f, 1.0f, 0.5f, 0.5f, 0.7f, 1.8f, false, RenderLayer.DEFAULT_ADDITIVE);
-        ParticleSpawner.spawnShipDestroy(randomVectorX, randomVectorY, baseSize + rand.nextFloat() * 2.0f);
-        ParticleSpawner.spawnExplosion(randomVectorX, randomVectorY, baseSize + rand.nextFloat() * 2.0f);
-        Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.explosion0, randomVectorX, randomVectorY));
+        float randomVectorX = -scale.x * 0.4f + scale.x * 0.8f * rand.nextFloat();
+        float randomVectorY = -scale.y * 0.4f + scale.y * 0.8f * rand.nextFloat();
+        ParticleSpawner.spawnSmallExplosion(position.x + randomVectorX, position.y + randomVectorY, 2.0f);
     }
 
     protected abstract void createDestroyParticles();

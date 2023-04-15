@@ -27,10 +27,8 @@ public final class ParticleSpawner {
     public static final Vector2f CACHED_VECTOR = new Vector2f();
     public static final Supplier<Particle> PARTICLE_SUPPLIER = Particle::new;
 
-    private static final ParticleEffect garbageMedium = ParticleEffectsRegistry.INSTANCE.getEffectByPath("garbage/garbage_medium");
-    private static final ParticleEffect shipDestroyExplosion = ParticleEffectsRegistry.INSTANCE.getEffectByPath("explosion/ship_small/explosion");
-    private static final ParticleEffect shipDestroySpark = ParticleEffectsRegistry.INSTANCE.getEffectByPath("explosion/ship_small/spark");
     private static final ParticleEffect shipDestroySmall = ParticleEffectsRegistry.INSTANCE.getEffectByPath("explosion/ship_small");
+    private static final ParticleEffect smallExplosion = ParticleEffectsRegistry.INSTANCE.getEffectByPath("explosion/small");
 
     public static void spawnDestroyShipSmall(Ship ship) {
         Vector2f scale = ship.getScale();
@@ -43,9 +41,8 @@ public final class ParticleSpawner {
         PARTICLE_POOL.getOrCreate(PARTICLE_SUPPLIER).init(TextureRegister.particleLight, x, y, 0, 0, 0, 0, size, size, sizeSpeed, r, g, b, a, alphaSpeed, alphaFromZero, renderLayer);
     }
 
-    public static void spawnShipDestroy(float x, float y, float size) {
-        shipDestroyExplosion.play(x, y, size, size);
-        shipDestroySpark.play(x, y, size, size);
+    public static void spawnSmallExplosion(float x, float y, float size) {
+        smallExplosion.play(x, y, size, size);
     }
 
     public static void spawnExplosion(float x, float y, float size) {
@@ -58,12 +55,6 @@ public final class ParticleSpawner {
             float alphaVel = 0.84f;
             PARTICLE_POOL.getOrCreate(PARTICLE_SUPPLIER).init(TextureRegister.particleExplosion, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, size, size, sizeVel,
                     1.0f, 1.0f, 1.0f, 1.0f, alphaVel, false, RenderLayer.DEFAULT_ADDITIVE);
-        }
-    }
-
-    public static void spawnMediumGarbage(int count, float x, float y, float velocityX, float velocityY, float size) {
-        for (int i = 0; i < count; i++) {
-            garbageMedium.play(x, y, size, size, velocityX, velocityY);
         }
     }
 

@@ -5,7 +5,6 @@ import net.bfsr.client.collision.filter.WreckFilter;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.CollisionObject;
 import net.bfsr.client.particle.ParticleSpawner;
-import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
@@ -275,14 +274,9 @@ public class Wreck extends CollisionObject {
     @Override
     public void setDead() {
         super.setDead();
-        Vector2f velocity = getVelocity();
         if (color.w > 0.01f) {
             Vector2f pos = getPosition();
-            ParticleSpawner.spawnLight(pos.x, pos.y, getScale().x * 2.0f, 1.0f, 0.8f, 0.6f, 1.0f, RenderLayer.DEFAULT_ADDITIVE);
-            ParticleSpawner.spawnShipDestroy(pos.x, pos.y, getScale().x);
-            ParticleSpawner.spawnExplosion(pos.x, pos.y, getScale().x);
-            ParticleSpawner.spawnSmallGarbage(random.nextInt(10), pos.x, pos.y, 2.0f, 5.0f + getScale().x);
-            ParticleSpawner.spawnShipOst(random.nextInt(3), pos.x, pos.y, velocity.x * 0.06f, velocity.y * 0.06f, 0.25f + 0.75f * random.nextFloat());
+            ParticleSpawner.spawnSmallExplosion(pos.x, pos.y, getScale().x);
         }
     }
 
