@@ -4,7 +4,6 @@
 /core/build/
 /core/out/
 /test/
-gradlew
 gradlew.bat
 /gradle/wrapper/gradle-wrapper.jar
 /core/client/out/
