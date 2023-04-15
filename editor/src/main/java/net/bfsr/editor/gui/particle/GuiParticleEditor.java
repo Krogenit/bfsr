@@ -379,7 +379,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
                     spawnAccumulator.resetTime();
                 }
                 particleEffect.init();
-                particleEffect.debug(gameObject.getPosX(), gameObject.getPosY(), gameObject.getSizeX(), gameObject.getSizeY(), gameObject.getVelocityX(), gameObject.getVelocityY(),
+                particleEffect.debug(gameObject.getPosX(), gameObject.getPosY(), gameObject.getSizeX(), gameObject.getSizeY(), 0, gameObject.getVelocityX(), gameObject.getVelocityY(),
                         spawnAccumulator);
             }
         }
@@ -462,7 +462,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
 
     @Override
     public boolean isAllowCameraZoom() {
-        return !propertiesPanel.isMouseHover() && !inspectionPanel.isMouseHover();
+        return !propertiesPanel.isIntersectsWithMouse() && !inspectionPanel.isIntersectsWithMouse();
     }
 
     @Override

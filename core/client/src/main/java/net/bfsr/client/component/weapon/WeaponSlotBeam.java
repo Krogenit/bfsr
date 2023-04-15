@@ -6,6 +6,7 @@ import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.entity.wreck.Wreck;
 import net.bfsr.client.particle.Beam;
 import net.bfsr.client.particle.ParticleSpawner;
+import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.TextureLoader;
@@ -31,6 +32,8 @@ import org.joml.Vector4f;
 
 import java.util.Random;
 
+import static net.bfsr.client.particle.ParticleSpawner.CACHED_VECTOR;
+
 public abstract class WeaponSlotBeam extends WeaponSlot {
     private final Vector2 start = new Vector2();
     private final BeamFilter filter = new BeamFilter(null);
@@ -49,6 +52,7 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
     private final DetectFilter<Body, BodyFixture> detectFilter = new DetectFilter<>(true, true, filter);
     private final Vector2 rayDirection = new Vector2();
     private final Beam beam;
+    private final SpawnAccumulator spawnAccumulator = new SpawnAccumulator();
 
     protected WeaponSlotBeam(Ship ship, float beamMaxRange, BulletDamage damage, Vector4f beamColor, float shootTimerMax, float energyCost, float scaleX, float scaleY,
                              TextureRegister texture, SoundRegistry[] shootSounds) {
@@ -85,7 +89,10 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                     beamColor.w = rand.nextFloat() / 3.0f + 0.66f;
                 }
 
-                ParticleSpawner.spawnBeam(position.x, position.y, ship.getRotation(), 2.0f, beamColor.x, beamColor.y, beamColor.z, beamColor.w);
+                float shipRotation = ship.getRotation();
+                RotationHelper.angleToVelocity(shipRotation, 10.0f, CACHED_VECTOR);
+                ParticleSpawner.emitBeam(position.x, position.y, 2.0f, shipRotation, CACHED_VECTOR.x, CACHED_VECTOR.y,
+                        beamColor.x, beamColor.y, beamColor.z, beamColor.w, spawnAccumulator);
             }
 
             rayCast();
@@ -173,13 +180,13 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                 float velocityX = ship.getVelocity().x * 0.005f;
                 float velocityY = ship.getVelocity().y * 0.005f;
                 if (hull.getHull() / hull.getMaxHull() < 0.5f && rand.nextInt(50) == 0) {
-                    RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.5f, ParticleSpawner.CACHED_VECTOR);
-                    ParticleSpawner.spawnShipOst(1, hitX, hitY, velocityX + ParticleSpawner.CACHED_VECTOR.x,
-                            velocityY + ParticleSpawner.CACHED_VECTOR.y, 0.5f);
+                    RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.5f, CACHED_VECTOR);
+                    ParticleSpawner.spawnShipOst(1, hitX, hitY, velocityX + CACHED_VECTOR.x,
+                            velocityY + CACHED_VECTOR.y, 0.5f);
                 }
-                RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.5f, ParticleSpawner.CACHED_VECTOR);
-                ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), hitX, hitY, velocityX + ParticleSpawner.CACHED_VECTOR.x,
-                        velocityY + ParticleSpawner.CACHED_VECTOR.y, 2.0f * rand.nextFloat());
+                RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.5f, CACHED_VECTOR);
+                ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), hitX, hitY, velocityX + CACHED_VECTOR.x,
+                        velocityY + CACHED_VECTOR.y, 2.0f * rand.nextFloat());
             }
         }
     }
@@ -191,13 +198,13 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
             float velocityX = wreck.getVelocity().x * 0.005f;
             float velocityY = wreck.getVelocity().y * 0.005f;
             if (rand.nextInt(50) == 0) {
-                RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.5f, ParticleSpawner.CACHED_VECTOR);
-                ParticleSpawner.spawnShipOst(1, hitX, hitY, velocityX + ParticleSpawner.CACHED_VECTOR.x,
-                        velocityY + ParticleSpawner.CACHED_VECTOR.y, 0.5f);
+                RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.5f, CACHED_VECTOR);
+                ParticleSpawner.spawnShipOst(1, hitX, hitY, velocityX + CACHED_VECTOR.x,
+                        velocityY + CACHED_VECTOR.y, 0.5f);
             }
-            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.5f, ParticleSpawner.CACHED_VECTOR);
-            ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), hitX, hitY, velocityX + ParticleSpawner.CACHED_VECTOR.x,
-                    velocityY + ParticleSpawner.CACHED_VECTOR.y, 2.0f * rand.nextFloat());
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.5f, CACHED_VECTOR);
+            ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), hitX, hitY, velocityX + CACHED_VECTOR.x,
+                    velocityY + CACHED_VECTOR.y, 2.0f * rand.nextFloat());
         }
     }
 
@@ -208,17 +215,19 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
             float velocityX = collisionObject.getVelocity().x * 0.005f;
             float velocityY = collisionObject.getVelocity().y * 0.005f;
             if (rand.nextInt(50) == 0) {
-                RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.5f, ParticleSpawner.CACHED_VECTOR);
-                ParticleSpawner.spawnShipOst(1, hitX, hitY, velocityX + ParticleSpawner.CACHED_VECTOR.x, velocityY + ParticleSpawner.CACHED_VECTOR.y, 0.5f);
+                RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.5f, CACHED_VECTOR);
+                ParticleSpawner.spawnShipOst(1, hitX, hitY, velocityX + CACHED_VECTOR.x, velocityY + CACHED_VECTOR.y, 0.5f);
             }
-            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.5f, ParticleSpawner.CACHED_VECTOR);
-            ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), hitX, hitY, velocityX + ParticleSpawner.CACHED_VECTOR.x,
-                    velocityY + ParticleSpawner.CACHED_VECTOR.y, 2.0f * rand.nextFloat());
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 1.5f, CACHED_VECTOR);
+            ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), hitX, hitY, velocityX + CACHED_VECTOR.x,
+                    velocityY + CACHED_VECTOR.y, 2.0f * rand.nextFloat());
         }
     }
 
     @Override
-    protected void spawnShootParticles() {}
+    protected void spawnShootParticles() {
+        spawnAccumulator.resetTime();
+    }
 
     @Override
     public void renderAdditive() {

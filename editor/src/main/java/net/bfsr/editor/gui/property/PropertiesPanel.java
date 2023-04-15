@@ -174,8 +174,8 @@ public class PropertiesPanel {
                 BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
     }
 
-    public boolean isMouseHover() {
-        return propertiesContainer.isMouseHover();
+    public boolean isIntersectsWithMouse() {
+        return propertiesContainer.isIntersectsWithMouse();
     }
 
     public boolean hasComponents() {

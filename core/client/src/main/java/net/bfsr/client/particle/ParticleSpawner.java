@@ -30,6 +30,11 @@ public final class ParticleSpawner {
     private static final ParticleEffect shipDestroySmall = ParticleEffectsRegistry.INSTANCE.getEffectByPath("explosion/ship_small");
     private static final ParticleEffect smallExplosion = ParticleEffectsRegistry.INSTANCE.getEffectByPath("explosion/small");
     private static final ParticleEffect smallFire = ParticleEffectsRegistry.INSTANCE.getEffectByPath("fire/small");
+    private static final ParticleEffect smallBeam = ParticleEffectsRegistry.INSTANCE.getEffectByPath("beam/small");
+
+    public static void emitBeam(float x, float y, float size, float angle, float velocityX, float velocityY, float r, float g, float b, float a, SpawnAccumulator spawnAccumulator) {
+        smallBeam.emit(x, y, size, size, angle, velocityX, velocityY, r, g, b, a, spawnAccumulator);
+    }
 
     public static void spawnDestroyShipSmall(Ship ship) {
         Vector2f scale = ship.getScale();
@@ -48,14 +53,6 @@ public final class ParticleSpawner {
 
     public static void emitFire(float x, float y, SpawnAccumulator spawnAccumulator) {
         smallFire.emit(x, y, spawnAccumulator);
-    }
-
-    public static void spawnBeam(float x, float y, float rotation, float size, float r, float g, float b, float a) {
-        float alphaSpeed = 6.0f;
-        float sizeSpeed = 30.0f;
-        RotationHelper.angleToVelocity(rotation, 10.0f, CACHED_VECTOR);
-        PARTICLE_POOL.getOrCreate(PARTICLE_SUPPLIER).init(TextureRegister.particleBeamDamage, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, rotation, 0, size, size, sizeSpeed, r, g, b, a,
-                alphaSpeed, false, RenderLayer.DEFAULT_ADDITIVE);
     }
 
     public static ParticleBeamEffect spawnBeamEffect(WeaponSlotBeam slot) {

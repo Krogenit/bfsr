@@ -97,7 +97,7 @@ public class ParticleEffect implements PropertiesHolder {
 
     @FunctionalInterface
     private interface ParticleEffectSpawnRunnable {
-        void spawn(float x, float y, float sizeX, float sizeY, float velocityX, float velocityY);
+        void spawn(float x, float y, float sizeX, float sizeY, float angle, float velocityX, float velocityY, float r, float g, float b, float a);
     }
 
     @FunctionalInterface
@@ -146,7 +146,7 @@ public class ParticleEffect implements PropertiesHolder {
                 soundEffect.setSoundBuffer(SoundLoader.getBuffer(PathHelper.convertPath(soundEffect.getPath())));
             }
 
-            spawnRunnables.add((x, y, sizeX, sizeY, velocityX, velocityY) -> {
+            spawnRunnables.add((x, y, sizeX, sizeY, angle, velocityX, velocityY, r, g, b, a) -> {
                 for (int i = 0; i < soundEffects.size(); i++) {
                     ParticleSoundEffect soundEffect = soundEffects.get(i);
                     Core.get().getSoundManager().play(new SoundSourceEffect(soundEffect.getSoundBuffer(), soundEffect.getVolume(), x, y));
@@ -159,7 +159,8 @@ public class ParticleEffect implements PropertiesHolder {
         ParticleParamFunction velocityXFunc = makeFunction(minVelocityX, maxVelocityX, sourceVelocityXMultiplier);
         ParticleParamFunction velocityYFunc = makeFunction(minVelocityY, maxVelocityY, sourceVelocityYMultiplier);
         Supplier<Float> angleSupplier = minAngle == maxAngle ? () -> minAngle : () -> RandomHelper.randomFloat(rand, minAngle, maxAngle * MathUtils.TWO_PI);
-        Supplier<Float> angularVelocitySupplier = minAngularVelocity == maxAngularVelocity ? () -> minAngularVelocity : () -> RandomHelper.randomFloat(rand, minAngularVelocity, maxAngularVelocity);
+        Supplier<Float> angularVelocitySupplier = minAngularVelocity == maxAngularVelocity ? () -> minAngularVelocity :
+                () -> RandomHelper.randomFloat(rand, minAngularVelocity, maxAngularVelocity);
         ParticleParamFunction sizeXFunc = makeFunction(minSizeX, maxSizeX, sourceSizeXMultiplier);
         ParticleParamFunction sizeYFunc = makeFunction(minSizeY, maxSizeY, sourceSizeYMultiplier);
         Supplier<Float> sizeVelocitySupplier = minSizeVelocity == maxSizeVelocity ? () -> minSizeVelocity : () -> RandomHelper.randomFloat(rand, minSizeVelocity, maxSizeVelocity);
@@ -168,36 +169,38 @@ public class ParticleEffect implements PropertiesHolder {
         Supplier<Long> textureSupplier = textures.length > 1 ? () -> textures[rand.nextInt(textures.length)].getTextureHandle() : () -> texture;
 
         if (maxSpawnCount > minSpawnCount) {
-            spawnRunnables.add((x, y, sizeX, sizeY, velocityX, velocityY) -> {
+            spawnRunnables.add((x, y, sizeX, sizeY, angle, velocityX, velocityY, r, g, b, a) -> {
                 int spawnCount = rand.nextInt(maxSpawnCount - minSpawnCount + 1) + minSpawnCount;
                 for (int i = 0; i < spawnCount; i++) {
-                    aliveParticles.add(ParticleSpawner.PARTICLE_POOL.getOrCreate(ParticleSpawner.PARTICLE_SUPPLIER).init(textureSupplier.get(), x + localXSupplier.get(), y + localYSupplier.get(),
-                            velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), angleSupplier.get(), angularVelocitySupplier.get(), sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY),
-                            sizeVelocitySupplier.get(), r, g, b, a, alphaVellocitySupplier.get(), isAlphaFromZero, renderLayer));
+                    aliveParticles.add(ParticleSpawner.PARTICLE_POOL.getOrCreate(ParticleSpawner.PARTICLE_SUPPLIER).init(textureSupplier.get(), x + localXSupplier.get(),
+                            y + localYSupplier.get(), velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), angle + angleSupplier.get(), angularVelocitySupplier.get(),
+                            sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sizeVelocitySupplier.get(), r * this.r, g * this.g, b * this.b, a * this.a, alphaVellocitySupplier.get(),
+                            isAlphaFromZero, renderLayer));
                 }
             });
         } else {
             if (minSpawnCount > 1) {
-                spawnRunnables.add((x, y, sizeX, sizeY, velocityX, velocityY) -> {
+                spawnRunnables.add((x, y, sizeX, sizeY, angle, velocityX, velocityY, r, g, b, a) -> {
                     for (int i = 0; i < minSpawnCount; i++) {
-                        aliveParticles.add(ParticleSpawner.PARTICLE_POOL.getOrCreate(ParticleSpawner.PARTICLE_SUPPLIER).init(textureSupplier.get(), x + localXSupplier.get(), y + localYSupplier.get(),
-                                velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), angleSupplier.get(), angularVelocitySupplier.get(), sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY),
-                                sizeVelocitySupplier.get(), r, g, b, a, alphaVellocitySupplier.get(), isAlphaFromZero, renderLayer));
+                        aliveParticles.add(ParticleSpawner.PARTICLE_POOL.getOrCreate(ParticleSpawner.PARTICLE_SUPPLIER).init(textureSupplier.get(), x + localXSupplier.get(),
+                                y + localYSupplier.get(), velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), angle + angleSupplier.get(), angularVelocitySupplier.get(),
+                                sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sizeVelocitySupplier.get(), r * this.r, g * this.g, b * this.b, a * this.a, alphaVellocitySupplier.get(),
+                                isAlphaFromZero, renderLayer));
                     }
                 });
             } else if (minSpawnCount > 0) {
-                spawnRunnables.add((x, y, sizeX, sizeY, velocityX, velocityY) -> aliveParticles.add(ParticleSpawner.PARTICLE_POOL.getOrCreate(ParticleSpawner.PARTICLE_SUPPLIER)
-                        .init(textureSupplier.get(), x + localXSupplier.get(), y + localYSupplier.get(), velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), angleSupplier.get(),
-                                angularVelocitySupplier.get(), sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sizeVelocitySupplier.get(), r, g, b, a, alphaVellocitySupplier.get(),
-                                isAlphaFromZero, renderLayer)));
+                spawnRunnables.add((x, y, sizeX, sizeY, angle, velocityX, velocityY, r, g, b, a) -> aliveParticles.add(ParticleSpawner.PARTICLE_POOL.getOrCreate(ParticleSpawner.PARTICLE_SUPPLIER)
+                        .init(textureSupplier.get(), x + localXSupplier.get(), y + localYSupplier.get(), velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY),
+                                angle + angleSupplier.get(), angularVelocitySupplier.get(), sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sizeVelocitySupplier.get(),
+                                r * this.r, g * this.g, b * this.b, a * this.a, alphaVellocitySupplier.get(), isAlphaFromZero, renderLayer)));
             }
         }
 
         if (childEffectsInstances.size() > 0) {
             for (int i = 0; i < childEffectsInstances.size(); i++) {
                 ParticleEffect effect = childEffectsInstances.get(i);
-                spawnRunnables.add((x, y, sizeX, sizeY, velocityX, velocityY) -> effect.play(x + localXSupplier.get(), y + localYSupplier.get(), sizeXFunc.apply(sizeX),
-                        sizeYFunc.apply(sizeY), velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY)));
+                spawnRunnables.add((x, y, sizeX, sizeY, angle, velocityX, velocityY, r, g, b, a) -> effect.play(x + localXSupplier.get(), y + localYSupplier.get(), sizeXFunc.apply(sizeX),
+                        sizeYFunc.apply(sizeY), angle, velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), r, g, b, a));
             }
         }
     }
@@ -225,36 +228,44 @@ public class ParticleEffect implements PropertiesHolder {
     }
 
     public void emit(float x, float y, SpawnAccumulator spawnAccumulator) {
-        emit(x, y, 0, 0, 0, 0, spawnAccumulator);
+        emit(x, y, 0, 0, 0, 0, 0, spawnAccumulator);
     }
 
-    public void emit(float x, float y, float sizeX, float sizeY, float velocityX, float velocityY, SpawnAccumulator spawnAccumulator) {
+    public void emit(float x, float y, float sizeX, float sizeY, float angle, float velocityX, float velocityY, SpawnAccumulator spawnAccumulator) {
+        emit(x, y, sizeX, sizeY, angle, velocityX, velocityY, 1.0f, 1.0f, 1.0f, 1.0f, spawnAccumulator);
+    }
+
+    public void emit(float x, float y, float sizeX, float sizeY, float angle, float velocityX, float velocityY, float r, float g, float b, float a, SpawnAccumulator spawnAccumulator) {
         spawnAccumulator.update();
         while (spawnAccumulator.getAccumulatedTime() >= spawnTime) {
-            play(x, y, sizeX, sizeY, velocityX, velocityY);
+            play(x, y, sizeX, sizeY, angle, velocityX, velocityY, r, g, b, a);
             spawnAccumulator.consume(spawnTime);
         }
     }
 
-    public void debug(float x, float y, float sizeX, float sizeY, float velocityX, float velocityY, SpawnAccumulator spawnAccumulator) {
+    public void debug(float x, float y, float sizeX, float sizeY, float angle, float velocityX, float velocityY, SpawnAccumulator spawnAccumulator) {
         checkParticles();
 
         if (spawnTime > 0) {
-            emit(x, y, sizeX, sizeY, velocityX, velocityY, spawnAccumulator);
+            emit(x, y, sizeX, sizeY, angle, velocityX, velocityY, spawnAccumulator);
         } else {
             if (!isAlive()) {
-                play(x, y, sizeX, sizeY, velocityX, velocityY);
+                play(x, y, sizeX, sizeY, angle, velocityX, velocityY, 1.0f, 1.0f, 1.0f, 1.0f);
             }
         }
     }
 
     public void play(float x, float y, float sizeX, float sizeY) {
-        play(x, y, sizeX, sizeY, 0, 0);
+        play(x, y, sizeX, sizeY, 0, 0, 0, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     public void play(float x, float y, float sizeX, float sizeY, float velocityX, float velocityY) {
+        play(x, y, sizeX, sizeY, 0, velocityX, velocityY, 1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
+    public void play(float x, float y, float sizeX, float sizeY, float angle, float velocityX, float velocityY, float r, float g, float b, float a) {
         for (int i = 0; i < spawnRunnables.size(); i++) {
-            spawnRunnables.get(i).spawn(x, y, sizeX, sizeY, velocityX, velocityY);
+            spawnRunnables.get(i).spawn(x, y, sizeX, sizeY, angle, velocityX, velocityY, r, g, b, a);
         }
     }
 
