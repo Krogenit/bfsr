@@ -1,8 +1,8 @@
 package net.bfsr.server.util;
 
-import java.io.File;
+import java.nio.file.Path;
 
 public final class PathHelper {
-    public static final File CONTENT = new File("../../", "core/server/src/main/resources");
-    public static final File CONFIG = new File(CONTENT, "config");
+    public static final Path CONTENT = Path.of("../../core/server/src/main/resources");
+    public static final Path CONFIG = CONTENT.resolve("config");
 }

@@ -31,7 +31,10 @@ import org.lwjgl.glfw.GLFW;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -243,12 +246,12 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
             log.error("Failed to save particle effects", e);
         }
 
-        File folder = ParticleEffectsRegistry.INSTANCE.getEffectsFolder();
+        Path folder = ParticleEffectsRegistry.INSTANCE.getEffectsFolder();
         try {
-            Files.walkFileTree(folder.toPath(), new SimpleFileVisitor<>() {
+            Files.walkFileTree(folder, new SimpleFileVisitor<>() {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    String filePath = PathHelper.getFileNameWithoutExtension(file.toString().replace(folder.getPath(), "").replace(File.separator, "/").substring(1));
+                    String filePath = PathHelper.getFileNameWithoutExtension(file.toString().replace(folder.toString(), "").replace(File.separator, "/").substring(1));
                     if (particleEffects.stream().noneMatch(inspectionHolder -> {
                         ParticleEffect particleEffect = inspectionHolder.getComponentByType(ParticleEffect.class);
                         return particleEffect.getPath().equals(filePath);
@@ -286,10 +289,10 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
         particleEffect.setEditorPath(editorPath);
         particleEffect.setTreeIndex(buttonObjectHolder.getParent().getSubObjects().indexOf(buttonObjectHolder));
         ParticleEffectsRegistry.INSTANCE.add(particleEffect);
-        File folder = ParticleEffectsRegistry.INSTANCE.getEffectsFolder();
-        File effectFolder = new File(folder, Paths.get(editorPath).toString());
-        effectFolder.mkdirs();
-        ConfigLoader.save(new File(effectFolder, particleEffect.getName() + ".json"), particleEffect, ParticleEffect.class);
+        Path folder = ParticleEffectsRegistry.INSTANCE.getEffectsFolder();
+        Path effectFolder = folder.resolve(editorPath);
+        effectFolder.toFile().mkdirs();
+        ConfigLoader.save(effectFolder.resolve(particleEffect.getName() + ".json"), particleEffect, ParticleEffect.class);
     }
 
     private void remove(InspectionEntry<ParticleEffect> buttonObjectHolder) {

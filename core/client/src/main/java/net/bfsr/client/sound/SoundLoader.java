@@ -19,18 +19,16 @@ import java.nio.ShortBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Log4j2
 public final class SoundLoader {
     private static final TMap<String, SoundBuffer> LOADED_SOUNDS = new THashMap<>();
 
-    private static SoundBuffer loadSound(String path) {
+    private static SoundBuffer loadSound(Path path) {
         try (STBVorbisInfo info = STBVorbisInfo.malloc()) {
             ShortBuffer pcm = readVorbis(path, info);
 
             int bufferId = AL10.alGenBuffers();
-            // Copy to buffer
             AL10.alBufferData(bufferId, info.channels() == 1 ? AL10.AL_FORMAT_MONO16 : AL10.AL_FORMAT_STEREO16, pcm, info.sample_rate());
             MemoryUtil.memFree(pcm);
             SoundBuffer soundBuffer = new SoundBuffer(bufferId);
@@ -43,9 +41,9 @@ public final class SoundLoader {
     }
 
 
-    private static ShortBuffer readVorbis(String fileName, STBVorbisInfo info) throws IOException {
+    private static ShortBuffer readVorbis(Path path, STBVorbisInfo info) throws IOException {
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            ByteBuffer vorbis = resourceToByteBuffer(fileName);
+            ByteBuffer vorbis = resourceToByteBuffer(path);
             IntBuffer error = stack.mallocInt(1);
             long decoder = STBVorbis.stb_vorbis_open_memory(vorbis, error, null);
             if (decoder == MemoryUtil.NULL) {
@@ -62,8 +60,7 @@ public final class SoundLoader {
         }
     }
 
-    private static ByteBuffer resourceToByteBuffer(String resource) throws IOException {
-        Path path = Paths.get(resource);
+    private static ByteBuffer resourceToByteBuffer(Path path) throws IOException {
         try (SeekableByteChannel fc = Files.newByteChannel(path)) {
             ByteBuffer buffer = BufferUtils.createByteBuffer((int) fc.size() + 1);
             while (true) {
@@ -78,7 +75,7 @@ public final class SoundLoader {
         return getBuffer(PathHelper.convertPath(soundRegistry.getPath()));
     }
 
-    public static SoundBuffer getBuffer(String path) {
-        return LOADED_SOUNDS.computeIfAbsent(path, soundRegistry -> loadSound(path));
+    public static SoundBuffer getBuffer(Path path) {
+        return LOADED_SOUNDS.computeIfAbsent(path.toString(), soundRegistry -> loadSound(path));
     }
 }

@@ -9,9 +9,7 @@ import java.awt.font.GlyphVector;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -25,10 +23,6 @@ import java.util.*;
  * select the proper physical font to use (especially on less common Linux distributions). Once a pre-rendered glyph image is
  * cached, it will remain stored in an OpenGL texture for the entire lifetime of the application (StringCache depends on this
  * behavior).
- * @todo Should have a separate glyph cache and a separate smaller point size font for rendering the GUI at its smallest size
- * and for use in the F3 debug screen; may need some explicit argument in StringCache.renderString() to select the size
- * @todo Need to have a config file that allows overring the font search order by locale to properly support Traditional Chinese
- * hanzi, Simplified Chinese hanzi, Japanese kanji, and Korean hanja
  */
 public class GlyphCache {
     /**
@@ -238,10 +232,8 @@ public class GlyphCache {
      */
     void setFontFromFile(String fontFileName, boolean antiAlias) {
         try {
-            InputStream stream = new FileInputStream(new File(PathHelper.FONT, fontFileName));
-
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            Font font = Font.createFont(Font.TRUETYPE_FONT, stream);
+            Font font = Font.createFont(Font.TRUETYPE_FONT, PathHelper.FONT.resolve(fontFileName).toFile());
             ge.registerFont(font);
             font = font.deriveFont(Font.PLAIN, 72);
 
@@ -250,8 +242,8 @@ public class GlyphCache {
 
             antiAliasEnabled = antiAlias;
             setRenderingHints();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException | FontFormatException e) {
+            throw new RuntimeException("Can't load and create font " + fontFileName, e);
         }
     }
 

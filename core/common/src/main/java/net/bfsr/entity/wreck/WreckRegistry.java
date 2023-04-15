@@ -3,7 +3,7 @@ package net.bfsr.entity.wreck;
 import net.bfsr.config.ConfigLoader;
 import net.bfsr.entity.ship.ShipType;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -15,10 +15,10 @@ public class WreckRegistry {
     private final Map<ShipType, RegisteredShipWreck[]> wrecksByShipType = new EnumMap<>(ShipType.class);
     private final List<RegisteredShipWreck>[] wrecksByType = new List[2];
 
-    public void init(File folder) {
+    public void init(Path folder) {
         wrecksByType[WreckType.SMALL.ordinal()] = new ArrayList<>();
         wrecksByType[WreckType.DEFAULT.ordinal()] = new ArrayList<>();
-        ConfigLoader.loadFromFiles(new File(folder, "wreck"), WrecksConfig.class, wrecksConfig -> {
+        ConfigLoader.loadFromFiles(folder.resolve("wreck"), WrecksConfig.class, wrecksConfig -> {
             WreckConfig[] wrecks = wrecksConfig.getWrecks();
             if (wrecksConfig.getShipType() != null) {
                 RegisteredShipWreck[] registeredShipWrecks = new RegisteredShipWreck[wrecks.length];

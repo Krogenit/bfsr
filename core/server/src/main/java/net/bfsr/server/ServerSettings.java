@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.ConfigLoader;
 
-import java.io.File;
+import java.nio.file.Path;
 
 @Getter
 @Setter
@@ -26,7 +26,7 @@ public class ServerSettings {
         }
     }
 
-    public File getFile() {
-        return new File(".", "server_settings.json");
+    public Path getFile() {
+        return Path.of(".", "server_settings.json");
     }
 }

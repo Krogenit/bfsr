@@ -8,7 +8,6 @@ import net.bfsr.property.PropertiesHolder;
 import net.bfsr.util.RunnableUtils;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
@@ -31,8 +30,7 @@ public class PropertyFileSelector<P extends PropertiesHolder> extends PropertyCo
         button.setTextColor(TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, 1.0f);
         button.setOnMouseClickRunnable(() -> {
             try {
-                String canonicalPath = new File(PathHelper.CONTENT.getPath(), path).getCanonicalPath();
-                String selectedFilePath = TinyFileDialogs.tinyfd_openFileDialog("Select file", canonicalPath, null, null, false);
+                String selectedFilePath = TinyFileDialogs.tinyfd_openFileDialog("Select file", PathHelper.CONTENT.resolve(path).toString(), null, null, false);
                 if (selectedFilePath != null) {
                     setPath(selectedFilePath);
                 }
@@ -48,7 +46,7 @@ public class PropertyFileSelector<P extends PropertiesHolder> extends PropertyCo
     }
 
     public void setPath(String path) throws IOException {
-        this.path = path.replace(PathHelper.CONTENT.getCanonicalPath(), "").replace(File.separator, "/").substring(1);
+        this.path = PathHelper.convertToLocalPath(path);
         button.setString(this.path);
     }
 

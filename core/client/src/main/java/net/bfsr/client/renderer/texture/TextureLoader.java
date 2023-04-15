@@ -15,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.nio.file.Path;
 
 @Log4j2
 public final class TextureLoader {
@@ -53,11 +54,11 @@ public final class TextureLoader {
         return getTexture(PathHelper.convertPath(texture.getPath()), wrap, filter);
     }
 
-    public static Texture getTexture(String path) {
+    public static Texture getTexture(Path path) {
         return getTexture(path, true, DEFAULT_WRAP, DEFAULT_FILTER);
     }
 
-    public static Texture getTexture(String path, int wrap, int filter) {
+    public static Texture getTexture(Path path, int wrap, int filter) {
         return getTexture(path, true, wrap, filter);
     }
 
@@ -65,8 +66,8 @@ public final class TextureLoader {
         return getTexture(PathHelper.convertPath(texture.getPath()), createMips, wrap, filter);
     }
 
-    public static Texture getTexture(String path, boolean createMips, int wrap, int filter) {
-        return LOADED_TEXTURES.computeIfAbsent(path, s -> loadPngTexture(path, createMips, wrap, filter));
+    public static Texture getTexture(Path path, boolean createMips, int wrap, int filter) {
+        return LOADED_TEXTURES.computeIfAbsent(path.toString(), s -> loadPngTexture(path, createMips, wrap, filter));
     }
 
     private static void loadDDSTexture(String path) {
@@ -90,7 +91,7 @@ public final class TextureLoader {
         LOADED_TEXTURES.put(path, texture);
     }
 
-    private static Texture loadPngTexture(String path, boolean createMips, int wrap, int filter) {
+    private static Texture loadPngTexture(Path path, boolean createMips, int wrap, int filter) {
         ByteBuffer image;
         int width, height, channels;
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -99,7 +100,7 @@ public final class TextureLoader {
             IntBuffer comp = stack.mallocInt(1);
 
             STBImage.stbi_set_flip_vertically_on_load(false);
-            image = STBImage.stbi_load(path, w, h, comp, 0);
+            image = STBImage.stbi_load(path.toString(), w, h, comp, 0);
             if (image == null) {
                 log.error("Failed to load a texture file {}!{}{}", path, System.lineSeparator(), STBImage.stbi_failure_reason());
                 return null;

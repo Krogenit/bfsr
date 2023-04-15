@@ -4,11 +4,13 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.settings.Option;
 import net.bfsr.client.util.PathHelper;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,28 +21,28 @@ public final class Lang {
     private static final List<String> LANGUAGES = new ArrayList<>();
 
     public static void load() {
-        File folder = new File(PathHelper.CONTENT, "lang");
-        if (folder.exists()) {
-            try {
-                for (final File file : folder.listFiles()) {
-                    String langName = file.getName().substring(0, file.getName().indexOf('.'));
-                    BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8));
-                    String s;
+        Path folder = PathHelper.CONTENT.resolve("lang");
+        try {
+            Files.walkFileTree(folder, new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    String langName = PathHelper.getFileNameWithoutExtension(file.getFileName().toString());
+                    List<String> lines = Files.readAllLines(file, StandardCharsets.UTF_8);
                     HashMap<String, String> langData = new HashMap<>();
-                    while ((s = reader.readLine()) != null) {
-                        if (s.length() > 0) {
-                            s = s.replace("%N", "\n");
-                            String[] data = s.split("=");
+                    for (int i = 0; i < lines.size(); i++) {
+                        String s = lines.get(i);
+                        String[] data = s.split("=");
+                        if (data.length > 1) {
                             langData.put(data[0], data[1]);
                         }
                     }
                     TRANSLATIONS.put(langName, langData);
                     LANGUAGES.add(langName);
-                    reader.close();
+                    return FileVisitResult.CONTINUE;
                 }
-            } catch (IOException e) {
-                log.error("Can't load localization", e);
-            }
+            });
+        } catch (IOException e) {
+            throw new RuntimeException("Can't load localization", e);
         }
     }
 

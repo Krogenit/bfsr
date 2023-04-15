@@ -6,10 +6,7 @@ import net.bfsr.client.util.PathHelper;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.Platform;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -163,17 +160,10 @@ public class FileManager {
     }
 
     private String loadFile(String fileName) {
-        StringBuilder shaderSource = new StringBuilder(1024);
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Files.newInputStream(new File(PathHelper.SHADER, fileName).toPath()), StandardCharsets.UTF_8))) {
-            String line;
-
-            while ((line = reader.readLine()) != null) {
-                shaderSource.append(line).append('\n');
-            }
+        try {
+            return Files.readString(PathHelper.SHADER.resolve(fileName), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            log.error("Could not load shader {}", fileName, e);
+            throw new RuntimeException("Could not load shader " + fileName, e);
         }
-
-        return shaderSource.toString();
     }
 }

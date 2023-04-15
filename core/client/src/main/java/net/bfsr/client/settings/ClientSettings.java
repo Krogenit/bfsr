@@ -5,7 +5,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.config.ConfigLoader;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,8 +27,8 @@ public class ClientSettings {
     }
 
     public void readSettings() {
-        File file = getFile();
-        if (file.exists()) {
+        Path file = getFile();
+        if (file.toFile().exists()) {
             ClientSettings clientSettings = ConfigLoader.load(file, ClientSettings.class);
             for (Map.Entry<Option, Object> entry : clientSettings.options.entrySet()) {
                 entry.getKey().setValue(entry.getValue());
@@ -36,7 +36,7 @@ public class ClientSettings {
         }
     }
 
-    public File getFile() {
-        return new File(".", "client_settings.json");
+    public Path getFile() {
+        return Path.of(".", "client_settings.json");
     }
 }

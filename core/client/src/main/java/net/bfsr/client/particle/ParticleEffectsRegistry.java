@@ -15,7 +15,7 @@ import net.bfsr.entity.GameObject;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -26,7 +26,7 @@ public class ParticleEffectsRegistry {
     public static final ParticleEffectsRegistry INSTANCE = new ParticleEffectsRegistry();
 
     @Getter
-    private final File effectsFolder = new File(PathHelper.CONFIG, "particleeffect");
+    private final Path effectsFolder = PathHelper.CONFIG.resolve("particleeffect");
     private final ParticleSpawnFunction[] spawnFunctions = new ParticleSpawnFunction[ParticleEffect.values().length];
     private final TMap<String, net.bfsr.client.particle.ParticleEffect> registry = new THashMap<>();
 
