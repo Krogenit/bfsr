@@ -5,6 +5,7 @@ import net.bfsr.client.collision.filter.WreckFilter;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.CollisionObject;
 import net.bfsr.client.particle.ParticleSpawner;
+import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
@@ -36,7 +37,7 @@ public class Wreck extends CollisionObject {
     @Getter
     protected boolean light;
     @Getter
-    protected boolean fireExplosion;
+    protected boolean emitFire;
     protected boolean fireFadingOut;
 
     @Getter
@@ -61,9 +62,10 @@ public class Wreck extends CollisionObject {
 
     protected float sparkleActivationTimer;
     private boolean changeLight;
+    private final SpawnAccumulator spawnAccumulator = new SpawnAccumulator();
 
     public Wreck init(WorldClient world, int id, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY, float r, float g, float b,
-                      float a, float alphaVelocity, int wreckIndex, boolean fire, boolean light, boolean fireExplosion, float hull, int destroyedShipId,
+                      float a, float alphaVelocity, int wreckIndex, boolean fire, boolean light, boolean emitFire, float hull, int destroyedShipId,
                       WreckType wreckType, RegisteredShipWreck registeredShipWreck) {
         this.world = world;
         this.id = id;
@@ -77,7 +79,12 @@ public class Wreck extends CollisionObject {
         this.color.set(r, g, b, a);
         this.alphaVelocity = alphaVelocity;
         this.wreckIndex = wreckIndex;
-        this.fireExplosion = fireExplosion;
+        this.emitFire = emitFire;
+
+        if (emitFire) {
+            spawnAccumulator.resetTime();
+        }
+
         this.fire = fire;
         this.light = light;
         this.hull = hull;
@@ -166,8 +173,8 @@ public class Wreck extends CollisionObject {
     }
 
     protected void updateFireAndExplosion() {
-        if (fireExplosion) {
-            updateExplosion();
+        if (emitFire) {
+            emitFire();
         }
 
         updateFire();
@@ -208,14 +215,10 @@ public class Wreck extends CollisionObject {
         }
     }
 
-    protected void updateExplosion() {
-        explosionTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-        if (explosionTimer <= 0 && color.w > 0.6f) {
-            float size = scale.x / 4.0f;
+    protected void emitFire() {
+        if (color.w > 0.6f) {
             Vector2f position = getPosition();
-            ParticleSpawner.spawnExplosion(position.x, position.y, size / 10.0f);
-            ParticleSpawner.spawnDamageSmoke(position.x, position.y, size + 1.0f);
-            explosionTimer = 8 + world.getRand().nextInt(8);
+            ParticleSpawner.emitFire(position.x, position.y, spawnAccumulator);
         }
     }
 

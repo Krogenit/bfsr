@@ -87,9 +87,7 @@ public class ParticleEffect implements PropertiesHolder {
 
     private transient Texture[] textures;
     private transient float spawnTime;
-    private transient long lastEmitTime;
-    private transient long emitTime;
-    private transient float accumulatedTime;
+
     private final transient List<Particle> aliveParticles = new ArrayList<>();
 
     private static final transient Random rand = new Random();
@@ -132,7 +130,6 @@ public class ParticleEffect implements PropertiesHolder {
         spawnRunnables.clear();
 
         if (spawnOverTime > 0) {
-            if (spawnTime == 0) emitTime = System.currentTimeMillis();
             spawnTime = 1.0f / spawnOverTime;
         } else {
             spawnTime = 0;
@@ -227,21 +224,23 @@ public class ParticleEffect implements PropertiesHolder {
         }
     }
 
-    public void create() {
-        emitTime = System.currentTimeMillis();
+    public void emit(float x, float y, SpawnAccumulator spawnAccumulator) {
+        emit(x, y, 0, 0, 0, 0, spawnAccumulator);
     }
 
-    public void emit(float x, float y, float sizeX, float sizeY, float velocityX, float velocityY) {
+    public void emit(float x, float y, float sizeX, float sizeY, float velocityX, float velocityY, SpawnAccumulator spawnAccumulator) {
+        spawnAccumulator.update();
+        while (spawnAccumulator.getAccumulatedTime() >= spawnTime) {
+            play(x, y, sizeX, sizeY, velocityX, velocityY);
+            spawnAccumulator.consume(spawnTime);
+        }
+    }
+
+    public void debug(float x, float y, float sizeX, float sizeY, float velocityX, float velocityY, SpawnAccumulator spawnAccumulator) {
         checkParticles();
 
         if (spawnTime > 0) {
-            lastEmitTime = emitTime;
-            emitTime = System.currentTimeMillis();
-            accumulatedTime += (emitTime - lastEmitTime) / 1000.0f;
-            while (accumulatedTime > spawnTime) {
-                play(x, y, sizeX, sizeY, velocityX, velocityY);
-                accumulatedTime -= spawnTime;
-            }
+            emit(x, y, sizeX, sizeY, velocityX, velocityY, spawnAccumulator);
         } else {
             if (!isAlive()) {
                 play(x, y, sizeX, sizeY, velocityX, velocityY);

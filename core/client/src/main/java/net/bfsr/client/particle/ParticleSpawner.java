@@ -29,6 +29,7 @@ public final class ParticleSpawner {
 
     private static final ParticleEffect shipDestroySmall = ParticleEffectsRegistry.INSTANCE.getEffectByPath("explosion/ship_small");
     private static final ParticleEffect smallExplosion = ParticleEffectsRegistry.INSTANCE.getEffectByPath("explosion/small");
+    private static final ParticleEffect smallFire = ParticleEffectsRegistry.INSTANCE.getEffectByPath("fire/small");
 
     public static void spawnDestroyShipSmall(Ship ship) {
         Vector2f scale = ship.getScale();
@@ -45,17 +46,8 @@ public final class ParticleSpawner {
         smallExplosion.play(x, y, size, size);
     }
 
-    public static void spawnExplosion(float x, float y, float size) {
-        int count = rand.nextInt(2) + 1;
-        for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.01f + rand.nextFloat() / 4.0f * 6.0f, CACHED_VECTOR);
-            float angle = MathUtils.TWO_PI * rand.nextFloat();
-            float angleVel = RandomHelper.randomFloat(rand, -0.004f, 0.004f) * 60.0f;
-            float sizeVel = 5.4f;
-            float alphaVel = 0.84f;
-            PARTICLE_POOL.getOrCreate(PARTICLE_SUPPLIER).init(TextureRegister.particleExplosion, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, size, size, sizeVel,
-                    1.0f, 1.0f, 1.0f, 1.0f, alphaVel, false, RenderLayer.DEFAULT_ADDITIVE);
-        }
+    public static void emitFire(float x, float y, SpawnAccumulator spawnAccumulator) {
+        smallFire.emit(x, y, spawnAccumulator);
     }
 
     public static void spawnBeam(float x, float y, float rotation, float size, float r, float g, float b, float a) {
@@ -200,8 +192,8 @@ public final class ParticleSpawner {
             RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.05f + rand.nextFloat() / 3.0f * 6.0f, CACHED_VECTOR);
             float angle = MathUtils.TWO_PI * rand.nextFloat();
             float angleVel = 0.0F;
-            float sizeVel = 0.75F * 6.0f;
-            float alphaVel = 0.015F * 60.0f;
+            float sizeVel = 4.5f;
+            float alphaVel = 0.9f;
             PARTICLE_POOL.getOrCreate(PARTICLE_SUPPLIER).init(TextureRegister.particleSmokeRing, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, size, size, sizeVel,
                     0.75f, 0.75f, 0.75f, 0.75f, alphaVel, true, RenderLayer.DEFAULT_ALPHA_BLENDED);
         }

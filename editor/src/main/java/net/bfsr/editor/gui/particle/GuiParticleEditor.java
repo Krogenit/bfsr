@@ -9,6 +9,7 @@ import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.particle.ParticleEffect;
 import net.bfsr.client.particle.ParticleEffectsRegistry;
+import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.instanced.GUIRenderer;
@@ -62,6 +63,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     private final int contextMenuStringXOffset = 8;
     private final InspectionPanel<ParticleEffect> inspectionPanel = new InspectionPanel<>(this, "Particle Effects", leftPanelWidth, fontType, fontSize, stringYOffset);
     private final PropertiesPanel propertiesPanel = new PropertiesPanel(this, propertiesContainerWidth, fontType, fontSize, stringXOffset, stringYOffset, contextMenuStringXOffset);
+    private final SpawnAccumulator spawnAccumulator = new SpawnAccumulator();
 
     @Override
     protected void initElements() {
@@ -332,7 +334,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
 
         if (particleEffect != null) {
             propertiesPanel.add(particleEffect, "Particle Effect");
-            particleEffect.create();
+            spawnAccumulator.resetTime();
         }
     }
 
@@ -373,8 +375,12 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
             ParticleEffect particleEffect = selectedEntry.getComponentByType(ParticleEffect.class);
             if (particleEffect != null) {
                 findChild(particleEffect, selectedEntry);
+                if (particleEffect.getSpawnOverTime() > 0 && particleEffect.getSpawnTime() == 0) {
+                    spawnAccumulator.resetTime();
+                }
                 particleEffect.init();
-                particleEffect.emit(gameObject.getPosX(), gameObject.getPosY(), gameObject.getSizeX(), gameObject.getSizeY(), gameObject.getVelocityX(), gameObject.getVelocityY());
+                particleEffect.debug(gameObject.getPosX(), gameObject.getPosY(), gameObject.getSizeX(), gameObject.getSizeY(), gameObject.getVelocityX(), gameObject.getVelocityY(),
+                        spawnAccumulator);
             }
         }
     }
@@ -420,7 +426,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
                 if (playing) {
                     particleEffect.clear();
                 } else {
-                    particleEffect.create();
+                    spawnAccumulator.resetTime();
                 }
             }
         }
@@ -443,7 +449,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
         if (selectedEntry != null && Core.get().isPaused()) {
             ParticleEffect particleEffect = selectedEntry.getComponentByType(ParticleEffect.class);
             if (particleEffect != null) {
-                particleEffect.create();
+                spawnAccumulator.resetTime();
             }
         }
         Core.get().setPaused(value);
