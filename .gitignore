@@ -6,7 +6,7 @@
 /test/
 gradlew
 gradlew.bat
-/gradle/
+/gradle/wrapper/gradle-wrapper.jar
 /core/client/out/
 /core/client/build/
 /core/common/out/
