@@ -5,8 +5,9 @@ import clipper2.core.PointD;
 import net.bfsr.client.collision.filter.ShipFilter;
 import net.bfsr.client.component.Damage;
 import net.bfsr.client.component.Shield;
-import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
+import net.bfsr.client.particle.spawner.ExplosionSpawner;
+import net.bfsr.client.particle.spawner.ParticleSpawner;
 import net.bfsr.client.renderer.texture.DamageMaskTexture;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.component.Armor;
@@ -133,7 +134,7 @@ public class ShipEngiSmall0 extends Ship {
 
     @Override
     protected void createDestroyParticles() {
-        ParticleSpawner.spawnDestroyShipSmall(this);
+        ExplosionSpawner.spawnDestroyShipSmall(this);
     }
 
     @Override

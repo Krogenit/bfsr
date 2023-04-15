@@ -6,7 +6,7 @@ import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.entity.wreck.ShipWreck;
 import net.bfsr.client.entity.wreck.Wreck;
 import net.bfsr.client.network.packet.PacketIn;
-import net.bfsr.client.particle.ParticleSpawner;
+import net.bfsr.client.particle.spawner.ParticleSpawner;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.wreck.WreckType;

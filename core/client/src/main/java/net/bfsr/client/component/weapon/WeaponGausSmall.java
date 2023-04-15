@@ -2,7 +2,7 @@ package net.bfsr.client.component.weapon;
 
 import net.bfsr.client.collision.filter.ShipFilter;
 import net.bfsr.client.entity.ship.Ship;
-import net.bfsr.client.particle.ParticleSpawner;
+import net.bfsr.client.particle.spawner.ParticleSpawner;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.physics.PhysicsUtils;

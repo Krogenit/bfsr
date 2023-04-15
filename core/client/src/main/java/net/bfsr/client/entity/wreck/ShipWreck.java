@@ -5,7 +5,8 @@ import lombok.NoArgsConstructor;
 import net.bfsr.client.collision.filter.WreckFilter;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.ship.Ship;
-import net.bfsr.client.particle.ParticleSpawner;
+import net.bfsr.client.particle.spawner.ExplosionSpawner;
+import net.bfsr.client.particle.spawner.ParticleSpawner;
 import net.bfsr.entity.wreck.RegisteredShipWreck;
 import net.bfsr.entity.wreck.WreckRegistry;
 import net.bfsr.entity.wreck.WreckType;
@@ -89,7 +90,7 @@ public class ShipWreck extends Wreck {
         this.isDead = true;
         if (color.w > 0.01f) {
             Vector2 worldPos = body.getLocalCenter().add(position.x, position.y);
-            ParticleSpawner.spawnSmallExplosion((float) worldPos.x, (float) worldPos.y, getScale().x);
+            ExplosionSpawner.spawnSmallExplosion((float) worldPos.x, (float) worldPos.y, getScale().x);
         }
     }
 

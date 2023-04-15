@@ -15,8 +15,9 @@ import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.network.packet.common.PacketObjectPosition;
 import net.bfsr.client.network.packet.common.PacketShipEngine;
-import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
+import net.bfsr.client.particle.spawner.ExplosionSpawner;
+import net.bfsr.client.particle.spawner.ParticleSpawner;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.font.string.StringObject;
@@ -418,7 +419,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
         Vector2f position = getPosition();
         float randomVectorX = -scale.x * 0.4f + scale.x * 0.8f * rand.nextFloat();
         float randomVectorY = -scale.y * 0.4f + scale.y * 0.8f * rand.nextFloat();
-        ParticleSpawner.spawnSmallExplosion(position.x + randomVectorX, position.y + randomVectorY, 2.0f);
+        ExplosionSpawner.spawnSmallExplosion(position.x + randomVectorX, position.y + randomVectorY, 2.0f);
     }
 
     protected abstract void createDestroyParticles();

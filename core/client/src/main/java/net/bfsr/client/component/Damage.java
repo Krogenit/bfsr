@@ -2,8 +2,9 @@ package net.bfsr.client.component;
 
 import net.bfsr.client.entity.TextureObject;
 import net.bfsr.client.entity.ship.Ship;
-import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.RenderLayer;
+import net.bfsr.client.particle.spawner.ExplosionSpawner;
+import net.bfsr.client.particle.spawner.ParticleSpawner;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
@@ -83,9 +84,7 @@ public class Damage extends TextureObject {
         if (damaged) {
             if (!holeCreated) {
                 addRotation = MathUtils.TWO_PI * rand.nextFloat();
-                ParticleSpawner.spawnExplosion(position.x, position.y, scale.x, 2.0f);
-                ParticleSpawner.spawnSpark(position.x, position.y, scale.x, 2.0f);
-                ParticleSpawner.spawnLight(position.x, position.y, (scale.x + scale.y), 1.0f, 0.5f, 0.5f, 0.7f, 2.0f, true, RenderLayer.DEFAULT_ADDITIVE);
+                ExplosionSpawner.spawnSmallExplosion(position.x, position.y, scale.x);
                 holeCreated = true;
             }
 

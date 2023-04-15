@@ -1,9 +1,9 @@
-package net.bfsr.client.particle;
+package net.bfsr.client.particle.spawner;
 
-import net.bfsr.client.component.weapon.WeaponSlotBeam;
-import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.entity.wreck.ShipWreck;
 import net.bfsr.client.entity.wreck.Wreck;
+import net.bfsr.client.particle.Particle;
+import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.texture.TextureRegister;
@@ -21,42 +21,13 @@ import java.util.function.Supplier;
 public final class ParticleSpawner {
     private static final Random rand = new Random();
     public static final ObjectPool<Particle> PARTICLE_POOL = new ObjectPool<>();
-    public static final ObjectPool<ParticleBeamEffect> PARTICLE_BEAM_EFFECT_POOL = new ObjectPool<>();
     public static final ObjectPool<Wreck> PARTICLE_WREAK_POOL = new ObjectPool<>();
     public static final ObjectPool<ShipWreck> PARTICLE_SHIP_WREAK_POOL = new ObjectPool<>();
     public static final Vector2f CACHED_VECTOR = new Vector2f();
     public static final Supplier<Particle> PARTICLE_SUPPLIER = Particle::new;
 
-    private static final ParticleEffect shipDestroySmall = ParticleEffectsRegistry.INSTANCE.getEffectByPath("explosion/ship_small");
-    private static final ParticleEffect smallExplosion = ParticleEffectsRegistry.INSTANCE.getEffectByPath("explosion/small");
-    private static final ParticleEffect smallFire = ParticleEffectsRegistry.INSTANCE.getEffectByPath("fire/small");
-    private static final ParticleEffect smallBeam = ParticleEffectsRegistry.INSTANCE.getEffectByPath("beam/small");
-
-    public static void emitBeam(float x, float y, float size, float angle, float velocityX, float velocityY, float r, float g, float b, float a, SpawnAccumulator spawnAccumulator) {
-        smallBeam.emit(x, y, size, size, angle, velocityX, velocityY, r, g, b, a, spawnAccumulator);
-    }
-
-    public static void spawnDestroyShipSmall(Ship ship) {
-        Vector2f scale = ship.getScale();
-        Vector2f pos = ship.getPosition();
-        Vector2f velocity = ship.getVelocity();
-        shipDestroySmall.play(pos.x, pos.y, scale.x, scale.y, velocity.x, velocity.y);
-    }
-
     public static void spawnLight(float x, float y, float size, float sizeSpeed, float r, float g, float b, float a, float alphaSpeed, boolean alphaFromZero, RenderLayer renderLayer) {
         PARTICLE_POOL.getOrCreate(PARTICLE_SUPPLIER).init(TextureRegister.particleLight, x, y, 0, 0, 0, 0, size, size, sizeSpeed, r, g, b, a, alphaSpeed, alphaFromZero, renderLayer);
-    }
-
-    public static void spawnSmallExplosion(float x, float y, float size) {
-        smallExplosion.play(x, y, size, size);
-    }
-
-    public static void emitFire(float x, float y, SpawnAccumulator spawnAccumulator) {
-        smallFire.emit(x, y, spawnAccumulator);
-    }
-
-    public static ParticleBeamEffect spawnBeamEffect(WeaponSlotBeam slot) {
-        return PARTICLE_BEAM_EFFECT_POOL.getOrCreate(ParticleBeamEffect::new).init(slot, TextureRegister.particleBeamEffect);
     }
 
     public static void spawnLightingIon(Vector2f pos, float size) {
@@ -69,49 +40,6 @@ public final class ParticleSpawner {
             RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), size / 4.0f, CACHED_VECTOR);
             PARTICLE_POOL.getOrCreate(PARTICLE_SUPPLIER).init(TextureRegister.particleLighting, pos.x + CACHED_VECTOR.x, pos.y + CACHED_VECTOR.y, 0, 0, angle, angleVel, size, size, sizeVel,
                     0.75F, 0.75F, 1, 1.5f, alphaVel, true, RenderLayer.DEFAULT_ADDITIVE);
-        }
-    }
-
-    public static void spawnRocketShoot(float x, float y, float size) {
-        for (int a = 0; a < 2; a++) {
-            float angle = MathUtils.TWO_PI * rand.nextFloat();
-            float angleVel = 0.0F;
-            float sizeVel = 9.0f;
-            float alphaVel = 1.5f;
-            PARTICLE_POOL.getOrCreate(PARTICLE_SUPPLIER).init(TextureRegister.particleRocketEffect, x, y, 0, 0, angle, angleVel, size, size, sizeVel, 1.0f, 1.0f, 0.5f, 1.0f,
-                    alphaVel, true, RenderLayer.DEFAULT_ADDITIVE);
-        }
-
-        for (int a = 0; a < 1; a++) {
-            float angle = MathUtils.TWO_PI * rand.nextFloat();
-            float angleVel = 0.0F;
-            float sizeVel = 9.0f;
-            float alphaVel = 1.2f;
-            PARTICLE_POOL.getOrCreate(PARTICLE_SUPPLIER).init(TextureRegister.particleRocketSmoke, x, y, 0, 0, angle, angleVel, size, size, sizeVel, 0.3f, 0.3f, 0.3f, 1.0f,
-                    alphaVel, true, RenderLayer.DEFAULT_ALPHA_BLENDED);
-        }
-    }
-
-    public static void spawnSpark(float x, float y, float size, float sizeVel) {
-        for (int i = 0; i < 3; i++) {
-            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.2f * 6.0f, CACHED_VECTOR);
-            float angle = MathUtils.TWO_PI * rand.nextFloat();
-            float angleVel = 0;
-            float alphaVel = 0.03f * 60.0f;
-
-            PARTICLE_POOL.getOrCreate(PARTICLE_SUPPLIER).init(TextureRegister.particleExplosion, x, y, CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, size / 2.0f, size / 2.0f,
-                    sizeVel, 1.0f, 0.5f, 0.0f, 1.0f, alphaVel, true, RenderLayer.DEFAULT_ADDITIVE);
-        }
-
-        for (int i = 0; i < 2; i++) {
-            RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.2f * 6.0f, CACHED_VECTOR);
-            float angle = MathUtils.TWO_PI * rand.nextFloat();
-            float angleVel = 0;
-            sizeVel = 0;
-            float alphaVel = 0.04f * 60.0f;
-
-            PARTICLE_POOL.getOrCreate(PARTICLE_SUPPLIER).init(TextureRegister.values()[TextureRegister.particleSpark0.ordinal() + rand.nextInt(4)], x, y, CACHED_VECTOR.x, CACHED_VECTOR.y,
-                    angle, angleVel, size, size, sizeVel, 1.0f, 0.5f, 0.0f, 1.0f, alphaVel, true, RenderLayer.DEFAULT_ADDITIVE);
         }
     }
 

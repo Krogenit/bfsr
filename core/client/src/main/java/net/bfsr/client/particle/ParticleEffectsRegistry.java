@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.entity.bullet.Bullet;
 import net.bfsr.client.entity.ship.Ship;
+import net.bfsr.client.particle.spawner.ParticleSpawner;
 import net.bfsr.client.util.PathHelper;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.component.shield.ShieldCommon;

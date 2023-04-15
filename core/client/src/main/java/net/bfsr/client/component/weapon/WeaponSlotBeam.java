@@ -5,8 +5,9 @@ import net.bfsr.client.collision.filter.BeamFilter;
 import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.entity.wreck.Wreck;
 import net.bfsr.client.particle.Beam;
-import net.bfsr.client.particle.ParticleSpawner;
 import net.bfsr.client.particle.SpawnAccumulator;
+import net.bfsr.client.particle.spawner.BeamSpawner;
+import net.bfsr.client.particle.spawner.ParticleSpawner;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.TextureLoader;
@@ -32,7 +33,7 @@ import org.joml.Vector4f;
 
 import java.util.Random;
 
-import static net.bfsr.client.particle.ParticleSpawner.CACHED_VECTOR;
+import static net.bfsr.client.particle.spawner.ParticleSpawner.CACHED_VECTOR;
 
 public abstract class WeaponSlotBeam extends WeaponSlot {
     private final Vector2 start = new Vector2();
@@ -91,7 +92,7 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
 
                 float shipRotation = ship.getRotation();
                 RotationHelper.angleToVelocity(shipRotation, 10.0f, CACHED_VECTOR);
-                ParticleSpawner.emitBeam(position.x, position.y, 2.0f, shipRotation, CACHED_VECTOR.x, CACHED_VECTOR.y,
+                BeamSpawner.emitBeam(position.x, position.y, 2.0f, shipRotation, CACHED_VECTOR.x, CACHED_VECTOR.y,
                         beamColor.x, beamColor.y, beamColor.z, beamColor.w, spawnAccumulator);
             }
 
