@@ -142,6 +142,7 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
         RaycastResult<Body, BodyFixture> result = physicWorld.raycastClosest(ray, beamMaxRange, detectFilter);
         if (result == null) {
             damageSpawnAccumulator.resetTime();
+            currentBeamRange = beamMaxRange;
             return;
         }
 
