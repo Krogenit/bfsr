@@ -7,6 +7,7 @@ import net.bfsr.client.gui.menu.GuiMainMenu;
 import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.settings.Option;
+import net.bfsr.client.util.FpsSync;
 import net.bfsr.core.Loop;
 import org.joml.Vector2i;
 import org.lwjgl.glfw.Callbacks;
@@ -24,6 +25,7 @@ public class Main extends Loop {
     private final Core core = new Core();
     private long window;
     private GLFWVidMode vidMode;
+    private final FpsSync fpsSync = new FpsSync();
 
     @Override
     public void run() {
@@ -46,6 +48,7 @@ public class Main extends Loop {
         Vector2i windowSize = initGLFW();
         initInput();
         core.init(window, windowSize.x, windowSize.y, getStartGui(), getGuiInGame());
+        fpsSync.init();
     }
 
     protected Gui getStartGui() {
@@ -123,15 +126,18 @@ public class Main extends Loop {
         core.clear();
     }
 
-    @Override
-    protected boolean isVSync() {
+    private boolean isVSync() {
         return Option.V_SYNC.getBoolean() && Option.MAX_FPS.getMaxValue() - Option.MAX_FPS.getInteger() <= 0;
     }
 
     @Override
-    protected boolean shouldWait(long now, double lastUpdateTime, long lastFrameTime) {
-        int fps = Option.MAX_FPS.getInteger();
-        return fps < Option.MAX_FPS.getMaxValue() && now - lastFrameTime < 1_000_000_000.0 / fps;
+    protected void sync(long now, double lastUpdateTime) {
+        if (!isVSync()) {
+            int fps = Option.MAX_FPS.getInteger();
+            if (fps < Option.MAX_FPS.getMaxValue()) {
+                fpsSync.sync(fps);
+            }
+        }
     }
 
     public static void main(String[] args) {

@@ -9,8 +9,6 @@ public abstract class AbstractLoop {
         running = true;
     }
 
-    protected abstract boolean shouldWait(long now, double lastUpdateTime, long lastFrameTime);
-
     protected abstract void update();
 
     protected abstract void render(float interpolation);
@@ -18,10 +16,6 @@ public abstract class AbstractLoop {
     protected abstract void onPostRender();
 
     protected abstract void setFps(int fps);
-
-    protected boolean isVSync() {
-        return false;
-    }
 
     protected abstract int getUpdatesPerSecond();
 
