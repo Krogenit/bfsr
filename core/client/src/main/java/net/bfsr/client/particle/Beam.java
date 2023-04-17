@@ -68,6 +68,7 @@ public class Beam extends TextureObject {
         scale.y = slotScale.y;
     }
 
+    @Override
     public void update() {
         calculateTransform();
 
