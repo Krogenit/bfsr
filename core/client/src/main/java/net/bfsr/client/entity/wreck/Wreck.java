@@ -5,9 +5,9 @@ import net.bfsr.client.collision.filter.WreckFilter;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.CollisionObject;
 import net.bfsr.client.particle.SpawnAccumulator;
-import net.bfsr.client.particle.spawner.ExplosionSpawner;
-import net.bfsr.client.particle.spawner.FireSpawner;
-import net.bfsr.client.particle.spawner.ParticleSpawner;
+import net.bfsr.client.particle.effect.ExplosionEffects;
+import net.bfsr.client.particle.effect.FireEffects;
+import net.bfsr.client.particle.effect.ParticleSpawner;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
@@ -220,7 +220,7 @@ public class Wreck extends CollisionObject {
     protected void emitFire() {
         if (color.w > 0.6f) {
             Vector2f position = getPosition();
-            FireSpawner.emitFire(position.x, position.y, spawnAccumulator);
+            FireEffects.emitFire(position.x, position.y, spawnAccumulator);
         }
     }
 
@@ -281,7 +281,7 @@ public class Wreck extends CollisionObject {
         super.setDead();
         if (color.w > 0.01f) {
             Vector2f pos = getPosition();
-            ExplosionSpawner.spawnSmallExplosion(pos.x, pos.y, getScale().x);
+            ExplosionEffects.spawnSmallExplosion(pos.x, pos.y, getScale().x);
         }
     }
 

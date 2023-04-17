@@ -3,7 +3,7 @@ package net.bfsr.client.particle;
 import net.bfsr.client.component.weapon.WeaponSlotBeam;
 import net.bfsr.client.entity.TextureObject;
 import net.bfsr.client.entity.ship.Ship;
-import net.bfsr.client.particle.spawner.BeamSpawner;
+import net.bfsr.client.particle.effect.BeamEffects;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.TextureLoader;
@@ -72,7 +72,7 @@ public class Beam extends TextureObject {
         calculateTransform();
 
         while (particlesEffects.size() < slot.getCurrentBeamRange() / 90.0f) {
-            particlesEffects.add(BeamSpawner.spawnBeamEffect(slot));
+            particlesEffects.add(BeamEffects.beamEffect(slot));
         }
     }
 

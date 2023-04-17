@@ -2,16 +2,12 @@ package net.bfsr.client.component;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.ship.Ship;
-import net.bfsr.client.particle.RenderLayer;
-import net.bfsr.client.particle.spawner.ParticleSpawner;
+import net.bfsr.client.particle.effect.ShieldEffects;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
-import net.bfsr.client.sound.SoundRegistry;
-import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.client.util.PathHelper;
 import net.bfsr.component.shield.ShieldCommon;
 import net.bfsr.config.component.ShieldConfig;
@@ -47,25 +43,15 @@ public class Shield extends ShieldCommon {
         super.rebuildShield();
         Vector2f position = ship.getPosition();
         Vector3f shipEffectColor = ship.getEffectsColor();
-        ParticleSpawner.spawnLight(position.x, position.y, ship.getScale().x * 2.0f, shipEffectColor.x, shipEffectColor.y, shipEffectColor.z, 1.0f, 0.04f * 60.0f, false,
-                RenderLayer.DEFAULT_ADDITIVE);
-        if (ship.getWorld().getRand().nextInt(2) == 0) {
-            Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldUp0, position.x, position.y));
-        } else {
-            Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldUp1, position.x, position.y));
-        }
+        ShieldEffects.rebuild(position.x, position.y, ship.getScale().x * 2.0f, shipEffectColor.x, shipEffectColor.y, shipEffectColor.z, 1.0f);
     }
 
     @Override
     public void removeShield() {
         super.removeShield();
-        Vector2f shipPosition = ship.getPosition();
-        Vector3f shipEffectColor = ship.getEffectsColor();
         Vector2f position = ship.getPosition();
-        ParticleSpawner.spawnLight(position.x, position.y, ship.getScale().x * 2.0f, 30.0f, shipEffectColor.x, shipEffectColor.y, shipEffectColor.z, 1.0f, 2.4f, false,
-                RenderLayer.DEFAULT_ADDITIVE);
-        ParticleSpawner.spawnDisableShield(position.x, position.y, ship.getScale().x * 4.0f, -24.0f, color.x, color.y, color.z, color.w);
-        Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.shieldDown, shipPosition.x, shipPosition.y));
+        Vector3f shipEffectColor = ship.getEffectsColor();
+        ShieldEffects.disable(position.x, position.y, ship.getScale().x * 2.0f, shipEffectColor.x, shipEffectColor.y, shipEffectColor.z, 1.0f);
     }
 
     public void render() {

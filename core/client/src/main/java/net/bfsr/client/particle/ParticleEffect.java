@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.particle.spawner.ParticleSpawner;
+import net.bfsr.client.particle.effect.ParticleSpawner;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.sound.SoundLoader;
@@ -87,7 +87,7 @@ public class ParticleEffect implements PropertiesHolder {
     private int treeIndex;
 
     private transient Texture[] textures;
-    private transient float spawnTime;
+    private transient double spawnTime;
 
     private final transient List<Particle> aliveParticles = new ArrayList<>();
 
@@ -113,16 +113,18 @@ public class ParticleEffect implements PropertiesHolder {
         texturePaths.add(TextureRegister.particleShipEngineBack.getPath());
         minSpawnCount = maxSpawnCount = 1;
         setColor(1.0f, 1.0f, 1.0f, 1.0f);
-        setMinAlphaVelocity(0.5f);
-        setMaxAlphaVelocity(0.5f);
-        setMinSizeX(10.0f);
-        setMinSizeY(10.0f);
-        setMaxSizeX(10.0f);
-        setMaxSizeY(10.0f);
-        setRenderLayer(RenderLayer.DEFAULT_ADDITIVE);
-        setSoundEffects(new ArrayList<>());
-        setSourceSizeXMultiplier(1.0f);
-        setSourceSizeYMultiplier(1.0f);
+        minAlphaVelocity = 0.5f;
+        maxAlphaVelocity = 0.5f;
+        minSizeX = 10.0f;
+        minSizeY = 10.0f;
+        maxSizeX = 10.0f;
+        maxSizeY = 10.0f;
+        renderLayer = RenderLayer.DEFAULT_ADDITIVE;
+        soundEffects = new ArrayList<>();
+        sourceSizeXMultiplier = 1.0f;
+        sourceSizeYMultiplier = 1.0f;
+        sourceVelocityXMultiplier = 1.0f;
+        sourceVelocityYMultiplier = 1.0f;
     }
 
     public void processDeprecated() {}
@@ -131,7 +133,7 @@ public class ParticleEffect implements PropertiesHolder {
         spawnRunnables.clear();
 
         if (spawnOverTime > 0) {
-            spawnTime = 1.0f / spawnOverTime;
+            spawnTime = 1.0 / spawnOverTime;
         } else {
             spawnTime = 0;
         }
@@ -232,8 +234,16 @@ public class ParticleEffect implements PropertiesHolder {
         emit(x, y, 0, 0, 0, 0, 0, spawnAccumulator);
     }
 
+    public void emit(float x, float y, float size, SpawnAccumulator spawnAccumulator) {
+        emit(x, y, size, size, 0, 0, 0, spawnAccumulator);
+    }
+
     public void emit(float x, float y, float sizeX, float sizeY, float angle, float velocityX, float velocityY, SpawnAccumulator spawnAccumulator) {
         emit(x, y, sizeX, sizeY, angle, velocityX, velocityY, 1.0f, 1.0f, 1.0f, 1.0f, spawnAccumulator);
+    }
+
+    public void emit(float x, float y, float size, float angle, float velocityX, float velocityY, float r, float g, float b, float a, SpawnAccumulator spawnAccumulator) {
+        emit(x, y, size, size, angle, velocityX, velocityY, r, g, b, a, spawnAccumulator);
     }
 
     public void emit(float x, float y, float sizeX, float sizeY, float angle, float velocityX, float velocityY, float r, float g, float b, float a, SpawnAccumulator spawnAccumulator) {
@@ -262,6 +272,18 @@ public class ParticleEffect implements PropertiesHolder {
 
     public void play(float x, float y, float sizeX, float sizeY, float velocityX, float velocityY) {
         play(x, y, sizeX, sizeY, 0, velocityX, velocityY, 1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
+    public void play(float x, float y, float size, float r, float g, float b, float a) {
+        play(x, y, size, size, 0, 0, 0, r, g, b, a);
+    }
+
+    public void play(float x, float y, float size, float angle, float r, float g, float b, float a) {
+        play(x, y, size, size, angle, 0, 0, r, g, b, a);
+    }
+
+    public void play(float x, float y, float size, float velocityX, float velocityY, float r, float g, float b, float a) {
+        play(x, y, size, size, 0, velocityX, velocityY, r, g, b, a);
     }
 
     public void play(float x, float y, float sizeX, float sizeY, float angle, float velocityX, float velocityY, float r, float g, float b, float a) {
@@ -312,7 +334,7 @@ public class ParticleEffect implements PropertiesHolder {
     }
 
     public String getPath() {
-        return editorPath.isEmpty() ? name : editorPath + "/" + name;
+        return editorPath != null ? editorPath.isEmpty() ? name : editorPath + "/" + name : "";
     }
 
     public void clearChildEffects() {

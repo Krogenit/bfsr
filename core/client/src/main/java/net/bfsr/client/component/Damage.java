@@ -3,8 +3,8 @@ package net.bfsr.client.component;
 import net.bfsr.client.entity.TextureObject;
 import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.particle.RenderLayer;
-import net.bfsr.client.particle.spawner.ExplosionSpawner;
-import net.bfsr.client.particle.spawner.ParticleSpawner;
+import net.bfsr.client.particle.SpawnAccumulator;
+import net.bfsr.client.particle.effect.*;
 import net.bfsr.client.renderer.instanced.BufferType;
 import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.Texture;
@@ -37,6 +37,7 @@ public class Damage extends TextureObject {
     private final Vector4f colorFire = new Vector4f(1.0f, 1.0f, 1.0f, 0.5f);
     private final Vector4f colorLight = new Vector4f(1.0f, 1.0f, 1.0f, 0.0f);
     private final Random rand;
+    private final SpawnAccumulator smokeSpawnAccumulator = new SpawnAccumulator();
 
     public Damage(Ship ship, float damage, int type, Vector2f addPos, float size) {
         super(TextureLoader.getTexture(TextureRegister.values()[TextureRegister.shipDamage0.ordinal() + type]), ship.getPosition().x, ship.getPosition().y);
@@ -84,19 +85,22 @@ public class Damage extends TextureObject {
         if (damaged) {
             if (!holeCreated) {
                 addRotation = MathUtils.TWO_PI * rand.nextFloat();
-                ExplosionSpawner.spawnSmallExplosion(position.x, position.y, scale.x);
+                ExplosionEffects.spawnSmallExplosion(position.x, position.y, scale.x);
                 holeCreated = true;
+                smokeSpawnAccumulator.resetTime();
             }
 
             smokeTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             ionTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+            SmokeEffects.damageSmoke(position.x, position.y, 0.5f * rand.nextFloat() + scale.x * 0.25f, smokeSpawnAccumulator);
             if (smokeTimer <= 0) {
-                ParticleSpawner.spawnDamageSmoke(position.x, position.y, 0.5F * rand.nextFloat() + scale.x / 4.0f, 1.0f, 0.4f);
-                if (rand.nextInt(4) == 0) ParticleSpawner.spawnSmallGarbage(1, position.x, position.y, 0.01f, 1.0f);
-                smokeTimer = 1 + rand.nextInt(2);//3 + rand.nextInt(10);
+                if (rand.nextInt(4) == 0) {
+                    GarbageSpawner.smallGarbage(1, position.x, position.y, 0, 0, 1.0f, 0.5f, 0.12f);
+                }
+                smokeTimer = 1 + rand.nextInt(2);
             }
             if (ionTimer <= 0 && type > 1) {
-                ParticleSpawner.spawnLightingIon(position, (scale.x + scale.y) / 1.5f);
+                WeaponEffects.lightingIon(position, (scale.x + scale.y) / 1.5f);
                 ionTimer = 200 + rand.nextInt(120);
             }
             colorFix.w = 1.0f;
@@ -110,7 +114,7 @@ public class Damage extends TextureObject {
             repairTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
             if (repairTimer <= 0) {
                 if (holeCreated) {
-                    ParticleSpawner.spawnLight(position.x, position.y, (scale.x + scale.y), 0.25f, 0.75f, 1.0f, 1.0f, 5.0f, true, RenderLayer.DEFAULT_ADDITIVE);
+                    ParticleSpawner.light(position.x, position.y, (scale.x + scale.y), 0.25f, 0.75f, 1.0f, 1.0f, 5.0f, true, RenderLayer.DEFAULT_ADDITIVE);
                     holeCreated = false;
                 }
                 colorFix.z -= fixSpeed;

@@ -2,7 +2,7 @@ package net.bfsr.client.component.weapon;
 
 import net.bfsr.client.collision.filter.ShipFilter;
 import net.bfsr.client.entity.ship.Ship;
-import net.bfsr.client.particle.spawner.ParticleSpawner;
+import net.bfsr.client.particle.effect.WeaponEffects;
 import net.bfsr.client.sound.SoundRegistry;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.texture.TextureRegister;
@@ -43,6 +43,6 @@ public class WeaponLaserSmall extends WeaponSlot {
     @Override
     protected void spawnShootParticles() {
         Vector2f pos = RotationHelper.rotate(rotation, 1.0f, 0.0f).add(getPosition());
-        ParticleSpawner.spawnWeaponShoot(TextureRegister.particleBlue3, pos, getRotation(), 8.0f, 1.0f, 0.5f, 0.5f, 0.4f);
+        WeaponEffects.spawnWeaponShoot(pos, getRotation(), 8.0f, 1.0f, 0.5f, 0.5f, 0.4f);
     }
 }

@@ -6,17 +6,17 @@ public class SpawnAccumulator {
     private long lastEmitTime;
     private long emitTime;
     @Getter
-    private float accumulatedTime;
+    private double accumulatedTime;
 
     public void resetTime() {
-        lastEmitTime = emitTime = System.currentTimeMillis();
+        lastEmitTime = emitTime = System.nanoTime();
         accumulatedTime = 0.0f;
     }
 
     public void update() {
         lastEmitTime = emitTime;
-        emitTime = System.currentTimeMillis();
-        accumulatedTime += (emitTime - lastEmitTime) * 0.001f;
+        emitTime = System.nanoTime();
+        accumulatedTime += (emitTime - lastEmitTime) * 0.000000001;
     }
 
     public void consume(float spawnTime) {

@@ -5,10 +5,13 @@ import clipper2.core.PointD;
 import net.bfsr.client.collision.filter.ShipFilter;
 import net.bfsr.client.component.Damage;
 import net.bfsr.client.component.Shield;
-import net.bfsr.client.particle.RenderLayer;
-import net.bfsr.client.particle.spawner.ExplosionSpawner;
-import net.bfsr.client.particle.spawner.ParticleSpawner;
+import net.bfsr.client.particle.SpawnAccumulator;
+import net.bfsr.client.particle.effect.EngineEffects;
+import net.bfsr.client.particle.effect.ExplosionEffects;
+import net.bfsr.client.renderer.instanced.BufferType;
+import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.DamageMaskTexture;
+import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.component.Armor;
 import net.bfsr.component.ArmorPlate;
@@ -33,6 +36,9 @@ import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 
 public class ShipEngiSmall0 extends Ship {
+    private final SpawnAccumulator leftBackEngineSpawnAccumulator = new SpawnAccumulator();
+    private final SpawnAccumulator rightBackEngineSpawnAccumulator = new SpawnAccumulator();
+
     public ShipEngiSmall0(WorldClient world, int id, float x, float y, float rotation) {
         super(world, id, x, y, rotation, 13.913f, 13.913f, 0.8f, 1.0f, 0.5f, TextureRegister.shipEngiSmall0, TextureRegister.shipEngiSmall0Damage);
         addDamage(new Damage(this, 0.8f, 0, new Vector2f(-1.0f, 1.5f), 0.08f));
@@ -109,36 +115,56 @@ public class ShipEngiSmall0 extends Ship {
             Vector2 shipVelocity = body.getLinearVelocity();
             float velocityX = (float) shipVelocity.x / 50.0f;
             float velocityY = (float) shipVelocity.y / 50.0f;
-            ParticleSpawner.spawnEngineBack(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y, velocityX, velocityY,
-                    rotation, 10.0f, 6.0F, 0.8f, 1.0f, 0.5f, 1.0f, true);
+            EngineEffects.smallEngine(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y, rotation, 10.0f, velocityX, velocityY,
+                    effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, engineSpawnAccumulator);
+
             RotationHelper.rotate(rotation, -3.0f, 1.1f, CollisionObjectUtils.ROTATE_TO_VECTOR);
-            ParticleSpawner.spawnEngineBack(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y, velocityX, velocityY,
-                    rotation, 10.0f, 6.0F, 0.8f, 1.0f, 0.5f, 1.0f, false);
+            EngineEffects.smallEngineNoSmoke(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y, rotation, 10.0f, velocityX, velocityY,
+                    effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, leftBackEngineSpawnAccumulator);
             RotationHelper.rotate(rotation, -3.0f, -1.1f, CollisionObjectUtils.ROTATE_TO_VECTOR);
-            ParticleSpawner.spawnEngineBack(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y, velocityX, velocityY,
-                    rotation, 10.0f, 6.0F, 0.8f, 1.0f, 0.5f, 1.0f, false);
-            RotationHelper.rotate(rotation, -2.7f, 0, CollisionObjectUtils.ROTATE_TO_VECTOR);
-            ParticleSpawner.spawnLight(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y, 6.0f, 0.8f, 1.0f, 0.5f, 1.0f,
-                    RenderLayer.BACKGROUND_ADDITIVE);
+            EngineEffects.smallEngineNoSmoke(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y, rotation, 10.0f, velocityX, velocityY,
+                    effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, rightBackEngineSpawnAccumulator);
         } else if (direction == Direction.LEFT) {
             RotationHelper.rotate(rotation, 0, 2.1f, CollisionObjectUtils.ROTATE_TO_VECTOR);
-            ParticleSpawner.spawnShipEngineSmoke(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y);
+            EngineEffects.secondaryEngine(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y, engineSpawnAccumulator);
         } else if (direction == Direction.RIGHT) {
             RotationHelper.rotate(rotation, 0, -2.1f, CollisionObjectUtils.ROTATE_TO_VECTOR);
-            ParticleSpawner.spawnShipEngineSmoke(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y);
+            EngineEffects.secondaryEngine(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y, engineSpawnAccumulator);
         } else if (direction == Direction.BACKWARD) {
             RotationHelper.rotate(rotation, 3.7f, 0, CollisionObjectUtils.ROTATE_TO_VECTOR);
-            ParticleSpawner.spawnShipEngineSmoke(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y);
+            EngineEffects.secondaryEngine(shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y, engineSpawnAccumulator);
         }
     }
 
     @Override
     protected void createDestroyParticles() {
-        ExplosionSpawner.spawnDestroyShipSmall(this);
+        ExplosionEffects.spawnDestroyShipSmall(this);
     }
 
     @Override
     public ShipType getType() {
         return ShipType.ENGI_SMALL_0;
+    }
+
+    @Override
+    public void renderAdditive() {
+        if (moveDirection == Direction.FORWARD) {
+            Vector2f shipPos = getPosition();
+            float rotation = getRotation();
+            RotationHelper.rotate(rotation, -2.7f, 0, CollisionObjectUtils.ROTATE_TO_VECTOR);
+
+            SpriteRenderer.get().add(lastPosition.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, lastPosition.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y,
+                    shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y, rotation, 6.0f, 6.0f,
+                    effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, TextureLoader.getTexture(TextureRegister.particleLight), BufferType.ENTITIES_ADDITIVE);
+        }
+
+        super.renderAdditive();
+    }
+
+    @Override
+    public void setMoveDirection(Direction dir) {
+        super.setMoveDirection(dir);
+        rightBackEngineSpawnAccumulator.resetTime();
+        leftBackEngineSpawnAccumulator.resetTime();
     }
 }

@@ -1,11 +1,11 @@
-package net.bfsr.client.particle.spawner;
+package net.bfsr.client.particle.effect;
 
 import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.particle.ParticleEffect;
 import net.bfsr.client.particle.ParticleEffectsRegistry;
 import org.joml.Vector2f;
 
-public final class ExplosionSpawner {
+public final class ExplosionEffects {
     private static final ParticleEffect shipDestroySmall = ParticleEffectsRegistry.INSTANCE.getEffectByPath("explosion/ship_small");
     private static final ParticleEffect smallExplosion = ParticleEffectsRegistry.INSTANCE.getEffectByPath("explosion/small");
 

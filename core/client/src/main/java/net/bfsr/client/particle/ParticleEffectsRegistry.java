@@ -6,7 +6,8 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.entity.bullet.Bullet;
 import net.bfsr.client.entity.ship.Ship;
-import net.bfsr.client.particle.spawner.ParticleSpawner;
+import net.bfsr.client.particle.effect.GarbageSpawner;
+import net.bfsr.client.particle.effect.WeaponEffects;
 import net.bfsr.client.util.PathHelper;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.component.shield.ShieldCommon;
@@ -20,7 +21,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 
 @Log4j2
 public class ParticleEffectsRegistry {
@@ -85,20 +85,10 @@ public class ParticleEffectsRegistry {
             Vector2f bulletScale = bullet.getScale();
             if (shield == null || shield.getShield() <= 0) {
                 Hull hull = ship.getHull();
-                float velocityX = ship.getVelocity().x;
-                float velocityY = ship.getVelocity().y;
-                Random rand = ship.getWorld().getRand();
-                if (hull.getHull() / hull.getMaxHull() < 0.5f && rand.nextInt(2) == 0) {
-                    ParticleSpawner.spawnShipOst(1, contactX, contactY, velocityX + normalX * (rand.nextFloat() * 0.5f + 0.5f),
-                            velocityY + normalY * (rand.nextFloat() * 0.5f + 0.5f), 0.5f);
-                }
-                ParticleSpawner.spawnSmallGarbage(1 + rand.nextInt(3), contactX, contactY, velocityX + normalX, velocityY + normalY,
-                        1.1f * (rand.nextFloat() + 0.5f), 3.0f, 0.5f);
+                GarbageSpawner.bulletHullDamage(contactX, contactY, ship.getVelocity().x, ship.getVelocity().y, normalX, normalY, () -> hull.getHull() / hull.getMaxHull() < 0.5f);
             }
 
-            Vector2f position = bullet.getPosition();
-            ParticleSpawner.spawnLight(position.x, position.y, bulletScale.x * 3.0f, 3.0f * 6.0f, color.x, color.y, color.z, 0.4f, 0.5f * 60.0f, true, RenderLayer.DEFAULT_ADDITIVE);
-            ParticleSpawner.spawnDirectedSpark(contactX, contactY, normalX, normalY, bulletScale.x * 1.5f, color.x, color.y, color.z, color.w);
+            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bulletScale.x * 1.5f, color.x, color.y, color.z, color.w);
         };
     }
 

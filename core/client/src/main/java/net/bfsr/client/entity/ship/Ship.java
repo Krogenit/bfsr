@@ -15,9 +15,11 @@ import net.bfsr.client.input.Keyboard;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.network.packet.common.PacketObjectPosition;
 import net.bfsr.client.network.packet.common.PacketShipEngine;
-import net.bfsr.client.particle.RenderLayer;
-import net.bfsr.client.particle.spawner.ExplosionSpawner;
-import net.bfsr.client.particle.spawner.ParticleSpawner;
+import net.bfsr.client.particle.SpawnAccumulator;
+import net.bfsr.client.particle.effect.ExplosionEffects;
+import net.bfsr.client.particle.effect.GarbageSpawner;
+import net.bfsr.client.particle.effect.JumpEffects;
+import net.bfsr.client.particle.effect.WeaponEffects;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.font.string.StringObject;
@@ -26,8 +28,6 @@ import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.DamageMaskTexture;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
-import net.bfsr.client.sound.SoundRegistry;
-import net.bfsr.client.sound.SoundSourceEffect;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.component.Armor;
 import net.bfsr.component.Engine;
@@ -110,7 +110,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
     protected Texture textureDamage;
     private final List<Damage> damages;
 
-    private Direction moveDirection;
+    protected Direction moveDirection;
     @Getter
     @Setter
     protected PathsD contours = new PathsD();
@@ -118,6 +118,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
     protected DamageMaskTexture maskTexture;
     @Getter
     protected List<BodyFixture> fixturesToAdd = new ArrayList<>();
+    protected final SpawnAccumulator engineSpawnAccumulator = new SpawnAccumulator();
 
     protected Ship(WorldClient world, int id, float x, float y, float rotation, float scaleX, float scaleY, float r, float g, float b,
                    TextureRegister texture, TextureRegister textureDamage) {
@@ -132,6 +133,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
     }
 
     public void control() {
+        Direction lastMoveDirection = moveDirection;
         moveDirection = null;
 
         if (destroyingTimer == 0) {
@@ -162,6 +164,10 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
             if (Mouse.isLeftDown()) {
                 shoot();
+            }
+
+            if (lastMoveDirection != moveDirection) {
+                engineSpawnAccumulator.resetTime();
             }
         }
     }
@@ -235,9 +241,9 @@ public abstract class Ship extends CollisionObject implements Damagable {
     private void onCollidedWithWreck(float contactX, float contactY, float normalX, float normalY) {
         if (shield != null) {
             Vector4f color = shield.getColor();
-            ParticleSpawner.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
+            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
         } else {
-            ParticleSpawner.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
+            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
         }
     }
 
@@ -278,6 +284,10 @@ public abstract class Ship extends CollisionObject implements Damagable {
                 fixturesToAdd.clear();
             }
         }
+
+        if (moveDirection != null) {
+            spawnEngineParticles(moveDirection);
+        }
     }
 
     protected void updateJump() {
@@ -295,10 +305,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
     private void onShipSpawned() {
         Vector2f velocity = getVelocity();
-        ParticleSpawner.spawnLight(position.x, position.y, velocity.x * 0.5f, velocity.y * 0.5f, 32.0f + scale.x * 0.25f, effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, 3.6f,
-                true, RenderLayer.DEFAULT_ADDITIVE);
-        ParticleSpawner.spawnDisableShield(position.x, position.y, velocity.x * 0.5f, velocity.y * 0.5f, 32.0f + scale.x * 0.25f, effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
-        Core.get().getSoundManager().play(new SoundSourceEffect(SoundRegistry.jump, position.x, position.y));
+        JumpEffects.jump(position.x, position.y, 32.0f + scale.x * 0.25f, velocity.x * 0.5f, velocity.y * 0.5f, effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
     }
 
     @Override
@@ -372,14 +379,14 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
     private void onShieldDamageByCollision(float contactX, float contactY, float normalX, float normalY) {
         Vector4f color = shield.getColor();
-        ParticleSpawner.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
+        WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
     }
 
     protected void onHullDamageByCollision(float contactX, float contactY, float normalX, float normalY) {
         Random rand = world.getRand();
-        ParticleSpawner.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
+        WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
         Vector2f angletovel = RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.15f);
-        ParticleSpawner.spawnSmallGarbage(rand.nextInt(4), contactX, contactY, velocity.x * 0.25f + angletovel.x, velocity.y * 0.25f + angletovel.y, 2.0f * rand.nextFloat());
+        GarbageSpawner.smallGarbage(rand.nextInt(4), contactX, contactY, velocity.x * 0.25f + angletovel.x, velocity.y * 0.25f + angletovel.y, 2.0f * rand.nextFloat());
     }
 
     public boolean attackShip(BulletDamage damage, Ship attacker, Vector2f contactPoint, float multiplayer) {
@@ -419,7 +426,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
         Vector2f position = getPosition();
         float randomVectorX = -scale.x * 0.4f + scale.x * 0.8f * rand.nextFloat();
         float randomVectorY = -scale.y * 0.4f + scale.y * 0.8f * rand.nextFloat();
-        ExplosionSpawner.spawnSmallExplosion(position.x + randomVectorX, position.y + randomVectorY, 2.0f);
+        ExplosionEffects.spawnSmallExplosion(position.x + randomVectorX, position.y + randomVectorY, 2.0f);
     }
 
     protected abstract void createDestroyParticles();
@@ -515,7 +522,6 @@ public abstract class Ship extends CollisionObject implements Damagable {
     }
 
     public void emitParticles() {
-        spawnEngineParticles(moveDirection);
     }
 
     public void spawnEngineParticles(Direction direction) {
@@ -528,6 +534,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
     public void setMoveDirection(Direction dir) {
         moveDirection = dir;
+        engineSpawnAccumulator.resetTime();
     }
 
     public void setSpawned() {
