@@ -3,6 +3,8 @@ package net.bfsr.client.particle.spawner;
 import net.bfsr.client.entity.wreck.ShipWreck;
 import net.bfsr.client.entity.wreck.Wreck;
 import net.bfsr.client.particle.Particle;
+import net.bfsr.client.particle.ParticleEffect;
+import net.bfsr.client.particle.ParticleEffectsRegistry;
 import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
@@ -25,6 +27,7 @@ public final class ParticleSpawner {
     public static final ObjectPool<ShipWreck> PARTICLE_SHIP_WREAK_POOL = new ObjectPool<>();
     public static final Vector2f CACHED_VECTOR = new Vector2f();
     public static final Supplier<Particle> PARTICLE_SUPPLIER = Particle::new;
+    private static final ParticleEffect lightingIonEffect = ParticleEffectsRegistry.INSTANCE.getEffectByPath("lighting_ion");
 
     public static void spawnLight(float x, float y, float size, float sizeSpeed, float r, float g, float b, float a, float alphaSpeed, boolean alphaFromZero, RenderLayer renderLayer) {
         PARTICLE_POOL.getOrCreate(PARTICLE_SUPPLIER).init(TextureRegister.particleLight, x, y, 0, 0, 0, 0, size, size, sizeSpeed, r, g, b, a, alphaSpeed, alphaFromZero, renderLayer);
@@ -33,13 +36,8 @@ public final class ParticleSpawner {
     public static void spawnLightingIon(Vector2f pos, float size) {
         int count = rand.nextInt(3) + 1;
         for (int i = 0; i < count; i++) {
-            float angle = MathUtils.TWO_PI * rand.nextFloat();
-            float angleVel = 0.0F;
-            float sizeVel = 3.2F;
-            float alphaVel = 8.0F;
             RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), size / 4.0f, CACHED_VECTOR);
-            PARTICLE_POOL.getOrCreate(PARTICLE_SUPPLIER).init(TextureRegister.particleLighting, pos.x + CACHED_VECTOR.x, pos.y + CACHED_VECTOR.y, 0, 0, angle, angleVel, size, size, sizeVel,
-                    0.75F, 0.75F, 1, 1.5f, alphaVel, true, RenderLayer.DEFAULT_ADDITIVE);
+            lightingIonEffect.play(pos.x + CACHED_VECTOR.x, pos.y + CACHED_VECTOR.y, size, size);
         }
     }
 
