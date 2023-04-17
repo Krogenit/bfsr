@@ -19,7 +19,7 @@ public class SpawnAccumulator {
         accumulatedTime += (emitTime - lastEmitTime) * 0.000000001;
     }
 
-    public void consume(float spawnTime) {
+    public void consume(double spawnTime) {
         accumulatedTime -= spawnTime;
     }
 }
