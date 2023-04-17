@@ -1,13 +1,12 @@
 package net.bfsr.editor.property;
 
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.util.DecimalUtils;
 
 @Log4j2
 public class FloatConverter implements PropertyConverter<Float> {
     @Override
     public String toString(Float value) {
-        return DecimalUtils.formatWithToDigits(value);
+        return value.toString();
     }
 
     @Override
