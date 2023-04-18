@@ -16,6 +16,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.lwjgl.opengl.*;
 
+import java.nio.FloatBuffer;
 import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -53,6 +54,7 @@ public class Camera {
     private int worldProjectionMatrixUBO;
     private int GUIProjectionMatrixUBO;
     private int projectionViewMatrixUBO;
+    private int interpolatedProjectionViewMatrixUBO;
 
     public void init(int width, int height) {
         this.width = width;
@@ -64,6 +66,7 @@ public class Camera {
         worldProjectionMatrixUBO = GL45.glCreateBuffers();
         GUIProjectionMatrixUBO = GL45.glCreateBuffers();
         projectionViewMatrixUBO = GL45.glCreateBuffers();
+        interpolatedProjectionViewMatrixUBO = GL45.glCreateBuffers();
 
         GL45.glNamedBufferStorage(GUIProjectionMatrixUBO, orthographicMatrix.setOrtho(0.0f, width, height, 0.0f, Z_NEAR, Z_FAR)
                 .get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
@@ -71,7 +74,9 @@ public class Camera {
                 .get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
 
         MatrixUtils.scale(viewMatrix, zoom, zoom);
-        GL45.glNamedBufferStorage(projectionViewMatrixUBO, orthographicMatrix.mul(viewMatrix, projectionViewMatrix).get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
+        FloatBuffer matrixBuffer = orthographicMatrix.mul(viewMatrix, projectionViewMatrix).get(MatrixBufferUtils.MATRIX_BUFFER);
+        GL45.glNamedBufferStorage(projectionViewMatrixUBO, matrixBuffer, GL44.GL_DYNAMIC_STORAGE_BIT);
+        GL45.glNamedBufferStorage(interpolatedProjectionViewMatrixUBO, matrixBuffer, GL44.GL_DYNAMIC_STORAGE_BIT);
     }
 
     @Deprecated
@@ -233,6 +238,10 @@ public class Camera {
         zoomAccumulator = 0;
     }
 
+    public void bindInterpolatedWorldViewMatrix() {
+        GL30.glBindBufferBase(GL31.GL_UNIFORM_BUFFER, UBO_CAMERA_MATRIX, interpolatedProjectionViewMatrixUBO);
+    }
+
     public void bindWorldViewMatrix() {
         GL30.glBindBufferBase(GL31.GL_UNIFORM_BUFFER, UBO_CAMERA_MATRIX, projectionViewMatrixUBO);
     }
@@ -280,6 +289,10 @@ public class Camera {
 
         MatrixUtils.scale(viewMatrix.identity(), interpolatedZoom, interpolatedZoom);
         MatrixUtils.translate(viewMatrix, -cameraX, -cameraY);
+        GL45.glNamedBufferSubData(interpolatedProjectionViewMatrixUBO, 0, orthographicMatrix.mul(viewMatrix, projectionViewMatrix).get(MatrixBufferUtils.MATRIX_BUFFER));
+
+        MatrixUtils.scale(viewMatrix.identity(), zoom, zoom);
+        MatrixUtils.translate(viewMatrix, -position.x, -position.y);
         GL45.glNamedBufferSubData(projectionViewMatrixUBO, 0, orthographicMatrix.mul(viewMatrix, projectionViewMatrix).get(MatrixBufferUtils.MATRIX_BUFFER));
     }
 }

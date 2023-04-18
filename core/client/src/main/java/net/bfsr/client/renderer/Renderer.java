@@ -130,7 +130,7 @@ public class Renderer {
         resetDrawCalls();
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
         camera.calculateInterpolatedViewMatrix(interpolation);
-        camera.bindWorldViewMatrix();
+        camera.bindInterpolatedWorldViewMatrix();
         spriteRenderer.bind();
         shader.enable();
         OpenGLHelper.alphaGreater(0.0001f);
@@ -144,6 +144,7 @@ public class Renderer {
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
             if (Option.SHOW_DEBUG_BOXES.getBoolean()) {
                 debugRenderer.bind();
+                camera.bindWorldViewMatrix();
                 world.renderDebug(debugRenderer);
                 spriteRenderer.bind();
                 shader.enable();
