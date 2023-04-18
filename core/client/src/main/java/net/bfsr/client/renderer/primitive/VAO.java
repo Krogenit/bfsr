@@ -75,6 +75,10 @@ public class VAO {
         VBOs[index].storeData(data, flags);
     }
 
+    public void bindBuffer(int target, int bufferIndex) {
+        GL15C.glBindBuffer(target, VBOs[bufferIndex].getId());
+    }
+
     public void bindBufferBase(int target, int index, int bufferIndex) {
         GL30.glBindBufferBase(target, index, VBOs[bufferIndex].getId());
     }
