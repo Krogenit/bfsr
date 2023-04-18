@@ -129,7 +129,7 @@ public class WorldServer extends World<Ship, Bullet> {
 
     @Override
     public void update() {
-//        spawnShips();
+        spawnShips();
 
         while (damagesToAdd.size() > 0) {
             ShipWreckDamagable shipWreckDamagable = damagesToAdd.poll();
