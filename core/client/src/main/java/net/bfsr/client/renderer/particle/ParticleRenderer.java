@@ -37,8 +37,8 @@ public class ParticleRenderer {
 
     public ParticleRenderer() {
         for (int i = 0; i < RENDER_LAYERS.length; i++) {
-            materialBuffers[RENDER_LAYERS[i].ordinal()] = BufferUtils.createByteBuffer(START_PARTICLE_COUNT * SpriteRenderer.MATERIAL_DATA_SIZE);
-            vertexBuffers[RENDER_LAYERS[i].ordinal()] = BufferUtils.createFloatBuffer(START_PARTICLE_COUNT * SpriteRenderer.VERTEX_DATA_SIZE);
+            materialBuffers[RENDER_LAYERS[i].ordinal()] = BufferUtils.createByteBuffer(START_PARTICLE_COUNT * SpriteRenderer.MATERIAL_DATA_SIZE_IN_BYTES);
+            vertexBuffers[RENDER_LAYERS[i].ordinal()] = BufferUtils.createFloatBuffer(START_PARTICLE_COUNT * SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES);
             particlesByRenderLayer[RENDER_LAYERS[i].ordinal()] = new ArrayList<>(256);
         }
 
@@ -73,7 +73,7 @@ public class ParticleRenderer {
             int newDataSize = particles.size();
 
             ByteBuffer materialBuffer = materialBuffers[renderLayer.ordinal()];
-            while (materialBuffer.capacity() < newDataSize * SpriteRenderer.MATERIAL_DATA_SIZE) {
+            while (materialBuffer.capacity() < newDataSize * SpriteRenderer.MATERIAL_DATA_SIZE_IN_BYTES) {
                 materialBuffer = BufferUtils.createByteBuffer(materialBuffer.capacity() << 1);
                 materialBuffers[renderLayer.ordinal()] = materialBuffer;
                 resized = true;
@@ -82,7 +82,7 @@ public class ParticleRenderer {
             materialBuffer.clear();
 
             FloatBuffer vertexBuffer = vertexBuffers[renderLayer.ordinal()];
-            while (vertexBuffer.capacity() < newDataSize * SpriteRenderer.VERTEX_DATA_SIZE) {
+            while (vertexBuffer.capacity() < newDataSize * SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES) {
                 vertexBuffer = BufferUtils.createFloatBuffer(vertexBuffer.capacity() << 1);
                 vertexBuffers[renderLayer.ordinal()] = vertexBuffer;
                 resized = true;
@@ -126,8 +126,8 @@ public class ParticleRenderer {
 
                 backgroundTaskFutures[i] = spriteRenderer.addTask(backgroundParticlesStoreTask);
 
-                backgroundAlphaBufferIndex += backgroundAlphaParticlesPerTask * SpriteRenderer.VERTEX_DATA_SIZE;
-                backgroundAdditiveBufferIndex += backgroundAdditiveParticlesPerTask * SpriteRenderer.VERTEX_DATA_SIZE;
+                backgroundAlphaBufferIndex += backgroundAlphaParticlesPerTask * SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES;
+                backgroundAdditiveBufferIndex += backgroundAdditiveParticlesPerTask * SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES;
 
                 backgroundAlphaParticlesStartIndex += backgroundAlphaParticlesPerTask;
                 backgroundAlphaParticlesEndIndex = Math.min(backgroundAlphaParticlesEndIndex + backgroundAlphaParticlesPerTask,
@@ -163,8 +163,8 @@ public class ParticleRenderer {
 
                 taskFutures[i] = spriteRenderer.addTask(particlesStoreTasks[i]);
 
-                alphaBufferIndex += alphaParticlesPerTask * SpriteRenderer.VERTEX_DATA_SIZE;
-                additiveBufferIndex += additiveParticlesPerTask * SpriteRenderer.VERTEX_DATA_SIZE;
+                alphaBufferIndex += alphaParticlesPerTask * SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES;
+                additiveBufferIndex += additiveParticlesPerTask * SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES;
 
                 alphaParticlesStartIndex += alphaParticlesPerTask;
                 alphaParticlesEndIndex = Math.min(alphaParticlesEndIndex + alphaParticlesPerTask, getParticles(RenderLayer.DEFAULT_ALPHA_BLENDED).size());

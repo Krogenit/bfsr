@@ -10,18 +10,22 @@ import net.bfsr.math.MathUtils;
 import net.bfsr.util.MultithreadingUtils;
 import net.bfsr.util.MutableInt;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.GL11C;
-import org.lwjgl.opengl.GL43;
-import org.lwjgl.opengl.GL44C;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.concurrent.*;
 import java.util.function.BiConsumer;
 
+import static org.lwjgl.opengl.GL11C.GL_QUADS;
+import static org.lwjgl.opengl.GL11C.glDrawArrays;
+import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BUFFER;
+import static org.lwjgl.opengl.GL44C.GL_DYNAMIC_STORAGE_BIT;
+
 public class SpriteRenderer {
-    public static final int VERTEX_DATA_SIZE = 16;
-    public static final int MATERIAL_DATA_SIZE = 48;
+    public static final int VERTEX_DATA_SIZE = 4;
+    public static final int VERTEX_DATA_SIZE_IN_BYTES = VERTEX_DATA_SIZE << 2;
+    public static final int MATERIAL_DATA_SIZE = 12;
+    public static final int MATERIAL_DATA_SIZE_IN_BYTES = MATERIAL_DATA_SIZE << 2;
 
     private VAO vao;
     private ExecutorService executorService;
@@ -63,7 +67,7 @@ public class SpriteRenderer {
     }
 
     public void syncAndRender(BufferType bufferType) {
-        syncAndRender(GL11C.GL_QUADS, bufferType);
+        syncAndRender(GL_QUADS, bufferType);
     }
 
     public void syncAndRender(int type, BufferType bufferType) {
@@ -82,7 +86,7 @@ public class SpriteRenderer {
     }
 
     public void render(BufferType bufferType) {
-        render(GL11C.GL_QUADS, bufferType);
+        render(GL_QUADS, bufferType);
     }
 
     public void render(int type, BufferType bufferType) {
@@ -94,14 +98,14 @@ public class SpriteRenderer {
     }
 
     public void render(int count, FloatBuffer vertexBuffer, ByteBuffer materialBuffer) {
-        render(GL11C.GL_QUADS, count, vertexBuffer, materialBuffer);
+        render(GL_QUADS, count, vertexBuffer, materialBuffer);
     }
 
     public void render(int type, int count, FloatBuffer vertexBuffer, ByteBuffer materialBuffer) {
-        vao.updateVertexBuffer(0, vertexBuffer.limit(count * VERTEX_DATA_SIZE), GL44C.GL_DYNAMIC_STORAGE_BIT, VERTEX_DATA_SIZE);
-        vao.updateBuffer(1, materialBuffer.limit(count * MATERIAL_DATA_SIZE), GL44C.GL_DYNAMIC_STORAGE_BIT);
-        vao.bindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 0, 1);
-        GL11C.glDrawArrays(type, 0, count << 2);
+        vao.updateVertexBuffer(0, vertexBuffer.limit(count * VERTEX_DATA_SIZE_IN_BYTES), GL_DYNAMIC_STORAGE_BIT, VERTEX_DATA_SIZE_IN_BYTES);
+        vao.updateBuffer(1, materialBuffer.limit(count * MATERIAL_DATA_SIZE_IN_BYTES), GL_DYNAMIC_STORAGE_BIT);
+        vao.bindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 1);
+        glDrawArrays(type, 0, count << 2);
         Core.get().getRenderer().increaseDrawCalls();
     }
 

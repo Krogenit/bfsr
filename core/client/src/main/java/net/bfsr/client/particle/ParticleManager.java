@@ -38,9 +38,9 @@ public class ParticleManager {
         }
     }
 
-    public void renderDebug() {
+    public void renderDebug(DebugRenderer debugRenderer) {
         for (int i = 0; i < particlesWrecks.size(); i++) {
-            DebugRenderer.INSTANCE.render(particlesWrecks.get(i));
+            debugRenderer.render(particlesWrecks.get(i));
         }
     }
 

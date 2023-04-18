@@ -6,6 +6,7 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.camera.Camera;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.gui.Gui;
+import net.bfsr.client.renderer.debug.DebugRenderer;
 import net.bfsr.client.renderer.debug.OpenGLDebugUtils;
 import net.bfsr.client.renderer.font.StringGeometryBuilder;
 import net.bfsr.client.renderer.instanced.BufferType;
@@ -42,6 +43,7 @@ public class Renderer {
     private final SpriteRenderer spriteRenderer = new SpriteRenderer();
     @Getter
     private final GUIRenderer guiRenderer = new GUIRenderer();
+    private final DebugRenderer debugRenderer = new DebugRenderer();
     @Getter
     private int drawCalls;
     @Getter
@@ -67,6 +69,7 @@ public class Renderer {
         stringRenderer.init(stringGeometryBuilder, spriteRenderer);
         guiRenderer.init(spriteRenderer);
         particleRenderer.init(spriteRenderer);
+        debugRenderer.init();
         shader.load();
         shader.init();
 
@@ -140,8 +143,9 @@ public class Renderer {
             particleRenderer.render();
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
             if (Option.SHOW_DEBUG_BOXES.getBoolean()) {
-                shader.disable();
-                world.renderDebug();
+                debugRenderer.bind();
+                world.renderDebug(debugRenderer);
+                spriteRenderer.bind();
                 shader.enable();
             }
         }

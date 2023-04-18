@@ -434,45 +434,21 @@ public class WorldClient extends World<Ship, Bullet> {
         SpriteRenderer.get().syncAndRender(BufferType.ENTITIES_ADDITIVE);
     }
 
-    public void renderDebug() {
-        core.getRenderer().getCamera().setupOpenGLMatrix();
-
-//        try {
-//            ShipDamagable shipDamagable1 = shipDamagables.get(1);
-//            GL11.glPushMatrix();
-//            GL11.glTranslatef((float) shipDamagable1.getBody().getTransform().getTranslationX(), (float) shipDamagable1.getBody().getTransform().getTranslationY(), 0.0f);
-//            GL11.glScalef(0.5f, 0.5f, 1.0f);
-//            GL11.glTranslatef(-shipDamagable1.getScale().x, -shipDamagable1.getScale().y, 0.0f);
-//            backup.copyFrom(shipDamagable1.getMaskTexture().getByteBuffer());
-//            long now = System.nanoTime();
-//            TextureUpdateRegion textureUpdateRegion = new TextureUpdateRegion();
-//            PathD pathD = shipDamagable1.getContours().get(0);
-//            Path64 path64 = new Path64(pathD.size());
-//            for (int i = 0; i < pathD.size(); i++) {
-//                path64.add(new Point64(pathD.get(i), DamageUtils.SCALE));
-//            }
-//            DamageUtils.clipTextureOutside(path64, shipDamagable1.getMaskTexture(), shipDamagable1.getScale(), DamageUtils.SCALE, textureUpdateRegion);
-//            textureUpdateRegion.upload(shipDamagable1.getMaskTexture());
-//            shipDamagable1.getMaskTexture().copyFrom(backup.getByteBuffer());
-//            GL11.glPopMatrix();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
+    public void renderDebug(DebugRenderer debugRenderer) {
         for (int i = 0; i < shipWrecks.size(); i++) {
-            DebugRenderer.INSTANCE.render(shipWrecks.get(i));
+            debugRenderer.render(shipWrecks.get(i));
         }
 
         for (int i = 0, size = ships.size(); i < size; i++) {
-            DebugRenderer.INSTANCE.render(ships.get(i));
+            debugRenderer.render(ships.get(i));
         }
 
         for (int i = 0, size = bullets.size(); i < size; i++) {
             Bullet bullet = bullets.get(i);
-            DebugRenderer.INSTANCE.render(bullet);
+            debugRenderer.render(bullet);
         }
 
-        particleManager.renderDebug();
+        particleManager.renderDebug(debugRenderer);
     }
 
     public void setPlayerShip(Ship playerShip) {

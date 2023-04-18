@@ -21,16 +21,16 @@ public class BuffersHolder {
     private int objectCount;
 
     public BuffersHolder(int initialObjectCount) {
-        vertexBuffer = BufferUtils.createFloatBuffer(initialObjectCount * SpriteRenderer.VERTEX_DATA_SIZE);
-        materialBuffer = BufferUtils.createByteBuffer(initialObjectCount * SpriteRenderer.MATERIAL_DATA_SIZE);
+        vertexBuffer = BufferUtils.createFloatBuffer(initialObjectCount * SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES);
+        materialBuffer = BufferUtils.createByteBuffer(initialObjectCount * SpriteRenderer.MATERIAL_DATA_SIZE_IN_BYTES);
     }
 
     void checkBuffersSize(int objectCount) {
-        while (vertexBuffer.capacity() - vertexBufferIndex.get() < objectCount * SpriteRenderer.VERTEX_DATA_SIZE) {
+        while (vertexBuffer.capacity() - vertexBufferIndex.get() < objectCount * SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES) {
             vertexBuffer = BufferUtils.createFloatBuffer(vertexBuffer.capacity() << 1);
         }
 
-        while (materialBuffer.capacity() - materialBufferIndex.get() < objectCount * SpriteRenderer.MATERIAL_DATA_SIZE) {
+        while (materialBuffer.capacity() - materialBufferIndex.get() < objectCount * SpriteRenderer.MATERIAL_DATA_SIZE_IN_BYTES) {
             materialBuffer = BufferUtils.createByteBuffer(materialBuffer.capacity() << 1);
         }
     }

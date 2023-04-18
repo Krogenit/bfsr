@@ -3,6 +3,14 @@ package net.bfsr.math;
 import org.joml.Vector2f;
 
 public final class RotationHelper {
+    public static float rotateX(float sin, float cos, float x, float y) {
+        return cos * x - sin * y;
+    }
+
+    public static float rotateY(float sin, float cos, float x, float y) {
+        return sin * x + cos * y;
+    }
+
     public static Vector2f rotate(float sin, float cos, float x, float y) {
         return new Vector2f(cos * x - sin * y, sin * x + cos * y);
     }

@@ -49,19 +49,19 @@ public final class StringRenderer {
 
     public void addString(GLString glString, BufferType bufferType) {
         BuffersHolder buffersHolder = spriteRenderer.buffersHolders[bufferType.ordinal()];
-        buffersHolder.checkBuffersSize(glString.getVertexBuffer().remaining() / SpriteRenderer.VERTEX_DATA_SIZE);
+        buffersHolder.checkBuffersSize(glString.getVertexBuffer().remaining() / SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES);
         buffersHolder.getVertexBuffer().put(buffersHolder.getVertexBufferIndex().getAndAdd(glString.getVertexBuffer().remaining()), glString.getVertexBuffer(), 0,
                 glString.getVertexBuffer().remaining());
         buffersHolder.getMaterialBuffer().put(buffersHolder.getMaterialBufferIndex().getAndAdd(glString.getMaterialBuffer().remaining()), glString.getMaterialBuffer(), 0,
                 glString.getMaterialBuffer().remaining());
-        buffersHolder.addObjectCount(glString.getVertexBuffer().remaining() / SpriteRenderer.VERTEX_DATA_SIZE);
+        buffersHolder.addObjectCount(glString.getVertexBuffer().remaining() / SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES);
     }
 
     public void addString(GLString glString, float x, float y, BufferType bufferType) {
         BuffersHolder buffersHolder = spriteRenderer.buffersHolders[bufferType.ordinal()];
 
         int vertexDataSize = glString.getVertexBuffer().remaining();
-        int objectCount = vertexDataSize / SpriteRenderer.VERTEX_DATA_SIZE << 1;
+        int objectCount = vertexDataSize / SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES << 1;
         buffersHolder.checkBuffersSize(objectCount);
         int startIndex = buffersHolder.getVertexBufferIndex().getAndAdd(vertexDataSize);
         buffersHolder.getVertexBuffer().put(startIndex, glString.getVertexBuffer(), 0, vertexDataSize);
@@ -73,7 +73,7 @@ public final class StringRenderer {
 
         buffersHolder.getMaterialBuffer().put(buffersHolder.getMaterialBufferIndex().getAndAdd(glString.getMaterialBuffer().remaining()), glString.getMaterialBuffer(), 0,
                 glString.getMaterialBuffer().remaining());
-        buffersHolder.addObjectCount(vertexDataSize / SpriteRenderer.VERTEX_DATA_SIZE);
+        buffersHolder.addObjectCount(vertexDataSize / SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES);
     }
 
     public void addString(GLString glString, float lastX, float lastY, float x, float y, float scaleX, float scaleY, BufferType bufferType) {
@@ -108,14 +108,14 @@ public final class StringRenderer {
 
         ByteBuffer stringMaterialBuffer = glString.getMaterialBuffer();
         buffersHolder.getMaterialBuffer().put(buffersHolder.getMaterialBufferIndex().getAndAdd(stringMaterialBuffer.remaining()), stringMaterialBuffer, 0, stringMaterialBuffer.remaining());
-        buffersHolder.addObjectCount(vertexDataSize / SpriteRenderer.VERTEX_DATA_SIZE);
+        buffersHolder.addObjectCount(vertexDataSize / SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES);
     }
 
     public void addStringWithShadow(GLString glString, float x, float y, float scaleX, float scaleY, float shadowOffsetX, float shadowOffsetY, BufferType bufferType) {
         BuffersHolder buffersHolder = spriteRenderer.buffersHolders[bufferType.ordinal()];
         FloatBuffer stringVertexBuffer = glString.getVertexBuffer();
         int vertexDataSize = stringVertexBuffer.remaining();
-        int objectCount = vertexDataSize / SpriteRenderer.VERTEX_DATA_SIZE << 1;
+        int objectCount = vertexDataSize / SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES << 1;
         buffersHolder.checkBuffersSize(objectCount);
         int startIndex = buffersHolder.getVertexBufferIndex().getAndAdd(vertexDataSize);
 
@@ -143,7 +143,7 @@ public final class StringRenderer {
 
         int materialDataSize = stringMaterialBuffer.remaining();
 
-        for (int i = 0; i < materialDataSize; i += SpriteRenderer.MATERIAL_DATA_SIZE) {
+        for (int i = 0; i < materialDataSize; i += SpriteRenderer.MATERIAL_DATA_SIZE_IN_BYTES) {
             materialBuffer.putFloat(materialStartIndex + i, 0.0f);
             materialBuffer.putFloat(materialStartIndex + i + 4, 0.0f);
             materialBuffer.putFloat(materialStartIndex + i + 8, 0.0f);
