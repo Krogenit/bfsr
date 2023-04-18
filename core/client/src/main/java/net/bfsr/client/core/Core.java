@@ -110,8 +110,8 @@ public class Core {
 
     public void update() {
         profiler.endStartSection("tasks");
-        while (!this.futureTasks.isEmpty()) {
-            this.futureTasks.poll().run();
+        while (!futureTasks.isEmpty()) {
+            futureTasks.poll().run();
         }
 
         profiler.endStartSection("update");
