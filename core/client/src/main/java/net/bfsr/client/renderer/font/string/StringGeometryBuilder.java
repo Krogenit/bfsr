@@ -1,6 +1,6 @@
-package net.bfsr.client.renderer.font;
+package net.bfsr.client.renderer.font.string;
 
-import net.bfsr.client.renderer.font.string.GLString;
+import net.bfsr.client.renderer.font.*;
 import org.joml.Vector3f;
 
 import java.nio.ByteBuffer;

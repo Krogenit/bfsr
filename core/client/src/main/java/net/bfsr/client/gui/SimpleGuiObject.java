@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.bfsr.client.input.Mouse;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 

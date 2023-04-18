@@ -1,9 +1,10 @@
 package net.bfsr.client.renderer;
 
 import net.bfsr.client.renderer.texture.Texture;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL45C;
+
+import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30C.glBindFramebuffer;
+import static org.lwjgl.opengl.GL45C.*;
 
 public class FrameBuffer {
     private int buffer;
@@ -11,11 +12,15 @@ public class FrameBuffer {
     private Texture[] texture;
 
     public void generate() {
-        buffer = GL45C.glCreateFramebuffers();
+        buffer = glCreateFramebuffers();
     }
 
     public void bind() {
-        OpenGLHelper.bindFrameBuffer(buffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, buffer);
+    }
+
+    public static void unbind() {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     public void generateTexture(int count, int width, int height) {
@@ -23,37 +28,37 @@ public class FrameBuffer {
         int[] drawBuffers = new int[count];
         for (int i = 0; i < count; i++) {
             texture[i] = getTexture(i, width, height);
-            drawBuffers[i] = GL30.GL_COLOR_ATTACHMENT0 + i;
+            drawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
         }
-        GL45C.glNamedFramebufferDrawBuffers(buffer, drawBuffers);
+        glNamedFramebufferDrawBuffers(buffer, drawBuffers);
     }
 
     public void generateTexture(int width, int height) {
         texture = new Texture[1];
         texture[0] = getTexture(0, width, height);
-        GL45C.glNamedFramebufferDrawBuffers(buffer, new int[]{GL30.GL_COLOR_ATTACHMENT0});
+        glNamedFramebufferDrawBuffers(buffer, new int[]{GL_COLOR_ATTACHMENT0});
     }
 
     private Texture getTexture(int i, int width, int height) {
         Texture texture = new Texture(width, height).create();
-        GL45C.glTextureStorage2D(texture.getId(), 1, GL11.GL_RGB8, width, height);
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
+        glTextureStorage2D(texture.getId(), 1, GL_RGB8, width, height);
+        glTextureParameteri(texture.getId(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTextureParameteri(texture.getId(), GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTextureParameteri(texture.getId(), GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(texture.getId(), GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        GL45C.glNamedFramebufferTexture(buffer, GL30.GL_COLOR_ATTACHMENT0 + i, texture.getId(), 0);
+        glNamedFramebufferTexture(buffer, GL_COLOR_ATTACHMENT0 + i, texture.getId(), 0);
         return texture;
     }
 
     public void generateRenderBuffer() {
-        renderBuffer = GL45C.glCreateRenderbuffers();
-        GL45C.glNamedRenderbufferStorage(renderBuffer, GL11.GL_DEPTH_COMPONENT, texture[0].getWidth(), texture[0].getHeight());
-        GL45C.glNamedFramebufferRenderbuffer(buffer, GL30.GL_DEPTH_ATTACHMENT, GL30.GL_RENDERBUFFER, renderBuffer);
+        renderBuffer = glCreateRenderbuffers();
+        glNamedRenderbufferStorage(renderBuffer, GL_DEPTH_COMPONENT, texture[0].getWidth(), texture[0].getHeight());
+        glNamedFramebufferRenderbuffer(buffer, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
     }
 
     public void bindTexture() {
-        OpenGLHelper.bindTexture(texture[0].getId());
+        glBindTexture(GL_TEXTURE_2D, texture[0].getId());
     }
 
     public Texture getTexture() {
@@ -65,11 +70,11 @@ public class FrameBuffer {
     }
 
     public void clear() {
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     public void viewPort(int width, int height) {
-        GL11.glViewport(0, 0, width, height);
+        glViewport(0, 0, width, height);
     }
 
     public void deleteTexture(int i) {
@@ -77,17 +82,19 @@ public class FrameBuffer {
     }
 
     public void deleteTextures() {
-        for (Texture texture : texture)
-            texture.delete();
+        for (int i = 0; i < texture.length; i++) {
+            texture[i].delete();
+        }
+
         texture = null;
     }
 
     public void delete() {
-        GL30.glDeleteRenderbuffers(renderBuffer);
-        GL30.glDeleteFramebuffers(buffer);
+        glDeleteRenderbuffers(renderBuffer);
+        glDeleteFramebuffers(buffer);
     }
 
     public void drawBuffer(int i) {
-        GL45C.glNamedFramebufferDrawBuffer(buffer, GL30.GL_COLOR_ATTACHMENT0 + i);
+        glNamedFramebufferDrawBuffer(buffer, GL_COLOR_ATTACHMENT0 + i);
     }
 }

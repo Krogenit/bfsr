@@ -3,7 +3,7 @@ package net.bfsr.client.renderer.particle;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.particle.Particle;
 import net.bfsr.client.particle.RenderLayer;
-import net.bfsr.client.renderer.instanced.SpriteRenderer;
+import net.bfsr.client.renderer.SpriteRenderer;
 import net.bfsr.util.MutableInt;
 
 import java.nio.ByteBuffer;

@@ -5,18 +5,18 @@ package net.bfsr.client.renderer.font;
  * and position of the pre-rendered glyph image, and includes the x/y pixel coordinates of where this glyph occurs within
  * the string to which this Glyph object belongs.
  */
-class Glyph implements Comparable<Glyph> {
+public class Glyph implements Comparable<Glyph> {
     /** The index into the original string (i.e. with color codes) for the character that generated this glyph. */
-    int stringIndex;
+    public int stringIndex;
 
     /** Texture ID and position/size of the glyph's pre-rendered image within the cache texture. */
-    GlyphCache.Entry texture;
+    public GlyphCache.Entry texture;
 
     /** Glyph's horizontal position (in pixels) relative to the entire string's baseline */
-    int x;
+    public int x;
 
     /** Glyph's vertical position (in pixels) relative to the entire string's baseline */
-    int y;
+    public int y;
 
     /** Glyph's horizontal advance (in pixels) used for strikethrough and underline effects */
     int advance;

@@ -3,7 +3,7 @@ package net.bfsr.client.gui.ingame;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.gui.Gui;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.client.settings.Option;
 import org.lwjgl.glfw.GLFW;
 

@@ -3,21 +3,35 @@ package net.bfsr.client.renderer.texture;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.model.TexturedQuad;
 import net.bfsr.client.renderer.FrameBuffer;
-import net.bfsr.client.renderer.OpenGLHelper;
-import net.bfsr.client.shader.NebulaShader;
-import net.bfsr.client.shader.StarsShader;
+import net.bfsr.client.renderer.shader.NebulaShader;
+import net.bfsr.client.renderer.shader.StarsShader;
 import net.bfsr.util.RandomHelper;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.*;
-import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.util.Random;
 
+import static org.lwjgl.opengl.ARBBindlessTexture.glGetTextureHandleARB;
+import static org.lwjgl.opengl.ARBBindlessTexture.glMakeTextureHandleResidentARB;
+import static org.lwjgl.opengl.EXTDirectStateAccess.glBindMultiTextureEXT;
+import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT;
+import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT;
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL13C.GL_TEXTURE1;
+import static org.lwjgl.opengl.GL30C.GL_RG;
+import static org.lwjgl.opengl.GL30C.GL_RG8;
+import static org.lwjgl.opengl.GL45C.*;
+import static org.lwjgl.system.MemoryUtil.memAlloc;
+import static org.lwjgl.system.MemoryUtil.memFree;
+
 public final class TextureGenerator {
     private static TexturedQuad counterClockWiseCenteredQuad;
+
+    public static void init() {
+        counterClockWiseCenteredQuad = TexturedQuad.createCounterClockWiseCenteredQuad();
+    }
 
     private static Texture generateSpaceTexture(int width, int height, float density, float brightness, Random random) {
         int count = Math.round(width * height * density);
@@ -33,18 +47,18 @@ public final class TextureGenerator {
         }
 
         Texture texture = new Texture(width, height).create();
-        GL45C.glTextureStorage2D(texture.getId(), 1, GL11.GL_RGB8, width, height);
+        glTextureStorage2D(texture.getId(), 1, GL_RGB8, width, height);
 
-        ByteBuffer byteBuffer = MemoryUtil.memAlloc(width * height * 3);
-        GL45C.glTextureSubImage2D(texture.getId(), 0, 0, 0, width, height, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, byteBuffer.put(data).flip());
-        MemoryUtil.memFree(byteBuffer);
+        ByteBuffer byteBuffer = memAlloc(width * height * 3);
+        glTextureSubImage2D(texture.getId(), 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, byteBuffer.put(data).flip());
+        memFree(byteBuffer);
 
-        GL45C.glGenerateTextureMipmap(texture.getId());
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST_MIPMAP_NEAREST);
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-        GL45C.glTextureParameterf(texture.getId(), EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
+        glGenerateTextureMipmap(texture.getId());
+        glTextureParameteri(texture.getId(), GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(texture.getId(), GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTextureParameteri(texture.getId(), GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+        glTextureParameteri(texture.getId(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTextureParameterf(texture.getId(), GL_TEXTURE_MAX_ANISOTROPY_EXT, glGetFloat(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
 
         return texture;
     }
@@ -58,22 +72,22 @@ public final class TextureGenerator {
             data[(i << 1) + 1] = (byte) Math.round(0.5 * (1.0 + random.nextDouble()) * 255);
         }
 
-        GL45C.glTextureStorage2D(texture.getId(), 1, GL30.GL_RG8, size, size);
+        glTextureStorage2D(texture.getId(), 1, GL_RG8, size, size);
 
-        ByteBuffer byteBuffer = MemoryUtil.memAlloc(l << 1);
-        GL45C.glTextureSubImage2D(texture.getId(), 0, 0, 0, size, size, GL30.GL_RG, GL11.GL_UNSIGNED_BYTE, byteBuffer.put(data).flip());
-        MemoryUtil.memFree(byteBuffer);
+        ByteBuffer byteBuffer = memAlloc(l << 1);
+        glTextureSubImage2D(texture.getId(), 0, 0, 0, size, size, GL_RG, GL_UNSIGNED_BYTE, byteBuffer.put(data).flip());
+        memFree(byteBuffer);
 
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+        glTextureParameteri(texture.getId(), GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(texture.getId(), GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTextureParameteri(texture.getId(), GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTextureParameteri(texture.getId(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         return texture;
     }
 
     public static Texture generateNebulaTexture(int width, int height, Random random) {
-        if (counterClockWiseCenteredQuad == null) counterClockWiseCenteredQuad = TexturedQuad.createCounterClockWiseCenteredQuad();
+        int currentBindTexture = glGetInteger(GL_TEXTURE_BINDING_2D);
         NebulaShader nebulaShader = new NebulaShader();
         StarsShader starsShader = new StarsShader();
         FrameBuffer buffer = new FrameBuffer();
@@ -114,10 +128,8 @@ public final class TextureGenerator {
 
         for (int i = 0; i < count; i++) {
             Texture noise = generateNoiseTexture(random, noiseSize);
-            OpenGLHelper.activateTexture0();
-            OpenGLHelper.bindTexture(nebulaTexture.getId());
-            OpenGLHelper.activateTexture1();
-            OpenGLHelper.bindTexture(noise.getId());
+            glBindTexture(GL_TEXTURE_2D, nebulaTexture.getId());
+            glBindMultiTextureEXT(GL_TEXTURE1, GL_TEXTURE_2D, noise.getId());
 
             float density = RandomHelper.randomFloat(random, densityMin, deinsityMax);
             float falloff = RandomHelper.randomFloat(random, falloffMin, falloffMax);
@@ -190,8 +202,7 @@ public final class TextureGenerator {
 
         int starsCount = (int) (random.nextInt((int) (25 * starsCountByTextureSize.x)) + 10 * starsCountByTextureSize.x);
         for (int i = 0; i < starsCount; i++) {
-            OpenGLHelper.activateTexture0();
-            OpenGLHelper.bindTexture(nebulaTexture.getId());
+            glBindTexture(GL_TEXTURE_2D, nebulaTexture.getId());
 
             Vector2f center = new Vector2f(random.nextFloat(), random.nextFloat());
             float haloFalloff = random.nextFloat() * 0.512f + 0.064f;
@@ -216,8 +227,7 @@ public final class TextureGenerator {
 
         int mainStars = random.nextInt((int) (4 * starsCountByTextureSize.x));
         for (int i = 0; i < mainStars; i++) {
-            OpenGLHelper.activateTexture0();
-            OpenGLHelper.bindTexture(nebulaTexture.getId());
+            glBindTexture(GL_TEXTURE_2D, nebulaTexture.getId());
 
             Vector2f center = new Vector2f(random.nextFloat(), random.nextFloat());
             float haloFalloff = random.nextFloat() * 0.032f + 0.008f;
@@ -243,22 +253,22 @@ public final class TextureGenerator {
         starsShader.disable();
         starsShader.delete();
 
-        OpenGLHelper.bindFrameBuffer(0);
-        GL11.glViewport(0, 0, Core.get().getScreenWidth(), Core.get().getScreenHeight());
-        OpenGLHelper.activateTexture0();
+        FrameBuffer.unbind();
+        glViewport(0, 0, Core.get().getScreenWidth(), Core.get().getScreenHeight());
 
         buffer.delete();
         stars.delete();
         buffer.deleteTexture(1 - activeBuffer);
 
-        GL45C.glTextureParameteri(nebulaTexture.getId(), GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-        GL45C.glTextureParameteri(nebulaTexture.getId(), GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
-        GL45C.glTextureParameteri(nebulaTexture.getId(), GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-        GL45C.glTextureParameteri(nebulaTexture.getId(), GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-        GL45C.glTextureParameterf(nebulaTexture.getId(), EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
-        long textureHandle = ARBBindlessTexture.glGetTextureHandleARB(nebulaTexture.getId());
-        ARBBindlessTexture.glMakeTextureHandleResidentARB(textureHandle);
+        glTextureParameteri(nebulaTexture.getId(), GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(nebulaTexture.getId(), GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTextureParameteri(nebulaTexture.getId(), GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(nebulaTexture.getId(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameterf(nebulaTexture.getId(), GL_TEXTURE_MAX_ANISOTROPY_EXT, glGetFloat(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
+        long textureHandle = glGetTextureHandleARB(nebulaTexture.getId());
+        glMakeTextureHandleResidentARB(textureHandle);
         nebulaTexture.setTextureHandle(textureHandle);
+        glBindTexture(GL_TEXTURE_2D, currentBindTexture);
 
         return nebulaTexture;
     }

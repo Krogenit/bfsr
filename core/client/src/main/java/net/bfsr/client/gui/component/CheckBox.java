@@ -2,7 +2,7 @@ package net.bfsr.client.gui.component;
 
 import lombok.Setter;
 import net.bfsr.client.gui.TexturedGuiObject;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.texture.TextureRegister;
 import org.lwjgl.opengl.GL11C;
 

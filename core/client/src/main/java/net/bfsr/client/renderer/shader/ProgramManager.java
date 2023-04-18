@@ -1,9 +1,9 @@
-package net.bfsr.client.shader;
+package net.bfsr.client.renderer.shader;
 
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.client.shader.loader.Definition;
-import net.bfsr.client.shader.loader.FileManager;
-import net.bfsr.client.shader.loader.IncludeID;
+import net.bfsr.client.renderer.shader.loader.Definition;
+import net.bfsr.client.renderer.shader.loader.FileManager;
+import net.bfsr.client.renderer.shader.loader.IncludeID;
 import org.lwjgl.opengl.*;
 
 import java.util.ArrayList;

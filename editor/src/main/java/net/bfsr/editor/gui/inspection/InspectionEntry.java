@@ -9,7 +9,7 @@ import net.bfsr.client.gui.GuiObjectsHandler;
 import net.bfsr.client.gui.input.InputBox;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.renderer.font.FontType;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.editor.gui.ColorScheme;
 import net.bfsr.editor.gui.component.MinimizableGuiObject;
 import net.bfsr.property.ComponentHolder;

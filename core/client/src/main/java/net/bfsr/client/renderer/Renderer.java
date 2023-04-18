@@ -6,26 +6,31 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.camera.Camera;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.gui.Gui;
+import net.bfsr.client.renderer.buffer.BufferType;
 import net.bfsr.client.renderer.debug.DebugRenderer;
-import net.bfsr.client.renderer.debug.OpenGLDebugUtils;
-import net.bfsr.client.renderer.font.StringGeometryBuilder;
-import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
-import net.bfsr.client.renderer.instanced.SpriteRenderer;
-import net.bfsr.client.renderer.instanced.StringRenderer;
+import net.bfsr.client.renderer.font.string.StringGeometryBuilder;
+import net.bfsr.client.renderer.font.string.StringRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.client.renderer.particle.ParticleRenderer;
+import net.bfsr.client.renderer.shader.BaseShader;
+import net.bfsr.client.renderer.texture.Texture;
+import net.bfsr.client.renderer.texture.TextureGenerator;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.settings.Option;
-import net.bfsr.client.shader.BaseShader;
 import net.bfsr.client.world.WorldClient;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GLDebugMessageCallback;
-import org.lwjgl.system.MemoryUtil;
+import net.bfsr.texture.TextureRegister;
 
-import static org.lwjgl.opengl.GL11C.GL_LINE_LOOP;
+import java.util.Random;
+
+import static net.bfsr.client.renderer.debug.OpenGLDebugUtils.*;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.GL_ALPHA_TEST;
+import static org.lwjgl.opengl.GL11.glAlphaFunc;
+import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL43C.GL_DEBUG_TYPE_OTHER;
 import static org.lwjgl.opengl.GL43C.glDebugMessageCallback;
+import static org.lwjgl.opengl.GLDebugMessageCallback.getMessage;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
 @Log4j2
 public class Renderer {
@@ -64,6 +69,7 @@ public class Renderer {
         setVSync(Option.V_SYNC.getBoolean());
 
         TextureLoader.init();
+        TextureGenerator.init();
 
         camera.init(core.getScreenWidth(), core.getScreenHeight());
         spriteRenderer.init();
@@ -75,39 +81,38 @@ public class Renderer {
         shader.init();
 
         if (Option.IS_DEBUG.getBoolean()) {
-            GLFW.glfwRestoreWindow(window);
-            GLFW.glfwSetWindowSize(window, 1280, 720);
-            GLFW.glfwSetWindowPos(window, (width - 1280) / 2, (height - 720) / 2);
+            glfwRestoreWindow(window);
+            glfwSetWindowSize(window, 1280, 720);
+            glfwSetWindowPos(window, (width - 1280) / 2, (height - 720) / 2);
         }
 
-        GLFW.glfwShowWindow(window);
+        glfwShowWindow(window);
     }
 
     private void setupOpenGL(int width, int height) {
         glDebugMessageCallback((source, type, id, severity, length, message, userParam) -> {
             if (type != GL_DEBUG_TYPE_OTHER) {
-                log.info("GLDebug {} {}, {}, {}, {}", OpenGLDebugUtils.getDebugSeverity(severity), String.format("0x%X", id),
-                        OpenGLDebugUtils.getDebugSource(source), OpenGLDebugUtils.getDebugType(type), GLDebugMessageCallback.getMessage(length, message));
+                log.info("GLDebug {} {}, {}, {}, {}", getDebugSeverity(severity), String.format("0x%X", id),
+                        getDebugSource(source), getDebugType(type), getMessage(length, message));
             }
-        }, MemoryUtil.NULL);
+        }, NULL);
 
-        GL11.glViewport(0, 0, width, height);
+        glViewport(0, 0, width, height);
 
-        GL11.glEnable(GL11.GL_ALPHA_TEST);
-        GL11.glEnable(GL11.GL_BLEND);
-        GL11.glEnable(GL11.GL_CULL_FACE);
-        GL11.glCullFace(GL11.GL_BACK);
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
+        glEnable(GL_ALPHA_TEST);
+        glEnable(GL_BLEND);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glAlphaFunc(GL_GREATER, 0.0001f);
+        TextureLoader.getTexture(TextureRegister.damageFire, GL_REPEAT, GL_LINEAR).bind();
 
-        GL11.glClearColor(0.05F, 0.1F, 0.2F, 1.0F);
+        glClearColor(0.05F, 0.1F, 0.2F, 1.0F);
     }
 
     public void updateCamera() {
         camera.update();
-    }
-
-    public void update() {
     }
 
     public void prepareRender(float interpolation) {
@@ -119,7 +124,6 @@ public class Renderer {
 
         WorldClient world = core.getWorld();
         if (world != null) {
-            world.preRender();
             particleRenderer.putBackgroundParticlesToBuffers();
             world.prepareAmbient();
             world.prepareEntities();
@@ -129,20 +133,23 @@ public class Renderer {
 
     public void render() {
         resetDrawCalls();
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
         camera.calculateInterpolatedViewMatrix(interpolation);
         camera.bindInterpolatedWorldViewMatrix();
         spriteRenderer.bind();
         shader.enable();
-        OpenGLHelper.alphaGreater(0.0001f);
 
         WorldClient world = core.getWorld();
         if (world != null) {
             world.renderAmbient();
             particleRenderer.renderBackground();
-            world.renderEntities();
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            world.renderEntitiesAlpha();
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            world.renderEntitiesAdditive();
             particleRenderer.render();
-            OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             if (Option.SHOW_DEBUG_BOXES.getBoolean()) {
                 debugRenderer.clear();
                 debugRenderer.bind();
@@ -168,18 +175,13 @@ public class Renderer {
         spriteRenderer.render(BufferType.GUI);
     }
 
-    private void resetDrawCalls() {
-        lastFrameDrawCalls = drawCalls;
-        drawCalls = 0;
-    }
-
     public void resize(int width, int height) {
-        GL11.glViewport(0, 0, width, height);
+        glViewport(0, 0, width, height);
         camera.resize(width, height);
     }
 
-    public void setVSync(boolean value) {
-        GLFW.glfwSwapInterval(value ? 1 : 0);
+    public Texture createBackgroundTexture(long seed, int sizeX, int sizeY) {
+        return TextureGenerator.generateNebulaTexture(sizeX, sizeY, new Random(seed));
     }
 
     public void onExitToMainMenu() {
@@ -187,8 +189,17 @@ public class Renderer {
         particleRenderer.onExitToMainMenu();
     }
 
+    private void resetDrawCalls() {
+        lastFrameDrawCalls = drawCalls;
+        drawCalls = 0;
+    }
+
     public void increaseDrawCalls() {
         drawCalls++;
+    }
+
+    public void setVSync(boolean value) {
+        glfwSwapInterval(value ? 1 : 0);
     }
 
     public void reloadShaders() {

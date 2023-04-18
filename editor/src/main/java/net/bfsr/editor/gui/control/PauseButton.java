@@ -1,7 +1,7 @@
 package net.bfsr.editor.gui.control;
 
 import net.bfsr.client.gui.button.Button;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 
 public class PauseButton extends Button {
     private final Pausable pausable;

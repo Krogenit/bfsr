@@ -1,6 +1,6 @@
-package net.bfsr.client.shader;
+package net.bfsr.client.renderer.shader;
 
-import net.bfsr.client.shader.loader.Definition;
+import net.bfsr.client.renderer.shader.loader.Definition;
 import org.lwjgl.opengl.GL20;
 
 public class DebugShader extends ShaderProgram {

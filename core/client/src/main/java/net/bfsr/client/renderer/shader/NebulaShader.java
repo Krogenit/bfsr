@@ -1,6 +1,6 @@
-package net.bfsr.client.shader;
+package net.bfsr.client.renderer.shader;
 
-import net.bfsr.client.shader.loader.Definition;
+import net.bfsr.client.renderer.shader.loader.Definition;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;

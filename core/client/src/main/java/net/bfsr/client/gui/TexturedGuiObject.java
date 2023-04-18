@@ -1,7 +1,7 @@
 package net.bfsr.client.gui;
 
 import lombok.Getter;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.texture.TextureRegister;

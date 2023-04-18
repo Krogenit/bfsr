@@ -5,7 +5,7 @@ import lombok.Setter;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.TextureObject;
 import net.bfsr.client.particle.effect.ParticleSpawner;
-import net.bfsr.client.renderer.instanced.SpriteRenderer;
+import net.bfsr.client.renderer.SpriteRenderer;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.texture.TextureRegister;
 import net.bfsr.util.MutableInt;

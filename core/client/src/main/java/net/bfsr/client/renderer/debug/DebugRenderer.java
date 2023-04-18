@@ -8,7 +8,7 @@ import net.bfsr.client.core.Core;
 import net.bfsr.client.damage.Damagable;
 import net.bfsr.client.entity.CollisionObject;
 import net.bfsr.client.renderer.primitive.VAO;
-import net.bfsr.client.shader.DebugShader;
+import net.bfsr.client.renderer.shader.DebugShader;
 import net.bfsr.client.util.DamageUtils;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;

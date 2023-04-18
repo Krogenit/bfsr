@@ -8,7 +8,7 @@ import net.bfsr.client.language.Lang;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.font.string.StringObject;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.client.settings.Option;
 import net.bfsr.settings.SettingsCategory;
 import net.bfsr.settings.option.SettingsOption;

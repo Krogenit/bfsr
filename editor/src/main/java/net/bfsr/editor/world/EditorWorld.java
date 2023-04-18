@@ -2,8 +2,8 @@ package net.bfsr.editor.world;
 
 import lombok.Setter;
 import net.bfsr.client.entity.TextureObject;
-import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.SpriteRenderer;
+import net.bfsr.client.renderer.SpriteRenderer;
+import net.bfsr.client.renderer.buffer.BufferType;
 import net.bfsr.client.world.WorldClient;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -13,8 +13,8 @@ public class EditorWorld extends WorldClient {
     private TextureObject testObject;
 
     @Override
-    public void renderEntities() {
-        super.renderEntities();
+    public void renderEntitiesAlpha() {
+        super.renderEntitiesAlpha();
 
         if (testObject != null) {
             Vector2f position = testObject.getPosition();

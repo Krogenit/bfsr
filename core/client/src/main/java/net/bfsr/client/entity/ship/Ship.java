@@ -20,11 +20,11 @@ import net.bfsr.client.particle.effect.ExplosionEffects;
 import net.bfsr.client.particle.effect.GarbageSpawner;
 import net.bfsr.client.particle.effect.JumpEffects;
 import net.bfsr.client.particle.effect.WeaponEffects;
+import net.bfsr.client.renderer.SpriteRenderer;
+import net.bfsr.client.renderer.buffer.BufferType;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.font.string.StringObject;
-import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.SpriteRenderer;
 import net.bfsr.client.renderer.texture.DamageMaskTexture;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
@@ -521,12 +521,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
         return weaponSlots.get(i);
     }
 
-    public void emitParticles() {
-    }
-
-    public void spawnEngineParticles(Direction direction) {
-
-    }
+    public void spawnEngineParticles(Direction direction) {}
 
     public void addDamage(Damage damage) {
         damages.add(damage);

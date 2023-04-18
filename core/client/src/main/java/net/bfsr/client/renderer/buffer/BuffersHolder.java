@@ -1,7 +1,8 @@
-package net.bfsr.client.renderer.instanced;
+package net.bfsr.client.renderer.buffer;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.bfsr.client.renderer.SpriteRenderer;
 import net.bfsr.util.MutableInt;
 import org.lwjgl.BufferUtils;
 
@@ -25,7 +26,7 @@ public class BuffersHolder {
         materialBuffer = BufferUtils.createByteBuffer(initialObjectCount * SpriteRenderer.MATERIAL_DATA_SIZE_IN_BYTES);
     }
 
-    void checkBuffersSize(int objectCount) {
+    public void checkBuffersSize(int objectCount) {
         while (vertexBuffer.capacity() - vertexBufferIndex.get() < objectCount * SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES) {
             vertexBuffer = BufferUtils.createFloatBuffer(vertexBuffer.capacity() << 1);
         }

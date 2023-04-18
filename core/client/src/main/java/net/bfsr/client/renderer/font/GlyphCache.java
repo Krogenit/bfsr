@@ -167,7 +167,7 @@ public class GlyphCache {
      * This class holds information for a glyph about its pre-rendered image in an OpenGL texture. The texture coordinates in
      * this class are normalized in the standard 0.0 - 1.0 OpenGL range.
      */
-    static class Entry {
+    public static class Entry {
         /**
          * The OpenGL texture ID that contains this glyph image.
          */

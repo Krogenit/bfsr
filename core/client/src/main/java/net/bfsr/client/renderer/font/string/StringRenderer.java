@@ -1,9 +1,10 @@
-package net.bfsr.client.renderer.instanced;
+package net.bfsr.client.renderer.font.string;
 
 import net.bfsr.client.core.Core;
+import net.bfsr.client.renderer.SpriteRenderer;
+import net.bfsr.client.renderer.buffer.BufferType;
+import net.bfsr.client.renderer.buffer.BuffersHolder;
 import net.bfsr.client.renderer.font.StringCache;
-import net.bfsr.client.renderer.font.StringGeometryBuilder;
-import net.bfsr.client.renderer.font.string.GLString;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -48,7 +49,7 @@ public final class StringRenderer {
 
 
     public void addString(GLString glString, BufferType bufferType) {
-        BuffersHolder buffersHolder = spriteRenderer.buffersHolders[bufferType.ordinal()];
+        BuffersHolder buffersHolder = spriteRenderer.getBuffersHolder(bufferType);
         buffersHolder.checkBuffersSize(glString.getVertexBuffer().remaining() / SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES);
         buffersHolder.getVertexBuffer().put(buffersHolder.getVertexBufferIndex().getAndAdd(glString.getVertexBuffer().remaining()), glString.getVertexBuffer(), 0,
                 glString.getVertexBuffer().remaining());
@@ -58,7 +59,7 @@ public final class StringRenderer {
     }
 
     public void addString(GLString glString, float x, float y, BufferType bufferType) {
-        BuffersHolder buffersHolder = spriteRenderer.buffersHolders[bufferType.ordinal()];
+        BuffersHolder buffersHolder = spriteRenderer.getBuffersHolder(bufferType);
 
         int vertexDataSize = glString.getVertexBuffer().remaining();
         int objectCount = vertexDataSize / SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES << 1;
@@ -93,7 +94,7 @@ public final class StringRenderer {
     }
 
     public void addString(GLString glString, float x, float y, float scaleX, float scaleY, BufferType bufferType) {
-        BuffersHolder buffersHolder = spriteRenderer.buffersHolders[bufferType.ordinal()];
+        BuffersHolder buffersHolder = spriteRenderer.getBuffersHolder(bufferType);
 
         FloatBuffer stringVertexBuffer = glString.getVertexBuffer();
         int vertexDataSize = stringVertexBuffer.remaining();
@@ -112,7 +113,7 @@ public final class StringRenderer {
     }
 
     public void addStringWithShadow(GLString glString, float x, float y, float scaleX, float scaleY, float shadowOffsetX, float shadowOffsetY, BufferType bufferType) {
-        BuffersHolder buffersHolder = spriteRenderer.buffersHolders[bufferType.ordinal()];
+        BuffersHolder buffersHolder = spriteRenderer.getBuffersHolder(bufferType);
         FloatBuffer stringVertexBuffer = glString.getVertexBuffer();
         int vertexDataSize = stringVertexBuffer.remaining();
         int objectCount = vertexDataSize / SpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES << 1;

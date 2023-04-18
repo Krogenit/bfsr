@@ -3,7 +3,7 @@ package net.bfsr.client.gui;
 import lombok.Getter;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.gui.scroll.Scroll;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import org.lwjgl.opengl.GL11C;
 
 import java.util.ArrayList;

@@ -7,7 +7,7 @@ import net.bfsr.client.gui.GuiObjectWithSubObjects;
 import net.bfsr.client.gui.GuiObjectsHandler;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.string.StringObject;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.editor.gui.ColorScheme;
 import net.bfsr.property.PropertiesHolder;
 

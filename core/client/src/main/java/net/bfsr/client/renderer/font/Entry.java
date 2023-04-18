@@ -3,7 +3,7 @@ package net.bfsr.client.renderer.font;
 import java.lang.ref.WeakReference;
 
 /** This entry holds the layed out glyph positions for the cached string along with some relevant metadata. */
-class Entry {
+public class Entry {
     /** A weak reference back to the Key object in stringCache that maps to this Entry. */
     public WeakReference<Key> keyRef;
 

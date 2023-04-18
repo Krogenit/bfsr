@@ -6,7 +6,7 @@ import net.bfsr.client.gui.GuiSettings;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.texture.TextureRegister;
 import org.lwjgl.glfw.GLFW;
 

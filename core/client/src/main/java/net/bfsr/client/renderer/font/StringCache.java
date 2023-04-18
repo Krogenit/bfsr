@@ -124,7 +124,7 @@ public class StringCache {
      * @return the width in pixels (divided by 2; this matches the scaled coordinate system used by GUIs in Minecraft)
      */
     @SuppressWarnings("unused")
-    int getStringWidth(String str) {
+    public int getStringWidth(String str) {
         /* Check for invalid arguments */
         if (str == null || str.isEmpty()) {
             return 0;
@@ -275,7 +275,7 @@ public class StringCache {
         return string.substring(0, sizeString(string, width, true));
     }
 
-    Vector3f getColor(int colorCode) {
+    public Vector3f getColor(int colorCode) {
         return COLOR_TABLE[colorCode];
     }
 
@@ -289,7 +289,7 @@ public class StringCache {
      * @param str this String will be layed out and added to the cache (or looked up, if alraedy cached)
      * @return the string's cache entry containing all the glyph positions
      */
-    Entry cacheString(String str) {
+    public Entry cacheString(String str) {
         /*
          * New Key object allocated only if the string was not found in the StringCache using lookupKey. This variable must
          * be outside the (entry == null) code block to have a temporary strong reference between the time when the Key is

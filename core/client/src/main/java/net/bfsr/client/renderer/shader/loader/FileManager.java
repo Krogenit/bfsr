@@ -1,4 +1,4 @@
-package net.bfsr.client.shader.loader;
+package net.bfsr.client.renderer.shader.loader;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;

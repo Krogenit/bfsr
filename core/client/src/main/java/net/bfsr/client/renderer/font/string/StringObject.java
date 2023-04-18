@@ -4,11 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.gui.SimpleGuiObject;
+import net.bfsr.client.renderer.buffer.BufferType;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringCache;
 import net.bfsr.client.renderer.font.StringOffsetType;
-import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.StringRenderer;
 
 public class StringObject extends SimpleGuiObject {
     @Getter

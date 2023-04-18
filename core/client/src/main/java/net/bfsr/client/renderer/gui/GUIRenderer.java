@@ -1,6 +1,9 @@
-package net.bfsr.client.renderer.instanced;
+package net.bfsr.client.renderer.gui;
 
 import net.bfsr.client.core.Core;
+import net.bfsr.client.renderer.SpriteRenderer;
+import net.bfsr.client.renderer.buffer.BufferType;
+import net.bfsr.client.renderer.buffer.BuffersHolder;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.math.LUT;
 import net.bfsr.math.MathUtils;
@@ -12,7 +15,7 @@ public final class GUIRenderer {
 
     public void init(SpriteRenderer spriteRenderer) {
         this.spriteRenderer = spriteRenderer;
-        this.buffersHolder = spriteRenderer.buffersHolders[BufferType.GUI.ordinal()];
+        this.buffersHolder = spriteRenderer.getBuffersHolder(BufferType.GUI);
     }
 
     public void render() {

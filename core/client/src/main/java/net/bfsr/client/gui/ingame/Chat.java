@@ -4,10 +4,10 @@ import net.bfsr.client.core.Core;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.input.InputChat;
 import net.bfsr.client.gui.scroll.Scroll;
+import net.bfsr.client.renderer.buffer.BufferType;
 import net.bfsr.client.renderer.font.FontType;
-import net.bfsr.client.renderer.instanced.BufferType;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
-import net.bfsr.client.renderer.instanced.StringRenderer;
+import net.bfsr.client.renderer.font.string.StringRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.texture.TextureRegister;
 import org.lwjgl.opengl.GL11;
 

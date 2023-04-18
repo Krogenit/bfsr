@@ -11,7 +11,7 @@ import net.bfsr.client.language.Lang;
 import net.bfsr.client.network.packet.client.PacketShipControl;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.string.StringObject;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.world.WorldClient;

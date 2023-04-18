@@ -10,7 +10,7 @@ import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringCache;
 import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.client.renderer.font.string.StringObject;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.texture.TextureRegister;
 import org.joml.Vector4f;
 

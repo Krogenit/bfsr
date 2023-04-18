@@ -7,7 +7,7 @@ import net.bfsr.client.gui.GuiObjectsHandler;
 import net.bfsr.client.gui.SimpleGuiObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.renderer.font.FontType;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.editor.gui.GuiEditor;
 import net.bfsr.property.PropertiesHolder;
 import net.bfsr.util.RunnableUtils;

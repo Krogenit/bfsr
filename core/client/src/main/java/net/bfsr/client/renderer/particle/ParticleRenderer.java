@@ -5,11 +5,9 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.particle.Particle;
 import net.bfsr.client.particle.RenderLayer;
-import net.bfsr.client.renderer.OpenGLHelper;
-import net.bfsr.client.renderer.instanced.SpriteRenderer;
+import net.bfsr.client.renderer.SpriteRenderer;
 import net.bfsr.util.MultithreadingUtils;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -17,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
+import static org.lwjgl.opengl.GL11C.*;
 
 @Log4j2
 public class ParticleRenderer {
@@ -208,7 +208,7 @@ public class ParticleRenderer {
         int count = particlesByRenderLayer[alphaLayer.ordinal()].size();
 
         if (count > 0) {
-            OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             spriteRenderer.render(count, vertexBuffer, materialBuffer);
         }
 
@@ -217,7 +217,7 @@ public class ParticleRenderer {
         count = particlesByRenderLayer[additiveLayer.ordinal()].size();
 
         if (count > 0) {
-            OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
             spriteRenderer.render(count, vertexBuffer, materialBuffer);
         }
     }

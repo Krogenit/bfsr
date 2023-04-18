@@ -9,7 +9,7 @@ import net.bfsr.client.gui.GuiObjectsHandler;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringCache;
 import net.bfsr.client.renderer.font.string.StringObject;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.util.MutableInt;
 import net.bfsr.util.RunnableUtils;
 import org.joml.Vector4f;

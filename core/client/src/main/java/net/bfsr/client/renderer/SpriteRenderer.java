@@ -1,7 +1,9 @@
-package net.bfsr.client.renderer.instanced;
+package net.bfsr.client.renderer;
 
 import lombok.Getter;
 import net.bfsr.client.core.Core;
+import net.bfsr.client.renderer.buffer.BufferType;
+import net.bfsr.client.renderer.buffer.BuffersHolder;
 import net.bfsr.client.renderer.primitive.VAO;
 import net.bfsr.client.renderer.texture.DamageMaskTexture;
 import net.bfsr.client.renderer.texture.Texture;
@@ -308,7 +310,7 @@ public class SpriteRenderer {
                 0.5f * (lastScaleX + (scaleX - lastScaleX) * interpolation), 0.5f * (lastScaleY + (scaleY - lastScaleY) * interpolation), floatBuffer, bufferIndex);
     }
 
-    void putVerticesCentered(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
+    public void putVerticesCentered(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
         putVertices(-sizeX + x, sizeY + y, sizeX + x, sizeY + y, sizeX + x, -sizeY + y, -sizeX + x, -sizeY + y, floatBuffer, bufferIndex);
     }
 
@@ -328,7 +330,7 @@ public class SpriteRenderer {
         putVertices(x1, y1, x2, y2, x3, y3, x1 + (x3 - x2), y3 - (y2 - y1), floatBuffer, bufferIndex);
     }
 
-    void putVerticesCentered(float x, float y, float sin, float cos, float halfSizeX, float halfSizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
+    public void putVerticesCentered(float x, float y, float sin, float cos, float halfSizeX, float halfSizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
         final float sinSizeX = sin * halfSizeX;
         final float cosSizeX = cos * halfSizeX;
         final float sinSizeY = sin * halfSizeY;
@@ -344,7 +346,7 @@ public class SpriteRenderer {
         putVertices(x1, y1, x2, y2, x3, y3, x1 + (x3 - x2), y3 - (y2 - y1), floatBuffer, bufferIndex);
     }
 
-    void putVertices(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, FloatBuffer floatBuffer, MutableInt bufferIndex) {
+    public void putVertices(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, FloatBuffer floatBuffer, MutableInt bufferIndex) {
         final float u1 = 0.0f;
         final float v1 = 1.0f;
         final float u2 = 1.0f;
@@ -372,7 +374,7 @@ public class SpriteRenderer {
         floatBuffer.put(bufferIndex.getAndIncrement(), v4);
     }
 
-    void putColor(float r, float g, float b, float a, ByteBuffer byteBuffer, MutableInt bufferIndex) {
+    public void putColor(float r, float g, float b, float a, ByteBuffer byteBuffer, MutableInt bufferIndex) {
         byteBuffer.putFloat(bufferIndex.getAndAdd(4), r);
         byteBuffer.putFloat(bufferIndex.getAndAdd(4), g);
         byteBuffer.putFloat(bufferIndex.getAndAdd(4), b);
@@ -400,6 +402,10 @@ public class SpriteRenderer {
 
     public static SpriteRenderer get() {
         return Core.get().getRenderer().getSpriteRenderer();
+    }
+
+    public BuffersHolder getBuffersHolder(BufferType bufferType) {
+        return buffersHolders[bufferType.ordinal()];
     }
 
     public void clear() {

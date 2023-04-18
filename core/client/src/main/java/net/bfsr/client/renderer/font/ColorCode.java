@@ -1,7 +1,7 @@
 package net.bfsr.client.renderer.font;
 
 /** Identifies the location and value of a single color code in the original string */
-class ColorCode implements Comparable<Integer> {
+public class ColorCode implements Comparable<Integer> {
     /**
      * Bit flag used with renderStyle to request the underline style
      */

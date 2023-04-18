@@ -1,4 +1,4 @@
-package net.bfsr.client.shader.loader;
+package net.bfsr.client.renderer.shader.loader;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

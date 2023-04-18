@@ -12,7 +12,7 @@ import net.bfsr.client.particle.ParticleEffectsRegistry;
 import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.StringOffsetType;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.client.settings.Option;
 import net.bfsr.client.util.PathHelper;
 import net.bfsr.config.ConfigLoader;

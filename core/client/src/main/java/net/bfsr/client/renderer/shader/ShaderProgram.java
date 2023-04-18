@@ -1,8 +1,8 @@
-package net.bfsr.client.shader;
+package net.bfsr.client.renderer.shader;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.shader.loader.Definition;
+import net.bfsr.client.renderer.shader.loader.Definition;
 import net.bfsr.client.util.MatrixBufferUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;

@@ -6,7 +6,7 @@ import net.bfsr.client.core.Core;
 import net.bfsr.client.gui.GuiObject;
 import net.bfsr.client.gui.SimpleGuiObject;
 import net.bfsr.client.input.Mouse;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.client.sound.GuiSoundSource;
 import net.bfsr.client.sound.SoundRegistry;
 

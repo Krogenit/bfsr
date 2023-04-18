@@ -8,7 +8,7 @@ import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.input.Mouse;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.string.StringObject;
-import net.bfsr.client.renderer.instanced.GUIRenderer;
+import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.editor.gui.component.DragTarget;
 import net.bfsr.editor.gui.component.MinimizableGuiObject;
 import net.bfsr.property.PropertiesHolder;

@@ -2,9 +2,10 @@ package net.bfsr.client.renderer.texture;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.lwjgl.opengl.ARBBindlessTexture;
-import org.lwjgl.opengl.GL11C;
-import org.lwjgl.opengl.GL45C;
+
+import static org.lwjgl.opengl.ARBBindlessTexture.glMakeTextureHandleNonResidentARB;
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL45C.glCreateTextures;
 
 public class Texture {
     @Getter
@@ -23,12 +24,16 @@ public class Texture {
     }
 
     public Texture create() {
-        this.id = GL45C.glCreateTextures(GL11C.GL_TEXTURE_2D);
+        this.id = glCreateTextures(GL_TEXTURE_2D);
         return this;
     }
 
     public void delete() {
-        if (textureHandle != 0) ARBBindlessTexture.glMakeTextureHandleNonResidentARB(textureHandle);
-        GL11C.glDeleteTextures(id);
+        if (textureHandle != 0) glMakeTextureHandleNonResidentARB(textureHandle);
+        glDeleteTextures(id);
+    }
+
+    public void bind() {
+        glBindTexture(GL_TEXTURE_2D, id);
     }
 }
