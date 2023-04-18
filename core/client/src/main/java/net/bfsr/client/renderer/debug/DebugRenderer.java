@@ -175,11 +175,15 @@ public class DebugRenderer {
 
     void checkBuffersSize(int vertexCount) {
         while (vertexBuffer.capacity() - vertexBuffer.position() < vertexCount * VERTEX_DATA_SIZE) {
-            vertexBuffer = BufferUtils.createFloatBuffer(vertexBuffer.capacity() << 1);
+            FloatBuffer floatBuffer = BufferUtils.createFloatBuffer(vertexBuffer.capacity() << 1);
+            floatBuffer.put(vertexBuffer.flip());
+            vertexBuffer = floatBuffer;
         }
 
         while (cmdBuffer.capacity() - cmdBuffer.position() < COMMAND_SIZE_IN_BYTES) {
-            cmdBuffer = BufferUtils.createByteBuffer(cmdBuffer.capacity() << 1);
+            ByteBuffer byteBuffer = BufferUtils.createByteBuffer(cmdBuffer.capacity() << 1);
+            byteBuffer.put(cmdBuffer.flip());
+            cmdBuffer = byteBuffer;
         }
     }
 
