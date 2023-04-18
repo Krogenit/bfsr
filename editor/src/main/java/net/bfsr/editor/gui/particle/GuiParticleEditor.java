@@ -173,7 +173,12 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
             if (editorPath != null && !editorPath.isEmpty()) {
                 addParticleEffectToEntry(buildEntryPath(editorPath), particleEffect);
             } else {
-                inspectionPanel.addSubObject(createParticleEffectEntry(particleEffect));
+                InspectionEntry<ParticleEffect> entry = inspectionPanel.findEntry(particleEffect.getName());
+                if (entry != null) {
+                    entry.addComponent(particleEffect);
+                } else {
+                    inspectionPanel.addSubObject(createParticleEffectEntry(particleEffect));
+                }
             }
         });
 
