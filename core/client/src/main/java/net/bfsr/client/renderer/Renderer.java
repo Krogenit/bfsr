@@ -23,6 +23,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLDebugMessageCallback;
 import org.lwjgl.system.MemoryUtil;
 
+import static org.lwjgl.opengl.GL11C.GL_LINE_LOOP;
 import static org.lwjgl.opengl.GL43C.GL_DEBUG_TYPE_OTHER;
 import static org.lwjgl.opengl.GL43C.glDebugMessageCallback;
 
@@ -143,9 +144,11 @@ public class Renderer {
             particleRenderer.render();
             OpenGLHelper.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
             if (Option.SHOW_DEBUG_BOXES.getBoolean()) {
+                debugRenderer.clear();
                 debugRenderer.bind();
                 camera.bindWorldViewMatrix();
                 world.renderDebug(debugRenderer);
+                debugRenderer.render(GL_LINE_LOOP);
                 spriteRenderer.bind();
                 shader.enable();
             }
