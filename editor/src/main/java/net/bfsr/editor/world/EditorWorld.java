@@ -14,6 +14,8 @@ public class EditorWorld extends WorldClient {
 
     @Override
     public void renderEntities() {
+        super.renderEntities();
+
         if (testObject != null) {
             Vector2f position = testObject.getPosition();
             Vector2f scale = testObject.getScale();
@@ -21,7 +23,5 @@ public class EditorWorld extends WorldClient {
             SpriteRenderer.get().add(position.x, position.y, scale.x, scale.y,
                     color.x, color.y, color.z, color.w, testObject.getTexture(), BufferType.ENTITIES_ALPHA);
         }
-
-        super.renderEntities();
     }
 }
