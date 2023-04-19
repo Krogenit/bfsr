@@ -2,10 +2,7 @@ package net.bfsr.server.dto.converter;
 
 import net.bfsr.server.dto.ShipModel;
 import net.bfsr.server.entity.ship.Ship;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.ObjectFactory;
-import org.mapstruct.TargetType;
+import org.mapstruct.*;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -14,8 +11,16 @@ public interface ShipConverter {
     @Mapping(target = "className", expression = "java(ship.getClass().getName())")
     @Mapping(target = "weapons", source = "weaponSlots")
     ShipModel to(Ship ship);
-
-    @Mapping(target = "weaponSlots", source = "weapons")
+    @Mappings({@Mapping(target = "weaponSlots", source = "weapons"),
+            @Mapping(target = "rotation", ignore = true), @Mapping(target = "dead", ignore = true),
+            @Mapping(target = "id", ignore = true), @Mapping(target = "upFixture", ignore = true),
+            @Mapping(target = "hull", ignore = true), @Mapping(target = "velocity", ignore = true),
+            @Mapping(target = "armor", ignore = true), @Mapping(target = "shield", ignore = true),
+            @Mapping(target = "engine", ignore = true), @Mapping(target = "faction", ignore = true),
+            @Mapping(target = "reactor", ignore = true), @Mapping(target = "cargo", ignore = true),
+            @Mapping(target = "name", ignore = true), @Mapping(target = "controlledByPlayer", ignore = true),
+            @Mapping(target = "target", ignore = true), @Mapping(target = "owner", ignore = true),
+            @Mapping(target = "contours", ignore = true), @Mapping(target = "fixturesToAdd", ignore = true)})
     Ship from(ShipModel shipModel);
 
     @ObjectFactory

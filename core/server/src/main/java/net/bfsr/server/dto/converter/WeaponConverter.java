@@ -14,6 +14,10 @@ public interface WeaponConverter {
     @Mapping(target = "className", expression = "java(weaponSlot.getClass().getName())")
     WeaponModel to(WeaponSlot weaponSlot);
 
+    @Mapping(target = "rotation", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "ship", ignore = true)
+    @Mapping(target = "addPosition", ignore = true)
     WeaponSlot from(WeaponModel weaponModel);
 
     @ObjectFactory

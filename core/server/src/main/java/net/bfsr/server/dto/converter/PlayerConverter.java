@@ -11,6 +11,9 @@ public interface PlayerConverter {
     PlayerConverter INSTANCE = Mappers.getMapper(PlayerConverter.class);
 
     @Mapping(source = "name", target = "username")
+    @Mapping(target = "playerShip", ignore = true)
+    @Mapping(target = "networkHandler", ignore = true)
+    @Mapping(target = "digest", ignore = true)
     Player from(PlayerModel playerModel);
 
     @Mapping(source = "username", target = "name")
