@@ -7,7 +7,7 @@ import clipper2.offset.ClipperOffset;
 import clipper2.offset.EndType;
 import clipper2.offset.JoinType;
 import earcut4j.Earcut;
-import net.bfsr.server.MainServer;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.entity.wreck.ShipWreckDamagable;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
@@ -151,7 +151,7 @@ public class DamageUtils {
                         if (damage != null) {
                             damage.getBody().setLinearVelocity(damagable.getBody().getLinearVelocity());
                             damage.getBody().setAngularVelocity(damagable.getBody().getAngularVelocity());
-                            MainServer.getInstance().getWorld().addDamage(damage);
+                            Server.getInstance().getWorld().addDamage(damage);
                             damage.sendSpawnPacket();
                         }
                     }
@@ -436,10 +436,10 @@ public class DamageUtils {
                 for (int i = startX; i < maxX; i++) {
                     int dx = i - localX;
                     int dy = j - localY;
-                    float square = (dx * dx + dy * dy) * (MainServer.getInstance().getWorld().getRand().nextFloat(0.5f) + 0.5f);
+                    float square = (dx * dx + dy * dy) * (Server.getInstance().getWorld().getRand().nextFloat(0.5f) + 0.5f);
                     if (square < radiusSq) {
                         int index = j * height + i;
-                        float holeThreshold = radiusSq / 4.0f * MainServer.getInstance().getWorld().getRand().nextFloat();
+                        float holeThreshold = radiusSq / 4.0f * Server.getInstance().getWorld().getRand().nextFloat();
                         if (square <= holeThreshold) {
                             data[index] = value;
                         } else {

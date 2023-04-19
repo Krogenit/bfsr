@@ -35,7 +35,9 @@ public class MessageHandlerUDP extends SimpleChannelInboundHandler<PacketIn> {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        networkSystem.closeChannels();
-        networkSystem.onDisconnect("UDPChannelInactive");
+        if (networkSystem.isChannelOpen()) {
+            networkSystem.closeChannels();
+            networkSystem.onDisconnect("UDPChannelInactive");
+        }
     }
 }

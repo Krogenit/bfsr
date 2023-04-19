@@ -1,26 +1,16 @@
 package net.bfsr.server.local;
 
-import lombok.Getter;
-import net.bfsr.server.MainServer;
+import net.bfsr.server.LocalServerSpringApplication;
+import net.bfsr.server.core.Server;
+import net.bfsr.server.core.SpringContext;
 
-@Getter
 public class ThreadLocalServer extends Thread {
-    private final MainServer server;
-
-    public ThreadLocalServer() {
-        server = new MainServer(true);
-    }
-
     @Override
     public void run() {
-        server.run();
+        LocalServerSpringApplication.main();
     }
 
-    public void stopServer() {
-        server.stop();
-    }
-
-    public boolean isRunning() {
-        return server.isRunning();
+    public Server getServer() {
+        return SpringContext.isAvailable() ? SpringContext.getBean(Server.class) : null;
     }
 }

@@ -10,7 +10,7 @@ import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.entity.ship.ShipEngiSmall0;
 import net.bfsr.server.entity.ship.ShipHumanSmall0;
 import net.bfsr.server.entity.ship.ShipSaimonSmall0;
-import net.bfsr.server.player.PlayerServer;
+import net.bfsr.server.player.Player;
 import net.bfsr.server.world.WorldServer;
 
 public class PlayerManager {
@@ -23,33 +23,39 @@ public class PlayerManager {
         instance = this;
     }
 
-    public void respawnPlayer(PlayerServer player, float x, float y) {
+    public void respawnPlayer(Player player, float x, float y) {
         Faction faction = player.getFaction();
         Ship playerShip = null;
         switch (faction) {
-            case HUMAN:
-                playerShip = new ShipHumanSmall0(world, x, y, world.getRand().nextFloat() * MathUtils.TWO_PI, false);
-                playerShip.init();
-                playerShip.addWeaponToSlot(0, new WeaponPlasmSmall(playerShip));
-                playerShip.addWeaponToSlot(1, new WeaponPlasmSmall(playerShip));
-                break;
-            case SAIMON:
-                playerShip = new ShipSaimonSmall0(world, x, y, world.getRand().nextFloat() * MathUtils.TWO_PI, false);
-                playerShip.init();
-                playerShip.addWeaponToSlot(0, new WeaponLaserSmall(playerShip));
-                playerShip.addWeaponToSlot(1, new WeaponLaserSmall(playerShip));
-                break;
-            case ENGI:
-                playerShip = new ShipEngiSmall0(world, x, y, world.getRand().nextFloat() * MathUtils.TWO_PI, false);
-                playerShip.init();
-                playerShip.addWeaponToSlot(0, new WeaponGausSmall(playerShip));
-                playerShip.addWeaponToSlot(1, new WeaponGausSmall(playerShip));
-                break;
+            case HUMAN -> {
+                playerShip = new ShipHumanSmall0();
+                playerShip.init(world);
+                playerShip.setPosition(x, y);
+                playerShip.setRotation(world.getRand().nextFloat() * MathUtils.TWO_PI);
+                playerShip.addWeaponToSlot(0, new WeaponPlasmSmall());
+                playerShip.addWeaponToSlot(1, new WeaponPlasmSmall());
+            }
+            case SAIMON -> {
+                playerShip = new ShipSaimonSmall0();
+                playerShip.init(world);
+                playerShip.setPosition(x, y);
+                playerShip.setRotation(world.getRand().nextFloat() * MathUtils.TWO_PI);
+                playerShip.addWeaponToSlot(0, new WeaponLaserSmall());
+                playerShip.addWeaponToSlot(1, new WeaponLaserSmall());
+            }
+            case ENGI -> {
+                playerShip = new ShipEngiSmall0();
+                playerShip.init(world);
+                playerShip.setPosition(x, y);
+                playerShip.setRotation(world.getRand().nextFloat() * MathUtils.TWO_PI);
+                playerShip.addWeaponToSlot(0, new WeaponGausSmall());
+                playerShip.addWeaponToSlot(1, new WeaponGausSmall());
+            }
         }
 
         playerShip.setOwner(player);
         playerShip.setFaction(faction);
-        playerShip.setName(player.getUserName());
+        playerShip.setName(player.getUsername());
         playerShip.sendSpawnPacket();
         player.addShip(playerShip);
         player.setPlayerShip(playerShip);

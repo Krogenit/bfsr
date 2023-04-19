@@ -35,7 +35,9 @@ public class MessageHandlerTCP extends SimpleChannelInboundHandler<PacketIn> {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        networkSystem.closeChannels();
-        networkSystem.onDisconnect("TCPChannelInactive");
+        if (networkSystem.isChannelOpen()) {
+            networkSystem.closeChannels();
+            networkSystem.onDisconnect("TCPChannelInactive");
+        }
     }
 }

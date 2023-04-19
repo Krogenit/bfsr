@@ -9,7 +9,7 @@ import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.math.LUT;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
-import net.bfsr.server.MainServer;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.entity.CollisionObject;
 import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.entity.wreck.ShipWreckDamagable;
@@ -50,7 +50,7 @@ public abstract class Bullet extends CollisionObject {
         init();
         setBulletVelocityAndStartTransform(x, y);
         world.addBullet(this);
-        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnBullet(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnBullet(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     private void setBulletVelocityAndStartTransform(float x, float y) {
@@ -99,7 +99,7 @@ public abstract class Bullet extends CollisionObject {
                         reflect(normalX, normalY);
                     }
 
-                    MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnParticleEffect(ParticleEffect.SMALL_BULLET_DAMAGE_TO_SHIP,
+                    Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnParticleEffect(ParticleEffect.SMALL_BULLET_DAMAGE_TO_SHIP,
                             this, ship, contactX, contactY, normalX, normalY), getX(), getY(), WorldServer.PACKET_UPDATE_DISTANCE);
                 } else if (previousAObject != null && previousAObject != ship && this.ship == ship) {
                     previousAObject = ship;
@@ -135,7 +135,7 @@ public abstract class Bullet extends CollisionObject {
         sin = LUT.sin(rotateToVector);
         cos = LUT.cos(rotateToVector);
         body.getTransform().setRotation(sin, cos);
-        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketObjectPosition(this), position.x, position.y, WorldServer.PACKET_UPDATE_DISTANCE);
+        Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketObjectPosition(this), position.x, position.y, WorldServer.PACKET_UPDATE_DISTANCE);
     }
 
     private void damage(Bullet bullet) {
@@ -194,6 +194,6 @@ public abstract class Bullet extends CollisionObject {
     @Override
     public void setDead() {
         super.setDead();
-        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketRemoveObject(this), position.x, position.y, WorldServer.PACKET_UPDATE_DISTANCE);
+        Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketRemoveObject(this), position.x, position.y, WorldServer.PACKET_UPDATE_DISTANCE);
     }
 }

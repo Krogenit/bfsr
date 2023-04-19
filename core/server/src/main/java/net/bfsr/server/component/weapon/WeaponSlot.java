@@ -3,7 +3,7 @@ package net.bfsr.server.component.weapon;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.entity.GameObject;
-import net.bfsr.server.MainServer;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.network.packet.common.PacketWeaponShoot;
 import net.bfsr.server.world.WorldServer;
@@ -33,9 +33,7 @@ public abstract class WeaponSlot extends GameObject {
     @Setter
     protected Vector2f addPosition;
 
-    protected WeaponSlot(Ship ship, float shootTimerMax, float energyCost, float bulletSpeed, float alphaReducer, float scaleX, float scaleY) {
-        this.ship = ship;
-        this.world = ship.getWorld();
+    protected WeaponSlot(float shootTimerMax, float energyCost, float bulletSpeed, float alphaReducer, float scaleX, float scaleY) {
         this.shootTimerMax = shootTimerMax;
         this.energyCost = energyCost;
         this.bulletSpeed = bulletSpeed;
@@ -45,6 +43,7 @@ public abstract class WeaponSlot extends GameObject {
 
     public void init(int id, Vector2f addPosition, Ship ship) {
         this.addPosition = addPosition;
+        this.world = ship.getWorld();
         this.ship = ship;
         createBody();
         this.id = id;
@@ -61,7 +60,7 @@ public abstract class WeaponSlot extends GameObject {
     }
 
     protected void shoot() {
-        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), id), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), id), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         createBullet();
         shootTimer = shootTimerMax;
         ship.getReactor().consume(energyCost);

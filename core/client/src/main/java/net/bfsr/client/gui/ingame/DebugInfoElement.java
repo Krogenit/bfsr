@@ -14,7 +14,7 @@ import net.bfsr.component.hull.Hull;
 import net.bfsr.component.reactor.Reactor;
 import net.bfsr.component.shield.ShieldCommon;
 import net.bfsr.profiler.Profiler;
-import net.bfsr.server.MainServer;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.DecimalUtils;
 import org.joml.Vector2f;
@@ -46,7 +46,7 @@ public class DebugInfoElement {
         long totalMemoryMB = totalMemory / 1024L / 1024L;
         long freeMemoryMB = freeMemory / 1024L / 1024L;
 
-        int ups = MainServer.getInstance() != null ? MainServer.getInstance().getUps() : 0;
+        int ups = Server.getInstance() != null ? Server.getInstance().getUps() : 0;
         ParticleRenderer particleRenderer = renderer.getParticleRenderer();
 
         stringBuilder.setLength(0);
@@ -69,10 +69,10 @@ public class DebugInfoElement {
         float sPhysicsTime = 0.0f;
         float sNetworkTime = 0.0f;
 
-        if (MainServer.getInstance() != null) {
-            sUpdateTime = MainServer.getInstance().getProfiler().getResult("update");
-            sPhysicsTime = MainServer.getInstance().getProfiler().getResult("physics");
-            sNetworkTime = MainServer.getInstance().getProfiler().getResult("network");
+        if (Server.getInstance() != null) {
+            sUpdateTime = Server.getInstance().getProfiler().getResult("update");
+            sPhysicsTime = Server.getInstance().getProfiler().getResult("physics");
+            sNetworkTime = Server.getInstance().getProfiler().getResult("network");
         }
         stringBuilder.append("\nUpdate: ").append(DecimalUtils.strictFormatWithToDigits(updateTime)).append("ms / ").append(DecimalUtils.strictFormatWithToDigits(sUpdateTime)).append("ms ");
         stringBuilder.append("\nPhysics: ").append(DecimalUtils.strictFormatWithToDigits(physicsTime)).append("ms / ").append(DecimalUtils.strictFormatWithToDigits(sPhysicsTime)).append("ms ");
@@ -97,7 +97,7 @@ public class DebugInfoElement {
             int particlesCount = particleRenderer.getParticlesCount();
             int physicParticles = world.getParticleManager().getWreckCount();
 
-            WorldServer sWorld = MainServer.getInstance() != null ? MainServer.getInstance().getWorld() : null;
+            WorldServer sWorld = Server.getInstance() != null ? Server.getInstance().getWorld() : null;
             int sBulletsCount = sWorld != null ? sWorld.getBullets().size() : 0;
             int sShipsCount = sWorld != null ? sWorld.getShips().size() : 0;
             int sParticlesCount = sWorld != null ? sWorld.getParticles().size() : 0;

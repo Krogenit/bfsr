@@ -2,8 +2,8 @@ package net.bfsr.server.component.weapon;
 
 import lombok.Getter;
 import net.bfsr.entity.bullet.BulletDamage;
-import net.bfsr.server.MainServer;
 import net.bfsr.server.collision.filter.BeamFilter;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.entity.wreck.Wreck;
 import net.bfsr.server.network.packet.common.PacketWeaponShoot;
@@ -20,8 +20,6 @@ import org.dyn4j.world.result.RaycastResult;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-import java.util.Random;
-
 public abstract class WeaponSlotBeam extends WeaponSlot {
     private final Vector2 start = new Vector2();
     private final BeamFilter filter = new BeamFilter(null);
@@ -35,18 +33,16 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
     private final BulletDamage damage;
     @Getter
     protected final Vector4f beamColor;
-    protected final Random rand;
     private final Ray ray = new Ray(0);
     private final DetectFilter<Body, BodyFixture> detectFilter = new DetectFilter<>(true, true, filter);
     private final Vector2 rayDirection = new Vector2();
 
-    protected WeaponSlotBeam(Ship ship, float beamMaxRange, BulletDamage damage, Vector4f beamColor, float shootTimerMax, float energyCost, float scaleX, float scaleY) {
-        super(ship, shootTimerMax, energyCost, Float.MAX_VALUE, 0.0f, scaleX, scaleY);
+    protected WeaponSlotBeam(float beamMaxRange, BulletDamage damage, Vector4f beamColor, float shootTimerMax, float energyCost, float scaleX, float scaleY) {
+        super(shootTimerMax, energyCost, Float.MAX_VALUE, 0.0f, scaleX, scaleY);
         this.beamMaxRange = beamMaxRange;
         this.damage = damage;
         this.beamColor = beamColor;
         this.beamColor.w = 0.0f;
-        this.rand = world.getRand();
     }
 
     @Override
@@ -84,7 +80,7 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
 
     @Override
     protected void shoot() {
-        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), id), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), id), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         shootTimer = shootTimerMax;
         ship.getReactor().consume(energyCost);
     }

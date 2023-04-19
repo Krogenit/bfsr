@@ -18,7 +18,7 @@ import net.bfsr.server.entity.ship.ShipSaimonSmall0;
 import net.bfsr.server.entity.wreck.ShipWreckDamagable;
 import net.bfsr.server.entity.wreck.Wreck;
 import net.bfsr.server.network.packet.server.gui.PacketOpenGui;
-import net.bfsr.server.player.PlayerServer;
+import net.bfsr.server.player.Player;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.BodyFixture;
 import org.joml.Vector2f;
@@ -30,8 +30,8 @@ public class WorldServer extends World<Ship, Bullet> {
     public static final float PACKET_UPDATE_DISTANCE = 400;
 
     @Getter
-    private final List<PlayerServer> players = new ArrayList<>();
-    private final HashMap<String, PlayerServer> playersByName = new HashMap<>();
+    private final List<Player> players = new ArrayList<>();
+    private final HashMap<String, Player> playersByName = new HashMap<>();
     @Getter
     private final long seed;
     @Getter
@@ -73,15 +73,17 @@ public class WorldServer extends World<Ship, Bullet> {
             for (int i = 0; i < count; i++) {
                 pos.x = rand.nextInt(1) - 150;
                 pos.y = rand.nextInt(100) - 50;
-                ship = new ShipHumanSmall0(this, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, false);
-                ship.init();
+                ship = new ShipHumanSmall0();
+                ship.setPosition(pos.x, pos.y);
+                ship.setRotation(rand.nextFloat() * MathUtils.TWO_PI);
+                ship.init(this);
                 ship.setFaction(Faction.HUMAN);
                 if (rand.nextInt(2) == 0) {
-                    ship.addWeaponToSlot(0, new WeaponBeamSmall(ship));
-                    ship.addWeaponToSlot(1, new WeaponBeamSmall(ship));
+                    ship.addWeaponToSlot(0, new WeaponBeamSmall());
+                    ship.addWeaponToSlot(1, new WeaponBeamSmall());
                 } else {
-                    ship.addWeaponToSlot(0, new WeaponPlasmSmall(ship));
-                    ship.addWeaponToSlot(1, new WeaponPlasmSmall(ship));
+                    ship.addWeaponToSlot(0, new WeaponPlasmSmall());
+                    ship.addWeaponToSlot(1, new WeaponPlasmSmall());
                 }
                 ship.setName("[BOT] " + ship.getFaction().toString());
                 ship.sendSpawnPacket();
@@ -92,15 +94,17 @@ public class WorldServer extends World<Ship, Bullet> {
             for (int i = 0; i < count; i++) {
                 pos.y = rand.nextInt(1) - 50;
                 pos.x = rand.nextInt(100) - 50;
-                ship = new ShipSaimonSmall0(this, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, false);
-                ship.init();
+                ship = new ShipSaimonSmall0();
+                ship.setPosition(pos.x, pos.y);
+                ship.setRotation(rand.nextFloat() * MathUtils.TWO_PI);
+                ship.init(this);
                 ship.setFaction(Faction.SAIMON);
                 if (rand.nextInt(2) == 0) {
-                    ship.addWeaponToSlot(0, new WeaponBeamSmall(ship));
-                    ship.addWeaponToSlot(1, new WeaponBeamSmall(ship));
+                    ship.addWeaponToSlot(0, new WeaponBeamSmall());
+                    ship.addWeaponToSlot(1, new WeaponBeamSmall());
                 } else {
-                    ship.addWeaponToSlot(0, new WeaponLaserSmall(ship));
-                    ship.addWeaponToSlot(1, new WeaponLaserSmall(ship));
+                    ship.addWeaponToSlot(0, new WeaponLaserSmall());
+                    ship.addWeaponToSlot(1, new WeaponLaserSmall());
                 }
                 ship.setName("[BOT] " + ship.getFaction().toString());
                 ship.sendSpawnPacket();
@@ -111,15 +115,17 @@ public class WorldServer extends World<Ship, Bullet> {
             for (int i = 0; i < count; i++) {
                 pos.x = rand.nextInt(1) + 50;
                 pos.y = rand.nextInt(100) - 50;
-                ship = new ShipEngiSmall0(this, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, false);
-                ship.init();
+                ship = new ShipEngiSmall0();
+                ship.setPosition(pos.x, pos.y);
+                ship.setRotation(rand.nextFloat() * MathUtils.TWO_PI);
+                ship.init(this);
                 ship.setFaction(Faction.ENGI);
                 if (rand.nextInt(2) == 0) {
-                    ship.addWeaponToSlot(0, new WeaponBeamSmall(ship));
-                    ship.addWeaponToSlot(1, new WeaponBeamSmall(ship));
+                    ship.addWeaponToSlot(0, new WeaponBeamSmall());
+                    ship.addWeaponToSlot(1, new WeaponBeamSmall());
                 } else {
-                    ship.addWeaponToSlot(0, new WeaponGausSmall(ship));
-                    ship.addWeaponToSlot(1, new WeaponGausSmall(ship));
+                    ship.addWeaponToSlot(0, new WeaponGausSmall());
+                    ship.addWeaponToSlot(1, new WeaponGausSmall());
                 }
                 ship.setName("[BOT] " + ship.getFaction().toString());
                 ship.sendSpawnPacket();
@@ -182,7 +188,7 @@ public class WorldServer extends World<Ship, Bullet> {
     protected void removeShip(Ship ship, int index) {
         super.removeShip(ship, index);
         if (ship.getOwner() != null) {
-            PlayerServer player = ship.getOwner();
+            Player player = ship.getOwner();
             player.removeShip(ship);
             if (player.getShips().size() == 0) {
                 CollisionObject lastAttacker = ship.getLastAttacker();
@@ -205,22 +211,22 @@ public class WorldServer extends World<Ship, Bullet> {
         particles.add(wreck);
     }
 
-    public void removePlayer(PlayerServer player) {
+    public void removePlayer(Player player) {
         this.players.remove(player);
-        this.playersByName.remove(player.getUserName());
+        this.playersByName.remove(player.getUsername());
     }
 
-    public void addNewPlayer(PlayerServer player) {
+    public void addNewPlayer(Player player) {
         this.players.add(player);
-        this.playersByName.put(player.getUserName(), player);
+        this.playersByName.put(player.getUsername(), player);
     }
 
-    public PlayerServer getPlayer(String name) {
+    public Player getPlayer(String name) {
         return playersByName.get(name);
     }
 
-    public boolean canJoin(PlayerServer player) {
-        return !playersByName.containsKey(player.getUserName());
+    public boolean canJoin(Player player) {
+        return !playersByName.containsKey(player.getUsername());
     }
 
     @Override

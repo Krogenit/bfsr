@@ -31,24 +31,18 @@ public class PacketShipWreck implements PacketIn {
         float scaleX = data.readFloat();
         float scaleY = data.readFloat();
         short textureIndex = data.readShort();
-        TextureRegister textureRegister = TextureRegister.values()[textureIndex];
-        Texture texture = TextureLoader.getTexture(textureRegister);
-
         x = data.readShort();
         y = data.readShort();
         short maxX = data.readShort();
         short maxY = data.readShort();
         width = maxX - x + 1;
         height = maxY - y + 1;
-
         int size = width * height;
         byteBuffer = BufferUtils.createByteBuffer(size);
         byte[] bytes = new byte[size];
         data.readBytes(bytes, 0, size);
         byteBuffer.put(bytes, 0, size);
         byteBuffer.flip();
-
-        DamageMaskTexture damageMaskTexture = new DamageMaskTexture(texture.getWidth(), texture.getHeight(), BufferUtils.createByteBuffer(texture.getWidth() * texture.getHeight()));
 
         short paths = data.readShort();
         PathD pathD = new PathD(paths);
@@ -60,11 +54,17 @@ public class PacketShipWreck implements PacketIn {
         float velocityY = data.readFloat();
         float angularVelocity = data.readFloat();
 
-        shipWreckDamagable = DamageUtils.createDamage(id, posX, posY, sin, cos, scaleX, scaleY, pathD, damageMaskTexture, texture);
+        TextureRegister textureRegister = TextureRegister.values()[textureIndex];
+        if (TextureLoader.isLoaded(textureRegister)) {
+            Texture texture = TextureLoader.getTexture(textureRegister);
 
-        if (shipWreckDamagable != null) {
-            shipWreckDamagable.getBody().setLinearVelocity(velocityX, velocityY);
-            shipWreckDamagable.getBody().setAngularVelocity(angularVelocity);
+            DamageMaskTexture damageMaskTexture = new DamageMaskTexture(texture.getWidth(), texture.getHeight(), BufferUtils.createByteBuffer(texture.getWidth() * texture.getHeight()));
+            shipWreckDamagable = DamageUtils.createDamage(id, posX, posY, sin, cos, scaleX, scaleY, pathD, damageMaskTexture, texture);
+
+            if (shipWreckDamagable != null) {
+                shipWreckDamagable.getBody().setLinearVelocity(velocityX, velocityY);
+                shipWreckDamagable.getBody().setAngularVelocity(angularVelocity);
+            }
         }
     }
 

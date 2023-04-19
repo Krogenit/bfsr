@@ -2,7 +2,7 @@ package net.bfsr.server.damage;
 
 import clipper2.core.PathsD;
 import net.bfsr.damage.DamagableCommon;
-import net.bfsr.server.MainServer;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.network.packet.server.entity.wreck.PacketSyncDamage;
 import net.bfsr.server.world.WorldServer;
 import org.dyn4j.dynamics.Body;
@@ -21,7 +21,7 @@ public interface Damagable extends DamagableCommon {
     void destroy();
     void setupFixture(BodyFixture bodyFixture);
     default void sync() {
-        MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketSyncDamage(this), getX(), getY(), WorldServer.PACKET_UPDATE_DISTANCE);
+        Server.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketSyncDamage(this), getX(), getY(), WorldServer.PACKET_UPDATE_DISTANCE);
     }
     void sendSpawnPacket();
     float getX();

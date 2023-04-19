@@ -3,7 +3,6 @@ package net.bfsr.server.component.weapon;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.server.collision.filter.ShipFilter;
-import net.bfsr.server.entity.ship.Ship;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Polygon;
@@ -12,8 +11,8 @@ import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 public class WeaponBeamSmall extends WeaponSlotBeam {
-    public WeaponBeamSmall(Ship ship) {
-        super(ship, 40.0f, new BulletDamage(0.075f, 0.075f, 0.15f), new Vector4f(0.8f, 0.8f, 1.0f, 1.0f), 125.0f, 6.0f, 1.4f, 1.0f);
+    public WeaponBeamSmall() {
+        super(40.0f, new BulletDamage(0.075f, 0.075f, 0.15f), new Vector4f(0.8f, 0.8f, 1.0f, 1.0f), 125.0f, 6.0f, 1.4f, 1.0f);
     }
 
     @Override

@@ -12,7 +12,7 @@ public class PacketPauseGame implements PacketIn {
 
     @Override
     public void processOnServerSide(PlayerNetworkHandler playerNetworkHandler) {
-        if (playerNetworkHandler.getServer().isSinglePlayer()) {
+        if (playerNetworkHandler.getServer().isLocal()) {
             playerNetworkHandler.getServer().setPause(!playerNetworkHandler.getServer().isPause());
         }
     }

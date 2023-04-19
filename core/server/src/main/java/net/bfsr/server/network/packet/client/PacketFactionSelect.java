@@ -3,7 +3,6 @@ package net.bfsr.server.network.packet.client;
 import io.netty.buffer.ByteBuf;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.MathUtils;
-import net.bfsr.server.MainServer;
 import net.bfsr.server.component.weapon.WeaponGausSmall;
 import net.bfsr.server.component.weapon.WeaponLaserSmall;
 import net.bfsr.server.component.weapon.WeaponPlasmSmall;
@@ -13,7 +12,7 @@ import net.bfsr.server.entity.ship.ShipHumanSmall0;
 import net.bfsr.server.entity.ship.ShipSaimonSmall0;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.PacketIn;
-import net.bfsr.server.player.PlayerServer;
+import net.bfsr.server.player.Player;
 import net.bfsr.server.world.WorldServer;
 
 import java.io.IOException;
@@ -33,33 +32,35 @@ public class PacketFactionSelect implements PacketIn {
         Ship playerShip = null;
         switch (faction) {
             case HUMAN:
-                playerShip = new ShipHumanSmall0(world, 0, 0, world.getRand().nextFloat() * MathUtils.TWO_PI, false);
-                playerShip.init();
-                playerShip.addWeaponToSlot(0, new WeaponPlasmSmall(playerShip));
-                playerShip.addWeaponToSlot(1, new WeaponPlasmSmall(playerShip));
+                playerShip = new ShipHumanSmall0();
+                playerShip.init(world);
+                playerShip.setRotation(world.getRand().nextFloat() * MathUtils.TWO_PI);
+                playerShip.addWeaponToSlot(0, new WeaponPlasmSmall());
+                playerShip.addWeaponToSlot(1, new WeaponPlasmSmall());
                 break;
             case SAIMON:
-                playerShip = new ShipSaimonSmall0(world, 0, 0, world.getRand().nextFloat() * MathUtils.TWO_PI, false);
-                playerShip.init();
-                playerShip.addWeaponToSlot(0, new WeaponLaserSmall(playerShip));
-                playerShip.addWeaponToSlot(1, new WeaponLaserSmall(playerShip));
+                playerShip = new ShipSaimonSmall0();
+                playerShip.init(world);
+                playerShip.setRotation(world.getRand().nextFloat() * MathUtils.TWO_PI);
+                playerShip.addWeaponToSlot(0, new WeaponLaserSmall());
+                playerShip.addWeaponToSlot(1, new WeaponLaserSmall());
                 break;
             case ENGI:
-                playerShip = new ShipEngiSmall0(world, 0, 0, world.getRand().nextFloat() * MathUtils.TWO_PI, false);
-                playerShip.init();
-                playerShip.addWeaponToSlot(0, new WeaponGausSmall(playerShip));
-                playerShip.addWeaponToSlot(1, new WeaponGausSmall(playerShip));
+                playerShip = new ShipEngiSmall0();
+                playerShip.init(world);
+                playerShip.setRotation(world.getRand().nextFloat() * MathUtils.TWO_PI);
+                playerShip.addWeaponToSlot(0, new WeaponGausSmall());
+                playerShip.addWeaponToSlot(1, new WeaponGausSmall());
                 break;
         }
 
-        PlayerServer player = playerNetworkHandler.getPlayer();
+        Player player = playerNetworkHandler.getPlayer();
         playerShip.setOwner(player);
         playerShip.setFaction(faction);
-        playerShip.setName(player.getUserName());
+        playerShip.setName(player.getUsername());
         playerShip.sendSpawnPacket();
         player.setFaction(faction);
         player.addShip(playerShip);
         player.setPlayerShip(playerShip);
-        MainServer.getInstance().getDataBase().saveUser(player);
     }
 }

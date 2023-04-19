@@ -5,8 +5,8 @@ import net.bfsr.entity.wreck.RegisteredShipWreck;
 import net.bfsr.entity.wreck.WreckRegistry;
 import net.bfsr.entity.wreck.WreckType;
 import net.bfsr.physics.PhysicsUtils;
-import net.bfsr.server.MainServer;
 import net.bfsr.server.collision.filter.WreckFilter;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.entity.CollisionObject;
 import net.bfsr.server.network.packet.common.PacketObjectPosition;
 import net.bfsr.server.network.packet.server.entity.PacketRemoveObject;
@@ -112,7 +112,7 @@ public class Wreck extends CollisionObject {
     @Override
     public void update() {
         updateLifeTime();
-        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketObjectPosition(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketObjectPosition(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     protected void updateLifeTime() {
@@ -143,6 +143,6 @@ public class Wreck extends CollisionObject {
 
     protected void destroy() {
         setDead(true);
-        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 }

@@ -25,13 +25,13 @@ import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
 public class ShipHumanSmall0 extends Ship {
-    public ShipHumanSmall0(WorldServer world, float x, float y, float rotation, boolean spawned) {
-        super(world, x, y, rotation, 6.9423f, 6.9423f, spawned, TextureRegister.shipHumanSmall0.ordinal());
+    public ShipHumanSmall0() {
+        super(6.9423f, 6.9423f, TextureRegister.shipHumanSmall0.ordinal());
     }
 
     @Override
-    public void init() {
-        super.init();
+    public void init(WorldServer world) {
+        super.init(world);
         setEngine(new Engine(1.2f, 1.0f, 1.0f, 30.0f, 0.99f, 2.5f));
 
         setReactor(new Reactor(30.0f, 9.0f));
@@ -50,14 +50,9 @@ public class ShipHumanSmall0 extends Ship {
         setShield(shield);
         shield.createBody();
 
-        setWeaponsCount(2);
-
         setCrew(new Crew(2));
 
         setCargo(new Cargo(2));
-
-        createWeaponPosition(new Vector2f(0.7f, 2.4f));
-        createWeaponPosition(new Vector2f(0.7f, -2.4f));
 
         maxDestroyingTimer = 60;
         maxSparksTimer = 20;
@@ -95,6 +90,14 @@ public class ShipHumanSmall0 extends Ship {
     @Override
     protected void createDestroyParticles() {
         WreckSpawner.spawnDestroyShipSmall(this);
+    }
+
+
+    @Override
+    protected Vector2f getWeaponSlotPosition(int id) {
+        if (id == 0) return new Vector2f(0.7f, 2.4f);
+        else if (id == 1) return new Vector2f(0.7f, -2.4f);
+        throw new UnsupportedOperationException("Unsupported weapon slot position " + id);
     }
 
     @Override

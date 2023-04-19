@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.network.util.ByteBufUtils;
-import net.bfsr.server.MainServer;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.AsyncPacketIn;
 
@@ -24,7 +24,7 @@ public class PacketLoginUDP implements AsyncPacketIn {
 
     @Override
     public void processOnServerSide(PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
-        PlayerNetworkHandler networkHandler = MainServer.getInstance().getNetworkSystem().getHandler(login);
+        PlayerNetworkHandler networkHandler = Server.getInstance().getNetworkSystem().getHandler(login);
         if (networkHandler == null) {
             log.error("Network Handler not found for player {} {}", login, ctx.channel().remoteAddress());
             ctx.channel().close();

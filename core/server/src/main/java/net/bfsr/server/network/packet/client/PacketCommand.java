@@ -16,7 +16,7 @@ import net.bfsr.server.entity.ship.ShipSaimonSmall0;
 import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.PacketIn;
-import net.bfsr.server.player.PlayerServer;
+import net.bfsr.server.player.Player;
 import net.bfsr.server.world.WorldServer;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
@@ -52,24 +52,33 @@ public class PacketCommand implements PacketIn {
                 Ship ship = null;
                 switch (fact) {
                     case HUMAN:
-                        ship = new ShipHumanSmall0(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, true);
-                        ship.init();
-                        ship.addWeaponToSlot(0, new WeaponPlasmSmall(ship));
-                        ship.addWeaponToSlot(1, new WeaponPlasmSmall(ship));
+                        ship = new ShipHumanSmall0();
+                        ship.init(world);
+                        ship.setSpawned();
+                        ship.setPosition(pos.x, pos.y);
+                        ship.setRotation(rand.nextFloat() * MathUtils.TWO_PI);
+                        ship.addWeaponToSlot(0, new WeaponPlasmSmall());
+                        ship.addWeaponToSlot(1, new WeaponPlasmSmall());
 
                         break;
                     case SAIMON:
-                        ship = new ShipSaimonSmall0(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, true);
-                        ship.init();
-                        ship.addWeaponToSlot(0, new WeaponLaserSmall(ship));
-                        ship.addWeaponToSlot(1, new WeaponLaserSmall(ship));
+                        ship = new ShipSaimonSmall0();
+                        ship.init(world);
+                        ship.setSpawned();
+                        ship.setPosition(pos.x, pos.y);
+                        ship.setRotation(rand.nextFloat() * MathUtils.TWO_PI);
+                        ship.addWeaponToSlot(0, new WeaponLaserSmall());
+                        ship.addWeaponToSlot(1, new WeaponLaserSmall());
 
                         break;
                     case ENGI:
-                        ship = new ShipEngiSmall0(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, true);
-                        ship.init();
-                        ship.addWeaponToSlot(0, new WeaponGausSmall(ship));
-                        ship.addWeaponToSlot(1, new WeaponGausSmall(ship));
+                        ship = new ShipEngiSmall0();
+                        ship.init(world);
+                        ship.setSpawned();
+                        ship.setPosition(pos.x, pos.y);
+                        ship.setRotation(rand.nextFloat() * MathUtils.TWO_PI);
+                        ship.addWeaponToSlot(0, new WeaponGausSmall());
+                        ship.addWeaponToSlot(1, new WeaponGausSmall());
 
                         break;
                 }
@@ -79,7 +88,7 @@ public class PacketCommand implements PacketIn {
                 ship.sendSpawnPacket();
                 return;
             case SPAWN_PARTICLE:
-                PlayerServer player = playerNetworkHandler.getPlayer();
+                Player player = playerNetworkHandler.getPlayer();
                 pos = new Vector2f(Float.parseFloat(args[0]), Float.parseFloat(args[1]));
                 Vector2 linearVelocity = player.getPlayerShip().getBody().getLinearVelocity();
                 float rot = player.getPlayerShip().getRotation();

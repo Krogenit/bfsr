@@ -60,6 +60,6 @@ public class NetworkManagerUDP {
     }
 
     public boolean isChannelOpen() {
-        return channel.isOpen();
+        return channel != null && channel.isOpen();
     }
 }

@@ -5,8 +5,8 @@ import clipper2.core.PathsD;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.physics.PhysicsUtils;
-import net.bfsr.server.MainServer;
 import net.bfsr.server.collision.filter.ShipWreckFilter;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.damage.Damagable;
 import net.bfsr.server.damage.DamageMask;
 import net.bfsr.server.damage.DamageUtils;
@@ -33,7 +33,7 @@ public class ShipWreckDamagable extends CollisionObject implements Damagable {
     private final int textureIndex;
 
     public ShipWreckDamagable(float x, float y, float sin, float cos, float scaleX, float scaleY, int textureIndex, DamageMask mask, PathsD contours) {
-        super(MainServer.getInstance().getWorld(), MainServer.getInstance().getWorld().getNextId(), x, y, sin, cos, scaleX, scaleY);
+        super(Server.getInstance().getWorld(), Server.getInstance().getWorld().getNextId(), x, y, sin, cos, scaleX, scaleY);
         this.textureIndex = textureIndex;
         this.mask = mask;
         this.contours = contours;
@@ -68,7 +68,7 @@ public class ShipWreckDamagable extends CollisionObject implements Damagable {
 
     @Override
     public void sendSpawnPacket() {
-        MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketShipWreck(this), getX(), getY(), WorldServer.PACKET_SPAWN_DISTANCE);
+        Server.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketShipWreck(this), getX(), getY(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     @Override

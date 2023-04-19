@@ -4,13 +4,13 @@ import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.network.PacketOut;
-import net.bfsr.server.MainServer;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.manager.NetworkManagerTCP;
 import net.bfsr.server.network.manager.NetworkManagerUDP;
 import net.bfsr.server.network.packet.PacketIn;
 import net.bfsr.server.network.packet.PacketRegistry;
-import net.bfsr.server.player.PlayerServer;
+import net.bfsr.server.player.Player;
 import org.joml.Vector2f;
 
 import java.lang.reflect.InvocationTargetException;
@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 
 @RequiredArgsConstructor
 public class NetworkSystem {
-    private final MainServer server;
+    private final Server server;
 
     private final NetworkManagerTCP networkManagerTCP = new NetworkManagerTCP();
     private final NetworkManagerUDP networkManagerUDP = new NetworkManagerUDP();
@@ -49,7 +49,7 @@ public class NetworkSystem {
                     networkHandlers.remove(i--);
 
                     if (networkHandler.getPlayer() != null) {
-                        networkHandlerMap.remove(networkHandler.getPlayer().getUserName());
+                        networkHandlerMap.remove(networkHandler.getPlayer().getUsername());
                     }
 
                     networkHandler.onDisconnected();
@@ -58,26 +58,26 @@ public class NetworkSystem {
         }
     }
 
-    public void sendTCPPacketTo(PacketOut packet, PlayerServer player) {
+    public void sendTCPPacketTo(PacketOut packet, Player player) {
         player.getNetworkHandler().sendTCPPacket(packet);
     }
 
-    public void sendUDPPacketTo(PacketOut packet, PlayerServer player) {
+    public void sendUDPPacketTo(PacketOut packet, Player player) {
         player.getNetworkHandler().sendUDPPacket(packet);
     }
 
-    public void sendTCPPacketToAllExcept(PacketOut packet, PlayerServer player) {
+    public void sendTCPPacketToAllExcept(PacketOut packet, Player player) {
         sendPacketToAllExcept(player, playerNetworkHandler -> playerNetworkHandler.sendTCPPacket(packet));
     }
 
-    public void sendUDPPacketToAllExcept(PacketOut packet, PlayerServer player) {
+    public void sendUDPPacketToAllExcept(PacketOut packet, Player player) {
         sendPacketToAllExcept(player, playerNetworkHandler -> playerNetworkHandler.sendUDPPacket(packet));
     }
 
-    private void sendPacketToAllExcept(PlayerServer player, Consumer<PlayerNetworkHandler> protocol) {
-        List<PlayerServer> players = server.getWorld().getPlayers();
+    private void sendPacketToAllExcept(Player player, Consumer<PlayerNetworkHandler> protocol) {
+        List<Player> players = server.getWorld().getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
-            PlayerServer player1 = players.get(i);
+            Player player1 = players.get(i);
             if (player1 != player) protocol.accept(player1.getNetworkHandler());
         }
     }
@@ -99,27 +99,27 @@ public class NetworkSystem {
     }
 
     private void sendPacketToAllNearby(float x, float y, float dist, Consumer<PlayerNetworkHandler> protocol) {
-        List<PlayerServer> players = server.getWorld().getPlayers();
+        List<Player> players = server.getWorld().getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
-            PlayerServer player = players.get(i);
+            Player player = players.get(i);
             if (player.getPosition().distance(x, y) <= dist) {
                 protocol.accept(player.getNetworkHandler());
             }
         }
     }
 
-    public void sendTCPPacketToAllNearbyExcept(PacketOut packet, Vector2f pos, float dist, PlayerServer player1) {
+    public void sendTCPPacketToAllNearbyExcept(PacketOut packet, Vector2f pos, float dist, Player player1) {
         this.sendPacketToAllNearbyExcept(pos.x, pos.y, dist, player1, playerNetworkHandler -> playerNetworkHandler.sendTCPPacket(packet));
     }
 
-    public void sendUDPPacketToAllNearbyExcept(PacketOut packet, Vector2f pos, float dist, PlayerServer player1) {
+    public void sendUDPPacketToAllNearbyExcept(PacketOut packet, Vector2f pos, float dist, Player player1) {
         this.sendPacketToAllNearbyExcept(pos.x, pos.y, dist, player1, playerNetworkHandler -> playerNetworkHandler.sendUDPPacket(packet));
     }
 
-    private void sendPacketToAllNearbyExcept(float x, float y, float dist, PlayerServer player1, Consumer<PlayerNetworkHandler> protocol) {
-        List<PlayerServer> players = server.getWorld().getPlayers();
+    private void sendPacketToAllNearbyExcept(float x, float y, float dist, Player player1, Consumer<PlayerNetworkHandler> protocol) {
+        List<Player> players = server.getWorld().getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
-            PlayerServer player = players.get(i);
+            Player player = players.get(i);
             if (player1 != player && player.getPosition().distance(x, y) <= dist) {
                 protocol.accept(player.getNetworkHandler());
             }
@@ -135,7 +135,7 @@ public class NetworkSystem {
     }
 
     private void sendPacketToAll(Consumer<PlayerNetworkHandler> protocol) {
-        List<PlayerServer> players = server.getWorld().getPlayers();
+        List<Player> players = server.getWorld().getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
             protocol.accept(players.get(i).getNetworkHandler());
         }

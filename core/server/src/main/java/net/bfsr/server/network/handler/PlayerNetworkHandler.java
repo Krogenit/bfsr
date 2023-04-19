@@ -12,7 +12,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.network.GuiType;
 import net.bfsr.network.PacketOut;
-import net.bfsr.server.MainServer;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.network.ConnectionState;
 import net.bfsr.server.network.packet.PacketIn;
@@ -24,7 +24,7 @@ import net.bfsr.server.network.packet.server.login.PacketJoinGame;
 import net.bfsr.server.network.packet.server.login.PacketLoginTCPSuccess;
 import net.bfsr.server.network.packet.server.login.PacketLoginUDPSuccess;
 import net.bfsr.server.network.pipeline.MessageHandlerUDP;
-import net.bfsr.server.player.PlayerServer;
+import net.bfsr.server.player.Player;
 import net.bfsr.server.world.WorldServer;
 
 import java.net.InetSocketAddress;
@@ -48,10 +48,10 @@ public class PlayerNetworkHandler {
     private InetSocketAddress remoteAddress;
 
     private final boolean singlePlayer;
-    private final MainServer server = MainServer.getInstance();
+    private final Server server = Server.getInstance();
     private final WorldServer world = server.getWorld();
     @Setter
-    private PlayerServer player;
+    private Player player;
     @Setter
     private ConnectionState connectionState = ConnectionState.HANDSHAKE;
     private ConnectionState connectionStateBeforeDisconnect;
@@ -128,18 +128,18 @@ public class PlayerNetworkHandler {
     public void loginTCP(String username) {
         if (singlePlayer) {
             log.debug("Player logging in");
-            server.getDataBase().authorizeUser(username, "test");
-            player = server.getDataBase().getPlayer(username);
+            server.getPlayerService().authUser(username, "test");
+            player = server.getPlayerService().getPlayer(username);
             log.debug("Player created");
         } else {
-            String message = server.getDataBase().authorizeUser(username, "password");
+            String message = server.getPlayerService().authUser(username, "password");
 
             if (message != null) {
                 disconnect(message);
                 return;
             }
 
-            player = server.getDataBase().getPlayer(username);
+            player = server.getPlayerService().getPlayer(username);
             if (!server.getWorld().canJoin(player)) {
                 disconnect("Already in game");
                 return;
@@ -152,7 +152,7 @@ public class PlayerNetworkHandler {
             byte[] digest = messageDigest.digest();
             log.debug("Player hash created");
             player.setDigest(digest);
-            MainServer.getInstance().getNetworkSystem().addHandler(username, this);
+            Server.getInstance().getNetworkSystem().addHandler(username, this);
             sendTCPPacket(new PacketLoginTCPSuccess(digest));
         } catch (NoSuchAlgorithmException e) {
             log.error("Couldn't create player hash", e);
@@ -187,12 +187,35 @@ public class PlayerNetworkHandler {
         world.addNewPlayer(player);
         sendTCPPacket(new PacketJoinGame(world.getSeed()));
         if (player.getFaction() != null) {
-            server.getDataBase().getPlayerShips(player);
-            if (player.getShips().isEmpty()) {
+            List<Ship> ships = player.getShips();
+            if (ships.isEmpty()) {
                 server.getPlayerManager().respawnPlayer(player, 0, 0);
+            } else {
+                initShips(player);
+                spawnShips(player);
+                player.setPlayerShip(player.getShip(0));
             }
         } else {
             sendTCPPacket(new PacketOpenGui(GuiType.SELECT_FACTION));
+        }
+    }
+
+    private void initShips(Player player) {
+        List<Ship> ships = player.getShips();
+        for (int i = 0; i < ships.size(); i++) {
+            Ship ship = ships.get(i);
+            ship.init(world);
+            ship.setName(player.getUsername());
+            ship.setOwner(player);
+            ship.setFaction(player.getFaction());
+        }
+    }
+
+    private void spawnShips(Player player) {
+        List<Ship> ships = player.getShips();
+        for (int i = 0; i < ships.size(); i++) {
+            Ship ship = ships.get(i);
+            ship.sendSpawnPacket();
         }
     }
 
@@ -210,7 +233,8 @@ public class PlayerNetworkHandler {
         if (connectionStateBeforeDisconnect == ConnectionState.PLAY) {
             log.info("{} lost connection: {}", player, terminationReason);
             server.getWorld().removePlayer(player);
-            server.getDataBase().saveUser(player);
+            server.getPlayerService().removePlayer(player.getUsername());
+            server.getPlayerService().save(player);
             List<Ship> ships = player.getShips();
             for (int i = 0, shipsSize = ships.size(); i < shipsSize; i++) {
                 Ship s = ships.get(i);
@@ -219,7 +243,7 @@ public class PlayerNetworkHandler {
                 server.getNetworkSystem().sendUDPPacketToAllNearby(new PacketRemoveObject(s), s.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
             }
 
-            if (server.isSinglePlayer()) {
+            if (server.isLocal()) {
                 log.info("Stopping local server");
                 server.stop();
             }

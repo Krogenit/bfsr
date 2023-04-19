@@ -1,20 +1,22 @@
 package net.bfsr.server.player;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.bfsr.faction.Faction;
 import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.server.player.PacketSetPlayerShip;
+import org.bson.types.ObjectId;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlayerServer {
+@RequiredArgsConstructor
+public class Player {
     @Getter
-    @Setter
-    private int id;
+    private final ObjectId id;
     @Getter
     @Setter
     private PlayerNetworkHandler networkHandler;
@@ -23,9 +25,7 @@ public class PlayerServer {
     @Getter
     private final List<Ship> ships = new ArrayList<>();
     @Getter
-    private final String userName;
-    @Getter
-    private final String password;
+    private final String username;
     @Getter
     private final Vector2f position = new Vector2f();
     @Getter
@@ -34,11 +34,6 @@ public class PlayerServer {
     @Getter
     @Setter
     private byte[] digest;
-
-    public PlayerServer(String playerName, String password) {
-        this.userName = playerName;
-        this.password = password;
-    }
 
     public void setPlayerShip(Ship playerShip) {
         this.playerShip = playerShip;

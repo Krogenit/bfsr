@@ -47,6 +47,10 @@ public class CollisionObject extends GameObject {
         this(world, id, x, y, 0, scaleX, scaleY);
     }
 
+    protected CollisionObject(float scaleX, float scaleY) {
+        this(null, 0, 0, 0, scaleX, scaleY);
+    }
+
     protected CollisionObject(WorldServer world) {
         this.world = world;
     }

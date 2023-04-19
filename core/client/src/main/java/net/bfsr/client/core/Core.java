@@ -24,6 +24,7 @@ import net.bfsr.component.shield.ShieldRegistry;
 import net.bfsr.entity.wreck.WreckRegistry;
 import net.bfsr.network.PacketOut;
 import net.bfsr.profiler.Profiler;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.local.ThreadLocalServer;
 import net.bfsr.server.network.ConnectionState;
 import org.joml.Vector3f;
@@ -70,8 +71,8 @@ public class Core {
     private GuiInGame guiInGame;
     @Getter
     private String playerName;
-
-    private ThreadLocalServer localServer;
+    @Getter
+    private Server localServer;
 
     private final Queue<ListenableFutureTask<?>> futureTasks = new ConcurrentLinkedQueue<>();
     @Setter
@@ -144,13 +145,14 @@ public class Core {
 
     private void startLocalServer() {
         playerName = "Local Player";
-        localServer = new ThreadLocalServer();
-        localServer.setName("Local Server");
-        localServer.start();
+        ThreadLocalServer threadLocalServer = new ThreadLocalServer();
+        threadLocalServer.setName("Local Server");
+        threadLocalServer.start();
+        waitServerStart(threadLocalServer);
     }
 
-    public void connectToLocalServerTCP() {
-        while (!localServer.isRunning()) {
+    private void waitServerStart(ThreadLocalServer threadLocalServer) {
+        while ((localServer = threadLocalServer.getServer()) == null || !localServer.isRunning()) {
             try {
                 Thread.sleep(1);
             } catch (InterruptedException e) {
@@ -158,7 +160,9 @@ public class Core {
                 return;
             }
         }
+    }
 
+    public void connectToLocalServerTCP() {
         try {
             InetAddress inetaddress = InetAddress.getByName("127.0.0.1");
             connectToServer(inetaddress, 34000);
@@ -186,7 +190,7 @@ public class Core {
 
     private void stopServer() {
         if (localServer != null) {
-            localServer.stopServer();
+            localServer.stop();
             localServer = null;
         }
     }
@@ -259,9 +263,7 @@ public class Core {
 
     public void clear() {
         clearNetwork();
-        if (localServer != null) {
-            localServer.stopServer();
-        }
+        stopServer();
 
         soundManager.cleanup();
         renderer.clear();

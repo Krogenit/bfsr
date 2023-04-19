@@ -2,7 +2,7 @@ package net.bfsr.server.component;
 
 import net.bfsr.component.shield.ShieldCommon;
 import net.bfsr.config.component.ShieldConfig;
-import net.bfsr.server.MainServer;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.network.packet.server.component.PacketShieldRebuild;
 import net.bfsr.server.network.packet.server.component.PacketShieldRebuildingTime;
@@ -38,18 +38,18 @@ public class Shield extends ShieldCommon {
     @Override
     public void rebuildShield() {
         super.rebuildShield();
-        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShieldRebuild(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShieldRebuild(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     @Override
     protected void onNoShieldDamage() {
         setRebuildingTime(0);
-        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShieldRebuildingTime(ship.getId(), 0), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShieldRebuildingTime(ship.getId(), 0), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     @Override
     public void removeShield() {
         super.removeShield();
-        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShieldRemove(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShieldRemove(ship.getId()), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 }

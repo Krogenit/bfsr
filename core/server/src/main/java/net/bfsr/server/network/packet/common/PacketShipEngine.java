@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.network.PacketOut;
-import net.bfsr.server.MainServer;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.PacketIn;
 
@@ -32,6 +32,6 @@ public class PacketShipEngine implements PacketOut, PacketIn {
 
     @Override
     public void processOnServerSide(PlayerNetworkHandler playerNetworkHandler) {
-        MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllExcept(new PacketShipEngine(id, dir), playerNetworkHandler.getPlayer());
+        Server.getInstance().getNetworkSystem().sendTCPPacketToAllExcept(new PacketShipEngine(id, dir), playerNetworkHandler.getPlayer());
     }
 }

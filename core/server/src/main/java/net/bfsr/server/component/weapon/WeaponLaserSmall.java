@@ -2,7 +2,6 @@ package net.bfsr.server.component.weapon;
 
 import net.bfsr.server.collision.filter.ShipFilter;
 import net.bfsr.server.entity.bullet.BulletLaserSmall;
-import net.bfsr.server.entity.ship.Ship;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Polygon;
@@ -10,8 +9,8 @@ import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
 public class WeaponLaserSmall extends WeaponSlot {
-    public WeaponLaserSmall(Ship ship) {
-        super(ship, 30.0f, 5.0f, 75.0f, 1.68f, 2.6f, 1.4f);
+    public WeaponLaserSmall() {
+        super(30.0f, 5.0f, 75.0f, 1.68f, 2.6f, 1.4f);
     }
 
     @Override

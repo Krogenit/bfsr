@@ -190,4 +190,8 @@ public final class TextureLoader {
 
         return texture;
     }
+
+    public static boolean isLoaded(TextureRegister textureRegister) {
+        return LOADED_TEXTURES.containsKey(PathHelper.convertPath(textureRegister.getPath()).toString());
+    }
 }

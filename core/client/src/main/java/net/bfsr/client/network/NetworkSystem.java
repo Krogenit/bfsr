@@ -89,9 +89,9 @@ public class NetworkSystem {
                 Core.get().setCurrentGui(new GuiDisconnected(new GuiMainMenu(), "disconnect.lost", reason));
             });
         } else if (connectionState == ConnectionState.LOGIN) {
-            Core.get().addFutureTask(() -> {
-                Core.get().setCurrentGui(new GuiDisconnected(new GuiMainMenu(), "connect.failed", reason));
-            });
+            Core.get().addFutureTask(() -> Core.get().setCurrentGui(new GuiDisconnected(new GuiMainMenu(), "login.failed", reason)));
+        } else {
+            Core.get().addFutureTask(() -> Core.get().setCurrentGui(new GuiDisconnected(new GuiMainMenu(), "other", reason)));
         }
 
         connectionState = ConnectionState.NOT_CONNECTED;

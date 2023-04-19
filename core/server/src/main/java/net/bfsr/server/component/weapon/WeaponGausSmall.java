@@ -3,7 +3,6 @@ package net.bfsr.server.component.weapon;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.server.collision.filter.ShipFilter;
 import net.bfsr.server.entity.bullet.BulletGausSmall;
-import net.bfsr.server.entity.ship.Ship;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Polygon;
@@ -11,8 +10,8 @@ import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
 public class WeaponGausSmall extends WeaponSlot {
-    public WeaponGausSmall(Ship ship) {
-        super(ship, 30.0f, 5.0f, 70.0f, 1.56f, 2.6f, 1.4f);
+    public WeaponGausSmall() {
+        super(30.0f, 5.0f, 70.0f, 1.56f, 2.6f, 1.4f);
     }
 
     @Override

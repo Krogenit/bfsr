@@ -17,7 +17,6 @@ import net.bfsr.math.Direction;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.physics.PhysicsUtils;
-import net.bfsr.server.MainServer;
 import net.bfsr.server.ai.Ai;
 import net.bfsr.server.ai.AiAggressiveType;
 import net.bfsr.server.ai.task.AiAttackTarget;
@@ -25,6 +24,7 @@ import net.bfsr.server.ai.task.AiSearchTarget;
 import net.bfsr.server.collision.filter.ShipFilter;
 import net.bfsr.server.component.Shield;
 import net.bfsr.server.component.weapon.WeaponSlot;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.damage.Damagable;
 import net.bfsr.server.damage.DamageMask;
 import net.bfsr.server.damage.DamageUtils;
@@ -37,7 +37,7 @@ import net.bfsr.server.network.packet.server.entity.PacketRemoveObject;
 import net.bfsr.server.network.packet.server.entity.ship.PacketDestroyingShip;
 import net.bfsr.server.network.packet.server.entity.ship.PacketShipInfo;
 import net.bfsr.server.network.packet.server.entity.ship.PacketSpawnShip;
-import net.bfsr.server.player.PlayerServer;
+import net.bfsr.server.player.Player;
 import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.CollisionObjectUtils;
 import net.bfsr.util.TimeUtils;
@@ -79,9 +79,8 @@ public abstract class Ship extends CollisionObject implements Damagable {
     @Setter
     protected String name;
 
-    private final List<Vector2f> weaponPositions = new ArrayList<>();
     @Getter
-    protected List<WeaponSlot> weaponSlots;
+    protected final List<WeaponSlot> weaponSlots = new ArrayList<>();
     protected boolean spawned;
     protected final Vector2f jumpVelocity = new Vector2f();
     protected final Vector2f jumpPosition = new Vector2f();
@@ -103,7 +102,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
     @Getter
     @Setter
-    private PlayerServer owner;
+    private Player owner;
     @Getter
     private final Ai ai;
     @Getter
@@ -118,12 +117,8 @@ public abstract class Ship extends CollisionObject implements Damagable {
     @Getter
     private final int textureIndex;
 
-    protected Ship(WorldServer world, float x, float y, float rotation, float scaleX, float scaleY, boolean spawned, int textureIndex) {
-        super(world, world.getNextId(), x, y, rotation, scaleX, scaleY);
-        RotationHelper.angleToVelocity(this.rotation + MathUtils.PI, -jumpSpeed * 6.0f, jumpVelocity);
-        this.jumpPosition.set(jumpVelocity.x / 60.0f * (64.0f + scale.x * 0.1f) * -0.5f + x, jumpVelocity.y / 60.0f * (64.0f + scale.y * 0.1f) * -0.5f + y);
-        setRotation(this.rotation);
-        if (spawned) setSpawned();
+    protected Ship(float scaleX, float scaleY, int textureIndex) {
+        super(scaleX, scaleY);
         this.ai = new Ai(this);
         this.ai.setAggressiveType(AiAggressiveType.ATTACK);
         this.ai.addTask(new AiSearchTarget(this, 4000.0f));
@@ -131,10 +126,28 @@ public abstract class Ship extends CollisionObject implements Damagable {
         this.textureIndex = textureIndex;
     }
 
+    public void init(WorldServer world) {
+        this.world = world;
+        this.id = world.getNextId();
+
+        if (!spawned) {
+            RotationHelper.angleToVelocity(rotation + MathUtils.PI, -jumpSpeed * 6.0f, jumpVelocity);
+            jumpPosition.set(jumpVelocity.x / 60.0f * (64.0f + scale.x * 0.1f) * -0.5f + position.x, jumpVelocity.y / 60.0f * (64.0f + scale.y * 0.1f) * -0.5f + position.y);
+        }
+
+        super.init();
+
+        for (int i = 0; i < weaponSlots.size(); i++) {
+            WeaponSlot weaponSlot = weaponSlots.get(i);
+            weaponSlot.init(i, getWeaponSlotPosition(i), this);
+        }
+
+        this.world.addShip(this);
+    }
+
     @Override
     public void init() {
-        super.init();
-        world.addShip(this);
+        throw new UnsupportedOperationException("Use init(WorldServer) instead!");
     }
 
     @Override
@@ -144,7 +157,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
     }
 
     public void sendSpawnPacket() {
-        MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketSpawnShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        Server.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketSpawnShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     protected void updateShip() {
@@ -222,12 +235,12 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
     private void onMove(Direction direction) {
         if (lastMoveDir != direction)
-            MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketShipEngine(id, direction.ordinal()), getPosition(), WorldServer.PACKET_UPDATE_DISTANCE);
+            Server.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketShipEngine(id, direction.ordinal()), getPosition(), WorldServer.PACKET_UPDATE_DISTANCE);
         lastMoveDir = direction;
     }
 
     private void onStopMove(Direction direction) {
-        MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketShipEngine(id, direction.ordinal()), getPosition(), WorldServer.PACKET_UPDATE_DISTANCE);
+        Server.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketShipEngine(id, direction.ordinal()), getPosition(), WorldServer.PACKET_UPDATE_DISTANCE);
     }
 
     public void collision(Body body, float contactX, float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
@@ -284,13 +297,13 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
         updateComponents();
 
-        PlayerServer player = world.getPlayer(name);
+        Player player = world.getPlayer(name);
         if (controlledByPlayer) {
-            MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearbyExcept(new PacketObjectPosition(this), position, WorldServer.PACKET_UPDATE_DISTANCE, player);
-            MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShipInfo(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
+            Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearbyExcept(new PacketObjectPosition(this), position, WorldServer.PACKET_UPDATE_DISTANCE, player);
+            Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShipInfo(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
         } else {
-            MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketObjectPosition(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
-            MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShipInfo(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
+            Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketObjectPosition(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
+            Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketShipInfo(this), position, WorldServer.PACKET_UPDATE_DISTANCE);
         }
     }
 
@@ -336,7 +349,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
     protected void onHullDamageByCollision() {
         if (hull.getHull() <= 0) {
             setDestroying();
-            MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketDestroyingShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+            Server.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketDestroyingShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         }
     }
 
@@ -361,7 +374,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
     protected void onHullDamage(float contactX, float contactY) {
         if (hull.getHull() <= 0) {
             setDestroying();
-            MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketDestroyingShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+            Server.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketDestroyingShip(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
         } else {
             float polygonRadius = 0.75f;
             float radius = 2.0f;
@@ -399,7 +412,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
     public void destroy() {
         setDead(true);
         createDestroyParticles();
-        MainServer.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        Server.getInstance().getNetworkSystem().sendTCPPacketToAllNearby(new PacketRemoveObject(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     public void setHull(Hull hull) {
@@ -410,32 +423,21 @@ public abstract class Ship extends CollisionObject implements Damagable {
         this.crew = crew;
     }
 
-    protected void createWeaponPosition(Vector2f pos) {
-        weaponPositions.add(pos);
-    }
+    protected abstract Vector2f getWeaponSlotPosition(int id);
 
-    private Vector2f getWeaponSlotPosition(int i) {
-        return weaponPositions.get(i);
-    }
-
-    protected void setWeaponsCount(int count) {
-        weaponSlots = new ArrayList<>(count);
-        for (int i = 0; i < count; i++) {
-            weaponSlots.add(null);
-        }
-    }
-
-    public void addWeaponToSlot(int i, WeaponSlot slot) {
-        if (i < weaponSlots.size()) {
-            WeaponSlot oldSlot = weaponSlots.get(i);
-            if (oldSlot != null) {
-                oldSlot.clear();
+    public void addWeaponToSlot(int id, WeaponSlot slot) {
+        for (int i = 0; i < weaponSlots.size(); i++) {
+            WeaponSlot weaponSlot = weaponSlots.get(i);
+            if (weaponSlot.getId() == id) {
+                weaponSlot.clear();
+                weaponSlots.set(i, slot);
+                slot.init(id, getWeaponSlotPosition(id), this);
+                return;
             }
         }
 
-        slot.init(i, getWeaponSlotPosition(i), this);
-
-        weaponSlots.set(i, slot);
+        slot.init(id, getWeaponSlotPosition(id), this);
+        weaponSlots.add(slot);
     }
 
     public WeaponSlot getWeaponSlot(int i) {

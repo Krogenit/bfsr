@@ -78,17 +78,17 @@ public class ParticleEffectsRegistry {
         }
 
         spawnFunctions[ParticleEffect.SMALL_BULLET_DAMAGE_TO_SHIP.ordinal()] = (initiator, affected, contactX, contactY, normalX, normalY) -> {
-            Ship ship = (Ship) affected;
-            Bullet bullet = (Bullet) initiator;
-            ShieldCommon shield = ship.getShield();
-            Vector4f color = bullet.getColor();
-            Vector2f bulletScale = bullet.getScale();
-            if (shield == null || shield.getShield() <= 0) {
-                Hull hull = ship.getHull();
-                GarbageSpawner.bulletHullDamage(contactX, contactY, ship.getVelocity().x, ship.getVelocity().y, normalX, normalY, () -> hull.getHull() / hull.getMaxHull() < 0.5f);
-            }
+            if (affected instanceof Ship ship && initiator instanceof Bullet bullet) {
+                ShieldCommon shield = ship.getShield();
+                Vector4f color = bullet.getColor();
+                Vector2f bulletScale = bullet.getScale();
+                if (shield == null || shield.getShield() <= 0) {
+                    Hull hull = ship.getHull();
+                    GarbageSpawner.bulletHullDamage(contactX, contactY, ship.getVelocity().x, ship.getVelocity().y, normalX, normalY, () -> hull.getHull() / hull.getMaxHull() < 0.5f);
+                }
 
-            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bulletScale.x * 1.5f, color.x, color.y, color.z, color.w);
+                WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bulletScale.x * 1.5f, color.x, color.y, color.z, color.w);
+            }
         };
     }
 

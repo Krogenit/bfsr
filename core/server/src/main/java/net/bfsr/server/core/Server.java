@@ -1,4 +1,4 @@
-package net.bfsr.server;
+package net.bfsr.server.core;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -7,8 +7,10 @@ import net.bfsr.component.shield.ShieldRegistry;
 import net.bfsr.core.Loop;
 import net.bfsr.entity.wreck.WreckRegistry;
 import net.bfsr.profiler.Profiler;
-import net.bfsr.server.database.SimpleDataBase;
+import net.bfsr.server.PlayerManager;
+import net.bfsr.server.ServerSettings;
 import net.bfsr.server.network.NetworkSystem;
+import net.bfsr.server.service.PlayerService;
 import net.bfsr.server.util.PathHelper;
 import net.bfsr.server.world.WorldServer;
 
@@ -20,19 +22,20 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 
 @Log4j2
-public class MainServer extends Loop {
+public class Server extends Loop {
     @Getter
-    private static MainServer instance;
+    private static Server instance;
 
     @Getter
-    private final boolean singlePlayer;
+    @Setter
+    private boolean local;
     @Getter
     private int ups;
 
     @Getter
     private final WorldServer world;
     @Getter
-    private final SimpleDataBase dataBase;
+    private final PlayerService playerService;
     @Getter
     private final NetworkSystem networkSystem;
     @Getter
@@ -44,24 +47,24 @@ public class MainServer extends Loop {
     @Setter
     private boolean pause;
 
-    public MainServer(boolean singlePlayer) {
+    public Server() {
         this.networkSystem = new NetworkSystem(this);
-        this.dataBase = new SimpleDataBase(this);
         this.world = new WorldServer(profiler);
+        this.playerService = new PlayerService();
         this.playerManager = new PlayerManager(world);
 
         instance = this;
-        this.singlePlayer = singlePlayer;
-        if (singlePlayer) {
-            log.info("Starting local server...");
-        } else {
-            log.info("Starting dedicated server...");
-        }
     }
 
     @Override
     public void run() {
-        log.info("Initialization server...");
+        if (local) {
+            log.info("Starting local server...");
+        } else {
+            log.info("Starting dedicated server...");
+        }
+
+        log.info("Server initialization...");
         init();
         log.info("Initialized");
         super.run();
@@ -77,7 +80,7 @@ public class MainServer extends Loop {
 
         String hostname;
         int port;
-        if (!singlePlayer) {
+        if (!local) {
             settings = new ServerSettings();
             settings.readSettings();
             hostname = settings.getHostName();
@@ -117,7 +120,7 @@ public class MainServer extends Loop {
     @Override
     protected void update() {
         profiler.startSection("update");
-        if (!singlePlayer || !pause) world.update();
+        if (!local || !pause) world.update();
         profiler.endStartSection("network");
         networkSystem.update();
         profiler.endSection();
@@ -130,21 +133,20 @@ public class MainServer extends Loop {
 
     @Override
     protected void clear() {
+        super.clear();
         log.info("Terminating network...");
         networkSystem.shutdown();
         log.info("Saving database...");
-        dataBase.save();
+        playerService.save();
         log.info("Clearing world...");
         world.clear();
+        log.info("Clearing spring context...");
+        SpringContext.clear();
         log.info("Stopped");
     }
 
     public void stop() {
         log.info("Stopping server...");
         super.stop();
-    }
-
-    public static void main(String[] args) {
-        new MainServer(false).run();
     }
 }

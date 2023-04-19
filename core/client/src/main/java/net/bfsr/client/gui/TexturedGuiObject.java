@@ -36,7 +36,8 @@ public class TexturedGuiObject extends SimpleGuiObject {
         if (texture != null) {
             if (rotation != 0.0f) {
                 if (centered) {
-                    GUIRenderer.get().add(lastX, lastY, x + width / 2, y + height / 2, lastRotation, rotation, width, height, color.x, color.y, color.z, color.w, texture);
+                    GUIRenderer.get().add(lastX + width / 2, lastY + height / 2, x + width / 2, y + height / 2, lastRotation, rotation, width, height,
+                            color.x, color.y, color.z, color.w, texture);
                 } else {
                     GUIRenderer.get().add(lastX, lastY, x, y, lastRotation, rotation, width, height, color.x, color.y, color.z, color.w, texture);
                 }

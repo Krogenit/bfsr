@@ -28,13 +28,13 @@ import org.joml.Vector2f;
 import java.util.List;
 
 public class ShipSaimonSmall0 extends Ship {
-    public ShipSaimonSmall0(WorldServer world, float x, float y, float rotation, boolean spawned) {
-        super(world, x, y, rotation, 12.8f, 12.8f, spawned, TextureRegister.shipSaimonSmall0.ordinal());
+    public ShipSaimonSmall0() {
+        super(12.8f, 12.8f, TextureRegister.shipSaimonSmall0.ordinal());
     }
 
     @Override
-    public void init() {
-        super.init();
+    public void init(WorldServer world) {
+        super.init(world);
         setEngine(new Engine(1.2f, 1.0f, 1.0f, 30.0f, 0.99f, 2.6f));
 
         setReactor(new Reactor(30.0f, 9.75f));
@@ -53,14 +53,9 @@ public class ShipSaimonSmall0 extends Ship {
         setShield(shield);
         shield.createBody();
 
-        setWeaponsCount(2);
-
         setCrew(new Crew(2));
 
         setCargo(new Cargo(2));
-
-        createWeaponPosition(new Vector2f(1.5f, 2.3f));
-        createWeaponPosition(new Vector2f(1.5f, -2.3f));
 
         maxDestroyingTimer = 60;
         maxSparksTimer = 20;
@@ -120,6 +115,13 @@ public class ShipSaimonSmall0 extends Ship {
     @Override
     protected void createDestroyParticles() {
         WreckSpawner.spawnDestroyShipSmall(this);
+    }
+
+    @Override
+    protected Vector2f getWeaponSlotPosition(int id) {
+        if (id == 0) return new Vector2f(1.5f, 2.3f);
+        else if (id == 1) return new Vector2f(1.5f, -2.3f);
+        throw new UnsupportedOperationException("Unsupported weapon slot position " + id);
     }
 
     @Override

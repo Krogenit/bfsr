@@ -3,7 +3,7 @@ package net.bfsr.server.entity.wreck;
 import net.bfsr.entity.wreck.WreckType;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
-import net.bfsr.server.MainServer;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.network.packet.server.entity.wreck.PacketSpawnWreck;
 import net.bfsr.server.world.WorldServer;
@@ -41,7 +41,7 @@ public final class WreckSpawner {
         float angleVel = (-0.005f + RAND.nextFloat() / 200.0f) * 60.0f;
         ShipWreck wreck = PARTICLE_SHIP_WREAK_POOL.getOrCreate(ShipWreck::new).init(s.getWorld().getNextId(), wreckIndex, s, x, y, velocityX, velocityY, angle, angleVel,
                 s.getScale().x, s.getScale().y, lifeTime);
-        MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnWreck(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
+        Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnWreck(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     public static void spawnDamageDebris(WorldServer world, int count, float x, float y, float velocityX, float velocityY, float size) {
@@ -56,7 +56,7 @@ public final class WreckSpawner {
             boolean isFireExplosion = isFire && RAND.nextInt(5) == 0;
             Wreck wreck = PARTICLE_WREAK_POOL.getOrCreate(Wreck::new).init(world, world.getNextId(), RAND.nextInt(6), false, isFire, isFireExplosion, x, y,
                     CACHED_VECTOR.x, CACHED_VECTOR.y, angle, angleVel, size2, size2, 1.0f, alphaVel, WreckType.SMALL);
-            MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnWreck(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
+            Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnWreck(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
         }
     }
 
@@ -70,7 +70,7 @@ public final class WreckSpawner {
             boolean isFireExplosion = RAND.nextInt(4) == 0;
             Wreck wreck = PARTICLE_WREAK_POOL.getOrCreate(Wreck::new).init(world, world.getNextId(), RAND.nextInt(3), true, true, isFireExplosion,
                     x, y, CACHED_VECTOR.x + velocityX * 0.7f, CACHED_VECTOR.y + velocityY * 0.7f, angle, angleVel, size, size, 1.0f, alphaVel, WreckType.DEFAULT);
-            MainServer.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnWreck(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
+            Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnWreck(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
         }
     }
 }

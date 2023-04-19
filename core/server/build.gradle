@@ -6,5 +6,18 @@ jar {
 dependencies {
     api project(':core:common')
 
-    implementation 'com.google.code.gson:gson:2.10'//TODO: remove
+    implementation 'org.mapstruct:mapstruct:1.5.4.Final'
+    annotationProcessor "org.mapstruct:mapstruct-processor:1.5.4.Final"
+    testAnnotationProcessor "org.mapstruct:mapstruct-processor:1.5.4.Final"
+
+    implementation('org.springframework.boot:spring-boot-starter-data-mongodb') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+    implementation('org.springframework.boot:spring-boot-starter') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+    implementation('org.springframework.boot:spring-boot-starter-log4j2')
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
