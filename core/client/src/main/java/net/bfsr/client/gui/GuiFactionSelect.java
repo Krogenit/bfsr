@@ -34,9 +34,9 @@ public class GuiFactionSelect extends Gui {
         }).atCenter(309 - 300 / 2, 230 - 50 / 2));
 
         shipsStartIndex = guiObjects.size();
-        registerGuiObject(new TexturedGuiObject(TextureRegister.shipHumanSmall0).atCenter(-309 - 60, 70 - 60).setSize(120, 120));
-        registerGuiObject(new TexturedGuiObject(TextureRegister.shipSaimonSmall0).atCenter(-85, 70 - 85).setSize(170, 170));
-        registerGuiObject(new TexturedGuiObject(TextureRegister.shipEngiSmall0).atCenter(309 - 90, 70 - 90).setSize(180, 180));
+        registerGuiObject(new TexturedGuiObject(TextureRegister.shipHumanSmall0).centered().atCenter(-309 - 60, 70 - 60).setSize(120, 120));
+        registerGuiObject(new TexturedGuiObject(TextureRegister.shipSaimonSmall0).centered().atCenter(-85, 70 - 85).setSize(170, 170));
+        registerGuiObject(new TexturedGuiObject(TextureRegister.shipEngiSmall0).centered().atCenter(309 - 90, 70 - 90).setSize(180, 180));
 
         StringObject stringObject = new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.maintext"), 24).compile();
         registerGuiObject(stringObject.atCenter(-stringObject.getWidth() / 2, -96));

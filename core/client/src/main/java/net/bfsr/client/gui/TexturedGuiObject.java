@@ -9,6 +9,7 @@ import net.bfsr.texture.TextureRegister;
 public class TexturedGuiObject extends SimpleGuiObject {
     @Getter
     protected Texture texture;
+    private boolean centered;
 
     public TexturedGuiObject(TextureRegister texture) {
         this(texture, 0, 0);
@@ -34,7 +35,11 @@ public class TexturedGuiObject extends SimpleGuiObject {
     public void render() {
         if (texture != null) {
             if (rotation != 0.0f) {
-                GUIRenderer.get().add(lastX, lastY, x, y, lastRotation, rotation, width, height, color.x, color.y, color.z, color.w, texture);
+                if (centered) {
+                    GUIRenderer.get().add(lastX, lastY, x + width / 2, y + height / 2, lastRotation, rotation, width, height, color.x, color.y, color.z, color.w, texture);
+                } else {
+                    GUIRenderer.get().add(lastX, lastY, x, y, lastRotation, rotation, width, height, color.x, color.y, color.z, color.w, texture);
+                }
             } else {
                 GUIRenderer.get().add(lastX, lastY, x, y, width, height, color.x, color.y, color.z, color.w, texture);
             }
@@ -50,5 +55,10 @@ public class TexturedGuiObject extends SimpleGuiObject {
         } else {
             super.renderNoInterpolation();
         }
+    }
+
+    public TexturedGuiObject centered() {
+        centered = true;
+        return this;
     }
 }
