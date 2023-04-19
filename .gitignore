@@ -10,5 +10,6 @@
 /core/common/build/
 /core/server/out/
 /core/server/build/
+/core/server/src/main/generated/
 /editor/build/
 /editor/out/
