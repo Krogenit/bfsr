@@ -20,7 +20,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @ContextConfiguration(classes = DedicatedServerSpringApplication.class)
 public class PlayerServiceTest {
     @Container
