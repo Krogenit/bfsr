@@ -20,7 +20,7 @@ public class PlayerService {
     }
 
     public Player registerPlayer(String playerName, String password) {
-        Player player = new Player(null, playerName);
+        Player player = new Player(playerName);
         log.info("Registered new player {}", playerName);
         return player;
     }

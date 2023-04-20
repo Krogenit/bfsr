@@ -28,6 +28,11 @@ public class Player {
     @Setter
     private byte[] digest;
 
+    public Player(String username) {
+        this.id = null;
+        this.username = username;
+    }
+
     public void setPlayerShip(Ship playerShip) {
         this.playerShip = playerShip;
         this.playerShip.setControlledByPlayer(true);
