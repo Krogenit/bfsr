@@ -87,6 +87,15 @@ public class Server extends Loop {
             port = settings.getPort();
 
             Thread t = new Thread(() -> {
+                while (!isRunning()) {
+                    try {
+                        Thread.sleep(1L);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+
                 while (isRunning()) {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
                     String name;
@@ -140,6 +149,8 @@ public class Server extends Loop {
         playerService.save();
         log.info("Clearing world...");
         world.clear();
+        log.info("Stopping spring boot...");
+        SpringContext.stop();
         log.info("Clearing spring context...");
         SpringContext.clear();
         log.info("Stopped");

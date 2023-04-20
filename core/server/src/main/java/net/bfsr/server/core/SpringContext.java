@@ -1,5 +1,6 @@
 package net.bfsr.server.core;
 
+import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,10 @@ public class SpringContext implements ApplicationContextAware {
 
     public static <T extends Object> T getBean(Class<T> beanClass) {
         return context.getBean(beanClass);
+    }
+
+    public static void stop() {
+        SpringApplication.exit(context);
     }
 
     @Override
