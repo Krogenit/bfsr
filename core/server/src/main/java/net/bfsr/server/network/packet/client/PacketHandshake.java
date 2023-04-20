@@ -1,7 +1,7 @@
 package net.bfsr.server.network.packet.client;
 
 import io.netty.buffer.ByteBuf;
-import net.bfsr.server.network.ConnectionState;
+import net.bfsr.network.ConnectionState;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.PacketIn;
 

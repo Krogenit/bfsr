@@ -11,9 +11,9 @@ import net.bfsr.client.network.manager.NetworkManagerUDP;
 import net.bfsr.client.network.packet.PacketIn;
 import net.bfsr.client.network.packet.PacketRegistry;
 import net.bfsr.client.network.packet.common.PacketPing;
+import net.bfsr.network.ConnectionState;
 import net.bfsr.network.Packet;
 import net.bfsr.network.PacketOut;
-import net.bfsr.server.network.ConnectionState;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;

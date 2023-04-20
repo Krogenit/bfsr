@@ -2,6 +2,7 @@ package net.bfsr.client.component.weapon;
 
 import lombok.Getter;
 import net.bfsr.client.collision.filter.BeamFilter;
+import net.bfsr.client.entity.CollisionObject;
 import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.entity.wreck.Wreck;
 import net.bfsr.client.particle.Beam;
@@ -16,7 +17,6 @@ import net.bfsr.component.hull.Hull;
 import net.bfsr.component.shield.ShieldCommon;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.math.RotationHelper;
-import net.bfsr.server.entity.CollisionObject;
 import net.bfsr.texture.TextureRegister;
 import net.bfsr.util.TimeUtils;
 import org.dyn4j.collision.narrowphase.Raycast;

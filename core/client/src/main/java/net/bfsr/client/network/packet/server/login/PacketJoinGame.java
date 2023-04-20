@@ -4,8 +4,8 @@ import io.netty.buffer.ByteBuf;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.network.packet.PacketIn;
 import net.bfsr.client.world.WorldClient;
+import net.bfsr.network.ConnectionState;
 import net.bfsr.network.PacketOut;
-import net.bfsr.server.network.ConnectionState;
 
 import java.io.IOException;
 

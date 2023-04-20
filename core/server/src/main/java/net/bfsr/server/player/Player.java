@@ -14,24 +14,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
+@Getter
 public class Player {
-    @Getter
     private final ObjectId id;
-    @Getter
     @Setter
     private PlayerNetworkHandler networkHandler;
-    @Getter
     private Ship playerShip;
-    @Getter
     private final List<Ship> ships = new ArrayList<>();
-    @Getter
     private final String username;
-    @Getter
     private final Vector2f position = new Vector2f();
-    @Getter
     @Setter
     private Faction faction;
-    @Getter
     @Setter
     private byte[] digest;
 
