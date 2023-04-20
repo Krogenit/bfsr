@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.bfsr.faction.Faction;
+import net.bfsr.server.dto.Default;
 import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.server.player.PacketSetPlayerShip;
@@ -13,8 +14,8 @@ import org.joml.Vector2f;
 import java.util.ArrayList;
 import java.util.List;
 
-@RequiredArgsConstructor
 @Getter
+@RequiredArgsConstructor(onConstructor_ = {@Default})
 public class Player {
     private final ObjectId id;
     @Setter

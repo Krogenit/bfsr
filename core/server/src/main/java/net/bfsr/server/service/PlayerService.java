@@ -2,6 +2,7 @@ package net.bfsr.server.service;
 
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.server.core.SpringContext;
 import net.bfsr.server.dto.PlayerModel;
@@ -10,13 +11,14 @@ import net.bfsr.server.player.Player;
 import net.bfsr.server.repository.PlayerRepository;
 
 @Log4j2
+@RequiredArgsConstructor
 public class PlayerService {
     private final TMap<String, Player> loadedPlayersMap = new THashMap<>();
 
     private final PlayerRepository playerRepository;
 
     public PlayerService() {
-        this.playerRepository = SpringContext.getBean(PlayerRepository.class);
+        this(SpringContext.getBean(PlayerRepository.class));
     }
 
     public Player registerPlayer(String playerName, String password) {
