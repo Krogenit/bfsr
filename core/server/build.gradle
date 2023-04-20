@@ -3,6 +3,10 @@ jar {
     archiveVersion = '0.0.1-SNAPSHOT'
 }
 
+bootJar {
+    enabled = true
+}
+
 dependencies {
     api project(':core:common')
 

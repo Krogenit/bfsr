@@ -48,6 +48,20 @@ subprojects {
     }
 }
 
+import com.github.jengelman.gradle.plugins.shadow.transformers.PropertiesFileTransformer
+
+shadowJar {
+    // Required for Spring
+    mergeServiceFiles()
+    append 'META-INF/spring.handlers'
+    append 'META-INF/spring.schemas'
+    append 'META-INF/spring.tooling'
+    transform(PropertiesFileTransformer) {
+        paths = ['META-INF/spring.factories']
+        mergeStrategy = "append"
+    }
+}
+
 bootJar {
     enabled = false
 }
