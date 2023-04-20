@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -27,8 +26,6 @@ public class PlayerServiceTest {
     static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.5");
     @Autowired
     private PlayerRepository playerRepository;
-    @Autowired
-    private ApplicationContext context;
     private PlayerService playerService;
 
     @DynamicPropertySource
