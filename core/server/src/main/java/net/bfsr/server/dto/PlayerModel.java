@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Document(collection = "players")
+@Document(collection = "player")
 public record PlayerModel(
         @Id
         ObjectId id,
