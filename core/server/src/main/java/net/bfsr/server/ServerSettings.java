@@ -13,20 +13,22 @@ public class ServerSettings {
     private int port = 25565;
 
     public void saveSettings() {
-        ConfigLoader.save(getFile(), this, ServerSettings.class);
+        ConfigLoader.save(getPath(), this, ServerSettings.class);
     }
 
     public void readSettings() {
-        ServerSettings serverSettings = ConfigLoader.load(getFile(), ServerSettings.class);
-        if (serverSettings != null) {
-            this.hostName = serverSettings.hostName;
-            this.port = serverSettings.port;
-        } else {
+        Path path = getPath();
+        if (!path.toFile().exists()) {
             saveSettings();
+            return;
         }
+
+        ServerSettings serverSettings = ConfigLoader.load(path, ServerSettings.class);
+        this.hostName = serverSettings.hostName;
+        this.port = serverSettings.port;
     }
 
-    public Path getFile() {
+    public Path getPath() {
         return Path.of(".", "server_settings.json");
     }
 }
