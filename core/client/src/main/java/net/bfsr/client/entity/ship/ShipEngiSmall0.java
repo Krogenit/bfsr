@@ -155,7 +155,7 @@ public class ShipEngiSmall0 extends Ship {
 
             SpriteRenderer.get().add(lastPosition.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, lastPosition.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y,
                     shipPos.x + CollisionObjectUtils.ROTATE_TO_VECTOR.x, shipPos.y + CollisionObjectUtils.ROTATE_TO_VECTOR.y, rotation, 6.0f, 6.0f,
-                    effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, TextureLoader.getTexture(TextureRegister.particleLight), BufferType.ENTITIES_ADDITIVE);
+                    effectsColor.x, effectsColor.y, effectsColor.z, 0.5f, TextureLoader.getTexture(TextureRegister.particleLight), BufferType.ENTITIES_ADDITIVE);
         }
 
         super.renderAdditive();
