@@ -1,41 +1,47 @@
 package net.bfsr.entity.bullet;
 
-public class BulletDamage {
-    float bulletDamageArmor, bulletDamageHull, bulletDamageShield;
-    float averageDamage;
+import net.bfsr.config.bullet.BulletDamageConfigurable;
 
-    public BulletDamage(float bulletDamageArmor, float bulletDamageHull, float bulletDamageShield) {
-        this.bulletDamageArmor = bulletDamageArmor;
-        this.bulletDamageHull = bulletDamageHull;
-        this.bulletDamageShield = bulletDamageShield;
-        this.averageDamage = (bulletDamageArmor + bulletDamageHull + bulletDamageShield) / 3.0f;
+public class BulletDamage {
+    private float armor, hull, shield;
+    private final float average;
+
+    public BulletDamage(float armor, float hull, float shield) {
+        this.armor = armor;
+        this.hull = hull;
+        this.shield = shield;
+        this.average = (armor + hull + shield) / 3.0f;
     }
 
-    public float getBulletDamageArmor() {
-        return bulletDamageArmor;
+    public BulletDamage(BulletDamageConfigurable bulletDamage) {
+        this(bulletDamage.armor(), bulletDamage.hull(), bulletDamage.shield());
+    }
+
+    public float getArmor() {
+        return armor;
     }
 
     public void reduceBulletDamageArmor(float amount) {
-        this.bulletDamageArmor -= amount;
+        this.armor -= amount;
     }
 
-    public float getBulletDamageHull() {
-        return bulletDamageHull;
+    public float getHull() {
+        return hull;
     }
 
     public void reduceBulletDamageHull(float amount) {
-        this.bulletDamageHull -= amount;
+        this.hull -= amount;
     }
 
-    public float getBulletDamageShield() {
-        return bulletDamageShield;
+    public float getShield() {
+        return shield;
     }
 
     public void reduceBulletDamageShield(float amount) {
-        this.bulletDamageShield -= amount;
+        this.shield -= amount;
     }
 
-    public float getAverageDamage() {
-        return averageDamage;
+    public float getAverage() {
+        return average;
     }
 }

@@ -4,12 +4,12 @@ import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
-import net.bfsr.client.util.PathHelper;
 import net.bfsr.property.PropertiesHolder;
 import net.bfsr.property.Property;
 import net.bfsr.property.PropertyGuiElementType;
 import net.bfsr.property.event.ChangeNameEventListener;
 import net.bfsr.texture.TextureRegister;
+import net.bfsr.util.PathHelper;
 
 @SuppressWarnings("TransientFieldInNonSerializableClass")
 @Getter

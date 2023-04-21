@@ -2,7 +2,7 @@ package net.bfsr.client.language;
 
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.settings.Option;
-import net.bfsr.client.util.PathHelper;
+import net.bfsr.util.PathHelper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -21,7 +21,7 @@ public final class Lang {
     private static final List<String> LANGUAGES = new ArrayList<>();
 
     public static void load() {
-        Path folder = PathHelper.CONTENT.resolve("lang");
+        Path folder = PathHelper.CLIENT_CONTENT.resolve("lang");
         try {
             Files.walkFileTree(folder, new SimpleFileVisitor<>() {
                 @Override

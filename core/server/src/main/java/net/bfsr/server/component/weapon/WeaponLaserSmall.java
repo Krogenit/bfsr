@@ -1,7 +1,9 @@
 package net.bfsr.server.component.weapon;
 
+import net.bfsr.config.BulletRegistry;
+import net.bfsr.config.bullet.BulletData;
 import net.bfsr.server.collision.filter.ShipFilter;
-import net.bfsr.server.entity.bullet.BulletLaserSmall;
+import net.bfsr.server.entity.bullet.Bullet;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Polygon;
@@ -38,6 +40,9 @@ public class WeaponLaserSmall extends WeaponSlot {
 
     @Override
     protected void createBullet() {
-        new BulletLaserSmall(world, world.getNextId(), position.x, position.y, ship);
+        BulletData bulletData = BulletRegistry.INSTANCE.get("laser_small");
+        Bullet bullet = new Bullet(world, world.getNextId(), position.x, position.y, ship, bulletData);
+        bullet.init();
+        world.addBullet(bullet);
     }
 }

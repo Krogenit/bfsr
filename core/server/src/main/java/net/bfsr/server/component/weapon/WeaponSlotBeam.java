@@ -118,7 +118,7 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                     ship.attackShip(damage, this.ship, collisionPoint.x, collisionPoint.y, ship.getFaction() == this.ship.getFaction() ? beamColor.w / 2.0f * 60.0f * TimeUtils.UPDATE_DELTA_TIME :
                             beamColor.w * 60.0f * TimeUtils.UPDATE_DELTA_TIME);
                 } else if (userData instanceof Wreck wreck) {
-                    wreck.damage(damage.getBulletDamageHull() * beamColor.w);
+                    wreck.damage(damage.getHull() * beamColor.w);
                 }
             }
         }

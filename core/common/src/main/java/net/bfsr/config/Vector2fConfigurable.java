@@ -1,9 +1,5 @@
 package net.bfsr.config;
 
-import lombok.Getter;
-
 @Configurable
-@Getter
-public class Vector2fConfigurable {
-    private float x, y;
+public record Vector2fConfigurable(float x, float y) {
 }

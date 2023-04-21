@@ -391,14 +391,14 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
     public boolean attackShip(BulletDamage damage, Ship attacker, Vector2f contactPoint, float multiplayer) {
         lastAttacker = attacker;
-        float shieldDamage = damage.getBulletDamageShield() * multiplayer;
+        float shieldDamage = damage.getShield() * multiplayer;
 
         if ((shield != null && shield.damage(shieldDamage))) {
             return false;
         }
 
-        float hullDamage = damage.getBulletDamageHull() * multiplayer;
-        float armorDamage = damage.getBulletDamageArmor() * multiplayer;
+        float hullDamage = damage.getHull() * multiplayer;
+        float armorDamage = damage.getArmor() * multiplayer;
         Direction dir = CollisionObjectUtils.calculateDirectionToOtherObject(this, contactPoint.x, contactPoint.y);
 
         float reducedHullDamage = armor.reduceDamageByArmor(armorDamage, hullDamage, dir);

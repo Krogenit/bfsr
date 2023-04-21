@@ -3,12 +3,14 @@ package net.bfsr.server.entity.bullet;
 import lombok.Getter;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.component.shield.ShieldCommon;
+import net.bfsr.config.bullet.BulletData;
 import net.bfsr.effect.ParticleEffect;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.math.LUT;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
+import net.bfsr.server.collision.filter.BulletFilter;
 import net.bfsr.server.core.Server;
 import net.bfsr.server.entity.CollisionObject;
 import net.bfsr.server.entity.ship.Ship;
@@ -18,39 +20,53 @@ import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.network.packet.common.PacketObjectPosition;
 import net.bfsr.server.network.packet.server.effect.PacketSpawnParticleEffect;
 import net.bfsr.server.network.packet.server.entity.PacketRemoveObject;
-import net.bfsr.server.network.packet.server.entity.bullet.PacketSpawnBullet;
 import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.CollisionObjectUtils;
 import net.bfsr.util.TimeUtils;
 import org.dyn4j.dynamics.Body;
+import org.dyn4j.dynamics.BodyFixture;
+import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
 import org.dyn4j.world.ContactCollisionData;
 
 import java.util.Random;
 
-public abstract class Bullet extends CollisionObject {
+public class Bullet extends CollisionObject {
     @Getter
     protected final Ship ship;
     private final float bulletSpeed;
-    private final float aliveTimeReducer;
     @Getter
     private final BulletDamage damage;
     private float energy;
     private Object previousAObject;
+    @Getter
+    private final int dataIndex;
+    private final Polygon polygon;
 
-    protected Bullet(WorldServer world, int id, float bulletSpeed, float x, float y, float scaleX, float scaleY, Ship ship,
-                     float a, float aliveTimeReducer, BulletDamage damage) {
-        super(world, id, x, y, ship.getSin(), ship.getCos(), scaleX, scaleY);
-        this.aliveTimeReducer = aliveTimeReducer;
-        this.lifeTime = a;
-        this.damage = damage;
+    public Bullet(WorldServer world, int id, float x, float y, Ship ship, BulletData bulletData) {
+        super(world, id, x, y, ship.getSin(), ship.getCos(), bulletData.getSizeX(), bulletData.getSizeY());
         this.ship = ship;
-        this.bulletSpeed = bulletSpeed;
-        energy = damage.getAverageDamage();
-        init();
-        setBulletVelocityAndStartTransform(x, y);
-        world.addBullet(this);
-        Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnBullet(this), getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        this.lifeTime = bulletData.getLifeTime() * TimeUtils.UPDATES_PER_SECOND;
+        this.bulletSpeed = bulletData.getBulletSpeed();
+        this.damage = new BulletDamage(bulletData.getBulletDamage());
+        this.energy = damage.getAverage();
+        this.dataIndex = bulletData.getDataIndex();
+        this.polygon = bulletData.getPolygon();
+    }
+
+    @Override
+    public void init() {
+        super.init();
+        setBulletVelocityAndStartTransform(position.x, position.y);
+    }
+
+    @Override
+    protected void initBody() {
+        BodyFixture bodyFixture = new BodyFixture(polygon);
+        bodyFixture.setFilter(new BulletFilter(this));
+        body.addFixture(bodyFixture);
+        body.setUserData(this);
+        body.setBullet(true);
     }
 
     private void setBulletVelocityAndStartTransform(float x, float y) {
@@ -64,7 +80,7 @@ public abstract class Bullet extends CollisionObject {
     public void update() {
         super.update();
 
-        lifeTime -= aliveTimeReducer * TimeUtils.UPDATE_DELTA_TIME;
+        lifeTime -= 1;
 
         if (lifeTime <= 0) {
             setDead(true);
@@ -118,7 +134,7 @@ public abstract class Bullet extends CollisionObject {
                     reflect(normalX, normalY);
                 }
             } else if (userData instanceof Wreck wreck) {
-                wreck.damage(damage.getBulletDamageHull());
+                wreck.damage(damage.getHull());
             } else if (userData instanceof ShipWreckDamagable shipWreckDamagable) {
                 shipWreckDamagable.attackFromBullet(this, contactX, contactY, normalX, normalY);
                 setDead();
@@ -139,16 +155,16 @@ public abstract class Bullet extends CollisionObject {
     }
 
     private void damage(Bullet bullet) {
-        float damage = bullet.damage.getAverageDamage();
+        float damage = bullet.damage.getAverage();
         damage /= 3.0f;
 
         this.damage.reduceBulletDamageArmor(damage);
         this.damage.reduceBulletDamageHull(damage);
         this.damage.reduceBulletDamageShield(damage);
 
-        if (this.damage.getBulletDamageArmor() < 0) setDead();
-        else if (this.damage.getBulletDamageHull() < 0) setDead();
-        else if (this.damage.getBulletDamageShield() < 0) setDead();
+        if (this.damage.getArmor() < 0) setDead();
+        else if (this.damage.getHull() < 0) setDead();
+        else if (this.damage.getShield() < 0) setDead();
 
         if (bullet != this) {
             energy -= damage;

@@ -9,7 +9,6 @@ import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.sound.SoundLoader;
 import net.bfsr.client.sound.SoundSourceEffect;
-import net.bfsr.client.util.PathHelper;
 import net.bfsr.config.Configurable;
 import net.bfsr.math.MathUtils;
 import net.bfsr.property.PropertiesHolder;
@@ -17,6 +16,7 @@ import net.bfsr.property.Property;
 import net.bfsr.property.PropertyGuiElementType;
 import net.bfsr.property.event.ChangeNameEventListener;
 import net.bfsr.texture.TextureRegister;
+import net.bfsr.util.PathHelper;
 import net.bfsr.util.RandomHelper;
 
 import java.util.ArrayList;

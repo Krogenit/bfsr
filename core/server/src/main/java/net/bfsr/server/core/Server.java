@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.component.shield.ShieldRegistry;
+import net.bfsr.config.BulletRegistry;
 import net.bfsr.core.Loop;
 import net.bfsr.entity.wreck.WreckRegistry;
 import net.bfsr.profiler.Profiler;
@@ -11,8 +12,8 @@ import net.bfsr.server.PlayerManager;
 import net.bfsr.server.ServerSettings;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.service.PlayerService;
-import net.bfsr.server.util.PathHelper;
 import net.bfsr.server.world.WorldServer;
+import net.bfsr.util.PathHelper;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -76,6 +77,7 @@ public class Server extends Loop {
         networkSystem.init();
         WreckRegistry.INSTANCE.init(PathHelper.CONFIG);
         ShieldRegistry.INSTANCE.init(PathHelper.CONFIG);
+        BulletRegistry.INSTANCE.init();
 //		world.spawnShips();
 
         String hostname;

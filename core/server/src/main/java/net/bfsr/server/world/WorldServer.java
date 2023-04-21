@@ -9,6 +9,7 @@ import net.bfsr.server.component.weapon.WeaponBeamSmall;
 import net.bfsr.server.component.weapon.WeaponGausSmall;
 import net.bfsr.server.component.weapon.WeaponLaserSmall;
 import net.bfsr.server.component.weapon.WeaponPlasmSmall;
+import net.bfsr.server.core.Server;
 import net.bfsr.server.entity.CollisionObject;
 import net.bfsr.server.entity.bullet.Bullet;
 import net.bfsr.server.entity.ship.Ship;
@@ -17,6 +18,7 @@ import net.bfsr.server.entity.ship.ShipHumanSmall0;
 import net.bfsr.server.entity.ship.ShipSaimonSmall0;
 import net.bfsr.server.entity.wreck.ShipWreckDamagable;
 import net.bfsr.server.entity.wreck.Wreck;
+import net.bfsr.server.network.packet.server.entity.bullet.PacketSpawnBullet;
 import net.bfsr.server.network.packet.server.gui.PacketOpenGui;
 import net.bfsr.server.player.Player;
 import net.bfsr.world.World;
@@ -201,6 +203,11 @@ public class WorldServer extends World<Ship, Bullet> {
                 player.getNetworkHandler().sendUDPPacket(new PacketOpenGui(GuiType.DESTROYED, attacker));
             }
         }
+    }
+
+    public void addBullet(Bullet bullet) {
+        super.addBullet(bullet);
+        Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnBullet(bullet), bullet.getPosition(), PACKET_SPAWN_DISTANCE);
     }
 
     public void addDamage(ShipWreckDamagable shipWreckDamagable) {

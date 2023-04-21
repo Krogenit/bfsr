@@ -16,6 +16,7 @@ import java.util.function.Consumer;
 public final class ConfigLoader {
     private static final Moshi MOSHI = new Moshi.Builder().build();
     private static final String INDENT = "    ";
+    private static final String FORMAT = ".json";
 
     public static <T> T load(Path file, Class<T> type) {
         try {
@@ -31,7 +32,7 @@ public final class ConfigLoader {
             Files.walkFileTree(folder, new SimpleFileVisitor<>() {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                    if (file.getFileName().toString().endsWith(".json")) {
+                    if (file.getFileName().toString().endsWith(FORMAT)) {
                         fileConsumer.accept(load(file, configClass));
                     }
                     return FileVisitResult.CONTINUE;

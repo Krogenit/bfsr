@@ -1,6 +1,7 @@
 package net.bfsr.client.entity.bullet;
 
 import lombok.Getter;
+import net.bfsr.client.collision.filter.BulletFilter;
 import net.bfsr.client.entity.CollisionObject;
 import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.renderer.SpriteRenderer;
@@ -8,43 +9,62 @@ import net.bfsr.client.renderer.buffer.BufferType;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.world.WorldClient;
+import net.bfsr.config.bullet.BulletData;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.texture.TextureRegister;
 import net.bfsr.util.CollisionObjectUtils;
 import net.bfsr.util.TimeUtils;
+import org.dyn4j.dynamics.BodyFixture;
+import org.dyn4j.geometry.Polygon;
 import org.joml.Vector2f;
 
-public abstract class Bullet extends CollisionObject {
+public class Bullet extends CollisionObject {
     private static final Texture LIGHT_TEXTURE = TextureLoader.getTexture(TextureRegister.particleLight);
 
     @Getter
-    protected final Ship ship;
+    protected Ship ship;
     private final float bulletSpeed;
-    private final float alphaReducer;
+    private final float startLifeTime;
     @Getter
     private final BulletDamage damage;
+    private final Polygon polygon;
 
-    protected Bullet(WorldClient world, int id, float bulletSpeed, float x, float y, float sin, float cos, float scaleX, float scaleY, Ship ship,
-                     TextureRegister texture, float r, float g, float b, float a, float alphaReducer, BulletDamage damage) {
-        super(world, id, x, y, sin, cos, scaleX, scaleY, r, g, b, a, TextureLoader.getTexture(texture));
-        this.alphaReducer = alphaReducer;
-        this.damage = damage;
+    public Bullet(WorldClient world, int id, float x, float y, float sin, float cos, Ship ship, BulletData bulletData) {
+        super(world, id, x, y, sin, cos, bulletData.getSizeX(), bulletData.getSizeY(), bulletData.getColor().x, bulletData.getColor().y, bulletData.getColor().z, bulletData.getColor().w,
+                TextureLoader.getTexture(bulletData.getTexturePath()));
         this.ship = ship;
-        this.bulletSpeed = bulletSpeed;
-        init();
+        this.lifeTime = bulletData.getLifeTime() * TimeUtils.UPDATES_PER_SECOND;
+        this.startLifeTime = lifeTime;
+        this.bulletSpeed = bulletData.getBulletSpeed();
+        this.damage = new BulletDamage(bulletData.getBulletDamage());
+        this.polygon = bulletData.getPolygon();
+    }
+
+    @Override
+    public void init() {
+        super.init();
         velocity.set(cos * bulletSpeed, sin * bulletSpeed);
         body.setLinearVelocity(velocity.x, velocity.y);
-        world.addBullet(this);
+    }
+
+    @Override
+    protected void initBody() {
+        BodyFixture bodyFixture = new BodyFixture(polygon);
+        bodyFixture.setSensor(true);
+        bodyFixture.setFilter(new BulletFilter(this));
+        body.addFixture(bodyFixture);
+        body.setUserData(this);
     }
 
     @Override
     public void update() {
         lastPosition.set(getPosition());
 
-        color.w -= alphaReducer * TimeUtils.UPDATE_DELTA_TIME;
+        lifeTime -= 1;
+        color.w = lifeTime / startLifeTime;
 
-        if (color.w <= 0) {
+        if (lifeTime <= 0) {
             setDead();
         }
     }

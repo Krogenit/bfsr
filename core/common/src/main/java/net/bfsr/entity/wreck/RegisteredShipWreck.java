@@ -21,7 +21,7 @@ public class RegisteredShipWreck {
 
         Vector2[] vertices = new Vector2[vectors.length];
         for (int i = 0; i < vertices.length; i++) {
-            vertices[i] = new Vector2(vectors[i].getX(), vectors[i].getY());
+            vertices[i] = new Vector2(vectors[i].x(), vectors[i].y());
         }
 
         polygon = new Polygon(vertices);

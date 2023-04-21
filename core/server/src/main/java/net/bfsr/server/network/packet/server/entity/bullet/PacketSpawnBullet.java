@@ -12,14 +12,14 @@ import java.io.IOException;
 @NoArgsConstructor
 public class PacketSpawnBullet implements PacketOut {
     private int id;
-    private String className;
+    private int dataIndex;
     private Vector2f pos;
     private float sin, cos;
     private int shipId;
 
     public PacketSpawnBullet(Bullet bullet) {
         this.id = bullet.getId();
-        this.className = bullet.getClass().getSimpleName();
+        this.dataIndex = bullet.getDataIndex();
         this.pos = bullet.getPosition();
         this.sin = bullet.getSin();
         this.cos = bullet.getCos();
@@ -29,7 +29,7 @@ public class PacketSpawnBullet implements PacketOut {
     @Override
     public void write(ByteBuf data) throws IOException {
         data.writeInt(id);
-        ByteBufUtils.writeString(data, className);
+        data.writeShort(dataIndex);
         ByteBufUtils.writeVector(data, pos);
         data.writeFloat(sin);
         data.writeFloat(cos);

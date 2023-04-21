@@ -8,12 +8,12 @@ import net.bfsr.client.entity.bullet.Bullet;
 import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.particle.effect.GarbageSpawner;
 import net.bfsr.client.particle.effect.WeaponEffects;
-import net.bfsr.client.util.PathHelper;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.component.shield.ShieldCommon;
 import net.bfsr.config.ConfigLoader;
 import net.bfsr.effect.ParticleEffect;
 import net.bfsr.entity.GameObject;
+import net.bfsr.util.PathHelper;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -27,7 +27,7 @@ public class ParticleEffectsRegistry {
     public static final ParticleEffectsRegistry INSTANCE = new ParticleEffectsRegistry();
 
     @Getter
-    private final Path effectsFolder = PathHelper.CONFIG.resolve("particleeffect");
+    private final Path effectsFolder = PathHelper.CLIENT_CONFIG.resolve("particleeffect");
     private final ParticleSpawnFunction[] spawnFunctions = new ParticleSpawnFunction[ParticleEffect.values().length];
     private final TMap<String, net.bfsr.client.particle.ParticleEffect> registry = new THashMap<>();
 

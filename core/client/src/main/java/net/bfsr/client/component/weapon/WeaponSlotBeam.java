@@ -169,7 +169,7 @@ public abstract class WeaponSlotBeam extends WeaponSlot {
                     beamColor.w * 60.0f * TimeUtils.UPDATE_DELTA_TIME);
             onDamageShip(raycast, hitX, hitY);
         } else if (userData instanceof Wreck wreck) {
-            wreck.damage(damage.getBulletDamageHull() * beamColor.w);
+            wreck.damage(damage.getHull() * beamColor.w);
             onDamageWreck(raycast, hitX, hitY, wreck);
         } else if (userData instanceof CollisionObject collisionObject) {
             onDamageObject(raycast, hitX, hitY, collisionObject);

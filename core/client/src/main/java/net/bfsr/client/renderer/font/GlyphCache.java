@@ -1,6 +1,6 @@
 package net.bfsr.client.renderer.font;
 
-import net.bfsr.client.util.PathHelper;
+import net.bfsr.util.PathHelper;
 import org.lwjgl.opengl.*;
 
 import java.awt.*;

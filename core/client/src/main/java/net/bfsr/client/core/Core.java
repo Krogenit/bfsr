@@ -18,15 +18,16 @@ import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.client.settings.Option;
 import net.bfsr.client.sound.SoundListener;
 import net.bfsr.client.sound.SoundManager;
-import net.bfsr.client.util.PathHelper;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.component.shield.ShieldRegistry;
+import net.bfsr.config.BulletRegistry;
 import net.bfsr.entity.wreck.WreckRegistry;
 import net.bfsr.network.ConnectionState;
 import net.bfsr.network.PacketOut;
 import net.bfsr.profiler.Profiler;
 import net.bfsr.server.core.Server;
 import net.bfsr.server.local.ThreadLocalServer;
+import net.bfsr.util.PathHelper;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.openal.AL11;
@@ -107,6 +108,7 @@ public class Core {
         WreckRegistry.INSTANCE.init(PathHelper.CONFIG);
         ShieldRegistry.INSTANCE.init(PathHelper.CONFIG);
         ParticleEffectsRegistry.INSTANCE.init();
+        BulletRegistry.INSTANCE.init();
     }
 
     public void update() {

@@ -2,7 +2,7 @@ package net.bfsr.client.renderer.shader.loader;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.client.util.PathHelper;
+import net.bfsr.util.PathHelper;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.Platform;
 

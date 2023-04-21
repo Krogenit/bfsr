@@ -101,6 +101,10 @@ public class CollisionObject extends TextureObject {
     public void update() {
         lastSin = sin;
         lastCos = cos;
+        updateLifeTime();
+    }
+
+    protected void updateLifeTime() {
         lifeTime += 60.0f * TimeUtils.UPDATE_DELTA_TIME;
         if (lifeTime > 120) {
             setDead();

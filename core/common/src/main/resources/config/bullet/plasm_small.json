@@ -1,0 +1,40 @@
+{
+  "name": "plasm_small",
+  "speed": 75.0,
+  "lifeTime": 2.52,
+  "size": {
+    "x": 2.4,
+    "y": 2.4
+  },
+  "texture": "texture/entity/bullet/smallPlasm.png",
+  "damage": {
+    "armor": 5.0,
+    "average": 3.3333333,
+    "hull": 2.5,
+    "shield": 2.5
+  },
+  "color": {
+    "r": 0.5,
+    "g": 0.5,
+    "b": 1.0,
+    "a": 1.0
+  },
+  "vertices": [
+    {
+      "x": -0.6,
+      "y": -0.2
+    },
+    {
+      "x": 0.6,
+      "y": -0.2
+    },
+    {
+      "x": 0.6,
+      "y": 0.2
+    },
+    {
+      "x": -0.6,
+      "y": 0.2
+    }
+  ]
+}
