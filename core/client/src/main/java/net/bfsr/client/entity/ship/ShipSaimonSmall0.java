@@ -2,7 +2,6 @@ package net.bfsr.client.entity.ship;
 
 import clipper2.core.PathD;
 import clipper2.core.PointD;
-import net.bfsr.client.component.Damage;
 import net.bfsr.client.component.Shield;
 import net.bfsr.client.particle.effect.EngineEffects;
 import net.bfsr.client.particle.effect.ExplosionEffects;
@@ -38,10 +37,6 @@ import java.util.List;
 public class ShipSaimonSmall0 extends Ship {
     public ShipSaimonSmall0(WorldClient world, int id, float x, float y, float rotation) {
         super(world, id, x, y, rotation, 12.8f, 12.8f, 1.0f, 0.6f, 0.5f, TextureRegister.shipSaimonSmall0, TextureRegister.shipSaimonSmall0Damage);
-        addDamage(new Damage(this, 0.8f, 0, new Vector2f(1.0f, -0.4f), 0.08f));
-        addDamage(new Damage(this, 0.6f, 0, new Vector2f(0.5f, -1.8f), 0.1f));
-        addDamage(new Damage(this, 0.4f, 1, new Vector2f(0.5f, 1.5f), 0.055f));
-        addDamage(new Damage(this, 0.2f, 3, new Vector2f(-1.9f, 0), 0.06f));
     }
 
     @Override

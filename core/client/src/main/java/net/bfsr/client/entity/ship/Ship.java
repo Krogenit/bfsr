@@ -4,7 +4,6 @@ import clipper2.core.PathsD;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.collision.filter.ShipFilter;
-import net.bfsr.client.component.Damage;
 import net.bfsr.client.component.Shield;
 import net.bfsr.client.component.weapon.WeaponSlot;
 import net.bfsr.client.core.Core;
@@ -108,7 +107,6 @@ public abstract class Ship extends CollisionObject implements Damagable {
     private CollisionObject lastAttacker;
 
     protected Texture textureDamage;
-    private final List<Damage> damages;
 
     protected Direction moveDirection;
     @Getter
@@ -124,7 +122,6 @@ public abstract class Ship extends CollisionObject implements Damagable {
                    TextureRegister texture, TextureRegister textureDamage) {
         super(world, id, x, y, rotation, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 0.0f, TextureLoader.getTexture(texture));
         this.textureDamage = TextureLoader.getTexture(textureDamage);
-        this.damages = new ArrayList<>();
         RotationHelper.angleToVelocity(this.rotation + MathUtils.PI, -jumpSpeed * 6.0f, jumpVelocity);
         this.jumpPosition.set(jumpVelocity.x / 60.0f * (64.0f + scale.x * 0.1f) * -0.5f + x, jumpVelocity.y / 60.0f * (64.0f + scale.y * 0.1f) * -0.5f + y);
         this.effectsColor.set(r, g, b);
@@ -342,12 +339,6 @@ public abstract class Ship extends CollisionObject implements Damagable {
             WeaponSlot weaponSlot = weaponSlots.get(i);
             if (weaponSlot != null) weaponSlot.update();
         }
-
-        size = damages.size();
-        for (int i = 0; i < size; i++) {
-            Damage damage = damages.get(i);
-            damage.update();
-        }
     }
 
     private void damageByCollision(Ship otherShip, float impactPower, float contactX, float contactY, float normalX, float normalY) {
@@ -522,10 +513,6 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
     public void spawnEngineParticles(Direction direction) {}
 
-    public void addDamage(Damage damage) {
-        damages.add(damage);
-    }
-
     public void setMoveDirection(Direction dir) {
         moveDirection = dir;
         engineSpawnAccumulator.resetTime();
@@ -555,12 +542,6 @@ public abstract class Ship extends CollisionObject implements Damagable {
         for (int i = 0; i < size; i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
             if (weaponSlot != null) weaponSlot.updatePos();
-        }
-
-        size = damages.size();
-        for (int i = 0; i < size; i++) {
-            Damage damage = damages.get(i);
-            damage.updatePos();
         }
     }
 

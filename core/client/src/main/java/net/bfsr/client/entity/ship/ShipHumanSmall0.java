@@ -3,7 +3,6 @@ package net.bfsr.client.entity.ship;
 import clipper2.core.PathD;
 import clipper2.core.PointD;
 import net.bfsr.client.collision.filter.ShipFilter;
-import net.bfsr.client.component.Damage;
 import net.bfsr.client.component.Shield;
 import net.bfsr.client.particle.effect.EngineEffects;
 import net.bfsr.client.particle.effect.ExplosionEffects;
@@ -37,10 +36,6 @@ import org.lwjgl.BufferUtils;
 public class ShipHumanSmall0 extends Ship {
     public ShipHumanSmall0(WorldClient world, int id, float x, float y, float rotation) {
         super(world, id, x, y, rotation, 6.9423f, 6.9423f, 0.5f, 0.6f, 1.0f, TextureRegister.shipHumanSmall0, TextureRegister.shipHumanSmall0Damage);
-        addDamage(new Damage(this, 0.8f, 0, new Vector2f(-0.5f, 1.5f), 0.08f));
-        addDamage(new Damage(this, 0.6f, 0, new Vector2f(-1.8f, -0.8f), 0.08f));
-        addDamage(new Damage(this, 0.4f, 1, new Vector2f(-0.5f, -1.5f), 0.055f));
-        addDamage(new Damage(this, 0.2f, 2, new Vector2f(0.8f, -0.2f), 0.05f));
     }
 
     @Override
