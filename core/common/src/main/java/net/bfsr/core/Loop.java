@@ -7,7 +7,7 @@ public class Loop extends AbstractLoop {
 
     @Override
     protected void loop() {
-        final int maxUpdatesBeforeRender = 4;
+        final int maxUpdatesBeforeRender = 40;
         double lastUpdateTime = System.nanoTime();
 
         int lastSecondTime = (int) (lastUpdateTime / 1000000000.0f);
