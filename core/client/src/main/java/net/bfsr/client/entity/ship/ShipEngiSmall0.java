@@ -56,7 +56,7 @@ public class ShipEngiSmall0 extends Ship {
         armor.setArmorPlateByDir(Direction.RIGHT, new ArmorPlate(17.5f, 0.25f, 1.05f));
         setArmor(armor);
         ShieldConfig shieldConfig = ShieldRegistry.INSTANCE.getShield("engiSmall0");
-        Shield shield = new Shield(this, shieldConfig, 0.8f, 1.0f, 0.5f, 1.0f);
+        Shield shield = new Shield(this, shieldConfig, effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
         setShield(shield);
         shield.createBody();
         setWeaponsCount(2);

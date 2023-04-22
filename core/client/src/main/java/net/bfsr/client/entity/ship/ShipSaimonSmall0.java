@@ -56,7 +56,7 @@ public class ShipSaimonSmall0 extends Ship {
         setArmor(armor);
 
         ShieldConfig shieldConfig = ShieldRegistry.INSTANCE.getShield("saimonSmall0");
-        Shield shield = new Shield(this, shieldConfig, 1.0f, 0.6f, 0.5f, 1.0f);
+        Shield shield = new Shield(this, shieldConfig, effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
         setShield(shield);
         shield.createBody();
 

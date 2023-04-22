@@ -55,7 +55,7 @@ public class ShipHumanSmall0 extends Ship {
         setArmor(armor);
 
         ShieldConfig shieldConfig = ShieldRegistry.INSTANCE.getShield("humanSmall0");
-        Shield shield = new Shield(this, shieldConfig, 0.5f, 0.6f, 1.0f, 1.0f);
+        Shield shield = new Shield(this, shieldConfig, effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
         setShield(shield);
         shield.createBody();
 
