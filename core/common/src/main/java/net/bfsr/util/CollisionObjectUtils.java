@@ -104,15 +104,15 @@ public final class CollisionObjectUtils {
     public static void updatePos(GameObject gameObject, Vector2f newPos) {
         Vector2f pos = gameObject.getPosition();
 
-        float dist = pos.distance(newPos);
+        float dist = pos.distanceSquared(newPos);
 
-        float interpolationAmount = 1.0f;
-        if (dist >= 20) {
+        if (dist >= 400) {
+            float interpolationAmount = 1.0f;
             float x = pos.x + (newPos.x - pos.x) * interpolationAmount;
             float y = pos.y + (newPos.y - pos.y) * interpolationAmount;
             gameObject.setPosition(x, y);
         } else {
-            float alpha = Math.max(dist / 20, 0.0f) * interpolationAmount;
+            float alpha = Math.max(dist / 400, 0.0f);
             float x = pos.x + (newPos.x - pos.x) * alpha;
             float y = pos.y + (newPos.y - pos.y) * alpha;
 
