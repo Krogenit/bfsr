@@ -1,17 +1,21 @@
-package net.bfsr.config.bullet;
+package net.bfsr.config.weapon.beam;
 
 import net.bfsr.config.ColorConfigurable;
 import net.bfsr.config.Configurable;
+import net.bfsr.config.ConfigurableSound;
 import net.bfsr.config.Vector2fConfigurable;
+import net.bfsr.config.bullet.DamageConfigurable;
 
 @Configurable
-public record BulletConfig(
+public record BeamConfig(
         String name,
-        float speed,
-        float lifeTime,
+        ConfigurableSound[] sounds,
+        float reloadTimeInSeconds,
+        float energyCost,
         Vector2fConfigurable size,
-        String texture,
+        float beamMaxRange,
         DamageConfigurable damage,
+        String texture,
         ColorConfigurable color,
         Vector2fConfigurable[] vertices
 ) {

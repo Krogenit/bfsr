@@ -23,7 +23,7 @@ public class ParticleBeamEffect extends Particle {
         this.slot = slot;
         this.ship = slot.getShip();
         this.rand = ship.getWorld().getRand();
-        this.color.set(slot.getBeamColor());
+        this.color.set(slot.getEffectsColor());
         this.lastColor.set(color);
         this.addPos.set(rand.nextFloat(), (rand.nextFloat() * 2.0f - 1.0f) * slot.getScale().y / 2.0f);
         calculateTransform();
@@ -39,7 +39,7 @@ public class ParticleBeamEffect extends Particle {
 
         calculateTransform();
 
-        Vector4f beamColor = slot.getBeamColor();
+        Vector4f beamColor = slot.getEffectsColor();
         float colorSpeed = 0.25f * rand.nextFloat();
         if (changeColor) {
             if (color.w > 0) {

@@ -5,10 +5,7 @@ import net.bfsr.faction.Faction;
 import net.bfsr.math.MathUtils;
 import net.bfsr.network.GuiType;
 import net.bfsr.profiler.Profiler;
-import net.bfsr.server.component.weapon.WeaponBeamSmall;
-import net.bfsr.server.component.weapon.WeaponGausSmall;
-import net.bfsr.server.component.weapon.WeaponLaserSmall;
-import net.bfsr.server.component.weapon.WeaponPlasmSmall;
+import net.bfsr.server.component.weapon.WeaponBuilder;
 import net.bfsr.server.core.Server;
 import net.bfsr.server.entity.CollisionObject;
 import net.bfsr.server.entity.bullet.Bullet;
@@ -81,11 +78,11 @@ public class WorldServer extends World<Ship, Bullet> {
                 ship.init(this);
                 ship.setFaction(Faction.HUMAN);
                 if (rand.nextInt(2) == 0) {
-                    ship.addWeaponToSlot(0, new WeaponBeamSmall());
-                    ship.addWeaponToSlot(1, new WeaponBeamSmall());
+                    ship.addWeaponToSlot(0, WeaponBuilder.createBeam("beam_small"));
+                    ship.addWeaponToSlot(1, WeaponBuilder.createBeam("beam_small"));
                 } else {
-                    ship.addWeaponToSlot(0, new WeaponPlasmSmall());
-                    ship.addWeaponToSlot(1, new WeaponPlasmSmall());
+                    ship.addWeaponToSlot(0, WeaponBuilder.createGun("plasm_small"));
+                    ship.addWeaponToSlot(1, WeaponBuilder.createGun("plasm_small"));
                 }
                 ship.setName("[BOT] " + ship.getFaction().toString());
                 ship.sendSpawnPacket();
@@ -102,11 +99,11 @@ public class WorldServer extends World<Ship, Bullet> {
                 ship.init(this);
                 ship.setFaction(Faction.SAIMON);
                 if (rand.nextInt(2) == 0) {
-                    ship.addWeaponToSlot(0, new WeaponBeamSmall());
-                    ship.addWeaponToSlot(1, new WeaponBeamSmall());
+                    ship.addWeaponToSlot(0, WeaponBuilder.createBeam("beam_small"));
+                    ship.addWeaponToSlot(1, WeaponBuilder.createBeam("beam_small"));
                 } else {
-                    ship.addWeaponToSlot(0, new WeaponLaserSmall());
-                    ship.addWeaponToSlot(1, new WeaponLaserSmall());
+                    ship.addWeaponToSlot(0, WeaponBuilder.createGun("laser_small"));
+                    ship.addWeaponToSlot(1, WeaponBuilder.createGun("laser_small"));
                 }
                 ship.setName("[BOT] " + ship.getFaction().toString());
                 ship.sendSpawnPacket();
@@ -123,11 +120,11 @@ public class WorldServer extends World<Ship, Bullet> {
                 ship.init(this);
                 ship.setFaction(Faction.ENGI);
                 if (rand.nextInt(2) == 0) {
-                    ship.addWeaponToSlot(0, new WeaponBeamSmall());
-                    ship.addWeaponToSlot(1, new WeaponBeamSmall());
+                    ship.addWeaponToSlot(0, WeaponBuilder.createBeam("beam_small"));
+                    ship.addWeaponToSlot(1, WeaponBuilder.createBeam("beam_small"));
                 } else {
-                    ship.addWeaponToSlot(0, new WeaponGausSmall());
-                    ship.addWeaponToSlot(1, new WeaponGausSmall());
+                    ship.addWeaponToSlot(0, WeaponBuilder.createGun("gaus_small"));
+                    ship.addWeaponToSlot(1, WeaponBuilder.createGun("gaus_small"));
                 }
                 ship.setName("[BOT] " + ship.getFaction().toString());
                 ship.sendSpawnPacket();

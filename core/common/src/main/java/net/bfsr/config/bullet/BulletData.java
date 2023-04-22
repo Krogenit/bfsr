@@ -16,7 +16,7 @@ public class BulletData {
     private final Path texturePath;
     private final Vector4f color;
     private final float lifeTime;
-    private final BulletDamageConfigurable bulletDamage;
+    private final DamageConfigurable bulletDamage;
     private final Polygon polygon;
     private final int dataIndex;
 

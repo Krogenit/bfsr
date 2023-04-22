@@ -29,9 +29,13 @@ public class ConfigRegistry<CONFIG_TYPE, DATA_TYPE> {
     }
 
     private void add(CONFIG_TYPE config) {
-        DATA_TYPE data = mapFunction.apply(config, list.size());
-        list.add(data);
-        registry.put(nameFunction.apply(config), data);
+        try {
+            DATA_TYPE data = mapFunction.apply(config, list.size());
+            list.add(data);
+            registry.put(nameFunction.apply(config), data);
+        } catch (Exception e) {
+            throw new RuntimeException("Can't map config " + config + " to data", e);
+        }
     }
 
     public DATA_TYPE get(String key) {

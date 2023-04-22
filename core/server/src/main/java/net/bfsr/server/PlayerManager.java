@@ -3,9 +3,7 @@ package net.bfsr.server;
 import lombok.Getter;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.MathUtils;
-import net.bfsr.server.component.weapon.WeaponGausSmall;
-import net.bfsr.server.component.weapon.WeaponLaserSmall;
-import net.bfsr.server.component.weapon.WeaponPlasmSmall;
+import net.bfsr.server.component.weapon.WeaponBuilder;
 import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.entity.ship.ShipEngiSmall0;
 import net.bfsr.server.entity.ship.ShipHumanSmall0;
@@ -32,24 +30,24 @@ public class PlayerManager {
                 playerShip.init(world);
                 playerShip.setPosition(x, y);
                 playerShip.setRotation(world.getRand().nextFloat() * MathUtils.TWO_PI);
-                playerShip.addWeaponToSlot(0, new WeaponPlasmSmall());
-                playerShip.addWeaponToSlot(1, new WeaponPlasmSmall());
+                playerShip.addWeaponToSlot(0, WeaponBuilder.createGun("plasm_small"));
+                playerShip.addWeaponToSlot(1, WeaponBuilder.createGun("plasm_small"));
             }
             case SAIMON -> {
                 playerShip = new ShipSaimonSmall0();
                 playerShip.init(world);
                 playerShip.setPosition(x, y);
                 playerShip.setRotation(world.getRand().nextFloat() * MathUtils.TWO_PI);
-                playerShip.addWeaponToSlot(0, new WeaponLaserSmall());
-                playerShip.addWeaponToSlot(1, new WeaponLaserSmall());
+                playerShip.addWeaponToSlot(0, WeaponBuilder.createGun("laser_small"));
+                playerShip.addWeaponToSlot(1, WeaponBuilder.createGun("laser_small"));
             }
             case ENGI -> {
                 playerShip = new ShipEngiSmall0();
                 playerShip.init(world);
                 playerShip.setPosition(x, y);
                 playerShip.setRotation(world.getRand().nextFloat() * MathUtils.TWO_PI);
-                playerShip.addWeaponToSlot(0, new WeaponGausSmall());
-                playerShip.addWeaponToSlot(1, new WeaponGausSmall());
+                playerShip.addWeaponToSlot(0, WeaponBuilder.createGun("gaus_small"));
+                playerShip.addWeaponToSlot(1, WeaponBuilder.createGun("gaus_small"));
             }
         }
 

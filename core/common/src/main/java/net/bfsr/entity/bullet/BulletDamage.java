@@ -1,6 +1,6 @@
 package net.bfsr.entity.bullet;
 
-import net.bfsr.config.bullet.BulletDamageConfigurable;
+import net.bfsr.config.bullet.DamageConfigurable;
 
 public class BulletDamage {
     private float armor, hull, shield;
@@ -13,7 +13,7 @@ public class BulletDamage {
         this.average = (armor + hull + shield) / 3.0f;
     }
 
-    public BulletDamage(BulletDamageConfigurable bulletDamage) {
+    public BulletDamage(DamageConfigurable bulletDamage) {
         this(bulletDamage.armor(), bulletDamage.hull(), bulletDamage.shield());
     }
 

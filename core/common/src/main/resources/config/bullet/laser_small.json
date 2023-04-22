@@ -1,7 +1,7 @@
 {
   "name": "laser_small",
   "speed": 75.0,
-  "lifeTime": 2.52,
+  "lifeTime": 0.84,
   "size": {
     "x": 2.4,
     "y": 2.4

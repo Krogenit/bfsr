@@ -1,0 +1,54 @@
+{
+  "name": "beam_small",
+  "sounds": [
+    {
+      "path": "sound/weapon/beam0.ogg",
+      "volume": 1.0
+    },
+    {
+      "path": "sound/weapon/beam1.ogg",
+      "volume": 1.0
+    },
+    {
+      "path": "sound/weapon/beam2.ogg",
+      "volume": 1.0
+    }
+  ],
+  "reloadTimeInSeconds": 2.0,
+  "energyCost": 6.0,
+  "size": {
+    "x": 1.4,
+    "y": 1.0
+  },
+  "beamMaxRange": 40.0,
+  "damage": {
+    "armor": 0.075,
+    "hull": 0.075,
+    "shield": 0.15
+  },
+  "texture": "texture/component/weapon/beam1.png",
+  "color": {
+    "r": 0.8,
+    "g": 0.8,
+    "b": 1.0,
+    "a": 1.0
+  },
+  "vertices": [
+    {
+      "x": -0.7,
+      "y": -0.5
+    },
+    {
+      "x": 0.7,
+      "y": -0.5
+    },
+    {
+      "x": 0.7,
+      "y": 0.5
+    },
+    {
+      "x": -0.7,
+      "y": 0.5
+    }
+  ]
+}

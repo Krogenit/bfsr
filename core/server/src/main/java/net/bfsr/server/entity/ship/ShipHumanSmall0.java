@@ -94,7 +94,7 @@ public class ShipHumanSmall0 extends Ship {
 
 
     @Override
-    protected Vector2f getWeaponSlotPosition(int id) {
+    public Vector2f getWeaponSlotPosition(int id) {
         if (id == 0) return new Vector2f(0.7f, 2.4f);
         else if (id == 1) return new Vector2f(0.7f, -2.4f);
         throw new UnsupportedOperationException("Unsupported weapon slot position " + id);

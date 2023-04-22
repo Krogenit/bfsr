@@ -6,9 +6,7 @@ import net.bfsr.command.Command;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.MathUtils;
 import net.bfsr.network.util.ByteBufUtils;
-import net.bfsr.server.component.weapon.WeaponGausSmall;
-import net.bfsr.server.component.weapon.WeaponLaserSmall;
-import net.bfsr.server.component.weapon.WeaponPlasmSmall;
+import net.bfsr.server.component.weapon.WeaponBuilder;
 import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.entity.ship.ShipEngiSmall0;
 import net.bfsr.server.entity.ship.ShipHumanSmall0;
@@ -57,8 +55,8 @@ public class PacketCommand implements PacketIn {
                         ship.setSpawned();
                         ship.setPosition(pos.x, pos.y);
                         ship.setRotation(rand.nextFloat() * MathUtils.TWO_PI);
-                        ship.addWeaponToSlot(0, new WeaponPlasmSmall());
-                        ship.addWeaponToSlot(1, new WeaponPlasmSmall());
+                        ship.addWeaponToSlot(0, WeaponBuilder.createGun("plasm_small"));
+                        ship.addWeaponToSlot(1, WeaponBuilder.createGun("plasm_small"));
 
                         break;
                     case SAIMON:
@@ -67,8 +65,8 @@ public class PacketCommand implements PacketIn {
                         ship.setSpawned();
                         ship.setPosition(pos.x, pos.y);
                         ship.setRotation(rand.nextFloat() * MathUtils.TWO_PI);
-                        ship.addWeaponToSlot(0, new WeaponLaserSmall());
-                        ship.addWeaponToSlot(1, new WeaponLaserSmall());
+                        ship.addWeaponToSlot(0, WeaponBuilder.createGun("laser_small"));
+                        ship.addWeaponToSlot(1, WeaponBuilder.createGun("laser_small"));
 
                         break;
                     case ENGI:
@@ -77,8 +75,8 @@ public class PacketCommand implements PacketIn {
                         ship.setSpawned();
                         ship.setPosition(pos.x, pos.y);
                         ship.setRotation(rand.nextFloat() * MathUtils.TWO_PI);
-                        ship.addWeaponToSlot(0, new WeaponGausSmall());
-                        ship.addWeaponToSlot(1, new WeaponGausSmall());
+                        ship.addWeaponToSlot(0, WeaponBuilder.createGun("gaus_small"));
+                        ship.addWeaponToSlot(1, WeaponBuilder.createGun("gaus_small"));
 
                         break;
                 }

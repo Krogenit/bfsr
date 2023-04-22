@@ -39,7 +39,7 @@ public class Beam extends TextureObject {
     private void calculateTransform() {
         Vector2f slotScale = slot.getScale();
         Vector2f slotPos = slot.getPosition();
-        this.color.set(slot.getBeamColor());
+        this.color.set(slot.getEffectsColor());
 
         float cos = ship.getCos();
         float sin = ship.getSin();

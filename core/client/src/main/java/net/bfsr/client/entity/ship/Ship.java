@@ -493,28 +493,27 @@ public abstract class Ship extends CollisionObject implements Damagable {
         weaponPositions.add(pos);
     }
 
-    private Vector2f getWeaponSlotPosition(int i) {
+    public Vector2f getWeaponSlotPosition(int i) {
         return weaponPositions.get(i);
     }
 
     protected void setWeaponsCount(int count) {
         weaponSlots = new ArrayList<>(count);
-        for (int i = 0; i < count; i++) {
-            weaponSlots.add(null);
-        }
     }
 
-    public void addWeaponToSlot(int i, WeaponSlot slot) {
-        if (i < weaponSlots.size()) {
-            WeaponSlot oldSlot = weaponSlots.get(i);
-            if (oldSlot != null) {
-                oldSlot.clear();
+    public void addWeaponToSlot(int id, WeaponSlot slot) {
+        for (int i = 0; i < weaponSlots.size(); i++) {
+            WeaponSlot weaponSlot = weaponSlots.get(i);
+            if (weaponSlot.getId() == id) {
+                weaponSlot.clear();
+                weaponSlots.set(i, slot);
+                slot.init(id);
+                return;
             }
         }
 
-        slot.init(i, getWeaponSlotPosition(i), this);
-
-        weaponSlots.set(i, slot);
+        slot.init(id);
+        weaponSlots.add(slot);
     }
 
     public WeaponSlot getWeaponSlot(int i) {

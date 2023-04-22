@@ -37,7 +37,8 @@ public class PacketSpawnShip implements PacketOut {
         data.writeByte(weaponSlots.size());
         for (int i = 0; i < weaponSlots.size(); i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
-            ByteBufUtils.writeString(data, weaponSlot.getClass().getSimpleName());
+            data.writeByte(weaponSlot.getType().ordinal());
+            data.writeShort(weaponSlot.getDataIndex());
             data.writeInt(weaponSlot.getId());
         }
 

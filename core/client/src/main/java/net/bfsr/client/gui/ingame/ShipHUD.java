@@ -155,8 +155,8 @@ public class ShipHUD {
         for (int i = 0; i < size; i++) {
             WeaponSlot slot = ship.getWeaponSlots().get(i);
             if (slot != null) {
-                float reload = slot.getShootTimer() / slot.getShootTimerMax();
-                Vector2f pos = slot.getAddPosition();
+                float reload = slot.getReloadTimer() / slot.getTimeToReload();
+                Vector2f pos = slot.getLocalPosition();
                 RotationHelper.rotate((float) (-Math.PI / 2.0f), pos.x, pos.y, rotationVector);
                 int slotWidth = (int) (slot.getScale().x * shipSize);
                 int slothHeight = (int) (slot.getScale().y * shipSize);

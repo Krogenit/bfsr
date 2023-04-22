@@ -17,7 +17,7 @@ public interface WeaponConverter {
     @Mapping(target = "rotation", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "ship", ignore = true)
-    @Mapping(target = "addPosition", ignore = true)
+    @Mapping(target = "localPosition", ignore = true)
     WeaponSlot from(WeaponModel weaponModel);
 
     @ObjectFactory

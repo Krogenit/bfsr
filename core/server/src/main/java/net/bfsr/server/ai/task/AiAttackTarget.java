@@ -1,5 +1,7 @@
 package net.bfsr.server.ai.task;
 
+import net.bfsr.component.weapon.WeaponType;
+import net.bfsr.config.bullet.BulletData;
 import net.bfsr.math.Direction;
 import net.bfsr.server.component.weapon.WeaponSlot;
 import net.bfsr.server.component.weapon.WeaponSlotBeam;
@@ -55,20 +57,21 @@ public class AiAttackTarget extends AiTask {
                 float bulletToShip;
                 Vector2f targetFinalPos;
 
-                if (slot instanceof WeaponSlotBeam) {
+                if (slot.getType() == WeaponType.BEAM) {
                     bulletToShip = ((WeaponSlotBeam) slot).getBeamMaxRange();
                     targetFinalPos = new Vector2f(targetPos.x + 0, targetPos.y + 0);
                 } else {
-                    Vector2f slotPos = slot.getAddPosition();
-                    float x1 = ship.getCos();
-                    float y1 = ship.getSin();
-                    float xPos = x1 * slotPos.x - y1 * slotPos.y;
-                    float yPos = y1 * slotPos.x + x1 * slotPos.y;
+                    Vector2f slotPos = slot.getLocalPosition();
+                    float cos = ship.getCos();
+                    float sin = ship.getSin();
+                    float xPos = cos * slotPos.x - sin * slotPos.y;
+                    float yPos = sin * slotPos.x + cos * slotPos.y;
 
-                    float bulletSpeed = slot.getBulletSpeed();
-                    int totalIterations = (int) (1.5f / (slot.getAlphaReducer() * TimeUtils.UPDATE_DELTA_TIME));
+                    BulletData bulletData = slot.getBulletData();
+                    float bulletSpeed = bulletData.getBulletSpeed();
+                    int totalIterations = (int) (bulletData.getLifeTime() * TimeUtils.UPDATES_PER_SECOND);
 
-                    Vector2f totalVelocity = new Vector2f(-x1, -y1).mul(bulletSpeed * TimeUtils.UPDATE_DELTA_TIME).mul(totalIterations);
+                    Vector2f totalVelocity = new Vector2f(-cos, -sin).mul(bulletSpeed * TimeUtils.UPDATE_DELTA_TIME).mul(totalIterations);
                     Vector2f bulletFinalPos = new Vector2f(pos.x + xPos + totalVelocity.x, pos.y + yPos + totalVelocity.y);
 
                     bulletToShip = bulletFinalPos.distance(pos) - 2.0f;

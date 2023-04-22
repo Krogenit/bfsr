@@ -139,7 +139,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
 
         for (int i = 0; i < weaponSlots.size(); i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
-            weaponSlot.init(i, getWeaponSlotPosition(i), this);
+            weaponSlot.init(i, this);
         }
 
         this.world.addShip(this);
@@ -423,7 +423,7 @@ public abstract class Ship extends CollisionObject implements Damagable {
         this.crew = crew;
     }
 
-    protected abstract Vector2f getWeaponSlotPosition(int id);
+    public abstract Vector2f getWeaponSlotPosition(int id);
 
     public void addWeaponToSlot(int id, WeaponSlot slot) {
         for (int i = 0; i < weaponSlots.size(); i++) {
@@ -431,12 +431,12 @@ public abstract class Ship extends CollisionObject implements Damagable {
             if (weaponSlot.getId() == id) {
                 weaponSlot.clear();
                 weaponSlots.set(i, slot);
-                slot.init(id, getWeaponSlotPosition(id), this);
+                slot.init(id, this);
                 return;
             }
         }
 
-        slot.init(id, getWeaponSlotPosition(id), this);
+        slot.init(id, this);
         weaponSlots.add(slot);
     }
 

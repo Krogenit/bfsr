@@ -1,7 +1,6 @@
-package net.bfsr.config;
+package net.bfsr.config.bullet;
 
-import net.bfsr.config.bullet.BulletConfig;
-import net.bfsr.config.bullet.BulletData;
+import net.bfsr.config.ConfigRegistry;
 import net.bfsr.util.PathHelper;
 
 public class BulletRegistry extends ConfigRegistry<BulletConfig, BulletData> {

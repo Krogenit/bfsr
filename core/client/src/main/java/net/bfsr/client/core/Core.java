@@ -20,7 +20,9 @@ import net.bfsr.client.sound.SoundListener;
 import net.bfsr.client.sound.SoundManager;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.component.shield.ShieldRegistry;
-import net.bfsr.config.BulletRegistry;
+import net.bfsr.config.bullet.BulletRegistry;
+import net.bfsr.config.weapon.beam.BeamRegistry;
+import net.bfsr.config.weapon.gun.GunRegistry;
 import net.bfsr.entity.wreck.WreckRegistry;
 import net.bfsr.network.ConnectionState;
 import net.bfsr.network.PacketOut;
@@ -109,6 +111,8 @@ public class Core {
         ShieldRegistry.INSTANCE.init(PathHelper.CONFIG);
         ParticleEffectsRegistry.INSTANCE.init();
         BulletRegistry.INSTANCE.init();
+        GunRegistry.INSTANCE.init();
+        BeamRegistry.INSTANCE.init();
     }
 
     public void update() {

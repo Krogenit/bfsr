@@ -2,26 +2,35 @@ package net.bfsr.client.component.weapon;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.bfsr.client.collision.filter.ShipFilter;
 import net.bfsr.client.core.Core;
 import net.bfsr.client.entity.TextureObject;
 import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.network.packet.common.PacketWeaponShoot;
+import net.bfsr.client.particle.effect.WeaponEffects;
 import net.bfsr.client.renderer.SpriteRenderer;
 import net.bfsr.client.renderer.buffer.BufferType;
 import net.bfsr.client.renderer.texture.TextureLoader;
-import net.bfsr.client.sound.SoundRegistry;
-import net.bfsr.client.sound.SoundSourceEffect;
+import net.bfsr.client.sound.Sound;
+import net.bfsr.client.sound.SoundLoader;
 import net.bfsr.client.world.WorldClient;
-import net.bfsr.texture.TextureRegister;
+import net.bfsr.config.ConfigurableSound;
+import net.bfsr.config.weapon.gun.GunData;
+import net.bfsr.math.RotationHelper;
+import net.bfsr.physics.PhysicsUtils;
+import net.bfsr.util.PathHelper;
 import net.bfsr.util.TimeUtils;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
+import org.dyn4j.geometry.Geometry;
+import org.dyn4j.geometry.Polygon;
 import org.joml.Vector2f;
+import org.joml.Vector4f;
 
 import java.util.List;
 import java.util.Random;
 
-public abstract class WeaponSlot extends TextureObject {
+public class WeaponSlot extends TextureObject {
     @Getter
     @Setter
     protected int id;
@@ -31,47 +40,60 @@ public abstract class WeaponSlot extends TextureObject {
     protected Ship ship;
     protected float energyCost;
     @Getter
-    private final float bulletSpeed;
-    @Getter
-    protected float shootTimer, shootTimerMax;
-    @Getter
-    private final float alphaReducer;
+    protected float reloadTimer, timeToReload;
     @Getter
     @Setter
-    protected Vector2f addPosition;
-    private final SoundRegistry[] shootSounds;
+    protected Vector2f localPosition;
+    private final Sound[] shootSounds;
+    @Getter
+    protected final Vector4f effectsColor;
+    private final Polygon polygon;
 
-    protected WeaponSlot(Ship ship, SoundRegistry[] shootSounds, float shootTimerMax, float energyCost, float bulletSpeed, float alphaReducer,
-                         float scaleX, float scaleY, TextureRegister texture) {
-        super(TextureLoader.getTexture(texture), 0.0f, 0.0f, scaleX, scaleY);
+    public WeaponSlot(Ship ship, GunData gunData) {
+        super(TextureLoader.getTexture(gunData.getTexturePath()), 0.0f, 0.0f, gunData.getSizeX(), gunData.getSizeY());
         this.ship = ship;
         this.world = ship.getWorld();
-        this.shootTimerMax = shootTimerMax;
-        this.energyCost = energyCost;
-        this.bulletSpeed = bulletSpeed;
-        this.scale.set(scaleX, scaleY);
-        this.alphaReducer = alphaReducer;
-        this.shootSounds = shootSounds;
-        this.color.set(1.0f, 1.0f, 1.0f, 1.0f);
-        this.scale.set(scaleX, scaleY);
+        this.timeToReload = gunData.getReloadTimeInSeconds() * TimeUtils.UPDATES_PER_SECOND;
+        this.energyCost = gunData.getEnergyCost();
+        ConfigurableSound[] sounds = gunData.getSounds();
+        this.shootSounds = new Sound[sounds.length];
+        for (int i = 0; i < shootSounds.length; i++) {
+            ConfigurableSound configurableSound = sounds[i];
+            shootSounds[i] = new Sound(SoundLoader.getBuffer(PathHelper.convertPath(configurableSound.path())), configurableSound.volume());
+        }
+
+        this.effectsColor = new Vector4f(gunData.getColor());
+        this.polygon = gunData.getPolygon();
     }
 
-    public void init(int id, Vector2f addPosition, Ship ship) {
-        this.addPosition = addPosition;
-        this.ship = ship;
-        createBody();
+    public void init(int id) {
         this.id = id;
+        this.localPosition = ship.getWeaponSlotPosition(id);
+        createBody();
         updatePos();
         lastRotation = rotation;
         lastPosition.set(position);
     }
 
-    public abstract void createBody();
-    protected abstract void spawnShootParticles();
+    public void createBody() {
+        Polygon polygon = Geometry.createPolygon(this.polygon.getVertices());
+        polygon.translate(localPosition.x, localPosition.y);
+        BodyFixture bodyFixture = new BodyFixture(polygon);
+        bodyFixture.setUserData(this);
+        bodyFixture.setFilter(new ShipFilter(ship));
+        bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
+        ship.getBody().addFixture(bodyFixture);
+        ship.getBody().updateMass();
+    }
+
+    protected void spawnShootParticles() {
+        Vector2f pos = RotationHelper.rotate(rotation, 1.0f, 0).add(getPosition());
+        WeaponEffects.spawnWeaponShoot(pos, rotation, 8.0f, effectsColor.x, effectsColor.y, effectsColor.z, effectsColor.w);
+    }
 
     public void tryShoot() {
         float energy = ship.getReactor().getEnergy();
-        if (shootTimer <= 0 && energy >= energyCost) {
+        if (reloadTimer <= 0 && energy >= energyCost) {
             shoot();
         }
     }
@@ -83,7 +105,7 @@ public abstract class WeaponSlot extends TextureObject {
     public void clientShoot() {
         spawnShootParticles();
         playSound();
-        shootTimer = shootTimerMax;
+        reloadTimer = timeToReload;
         ship.getReactor().consume(energyCost);
     }
 
@@ -91,9 +113,7 @@ public abstract class WeaponSlot extends TextureObject {
         if (shootSounds != null) {
             int size = shootSounds.length;
             Random rand = world.getRand();
-            SoundRegistry sound = shootSounds[rand.nextInt(size)];
-            SoundSourceEffect source = new SoundSourceEffect(sound, position.x, position.y);
-            Core.get().getSoundManager().play(source);
+            shootSounds[rand.nextInt(size)].play(position.x, position.y);
         }
     }
 
@@ -102,16 +122,16 @@ public abstract class WeaponSlot extends TextureObject {
         lastPosition.set(position);
 
         updatePos();
-        if (shootTimer > 0) {
-            shootTimer -= 50.0f * TimeUtils.UPDATE_DELTA_TIME;
-            if (shootTimer < 0) shootTimer = 0;
+        if (reloadTimer > 0) {
+            reloadTimer -= 50.0f * TimeUtils.UPDATE_DELTA_TIME;
+            if (reloadTimer < 0) reloadTimer = 0;
         }
     }
 
     public void updatePos() {
         Vector2f shipPos = ship.getPosition();
-        float x = addPosition.x;
-        float y = addPosition.y;
+        float x = localPosition.x;
+        float y = localPosition.y;
         float cos = ship.getCos();
         float sin = ship.getSin();
         float xPos = cos * x - sin * y;
