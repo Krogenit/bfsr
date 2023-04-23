@@ -27,7 +27,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = Main.class)
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @DirtiesContext
 public class PlayerServiceTest {
     @Container
