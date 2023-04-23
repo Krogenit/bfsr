@@ -3,9 +3,9 @@ package net.bfsr.server.network.packet.client;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import net.bfsr.server.PlayerManager;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.PacketIn;
+import net.bfsr.server.player.PlayerManager;
 
 import java.io.IOException;
 

@@ -1,7 +1,6 @@
 package net.bfsr.server.core;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.component.shield.ShieldRegistry;
 import net.bfsr.config.bullet.BulletRegistry;
@@ -10,28 +9,26 @@ import net.bfsr.config.weapon.gun.GunRegistry;
 import net.bfsr.core.Loop;
 import net.bfsr.entity.wreck.WreckRegistry;
 import net.bfsr.profiler.Profiler;
-import net.bfsr.server.PlayerManager;
-import net.bfsr.server.ServerSettings;
+import net.bfsr.server.config.ServerSettings;
+import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.network.NetworkSystem;
+import net.bfsr.server.network.packet.server.entity.PacketRemoveObject;
+import net.bfsr.server.player.Player;
+import net.bfsr.server.player.PlayerManager;
+import net.bfsr.server.rsocket.RSocketClient;
 import net.bfsr.server.service.PlayerService;
 import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.PathHelper;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Log4j2
-public class Server extends Loop {
+public abstract class Server extends Loop {
     @Getter
     private static Server instance;
 
-    @Getter
-    @Setter
-    private boolean local;
     @Getter
     private int ups;
 
@@ -47,13 +44,14 @@ public class Server extends Loop {
     @Getter
     private final PlayerManager playerManager;
     @Getter
-    @Setter
-    private boolean pause;
+    protected boolean pause;
+    @Getter
+    private final RSocketClient databaseRSocketClient = new RSocketClient();
 
-    public Server() {
+    protected Server() {
         this.networkSystem = new NetworkSystem(this);
         this.world = new WorldServer(profiler);
-        this.playerService = new PlayerService();
+        this.playerService = new PlayerService(databaseRSocketClient);
         this.playerManager = new PlayerManager(world);
 
         instance = this;
@@ -61,12 +59,6 @@ public class Server extends Loop {
 
     @Override
     public void run() {
-        if (local) {
-            log.info("Starting local server...");
-        } else {
-            log.info("Starting dedicated server...");
-        }
-
         log.info("Server initialization...");
         init();
         log.info("Initialized");
@@ -74,7 +66,7 @@ public class Server extends Loop {
         loop();
     }
 
-    private void init() {
+    protected void init() {
         profiler.setEnable(true);
         networkSystem.init();
         WreckRegistry.INSTANCE.init(PathHelper.CONFIG);
@@ -82,63 +74,51 @@ public class Server extends Loop {
         BulletRegistry.INSTANCE.init();
         GunRegistry.INSTANCE.init();
         BeamRegistry.INSTANCE.init();
-//		world.spawnShips();
+        settings = createSettings();
+        startupNetworkSystem(settings);
+    }
 
-        String hostname;
-        int port;
-        if (!local) {
-            settings = new ServerSettings();
-            settings.readSettings();
-            hostname = settings.getHostName();
-            port = settings.getPort();
+    protected ServerSettings createSettings() {
+        return new ServerSettings();
+    }
 
-            Thread t = new Thread(() -> {
-                while (!isRunning()) {
-                    try {
-                        Thread.sleep(1L);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-                }
-
-                while (isRunning()) {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
-                    String name;
-                    try {
-                        name = reader.readLine();
-                        if ("stop".equals(name)) {
-                            stop();
-                        }
-                    } catch (IOException e) {
-                        log.error("Can't read line from console input", e);
-                    }
-                }
-            });
-            t.setName("Console Input");
-            t.start();
-        } else {
-            hostname = "127.0.0.1";
-            port = 34000;
-        }
-
+    protected void startupNetworkSystem(ServerSettings serverSettings) {
         InetAddress inetaddress;
         try {
-            inetaddress = InetAddress.getByName(hostname);
-            networkSystem.startup(inetaddress, port);
-            log.info("Set server address {}:{}", hostname, port);
+            inetaddress = InetAddress.getByName(serverSettings.getHostName());
+            networkSystem.startup(inetaddress, serverSettings.getPort());
+            log.info("Set server address {}:{}", serverSettings.getHostName(), serverSettings.getPort());
         } catch (UnknownHostException e) {
-            throw new IllegalStateException("Can't start server on address " + hostname + ":" + port, e);
+            throw new IllegalStateException("Can't start server on address " + serverSettings.getHostName() + ":" + serverSettings.getPort(), e);
         }
+
+        databaseRSocketClient.connect(serverSettings.getDataBaseServiceHost(), serverSettings.getDatabaseServicePort());
     }
 
     @Override
     protected void update() {
         profiler.startSection("update");
-        if (!local || !pause) world.update();
+        updateWorld();
         profiler.endStartSection("network");
         networkSystem.update();
         profiler.endSection();
+    }
+
+    protected void updateWorld() {
+        world.update();
+    }
+
+    public void onPlayerDisconnected(Player player) {
+        world.removePlayer(player);
+        playerService.removePlayer(player.getUsername());
+        playerService.save(player);
+        List<Ship> ships = player.getShips();
+        for (int i = 0, shipsSize = ships.size(); i < shipsSize; i++) {
+            Ship s = ships.get(i);
+            s.setOwner(null);
+            s.setDead(true);
+            networkSystem.sendUDPPacketToAllNearby(new PacketRemoveObject(s), s.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        }
     }
 
     @Override
@@ -146,19 +126,20 @@ public class Server extends Loop {
         ups = fps;
     }
 
+    public void setPause(boolean pause) {
+        this.pause = pause;
+    }
+
     @Override
     protected void clear() {
         super.clear();
         log.info("Terminating network...");
         networkSystem.shutdown();
+        databaseRSocketClient.clear();
         log.info("Saving database...");
         playerService.save();
         log.info("Clearing world...");
         world.clear();
-        log.info("Stopping spring boot...");
-        SpringContext.stop();
-        log.info("Clearing spring context...");
-        SpringContext.clear();
         log.info("Stopped");
     }
 

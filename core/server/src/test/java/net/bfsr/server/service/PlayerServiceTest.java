@@ -1,42 +1,54 @@
 package net.bfsr.server.service;
 
+import net.bfsr.database.Main;
 import net.bfsr.faction.Faction;
-import net.bfsr.server.DedicatedServerSpringApplication;
 import net.bfsr.server.dto.PlayerModel;
 import net.bfsr.server.player.Player;
-import net.bfsr.server.repository.PlayerRepository;
+import net.bfsr.server.rsocket.RSocketClient;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.boot.test.rsocket.server.LocalRSocketServerPort;
+import org.springframework.messaging.rsocket.RSocketRequester;
+import org.springframework.messaging.rsocket.RSocketStrategies;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@Testcontainers(disabledWithoutDocker = true)
-@ContextConfiguration(classes = DedicatedServerSpringApplication.class)
+@SpringBootTest(classes = Main.class)
+@Testcontainers
+@DirtiesContext
 public class PlayerServiceTest {
     @Container
-    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.5");
-    @Autowired
-    private PlayerRepository playerRepository;
+    private static final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.5");
     private PlayerService playerService;
+    private static final RSocketClient rSocketClient = new RSocketClient();
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
         dynamicPropertyRegistry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
     }
 
+    @BeforeAll
+    static void setup(@Autowired RSocketRequester.Builder builder, @LocalRSocketServerPort Integer port, @Autowired RSocketStrategies strategies) {
+        rSocketClient.connect("localhost", port);
+    }
+
     @BeforeEach
     void setup() {
-        playerRepository.deleteAll();
-        playerService = new PlayerService(playerRepository);
+        rSocketClient.fireAndForget("delete-all", Void.class).block();
+        playerService = new PlayerService(rSocketClient);
     }
 
     @Test
@@ -49,24 +61,15 @@ public class PlayerServiceTest {
     }
 
     @Test
-    void saveSimplePlayer() {
+    void savePlayer() {
         Faction faction = Faction.HUMAN;
         String username = "test";
 
         Player player = playerService.registerPlayer(username, "");
         player.setFaction(faction);
-        playerService.save(player);
+        Mono<PlayerModel> mono = playerService.save(player);
 
-        assertThat(playerRepository.findAll().size()).isEqualTo(1);
-
-        PlayerModel playerModel = playerRepository.findByName(username);
-
-        assertThat(playerModel).isNotNull();
-        assertThat(playerModel.id()).isNotNull();
-        assertThat(playerModel.name()).isEqualTo(username);
-        assertThat(playerModel.faction()).isEqualTo(faction);
-        assertThat(playerModel.ships()).isNotNull();
-        assertThat(playerModel.ships().size()).isEqualTo(0);
+        StepVerifier.create(mono).expectNextCount(1).verifyComplete();
     }
 
     @Test
@@ -85,7 +88,7 @@ public class PlayerServiceTest {
         Faction faction = Faction.HUMAN;
         Player player = new Player(username);
         player.setFaction(faction);
-        playerService.save(player);
+        playerService.save(player).block();
 
         String result = playerService.authUser(username, "");
         assertThat(result).isNull();
@@ -103,8 +106,13 @@ public class PlayerServiceTest {
     void saveAllPlayers() {
         playerService.authUser("test", "");
         playerService.authUser("test1", "");
-        playerService.save();
-        assertThat(playerRepository.findAll().size()).isEqualTo(2);
+        List<Mono<PlayerModel>> monos = playerService.save();
+        assertThat(monos.size()).isEqualTo(2);
+
+        for (int i = 0; i < monos.size(); i++) {
+            Mono<PlayerModel> mono = monos.get(i);
+            StepVerifier.create(mono).expectNextCount(1).verifyComplete();
+        }
     }
 
     @Test

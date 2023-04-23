@@ -13,3 +13,7 @@
 /core/server/src/main/generated/
 /editor/build/
 /editor/out/
+/mongodb-service/build/
+/mongodb-service/out/
+/common-server-data-model/build/
+/common-server-data-model/out/

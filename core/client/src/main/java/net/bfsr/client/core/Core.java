@@ -4,6 +4,8 @@ import com.google.common.util.concurrent.ListenableFutureTask;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.client.LocalServer;
+import net.bfsr.client.ThreadLocalServer;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.ingame.GuiInGame;
 import net.bfsr.client.gui.menu.GuiMainMenu;
@@ -27,8 +29,6 @@ import net.bfsr.entity.wreck.WreckRegistry;
 import net.bfsr.network.ConnectionState;
 import net.bfsr.network.PacketOut;
 import net.bfsr.profiler.Profiler;
-import net.bfsr.server.core.Server;
-import net.bfsr.server.local.ThreadLocalServer;
 import net.bfsr.util.PathHelper;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -75,7 +75,7 @@ public class Core {
     @Getter
     private String playerName;
     @Getter
-    private Server localServer;
+    private LocalServer localServer;
 
     private final Queue<ListenableFutureTask<?>> futureTasks = new ConcurrentLinkedQueue<>();
     @Setter
@@ -151,14 +151,15 @@ public class Core {
 
     private void startLocalServer() {
         playerName = "Local Player";
-        ThreadLocalServer threadLocalServer = new ThreadLocalServer();
+        localServer = new LocalServer();
+        ThreadLocalServer threadLocalServer = new ThreadLocalServer(localServer);
         threadLocalServer.setName("Local Server");
         threadLocalServer.start();
-        waitServerStart(threadLocalServer);
+        waitServerStart();
     }
 
-    private void waitServerStart(ThreadLocalServer threadLocalServer) {
-        while ((localServer = threadLocalServer.getServer()) == null || !localServer.isRunning()) {
+    private void waitServerStart() {
+        while (!localServer.isRunning()) {
             try {
                 Thread.sleep(1);
             } catch (InterruptedException e) {

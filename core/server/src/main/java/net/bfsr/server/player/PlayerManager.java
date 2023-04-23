@@ -1,4 +1,4 @@
-package net.bfsr.server;
+package net.bfsr.server.player;
 
 import lombok.Getter;
 import net.bfsr.faction.Faction;
@@ -8,7 +8,6 @@ import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.entity.ship.ShipEngiSmall0;
 import net.bfsr.server.entity.ship.ShipHumanSmall0;
 import net.bfsr.server.entity.ship.ShipSaimonSmall0;
-import net.bfsr.server.player.Player;
 import net.bfsr.server.world.WorldServer;
 
 public class PlayerManager {

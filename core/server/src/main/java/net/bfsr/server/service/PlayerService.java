@@ -4,22 +4,21 @@ import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.server.core.SpringContext;
 import net.bfsr.server.dto.PlayerModel;
 import net.bfsr.server.dto.converter.PlayerConverter;
 import net.bfsr.server.player.Player;
-import net.bfsr.server.repository.PlayerRepository;
+import net.bfsr.server.rsocket.RSocketClient;
+import reactor.core.publisher.Mono;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Log4j2
 @RequiredArgsConstructor
 public class PlayerService {
     private final TMap<String, Player> loadedPlayersMap = new THashMap<>();
 
-    private final PlayerRepository playerRepository;
-
-    public PlayerService() {
-        this(SpringContext.getBean(PlayerRepository.class));
-    }
+    private final RSocketClient databaseRSocketClient;
 
     public Player registerPlayer(String playerName, String password) {
         Player player = new Player(playerName);
@@ -32,7 +31,7 @@ public class PlayerService {
             return null;
         }
 
-        PlayerModel playerModel = playerRepository.findByName(playerName);
+        PlayerModel playerModel = databaseRSocketClient.request("player", playerName, PlayerModel.class).block();
         Player player;
         if (playerModel != null) {
             player = PlayerConverter.INSTANCE.from(playerModel);
@@ -44,20 +43,23 @@ public class PlayerService {
         return null;
     }
 
-    public void save(Player player) {
+    public Mono<PlayerModel> save(Player player) {
         PlayerModel playerModel = PlayerConverter.INSTANCE.to(player);
-        playerRepository.save(playerModel);
+        return databaseRSocketClient.request("save-player", playerModel, PlayerModel.class);
     }
 
-    public void save() {
-        saveUsers();
+    public List<Mono<PlayerModel>> save() {
+        return saveUsers();
     }
 
-    private void saveUsers() {
+    private List<Mono<PlayerModel>> saveUsers() {
+        List<Mono<PlayerModel>> monos = new ArrayList<>(loadedPlayersMap.size());
         loadedPlayersMap.forEachValue(object -> {
-            save(object);
+            monos.add(save(object));
             return true;
         });
+
+        return monos;
     }
 
     public Player getPlayer(String username) {

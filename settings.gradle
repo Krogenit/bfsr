@@ -1,2 +1,2 @@
 rootProject.name = 'BFSR'
-include 'dyn4j', 'core:common', 'core:server', 'core:client', 'editor'
+include 'dyn4j', 'core:common', 'core:server', 'core:client', 'editor', 'mongodb-service', 'common-server-data-model'

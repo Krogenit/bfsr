@@ -17,7 +17,6 @@ import net.bfsr.server.core.Server;
 import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.network.packet.PacketIn;
 import net.bfsr.server.network.packet.common.PacketKeepAlive;
-import net.bfsr.server.network.packet.server.entity.PacketRemoveObject;
 import net.bfsr.server.network.packet.server.gui.PacketOpenGui;
 import net.bfsr.server.network.packet.server.login.PacketDisconnectLogin;
 import net.bfsr.server.network.packet.server.login.PacketJoinGame;
@@ -232,21 +231,7 @@ public class PlayerNetworkHandler {
     public void onDisconnected() {
         if (connectionStateBeforeDisconnect == ConnectionState.PLAY) {
             log.info("{} lost connection: {}", player, terminationReason);
-            server.getWorld().removePlayer(player);
-            server.getPlayerService().removePlayer(player.getUsername());
-            server.getPlayerService().save(player);
-            List<Ship> ships = player.getShips();
-            for (int i = 0, shipsSize = ships.size(); i < shipsSize; i++) {
-                Ship s = ships.get(i);
-                s.setOwner(null);
-                s.setDead(true);
-                server.getNetworkSystem().sendUDPPacketToAllNearby(new PacketRemoveObject(s), s.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
-            }
-
-            if (server.isLocal()) {
-                log.info("Stopping local server");
-                server.stop();
-            }
+            server.onPlayerDisconnected(player);
         } else {
             log.info("{} lost connection: {}", socketChannel.remoteAddress(), terminationReason);
         }
