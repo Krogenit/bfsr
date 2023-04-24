@@ -17,7 +17,6 @@ public final class WreckSpawner {
     public static final Vector2f CACHED_VECTOR = new Vector2f();
 
     public static final ObjectPool<Wreck> PARTICLE_WREAK_POOL = new ObjectPool<>();
-    public static final ObjectPool<ShipWreck> PARTICLE_SHIP_WREAK_POOL = new ObjectPool<>();
 
     public static void spawnDestroyShipSmall(Ship ship) {
         Vector2f pos = ship.getPosition();
@@ -26,22 +25,6 @@ public final class WreckSpawner {
         Random rand = w.getRand();
         spawnDamageDebris(w, rand.nextInt(3), pos.x, pos.y, velocity.x * 0.025f, velocity.y * 0.025f, 1.0f);
         spawnDamageWrecks(w, rand.nextInt(2), pos.x, pos.y, velocity.x * 0.25f, velocity.y * 0.25f);
-//        Vector2 bodyVelocity = ship.getBody().getLinearVelocity();
-//        float rot = ship.getRotation();
-//        if (rand.nextInt(2) == 0) {
-//            spawnShipWreck(ship, 0, pos.x, pos.y, rot, -rot * 3.0f + (float) bodyVelocity.x * 0.4f, -rot * 3.0f + (float) bodyVelocity.y * 0.4f, 750.0f);
-//        }
-//
-//        if (rand.nextInt(2) == 0) {
-//            spawnShipWreck(ship, 1, pos.x, pos.y, rot, rot * 3.0f - (float) bodyVelocity.x * 0.4f, rot * 3.0f - (float) bodyVelocity.y * 0.4f, 750.0f);
-//        }
-    }
-
-    public static void spawnShipWreck(Ship s, int wreckIndex, float x, float y, float angle, float velocityX, float velocityY, float lifeTime) {
-        float angleVel = (-0.005f + RAND.nextFloat() / 200.0f) * 60.0f;
-        ShipWreck wreck = PARTICLE_SHIP_WREAK_POOL.getOrCreate(ShipWreck::new).init(s.getWorld().getNextId(), wreckIndex, s, x, y, velocityX, velocityY, angle, angleVel,
-                s.getScale().x, s.getScale().y, lifeTime);
-        Server.getInstance().getNetworkSystem().sendUDPPacketToAllNearby(new PacketSpawnWreck(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
     public static void spawnDamageDebris(WorldServer world, int count, float x, float y, float velocityX, float velocityY, float size) {

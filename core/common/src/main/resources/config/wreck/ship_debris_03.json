@@ -1,0 +1,28 @@
+{
+  "name": "ship_debris_03",
+  "type": "SMALL",
+  "texturePath": "texture/particle/wreck/ship_debris_03.png",
+  "fireTexturePath": "texture/particle/wreck/ship_debris_ember_03.png",
+  "vertices": [
+    {
+      "x": -0.1203,
+      "y": 0.3247
+    },
+    {
+      "x": -0.3737,
+      "y": -0.2220
+    },
+    {
+      "x": -0.0837,
+      "y": -0.4487
+    },
+    {
+      "x": 0.3963,
+      "y": -0.2620
+    },
+    {
+      "x": 0.2763,
+      "y": 0.3113
+    }
+  ]
+}

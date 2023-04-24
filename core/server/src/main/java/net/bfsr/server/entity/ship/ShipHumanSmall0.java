@@ -9,8 +9,8 @@ import net.bfsr.component.cargo.Cargo;
 import net.bfsr.component.crew.Crew;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.component.reactor.Reactor;
-import net.bfsr.component.shield.ShieldRegistry;
-import net.bfsr.config.component.ShieldConfig;
+import net.bfsr.config.component.ShieldData;
+import net.bfsr.config.component.ShieldRegistry;
 import net.bfsr.entity.ship.ShipType;
 import net.bfsr.math.Direction;
 import net.bfsr.server.component.Shield;
@@ -45,8 +45,8 @@ public class ShipHumanSmall0 extends Ship {
         armor.setArmorPlateByDir(Direction.RIGHT, new ArmorPlate(25.0f, 0.45f, 1.15f));
         setArmor(armor);
 
-        ShieldConfig shieldConfig = ShieldRegistry.INSTANCE.getShield("humanSmall0");
-        Shield shield = new Shield(this, shieldConfig);
+        ShieldData shieldData = ShieldRegistry.INSTANCE.get("humanSmall0");
+        Shield shield = new Shield(this, shieldData);
         setShield(shield);
         shield.createBody();
 

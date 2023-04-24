@@ -7,7 +7,6 @@ import net.bfsr.entity.GameObject;
 import net.bfsr.math.Direction;
 import net.bfsr.server.entity.bullet.Bullet;
 import net.bfsr.server.entity.ship.Ship;
-import net.bfsr.server.entity.wreck.ShipWreck;
 import net.bfsr.server.entity.wreck.Wreck;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.PacketIn;
@@ -43,8 +42,6 @@ public class PacketNeedObjectInfo implements PacketIn {
                 }
             } else if (obj instanceof Bullet bullet) {
                 playerNetworkHandler.sendTCPPacket(new PacketSpawnBullet(bullet));
-            } else if (obj instanceof ShipWreck shipWreck) {
-                playerNetworkHandler.sendTCPPacket(new PacketSpawnWreck(shipWreck));
             } else if (obj instanceof Wreck wreck) {
                 playerNetworkHandler.sendTCPPacket(new PacketSpawnWreck(wreck));
             }

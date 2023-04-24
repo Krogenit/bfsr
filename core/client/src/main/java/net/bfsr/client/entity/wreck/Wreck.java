@@ -13,11 +13,10 @@ import net.bfsr.client.renderer.buffer.BufferType;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.client.world.WorldClient;
-import net.bfsr.entity.wreck.RegisteredShipWreck;
-import net.bfsr.entity.wreck.WreckRegistry;
+import net.bfsr.config.entity.wreck.WreckData;
+import net.bfsr.config.entity.wreck.WreckRegistry;
 import net.bfsr.entity.wreck.WreckType;
 import net.bfsr.physics.PhysicsUtils;
-import net.bfsr.util.PathHelper;
 import net.bfsr.util.TimeUtils;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
@@ -52,7 +51,7 @@ public class Wreck extends CollisionObject {
 
     @Getter
     private WreckType wreckType;
-    protected RegisteredShipWreck registeredShipWreck;
+    protected WreckData wreckData;
 
     @Getter
     private Texture textureFire, textureLight;
@@ -68,7 +67,7 @@ public class Wreck extends CollisionObject {
 
     public Wreck init(WorldClient world, int id, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY, float r, float g, float b,
                       float a, float alphaVelocity, int wreckIndex, boolean fire, boolean light, boolean emitFire, float hull, int destroyedShipId,
-                      WreckType wreckType, RegisteredShipWreck registeredShipWreck) {
+                      WreckType wreckType, WreckData wreckData) {
         this.world = world;
         this.id = id;
         this.position.set(x, y);
@@ -94,16 +93,16 @@ public class Wreck extends CollisionObject {
         this.random = world.getRand();
         this.lifeTime = 0;
         this.wreckType = wreckType;
-        this.registeredShipWreck = registeredShipWreck;
+        this.wreckData = wreckData;
         this.isDead = false;
         this.lastColor.set(color);
         this.colorFire.set(fire ? 1.0f : 0.0f);
         this.lastColorFire.set(colorFire);
         this.colorLight.set(1.0f, 1.0f, 1.0f, 0.0f);
         this.lastColorLight.set(colorLight);
-        this.texture = TextureLoader.getTexture(PathHelper.convertPath(registeredShipWreck.getTexture()));
-        this.textureFire = TextureLoader.getTexture(PathHelper.convertPath(registeredShipWreck.getFireTexture()));
-        this.textureLight = registeredShipWreck.getSparkleTexture() != null ? TextureLoader.getTexture(PathHelper.convertPath(registeredShipWreck.getSparkleTexture())) : null;
+        this.texture = TextureLoader.getTexture(wreckData.getTexture());
+        this.textureFire = TextureLoader.getTexture(wreckData.getFireTexture());
+        this.textureLight = wreckData.getSparkleTexture() != null ? TextureLoader.getTexture(wreckData.getSparkleTexture()) : null;
         this.sparkleActivationTimer = light ? 200.0f + world.getRand().nextInt(200) : 0.0f;
         createFixtures(angularVelocity);
         world.getParticleManager().addParticle(this);
@@ -113,7 +112,7 @@ public class Wreck extends CollisionObject {
 
     public Wreck init(int wreckIndex, boolean light, boolean fire, boolean fireExplosion, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity,
                       float scaleX, float scaleY, float r, float g, float b, float a, float alphaVelocity, int id, WreckType wreckType) {
-        RegisteredShipWreck wreck = WreckRegistry.INSTANCE.getWreck(wreckType, wreckIndex);
+        WreckData wreck = WreckRegistry.INSTANCE.getWreck(wreckType, wreckIndex);
         return init(Core.get().getWorld(), id, x, y, velocityX, velocityY, rotation, angularVelocity, scaleX, scaleY, r, g, b, a, alphaVelocity, wreckIndex, fire, light, fireExplosion, 10,
                 0, wreckType, wreck);
     }
@@ -141,7 +140,7 @@ public class Wreck extends CollisionObject {
     }
 
     protected void createFixture() {
-        Polygon p = Geometry.scale(registeredShipWreck.getPolygon(), scale.x);
+        Polygon p = Geometry.scale(wreckData.getPolygon(), scale.x);
         BodyFixture bodyFixture = new BodyFixture(p);
         bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         bodyFixture.setFilter(new WreckFilter(this));

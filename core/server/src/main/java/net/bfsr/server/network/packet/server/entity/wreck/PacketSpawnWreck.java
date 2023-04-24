@@ -12,16 +12,15 @@ import java.io.IOException;
 
 @NoArgsConstructor
 public class PacketSpawnWreck implements PacketOut {
-    protected int id, destroyedShipId;
+    protected int id;
     protected int wreckIndex;
     protected boolean isFire, isLight, isFireExplosion;
-    protected float rot, alphaVelocity, rotationSpeed, wreckLifeTime, wreckMaxLifeTime;
+    protected float rot, alphaVelocity, rotationSpeed;
     protected Vector2f pos, velocity, size;
     protected WreckType wreckType;
 
     public PacketSpawnWreck(Wreck p) {
         this.id = p.getId();
-        this.destroyedShipId = p.getDestroyedShipId();
         this.wreckIndex = p.getWreckIndex();
         this.isFire = p.isFire();
         this.isLight = p.isLight();
@@ -42,16 +41,10 @@ public class PacketSpawnWreck implements PacketOut {
         data.writeInt(wreckIndex);
         data.writeByte(wreckType.ordinal());
 
-        if (wreckType == WreckType.SHIP) {
-            data.writeFloat(wreckLifeTime);
-            data.writeFloat(wreckMaxLifeTime);
-            data.writeInt(destroyedShipId);
-        } else {
-            data.writeBoolean(isFire);
-            data.writeBoolean(isLight);
-            data.writeBoolean(isFireExplosion);
-            data.writeFloat(alphaVelocity);
-        }
+        data.writeBoolean(isFire);
+        data.writeBoolean(isLight);
+        data.writeBoolean(isFireExplosion);
+        data.writeFloat(alphaVelocity);
 
         ByteBufUtils.writeVector(data, pos);
         ByteBufUtils.writeVector(data, velocity);

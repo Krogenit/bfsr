@@ -11,12 +11,9 @@ import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.entity.ship.ShipEngiSmall0;
 import net.bfsr.server.entity.ship.ShipHumanSmall0;
 import net.bfsr.server.entity.ship.ShipSaimonSmall0;
-import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.PacketIn;
-import net.bfsr.server.player.Player;
 import net.bfsr.server.world.WorldServer;
-import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
 import java.io.IOException;
@@ -84,14 +81,6 @@ public class PacketCommand implements PacketIn {
                 ship.setFaction(fact);
                 ship.setName("[BOT] " + ship.getFaction().toString());
                 ship.sendSpawnPacket();
-                return;
-            case SPAWN_PARTICLE:
-                Player player = playerNetworkHandler.getPlayer();
-                pos = new Vector2f(Float.parseFloat(args[0]), Float.parseFloat(args[1]));
-                Vector2 linearVelocity = player.getPlayerShip().getBody().getLinearVelocity();
-                float rot = player.getPlayerShip().getRotation();
-                WreckSpawner.spawnShipWreck(player.getPlayerShip(), 0, pos.x, pos.y, rot, -rot * 30.0f + (float) linearVelocity.x * 0.8f,
-                        -rot * 30.0f + (float) linearVelocity.y * 0.8f, 750.0f);
         }
     }
 }

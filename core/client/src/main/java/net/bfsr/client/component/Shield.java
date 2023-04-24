@@ -9,8 +9,7 @@ import net.bfsr.client.renderer.buffer.BufferType;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
 import net.bfsr.component.shield.ShieldCommon;
-import net.bfsr.config.component.ShieldConfig;
-import net.bfsr.util.PathHelper;
+import net.bfsr.config.component.ShieldData;
 import net.bfsr.util.TimeUtils;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -23,9 +22,9 @@ public class Shield extends ShieldCommon {
     private final Vector4f color;
     private final Ship ship;
 
-    public Shield(Ship ship, ShieldConfig shieldConfig, float r, float g, float b, float a) {
+    public Shield(Ship ship, ShieldData shieldConfig, float r, float g, float b, float a) {
         super(ship.getBody(), shieldConfig.getMaxShield(), shieldConfig.getShieldRegen(), shieldConfig.getRebuildTime());
-        this.texture = TextureLoader.getTexture(PathHelper.convertPath(shieldConfig.getTexture()));
+        this.texture = TextureLoader.getTexture(shieldConfig.getTexturePath());
         this.color = new Vector4f(r, g, b, a);
         this.ship = ship;
     }

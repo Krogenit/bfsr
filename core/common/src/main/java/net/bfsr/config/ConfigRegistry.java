@@ -2,6 +2,7 @@ package net.bfsr.config;
 
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
+import net.bfsr.util.PathHelper;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -17,8 +18,8 @@ public class ConfigRegistry<CONFIG_TYPE, DATA_TYPE> {
     private final Function<CONFIG_TYPE, String> nameFunction;
     private final BiFunction<CONFIG_TYPE, Integer, DATA_TYPE> mapFunction;
 
-    public ConfigRegistry(Path folder, Class<CONFIG_TYPE> configClass, Function<CONFIG_TYPE, String> nameFunction, BiFunction<CONFIG_TYPE, Integer, DATA_TYPE> mapFunction) {
-        this.folder = folder;
+    public ConfigRegistry(String folder, Class<CONFIG_TYPE> configClass, Function<CONFIG_TYPE, String> nameFunction, BiFunction<CONFIG_TYPE, Integer, DATA_TYPE> mapFunction) {
+        this.folder = PathHelper.CONFIG.resolve(folder);
         this.configClass = configClass;
         this.nameFunction = nameFunction;
         this.mapFunction = mapFunction;
@@ -31,11 +32,15 @@ public class ConfigRegistry<CONFIG_TYPE, DATA_TYPE> {
     private void add(CONFIG_TYPE config) {
         try {
             DATA_TYPE data = mapFunction.apply(config, list.size());
-            list.add(data);
-            registry.put(nameFunction.apply(config), data);
+            add(data, nameFunction.apply(config));
         } catch (Exception e) {
             throw new RuntimeException("Can't map config " + config + " to data", e);
         }
+    }
+
+    protected void add(DATA_TYPE data, String name) {
+        list.add(data);
+        registry.put(name, data);
     }
 
     public DATA_TYPE get(String key) {

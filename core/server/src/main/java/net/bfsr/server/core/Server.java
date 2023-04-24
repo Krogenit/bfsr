@@ -2,12 +2,12 @@ package net.bfsr.server.core;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.component.shield.ShieldRegistry;
 import net.bfsr.config.bullet.BulletRegistry;
+import net.bfsr.config.component.ShieldRegistry;
+import net.bfsr.config.entity.wreck.WreckRegistry;
 import net.bfsr.config.weapon.beam.BeamRegistry;
 import net.bfsr.config.weapon.gun.GunRegistry;
 import net.bfsr.core.Loop;
-import net.bfsr.entity.wreck.WreckRegistry;
 import net.bfsr.profiler.Profiler;
 import net.bfsr.server.config.ServerSettings;
 import net.bfsr.server.entity.ship.Ship;
@@ -18,7 +18,6 @@ import net.bfsr.server.player.PlayerManager;
 import net.bfsr.server.rsocket.RSocketClient;
 import net.bfsr.server.service.PlayerService;
 import net.bfsr.server.world.WorldServer;
-import net.bfsr.util.PathHelper;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -69,8 +68,8 @@ public abstract class Server extends Loop {
     protected void init() {
         profiler.setEnable(true);
         networkSystem.init();
-        WreckRegistry.INSTANCE.init(PathHelper.CONFIG);
-        ShieldRegistry.INSTANCE.init(PathHelper.CONFIG);
+        WreckRegistry.INSTANCE.init();
+        ShieldRegistry.INSTANCE.init();
         BulletRegistry.INSTANCE.init();
         GunRegistry.INSTANCE.init();
         BeamRegistry.INSTANCE.init();

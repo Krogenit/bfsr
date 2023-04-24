@@ -1,8 +1,8 @@
 package net.bfsr.server.entity.wreck;
 
 import lombok.Getter;
-import net.bfsr.entity.wreck.RegisteredShipWreck;
-import net.bfsr.entity.wreck.WreckRegistry;
+import net.bfsr.config.entity.wreck.WreckData;
+import net.bfsr.config.entity.wreck.WreckRegistry;
 import net.bfsr.entity.wreck.WreckType;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.server.collision.filter.WreckFilter;
@@ -43,11 +43,11 @@ public class Wreck extends CollisionObject {
 
     @Getter
     private WreckType wreckType;
-    protected RegisteredShipWreck registeredShipWreck;
+    protected WreckData wreckData;
 
     public Wreck init(WorldServer world, int id, float x, float y, float velocityX, float velocityY, float rotation, float angularVelocity, float scaleX, float scaleY,
                       float lifeTime, float lifeTimeVelocity, int wreckIndex, boolean fire, boolean light, boolean fireExplosion, float hull, int destroyedShipId,
-                      WreckType wreckType, RegisteredShipWreck registeredShipWreck) {
+                      WreckType wreckType, WreckData wreckData) {
         this.world = world;
         this.id = id;
         this.position.set(x, y);
@@ -65,7 +65,7 @@ public class Wreck extends CollisionObject {
         this.lifeTime = 0;
         this.maxLifeTime = lifeTime;
         this.wreckType = wreckType;
-        this.registeredShipWreck = registeredShipWreck;
+        this.wreckData = wreckData;
         this.isDead = false;
         createFixtures(angularVelocity);
         world.addWreck(this);
@@ -102,7 +102,7 @@ public class Wreck extends CollisionObject {
     }
 
     protected void createFixture() {
-        Polygon p = Geometry.scale(registeredShipWreck.getPolygon(), scale.x);
+        Polygon p = Geometry.scale(wreckData.getPolygon(), scale.x);
         BodyFixture bodyFixture = new BodyFixture(p);
         bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         bodyFixture.setFilter(new WreckFilter(this));
