@@ -1,3 +1,3 @@
 package net.bfsr.server.dto;
 
-public record WeaponModel(String className) {}
+public record WeaponModel(String name) {}

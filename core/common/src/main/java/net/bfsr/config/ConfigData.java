@@ -7,6 +7,7 @@ import org.dyn4j.geometry.Vector2;
 @AllArgsConstructor
 @Getter
 public class ConfigData {
+    private final String name;
     private final int dataIndex;
 
     protected Vector2[] convertVertices(Vector2fConfigurable[] configurableVertices) {

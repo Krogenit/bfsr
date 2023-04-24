@@ -6,6 +6,7 @@ import net.bfsr.component.weapon.WeaponType;
 import net.bfsr.config.bullet.BulletData;
 import net.bfsr.config.bullet.BulletRegistry;
 import net.bfsr.config.weapon.gun.GunData;
+import net.bfsr.config.weapon.gun.GunRegistry;
 import net.bfsr.entity.GameObject;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.server.collision.filter.ShipFilter;
@@ -38,7 +39,7 @@ public class WeaponSlot extends GameObject {
     @Setter
     protected Vector2f localPosition;
     @Getter
-    private final int dataIndex;
+    protected final int dataIndex;
     private final Polygon polygon;
     @Getter
     private final WeaponType type;
@@ -55,7 +56,7 @@ public class WeaponSlot extends GameObject {
         this.bulletData = BulletRegistry.INSTANCE.get(gunData.getBulletData());
     }
 
-    protected WeaponSlot(GunData gunData) {
+    public WeaponSlot(GunData gunData) {
         this(gunData, WeaponType.GUN);
     }
 
@@ -117,6 +118,10 @@ public class WeaponSlot extends GameObject {
         float xPos = cos * x - sin * y;
         float yPos = sin * x + cos * y;
         position.set(xPos + shipPos.x, yPos + shipPos.y);
+    }
+
+    public GunData getData() {
+        return GunRegistry.INSTANCE.get(dataIndex);
     }
 
     public void clear() {

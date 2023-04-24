@@ -21,7 +21,7 @@ public class GunData extends ConfigData {
     private final String bulletData;
 
     public GunData(GunConfig config, int dataIndex) {
-        super(dataIndex);
+        super(config.name(), dataIndex);
         this.sizeX = config.size().x();
         this.sizeY = config.size().y();
         this.texturePath = PathHelper.CLIENT_CONTENT.resolve(config.texture());

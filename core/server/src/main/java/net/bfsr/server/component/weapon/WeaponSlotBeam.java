@@ -3,6 +3,7 @@ package net.bfsr.server.component.weapon;
 import lombok.Getter;
 import net.bfsr.component.weapon.WeaponType;
 import net.bfsr.config.weapon.beam.BeamData;
+import net.bfsr.config.weapon.beam.BeamRegistry;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.server.collision.filter.BeamFilter;
 import net.bfsr.server.core.Server;
@@ -124,4 +125,9 @@ public class WeaponSlotBeam extends WeaponSlot {
 
     @Override
     protected void createBullet() {}
+
+    @Override
+    public BeamData getData() {
+        return BeamRegistry.INSTANCE.get(dataIndex);
+    }
 }
