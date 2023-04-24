@@ -133,13 +133,13 @@ public abstract class Server extends Loop {
     @Override
     protected void clear() {
         super.clear();
+        log.info("Saving database...");
+        playerService.saveAllSync();
+        log.info("Clearing world...");
+        world.clear();
         log.info("Terminating network...");
         networkSystem.shutdown();
         databaseRSocketClient.clear();
-        log.info("Saving database...");
-        playerService.save();
-        log.info("Clearing world...");
-        world.clear();
         log.info("Stopped");
     }
 

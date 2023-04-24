@@ -48,6 +48,13 @@ public class PlayerService {
         return databaseRSocketClient.request("save-player", playerModel, PlayerModel.class);
     }
 
+    public void saveAllSync() {
+        List<Mono<PlayerModel>> monos = saveUsers();
+        for (int i = 0; i < monos.size(); i++) {
+            monos.get(i).block();
+        }
+    }
+
     public List<Mono<PlayerModel>> save() {
         return saveUsers();
     }
