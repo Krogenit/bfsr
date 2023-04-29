@@ -1,20 +1,21 @@
 package net.bfsr.util;
 
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.function.Supplier;
 
 public class ObjectPool<T> {
-    private final Stack<T> particles = new Stack<>();
+    private final Deque<T> particles = new ArrayDeque<>();
 
     public T getOrCreate(Supplier<T> supplier) {
-        if (particles.empty()) {
+        if (particles.isEmpty()) {
             return supplier.get();
         } else {
-            return particles.pop();
+            return particles.pollFirst();
         }
     }
 
     public void returnBack(T particle) {
-        particles.push(particle);
+        particles.addFirst(particle);
     }
 }
