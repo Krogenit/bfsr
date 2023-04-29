@@ -375,11 +375,6 @@ public class InspectionPanel<T extends PropertiesHolder> {
                 if (inspectionEntry.getName().equals(path)) {
                     return (InspectionEntry<T>) inspectionEntry;
                 }
-
-                InspectionEntry<T> entry = findEntry(inspectionEntry, path);
-                if (entry != null) {
-                    return entry;
-                }
             }
         }
 
