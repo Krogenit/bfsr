@@ -8,7 +8,7 @@ import org.mapstruct.Mapping;
 @Mapper(uses = ShipConverter.class)
 public interface PlayerConverter {
     @Mapping(source = "name", target = "username")
-    @Mapping(target = "playerShip", ignore = true)
+    @Mapping(target = "playerInputController", ignore = true)
     @Mapping(target = "networkHandler", ignore = true)
     @Mapping(target = "digest", ignore = true)
     Player from(PlayerModel playerModel);
