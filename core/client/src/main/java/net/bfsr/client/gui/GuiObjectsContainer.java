@@ -155,7 +155,7 @@ public class GuiObjectsContainer extends GuiObjectWithSubObjects implements GuiO
     public void render() {
         GUIRenderer.get().render();
         GL11C.glEnable(GL11C.GL_SCISSOR_TEST);
-        GL11C.glScissor(x, Core.get().getScreenHeight() - (y + height), width, height);
+        GL11C.glScissor(x, Core.get().getRenderer().getScreenHeight() - (y + height), width, height);
 
         for (int i = 0; i < guiObjects.size(); i++) {
             GuiObject guiObject = guiObjects.get(i);
@@ -241,12 +241,12 @@ public class GuiObjectsContainer extends GuiObjectWithSubObjects implements GuiO
 
     @Override
     public void openContextMenu(GuiObject... objects) {
-        Core.get().getCurrentGui().openContextMenu(objects);
+        Core.get().getGuiManager().getCurrentGui().openContextMenu(objects);
     }
 
     @Override
     public boolean isContextMenuOpened() {
-        return Core.get().getCurrentGui().isContextMenuOpened();
+        return Core.get().getGuiManager().getCurrentGui().isContextMenuOpened();
     }
 
     public int getScrollWidth() {

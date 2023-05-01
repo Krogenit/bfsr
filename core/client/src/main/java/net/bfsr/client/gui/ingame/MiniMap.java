@@ -1,13 +1,15 @@
 package net.bfsr.client.gui.ingame;
 
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.TexturedGuiObject;
+import net.bfsr.client.renderer.Renderer;
 import net.bfsr.client.renderer.gui.GUIRenderer;
+import net.bfsr.client.renderer.render.entity.ShipRender;
+import net.bfsr.client.world.WorldClient;
+import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
 import net.bfsr.texture.TextureRegister;
-import net.bfsr.world.World;
 import org.dyn4j.geometry.AABB;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -16,6 +18,7 @@ import org.lwjgl.opengl.GL11;
 import java.util.List;
 
 public class MiniMap {
+    private final Renderer renderer = Core.get().getRenderer();
     private final TexturedGuiObject map = new TexturedGuiObject(TextureRegister.guiHudShip);
 
     private final AABB boundingBox = new AABB(0);
@@ -30,9 +33,9 @@ public class MiniMap {
         gui.registerGuiObject(map);
     }
 
-    public void render(World world) {
+    public void render(WorldClient world) {
         List<Ship> ships = world.getShips();
-        Vector2f camPos = Core.get().getRenderer().getCamera().getPosition();
+        Vector2f camPos = renderer.getCamera().getPosition();
         float mapOffsetX = 600;
         float mapOffsetY = 600;
         boundingBox.set(camPos.x - mapOffsetX, camPos.y - mapOffsetY, camPos.x + mapOffsetX, camPos.y + mapOffsetY);
@@ -42,14 +45,14 @@ public class MiniMap {
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         int offsetY = 17;
         int offsetX = 22;
-        GL11.glScissor(map.getX() + offsetX, Core.get().getScreenHeight() - map.getHeight() + offsetY, map.getWidth() - (offsetX << 1), map.getHeight() - (offsetY << 1));
+        GL11.glScissor(map.getX() + offsetX, renderer.getScreenHeight() - map.getHeight() + offsetY, map.getWidth() - (offsetX << 1), map.getHeight() - (offsetY << 1));
 
         int miniMapX = map.getX() + map.getWidth() / 2;
         int miniMapY = map.getY() + map.getHeight() / 2;
         for (int i = 0; i < ships.size(); i++) {
             Ship s = ships.get(i);
             Vector2f pos = s.getPosition();
-            Vector2f scale = s.getScale();
+            Vector2f scale = s.getSize();
             float sX = scale.x * shipSize / 2.0f;
             float sY = scale.y * shipSize / 2.0f;
             shipAABB.set(pos.x - sX, pos.y - sY, pos.x + sX, pos.y + sY);
@@ -69,14 +72,16 @@ public class MiniMap {
                     color.z = 0.5f;
                 }
 
-                Vector2f lastPosition = s.getLastPosition();
+                ShipRender render = ((ShipRender) renderer.getRender(s.getId()));
+                Vector2f lastPosition = render.getLastPosition();
                 int lastX = (int) (miniMapX + (lastPosition.x - camPos.x) / mapScaleX);
                 int lastY = (int) (miniMapY + (lastPosition.y - camPos.y) / mapScaleY);
                 int x = (int) (miniMapX + (pos.x - camPos.x) / mapScaleX);
                 int y = (int) (miniMapY + (pos.y - camPos.y) / mapScaleY);
                 int sizeX = (int) (scale.x * shipSize);
                 int sizeY = (int) (scale.y * shipSize);
-                GUIRenderer.get().add(lastX, lastY, x, y, s.getLastSin(), s.getLastCos(), s.getSin(), s.getCos(), sizeX, sizeY, color.x, color.y, color.z, 1.0f, s.getTexture());
+                GUIRenderer.get().add(lastX, lastY, x, y, render.getLastSin(), render.getLastCos(), s.getSin(), s.getCos(), sizeX, sizeY,
+                        color.x, color.y, color.z, 1.0f, render.getTexture());
             }
         }
 

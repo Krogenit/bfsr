@@ -1,0 +1,40 @@
+{
+  "name": "laser_small",
+  "speed": 75.0,
+  "lifeTimeInSeconds": 0.84,
+  "size": {
+    "x": 2.4,
+    "y": 2.4
+  },
+  "texture": "texture/entity/bullet/smallLaser.png",
+  "damage": {
+    "armor": 2.5,
+    "average": 3.3333333,
+    "hull": 2.5,
+    "shield": 5.0
+  },
+  "color": {
+    "r": 1.0,
+    "g": 0.5,
+    "b": 0.5,
+    "a": 1.0
+  },
+  "vertices": [
+    {
+      "x": -0.6,
+      "y": -0.2
+    },
+    {
+      "x": 0.6,
+      "y": -0.2
+    },
+    {
+      "x": 0.6,
+      "y": 0.2
+    },
+    {
+      "x": -0.6,
+      "y": 0.2
+    }
+  ]
+}

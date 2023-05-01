@@ -2,24 +2,19 @@ package net.bfsr.client.camera;
 
 import lombok.Getter;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.ship.Ship;
-import net.bfsr.client.gui.Gui;
-import net.bfsr.client.input.Keyboard;
-import net.bfsr.client.input.Mouse;
-import net.bfsr.client.network.packet.client.PacketCameraPosition;
+import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.settings.Option;
 import net.bfsr.client.util.MatrixBufferUtils;
 import net.bfsr.math.MatrixUtils;
-import net.bfsr.util.TimeUtils;
 import org.dyn4j.geometry.AABB;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL31;
+import org.lwjgl.opengl.GL44;
+import org.lwjgl.opengl.GL45;
 
 import java.nio.FloatBuffer;
-import java.util.List;
-
-import static org.lwjgl.glfw.GLFW.*;
 
 public class Camera {
     public static final int UBO_CAMERA_MATRIX = 0;
@@ -39,6 +34,7 @@ public class Camera {
     @Getter
     private final Vector2f lastPosition = new Vector2f();
     private final Vector2f positionAndOrigin = new Vector2f();
+    @Getter
     private final Vector2f origin = new Vector2f();
     @Getter
     private float zoom = 10.0f;
@@ -46,19 +42,24 @@ public class Camera {
     private float lastZoom = zoom;
     private float zoomAccumulator;
 
+    @Getter
     private int width, height;
     private final Vector2f vectorInCamSpace = new Vector2f();
-    private long lastSendTime;
-    private Ship followShip;
 
     private int worldProjectionMatrixUBO;
     private int GUIProjectionMatrixUBO;
     private int projectionViewMatrixUBO;
     private int interpolatedProjectionViewMatrixUBO;
 
+    private Core core;
+    private GuiManager guiManager;
+
     public void init(int width, int height) {
         this.width = width;
         this.height = height;
+
+        this.core = core;
+        this.guiManager = guiManager;
 
         origin.set(-width / 2.0f, -height / 2.0f);
         boundingBox.set(position.x + origin.x, position.y + origin.y, position.x - origin.x, position.y - origin.y);
@@ -79,101 +80,13 @@ public class Camera {
         GL45.glNamedBufferStorage(interpolatedProjectionViewMatrixUBO, matrixBuffer, GL44.GL_DYNAMIC_STORAGE_BIT);
     }
 
-    @Deprecated
-    public void setupOpenGLMatrix() {
-        GL11.glMatrixMode(GL11.GL_PROJECTION);
-        GL11.glLoadIdentity();
-        GL11.glOrtho(-width / 2.0f, width / 2.0f, height / 2.0f, -height / 2.0f, Z_NEAR, Z_FAR);
-        GL11.glMatrixMode(GL11.GL_MODELVIEW);
-        GL11.glLoadIdentity();
-
-        GL11.glScalef(zoom, zoom, 1.0f);
-        GL11.glTranslatef(-position.x, -position.y, 0.0f);
+    public void zoom(float value) {
+        zoomAccumulator += value * Option.CAMERA_ZOOM_SPEED.getFloat() * (zoom + zoomAccumulator);
     }
 
-    private void followShip() {
-        Ship playerShip = Core.get().getWorld().getPlayerShip();
-        if (playerShip != null) {
-            Vector2f shipPosition = playerShip.getPosition();
-            float minDistance = 0.04f;
-            double dis = shipPosition.distanceSquared(position);
-            if (dis > minDistance) {
-                double mDx = shipPosition.x - position.x;
-                double mDy = shipPosition.y - position.y;
-                position.x += mDx * 3.0f * TimeUtils.UPDATE_DELTA_TIME;
-                position.y += mDy * 3.0f * TimeUtils.UPDATE_DELTA_TIME;
-            }
-        } else {
-            if (followShip == null || followShip.isDead()) {
-                findShipToFollow();
-            } else {
-                Vector2f shipPosition = followShip.getPosition();
-                double dis = shipPosition.distanceSquared(position);
-                float minDistance = 0.04f;
-                if (dis > minDistance) {
-                    double mDx = shipPosition.x - position.x;
-                    double mDy = shipPosition.y - position.y;
-                    float max = 400.0f;
-                    if (mDx < -max) mDx = -max;
-                    else if (mDx > max) mDx = max;
-                    if (mDy < -max) mDy = -max;
-                    else if (mDy > max) mDy = max;
-
-                    position.x += mDx * 3.0f * TimeUtils.UPDATE_DELTA_TIME;
-                    position.y += mDy * 3.0f * TimeUtils.UPDATE_DELTA_TIME;
-                }
-            }
-        }
-    }
-
-    private void findShipToFollow() {
-        Ship newShip = null;
-        if (Core.get().getWorld().getShips().size() > 0) {
-            float minDist = Float.MAX_VALUE;
-            List<Ship> ships = Core.get().getWorld().getShips();
-            for (int i = 0; i < ships.size(); i++) {
-                Ship s = ships.get(i);
-                float dist = s.getPosition().distance(position.x, position.y);
-                if (dist < minDist) {
-                    newShip = s;
-                    minDist = dist;
-                }
-            }
-
-            followShip = newShip;
-        }
-    }
-
-    private void moveByScreenBorders() {
-        float screenMoveSpeed = Option.CAMERA_MOVE_BY_SCREEN_BORDERS_SPEED.getFloat() / zoom;
-        float offset = Option.CAMERA_MOVE_BY_SCREEN_BORDERS_OFFSET.getFloat();
-        float moveSpeed = 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-        Vector2f cursorPosition = Mouse.getPosition();
-        if (cursorPosition.x <= offset) {
-            position.x -= screenMoveSpeed * moveSpeed;
-        } else if (cursorPosition.x >= width - offset) {
-            position.x += screenMoveSpeed * moveSpeed;
-        }
-
-        if (cursorPosition.y <= offset) {
-            position.y -= screenMoveSpeed * moveSpeed;
-        } else if (cursorPosition.y >= height - offset) {
-            position.y += screenMoveSpeed * moveSpeed;
-        }
-    }
-
-    public void scroll(float y) {
-        Gui currentGui = Core.get().getCurrentGui();
-        if (currentGui == null || currentGui.isAllowCameraZoom()) {
-            zoomAccumulator += y * Option.CAMERA_ZOOM_SPEED.getFloat() * (zoom + zoomAccumulator);
-        }
-    }
-
-    public void mouseMove(float dx, float dy) {
-        if (Mouse.isRightDown()) {
-            mouseMovingAccumulator.x -= dx / zoom;
-            mouseMovingAccumulator.y -= dy / zoom;
-        }
+    public void moveByMouse(float dx, float dy) {
+        mouseMovingAccumulator.x -= dx / zoom;
+        mouseMovingAccumulator.y -= dy / zoom;
     }
 
     public void update() {
@@ -184,41 +97,6 @@ public class Camera {
         position.x += mouseMovingAccumulator.x;
         position.y += mouseMovingAccumulator.y;
         mouseMovingAccumulator.set(0, 0);
-
-        if (Core.get().getWorld() != null) {
-            if (Core.get().canControlShip()) {
-                if (Option.CAMERA_MOVE_BY_SCREEN_BORDERS.getBoolean()) moveByScreenBorders();
-            }
-
-            boolean noShip = Core.get().getWorld().getPlayerShip() == null;
-            float keyMoveSpeed = Option.CAMERA_MOVE_BY_KEY_SPEED.getFloat();
-            boolean noScreen = Core.get().getCurrentGui() == null;
-            if (noScreen) {
-                if (Keyboard.isKeyDown(GLFW_KEY_LEFT) || (noShip && Keyboard.isKeyDown(GLFW_KEY_A))) {
-                    position.x -= keyMoveSpeed * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-                } else if (Keyboard.isKeyDown(GLFW_KEY_RIGHT) || (noShip && Keyboard.isKeyDown(GLFW_KEY_D))) {
-                    position.x += keyMoveSpeed * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-                }
-
-                if (Keyboard.isKeyDown(GLFW_KEY_UP) || (noShip && Keyboard.isKeyDown(GLFW_KEY_W))) {
-                    position.y -= keyMoveSpeed * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-                } else if (Keyboard.isKeyDown(GLFW_KEY_DOWN) || (noShip && Keyboard.isKeyDown(GLFW_KEY_S))) {
-                    position.y += keyMoveSpeed * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-                }
-            }
-
-            if (Option.CAMERA_FOLLOW_PLAYER.getBoolean()) followShip();
-
-            if (position.x != lastPosition.x || position.y != lastPosition.y || lastZoom != zoom) {
-                boundingBox.set(position.x + origin.x / zoom, position.y + origin.y / zoom, position.x - origin.x / zoom, position.y - origin.y / zoom);
-
-                long time = System.currentTimeMillis();
-                if (time - lastSendTime > 500) {
-                    Core.get().sendUDPPacket(new PacketCameraPosition(position.x, position.y));
-                    lastSendTime = time;
-                }
-            }
-        }
     }
 
     private void updateZoom() {
@@ -278,10 +156,6 @@ public class Camera {
         return positionAndOrigin;
     }
 
-    public void onExitToMainMenu() {
-        followShip = null;
-    }
-
     public void calculateInterpolatedViewMatrix(float interpolation) {
         float cameraX = lastPosition.x + (position.x - lastPosition.x) * interpolation;
         float cameraY = lastPosition.y + (position.y - lastPosition.y) * interpolation;
@@ -294,5 +168,9 @@ public class Camera {
         MatrixUtils.scale(viewMatrix.identity(), zoom, zoom);
         MatrixUtils.translate(viewMatrix, -position.x, -position.y);
         GL45.glNamedBufferSubData(projectionViewMatrixUBO, 0, orthographicMatrix.mul(viewMatrix, projectionViewMatrix).get(MatrixBufferUtils.MATRIX_BUFFER));
+    }
+
+    public void setBoundingBox(float minX, float minY, float maxX, float maxY) {
+        boundingBox.set(minX, minY, maxX, maxY);
     }
 }

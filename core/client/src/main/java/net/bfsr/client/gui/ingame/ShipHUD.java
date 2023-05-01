@@ -1,24 +1,26 @@
 package net.bfsr.client.gui.ingame;
 
 import lombok.Getter;
-import net.bfsr.client.component.Shield;
-import net.bfsr.client.component.weapon.WeaponSlot;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.ship.Ship;
+import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.button.Button;
+import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.network.packet.client.PacketShipControl;
+import net.bfsr.client.renderer.Renderer;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.string.StringObject;
 import net.bfsr.client.renderer.gui.GUIRenderer;
+import net.bfsr.client.renderer.render.entity.ShipRender;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
-import net.bfsr.client.world.WorldClient;
-import net.bfsr.component.Armor;
-import net.bfsr.component.ArmorPlate;
+import net.bfsr.component.armor.Armor;
+import net.bfsr.component.armor.ArmorPlate;
 import net.bfsr.component.reactor.Reactor;
-import net.bfsr.component.shield.ShieldCommon;
+import net.bfsr.component.shield.Shield;
+import net.bfsr.component.weapon.WeaponSlot;
+import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.texture.TextureRegister;
@@ -44,6 +46,11 @@ public class ShipHUD {
 
     private final Vector2f rotationVector = new Vector2f();
     private final Texture shieldTexture = TextureLoader.getTexture(TextureRegister.shieldSmall0);
+    private final Core core = Core.get();
+    private final PlayerInputController playerInputController = core.getInputHandler().getPlayerInputController();
+    private final Renderer renderer = core.getRenderer();
+    private final GUIRenderer guiRenderer = GUIRenderer.get();
+    private final GuiManager guiManager = core.getGuiManager();
 
     public void init(GuiInGame gui) {
         int scaleX = 280;
@@ -63,22 +70,21 @@ public class ShipHUD {
         gui.registerGuiObject(hudShipAdd0);
 
         Button buttonControl = new Button(TextureRegister.guiButtonControl, () -> {
-            WorldClient w = Core.get().getWorld();
-            Ship playerControlledShip = w.getPlayerShip();
+            Ship playerControlledShip = playerInputController.getShip();
             if (playerControlledShip != null) {
-                Core.get().sendTCPPacket(new PacketShipControl(playerControlledShip.getId(), false));
-                Core.get().getWorld().setPlayerShip(null);
-                Core.get().getWorld().disableShipDeselection();
+                core.sendTCPPacket(new PacketShipControl(playerControlledShip.getId(), false));
+                playerInputController.setShip(null);
+                playerInputController.disableShipDeselection();
                 selectShip(playerControlledShip);
                 onShipControlCanceled();
             } else if (currentShip != null && canControlShip(currentShip)) {
-                Core.get().getWorld().setPlayerShip(currentShip);
-                Core.get().sendTCPPacket(new PacketShipControl(currentShip.getId(), true));
+                playerInputController.setShip(currentShip);
+                core.sendTCPPacket(new PacketShipControl(currentShip.getId(), true));
             }
         }) {
             @Override
             public void updateMouseHover() {
-                if (Core.get().getCurrentGui() == null) {
+                if (guiManager.getCurrentGui() == null) {
                     super.updateMouseHover();
                 }
             }
@@ -86,10 +92,10 @@ public class ShipHUD {
         buttonControl.setSize(256, 40);
         buttonControl.atBottomRightCorner(-128 - hudShip.getWidth() / 2, -hudShip.getHeight() - 26);
 
-        if (Core.get().getWorld() != null && Core.get().getWorld().getPlayerShip() == null) {
-            controlText.setString(Lang.getString("gui.control"));
-        } else {
+        if (playerInputController.isControllingShip()) {
             controlText.setString(Lang.getString("gui.cancelControl"));
+        } else {
+            controlText.setString(Lang.getString("gui.control"));
         }
         gui.registerGuiObject(controlText.atBottomRightCorner(-hudShip.getWidth() / 2 - controlText.getWidth() / 2, -hudShip.getHeight() - 1));
         gui.registerGuiObject(buttonControl);
@@ -116,20 +122,21 @@ public class ShipHUD {
 
     private void renderShipInHUD(Ship ship, int x, int y, float shipSize) {
         float hull = ship.getHull().getHull() / ship.getHull().getMaxHull();
-        renderQuad(x, y, -MathUtils.HALF_PI, (int) (ship.getScale().x * shipSize), (int) (ship.getScale().y * shipSize), 1.0f - hull, hull, 0.0f, 1.0f, ship.getTexture());
+        Texture texture = renderer.getRender(ship.getId()).getTexture();
+        renderQuad(x, y, -MathUtils.HALF_PI, (int) (ship.getSize().x * shipSize), (int) (ship.getSize().y * shipSize), 1.0f - hull, hull, 0.0f, 1.0f, texture);
     }
 
     private void renderHullValue(Ship ship, int x, int y) {
-        textHull.setString(Math.round(ship.getHull().getHull()) + "");
+        textHull.setString(String.valueOf(Math.round(ship.getHull().getHull())));
         textHull.setPosition(x - textHull.getWidth() / 2, y + 16);
-        GUIRenderer.get().addCentered(x, y + 12, textHull.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture);
+        guiRenderer.addCentered(x, y + 12, textHull.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture);
         textHull.renderNoInterpolation();
     }
 
-    private void renderShieldValue(ShieldCommon shield, int x, int y) {
-        textShield.setString(Math.round(shield.getShield()) + "");
+    private void renderShieldValue(Shield shield, int x, int y) {
+        textShield.setString(String.valueOf(Math.round(shield.getShield())));
         textShield.setPosition(x - textShield.getWidth() / 2, y + 74);
-        GUIRenderer.get().addCentered(x, y + 70, textShield.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture);
+        guiRenderer.addCentered(x, y + 70, textShield.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture);
         textShield.renderNoInterpolation();
     }
 
@@ -155,13 +162,14 @@ public class ShipHUD {
         for (int i = 0; i < size; i++) {
             WeaponSlot slot = ship.getWeaponSlots().get(i);
             if (slot != null) {
-                float reload = slot.getReloadTimer() / slot.getTimeToReload();
+                float reload = slot.getReloadTimer() / (float) slot.getTimeToReload();
                 Vector2f pos = slot.getLocalPosition();
-                RotationHelper.rotate((float) (-Math.PI / 2.0f), pos.x, pos.y, rotationVector);
-                int slotWidth = (int) (slot.getScale().x * shipSize);
-                int slothHeight = (int) (slot.getScale().y * shipSize);
+                RotationHelper.rotate(-MathUtils.HALF_PI, pos.x, pos.y, rotationVector);
+                int slotWidth = (int) (slot.getSize().x * shipSize);
+                int slothHeight = (int) (slot.getSize().y * shipSize);
+                Texture texture = ((ShipRender) core.getRenderer().getRender(ship.getId())).getWeaponSlotTexture(i);
                 renderQuad((int) (x + rotationVector.x * shipSize), (int) (y + rotationVector.y * shipSize), -MathUtils.HALF_PI, slotWidth, slothHeight,
-                        reload, 0.0f, 1.0f - reload, 1.0f, slot.getTexture());
+                        reload, 0.0f, 1.0f - reload, 1.0f, texture);
             }
         }
     }
@@ -239,7 +247,7 @@ public class ShipHUD {
     }
 
     private boolean canControlShip(Ship s) {
-        return Core.get().getPlayerName().equals(s.getName());
+        return core.getPlayerName().equals(s.getName());
     }
 
     public void onShipControlStarted() {
@@ -256,11 +264,11 @@ public class ShipHUD {
     }
 
     private void renderQuad(int x, int y, float rot, int width, int height, float r, float g, float b, float a, Texture texture) {
-        GUIRenderer.get().add(x, y, rot, width, height, r, g, b, a, texture);
+        guiRenderer.add(x, y, rot, width, height, r, g, b, a, texture);
     }
 
     private void renderQuad(int x, int y, int width, int height, float r, float g, float b, float a, Texture texture) {
-        GUIRenderer.get().addCentered(x, y, width, height, r, g, b, a, texture);
+        guiRenderer.addCentered(x, y, width, height, r, g, b, a, texture);
     }
 
     public void resize() {

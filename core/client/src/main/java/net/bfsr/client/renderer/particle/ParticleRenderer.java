@@ -3,9 +3,8 @@ package net.bfsr.client.renderer.particle;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.particle.Particle;
-import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.renderer.SpriteRenderer;
+import net.bfsr.render.RenderLayer;
 import net.bfsr.util.MultithreadingUtils;
 import org.lwjgl.BufferUtils;
 
@@ -24,7 +23,7 @@ public class ParticleRenderer {
     private static final int START_PARTICLE_COUNT = 8192;
 
     private SpriteRenderer spriteRenderer = new SpriteRenderer();
-    private final List<Particle>[] particlesByRenderLayer = new List[4];
+    private final List<ParticleRender>[] particlesByRenderLayer = new List[4];
     private final ByteBuffer[] materialBuffers = new ByteBuffer[4];
     private final FloatBuffer[] vertexBuffers = new FloatBuffer[4];
     private ParticlesStoreTask[] particlesStoreTasks;
@@ -69,8 +68,8 @@ public class ParticleRenderer {
 
         for (int i = 0; i < RENDER_LAYERS.length; i++) {
             RenderLayer renderLayer = RENDER_LAYERS[i];
-            List<Particle> particles = particlesByRenderLayer[renderLayer.ordinal()];
-            int newDataSize = particles.size();
+            List<ParticleRender> renders = particlesByRenderLayer[renderLayer.ordinal()];
+            int newDataSize = renders.size();
 
             ByteBuffer materialBuffer = materialBuffers[renderLayer.ordinal()];
             while (materialBuffer.capacity() < newDataSize * SpriteRenderer.MATERIAL_DATA_SIZE_IN_BYTES) {
@@ -192,6 +191,19 @@ public class ParticleRenderer {
         }
     }
 
+    public void update() {
+        for (int i = 0; i < particlesByRenderLayer.length; i++) {
+            List<ParticleRender> renders = particlesByRenderLayer[i];
+            for (int i1 = 0; i1 < renders.size(); i1++) {
+                ParticleRender render = renders.get(i1);
+                render.update();
+                if (render.isDead()) {
+                    renders.remove(i1--);
+                }
+            }
+        }
+    }
+
     public void renderBackground() {
         waitTasks(backgroundTaskFutures);
         render(RenderLayer.BACKGROUND_ALPHA_BLENDED, RenderLayer.BACKGROUND_ADDITIVE);
@@ -222,12 +234,8 @@ public class ParticleRenderer {
         }
     }
 
-    public void addParticleToRenderLayer(Particle particle, RenderLayer renderLayer) {
-        getParticles(renderLayer).add(particle);
-    }
-
-    public void removeParticleFromRenderLayer(Particle particle, RenderLayer renderLayer) {
-        getParticles(renderLayer).remove(particle);
+    public void addParticleToRenderLayer(ParticleRender render, RenderLayer renderLayer) {
+        getParticles(renderLayer).add(render);
     }
 
     public void onExitToMainMenu() {
@@ -236,7 +244,7 @@ public class ParticleRenderer {
         }
     }
 
-    private List<Particle> getParticles(RenderLayer renderLayer) {
+    private List<ParticleRender> getParticles(RenderLayer renderLayer) {
         return particlesByRenderLayer[renderLayer.ordinal()];
     }
 

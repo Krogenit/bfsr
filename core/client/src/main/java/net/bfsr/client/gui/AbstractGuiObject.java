@@ -84,7 +84,7 @@ public abstract class AbstractGuiObject implements GuiObject {
     }
 
     public void updatePositionAndSize() {
-        updatePositionAndSize(Core.get().getScreenWidth(), Core.get().getScreenHeight());
+        updatePositionAndSize(Core.get().getRenderer().getScreenWidth(), Core.get().getRenderer().getScreenHeight());
     }
 
     public void updatePositionAndSize(int width, int height) {

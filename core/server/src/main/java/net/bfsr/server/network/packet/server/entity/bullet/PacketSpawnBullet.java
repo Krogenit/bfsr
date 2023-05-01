@@ -2,9 +2,9 @@ package net.bfsr.server.network.packet.server.entity.bullet;
 
 import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
+import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.network.PacketOut;
 import net.bfsr.network.util.ByteBufUtils;
-import net.bfsr.server.entity.bullet.Bullet;
 import org.joml.Vector2f;
 
 import java.io.IOException;
@@ -19,7 +19,7 @@ public class PacketSpawnBullet implements PacketOut {
 
     public PacketSpawnBullet(Bullet bullet) {
         this.id = bullet.getId();
-        this.dataIndex = bullet.getDataIndex();
+        this.dataIndex = bullet.getBulletData().getDataIndex();
         this.pos = bullet.getPosition();
         this.sin = bullet.getSin();
         this.cos = bullet.getCos();

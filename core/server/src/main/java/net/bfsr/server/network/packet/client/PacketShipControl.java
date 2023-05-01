@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import net.bfsr.entity.GameObject;
-import net.bfsr.server.entity.ship.Ship;
+import net.bfsr.entity.ship.Ship;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.PacketIn;
 
@@ -26,7 +26,11 @@ public class PacketShipControl implements PacketIn {
     public void processOnServerSide(PlayerNetworkHandler playerNetworkHandler) {
         GameObject obj = playerNetworkHandler.getWorld().getEntityById(id);
         if (obj instanceof Ship ship) {
-            ship.setControlledByPlayer(control);
+            if (control) {
+                playerNetworkHandler.getPlayer().getPlayerInputController().setShip(ship);
+            } else {
+                playerNetworkHandler.getPlayer().getPlayerInputController().setShip(null);
+            }
         }
     }
 }

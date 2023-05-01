@@ -3,13 +3,13 @@ package net.bfsr.client.network.packet.server.entity.bullet;
 import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.bullet.Bullet;
-import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.network.packet.PacketIn;
 import net.bfsr.client.world.WorldClient;
-import net.bfsr.config.bullet.BulletData;
-import net.bfsr.config.bullet.BulletRegistry;
+import net.bfsr.config.entity.bullet.BulletData;
+import net.bfsr.config.entity.bullet.BulletRegistry;
 import net.bfsr.entity.GameObject;
+import net.bfsr.entity.bullet.Bullet;
+import net.bfsr.entity.ship.Ship;
 import net.bfsr.network.util.ByteBufUtils;
 import org.joml.Vector2f;
 
@@ -39,8 +39,8 @@ public class PacketSpawnBullet implements PacketIn {
         GameObject obj = world.getEntityById(shipId);
         if (obj instanceof Ship ship) {
             BulletData bulletData = BulletRegistry.INSTANCE.get(index);
-            Bullet bullet = new Bullet(world, id, pos.x, pos.y, sin, cos, ship, bulletData);
-            bullet.init();
+            Bullet bullet = new Bullet(pos.x, pos.y, sin, cos, ship, bulletData);
+            bullet.init(world, id);
             world.addBullet(bullet);
         }
     }

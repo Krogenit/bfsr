@@ -1,6 +1,6 @@
 package net.bfsr.entity.bullet;
 
-import net.bfsr.config.bullet.DamageConfigurable;
+import net.bfsr.config.entity.bullet.DamageConfigurable;
 
 public class BulletDamage {
     private float armor, hull, shield;

@@ -1,0 +1,56 @@
+{
+  "name": "human_small",
+  "size": {
+    "x": 6.9423,
+    "y": 6.9423
+  },
+  "destroyTimeInSeconds": 1.0,
+  "texture": "texture/entity/ship/human_small0.png",
+  "damageTexture": "texture/entity/ship/human_small0_damage.png",
+  "effectsColor": {
+    "r": 0.5,
+    "g": 0.6,
+    "b": 1.0,
+    "a": 1.0
+  },
+  "weaponSlotPositions": [
+    {
+      "x": 0.7,
+      "y": 2.4
+    },
+    {
+      "x": 0.7,
+      "y": -2.4
+    }
+  ],
+  "vertices": [
+    {
+      "x": -2.9,
+      "y": 0.2
+    },
+    {
+      "x": -2.9,
+      "y": -0.2
+    },
+    {
+      "x": -1.0,
+      "y": -3.1
+    },
+    {
+      "x": 0.6,
+      "y": -3.1
+    },
+    {
+      "x": 2.7,
+      "y": 0.1
+    },
+    {
+      "x": 0.6,
+      "y": 3.1
+    },
+    {
+      "x": -1.0,
+      "y": 3.1
+    }
+  ]
+}

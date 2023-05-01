@@ -65,7 +65,9 @@ public class InspectionPanel<T extends PropertiesHolder> {
     public void initElements(int x, int y, Runnable saveAllRunnable, Supplier<InspectionEntry<T>> objectSupplier) {
         gui.registerGuiObject(new StringObject(fontType, name, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w).compile().atTopLeftCorner(x,
                 y + fontType.getStringCache().getCenteredYOffset(name, elementHeight, fontSize) + stringYOffset));
-        gui.registerGuiObject(objectsContainer.atTopLeftCorner(x, elementHeight).setHeightResizeFunction((width, height) -> Core.get().getScreenHeight() - elementHeight * 3));
+        gui.registerGuiObject(objectsContainer.atTopLeftCorner(x, elementHeight).setHeightResizeFunction(
+                (width, height) -> Core.get().getRenderer().getScreenHeight() - elementHeight * 3)
+        );
 
         y -= elementHeight;
         saveAllButton = new Button(objectsContainer.getWidth(), elementHeight, "Save All", fontType, fontSize, stringYOffset, saveAllRunnable);

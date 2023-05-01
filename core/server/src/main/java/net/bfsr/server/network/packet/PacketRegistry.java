@@ -6,15 +6,16 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import net.bfsr.network.Packet;
 import net.bfsr.server.network.packet.client.*;
-import net.bfsr.server.network.packet.common.*;
+import net.bfsr.server.network.packet.client.input.*;
+import net.bfsr.server.network.packet.common.PacketChatMessage;
+import net.bfsr.server.network.packet.common.PacketKeepAlive;
+import net.bfsr.server.network.packet.common.PacketObjectPosition;
+import net.bfsr.server.network.packet.common.PacketPing;
 import net.bfsr.server.network.packet.server.component.*;
-import net.bfsr.server.network.packet.server.effect.PacketSpawnParticleEffect;
+import net.bfsr.server.network.packet.server.effect.PacketBulletHitShip;
 import net.bfsr.server.network.packet.server.entity.PacketRemoveObject;
 import net.bfsr.server.network.packet.server.entity.bullet.PacketSpawnBullet;
-import net.bfsr.server.network.packet.server.entity.ship.PacketDestroyingShip;
-import net.bfsr.server.network.packet.server.entity.ship.PacketShipInfo;
-import net.bfsr.server.network.packet.server.entity.ship.PacketShipSetSpawned;
-import net.bfsr.server.network.packet.server.entity.ship.PacketSpawnShip;
+import net.bfsr.server.network.packet.server.entity.ship.*;
 import net.bfsr.server.network.packet.server.entity.wreck.PacketShipWreck;
 import net.bfsr.server.network.packet.server.entity.wreck.PacketSpawnWreck;
 import net.bfsr.server.network.packet.server.entity.wreck.PacketSyncDamage;
@@ -52,7 +53,7 @@ public class PacketRegistry {
         registerPacket(PacketRespawn.class);
         registerPacket(PacketShipControl.class);
         registerPacket(PacketObjectPosition.class);
-        registerPacket(PacketShipEngine.class);
+        registerPacket(PacketSyncMoveDirection.class);
         registerPacket(PacketWeaponShoot.class);
         registerPacket(PacketArmorInfo.class);
         registerPacket(PacketDestroyingShip.class);
@@ -70,7 +71,13 @@ public class PacketRegistry {
         registerPacket(PacketShipWreck.class);
         registerPacket(PacketSyncDamage.class);
         registerPacket(PacketShipSetSpawned.class);
-        registerPacket(PacketSpawnParticleEffect.class);
+        registerPacket(PacketBulletHitShip.class);
+
+        registerPacket(PacketShipMove.class);
+        registerPacket(PacketShipStopMove.class);
+        registerPacket(PacketSyncPlayerMousePosition.class);
+        registerPacket(PacketMouseLeftClick.class);
+        registerPacket(PacketMouseLeftRelease.class);
     }
 
     private void registerPacket(Class<? extends Packet> packetClass) {

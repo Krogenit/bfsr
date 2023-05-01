@@ -414,7 +414,7 @@ public class InputBox extends TexturedGuiObject {
         if (stringOffset.x < 0) {
             GUIRenderer.get().render();
             GL11C.glEnable(GL11C.GL_SCISSOR_TEST);
-            GL11C.glScissor(x + 1, Core.get().getScreenHeight() - y - height, width - 2, height);
+            GL11C.glScissor(x + 1, Core.get().getRenderer().getScreenHeight() - y - height, width - 2, height);
         }
 
         renderString();

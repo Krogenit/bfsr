@@ -6,7 +6,7 @@ import java.nio.file.Path;
 
 public final class PathHelper {
     public static final Path CLIENT_CONTENT = Path.of("../../core/client/src/main/resources");
-    public static final Path CONTENT = Path.of("../../core/common/src/main/resources");
+    private static final Path CONTENT = Path.of("../../core/common/src/main/resources");
     public static final Path CLIENT_CONFIG = CLIENT_CONTENT.resolve("config");
     public static final Path CONFIG = CONTENT.resolve("config");
     public static final Path SHADER = CLIENT_CONTENT.resolve("shader");
@@ -18,8 +18,12 @@ public final class PathHelper {
         return CLIENT_CONTENT.resolve(simplePath);
     }
 
-    public static String convertToLocalPath(String path) throws IOException {
-        return path.replace(CLIENT_CONTENT.toFile().getCanonicalPath(), "").replace(File.separator, "/").substring(1);
+    public static String convertToLocalPath(Path path) {
+        return path.toString().replace(CLIENT_CONTENT.toString(), "").replace(File.separator, "/").substring(1);
+    }
+
+    public static String convertToLocalPath(String canonicalPath) throws IOException {
+        return canonicalPath.replace(CLIENT_CONTENT.toFile().getCanonicalPath(), "").replace(File.separator, "/").substring(1);
     }
 
     public static String getFileNameWithoutExtension(String fileName) {

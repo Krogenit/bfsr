@@ -128,5 +128,6 @@ public class NetworkSystem {
 
     public void clear() {
         inboundPacketQueue.clear();
+        setConnectionState(ConnectionState.NOT_CONNECTED);
     }
 }

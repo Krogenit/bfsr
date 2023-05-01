@@ -1,21 +1,23 @@
 package net.bfsr.client.particle.effect;
 
-import net.bfsr.client.particle.ParticleEffect;
-import net.bfsr.client.particle.ParticleEffectsRegistry;
-import net.bfsr.client.particle.RenderLayer;
+import net.bfsr.client.particle.ParticleManager;
+import net.bfsr.client.particle.config.ParticleEffect;
+import net.bfsr.client.particle.config.ParticleEffectsRegistry;
+import net.bfsr.math.LUT;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
+import net.bfsr.render.RenderLayer;
 import net.bfsr.texture.TextureRegister;
 import net.bfsr.util.RandomHelper;
 import org.joml.Vector2f;
 
 import java.util.function.Supplier;
 
-import static net.bfsr.client.particle.effect.ParticleSpawner.CACHED_VECTOR;
-import static net.bfsr.client.particle.effect.ParticleSpawner.RAND;
+import static net.bfsr.client.particle.ParticleManager.CACHED_VECTOR;
+import static net.bfsr.client.particle.ParticleManager.RAND;
 
 public final class GarbageSpawner {
-    private static final ParticleEffect ost = ParticleEffectsRegistry.INSTANCE.getEffectByPath("garbage/ost");
+    private static final ParticleEffect ost = ParticleEffectsRegistry.INSTANCE.get("garbage/ost");
 
     public static void bulletHullDamage(float x, float y, float velocityX, float velocityY, float normalX, float normalY, Supplier<Boolean> shouldSpawnOstSupplier) {
         if (shouldSpawnOstSupplier.get() && RAND.nextInt(2) == 0) {
@@ -59,8 +61,10 @@ public final class GarbageSpawner {
         for (int i = 0; i < count; i++) {
             Vector2f localVelocity = localVelocitySupplier.get();
             float angularVelocity = RandomHelper.randomFloat(RAND, -0.06f, 0.06f);
-            ParticleSpawner.PARTICLE_POOL.getOrCreate(ParticleSpawner.PARTICLE_SUPPLIER).init(TextureRegister.particleGarbage0, x, y, velocityX + localVelocity.x, velocityY + localVelocity.y,
-                    MathUtils.TWO_PI * RAND.nextFloat(), angularVelocity, size, size, sizeVel, 0.6f, 0.6f, 0.6f, 1.0f, alphaVel, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
+            float angle = MathUtils.TWO_PI * RAND.nextFloat();
+            ParticleManager.PARTICLE_POOL.getOrCreate(ParticleManager.PARTICLE_SUPPLIER).init(TextureRegister.particleGarbage0, x, y,
+                    velocityX + localVelocity.x, velocityY + localVelocity.y, LUT.sin(angle), LUT.cos(angle), angularVelocity, size, size, sizeVel,
+                    0.6f, 0.6f, 0.6f, 1.0f, alphaVel, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
         }
     }
 }

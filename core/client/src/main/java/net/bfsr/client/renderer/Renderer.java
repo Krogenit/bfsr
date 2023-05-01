@@ -1,5 +1,7 @@
 package net.bfsr.client.renderer;
 
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -12,6 +14,7 @@ import net.bfsr.client.renderer.font.string.StringGeometryBuilder;
 import net.bfsr.client.renderer.font.string.StringRenderer;
 import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.client.renderer.particle.ParticleRenderer;
+import net.bfsr.client.renderer.render.Render;
 import net.bfsr.client.renderer.shader.BaseShader;
 import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureGenerator;
@@ -20,6 +23,8 @@ import net.bfsr.client.settings.Option;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.texture.TextureRegister;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import static net.bfsr.client.renderer.debug.OpenGLDebugUtils.*;
@@ -35,6 +40,9 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 @Log4j2
 public class Renderer {
     private final Core core;
+    @Setter
+    @Getter
+    private int screenWidth, screenHeight;
     @Getter
     private final Camera camera = new Camera();
     @Getter
@@ -49,6 +57,7 @@ public class Renderer {
     private final SpriteRenderer spriteRenderer = new SpriteRenderer();
     @Getter
     private final GUIRenderer guiRenderer = new GUIRenderer();
+    @Getter
     private final DebugRenderer debugRenderer = new DebugRenderer();
     @Getter
     private int drawCalls;
@@ -59,19 +68,24 @@ public class Renderer {
     private int fps;
     @Getter
     private float interpolation;
+    private final List<Render<?>> renderList = new ArrayList<>();
+    private final TIntObjectMap<Render<?>> renders = new TIntObjectHashMap<>();
+    private Texture backgroundTexture;
 
     public Renderer(Core core) {
         this.core = core;
     }
 
     public void init(long window, int width, int height) {
-        setupOpenGL(core.getScreenWidth(), core.getScreenHeight());
+        this.screenWidth = width;
+        this.screenHeight = height;
+        setupOpenGL(width, height);
         setVSync(Option.V_SYNC.getBoolean());
 
         TextureLoader.init();
         TextureGenerator.init();
 
-        camera.init(core.getScreenWidth(), core.getScreenHeight());
+        camera.init(width, height);
         spriteRenderer.init();
         stringRenderer.init(stringGeometryBuilder, spriteRenderer);
         guiRenderer.init(spriteRenderer);
@@ -107,12 +121,35 @@ public class Renderer {
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glAlphaFunc(GL_GREATER, 0.0001f);
         TextureLoader.getTexture(TextureRegister.damageFire, GL_REPEAT, GL_LINEAR).bind();
+        backgroundTexture = new Texture(2560 << 1, 2560 << 1).create();
 
         glClearColor(0.05F, 0.1F, 0.2F, 1.0F);
     }
 
-    public void updateCamera() {
+    public void update() {
         camera.update();
+
+        if (!core.isPaused()) {
+            for (int i = 0; i < renderList.size(); i++) {
+                Render<?> render = renderList.get(i);
+                if (render.isDead()) {
+                    render.clear();
+                    renderList.remove(i--);
+                    renders.remove(render.getObject().getId());
+                } else {
+                    render.update();
+                }
+            }
+
+            particleRenderer.update();
+        }
+    }
+
+    public void postUpdate() {
+        for (int i = 0; i < renderList.size(); i++) {
+            Render<?> render = renderList.get(i);
+            render.postWorldUpdate();
+        }
     }
 
     public void prepareRender(float interpolation) {
@@ -125,9 +162,41 @@ public class Renderer {
         WorldClient world = core.getWorld();
         if (world != null) {
             particleRenderer.putBackgroundParticlesToBuffers();
-            world.prepareAmbient();
-            world.prepareEntities();
+            prepareAmbient();
+            spriteRenderer.addTask(this::renderAlpha, BufferType.ENTITIES_ALPHA);
+            spriteRenderer.addTask(this::renderAdditive, BufferType.ENTITIES_ADDITIVE);
             particleRenderer.putParticlesToBuffers();
+        }
+    }
+
+    private void prepareAmbient() {
+        float moveFactor = 0.005f;
+        float cameraZoom = camera.getLastZoom() + (camera.getZoom() - camera.getLastZoom()) * interpolation;
+        float lastX = (camera.getLastPosition().x - camera.getLastPosition().x * moveFactor / cameraZoom);
+        float lastY = (camera.getLastPosition().y - camera.getLastPosition().y * moveFactor / cameraZoom);
+        float x = (camera.getPosition().x - camera.getPosition().x * moveFactor / cameraZoom);
+        float y = (camera.getPosition().y - camera.getPosition().y * moveFactor / cameraZoom);
+        float zoom = (float) (0.5f + Math.log(cameraZoom) * 0.01f);
+        float scaleX = backgroundTexture.getWidth() / cameraZoom * zoom;
+        float scaleY = backgroundTexture.getHeight() / cameraZoom * zoom;
+        spriteRenderer.add(lastX, lastY, x, y, scaleX, scaleY, 1.0f, 1.0f, 1.0f, 1.0f, backgroundTexture, BufferType.BACKGROUND);
+    }
+
+    public void renderAlpha() {
+        for (int i = 0; i < renderList.size(); i++) {
+            Render<?> render = renderList.get(i);
+            if (render.getAabb().overlaps(camera.getBoundingBox())) {
+                render.renderAlpha();
+            }
+        }
+    }
+
+    public void renderAdditive() {
+        for (int i = 0; i < renderList.size(); i++) {
+            Render<?> render = renderList.get(i);
+            if (render.getAabb().overlaps(camera.getBoundingBox())) {
+                render.renderAdditive();
+            }
         }
     }
 
@@ -141,12 +210,12 @@ public class Renderer {
 
         WorldClient world = core.getWorld();
         if (world != null) {
-            world.renderAmbient();
+            SpriteRenderer.get().render(BufferType.BACKGROUND);
             particleRenderer.renderBackground();
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            world.renderEntitiesAlpha();
+            spriteRenderer.syncAndRender(BufferType.ENTITIES_ALPHA);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-            world.renderEntitiesAdditive();
+            spriteRenderer.syncAndRender(BufferType.ENTITIES_ADDITIVE);
             particleRenderer.render();
 
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -154,7 +223,12 @@ public class Renderer {
                 debugRenderer.clear();
                 debugRenderer.bind();
                 camera.bindWorldViewMatrix();
-                world.renderDebug(debugRenderer);
+                for (int i = 0; i < renderList.size(); i++) {
+                    Render<?> render = renderList.get(i);
+                    if (render.getAabb().overlaps(camera.getBoundingBox())) {
+                        render.renderDebug();
+                    }
+                }
                 debugRenderer.render(GL_LINE_LOOP);
                 spriteRenderer.bind();
                 shader.enable();
@@ -164,10 +238,10 @@ public class Renderer {
         camera.bindGUI();
 
         if (world != null) {
-            core.getGuiInGame().render();
+            core.getGuiManager().getGuiInGame().render();
         }
 
-        Gui gui = core.getCurrentGui();
+        Gui gui = core.getGuiManager().getCurrentGui();
         if (gui != null) {
             gui.render();
         }
@@ -176,17 +250,20 @@ public class Renderer {
     }
 
     public void resize(int width, int height) {
+        this.screenWidth = width;
+        this.screenHeight = height;
         glViewport(0, 0, width, height);
         camera.resize(width, height);
     }
 
-    public Texture createBackgroundTexture(long seed, int sizeX, int sizeY) {
-        return TextureGenerator.generateNebulaTexture(sizeX, sizeY, new Random(seed));
+    public void createBackgroundTexture(long seed) {
+        if (backgroundTexture != null) backgroundTexture.delete();
+        backgroundTexture = TextureGenerator.generateNebulaTexture(backgroundTexture.getWidth(), backgroundTexture.getHeight(), new Random(seed));
     }
 
     public void onExitToMainMenu() {
-        camera.onExitToMainMenu();
         particleRenderer.onExitToMainMenu();
+        renderList.clear();
     }
 
     private void resetDrawCalls() {
@@ -208,7 +285,23 @@ public class Renderer {
         shader.init();
     }
 
+    public void addRender(Render<?> render) {
+        renderList.add(render);
+        renders.put(render.getObject().getId(), render);
+    }
+
+    public Render<?> getRender(int id) {
+        return renders.get(id);
+    }
+
     public void clear() {
         spriteRenderer.clear();
+
+        for (int i = 0; i < renderList.size(); i++) {
+            renderList.get(i).clear();
+        }
+
+        renderList.clear();
+        renders.clear();
     }
 }

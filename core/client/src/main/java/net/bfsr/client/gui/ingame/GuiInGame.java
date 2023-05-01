@@ -1,10 +1,11 @@
 package net.bfsr.client.gui.ingame;
 
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.gui.Gui;
+import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.client.settings.Option;
+import net.bfsr.entity.ship.Ship;
 import org.lwjgl.glfw.GLFW;
 
 public class GuiInGame extends Gui {
@@ -12,6 +13,7 @@ public class GuiInGame extends Gui {
     private final MiniMap miniMap = new MiniMap();
     private final Chat chat = new Chat();
     private final ShipHUD shipHUD = new ShipHUD();
+    private final GuiManager guiManager = Core.get().getGuiManager();
 
     @Override
     protected void initElements() {
@@ -41,8 +43,8 @@ public class GuiInGame extends Gui {
     public void input(int key) {
         super.input(key);
 
-        if (key == GLFW.GLFW_KEY_ESCAPE && Core.get().canControlShip()) {
-            Core.get().setCurrentGui(new GuiInGameMenu());
+        if (key == GLFW.GLFW_KEY_ESCAPE && !isActive() && guiManager.getCurrentGui() == null) {
+            guiManager.setCurrentGui(new GuiInGameMenu());
         }
     }
 

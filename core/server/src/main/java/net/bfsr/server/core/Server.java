@@ -2,21 +2,16 @@ package net.bfsr.server.core;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.config.bullet.BulletRegistry;
-import net.bfsr.config.component.ShieldRegistry;
-import net.bfsr.config.entity.wreck.WreckRegistry;
-import net.bfsr.config.weapon.beam.BeamRegistry;
-import net.bfsr.config.weapon.gun.GunRegistry;
+import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.core.Loop;
+import net.bfsr.entity.ship.Ship;
 import net.bfsr.profiler.Profiler;
 import net.bfsr.server.config.ServerSettings;
-import net.bfsr.server.entity.ship.Ship;
+import net.bfsr.server.event.listener.Listeners;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.network.packet.server.entity.PacketRemoveObject;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
-import net.bfsr.server.rsocket.RSocketClient;
-import net.bfsr.server.service.PlayerService;
 import net.bfsr.server.world.WorldServer;
 
 import java.net.InetAddress;
@@ -34,8 +29,6 @@ public abstract class Server extends Loop {
     @Getter
     private final WorldServer world;
     @Getter
-    private final PlayerService playerService;
-    @Getter
     private final NetworkSystem networkSystem;
     @Getter
     private final Profiler profiler = new Profiler();
@@ -44,14 +37,11 @@ public abstract class Server extends Loop {
     private final PlayerManager playerManager;
     @Getter
     protected boolean pause;
-    @Getter
-    private final RSocketClient databaseRSocketClient = new RSocketClient();
 
     protected Server() {
-        this.networkSystem = new NetworkSystem(this);
         this.world = new WorldServer(profiler);
-        this.playerService = new PlayerService(databaseRSocketClient);
         this.playerManager = new PlayerManager(world);
+        this.networkSystem = new NetworkSystem(playerManager);
 
         instance = this;
     }
@@ -68,13 +58,14 @@ public abstract class Server extends Loop {
     protected void init() {
         profiler.setEnable(true);
         networkSystem.init();
-        WreckRegistry.INSTANCE.init();
-        ShieldRegistry.INSTANCE.init();
-        BulletRegistry.INSTANCE.init();
-        GunRegistry.INSTANCE.init();
-        BeamRegistry.INSTANCE.init();
+        loadConfigs();
         settings = createSettings();
         startupNetworkSystem(settings);
+        Listeners.init();
+    }
+
+    protected void loadConfigs() {
+        ConfigConverterManager.INSTANCE.init();
     }
 
     protected ServerSettings createSettings() {
@@ -91,12 +82,14 @@ public abstract class Server extends Loop {
             throw new IllegalStateException("Can't start server on address " + serverSettings.getHostName() + ":" + serverSettings.getPort(), e);
         }
 
-        databaseRSocketClient.connect(serverSettings.getDataBaseServiceHost(), serverSettings.getDatabaseServicePort());
+        playerManager.connect(serverSettings.getDataBaseServiceHost(), serverSettings.getDatabaseServicePort());
     }
 
     @Override
     protected void update() {
-        profiler.startSection("update");
+        profiler.startSection("playerManager");
+        playerManager.update();
+        profiler.endStartSection("update");
         updateWorld();
         profiler.endStartSection("network");
         networkSystem.update();
@@ -108,15 +101,14 @@ public abstract class Server extends Loop {
     }
 
     public void onPlayerDisconnected(Player player) {
-        world.removePlayer(player);
-        playerService.removePlayer(player.getUsername());
-        playerService.save(player);
+        playerManager.removePlayer(player);
+        playerManager.save(player);
         List<Ship> ships = player.getShips();
         for (int i = 0, shipsSize = ships.size(); i < shipsSize; i++) {
             Ship s = ships.get(i);
             s.setOwner(null);
-            s.setDead(true);
-            networkSystem.sendUDPPacketToAllNearby(new PacketRemoveObject(s), s.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+            s.setDead();
+            networkSystem.sendTCPPacketToAll(new PacketRemoveObject(s));
         }
     }
 
@@ -129,16 +121,20 @@ public abstract class Server extends Loop {
         this.pause = pause;
     }
 
+    public static NetworkSystem getNetwork() {
+        return instance.networkSystem;
+    }
+
     @Override
     protected void clear() {
         super.clear();
         log.info("Saving database...");
-        playerService.saveAllSync();
+        playerManager.saveAllSync();
         log.info("Clearing world...");
         world.clear();
         log.info("Terminating network...");
         networkSystem.shutdown();
-        databaseRSocketClient.clear();
+        playerManager.clear();
         log.info("Stopped");
     }
 

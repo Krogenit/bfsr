@@ -1,8 +1,9 @@
 package net.bfsr.client.renderer.texture;
 
 import net.bfsr.client.core.Core;
-import net.bfsr.client.model.TexturedQuad;
 import net.bfsr.client.renderer.FrameBuffer;
+import net.bfsr.client.renderer.Renderer;
+import net.bfsr.client.renderer.primitive.TexturedQuad;
 import net.bfsr.client.renderer.shader.NebulaShader;
 import net.bfsr.client.renderer.shader.StarsShader;
 import net.bfsr.util.RandomHelper;
@@ -27,6 +28,7 @@ import static org.lwjgl.system.MemoryUtil.memAlloc;
 import static org.lwjgl.system.MemoryUtil.memFree;
 
 public final class TextureGenerator {
+    private static final Renderer RENDERER = Core.get().getRenderer();
     private static TexturedQuad counterClockWiseCenteredQuad;
 
     public static void init() {
@@ -254,7 +256,7 @@ public final class TextureGenerator {
         starsShader.delete();
 
         FrameBuffer.unbind();
-        glViewport(0, 0, Core.get().getScreenWidth(), Core.get().getScreenHeight());
+        glViewport(0, 0, RENDERER.getScreenWidth(), RENDERER.getScreenHeight());
 
         buffer.delete();
         stars.delete();

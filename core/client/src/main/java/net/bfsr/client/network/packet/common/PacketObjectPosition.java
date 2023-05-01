@@ -3,10 +3,9 @@ package net.bfsr.client.network.packet.common;
 import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.CollisionObject;
 import net.bfsr.client.network.packet.PacketIn;
 import net.bfsr.client.network.packet.client.PacketNeedObjectInfo;
-import net.bfsr.entity.GameObject;
+import net.bfsr.entity.RigidBody;
 import net.bfsr.network.PacketOut;
 import net.bfsr.network.util.ByteBufUtils;
 import org.joml.Vector2f;
@@ -15,14 +14,15 @@ import org.joml.Vector2f;
 public class PacketObjectPosition implements PacketIn, PacketOut {
     private int id;
     private Vector2f position;
-    private float angle;
+    private float sin, cos;
     private Vector2f velocity;
     private float angularVelocity;
 
-    public PacketObjectPosition(CollisionObject obj) {
+    public PacketObjectPosition(RigidBody obj) {
         this.id = obj.getId();
         this.position = obj.getPosition();
-        this.angle = obj.getRotation();
+        this.sin = obj.getSin();
+        this.cos = obj.getCos();
         this.velocity = obj.getVelocity();
         this.angularVelocity = obj.getAngularVelocity();
     }
@@ -31,7 +31,8 @@ public class PacketObjectPosition implements PacketIn, PacketOut {
     public void read(ByteBuf data) {
         id = data.readInt();
         ByteBufUtils.readVector(data, position = new Vector2f());
-        angle = data.readFloat();
+        sin = data.readFloat();
+        cos = data.readFloat();
         ByteBufUtils.readVector(data, velocity = new Vector2f());
         angularVelocity = data.readFloat();
     }
@@ -40,7 +41,8 @@ public class PacketObjectPosition implements PacketIn, PacketOut {
     public void write(ByteBuf data) {
         data.writeInt(id);
         ByteBufUtils.writeVector(data, position);
-        data.writeFloat(angle);
+        data.writeFloat(sin);
+        data.writeFloat(cos);
         ByteBufUtils.writeVector(data, velocity);
         data.writeFloat(angularVelocity);
     }
@@ -48,9 +50,9 @@ public class PacketObjectPosition implements PacketIn, PacketOut {
     @Override
     public void processOnClientSide() {
         Core core = Core.get();
-        GameObject obj = core.getWorld().getEntityById(id);
+        RigidBody obj = core.getWorld().getEntityById(id);
         if (obj != null) {
-            obj.updateClientPositionFromPacket(position, angle, velocity, angularVelocity);
+            obj.updateClientPositionFromPacket(position, sin, cos, velocity, angularVelocity);
         } else {
             core.sendUDPPacket(new PacketNeedObjectInfo(id));
         }

@@ -1,11 +1,10 @@
 package net.bfsr.server.player;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
 import net.bfsr.server.dto.Default;
-import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.server.player.PacketSetPlayerShip;
 import org.joml.Vector2f;
@@ -14,12 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@RequiredArgsConstructor(onConstructor_ = {@Default})
 public class Player {
     private final String id;
     @Setter
     private PlayerNetworkHandler networkHandler;
-    private Ship playerShip;
     private final List<Ship> ships = new ArrayList<>();
     private final String username;
     private final Vector2f position = new Vector2f();
@@ -27,16 +24,22 @@ public class Player {
     private Faction faction;
     @Setter
     private byte[] digest;
+    private final PlayerInputController playerInputController;
 
-    public Player(String username) {
-        this.id = null;
+    @Default
+    public Player(String id, String username) {
+        this.id = id;
         this.username = username;
+        this.playerInputController = new PlayerInputController(this);
     }
 
-    public void setPlayerShip(Ship playerShip) {
-        this.playerShip = playerShip;
-        this.playerShip.setControlledByPlayer(true);
-        networkHandler.sendTCPPacket(new PacketSetPlayerShip(playerShip.getId()));
+    public Player(String username) {
+        this(null, username);
+    }
+
+    public void setShip(Ship ship) {
+        this.playerInputController.setShip(ship);
+        networkHandler.sendTCPPacket(new PacketSetPlayerShip(ship.getId()));
     }
 
     public void setPosition(float x, float y) {

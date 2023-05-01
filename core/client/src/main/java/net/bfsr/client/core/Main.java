@@ -4,8 +4,6 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.ingame.GuiInGame;
 import net.bfsr.client.gui.menu.GuiMainMenu;
-import net.bfsr.client.input.Keyboard;
-import net.bfsr.client.input.Mouse;
 import net.bfsr.client.settings.Option;
 import net.bfsr.client.util.FpsSync;
 import net.bfsr.core.Loop;
@@ -46,7 +44,6 @@ public class Main extends Loop {
 
     protected void init() {
         Vector2i windowSize = initGLFW();
-        initInput();
         core.init(window, windowSize.x, windowSize.y, getStartGui(), getGuiInGame());
         fpsSync.init();
     }
@@ -88,11 +85,6 @@ public class Main extends Loop {
         GLFW.glfwMakeContextCurrent(window);
         GL.createCapabilities();
         return size;
-    }
-
-    private void initInput() {
-        Mouse.init(window);
-        Keyboard.init(window);
     }
 
     @Override

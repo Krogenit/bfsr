@@ -2,12 +2,12 @@ package net.bfsr.client.network.packet.server.component;
 
 import io.netty.buffer.ByteBuf;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.network.packet.PacketIn;
 import net.bfsr.client.world.WorldClient;
-import net.bfsr.component.Armor;
-import net.bfsr.component.ArmorPlate;
+import net.bfsr.component.armor.Armor;
+import net.bfsr.component.armor.ArmorPlate;
 import net.bfsr.entity.GameObject;
+import net.bfsr.entity.ship.Ship;
 
 import java.io.IOException;
 

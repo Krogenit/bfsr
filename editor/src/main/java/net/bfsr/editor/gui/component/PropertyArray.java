@@ -93,7 +93,7 @@ public abstract class PropertyArray<P extends PropertiesHolder, T extends Abstra
     }
 
     protected void updatePositions() {
-        Gui currentGui = Core.get().getCurrentGui();
+        Gui currentGui = Core.get().getGuiManager().getCurrentGui();
         if (currentGui instanceof GuiEditor) {
             ((GuiEditor) currentGui).updatePositions();
         }

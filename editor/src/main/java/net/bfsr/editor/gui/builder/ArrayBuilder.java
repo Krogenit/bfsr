@@ -16,7 +16,7 @@ import java.util.List;
 public class ArrayBuilder extends ComponentBuilder {
     @Override
     public <V extends PropertiesHolder> PropertyComponent<V> build(int width, int height, String propertyName, int offsetX, FontType fontType, int fontSize, int stringOffsetY,
-                                                                   List<Field> fields, Object[] values, V object) throws IllegalAccessException {
+                                                                   List<Field> fields, Object[] values, V object) {
         Object value = values[0];
         List<?> objects = (List<?>) value;
         Field field = fields.get(0);

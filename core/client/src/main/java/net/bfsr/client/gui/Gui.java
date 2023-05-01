@@ -25,8 +25,8 @@ public abstract class Gui implements GuiObjectsHandler {
     }
 
     public void init() {
-        width = Core.get().getScreenWidth();
-        height = Core.get().getScreenHeight();
+        width = Core.get().getRenderer().getScreenWidth();
+        height = Core.get().getRenderer().getScreenHeight();
         updateCenter();
         initElements();
     }

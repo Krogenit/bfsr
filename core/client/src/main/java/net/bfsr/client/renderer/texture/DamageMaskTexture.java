@@ -1,21 +1,12 @@
 package net.bfsr.client.renderer.texture;
 
-import lombok.Getter;
-import lombok.Setter;
 import net.bfsr.math.MathUtils;
 import net.bfsr.util.TimeUtils;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 
 import java.nio.ByteBuffer;
 
-@Getter
-@Setter
 public class DamageMaskTexture extends Texture {
-    private static final ByteBuffer BYTE_BUFFER = BufferUtils.createByteBuffer(128 << 7);
-
-    public int x = Integer.MAX_VALUE, y = Integer.MAX_VALUE;
-    public int maxX, maxY;
     private final ByteBuffer byteBuffer;
     private float lastFireAmount, lastFireUVAnimation;
     private float fireAmount, fireUVAnimation;
@@ -63,20 +54,6 @@ public class DamageMaskTexture extends Texture {
         GL45C.glTextureSubImage2D(id, 0, x, y, width, height, GL11.GL_RED, GL11.GL_UNSIGNED_BYTE, byteBuffer);
     }
 
-    public void upload() {
-        if (maxX > 0 && maxY > 0) {
-            int width = maxX - x + 1;
-            int height = maxY - y + 1;
-            int index = 0;
-
-            for (int i = y; i <= maxY; i++, index += width) {
-                BYTE_BUFFER.put(index, byteBuffer, i * this.height + x, width);
-            }
-
-            GL45C.glTextureSubImage2D(id, 0, x, y, width, height, GL11.GL_RED, GL11.GL_UNSIGNED_BYTE, BYTE_BUFFER);
-        }
-    }
-
     public void updateEffects() {
         float speed = 0.24f * TimeUtils.UPDATE_DELTA_TIME;
         float uvAnimationSpeed = 0.12f * TimeUtils.UPDATE_DELTA_TIME;
@@ -110,20 +87,5 @@ public class DamageMaskTexture extends Texture {
 
     public float getFireUVAnimation(float interpolation) {
         return lastFireUVAnimation + (fireUVAnimation - lastFireUVAnimation) * interpolation;
-    }
-
-    public void reset() {
-        x = Integer.MAX_VALUE;
-        y = Integer.MAX_VALUE;
-        maxX = 0;
-        maxY = 0;
-    }
-
-    public void copyFrom(ByteBuffer byteBuffer) {
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                this.byteBuffer.put(i * width + j, byteBuffer.get(i * width + j));
-            }
-        }
     }
 }

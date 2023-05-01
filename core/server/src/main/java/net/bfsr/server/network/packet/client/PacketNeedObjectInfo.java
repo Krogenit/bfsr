@@ -4,13 +4,11 @@ import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import net.bfsr.entity.GameObject;
-import net.bfsr.math.Direction;
-import net.bfsr.server.entity.bullet.Bullet;
-import net.bfsr.server.entity.ship.Ship;
-import net.bfsr.server.entity.wreck.Wreck;
+import net.bfsr.entity.bullet.Bullet;
+import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.PacketIn;
-import net.bfsr.server.network.packet.common.PacketShipEngine;
 import net.bfsr.server.network.packet.server.entity.bullet.PacketSpawnBullet;
 import net.bfsr.server.network.packet.server.entity.ship.PacketSpawnShip;
 import net.bfsr.server.network.packet.server.entity.wreck.PacketSpawnWreck;
@@ -34,10 +32,8 @@ public class PacketNeedObjectInfo implements PacketIn {
         if (obj != null) {
             if (obj instanceof Ship ship) {
                 playerNetworkHandler.sendTCPPacket(new PacketSpawnShip(ship));
-                Direction dir = ship.getLastMoveDir();
-                if (dir != null) playerNetworkHandler.sendTCPPacket(new PacketShipEngine(objectId, dir.ordinal()));
 
-                if (ship.isControlledByPlayer() && ship.getOwner() == playerNetworkHandler.getPlayer()) {
+                if (playerNetworkHandler.getPlayer().getPlayerInputController().getShip() == ship) {
                     playerNetworkHandler.sendTCPPacket(new PacketSetPlayerShip(ship.getId()));
                 }
             } else if (obj instanceof Bullet bullet) {

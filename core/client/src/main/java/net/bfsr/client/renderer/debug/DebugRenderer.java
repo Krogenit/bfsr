@@ -5,11 +5,12 @@ import clipper2.offset.ClipperOffset;
 import clipper2.offset.EndType;
 import clipper2.offset.JoinType;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.damage.Damagable;
-import net.bfsr.client.entity.CollisionObject;
 import net.bfsr.client.renderer.primitive.VAO;
+import net.bfsr.client.renderer.render.Render;
 import net.bfsr.client.renderer.shader.DebugShader;
-import net.bfsr.client.util.DamageUtils;
+import net.bfsr.damage.DamageUtils;
+import net.bfsr.damage.Damageable;
+import net.bfsr.entity.RigidBody;
 import net.bfsr.math.MathUtils;
 import net.bfsr.math.RotationHelper;
 import org.dyn4j.dynamics.Body;
@@ -32,9 +33,10 @@ public class DebugRenderer {
     private static final int COMMAND_SIZE_IN_BYTES = 16;
     private static final Vector4f CONTOUR_COLOR = new Vector4f(1.0f, 0.6f, 0.4f, 1.0f);
     private static final Vector4f CONTOUR_OFFSET_COLOR = new Vector4f(1.0f, 0.6f, 0.4f, 0.6f);
-    private static final Vector4f CONVEX_COLOR = new Vector4f(0.6f, 0.8f, 1.0f, 1.0f);
+    private static final Vector4f CONVEX_COLOR = new Vector4f(0.6f, 0.8f, 1.0f, 0.75f);
     private static final Vector4f AABB_COLOR = new Vector4f(1.0f, 1.0f, 1.0f, 0.1f);
-    private static final Vector4f VELOCITY_COLOR = new Vector4f(0.6f, 1.0f, 0.8f, 0.5f);
+    private static final Vector4f VELOCITY_COLOR = new Vector4f(0.6f, 1.0f, 0.8f, 0.25f);
+    private static final AABB AABB_CACHE = new AABB(0, 0, 0, 0);
 
     private final DebugShader debugShader = new DebugShader();
     private VAO vao;
@@ -65,17 +67,17 @@ public class DebugRenderer {
         addVertex((float) aabb.getMaxX(), (float) aabb.getMinY(), AABB_COLOR);
     }
 
-    public void render(CollisionObject collisionObject) {
-        Vector2f position = collisionObject.getPosition();
+    public void render(RigidBody rigidBody) {
+        Vector2f position = rigidBody.getPosition();
 
-        AABB aabb = collisionObject.getAabb();
-        renderAABB(aabb);
+        rigidBody.getBody().computeAABB(AABB_CACHE);
+        renderAABB(AABB_CACHE);
 
-        float sin = (float) collisionObject.getBody().getTransform().getSint();
-        float cos = (float) collisionObject.getBody().getTransform().getCost();
-        render(collisionObject.getBody(), position.x, position.y, sin, cos);
-        if (collisionObject instanceof Damagable damagable) {
-            PathsD contours = damagable.getContours();
+        float sin = (float) rigidBody.getBody().getTransform().getSint();
+        float cos = (float) rigidBody.getBody().getTransform().getCost();
+        render(rigidBody.getBody(), position.x, position.y, sin, cos);
+        if (rigidBody instanceof Damageable damageable) {
+            PathsD contours = damageable.getContours();
             if (contours != null) {
                 for (int i = 0; i < contours.size(); i++) {
                     PathD pathD = contours.get(i);
@@ -93,7 +95,8 @@ public class DebugRenderer {
                             path64.add(new Point64(pathD.get(i1), DamageUtils.SCALE));
                         }
                         clipperOffset.AddPath(path64, JoinType.Miter, EndType.Polygon);
-                        float localScaleX = damagable.getMaskTexture().getWidth() / damagable.getScale().x;
+                        Render<?> render = Core.get().getRenderer().getRender(damageable.getId());
+                        float localScaleX = render.getMaskTexture().getWidth() / damageable.getSize().x;
                         Path64 solution = clipperOffset.Execute(1.2f * DamageUtils.SCALE / (localScaleX * 0.5f)).get(0);
                         addCommand(solution.size());
                         for (int i2 = 0, path64Size = solution.size(); i2 < path64Size; i2++) {
@@ -109,11 +112,11 @@ public class DebugRenderer {
     }
 
     public void render(Body body, float x, float y, float sin, float cos) {
-        float velocityX = (float) body.getLinearVelocity().x;
-        float velocityY = (float) body.getLinearVelocity().y;
+        float velocityX = (float) body.getLinearVelocity().x * 0.05f;
+        float velocityY = (float) body.getLinearVelocity().y * 0.05f;
         addCommand(2);
         addVertex((float) body.getWorldCenter().x, (float) body.getWorldCenter().y, VELOCITY_COLOR);
-        addVertex((float) (velocityX / 5.0f + body.getWorldCenter().x), (float) (velocityY / 5.0f + body.getWorldCenter().y), VELOCITY_COLOR);
+        addVertex((float) (velocityX + body.getWorldCenter().x), (float) (velocityY + body.getWorldCenter().y), VELOCITY_COLOR);
 
         List<BodyFixture> fixtures = body.getFixtures();
         for (int j = 0, fixturesSize = fixtures.size(); j < fixturesSize; j++) {

@@ -10,11 +10,12 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.network.ConnectionState;
 import net.bfsr.network.GuiType;
 import net.bfsr.network.PacketOut;
 import net.bfsr.server.core.Server;
-import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.network.packet.PacketIn;
 import net.bfsr.server.network.packet.common.PacketKeepAlive;
 import net.bfsr.server.network.packet.server.gui.PacketOpenGui;
@@ -24,6 +25,7 @@ import net.bfsr.server.network.packet.server.login.PacketLoginTCPSuccess;
 import net.bfsr.server.network.packet.server.login.PacketLoginUDPSuccess;
 import net.bfsr.server.network.pipeline.MessageHandlerUDP;
 import net.bfsr.server.player.Player;
+import net.bfsr.server.player.PlayerManager;
 import net.bfsr.server.world.WorldServer;
 
 import java.net.InetSocketAddress;
@@ -45,16 +47,9 @@ public class PlayerNetworkHandler {
     private final SocketChannel socketChannel;
     private DatagramChannel datagramChannel;
     private InetSocketAddress remoteAddress;
-
-    private final boolean singlePlayer;
-    private final Server server = Server.getInstance();
-    private final WorldServer world = server.getWorld();
-    @Setter
-    private Player player;
     @Setter
     private ConnectionState connectionState = ConnectionState.HANDSHAKE;
     private ConnectionState connectionStateBeforeDisconnect;
-
     private final Queue<PacketIn> inboundPacketQueue = Queues.newConcurrentLinkedQueue();
 
     @Setter
@@ -62,8 +57,13 @@ public class PlayerNetworkHandler {
     @Setter
     private long handshakeClientTime;
     private long lastKeepAlivePacketTime;
-
     private String terminationReason;
+
+    private final boolean singlePlayer;
+    private final Server server = Server.getInstance();
+    private final WorldServer world = server.getWorld();
+    private final PlayerManager playerManager = server.getPlayerManager();
+    private Player player;
 
     public void update() {
         if (connectionState != ConnectionState.NOT_CONNECTED) {
@@ -125,24 +125,17 @@ public class PlayerNetworkHandler {
     }
 
     public void loginTCP(String username) {
+        if (playerManager.hasPlayer(username)) {
+            disconnect("Player with this name already in game");
+            return;
+        }
+
+        log.debug("Player logging in");
         if (singlePlayer) {
-            log.debug("Player logging in");
-            server.getPlayerService().authUser(username, "test");
-            player = server.getPlayerService().getPlayer(username);
+            player = playerManager.getPlayerService().authUser(username, "test");
             log.debug("Player created");
         } else {
-            String message = server.getPlayerService().authUser(username, "password");
-
-            if (message != null) {
-                disconnect(message);
-                return;
-            }
-
-            player = server.getPlayerService().getPlayer(username);
-            if (!server.getWorld().canJoin(player)) {
-                disconnect("Already in game");
-                return;
-            }
+            player = playerManager.getPlayerService().authUser(username, "password");
         }
 
         try {
@@ -183,7 +176,7 @@ public class PlayerNetworkHandler {
     public void joinGame() {
         connectionState = ConnectionState.PLAY;
         player.setNetworkHandler(this);
-        world.addNewPlayer(player);
+        playerManager.addPlayer(player);
         sendTCPPacket(new PacketJoinGame(world.getSeed()));
         if (player.getFaction() != null) {
             List<Ship> ships = player.getShips();
@@ -192,7 +185,7 @@ public class PlayerNetworkHandler {
             } else {
                 initShips(player);
                 spawnShips(player);
-                player.setPlayerShip(player.getShip(0));
+                player.setShip(player.getShip(0));
             }
         } else {
             sendTCPPacket(new PacketOpenGui(GuiType.SELECT_FACTION));
@@ -203,10 +196,11 @@ public class PlayerNetworkHandler {
         List<Ship> ships = player.getShips();
         for (int i = 0; i < ships.size(); i++) {
             Ship ship = ships.get(i);
-            ship.init(world);
+            ship.init(world, world.getNextId());
             ship.setName(player.getUsername());
-            ship.setOwner(player);
+            ship.setOwner(player.getUsername());
             ship.setFaction(player.getFaction());
+            ShipOutfitter.get().outfit(ship);
         }
     }
 
@@ -214,11 +208,11 @@ public class PlayerNetworkHandler {
         List<Ship> ships = player.getShips();
         for (int i = 0; i < ships.size(); i++) {
             Ship ship = ships.get(i);
-            ship.sendSpawnPacket();
+            world.addShip(ship);
         }
     }
 
-    protected void disconnect(String reason) {
+    private void disconnect(String reason) {
         try {
             log.info("Disconnecting {}: {}", socketChannel.remoteAddress(), reason);
             sendTCPPacket(new PacketDisconnectLogin(reason));

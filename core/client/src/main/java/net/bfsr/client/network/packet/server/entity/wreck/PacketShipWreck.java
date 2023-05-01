@@ -4,77 +4,70 @@ import clipper2.core.PathD;
 import clipper2.core.PointD;
 import io.netty.buffer.ByteBuf;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.wreck.ShipWreckDamagable;
+import net.bfsr.client.damage.DamageHandler;
 import net.bfsr.client.network.packet.PacketIn;
-import net.bfsr.client.renderer.texture.DamageMaskTexture;
-import net.bfsr.client.renderer.texture.Texture;
-import net.bfsr.client.renderer.texture.TextureLoader;
-import net.bfsr.client.util.DamageUtils;
-import net.bfsr.texture.TextureRegister;
+import net.bfsr.damage.DamageUtils;
+import net.bfsr.entity.wreck.ShipWreck;
 import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class PacketShipWreck implements PacketIn {
-    private ShipWreckDamagable shipWreckDamagable;
-    private int x, y, width, height;
+    private ShipWreck wreck;
+    private int x, y;
+    private int id;
+    private float posX, posY;
+    private float sin, cos;
+    private float sizeX, sizeY;
+    private short dataIndex;
+    private float velocityX, velocityY;
+    private float angularVelocity;
+    private PathD pathD;
+    private int width, height;
     private ByteBuffer byteBuffer;
 
     @Override
     public void read(ByteBuf data) throws IOException {
-        int id = data.readInt();
-        float posX = data.readFloat();
-        float posY = data.readFloat();
-        float sin = data.readFloat();
-        float cos = data.readFloat();
-        float scaleX = data.readFloat();
-        float scaleY = data.readFloat();
-        short textureIndex = data.readShort();
+        id = data.readInt();
+        posX = data.readFloat();
+        posY = data.readFloat();
+        sin = data.readFloat();
+        cos = data.readFloat();
+        sizeX = data.readFloat();
+        sizeY = data.readFloat();
+        dataIndex = data.readShort();
         x = data.readShort();
         y = data.readShort();
-        short maxX = data.readShort();
-        short maxY = data.readShort();
+        int maxX = data.readShort();
+        int maxY = data.readShort();
         width = maxX - x + 1;
         height = maxY - y + 1;
         int size = width * height;
         byteBuffer = BufferUtils.createByteBuffer(size);
-        byte[] bytes = new byte[size];
-        data.readBytes(bytes, 0, size);
-        byteBuffer.put(bytes, 0, size);
-        byteBuffer.flip();
+        data.readBytes(byteBuffer);
+        byteBuffer.position(0);
 
         short paths = data.readShort();
-        PathD pathD = new PathD(paths);
+        pathD = new PathD(paths);
         for (int j = 0; j < paths; j++) {
             pathD.add(new PointD(data.readFloat(), data.readFloat()));
         }
 
-        float velocityX = data.readFloat();
-        float velocityY = data.readFloat();
-        float angularVelocity = data.readFloat();
+        velocityX = data.readFloat();
+        velocityY = data.readFloat();
+        angularVelocity = data.readFloat();
 
-        TextureRegister textureRegister = TextureRegister.values()[textureIndex];
-        if (TextureLoader.isLoaded(textureRegister)) {
-            Texture texture = TextureLoader.getTexture(textureRegister);
-
-            DamageMaskTexture damageMaskTexture = new DamageMaskTexture(texture.getWidth(), texture.getHeight(), BufferUtils.createByteBuffer(texture.getWidth() * texture.getHeight()));
-            shipWreckDamagable = DamageUtils.createDamage(id, posX, posY, sin, cos, scaleX, scaleY, pathD, damageMaskTexture, texture);
-
-            if (shipWreckDamagable != null) {
-                shipWreckDamagable.getBody().setLinearVelocity(velocityX, velocityY);
-                shipWreckDamagable.getBody().setAngularVelocity(angularVelocity);
-            }
-        }
+        wreck = DamageUtils.createDamage(Core.get().getWorld(), id, posX, posY, sin, cos, sizeX, sizeY, pathD, null, dataIndex);
     }
 
     @Override
     public void processOnClientSide() {
-        if (shipWreckDamagable != null) {
-            DamageMaskTexture maskTexture = shipWreckDamagable.getMaskTexture();
-            maskTexture.createEmpty();
-            maskTexture.upload(x, y, width, height, byteBuffer);
-            Core.get().getWorld().addDamage(shipWreckDamagable);
+        if (wreck != null) {
+            Core.get().getWorld().addWreck(wreck);
+            DamageHandler.updateDamage(wreck, x, y, width, height, byteBuffer);
+            wreck.getBody().setLinearVelocity(velocityX, velocityY);
+            wreck.getBody().setAngularVelocity(angularVelocity);
         }
     }
 }

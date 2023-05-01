@@ -5,7 +5,6 @@ import gnu.trove.map.hash.THashMap;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.renderer.texture.dds.DDSFile;
 import net.bfsr.texture.TextureRegister;
-import net.bfsr.util.PathHelper;
 import org.lwjgl.opengl.*;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
@@ -47,11 +46,11 @@ public final class TextureLoader {
     }
 
     public static Texture getTexture(TextureRegister texture) {
-        return getTexture(PathHelper.convertPath(texture.getPath()), DEFAULT_WRAP, DEFAULT_FILTER);
+        return getTexture(texture.getPath(), DEFAULT_WRAP, DEFAULT_FILTER);
     }
 
     public static Texture getTexture(TextureRegister texture, int wrap, int filter) {
-        return getTexture(PathHelper.convertPath(texture.getPath()), wrap, filter);
+        return getTexture(texture.getPath(), wrap, filter);
     }
 
     public static Texture getTexture(Path path) {
@@ -63,7 +62,7 @@ public final class TextureLoader {
     }
 
     public static Texture getTexture(TextureRegister texture, boolean createMips, int wrap, int filter) {
-        return getTexture(PathHelper.convertPath(texture.getPath()), createMips, wrap, filter);
+        return getTexture(texture.getPath(), createMips, wrap, filter);
     }
 
     public static Texture getTexture(Path path, boolean createMips, int wrap, int filter) {
@@ -189,9 +188,5 @@ public final class TextureLoader {
         texture.setTextureHandle(textureHandle);
 
         return texture;
-    }
-
-    public static boolean isLoaded(TextureRegister textureRegister) {
-        return LOADED_TEXTURES.containsKey(PathHelper.convertPath(textureRegister.getPath()).toString());
     }
 }

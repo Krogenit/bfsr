@@ -3,10 +3,10 @@ package net.bfsr.server.network.packet.common;
 import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
 import net.bfsr.entity.GameObject;
+import net.bfsr.entity.RigidBody;
+import net.bfsr.entity.ship.Ship;
 import net.bfsr.network.PacketOut;
 import net.bfsr.network.util.ByteBufUtils;
-import net.bfsr.server.entity.CollisionObject;
-import net.bfsr.server.entity.ship.Ship;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.PacketIn;
 import org.joml.Vector2f;
@@ -17,14 +17,15 @@ import java.io.IOException;
 public class PacketObjectPosition implements PacketOut, PacketIn {
     private int id;
     private Vector2f pos;
-    private float angle;
+    private float sin, cos;
     private Vector2f velocity;
     private float angularVelocity;
 
-    public PacketObjectPosition(CollisionObject obj) {
+    public PacketObjectPosition(RigidBody obj) {
         this.id = obj.getId();
         this.pos = obj.getPosition();
-        this.angle = obj.getRotation();
+        this.sin = obj.getSin();
+        this.cos = obj.getCos();
         this.velocity = obj.getVelocity();
         this.angularVelocity = obj.getAngularVelocity();
     }
@@ -33,7 +34,8 @@ public class PacketObjectPosition implements PacketOut, PacketIn {
     public void read(ByteBuf data) throws IOException {
         id = data.readInt();
         ByteBufUtils.readVector(data, pos = new Vector2f());
-        angle = data.readFloat();
+        sin = data.readFloat();
+        cos = data.readFloat();
         ByteBufUtils.readVector(data, velocity = new Vector2f());
         angularVelocity = data.readFloat();
     }
@@ -42,7 +44,8 @@ public class PacketObjectPosition implements PacketOut, PacketIn {
     public void write(ByteBuf data) throws IOException {
         data.writeInt(id);
         ByteBufUtils.writeVector(data, pos);
-        data.writeFloat(angle);
+        data.writeFloat(sin);
+        data.writeFloat(cos);
         ByteBufUtils.writeVector(data, velocity);
         data.writeFloat(angularVelocity);
     }
@@ -51,7 +54,7 @@ public class PacketObjectPosition implements PacketOut, PacketIn {
     public void processOnServerSide(PlayerNetworkHandler playerNetworkHandler) {
         GameObject obj = playerNetworkHandler.getWorld().getEntityById(id);
         if (obj instanceof Ship ship) {
-            ship.updateServerPositionFromPacket(pos, angle, velocity, angularVelocity);
+            ship.updateServerPositionFromPacket(pos, sin, cos, velocity, angularVelocity);
         }
     }
 }

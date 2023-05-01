@@ -3,8 +3,9 @@ package net.bfsr.client.gui.ingame;
 import lombok.Setter;
 import net.bfsr.client.camera.Camera;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.ship.Ship;
+import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.input.Mouse;
+import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.renderer.Renderer;
 import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.client.renderer.font.string.StringObject;
@@ -12,7 +13,8 @@ import net.bfsr.client.renderer.particle.ParticleRenderer;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.component.reactor.Reactor;
-import net.bfsr.component.shield.ShieldCommon;
+import net.bfsr.component.shield.Shield;
+import net.bfsr.entity.ship.Ship;
 import net.bfsr.profiler.Profiler;
 import net.bfsr.server.core.Server;
 import net.bfsr.server.world.WorldServer;
@@ -27,15 +29,17 @@ public class DebugInfoElement {
     @Setter
     private float ping;
     private final StringObject stringObject = new StringObject(FontType.CONSOLA);
+    private final Core core = Core.get();
+    private final Renderer renderer = core.getRenderer();
+    private final ParticleRenderer particleRenderer = renderer.getParticleRenderer();
+    private final GuiManager guiManager = core.getGuiManager();
+    private final PlayerInputController playerInputController = Core.get().getInputHandler().getPlayerInputController();
 
     public void init(int x, int y) {
         stringObject.setPosition(x, y);
     }
 
     public void update() {
-        Core core = Core.get();
-
-        Renderer renderer = core.getRenderer();
         int drawCalls = renderer.getLastFrameDrawCalls();
 
         Runtime runtime = Runtime.getRuntime();
@@ -46,8 +50,8 @@ public class DebugInfoElement {
         long totalMemoryMB = totalMemory / 1024L / 1024L;
         long freeMemoryMB = freeMemory / 1024L / 1024L;
 
-        int ups = Server.getInstance() != null ? Server.getInstance().getUps() : 0;
-        ParticleRenderer particleRenderer = renderer.getParticleRenderer();
+        Server server = Server.getInstance();
+        int ups = server != null ? server.getUps() : 0;
 
         stringBuilder.setLength(0);
         stringBuilder.append("BFSR Client Dev 0.0.4 \n");
@@ -69,10 +73,10 @@ public class DebugInfoElement {
         float sPhysicsTime = 0.0f;
         float sNetworkTime = 0.0f;
 
-        if (Server.getInstance() != null) {
-            sUpdateTime = Server.getInstance().getProfiler().getResult("update");
-            sPhysicsTime = Server.getInstance().getProfiler().getResult("physics");
-            sNetworkTime = Server.getInstance().getProfiler().getResult("network");
+        if (server != null) {
+            sUpdateTime = server.getProfiler().getResult("update");
+            sPhysicsTime = server.getProfiler().getResult("physics");
+            sNetworkTime = server.getProfiler().getResult("network");
         }
         stringBuilder.append("\nUpdate: ").append(DecimalUtils.strictFormatWithToDigits(updateTime)).append("ms / ").append(DecimalUtils.strictFormatWithToDigits(sUpdateTime)).append("ms ");
         stringBuilder.append("\nPhysics: ").append(DecimalUtils.strictFormatWithToDigits(physicsTime)).append("ms / ").append(DecimalUtils.strictFormatWithToDigits(sPhysicsTime)).append("ms ");
@@ -92,28 +96,33 @@ public class DebugInfoElement {
 
         WorldClient world = core.getWorld();
         if (world != null) {
-            int bulletsCount = world.getBullets().size();
+            int bulletsCount = world.getBulletsCount();
             int shipsCount = world.getShips().size();
             int particlesCount = particleRenderer.getParticlesCount();
-            int physicParticles = world.getParticleManager().getWreckCount();
+            int wreckCount = world.getWreckCount();
+            int shipWreckCount = world.getShipWreckCount();
+            int bodyCount = world.getPhysicWorld().getBodyCount();
 
-            WorldServer sWorld = Server.getInstance() != null ? Server.getInstance().getWorld() : null;
-            int sBulletsCount = sWorld != null ? sWorld.getBullets().size() : 0;
+            WorldServer sWorld = server != null ? server.getWorld() : null;
+            int sBulletsCount = sWorld != null ? sWorld.getBulletsCount() : 0;
             int sShipsCount = sWorld != null ? sWorld.getShips().size() : 0;
-            int sParticlesCount = sWorld != null ? sWorld.getParticles().size() : 0;
+            int sWrecksCount = sWorld != null ? sWorld.getWreckCount() : 0;
+            int sShipWrecksCount = sWorld != null ? sWorld.getShipWreckCount() : 0;
+            int sBodyCount = sWorld != null ? sWorld.getPhysicWorld().getBodyCount() : 0;
             stringBuilder.append("\n\n---World--- ");
-            stringBuilder.append("\nPhysic body count: ").append(world.getPhysicWorld().getBodies().size());
+            stringBuilder.append("\nPhysic body count: ").append(bodyCount).append("/").append(sBodyCount);
             stringBuilder.append("\nShips count: ").append(shipsCount).append("/").append(sShipsCount);
-            stringBuilder.append(" \nBullets count: ").append(bulletsCount).append("/").append(sBulletsCount);
-            stringBuilder.append(" \nParticles count: ").append(particlesCount);
-            stringBuilder.append(" \nPhysic particles count: ").append(physicParticles).append("/").append(sParticlesCount);
+            stringBuilder.append("\nBullets count: ").append(bulletsCount).append("/").append(sBulletsCount);
+            stringBuilder.append("\nParticles count: ").append(particlesCount);
+            stringBuilder.append("\nWrecks count: ").append(wreckCount).append("/").append(sWrecksCount);
+            stringBuilder.append("\nShip wrecks count: ").append(shipWreckCount).append("/").append(sShipWrecksCount);
 
-            Ship playerShip = world.getPlayerShip();
+            Ship playerShip = playerInputController.getShip();
             if (playerShip != null) {
                 Vector2f pos = playerShip.getPosition();
                 Vector2f velocity = playerShip.getVelocity();
                 Hull hull = playerShip.getHull();
-                ShieldCommon shield = playerShip.getShield();
+                Shield shield = playerShip.getShield();
                 Reactor reactor = playerShip.getReactor();
                 stringBuilder.append("\n\n---Player Ship--- ");
                 stringBuilder.append("\nShip: ").append(playerShip.getClass().getSimpleName());
@@ -125,7 +134,7 @@ public class DebugInfoElement {
                 stringBuilder.append("\nReactor: ").append(DecimalUtils.strictFormatWithToDigits(reactor.getEnergy())).append("/").append(DecimalUtils.strictFormatWithToDigits(reactor.getMaxEnergy()));
             }
 
-            Ship ship = core.getGuiInGame().getSelectedShip();
+            Ship ship = guiManager.getGuiInGame().getSelectedShip();
             if (ship != null) {
                 stringBuilder.append("\n\n---Selected Ship--- ");
                 stringBuilder.append("\nId: ").append(ship.getId());

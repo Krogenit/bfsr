@@ -1,0 +1,9 @@
+{
+  "name": "saimon",
+  "forwardAcceleration": 1.2,
+  "backwardAcceleration": 1.0,
+  "sideAcceleration": 1.0,
+  "maxForwardVelocity": 30.0,
+  "maneuverability": 0.99,
+  "angularVelocity": 2.6
+}

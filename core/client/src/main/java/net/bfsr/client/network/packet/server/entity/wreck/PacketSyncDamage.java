@@ -6,9 +6,10 @@ import clipper2.core.PointD;
 import earcut4j.Earcut;
 import io.netty.buffer.ByteBuf;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.damage.Damagable;
+import net.bfsr.client.damage.DamageHandler;
 import net.bfsr.client.network.packet.PacketIn;
-import net.bfsr.client.util.DamageUtils;
+import net.bfsr.damage.DamageUtils;
+import net.bfsr.damage.Damageable;
 import net.bfsr.entity.GameObject;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.decompose.SweepLine;
@@ -61,13 +62,13 @@ public class PacketSyncDamage implements PacketIn {
     @Override
     public void processOnClientSide() {
         GameObject gameObject = Core.get().getWorld().getEntityById(id);
-        if (gameObject instanceof Damagable damagable) {
-            damagable.setContours(contours);
+        if (gameObject instanceof Damageable damageable) {
+            damageable.setContours(contours);
             if (fixtures.size() > 0) {
-                damagable.setFixtures(fixtures);
+                damageable.setFixtures(fixtures);
             }
 
-            damagable.getMaskTexture().upload(x, y, width, height, byteBuffer);
+            DamageHandler.updateDamage(damageable, x, y, width, height, byteBuffer);
         }
     }
 }

@@ -2,7 +2,6 @@ package net.bfsr.entity;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.world.ContactCollisionData;
@@ -12,31 +11,22 @@ import org.joml.Vector2f;
 @NoArgsConstructor
 public class GameObject {
     protected final Vector2f position = new Vector2f();
-    protected final Vector2f scale = new Vector2f();
-    @Setter
-    protected float rotation;
+    protected final Vector2f size = new Vector2f();
+    @Getter
+    protected boolean isDead;
 
-    public GameObject(float x, float y, float rotation, float scaleX, float scaleY) {
+    public GameObject(float x, float y, float sizeX, float sizeY) {
         this.position.set(x, y);
-        this.rotation = rotation;
-        this.scale.set(scaleX, scaleY);
+        this.size.set(sizeX, sizeY);
     }
 
-    public GameObject(float x, float y, float scaleX, float scaleY) {
-        this(x, y, 0.0f, scaleX, scaleY);
-    }
-
-    public GameObject(float x, float y) {
-        this(x, y, 0.0f, 0.0f, 0.0f);
+    public GameObject(float sizeX, float sizeY) {
+        this(0.0f, 0.0f, sizeX, sizeY);
     }
 
     public void update() {}
 
     public void postPhysicsUpdate() {}
-
-    public void updateClientPositionFromPacket(Vector2f position, float angle, Vector2f velocity, float angularVelocity) {
-        this.position.set(position);
-    }
 
     public void collision(Body body, float contactX, float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {}
 
@@ -52,30 +42,16 @@ public class GameObject {
         this.position.set(x, y);
     }
 
-    public void setScale(float x, float y) {
-        this.scale.set(x, y);
+    public void setSize(float x, float y) {
+        this.size.set(x, y);
     }
 
-    public Body getBody() {
-        return null;
-    }
-
-    public float getSin() {
-        return 0.0f;
-    }
-
-    public float getCos() {
-        return 0.0f;
-    }
-
-    public void setDead() {}
-
-    public boolean isDead() {
-        return false;
+    public void setDead() {
+        isDead = true;
     }
 
     public int getId() {
-        return 0;
+        return -1;
     }
 
     public void clear() {}

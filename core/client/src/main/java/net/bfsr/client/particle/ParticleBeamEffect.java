@@ -1,63 +1,58 @@
 package net.bfsr.client.particle;
 
-import net.bfsr.client.component.weapon.WeaponSlotBeam;
+import lombok.Getter;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.particle.effect.BeamEffects;
+import net.bfsr.client.renderer.particle.ParticleBeamRender;
+import net.bfsr.component.weapon.WeaponSlotBeam;
+import net.bfsr.entity.ship.Ship;
+import net.bfsr.render.RenderLayer;
 import net.bfsr.texture.TextureRegister;
+import net.bfsr.util.ObjectPool;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 import java.util.Random;
+import java.util.function.Supplier;
 
 public class ParticleBeamEffect extends Particle {
+    private static final ObjectPool<ParticleBeamRender> RENDER_POOL = new ObjectPool<>();
+    private static final Supplier<ParticleBeamRender> RENDER_SUPPLIER = ParticleBeamRender::new;
+
+    @Getter
     private WeaponSlotBeam slot;
     private Ship ship;
     private final Vector2f addPos = new Vector2f();
     private Random rand;
-    private boolean changeColor;
 
-    public ParticleBeamEffect init(WeaponSlotBeam slot, TextureRegister texture) {
-        init(texture, 0.0f, 0.0f, 0.0f, 0.0f, slot.getShip().getRotation(), 0.0f, 5.0f + 2.8f * slot.getShip().getWorld().getRand().nextFloat(),
-                slot.getScale().y / 2.0f + 0.4f * slot.getShip().getWorld().getRand().nextFloat(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, false, RenderLayer.DEFAULT_ADDITIVE);
+    public ParticleBeamEffect init(WeaponSlotBeam slot, TextureRegister texture, Vector4f color) {
+        Ship ship = slot.getShip();
+        Random random = ship.getWorld().getRand();
         this.slot = slot;
-        this.ship = slot.getShip();
-        this.rand = ship.getWorld().getRand();
-        this.color.set(slot.getEffectsColor());
-        this.lastColor.set(color);
-        this.addPos.set(rand.nextFloat(), (rand.nextFloat() * 2.0f - 1.0f) * slot.getScale().y / 2.0f);
+        this.ship = ship;
+        this.rand = random;
+        this.addPos.set(rand.nextFloat(), (rand.nextFloat() * 2.0f - 1.0f) * slot.getSize().y / 2.0f);
         calculateTransform();
-        this.lastPosition.set(position);
-        this.changeColor = false;
+        init(texture, position.x, position.y, 0.0f, 0.0f, sin, cos, 0.0f, 5.0f + 2.8f * random.nextFloat(),
+                slot.getSize().y / 2.0f + 0.4f * random.nextFloat(), 0.0f, color.x, color.y, color.z, color.w, 0.0f,
+                false, RenderLayer.DEFAULT_ADDITIVE);
         return this;
     }
 
     @Override
-    public void update() {
-        lastPosition.set(position);
-        lastRotation = rotation;
+    protected void addParticle(long textureHandle, float r, float g, float b, float a, boolean isAlphaFromZero, RenderLayer renderLayer) {
+        Core.get().getWorld().getParticleManager().addParticle(this);
+        Core.get().getRenderer().getParticleRenderer().addParticleToRenderLayer(
+                RENDER_POOL.getOrCreate(RENDER_SUPPLIER).init(this, textureHandle, r, g, b, a), renderLayer
+        );
+    }
 
+    @Override
+    public void update() {
         calculateTransform();
 
-        Vector4f beamColor = slot.getEffectsColor();
-        float colorSpeed = 0.25f * rand.nextFloat();
-        if (changeColor) {
-            if (color.w > 0) {
-                color.w -= colorSpeed;
-            }
-        } else {
-            if (color.w < beamColor.w * 2.0f) {
-                color.w += colorSpeed;
-            } else {
-                changeColor = true;
-            }
-        }
-
-        if (color.w > beamColor.w * 2.0f)
-            color.w = beamColor.w * 2.0f;
-
-        if (ship.isDead() || color.w <= 0) {
-            setDead(true);
+        if (ship.isDead()) {
+            setDead();
         }
     }
 
@@ -65,13 +60,12 @@ public class ParticleBeamEffect extends Particle {
         float beamRange = slot.getCurrentBeamRange();
         Vector2f slotPos = slot.getPosition();
 
-        float cos = ship.getCos();
-        float sin = ship.getSin();
+        cos = ship.getCos();
+        sin = ship.getSin();
 
         float l = beamRange * addPos.x + (rand.nextFloat() * 2.0f - 1.0f);
         float k = addPos.y;
 
-        rotation = ship.getRotation();
         position.x = cos * l - sin * k + slotPos.x;
         position.y = sin * l + cos * k + slotPos.y;
     }
@@ -79,6 +73,5 @@ public class ParticleBeamEffect extends Particle {
     @Override
     public void onRemoved() {
         BeamEffects.PARTICLE_BEAM_EFFECT_POOL.returnBack(this);
-        Core.get().getRenderer().getParticleRenderer().removeParticleFromRenderLayer(this, renderLayer);
     }
 }

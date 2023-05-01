@@ -4,13 +4,13 @@ import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.network.PacketOut;
-import net.bfsr.server.core.Server;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.manager.NetworkManagerTCP;
 import net.bfsr.server.network.manager.NetworkManagerUDP;
 import net.bfsr.server.network.packet.PacketIn;
 import net.bfsr.server.network.packet.PacketRegistry;
 import net.bfsr.server.player.Player;
+import net.bfsr.server.player.PlayerManager;
 import org.joml.Vector2f;
 
 import java.lang.reflect.InvocationTargetException;
@@ -21,8 +21,6 @@ import java.util.function.Consumer;
 
 @RequiredArgsConstructor
 public class NetworkSystem {
-    private final Server server;
-
     private final NetworkManagerTCP networkManagerTCP = new NetworkManagerTCP();
     private final NetworkManagerUDP networkManagerUDP = new NetworkManagerUDP();
 
@@ -30,6 +28,7 @@ public class NetworkSystem {
 
     private final List<PlayerNetworkHandler> networkHandlers = new ArrayList<>();
     private final TMap<String, PlayerNetworkHandler> networkHandlerMap = new THashMap<>();
+    private final PlayerManager playerManager;
 
     public void init() {
         packetRegistry.registerPackets();
@@ -75,7 +74,7 @@ public class NetworkSystem {
     }
 
     private void sendPacketToAllExcept(Player player, Consumer<PlayerNetworkHandler> protocol) {
-        List<Player> players = server.getWorld().getPlayers();
+        List<Player> players = playerManager.getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
             Player player1 = players.get(i);
             if (player1 != player) protocol.accept(player1.getNetworkHandler());
@@ -99,7 +98,7 @@ public class NetworkSystem {
     }
 
     private void sendPacketToAllNearby(float x, float y, float dist, Consumer<PlayerNetworkHandler> protocol) {
-        List<Player> players = server.getWorld().getPlayers();
+        List<Player> players = playerManager.getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
             Player player = players.get(i);
             if (player.getPosition().distance(x, y) <= dist) {
@@ -117,7 +116,7 @@ public class NetworkSystem {
     }
 
     private void sendPacketToAllNearbyExcept(float x, float y, float dist, Player player1, Consumer<PlayerNetworkHandler> protocol) {
-        List<Player> players = server.getWorld().getPlayers();
+        List<Player> players = playerManager.getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
             Player player = players.get(i);
             if (player1 != player && player.getPosition().distance(x, y) <= dist) {
@@ -135,7 +134,7 @@ public class NetworkSystem {
     }
 
     private void sendPacketToAll(Consumer<PlayerNetworkHandler> protocol) {
-        List<Player> players = server.getWorld().getPlayers();
+        List<Player> players = playerManager.getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
             protocol.accept(players.get(i).getNetworkHandler());
         }

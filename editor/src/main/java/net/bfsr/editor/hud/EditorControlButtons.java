@@ -13,7 +13,7 @@ public class EditorControlButtons {
         gui.registerGuiObject(ColorScheme.setupButtonColors(new Button(null, buttonWidth, buttonHeight, "Particle Editor", 22, () -> Core.get().setCurrentGui(new GuiParticleEditor())) {
             @Override
             public void updateMouseHover() {
-                if (Core.get().getCurrentGui() == null) {
+                if (Core.get().getGuiManager().getCurrentGui() == null) {
                     super.updateMouseHover();
                 }
             }

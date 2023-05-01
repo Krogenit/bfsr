@@ -3,13 +3,13 @@ package net.bfsr.client.network.packet.server.entity.ship;
 import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
 import net.bfsr.client.core.Core;
-import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.network.packet.PacketIn;
 import net.bfsr.client.network.packet.client.PacketNeedObjectInfo;
-import net.bfsr.component.Armor;
-import net.bfsr.component.ArmorPlate;
-import net.bfsr.component.shield.ShieldCommon;
+import net.bfsr.component.armor.Armor;
+import net.bfsr.component.armor.ArmorPlate;
+import net.bfsr.component.shield.Shield;
 import net.bfsr.entity.GameObject;
+import net.bfsr.entity.ship.Ship;
 
 import java.io.IOException;
 
@@ -49,7 +49,7 @@ public class PacketShipInfo implements PacketIn {
             ship.getCrew().setCrewSize(crew);
             ship.getReactor().setEnergy(energy);
             ship.getHull().setHull(hull);
-            ShieldCommon shipShield = ship.getShield();
+            Shield shipShield = ship.getShield();
             if (shipShield != null) shipShield.setShield(shield);
         } else {
             Core.get().sendUDPPacket(new PacketNeedObjectInfo(id));

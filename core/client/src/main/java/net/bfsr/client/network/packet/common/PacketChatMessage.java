@@ -27,6 +27,6 @@ public class PacketChatMessage implements PacketOut, PacketIn {
 
     @Override
     public void processOnClientSide() {
-        Core.get().getGuiInGame().addChatMessage(message);
+        Core.get().getGuiManager().getGuiInGame().addChatMessage(message);
     }
 }

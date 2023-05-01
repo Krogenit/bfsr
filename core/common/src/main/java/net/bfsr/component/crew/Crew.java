@@ -2,6 +2,7 @@ package net.bfsr.component.crew;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.bfsr.config.component.crew.CrewData;
 
 @Getter
 public class Crew {
@@ -9,8 +10,8 @@ public class Crew {
     @Setter
     private int crewSize;
 
-    public Crew(int maxCrewSize) {
-        this.maxCrewSize = maxCrewSize;
+    public Crew(CrewData crewData) {
+        this.maxCrewSize = crewData.getMaxCapacity();
     }
 
     public float getCrewRegen() {

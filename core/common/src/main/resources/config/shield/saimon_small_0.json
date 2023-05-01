@@ -1,7 +1,0 @@
-{
-  "name": "saimonSmall0",
-  "texture": "texture/component/shield/station0.png",
-  "maxShield": 17.5,
-  "shieldRegen": 0.64,
-  "rebuildTime": 185
-}

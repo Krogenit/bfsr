@@ -1,0 +1,6 @@
+{
+  "name": "human",
+  "maxArmorValue": 25.0,
+  "regenSpeedInSeconds": 0.45,
+  "hullProtection": 1.15
+}

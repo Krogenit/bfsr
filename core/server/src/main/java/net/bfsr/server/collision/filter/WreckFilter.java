@@ -1,8 +1,8 @@
 package net.bfsr.server.collision.filter;
 
-import net.bfsr.collision.filter.Categories;
-import net.bfsr.collision.filter.CollisionFilter;
-import net.bfsr.server.entity.wreck.Wreck;
+import net.bfsr.entity.wreck.Wreck;
+import net.bfsr.physics.filter.Categories;
+import net.bfsr.physics.filter.CollisionFilter;
 
 public class WreckFilter extends CollisionFilter<Wreck> {
     public WreckFilter(Wreck userData) {

@@ -30,6 +30,10 @@ public class SoundSource {
         setReferenceDistance(90.0f);
     }
 
+    public SoundSource(SoundBuffer soundBuffer, float volume, float x, float y) {
+        this(soundBuffer, volume, false, false, x, y);
+    }
+
     public void setBuffer(int bufferId) {
         stop();
         AL10.alSourcei(sourceId, AL10.AL_BUFFER, bufferId);

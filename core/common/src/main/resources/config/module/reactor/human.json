@@ -1,0 +1,5 @@
+{
+  "name": "human",
+  "maxEnergyCapacity": 30.0,
+  "regenAmountInSeconds": 9.0
+}

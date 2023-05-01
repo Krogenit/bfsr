@@ -1,0 +1,45 @@
+{
+  "name": "laser_small",
+  "sounds": [
+    {
+      "path": "sound/weapon/laser0.ogg",
+      "volume": 1.0
+    },
+    {
+      "path": "sound/weapon/laser1.ogg",
+      "volume": 1.0
+    }
+  ],
+  "reloadTimeInSeconds": 0.5,
+  "energyCost": 5.0,
+  "bulletData": "laser_small",
+  "size": {
+    "x": 2.6,
+    "y": 1.4
+  },
+  "texture": "texture/component/weapon/laser1.png",
+  "color": {
+    "r": 1.0,
+    "g": 0.5,
+    "b": 0.5,
+    "a": 1.0
+  },
+  "vertices": [
+    {
+      "x": -1.2,
+      "y": -0.7
+    },
+    {
+      "x": 1.2,
+      "y": -0.7
+    },
+    {
+      "x": 1.2,
+      "y": 0.7
+    },
+    {
+      "x": -1.2,
+      "y": 0.7
+    }
+  ]
+}

@@ -1,27 +1,36 @@
 package net.bfsr.client.particle;
 
-import net.bfsr.client.component.weapon.WeaponSlotBeam;
-import net.bfsr.client.entity.TextureObject;
-import net.bfsr.client.entity.ship.Ship;
 import net.bfsr.client.particle.effect.BeamEffects;
 import net.bfsr.client.renderer.SpriteRenderer;
 import net.bfsr.client.renderer.buffer.BufferType;
+import net.bfsr.client.renderer.texture.Texture;
 import net.bfsr.client.renderer.texture.TextureLoader;
+import net.bfsr.component.weapon.WeaponSlotBeam;
+import net.bfsr.entity.GameObject;
+import net.bfsr.entity.ship.Ship;
 import net.bfsr.texture.TextureRegister;
 import org.joml.Vector2f;
+import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Beam extends TextureObject {
+public class Beam extends GameObject {
     private final WeaponSlotBeam slot;
     private final Ship ship;
     private final List<ParticleBeamEffect> particlesEffects = new ArrayList<>();
 
-    public Beam(WeaponSlotBeam slot, Ship ship) {
-        super(TextureLoader.getTexture(TextureRegister.particleBeam));
+    private final Vector2f lastPosition = new Vector2f();
+    private final Vector2f lastSize = new Vector2f();
+
+    private final Vector4f color;
+    private final Texture texture;
+
+    public Beam(WeaponSlotBeam slot, Vector4f color) {
+        this.texture = TextureLoader.getTexture(TextureRegister.particleBeam);
         this.slot = slot;
-        this.ship = ship;
+        this.ship = slot.getShip();
+        this.color = color;
     }
 
     public void init() {
@@ -37,9 +46,8 @@ public class Beam extends TextureObject {
     }
 
     private void calculateTransform() {
-        Vector2f slotScale = slot.getScale();
+        Vector2f slotScale = slot.getSize();
         Vector2f slotPos = slot.getPosition();
-        this.color.set(slot.getEffectsColor());
 
         float cos = ship.getCos();
         float sin = ship.getSin();
@@ -64,16 +72,24 @@ public class Beam extends TextureObject {
             position.y = slotPos.y + posY / 2.0f;
         }
 
-        scale.x = (float) Math.sqrt((posX - startX) * (posX - startX) + (posY - startY) * (posY - startY));
-        scale.y = slotScale.y;
+        size.x = (float) Math.sqrt((posX - startX) * (posX - startX) + (posY - startY) * (posY - startY));
+        size.y = slotScale.y;
     }
 
     @Override
     public void update() {
-        calculateTransform();
+        setLastValues();
+        updateEffects();
+    }
 
-        while (particlesEffects.size() < slot.getCurrentBeamRange() / 90.0f) {
-            particlesEffects.add(BeamEffects.beamEffect(slot));
+    @Override
+    public void postPhysicsUpdate() {
+        if (color.w > 0) {
+            updatePosition();
+
+            while (particlesEffects.size() < slot.getCurrentBeamRange() / 90.0f) {
+                particlesEffects.add(BeamEffects.beamEffect(slot, color));
+            }
         }
     }
 
@@ -86,15 +102,15 @@ public class Beam extends TextureObject {
         }
     }
 
-    public void render() {
-        SpriteRenderer.get().addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, ship.getLastSin(), ship.getLastCos(), ship.getSin(), ship.getCos(),
-                lastScale.x, lastScale.y, scale.x, scale.y, color.x, color.y, color.z, color.w / 3.0f, texture, BufferType.ENTITIES_ADDITIVE);
-        SpriteRenderer.get().addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, ship.getLastSin(), ship.getLastCos(), ship.getSin(), ship.getCos(),
-                lastScale.x, lastScale.y / 3.0f, scale.x, scale.y / 3.0f, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ADDITIVE);
+    private void setLastValues() {
+        lastSize.set(size);
+        lastPosition.set(position);
     }
 
-    public void setLastValues() {
-        lastScale.set(scale);
-        lastPosition.set(position);
+    public void render(float lastSin, float lastCos, float sin, float cos) {
+        SpriteRenderer.get().addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos,
+                lastSize.x, lastSize.y, size.x, size.y, color.x, color.y, color.z, color.w * 0.3333f, texture, BufferType.ENTITIES_ADDITIVE);
+        SpriteRenderer.get().addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos,
+                lastSize.x, lastSize.y * 0.3333f, size.x, size.y * 0.3333f, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ADDITIVE);
     }
 }

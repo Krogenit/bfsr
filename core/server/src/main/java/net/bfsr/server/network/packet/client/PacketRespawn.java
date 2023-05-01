@@ -22,6 +22,6 @@ public class PacketRespawn implements PacketIn {
 
     @Override
     public void processOnServerSide(PlayerNetworkHandler playerNetworkHandler) {
-        PlayerManager.getInstance().respawnPlayer(playerNetworkHandler.getPlayer(), camPosX, camPosY);
+        PlayerManager.get().respawnPlayer(playerNetworkHandler.getPlayer(), camPosX, camPosY);
     }
 }

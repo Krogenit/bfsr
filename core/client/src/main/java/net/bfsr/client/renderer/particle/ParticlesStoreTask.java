@@ -1,9 +1,8 @@
 package net.bfsr.client.renderer.particle;
 
 import net.bfsr.client.core.Core;
-import net.bfsr.client.particle.Particle;
-import net.bfsr.client.particle.RenderLayer;
 import net.bfsr.client.renderer.SpriteRenderer;
+import net.bfsr.render.RenderLayer;
 import net.bfsr.util.MutableInt;
 
 import java.nio.ByteBuffer;
@@ -19,11 +18,11 @@ public class ParticlesStoreTask implements Runnable {
     private int alphaParticlesStartIndex, alphaParticlesEndIndex;
     private int additiveParticlesStartIndex, additiveParticlesEndIndex;
     private final Runnable[] runnables = new Runnable[2];
-    private final List<Particle>[] particlesByRenderLayer;
+    private final List<ParticleRender>[] particlesByRenderLayer;
     private final RenderLayer renderLayer;
     private SpriteRenderer spriteRenderer;
 
-    public ParticlesStoreTask(List<Particle>[] particlesByRenderLayer, RenderLayer renderLayer) {
+    public ParticlesStoreTask(List<ParticleRender>[] particlesByRenderLayer, RenderLayer renderLayer) {
         this.particlesByRenderLayer = particlesByRenderLayer;
         this.renderLayer = renderLayer;
     }
@@ -75,7 +74,7 @@ public class ParticlesStoreTask implements Runnable {
         runnables[1].run();
     }
 
-    private void storeParticles(List<Particle> particles, FloatBuffer vertexBuffer, ByteBuffer materialBuffer, float interpolation, int start, int end, MutableInt vertexBufferIndex,
+    private void storeParticles(List<ParticleRender> particles, FloatBuffer vertexBuffer, ByteBuffer materialBuffer, float interpolation, int start, int end, MutableInt vertexBufferIndex,
                                 MutableInt materialBufferIndex) {
         for (int i = start; i < end; i++) {
             particles.get(i).putToBuffer(spriteRenderer, vertexBuffer, materialBuffer, interpolation, vertexBufferIndex, materialBufferIndex);

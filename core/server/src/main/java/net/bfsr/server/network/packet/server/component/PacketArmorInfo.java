@@ -2,9 +2,9 @@ package net.bfsr.server.network.packet.server.component;
 
 import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
-import net.bfsr.component.ArmorPlate;
+import net.bfsr.component.armor.ArmorPlate;
+import net.bfsr.entity.ship.Ship;
 import net.bfsr.network.PacketOut;
-import net.bfsr.server.entity.ship.Ship;
 
 import java.io.IOException;
 

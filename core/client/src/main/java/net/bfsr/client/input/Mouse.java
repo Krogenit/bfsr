@@ -1,61 +1,30 @@
 package net.bfsr.client.input;
 
 import net.bfsr.client.camera.Camera;
-import net.bfsr.client.core.Core;
-import net.bfsr.client.gui.Gui;
-import net.bfsr.client.world.WorldClient;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.function.Consumer;
-
 public final class Mouse {
     private static long window;
-    private static final Vector2f position = new Vector2f(), lastPosition = new Vector2f();
-    private static final MouseConsumer[][] mouseConsumers = new MouseConsumer[2][2];
-
+    private static final Vector2f POSITION = new Vector2f(), LAST_POSITION = new Vector2f();
     public static final long INPUT_CURSOR = GLFW.glfwCreateStandardCursor(GLFW.GLFW_IBEAM_CURSOR);
     public static final long DEFAULT_CURSOR = GLFW.glfwCreateStandardCursor(GLFW.GLFW_ARROW_CURSOR);
 
-    public static void init(long window) {
+    public void init(long window, InputHandler inputHandler) {
         Mouse.window = window;
 
-        mouseConsumers[0][1] = action -> guiAndWorldInput(Gui::onMouseLeftClick, WorldClient::onMouseLeftClicked);
-        mouseConsumers[0][0] = action -> guiAndWorldInput(Gui::onMouseLeftRelease, WorldClient::onMouseLeftRelease);
-        mouseConsumers[1][1] = action -> guiAndWorldInput(Gui::onMouseRightClick, WorldClient::onMouseRightClicked);
-        mouseConsumers[1][0] = action -> guiInput(Gui::onMouseRightRelease);
-
-        GLFW.glfwSetCursorPosCallback(window, (windowHandle, xpos, ypos) -> {
-            lastPosition.set(position.x, position.y);
-            position.set((float) xpos, (float) ypos);
-            Core.get().getRenderer().getCamera().mouseMove(position.x - lastPosition.x, position.y - lastPosition.y);
+        GLFW.glfwSetCursorPosCallback(window, (windowHandle, xPos, yPos) -> {
+            LAST_POSITION.set(POSITION.x, POSITION.y);
+            POSITION.set((float) xPos, (float) yPos);
+            inputHandler.mouseMove(POSITION.x - LAST_POSITION.x, POSITION.y - LAST_POSITION.y);
         });
         GLFW.glfwSetCursorEnterCallback(window, (windowHandle, entered) -> {});
         GLFW.glfwSetMouseButtonCallback(window, (windowHandle, button, action, mode) -> {
             if (button < 2) {
-                mouseConsumers[button][action].input(action);
+                inputHandler.mouseInput(button, action);
             }
         });
-        GLFW.glfwSetScrollCallback(window, (windowHandle, x, y) -> {
-            float floatY = (float) y;
-            guiInput(gui -> gui.onMouseScroll(floatY));
-            Core.get().getRenderer().getCamera().scroll(floatY);
-        });
-    }
-
-    private static void guiInput(Consumer<Gui> consumer) {
-        Gui gui = Core.get().getCurrentGui();
-        if (gui != null) {
-            consumer.accept(gui);
-        } else {
-            consumer.accept(Core.get().getGuiInGame());
-        }
-    }
-
-    private static void guiAndWorldInput(Consumer<Gui> guiConsumer, Consumer<WorldClient> worldConsumer) {
-        guiInput(guiConsumer);
-        WorldClient world = Core.get().getWorld();
-        if (world != null) worldConsumer.accept(world);
+        GLFW.glfwSetScrollCallback(window, (windowHandle, x, y) -> inputHandler.scroll((float) y));
     }
 
     public static void changeCursor(long cursor) {
@@ -75,10 +44,10 @@ public final class Mouse {
     }
 
     public static Vector2f getPosition() {
-        return position;
+        return POSITION;
     }
 
     public static Vector2f getWorldPosition(Camera camera) {
-        return camera.getWorldVector(position);
+        return camera.getWorldVector(POSITION);
     }
 }

@@ -5,20 +5,20 @@ import clipper2.core.PathsD;
 import clipper2.core.PointD;
 import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
+import net.bfsr.damage.DamageMask;
+import net.bfsr.damage.Damageable;
 import net.bfsr.network.PacketOut;
-import net.bfsr.server.damage.Damagable;
-import net.bfsr.server.damage.DamageMask;
 
 import java.io.IOException;
 
 @NoArgsConstructor
 public class PacketSyncDamage implements PacketOut {
-    private Damagable damagable;
+    private Damageable damagable;
     private int x, y, maxX, maxY;
     private PathsD contours;
     private byte[] bytes;
 
-    public PacketSyncDamage(Damagable damagable) {
+    public PacketSyncDamage(Damageable damagable) {
         this.damagable = damagable;
         DamageMask damageMask = damagable.getMask();
         x = damageMask.getX();

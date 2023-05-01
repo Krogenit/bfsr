@@ -6,27 +6,26 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.LocalServer;
 import net.bfsr.client.ThreadLocalServer;
+import net.bfsr.client.camera.CameraController;
 import net.bfsr.client.gui.Gui;
+import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.gui.ingame.GuiInGame;
 import net.bfsr.client.gui.menu.GuiMainMenu;
+import net.bfsr.client.input.InputHandler;
 import net.bfsr.client.language.Lang;
+import net.bfsr.client.listener.Listeners;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.network.packet.client.PacketHandshake;
 import net.bfsr.client.network.packet.client.PacketLoginTCP;
 import net.bfsr.client.network.packet.client.PacketLoginUDP;
-import net.bfsr.client.particle.ParticleEffectsRegistry;
+import net.bfsr.client.particle.config.ParticleEffectsRegistry;
 import net.bfsr.client.renderer.Renderer;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.client.settings.Option;
 import net.bfsr.client.sound.SoundListener;
 import net.bfsr.client.sound.SoundManager;
 import net.bfsr.client.world.WorldClient;
-import net.bfsr.config.bullet.BulletRegistry;
-import net.bfsr.config.component.ShieldRegistry;
-import net.bfsr.config.entity.wreck.WreckRegistry;
-import net.bfsr.config.weapon.beam.BeamRegistry;
-import net.bfsr.config.weapon.gun.GunRegistry;
-import net.bfsr.network.ConnectionState;
+import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.network.PacketOut;
 import net.bfsr.profiler.Profiler;
 import org.joml.Vector3f;
@@ -44,33 +43,32 @@ import java.util.function.Supplier;
 public class Core {
     private static Core instance;
 
-    @Setter
-    @Getter
-    private int screenWidth, screenHeight;
     private long window;
     @Setter
     @Getter
     private boolean paused;
 
     @Getter
-    private final SoundManager soundManager;
+    private final SoundManager soundManager = new SoundManager();
     @Getter
     private final Renderer renderer;
     @Getter
     private final NetworkSystem networkSystem = new NetworkSystem();
     @Getter
-    private final Profiler profiler;
+    private final Profiler profiler = new Profiler();
+    @Getter
+    private final InputHandler inputHandler = new InputHandler();
+    @Getter
+    private final GuiManager guiManager = new GuiManager();
+    @Getter
+    private final CameraController cameraController = new CameraController();
 
     @Getter
-    private final ClientSettings settings;
+    private final ClientSettings settings = new ClientSettings();
 
     @Setter
     @Getter
     private WorldClient world;
-    @Getter
-    private Gui currentGui;
-    @Getter
-    private GuiInGame guiInGame;
     @Getter
     private String playerName;
     @Getter
@@ -81,37 +79,27 @@ public class Core {
     private Supplier<WorldClient> worldSupplier = WorldClient::new;
 
     public Core() {
-        instance = this;
-
-        this.settings = new ClientSettings();
-        this.soundManager = new SoundManager();
         this.renderer = new Renderer(this);
-        this.profiler = new Profiler();
+        instance = this;
     }
 
     public void init(long window, int width, int height, Gui startGui, GuiInGame guiInGame) {
         this.window = window;
-        this.screenWidth = width;
-        this.screenHeight = height;
-
         Lang.load();
+        Listeners.init();
+        this.inputHandler.init(window);
         this.settings.readSettings();
         this.networkSystem.init();
         this.soundManager.init();
         this.soundManager.setAttenuationModel(AL11.AL_EXPONENT_DISTANCE);
         this.soundManager.setListener(new SoundListener(new Vector3f(0, 0, 0)));
         this.renderer.init(window, width, height);
-        this.guiInGame = guiInGame;
-        this.guiInGame.init();
-        this.currentGui = startGui;
-        this.currentGui.init();
-        profiler.setEnable(Option.IS_PROFILING.getBoolean());
-        WreckRegistry.INSTANCE.init();
-        ShieldRegistry.INSTANCE.init();
+        this.guiManager.init(startGui, guiInGame);
+        this.cameraController.init();
+        this.profiler.setEnable(Option.IS_PROFILING.getBoolean());
         ParticleEffectsRegistry.INSTANCE.init();
-        BulletRegistry.INSTANCE.init();
-        GunRegistry.INSTANCE.init();
-        BeamRegistry.INSTANCE.init();
+        ConfigConverterManager.INSTANCE.init();
+        Listeners.registerListeners();
     }
 
     public void update() {
@@ -120,18 +108,25 @@ public class Core {
             futureTasks.poll().run();
         }
 
-        profiler.endStartSection("update");
+        profiler.endStartSection("renderer");
+        renderer.update();
+        profiler.endStartSection("inputHandler");
+        inputHandler.update();
+        profiler.endStartSection("cameraController");
+        cameraController.update();
         if (world != null) {
-            renderer.updateCamera();
+            profiler.endStartSection("soundManager");
             soundManager.updateListenerPosition(renderer.getCamera());
+            profiler.endStartSection("world");
             if (!paused) world.update();
-            guiInGame.update();
         }
 
-        if (currentGui != null) currentGui.update();
-
+        profiler.endStartSection("guiManager");
+        guiManager.update();
         profiler.endStartSection("network");
         networkSystem.update();
+        profiler.endStartSection("renderer.postUpdate");
+        renderer.postUpdate();
     }
 
     public void render(float interpolation) {
@@ -202,6 +197,7 @@ public class Core {
     }
 
     public void quitToMainMenu() {
+        cameraController.onExitToMainMenu();
         renderer.onExitToMainMenu();
         clearNetwork();
         stopServer();
@@ -214,18 +210,14 @@ public class Core {
     }
 
     public void clearNetwork() {
-        networkSystem.clear();
-        networkSystem.setConnectionState(ConnectionState.HANDSHAKE);
         networkSystem.closeChannels();
         networkSystem.shutdown();
+        networkSystem.clear();
     }
 
     void resize(int width, int height) {
-        screenWidth = width;
-        screenHeight = height;
         renderer.resize(width, height);
-        if (guiInGame != null) guiInGame.onScreenResize(width, height);
-        if (currentGui != null) currentGui.onScreenResize(width, height);
+        guiManager.resize(width, height);
     }
 
     public WorldClient createWorld() {
@@ -234,9 +226,7 @@ public class Core {
     }
 
     public void setCurrentGui(Gui gui) {
-        if (currentGui != null) currentGui.clear();
-        currentGui = gui;
-        if (currentGui != null) currentGui.init();
+        guiManager.setCurrentGui(gui);
     }
 
     public void sendTCPPacket(PacketOut packet) {
@@ -255,14 +245,6 @@ public class Core {
         futureTasks.add(ListenableFutureTask.create(callable));
     }
 
-    public static Core get() {
-        return instance;
-    }
-
-    public boolean canControlShip() {
-        return !guiInGame.isActive() && currentGui == null;
-    }
-
     public void stop() {
         GLFW.glfwSetWindowShouldClose(window, true);
     }
@@ -273,5 +255,9 @@ public class Core {
 
         soundManager.cleanup();
         renderer.clear();
+    }
+
+    public static Core get() {
+        return instance;
     }
 }

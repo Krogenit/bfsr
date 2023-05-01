@@ -1,43 +1,21 @@
 package net.bfsr.client.input;
 
-import net.bfsr.client.core.Core;
-import net.bfsr.client.gui.Gui;
-import net.bfsr.client.world.WorldClient;
-
-import java.util.function.Consumer;
-
 import static org.lwjgl.glfw.GLFW.*;
 
 public final class Keyboard {
     private static long window;
 
-    public static void init(long win) {
-        window = win;
+    public void init(long window, InputHandler inputHandler) {
+        Keyboard.window = window;
 
-        glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-            if (action != GLFW_RELEASE) {
-                Gui currentGui = Core.get().getCurrentGui();
-                if (currentGui != null) {
-                    currentGui.input(key);
-                } else {
-                    WorldClient world = Core.get().getWorld();
-                    if (world != null) world.input(key);
-
-                    Core.get().getGuiInGame().input(key);
-                }
+        glfwSetKeyCallback(window, (windowHandle, key, scancode, action, mods) -> {
+            if (action == GLFW_RELEASE) {
+                inputHandler.release(key);
+            } else {
+                inputHandler.input(key);
             }
         });
-
-        glfwSetCharCallback(window, (window, key) -> guiInput(gui -> gui.textInput(key)));
-    }
-
-    private static void guiInput(Consumer<Gui> guiConsumer) {
-        Gui gui = Core.get().getCurrentGui();
-        if (gui != null) {
-            guiConsumer.accept(gui);
-        } else {
-            guiConsumer.accept(Core.get().getGuiInGame());
-        }
+        glfwSetCharCallback(window, (windowHandle, key) -> inputHandler.textInput(key));
     }
 
     public static boolean isKeyDown(int keyCode) {

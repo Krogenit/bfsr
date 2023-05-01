@@ -1,0 +1,56 @@
+{
+  "name": "engi_small",
+  "size": {
+    "x": 13.913,
+    "y": 13.913
+  },
+  "destroyTimeInSeconds": 1.0,
+  "texture": "texture/entity/ship/engi_small0.png",
+  "damageTexture": "texture/entity/ship/engi_small0_damage.png",
+  "effectsColor": {
+    "r": 0.8,
+    "g": 1.0,
+    "b": 0.5,
+    "a": 1.0
+  },
+  "weaponSlotPositions": [
+    {
+      "x": 1.8,
+      "y": 1.8
+    },
+    {
+      "x": 1.8,
+      "y": -1.8
+    }
+  ],
+  "vertices": [
+    {
+      "x": -3.6,
+      "y": 0.0
+    },
+    {
+      "x": -1.7,
+      "y": -2.0
+    },
+    {
+      "x": 1.0,
+      "y": -2.0
+    },
+    {
+      "x": 3.6,
+      "y": -0.55
+    },
+    {
+      "x": 3.6,
+      "y": 0.55
+    },
+    {
+      "x": 1.0,
+      "y": 2.0
+    },
+    {
+      "x": -1.7,
+      "y": 2.0
+    }
+  ]
+}

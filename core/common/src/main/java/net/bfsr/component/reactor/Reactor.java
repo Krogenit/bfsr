@@ -2,7 +2,7 @@ package net.bfsr.component.reactor;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.util.TimeUtils;
+import net.bfsr.config.component.reactor.ReactorData;
 
 public class Reactor {
     @Getter
@@ -12,10 +12,10 @@ public class Reactor {
     private final float maxEnergy;
     private final float regenEnergy;
 
-    public Reactor(float maxEnergy, float regenEnergy) {
-        this.energy = maxEnergy;
-        this.maxEnergy = maxEnergy;
-        this.regenEnergy = regenEnergy;
+    public Reactor(ReactorData reactorData) {
+        this.energy = reactorData.getMaxEnergyCapacity();
+        this.maxEnergy = reactorData.getMaxEnergyCapacity();
+        this.regenEnergy = reactorData.getRegenAmount();
     }
 
     public void update() {
@@ -24,7 +24,7 @@ public class Reactor {
 
     private void regenEnergy() {
         if (energy < maxEnergy) {
-            energy += regenEnergy * TimeUtils.UPDATE_DELTA_TIME;
+            energy += regenEnergy;
 
             if (energy > maxEnergy) {
                 energy = maxEnergy;

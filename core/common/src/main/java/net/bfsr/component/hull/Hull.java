@@ -2,7 +2,7 @@ package net.bfsr.component.hull;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.util.TimeUtils;
+import net.bfsr.config.component.hull.HullData;
 
 public class Hull {
     @Getter
@@ -10,17 +10,17 @@ public class Hull {
     private float hull;
     @Getter
     private final float maxHull;
-    private final float regenHull;
+    private final float regenAmount;
 
-    public Hull(float maxHull, float regenHull) {
-        this.hull = maxHull;
-        this.maxHull = maxHull;
-        this.regenHull = regenHull;
+    public Hull(HullData hullData) {
+        this.hull = hullData.getMaxHullValue();
+        this.maxHull = hullData.getMaxHullValue();
+        this.regenAmount = hullData.getRegenAmount();
     }
 
     public void regenHull(float crewRegen) {
         if (hull < maxHull) {
-            hull += (regenHull + crewRegen) * TimeUtils.UPDATE_DELTA_TIME;
+            hull += regenAmount + crewRegen;
 
             if (hull > maxHull) {
                 hull = maxHull;

@@ -1,8 +1,8 @@
 package net.bfsr.server.collision.filter;
 
-import net.bfsr.collision.filter.Categories;
-import net.bfsr.collision.filter.CollisionFilter;
-import net.bfsr.server.entity.ship.Ship;
+import net.bfsr.entity.ship.Ship;
+import net.bfsr.physics.filter.Categories;
+import net.bfsr.physics.filter.CollisionFilter;
 
 public class ShipFilter extends CollisionFilter<Ship> {
     public ShipFilter(Ship userData) {

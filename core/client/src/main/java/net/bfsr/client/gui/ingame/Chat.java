@@ -1,6 +1,7 @@
 package net.bfsr.client.gui.ingame;
 
 import net.bfsr.client.core.Core;
+import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.input.InputChat;
 import net.bfsr.client.gui.scroll.Scroll;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Chat {
+    private final GuiManager guiManager = Core.get().getGuiManager();
     private final TexturedGuiObject chat = new TexturedGuiObject(TextureRegister.guiChat, 320, 170) {
         @Override
         public void render() {
@@ -48,7 +50,7 @@ public class Chat {
     private final InputChat chatInput = new InputChat() {
         @Override
         public void updateMouseHover() {
-            if (Core.get().getCurrentGui() == null) {
+            if (guiManager.getCurrentGui() == null) {
                 super.updateMouseHover();
             }
         }
@@ -64,7 +66,7 @@ public class Chat {
 
         @Override
         public void updateMouseHover() {
-            if (Core.get().getCurrentGui() == null) {
+            if (guiManager.getCurrentGui() == null) {
                 super.updateMouseHover();
             }
         }

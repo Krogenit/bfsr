@@ -1,7 +1,0 @@
-{
-  "name": "engiSmall0",
-  "texture": "texture/component/shield/station0.png",
-  "maxShield": 12.5,
-  "shieldRegen": 0.55,
-  "rebuildTime": 225
-}

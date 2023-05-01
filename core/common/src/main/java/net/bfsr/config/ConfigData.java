@@ -2,7 +2,12 @@ package net.bfsr.config;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import net.bfsr.util.PathHelper;
 import org.dyn4j.geometry.Vector2;
+import org.joml.Vector2f;
+import org.joml.Vector4f;
+
+import java.util.List;
 
 @AllArgsConstructor
 @Getter
@@ -18,5 +23,27 @@ public class ConfigData {
         }
 
         return vertices;
+    }
+
+    protected Vector2f convert(Vector2fConfigurable size) {
+        return new Vector2f(size.x(), size.y());
+    }
+
+    protected Vector4f convert(ColorConfigurable effectsColor) {
+        return new Vector4f(effectsColor.r(), effectsColor.g(), effectsColor.b(), effectsColor.a());
+    }
+
+    protected SoundData[] convert(List<ConfigurableSound> configurableSounds) {
+        return convert(configurableSounds.toArray(new ConfigurableSound[0]));
+    }
+
+    protected SoundData[] convert(ConfigurableSound[] configurableSounds) {
+        SoundData[] sounds = new SoundData[configurableSounds.length];
+        for (int i = 0; i < configurableSounds.length; i++) {
+            ConfigurableSound configurableSound = configurableSounds[i];
+            sounds[i] = new SoundData(PathHelper.convertPath(configurableSound.getPath()), configurableSound.getVolume());
+        }
+
+        return sounds;
     }
 }

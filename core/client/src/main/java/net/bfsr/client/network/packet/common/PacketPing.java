@@ -27,6 +27,6 @@ public class PacketPing implements AsyncPacketIn, PacketOut {
 
     @Override
     public void processOnClientSide(ChannelHandlerContext ctx) {
-        Core.get().getGuiInGame().setPing(time / 1_000_000.0f);
+        Core.get().getGuiManager().getGuiInGame().setPing(time / 1_000_000.0f);
     }
 }
