@@ -22,6 +22,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,9 +76,7 @@ public class PlayerServiceTest {
     @Test
     void authNewPlayer() {
         String username = "test";
-        String result = playerService.authUser(username, "");
-        assertThat(result).isNull();
-        Player player = playerService.getPlayer(username);
+        Player player = playerService.authUser(username, "");
         assertThat(player).isNotNull();
         assertThat(player.getUsername()).isEqualTo(username);
     }
@@ -90,10 +89,7 @@ public class PlayerServiceTest {
         player.setFaction(faction);
         playerService.save(player).block();
 
-        String result = playerService.authUser(username, "");
-        assertThat(result).isNull();
-
-        Player authenticatedPlayer = playerService.getPlayer(username);
+        Player authenticatedPlayer = playerService.authUser(username, "");
         assertThat(authenticatedPlayer).isNotNull();
         assertThat(authenticatedPlayer.getUsername()).isEqualTo(username);
         assertThat(authenticatedPlayer.getFaction()).isEqualTo(faction);
@@ -104,22 +100,16 @@ public class PlayerServiceTest {
 
     @Test
     void saveAllPlayers() {
-        playerService.authUser("test", "");
-        playerService.authUser("test1", "");
-        List<Mono<PlayerModel>> monos = playerService.save();
+        Player player = playerService.authUser("test", "");
+        Player player1 = playerService.authUser("test1", "");
+        List<Mono<PlayerModel>> monos = new ArrayList<>();
+        monos.add(playerService.save(player));
+        monos.add(playerService.save(player1));
         assertThat(monos.size()).isEqualTo(2);
 
         for (int i = 0; i < monos.size(); i++) {
             Mono<PlayerModel> mono = monos.get(i);
             StepVerifier.create(mono).expectNextCount(1).verifyComplete();
         }
-    }
-
-    @Test
-    void removePlayerFromCache() {
-        String username = "test";
-        playerService.authUser(username, "");
-        playerService.removePlayer(username);
-        assertThat(playerService.getPlayer(username)).isNull();
     }
 }
