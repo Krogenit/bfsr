@@ -131,11 +131,17 @@ public class PlayerNetworkHandler {
         }
 
         log.debug("Player logging in");
-        if (singlePlayer) {
-            player = playerManager.getPlayerService().authUser(username, "test");
-            log.debug("Player created");
-        } else {
-            player = playerManager.getPlayerService().authUser(username, "password");
+        try {
+            if (singlePlayer) {
+                player = playerManager.getPlayerService().authUser(username, "test");
+                log.debug("Player created");
+            } else {
+                player = playerManager.getPlayerService().authUser(username, "password");
+            }
+        } catch (Exception e) {
+            log.error("Couldn't auth user {}", username, e);
+            disconnect("Player service not available, try again later");
+            return;
         }
 
         try {
