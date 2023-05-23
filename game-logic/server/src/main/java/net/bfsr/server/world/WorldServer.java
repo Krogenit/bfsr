@@ -99,6 +99,7 @@ public class WorldServer extends World {
     @Override
     protected void updateParticles() {}
 
+    @Override
     public void addBullet(Bullet bullet) {
         super.addBullet(bullet);
         Server.getNetwork().sendUDPPacketToAllNearby(new PacketSpawnBullet(bullet), bullet.getPosition(), PACKET_SPAWN_DISTANCE);

@@ -138,6 +138,7 @@ public abstract class Server extends Loop {
         log.info("Stopped");
     }
 
+    @Override
     public void stop() {
         log.info("Stopping server...");
         super.stop();

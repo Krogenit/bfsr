@@ -50,6 +50,7 @@ public class RigidBody extends GameObject {
 
     protected void initBody() {}
 
+    @Override
     public void postPhysicsUpdate() {
         sin = (float) body.getTransform().getSint();
         cos = (float) body.getTransform().getCost();

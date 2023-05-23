@@ -10,6 +10,7 @@ import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.network.pipeline.MessageDecoderUDP;
 import net.bfsr.server.network.pipeline.MessageHandlerUDP;
 import net.bfsr.server.network.pipeline.PacketEncoderUDP;
+import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;
 
@@ -25,7 +26,7 @@ public class NetworkManagerUDP {
         bootstrap.option(ChannelOption.SO_BROADCAST, true);
         bootstrap.handler(new ChannelInitializer<DatagramChannel>() {
             @Override
-            protected void initChannel(DatagramChannel datagramChannel) {
+            protected void initChannel(@NotNull DatagramChannel datagramChannel) {
                 datagramChannel.pipeline().addLast("decoder", new MessageDecoderUDP());
                 datagramChannel.pipeline().addLast("encoder", new PacketEncoderUDP(networkSystem));
                 datagramChannel.pipeline().addLast("handler", new MessageHandlerUDP());

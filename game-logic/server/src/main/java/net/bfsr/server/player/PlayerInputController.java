@@ -9,7 +9,6 @@ import org.joml.Vector2f;
 
 @RequiredArgsConstructor
 public class PlayerInputController {
-    private final Player player;
     private final Vector2f mousePosition = new Vector2f();
     private boolean mouseLeftDown;
     @Getter

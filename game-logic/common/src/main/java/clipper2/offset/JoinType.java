@@ -25,6 +25,5 @@ public enum JoinType {
      * exceed a given maximum miter distance (relative to the offset distance),
      * these are 'squared' instead.
      */
-    Miter;
-
+    Miter
 }

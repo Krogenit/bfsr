@@ -28,10 +28,6 @@ public class RSocketClient {
         return rSocketRequester.route(route).data(data).send();
     }
 
-    public Mono<Void> fireAndForget(String route) {
-        return rSocketRequester.route(route).send();
-    }
-
     public void clear() {
         if (rSocketRequester != null) {
             rSocketRequester.dispose();

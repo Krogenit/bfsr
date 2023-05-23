@@ -37,18 +37,16 @@ public class PacketCommand implements PacketIn {
         Command cmd = Command.values()[command];
         WorldServer world = playerNetworkHandler.getWorld();
         Random rand = world.getRand();
-        switch (cmd) {
-            case SPAWN_SHIP -> {
-                Vector2f pos = new Vector2f(Float.parseFloat(args[0]), Float.parseFloat(args[1]));
-                Faction fact = Faction.values()[rand.nextInt(Faction.values().length)];
-                Ship ship = switch (fact) {
-                    case HUMAN -> ShipFactory.get().createBotHumanSmall(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI);
-                    case SAIMON -> ShipFactory.get().createBotSaimonSmall(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI);
-                    case ENGI -> ShipFactory.get().createBotEngiSmall(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI);
-                };
-                ShipOutfitter.get().outfit(ship);
-                world.addShip(ship);
-            }
+        if (cmd == Command.SPAWN_SHIP) {
+            Vector2f pos = new Vector2f(Float.parseFloat(args[0]), Float.parseFloat(args[1]));
+            Faction fact = Faction.values()[rand.nextInt(Faction.values().length)];
+            Ship ship = switch (fact) {
+                case HUMAN -> ShipFactory.get().createBotHumanSmall(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI);
+                case SAIMON -> ShipFactory.get().createBotSaimonSmall(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI);
+                case ENGI -> ShipFactory.get().createBotEngiSmall(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI);
+            };
+            ShipOutfitter.get().outfit(ship);
+            world.addShip(ship);
         }
     }
 }

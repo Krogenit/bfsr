@@ -29,6 +29,7 @@ import static org.lwjgl.system.MemoryUtil.memFree;
 public final class TextureGenerator extends AbstractTextureGenerator {
     private TexturedQuad counterClockWiseCenteredQuad;
 
+    @Override
     public void init() {
         counterClockWiseCenteredQuad = TexturedQuad.createCounterClockWiseCenteredQuad();
     }

@@ -21,7 +21,6 @@ package clipper2.core;
  * https://en.wikipedia.org/wiki/Nonzero-rule
  */
 public enum FillRule {
-
     /** Only odd numbered sub-regions are filled */
     EvenOdd,
     /** Only non-zero sub-regions are filled */
@@ -29,6 +28,5 @@ public enum FillRule {
     /** Only sub-regions with winding counts > 0 are filled */
     Positive,
     /** Only sub-regions with winding counts < 0 are filled */
-    Negative;
-
+    Negative
 }

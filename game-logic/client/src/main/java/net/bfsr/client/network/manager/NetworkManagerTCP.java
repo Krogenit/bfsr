@@ -13,6 +13,7 @@ import net.bfsr.client.network.pipeline.PacketEncoder;
 import net.bfsr.network.PacketOut;
 import net.bfsr.network.pipeline.tcp.FrameDecoder;
 import net.bfsr.network.pipeline.tcp.LengthPrepender;
+import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;
 
@@ -27,7 +28,7 @@ public class NetworkManagerTCP {
         bootstrap.channel(NioSocketChannel.class);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
-            protected void initChannel(SocketChannel socketChannel) {
+            protected void initChannel(@NotNull SocketChannel socketChannel) {
                 socketChannel.pipeline().addLast("slicer", new FrameDecoder());
                 socketChannel.pipeline().addLast("prepender", new LengthPrepender());
 

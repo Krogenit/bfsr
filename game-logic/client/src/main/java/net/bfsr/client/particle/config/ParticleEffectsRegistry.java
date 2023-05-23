@@ -19,6 +19,7 @@ public class ParticleEffectsRegistry extends ConfigToDataConverter<ParticleEffec
         });
     }
 
+    @Override
     public void init() {
         super.init();
 

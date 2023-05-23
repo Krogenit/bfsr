@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * run empty runnable ~2 time faster
  */
-public class EmptyRunnableVsNotNullRunnable {
+public final class EmptyRunnableVsNotNullRunnable {
     @Getter
     @Setter
     private static final class TestObject {

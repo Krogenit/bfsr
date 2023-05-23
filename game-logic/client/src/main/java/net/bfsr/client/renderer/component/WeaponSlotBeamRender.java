@@ -95,6 +95,7 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
         }
     }
 
+    @Override
     public void onShot() {
         beam.init();
         weaponSpawnAccumulator.resetTime();

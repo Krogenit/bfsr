@@ -8,12 +8,12 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
-public class VAO {
+public final class VAO {
     @Getter
     private final int id;
     private final VBO[] VBOs;
 
-    VAO(int id, int vboCount) {
+    private VAO(int id, int vboCount) {
         this.id = id;
         VBOs = new VBO[vboCount];
     }

@@ -16,7 +16,5 @@ package clipper2.offset;
  * regardless of whether or not the first and last vertices in the path match.
  */
 public enum EndType {
-
-    Polygon, Joined, Butt, Square, Round;
-
+    Polygon, Joined, Butt, Square, Round
 }

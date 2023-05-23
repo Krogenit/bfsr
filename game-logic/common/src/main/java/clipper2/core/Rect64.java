@@ -17,13 +17,6 @@ public final class Rect64 {
         bottom = b;
     }
 
-    public Rect64(Rect64 rec) {
-        left = rec.left;
-        top = rec.top;
-        right = rec.right;
-        bottom = rec.bottom;
-    }
-
     public long getWidth() {
         return right - left;
     }
@@ -47,26 +40,6 @@ public final class Rect64 {
         result.add(new Point64(right, bottom));
         result.add(new Point64(left, bottom));
         return result;
-    }
-
-    public boolean IsEmpty() {
-        return bottom <= top || right <= left;
-    }
-
-    public Point64 MidPoint() {
-        return new Point64((left + right) / 2, (top + bottom) / 2);
-    }
-
-    public boolean Contains(Point64 pt) {
-        return pt.x > left && pt.x < right && pt.y > top && pt.y < bottom;
-    }
-
-    public boolean Intersects(Rect64 rec) {
-        return (Math.max(left, rec.left) < Math.min(right, rec.right)) && (Math.max(top, rec.top) < Math.min(bottom, rec.bottom));
-    }
-
-    public boolean Contains(Rect64 rec) {
-        return rec.left >= left && rec.right <= right && rec.top >= top && rec.bottom <= bottom;
     }
 
     @Override

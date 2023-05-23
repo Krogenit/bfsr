@@ -7,8 +7,6 @@ import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-import java.util.List;
-
 @AllArgsConstructor
 @Getter
 public class ConfigData {
@@ -31,10 +29,6 @@ public class ConfigData {
 
     protected Vector4f convert(ColorConfigurable effectsColor) {
         return new Vector4f(effectsColor.r(), effectsColor.g(), effectsColor.b(), effectsColor.a());
-    }
-
-    protected SoundData[] convert(List<ConfigurableSound> configurableSounds) {
-        return convert(configurableSounds.toArray(new ConfigurableSound[0]));
     }
 
     protected SoundData[] convert(ConfigurableSound[] configurableSounds) {

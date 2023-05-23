@@ -21,7 +21,7 @@ public final class EventBus {
         SIDED_BUS[side.ordinal()].subscribe(object);
     }
 
-    private static MBassador createMBassador(Side side) {
+    private static MBassador<?> createMBassador(Side side) {
         IBusConfiguration config = new BusConfiguration()
                 .addFeature(Feature.SyncPubSub.Default())
                 .addFeature(Feature.AsynchronousHandlerInvocation.Default())
@@ -31,6 +31,6 @@ public final class EventBus {
                     throw new RuntimeException(error.getMessage(), error.getCause());
                 });
 
-        return new MBassador(config);
+        return new MBassador<>(config);
     }
 }

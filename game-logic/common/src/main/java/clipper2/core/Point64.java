@@ -19,11 +19,6 @@ public final class Point64 {
     public Point64() {
     }
 
-    public Point64(Point64 pt) {
-        this.x = pt.x;
-        this.y = pt.y;
-    }
-
     public Point64(long x, long y) {
         this.x = x;
         this.y = y;
@@ -37,11 +32,6 @@ public final class Point64 {
     public Point64(PointD pt) {
         x = (long) Math.rint(pt.x);
         y = (long) Math.rint(pt.y);
-    }
-
-    public Point64(Point64 pt, double scale) {
-        x = (long) Math.rint(pt.x * scale);
-        y = (long) Math.rint(pt.y * scale);
     }
 
     public Point64(PointD pt, double scale) {
@@ -59,18 +49,6 @@ public final class Point64 {
 
     public boolean opNotEquals(Point64 o) {
         return x != o.x || y != o.y;
-    }
-
-    public static boolean opNotEquals(Point64 lhs, Point64 rhs) {
-        return lhs.x != rhs.x || lhs.y != rhs.y;
-    }
-
-    public static Point64 opAdd(Point64 lhs, Point64 rhs) {
-        return new Point64(lhs.x + rhs.x, lhs.y + rhs.y);
-    }
-
-    public static Point64 opSubtract(Point64 lhs, Point64 rhs) {
-        return new Point64(lhs.x - rhs.x, lhs.y - rhs.y);
     }
 
     @Override

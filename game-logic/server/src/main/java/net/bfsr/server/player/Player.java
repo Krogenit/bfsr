@@ -30,7 +30,7 @@ public class Player {
     public Player(String id, String username) {
         this.id = id;
         this.username = username;
-        this.playerInputController = new PlayerInputController(this);
+        this.playerInputController = new PlayerInputController();
     }
 
     public Player(String username) {
