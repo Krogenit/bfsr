@@ -28,16 +28,6 @@ public class StringGeometryBuilder extends AbstractStringGeometryBuilder {
         glString.flipBuffers();
     }
 
-    @Override
-    public void createString(AbstractGLString glString, StringCache stringCache, String string, int x, int y, int fontSize, float r, float g, float b, float a) {
-        createString(glString, stringCache, string, x, y, fontSize, r, g, b, a, StringOffsetType.DEFAULT);
-    }
-
-    @Override
-    public void createString(AbstractGLString glString, StringCache stringCache, String text, int x, int y, int fontSize, float r, float g, float b, float a, int maxWidth) {
-        createString(glString, stringCache, text, x, y, fontSize, r, g, b, a, maxWidth, StringOffsetType.DEFAULT);
-    }
-
     private void createString(AbstractGLString glString, StringCache stringCache, String text, int x, int y, int fontSize, float r, float g, float b, float a, int maxWidth,
                               StringOffsetType offsetType) {
         createString(glString, stringCache, text, x, y, fontSize, r, g, b, a, maxWidth, offsetType, defaultIndent);

@@ -4,7 +4,7 @@ import java.util.Random;
 /**
  * Objects faster
  */
-public class ObjectsRequireNonNullElseOrCheckNonNull {
+public final class ObjectsRequireNonNullElseOrCheckNonNull {
     public static void main(String[] args) {
         Random random = new Random();
         int count = 1_000_000;

@@ -3,21 +3,18 @@ package net.bfsr.ai;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.ai.task.AiTask;
-import net.bfsr.entity.ship.Ship;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Ai {
-    private final Ship ship;
     private final List<AiTask> tasks;
 
     @Getter
     @Setter
     private AiAggressiveType aggressiveType;
 
-    public Ai(Ship ship) {
-        this.ship = ship;
+    public Ai() {
         this.tasks = new ArrayList<>();
     }
 

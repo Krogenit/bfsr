@@ -13,6 +13,7 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.property.ComponentHolder;
 import net.bfsr.property.PropertiesHolder;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
@@ -22,17 +23,16 @@ import java.util.List;
 import static net.bfsr.editor.gui.ColorScheme.setupColors;
 
 public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiObject implements ComponentHolder<T> {
-    protected final InspectionPanel<T> inspectionPanel;
+    private final InspectionPanel<T> inspectionPanel;
 
-    @Getter
-    protected final List<T> components = new ArrayList<>();
+    private final List<T> components = new ArrayList<>();
     @Setter
     @Getter
-    protected GuiObjectWithSubObjects parent;
+    private GuiObjectWithSubObjects parent;
 
     private boolean clicked;
     private boolean selected, wasSelected;
-    protected final Vector2i selectPosition = new Vector2i();
+    private final Vector2i selectPosition = new Vector2i();
     private InputBox inputBox;
 
     public InspectionEntry(InspectionPanel<T> inspectionPanel, int width, int height, String name, FontType fontType, int fontSize, int stringYOffset) {
@@ -85,7 +85,7 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
         }
     }
 
-    protected void onSelected() {
+    private void onSelected() {
         inspectionPanel.setWantSelectObject(this);
     }
 
@@ -241,6 +241,7 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
         }
     }
 
+    @Nullable
     @Override
     public T getComponentByType(Class<T> type) {
         for (int i = 0; i < components.size(); i++) {

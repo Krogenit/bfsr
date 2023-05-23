@@ -14,10 +14,7 @@ import java.util.List;
  */
 @SuppressWarnings("serial")
 public class PathD extends ArrayList<PointD> {
-
-    public PathD() {
-        super();
-    }
+    public PathD() {}
 
     public PathD(int n) {
         super(n);
@@ -26,5 +23,4 @@ public class PathD extends ArrayList<PointD> {
     public PathD(List<PointD> path) {
         super(path);
     }
-
 }

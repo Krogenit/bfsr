@@ -1,6 +1,8 @@
 package net.bfsr.engine.renderer.font;
 
-/** Identifies the location and value of a single color code in the original string */
+/**
+ * Identifies the location and value of a single color code in the original string  * Note: this class has a natural ordering that is inconsistent with equals.
+ */
 public class ColorCode implements Comparable<Integer> {
     /**
      * Bit flag used with renderStyle to request the underline style

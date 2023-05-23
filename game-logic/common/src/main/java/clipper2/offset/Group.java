@@ -12,10 +12,6 @@ class Group {
     EndType endType;
     boolean pathsReversed;
 
-    Group(Paths64 paths, JoinType joinType) {
-        this(paths, joinType, EndType.Polygon);
-    }
-
     Group(Paths64 paths, JoinType joinType, EndType endType) {
         inPaths = new Paths64(paths);
         this.joinType = joinType;

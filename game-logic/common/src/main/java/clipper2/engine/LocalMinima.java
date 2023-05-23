@@ -7,7 +7,7 @@ final class LocalMinima {
 
     Vertex vertex;
     PathType polytype;
-    boolean isOpen = false;
+    boolean isOpen;
 
     LocalMinima() {
     }
@@ -20,14 +20,6 @@ final class LocalMinima {
         this.vertex = vertex;
         this.polytype = polytype;
         this.isOpen = isOpen;
-    }
-
-    boolean opEquals(LocalMinima o) {
-        return vertex == o.vertex;
-    }
-
-    boolean opNotEquals(LocalMinima o) {
-        return vertex != o.vertex;
     }
 
     @Override

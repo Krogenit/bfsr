@@ -29,11 +29,6 @@ public final class VAO {
         }
     }
 
-    public void createVertexBuffer(int index) {
-        VBO vbo = VBO.create();
-        VBOs[index] = vbo;
-    }
-
     public void vertexArrayVertexBuffer(int index, int stride) {
         GL45C.glVertexArrayVertexBuffer(id, index, VBOs[index].getId(), 0, stride);
     }

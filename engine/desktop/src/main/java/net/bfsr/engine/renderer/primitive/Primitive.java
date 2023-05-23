@@ -27,12 +27,6 @@ public class Primitive {
         Engine.renderer.increaseDrawCalls();
     }
 
-    public void render(int renderMode) {
-        vao.bind();
-        GL11.glDrawArrays(renderMode, 0, vertexCount);
-        Engine.renderer.increaseDrawCalls();
-    }
-
     public void clear() {
         vao.clear();
     }

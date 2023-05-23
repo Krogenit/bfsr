@@ -16,10 +16,6 @@ public class CheckBox extends TexturedGuiObject {
         setSize(width, height);
     }
 
-    public CheckBox(int width, int height, boolean value) {
-        this(null, width, height, value);
-    }
-
     @Override
     public boolean onMouseLeftClick() {
         if (!isMouseHover()) return false;

@@ -1,4 +1,4 @@
-public class PerformanceTest {
+public final class PerformanceTest {
     private static long used;
     private static long startTime;
 

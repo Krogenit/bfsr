@@ -21,10 +21,6 @@ public class SoundSource {
         this(soundBuffer, volume, false, false, x, y);
     }
 
-    public SoundSource(SoundRegistry soundName, boolean loop, boolean relative) {
-        this(Engine.assetsManager.soundLoader.getBuffer(soundName), soundName.getVolume(), loop, relative);
-    }
-
     public SoundSource(SoundRegistry soundName) {
         this(Engine.assetsManager.soundLoader.getBuffer(soundName), soundName.getVolume(), false, true);
     }

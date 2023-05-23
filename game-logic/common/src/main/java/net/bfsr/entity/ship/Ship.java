@@ -505,7 +505,7 @@ public class Ship extends RigidBody implements Damageable {
     }
 
     public void addAI() {
-        this.ai = new Ai(this);
+        this.ai = new Ai();
         this.ai.setAggressiveType(AiAggressiveType.ATTACK);
         this.ai.addTask(new AiSearchTarget(this, 4000.0f));
         this.ai.addTask(new AiAttackTarget(this, 4000.0f));

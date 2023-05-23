@@ -8,10 +8,6 @@ import lombok.NoArgsConstructor;
 public class MutableInt {
     private int value;
 
-    public void increment() {
-        value++;
-    }
-
     public void set(int value) {
         this.value = value;
     }

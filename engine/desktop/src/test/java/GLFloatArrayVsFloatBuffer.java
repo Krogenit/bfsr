@@ -4,11 +4,11 @@ import org.lwjgl.opengl.GL45;
 
 import java.nio.FloatBuffer;
 
-public class GLFloatArrayVsFloatBuffer {
+public final class GLFloatArrayVsFloatBuffer {
     //buffer better
     public static void test() {
         int buffer = GL45.glCreateBuffers();
-        int size = 1000 * 16;
+        int size = 1000 << 4;
         FloatBuffer floatBuffer = BufferUtils.createFloatBuffer(size);
         float[] floats = new float[size];
         for (int i = 0; i < size; i++) {
