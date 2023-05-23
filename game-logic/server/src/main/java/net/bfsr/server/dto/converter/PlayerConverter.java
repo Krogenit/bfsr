@@ -11,6 +11,7 @@ public interface PlayerConverter {
     @Mapping(target = "playerInputController", ignore = true)
     @Mapping(target = "networkHandler", ignore = true)
     @Mapping(target = "digest", ignore = true)
+    @Mapping(target = "ship", ignore = true)
     Player from(PlayerModel playerModel);
 
     @Mapping(source = "username", target = "name")
