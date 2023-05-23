@@ -72,7 +72,7 @@ public class Key {
             if (c1 != c2 && colorCode) {
                 return false;
             }
-            colorCode = (c1 == '\u00A7');
+            colorCode = (c1 == '§');
         }
 
         return true;

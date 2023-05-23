@@ -93,6 +93,7 @@ public class DebugRenderer extends AbstractDebugRenderer {
         }
     }
 
+    @Override
     public void clear() {
         vertexBuffer.clear();
         cmdBuffer.clear();

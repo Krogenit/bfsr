@@ -84,14 +84,17 @@ public class CompoBoxElement<V> extends TexturedGuiObject {
         super.render();
         if (selected) {
             int triangleWidth = 14;
+            int triangleHalfWidth = triangleWidth / 2;
             int triangleHeight = 8;
+            int triangleHalfHeight = triangleHeight / 2;
             float interpolation = Engine.renderer.getInterpolation();
-            float triangleX = lastX + (x - lastX) * interpolation + width - triangleWidth / 2 - triangleXOffset;
-            float triangleY = lastY + (y - lastY) * interpolation + height / 2;
+            int triangleX = (int) (lastX + (x - lastX) * interpolation + width - triangleWidth / 2 - triangleXOffset);
+            int triangleY = (int) (lastY + (y - lastY) * interpolation + height / 2);
 
             Vector4f color = stringObject.getColor();
-            Engine.renderer.guiRenderer.addPrimitive(triangleX - triangleWidth / 2, triangleY - triangleHeight / 2, triangleX, triangleY + triangleHeight / 2, triangleX + triangleWidth / 2,
-                    triangleY - triangleHeight / 2, triangleX - triangleWidth / 2, triangleY - triangleHeight / 2, color.x, color.y, color.z, color.w, 0);
+            Engine.renderer.guiRenderer.addPrimitive(triangleX - triangleHalfWidth, triangleY - triangleHalfHeight, triangleX, triangleY + triangleHalfHeight,
+                    triangleX + triangleHalfWidth, triangleY - triangleHalfHeight, triangleX - triangleHalfWidth, triangleY - triangleHalfHeight,
+                    color.x, color.y, color.z, color.w, 0);
         }
     }
 
@@ -100,13 +103,16 @@ public class CompoBoxElement<V> extends TexturedGuiObject {
         super.renderNoInterpolation();
         if (selected) {
             int triangleWidth = 14;
+            int triangleHalfWidth = triangleWidth / 2;
             int triangleHeight = 8;
+            int triangleHalfHeight = triangleHeight / 2;
             int triangleX = x + width - triangleWidth / 2 - triangleXOffset;
             int triangleY = y + height / 2;
 
             Vector4f color = stringObject.getColor();
-            Engine.renderer.guiRenderer.addPrimitive(triangleX - triangleWidth / 2, triangleY - triangleHeight / 2, triangleX, triangleY + triangleHeight / 2, triangleX + triangleWidth / 2,
-                    triangleY - triangleHeight / 2, triangleX - triangleWidth / 2, triangleY - triangleHeight / 2, color.x, color.y, color.z, color.w, 0);
+            Engine.renderer.guiRenderer.addPrimitive(triangleX - triangleHalfWidth, triangleY - triangleHalfHeight, triangleX, triangleY + triangleHalfHeight,
+                    triangleX + triangleHalfWidth, triangleY - triangleHalfHeight, triangleX - triangleHalfWidth, triangleY - triangleHalfHeight,
+                    color.x, color.y, color.z, color.w, 0);
         }
     }
 

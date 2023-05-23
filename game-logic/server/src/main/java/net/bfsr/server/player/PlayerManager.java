@@ -66,11 +66,14 @@ public class PlayerManager {
 
     public void respawnPlayer(Player player, float x, float y) {
         Faction faction = player.getFaction();
-        Ship playerShip = null;
-        switch (faction) {
-            case HUMAN -> playerShip = ShipFactory.get().createPlayerShipHumanSmall(world, x, y, world.getRand().nextFloat() * MathUtils.TWO_PI);
-            case SAIMON -> playerShip = ShipFactory.get().createPlayerShipSaimonSmall(world, x, y, world.getRand().nextFloat() * MathUtils.TWO_PI);
-            case ENGI -> playerShip = ShipFactory.get().createPlayerShipEngiSmall(world, x, y, world.getRand().nextFloat() * MathUtils.TWO_PI);
+
+        Ship playerShip;
+        if (faction == Faction.HUMAN) {
+            playerShip = ShipFactory.get().createPlayerShipHumanSmall(world, x, y, world.getRand().nextFloat() * MathUtils.TWO_PI);
+        } else if (faction == Faction.SAIMON) {
+            playerShip = ShipFactory.get().createPlayerShipSaimonSmall(world, x, y, world.getRand().nextFloat() * MathUtils.TWO_PI);
+        } else {
+            playerShip = ShipFactory.get().createPlayerShipEngiSmall(world, x, y, world.getRand().nextFloat() * MathUtils.TWO_PI);
         }
 
         ShipOutfitter.get().outfit(playerShip);

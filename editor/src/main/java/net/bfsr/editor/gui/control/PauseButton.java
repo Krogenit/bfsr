@@ -44,7 +44,7 @@ public class PauseButton extends Button {
             }
         }
 
-        Engine.renderer.guiRenderer.add(centerX - xOffset - lineWidth, centerY - yOffset, lineWidth, yOffset * 2, r, g, b, a);
-        Engine.renderer.guiRenderer.add(centerX + xOffset, centerY - yOffset, lineWidth, yOffset * 2, r, g, b, a);
+        Engine.renderer.guiRenderer.add(centerX - xOffset - lineWidth, centerY - yOffset, lineWidth, yOffset << 1, r, g, b, a);
+        Engine.renderer.guiRenderer.add(centerX + xOffset, centerY - yOffset, lineWidth, yOffset << 1, r, g, b, a);
     }
 }

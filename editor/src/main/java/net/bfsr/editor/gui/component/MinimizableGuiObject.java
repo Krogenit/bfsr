@@ -82,8 +82,6 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
 
     protected void onStartMoving() {}
 
-    protected void onMoved() {}
-
     @Override
     protected void registerSubElements(GuiObjectsHandler gui) {
         if (maximized) {
@@ -154,7 +152,7 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
 
         if (canMaximize) {
             float interpolation = Engine.renderer.getInterpolation();
-            renderTriangle(lastX + (x - lastX) * interpolation + 10, lastY + (y - lastY) * interpolation + height / 2);
+            renderTriangle((int) (lastX + (x - lastX) * interpolation + 10), (int) (lastY + (y - lastY) * interpolation + height / 2));
         }
 
         stringObject.render();
@@ -166,7 +164,7 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
         }
     }
 
-    private void renderTriangle(float centerX, float centerY) {
+    private void renderTriangle(int centerX, int centerY) {
         Vector4f textColor = stringObject.getColor();
 
         if (maximized) {

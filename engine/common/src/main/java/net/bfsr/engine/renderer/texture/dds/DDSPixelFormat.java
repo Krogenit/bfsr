@@ -19,8 +19,8 @@
 
 package net.bfsr.engine.renderer.texture.dds;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 public class DDSPixelFormat {
 
@@ -69,7 +69,7 @@ public class DDSPixelFormat {
     protected boolean hasFlagYuv;
     protected boolean hasFlagLuminance;
 
-    protected DDSPixelFormat(ByteBuffer header, boolean printDebug) throws IOException {
+    protected DDSPixelFormat(ByteBuffer header, boolean printDebug) {
         dwSize = header.getInt();
         dwFlags = header.getInt();
         dwFourCC = header.getInt();
@@ -121,14 +121,11 @@ public class DDSPixelFormat {
 
     /**
      * Constructs the four-character code's String representation from the integer value.
-     *
-     * @param fourCC
-     * @return
      */
     private String createFourCCString(int fourCC) {
         byte[] fourCCString = new byte[DDPF_FOURCC];
-        for (int i = 0; i < fourCCString.length; i++) fourCCString[i] = (byte) (fourCC >> (i * 8));
-        return new String(fourCCString);
+        for (int i = 0; i < fourCCString.length; i++) fourCCString[i] = (byte) (fourCC >> (i << 3));
+        return new String(fourCCString, StandardCharsets.UTF_8);
     }
 
 }

@@ -57,10 +57,6 @@ public class SoundManager extends AbstractSoundManager {
         return source;
     }
 
-    public void play(SoundRegistry sound, boolean loop, boolean relative) {
-        play(new SoundSource(sound, loop, relative));
-    }
-
     @Override
     public void play(SoundSource source) {
         source.play();

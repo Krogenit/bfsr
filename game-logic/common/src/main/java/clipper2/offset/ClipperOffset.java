@@ -18,11 +18,11 @@ public class ClipperOffset {
     private final Paths64 solution = new Paths64();
     private double group_delta, abs_group_delta, tmpLimit, stepsPerRad;
     private JoinType joinType;
-    private double arcTolerance;
-    private boolean mergeGroups;
-    private double miterLimit;
-    private boolean preserveCollinear;
-    private boolean reverseSolution;
+    private final double arcTolerance;
+    private final boolean mergeGroups;
+    private final double miterLimit;
+    private final boolean preserveCollinear;
+    private final boolean reverseSolution;
 
     /**
      * @see #ClipperOffset(double, double, boolean, boolean)
@@ -84,18 +84,18 @@ public class ClipperOffset {
             return solution;
         }
 
-        tmpLimit = (getMiterLimit() <= 1 ? 2.0 : 2.0 / Clipper.Sqr(getMiterLimit()));
+        tmpLimit = (miterLimit <= 1 ? 2.0 : 2.0 / Clipper.Sqr(miterLimit));
 
         for (int i = 0, groupsSize = groups.size(); i < groupsSize; i++) {
             Group group = groups.get(i);
             DoGroupOffset(group, delta);
         }
 
-        if (getMergeGroups() && !groups.isEmpty()) {
+        if (mergeGroups && !groups.isEmpty()) {
             // clean up self-intersections ...
             clipper.Clear();
-            clipper.setPreserveCollinear(getPreserveCollinear());
-            clipper.setReverseSolution(getReverseSolution() != groups.get(0).pathsReversed);
+            clipper.setPreserveCollinear(preserveCollinear);
+            clipper.setReverseSolution(reverseSolution != groups.get(0).pathsReversed);
             clipper.AddSubject(solution);
             if (groups.get(0).pathsReversed) {
                 clipper.Execute(ClipType.Union, FillRule.Negative, solution);
@@ -104,46 +104,6 @@ public class ClipperOffset {
             }
         }
         return solution;
-    }
-
-    public final double getArcTolerance() {
-        return arcTolerance;
-    }
-
-    public final void setArcTolerance(double value) {
-        arcTolerance = value;
-    }
-
-    public final boolean getMergeGroups() {
-        return mergeGroups;
-    }
-
-    public final void setMergeGroups(boolean value) {
-        mergeGroups = value;
-    }
-
-    public final double getMiterLimit() {
-        return miterLimit;
-    }
-
-    public final void setMiterLimit(double value) {
-        miterLimit = value;
-    }
-
-    public final boolean getPreserveCollinear() {
-        return preserveCollinear;
-    }
-
-    public final void setPreserveCollinear(boolean value) {
-        preserveCollinear = value;
-    }
-
-    public final boolean getReverseSolution() {
-        return reverseSolution;
-    }
-
-    public final void setReverseSolution(boolean value) {
-        reverseSolution = value;
     }
 
     private static PointD GetUnitNormal(Point64 pt1, Point64 pt2) {
@@ -457,7 +417,7 @@ public class ClipperOffset {
 
         // calculate a sensible number of steps (for 360 deg for the given offset
         if (group.joinType == JoinType.Round || group.endType == EndType.Round) {
-            double arcTol = getArcTolerance() > 0.01 ? getArcTolerance() : Math.log10(2 + abs_group_delta) * 0.25; // empirically
+            double arcTol = arcTolerance > 0.01 ? arcTolerance : Math.log10(2 + abs_group_delta) * 0.25; // empirically
             // derived
             // get steps per 180 degrees (see offset_triginometry2.svg)
             stepsPerRad = Math.PI / Math.acos(1 - arcTol / abs_group_delta) / TWO_PI;
@@ -477,9 +437,6 @@ public class ClipperOffset {
                 // single vertex so build a circle or square ...
                 if (group.endType == EndType.Round) {
                     double r = abs_group_delta;
-                    if (group.endType == EndType.Polygon) {
-                        r *= 0.5;
-                    }
                     group.outPath = Clipper.Ellipse(path.get(0), r, r);
                 } else {
                     int d = (int) Math.ceil(group_delta);
@@ -499,11 +456,11 @@ public class ClipperOffset {
             }
         }
 
-        if (!getMergeGroups()) {
+        if (!mergeGroups) {
             // clean up self-intersections
             clipper.Clear();
-            clipper.setPreserveCollinear(getPreserveCollinear());
-            clipper.setReverseSolution(getReverseSolution() != group.pathsReversed);
+            clipper.setPreserveCollinear(preserveCollinear);
+            clipper.setReverseSolution(reverseSolution != group.pathsReversed);
             clipper.AddSubject(group.outPaths);
             if (group.pathsReversed) {
                 clipper.Execute(ClipType.Union, FillRule.Negative, group.outPaths);

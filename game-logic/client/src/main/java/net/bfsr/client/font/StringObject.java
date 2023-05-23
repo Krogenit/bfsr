@@ -127,14 +127,6 @@ public class StringObject extends SimpleGuiObject {
         update();
     }
 
-    public int sizeStringToWidth(int width) {
-        return stringCache.sizeStringToWidth(string, width);
-    }
-
-    public String trimStringToWidth(int width) {
-        return stringCache.trimStringToWidth(string, width);
-    }
-
     public int getCursorPositionInLine(float mouseX) {
         return stringCache.getCursorPositionInLine(string, mouseX, fontSize);
     }

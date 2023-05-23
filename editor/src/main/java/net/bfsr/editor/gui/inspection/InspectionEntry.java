@@ -73,11 +73,6 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
     }
 
     @Override
-    protected void onMoved() {
-        inspectionPanel.onEntryMoved(this);
-    }
-
-    @Override
     public void update() {
         super.update();
 

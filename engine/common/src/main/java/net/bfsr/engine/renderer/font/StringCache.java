@@ -43,7 +43,7 @@ public class StringCache {
     private static final Vector3f[] COLOR_TABLE = new Vector3f[32];
     private static final char SPACE = ' ';
     private static final char NEW_LINE = '\n';
-    private static final char COLOR_CODE = '\u00A7';
+    private static final char COLOR_CODE = '§';
 
     static {
         for (int i = 0; i < 32; ++i) {
@@ -167,11 +167,6 @@ public class StringCache {
         return index < glyphs.length ? glyphs[index].stringIndex : str.length();
     }
 
-    private int sizeString(String str, int fontSize, int width, boolean breakAtSpaces) {
-        setFontSize(fontSize);
-        return sizeString(str, width, breakAtSpaces);
-    }
-
     /**
      * Return the number of characters in a string that will completly fit inside the specified width when rendered.
      *
@@ -238,14 +233,6 @@ public class StringCache {
 
         /* The string index of the last glyph that wouldn't fit gives the total desired length of the string in characters */
         return index < glyphs.length ? glyphs[index].stringIndex : str.length();
-    }
-
-    public int sizeStringToWidth(String str, int fontSize, int width) {
-        return sizeString(str, fontSize, width, true);
-    }
-
-    public String trimStringToWidth(String str, int width) {
-        return trimStringToWidth(str, width, false);
     }
 
     /**
@@ -394,42 +381,40 @@ public class StringCache {
             int code = "0123456789abcdefklmnor".indexOf(Character.toLowerCase(str.charAt(next + 1)));
             switch (code) {
                 /* Bold style */
-                case 17:
-                    fontStyle |= Font.BOLD;
-                    break;
+                case 17 -> fontStyle |= Font.BOLD;
+
 
                 /* Strikethrough style */
-                case 18:
+                case 18 -> {
                     renderStyle |= ColorCode.STRIKETHROUGH;
                     cacheEntry.specialRender = true;
-                    break;
+                }
 
                 /* Underline style */
-                case 19:
+                case 19 -> {
                     renderStyle |= ColorCode.UNDERLINE;
                     cacheEntry.specialRender = true;
-                    break;
+                }
 
                 /* Italic style */
-                case 20:
-                    fontStyle |= Font.ITALIC;
-                    break;
+                case 20 -> fontStyle |= Font.ITALIC;
+
 
                 /* Plain style */
-                case 21:
+                case 21 -> {
                     fontStyle = Font.PLAIN;
                     renderStyle = 0;
                     colorCode = -1; // This may be a bug in Minecraft's original FontRenderer
-                    break;
+                }
 
                 /* Otherwise, must be a color code or some other unsupported code */
-                default:
+                default -> {
                     if (code >= 0) {
                         colorCode = (byte) code;
                         fontStyle = Font.PLAIN; // This may be a bug in Minecraft's original FontRenderer
                         renderStyle = 0; // This may be a bug in Minecraft's original FontRenderer
                     }
-                    break;
+                }
             }
 
             /* Create a new ColorCode object that tracks the position of the code in the original string */

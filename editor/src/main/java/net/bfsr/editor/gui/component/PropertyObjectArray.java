@@ -31,6 +31,7 @@ public class PropertyObjectArray<V extends PropertiesHolder> extends PropertyArr
         return propertiesHolder;
     }
 
+    @Override
     public MinimizableHolder<V> add(V propertiesHolder) {
         propertiesHolder.clearListeners();
         MinimizableHolder<V> minimizableHolder = new MinimizableHolder<>(baseWidth - propertyOffsetX, baseHeight, propertiesHolder.getName(), fontType, fontSize,

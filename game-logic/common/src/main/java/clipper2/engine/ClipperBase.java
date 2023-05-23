@@ -121,7 +121,7 @@ public class ClipperBase {
         @Nullable
         Joiner nextH;
 
-        public Joiner(OutPt op1, @Nullable OutPt op2, @Nullable Joiner nextH) {
+        Joiner(OutPt op1, @Nullable OutPt op2, @Nullable Joiner nextH) {
             this.idx = -1;
             this.nextH = nextH;
             this.op1 = op1;
@@ -161,7 +161,7 @@ public class ClipperBase {
      * ascending and descending 'bounds' (or sides) that start at local minima and
      * ascend to a local maxima, before descending again.
      */
-    class Vertex {
+    static class Vertex {
 
         Point64 pt;
         @Nullable
@@ -178,7 +178,7 @@ public class ClipperBase {
         }
     }
 
-    class VertexFlags {
+    static final class VertexFlags {
 
         static final int None = 0;
         static final int OpenStart = 1;

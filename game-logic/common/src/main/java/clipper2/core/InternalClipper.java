@@ -1,7 +1,5 @@
 package clipper2.core;
 
-import clipper2.engine.PointInPolygonResult;
-
 public final class InternalClipper {
     private static final double FLOATING_POINT_TOLERANCE = 1.0E-12;
 
@@ -109,80 +107,6 @@ public final class InternalClipper {
 
     public static boolean doIntersect(PointD p1, PointD q1, PointD p2, PointD q2) {
         return orientation(p1, q1, p2) != orientation(p1, q1, q2) && orientation(p2, q2, p1) != orientation(p2, q2, q1);
-    }
-
-    public static PointInPolygonResult PointInPolygon(PointD pt, PathD polygon) {
-        int len = polygon.size(), i = len - 1;
-
-        if (len < 3) {
-            return PointInPolygonResult.IsOutside;
-        }
-
-        while (i >= 0 && polygon.get(i).y == pt.y) {
-            --i;
-        }
-        if (i < 0) {
-            return PointInPolygonResult.IsOutside;
-        }
-
-        int val = 0;
-        boolean isAbove = polygon.get(i).y < pt.y;
-        i = 0;
-
-        while (i < len) {
-            if (isAbove) {
-                while (i < len && polygon.get(i).y < pt.y) {
-                    i++;
-                }
-                if (i == len) {
-                    break;
-                }
-            } else {
-                while (i < len && polygon.get(i).y > pt.y) {
-                    i++;
-                }
-                if (i == len) {
-                    break;
-                }
-            }
-
-            PointD prev;
-
-            PointD curr = polygon.get(i);
-            if (i > 0) {
-                prev = polygon.get(i - 1);
-            } else {
-                prev = polygon.get(len - 1);
-            }
-
-            if (curr.y == pt.y) {
-                if (curr.x == pt.x || (curr.y == prev.y && ((pt.x < prev.x) != (pt.x < curr.x)))) {
-                    return PointInPolygonResult.IsOn;
-                }
-                i++;
-                continue;
-            }
-
-            if (pt.x < curr.x && pt.x < prev.x) {
-                // we're only interested in edges crossing on the left
-            } else if (pt.x > prev.x && pt.x > curr.x) {
-                val = 1 - val; // toggle val
-            } else {
-                double d = CrossProduct(prev, curr, pt);
-                if (d == 0) {
-                    return PointInPolygonResult.IsOn;
-                }
-                if ((d < 0) == isAbove) {
-                    val = 1 - val;
-                }
-            }
-            isAbove = !isAbove;
-            i++;
-        }
-        if (val == 0) {
-            return PointInPolygonResult.IsOutside;
-        }
-        return PointInPolygonResult.IsInside;
     }
 
     public static boolean PointInPolygonOptimized(PointD pt, PathD polygon) {

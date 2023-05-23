@@ -55,6 +55,7 @@ public class Renderer extends AbstractRenderer {
         glClearColor(0.05F, 0.1F, 0.2F, 1.0F);
     }
 
+    @Override
     public void update() {
         camera.update();
     }
@@ -131,6 +132,7 @@ public class Renderer extends AbstractRenderer {
         glfwSetWindowShouldClose(window, true);
     }
 
+    @Override
     public void clear() {
         spriteRenderer.clear();
     }

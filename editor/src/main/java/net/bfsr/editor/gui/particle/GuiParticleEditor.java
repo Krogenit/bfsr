@@ -183,9 +183,6 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
         allEffects.stream().sorted(Comparator.comparingInt(ParticleEffectConfig::getTreeIndex)).forEach(particleEffect -> {
             String editorPath = particleEffect.getEditorPath();
             if (editorPath != null && !editorPath.isEmpty()) {
-                if (editorPath.equals("weapon/small")) {
-                    System.out.println();
-                }
                 addParticleEffectToEntry(buildEntryPath(editorPath), particleEffect);
             } else {
                 InspectionEntry<ParticleEffectConfig> entry = inspectionPanel.findEntry(particleEffect.getName());

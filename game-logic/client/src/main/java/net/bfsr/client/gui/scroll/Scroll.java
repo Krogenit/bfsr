@@ -167,10 +167,6 @@ public class Scroll extends SimpleGuiObject {
         }
     }
 
-    public void resetScroll() {
-        scroll = 0;
-    }
-
     @Override
     public Scroll setPosition(int x, int y) {
         this.x = x;
@@ -192,14 +188,5 @@ public class Scroll extends SimpleGuiObject {
     public Scroll setTotalHeight(int totalHeight) {
         this.totalHeight = totalHeight;
         return this;
-    }
-
-    public boolean isScrollNeeded() {
-        return totalHeight > viewHeight;
-    }
-
-    public void removeAllRegisteredObjects() {
-        totalHeight = 0;
-        scrollableElements.clear();
     }
 }

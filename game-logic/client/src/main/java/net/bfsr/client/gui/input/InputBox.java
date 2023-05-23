@@ -104,10 +104,6 @@ public class InputBox extends TexturedGuiObject {
         this(null, width, height, string, fontType, fontSize, stringOffsetX, stringOffsetY);
     }
 
-    public InputBox(int width, int height, String string, StringCache stringCache, int fontSize, int stringOffsetX, int stringOffsetY) {
-        this(null, width, height, string, stringCache, fontSize, stringOffsetX, stringOffsetY);
-    }
-
     public InputBox(int width, int height, String string, int fontSize, int stringOffsetX, int stringOffsetY) {
         this(width, height, string, FontType.XOLONIUM, fontSize, stringOffsetX, stringOffsetY);
     }

@@ -89,16 +89,10 @@ public class InspectionPanel<T extends PropertiesHolder> {
         return createEntry("Entry");
     }
 
-    public InspectionEntry<T> createEntry(String name, T... objects) {
+    public InspectionEntry<T> createEntry(String name, T component) {
         InspectionEntry<T> entry = createEntry(name);
-        for (int i = 0; i < objects.length; i++) {
-            entry.addComponent(objects[i]);
-        }
+        entry.addComponent(component);
         return entry;
-    }
-
-    public InspectionEntry<T> createEntry(T... objects) {
-        return createEntry("Entry", objects);
     }
 
     public void onMouseLeftClick() {

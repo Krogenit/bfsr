@@ -63,11 +63,6 @@ public abstract class AbstractGuiObject implements GuiObject {
         return this;
     }
 
-    public AbstractGuiObject setFullScreenWidth() {
-        widthResizeFunction = (width, height) -> width;
-        return this;
-    }
-
     public AbstractGuiObject setHeightResizeFunction(BiFunction<Integer, Integer, Integer> resizeHeightFunction) {
         this.heightResizeFunction = resizeHeightFunction;
         return this;

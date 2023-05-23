@@ -80,15 +80,6 @@ class DDSHeader {
     /** Additional details about the surfaces stored */
     private int dwCaps2;
 
-    /** Unused */
-    private int dwCaps3;
-
-    /** Unused */
-    private int dwCaps4;
-
-    /** Unused */
-    private int dwReserved2;
-
     boolean hasFlagMipMapCount;
     private boolean hasFlagCaps;
     private boolean hasFlagHeight;
@@ -132,11 +123,6 @@ class DDSHeader {
 
         dwCaps = header.getInt();
         dwCaps2 = header.getInt();
-
-        // Unused bytes
-        dwCaps3 = header.getInt();
-        dwCaps4 = header.getInt();
-        dwReserved2 = header.getInt();
 
         /* Flags */
         hasFlagCaps = (dwFlags & DDSD_CAPS) == DDSD_CAPS;
