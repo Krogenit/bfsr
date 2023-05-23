@@ -4,7 +4,5 @@ jar {
 }
 
 dependencies {
-    implementation project(':core:client')
-    implementation "org.lwjgl:lwjgl-tinyfd"
-    runtimeOnly "org.lwjgl:lwjgl-tinyfd::$lwjglNatives"
+    implementation project(':game-logic:client')
 }

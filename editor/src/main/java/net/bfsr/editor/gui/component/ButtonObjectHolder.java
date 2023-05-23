@@ -2,7 +2,7 @@ package net.bfsr.editor.gui.component;
 
 import lombok.Getter;
 import net.bfsr.client.gui.button.Button;
-import net.bfsr.client.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.FontType;
 
 @Getter
 public class ButtonObjectHolder<V> extends Button {

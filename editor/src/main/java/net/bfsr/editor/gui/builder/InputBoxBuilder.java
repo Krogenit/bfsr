@@ -1,9 +1,9 @@
 package net.bfsr.editor.gui.builder;
 
-import net.bfsr.client.renderer.font.FontType;
 import net.bfsr.editor.gui.component.PropertyComponent;
 import net.bfsr.editor.gui.component.PropertyInputBox;
 import net.bfsr.editor.property.ConverterUtils;
+import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.property.PropertiesHolder;
 
 import java.lang.reflect.Field;

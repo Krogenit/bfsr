@@ -2,17 +2,15 @@ package net.bfsr.editor.gui.inspection;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.core.Core;
+import net.bfsr.client.font.StringObject;
 import net.bfsr.client.gui.*;
 import net.bfsr.client.gui.button.Button;
-import net.bfsr.client.input.Mouse;
-import net.bfsr.client.renderer.font.FontType;
-import net.bfsr.client.renderer.font.string.StringObject;
-import net.bfsr.client.renderer.gui.GUIRenderer;
+import net.bfsr.common.util.MutableInt;
 import net.bfsr.editor.gui.component.DragTarget;
 import net.bfsr.editor.gui.component.MinimizableGuiObject;
+import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.property.PropertiesHolder;
-import net.bfsr.util.MutableInt;
 import org.joml.Vector2f;
 
 import java.util.Comparator;
@@ -66,7 +64,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
         gui.registerGuiObject(new StringObject(fontType, name, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w).compile().atTopLeftCorner(x,
                 y + fontType.getStringCache().getCenteredYOffset(name, elementHeight, fontSize) + stringYOffset));
         gui.registerGuiObject(objectsContainer.atTopLeftCorner(x, elementHeight).setHeightResizeFunction(
-                (width, height) -> Core.get().getRenderer().getScreenHeight() - elementHeight * 3)
+                (width, height) -> Engine.renderer.getScreenHeight() - elementHeight * 3)
         );
 
         y -= elementHeight;
@@ -136,7 +134,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
     public void onEntryMoved(InspectionEntry<T> entry) {
         InspectionEntry<T> inspectionGuiObject = getMouseHoverObject();
         if (inspectionGuiObject != null) {
-            int mouseY = (int) Mouse.getPosition().y;
+            int mouseY = (int) Engine.mouse.getPosition().y;
             if (mouseY < inspectionGuiObject.getY() + exactObjectSelectionOffsetY) {
                 GuiObjectWithSubObjects parent = inspectionGuiObject.getParent();
                 List<AbstractGuiObject> subObjects = parent.getSubObjects();
@@ -194,7 +192,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
             lastHoverObject = hoverObject;
             hoverObject = null;
 
-            findHoverObjectToMaximize(gui.getGuiObjects(), (int) Mouse.getPosition().y);
+            findHoverObjectToMaximize(gui.getGuiObjects(), (int) Engine.mouse.getPosition().y);
             disableCurrentGuiObjectHover();
         }
     }
@@ -305,7 +303,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
         int x = movableObject.getX();
         int y = movableObject.getY();
 
-        Vector2f position = Mouse.getPosition();
+        Vector2f position = Engine.mouse.getPosition();
         int mouseX = (int) position.x;
         int mouseY = (int) position.y;
 
@@ -362,7 +360,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
     }
 
     private void renderSelection(int x, int y, int width, int height) {
-        GUIRenderer.get().add(x, y, width, height, SELECTION_BLUE_COLOR.x, SELECTION_BLUE_COLOR.y, SELECTION_BLUE_COLOR.z, SELECTION_BLUE_COLOR.w);
+        Engine.renderer.guiRenderer.add(x, y, width, height, SELECTION_BLUE_COLOR.x, SELECTION_BLUE_COLOR.y, SELECTION_BLUE_COLOR.z, SELECTION_BLUE_COLOR.w);
     }
 
     public InspectionEntry<T> findEntry(String path) {

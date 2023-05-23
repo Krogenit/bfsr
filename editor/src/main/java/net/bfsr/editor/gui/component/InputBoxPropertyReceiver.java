@@ -1,7 +1,7 @@
 package net.bfsr.editor.gui.component;
 
 import net.bfsr.client.gui.input.InputBox;
-import net.bfsr.client.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.property.ComponentHolder;
 import net.bfsr.property.PropertiesHolder;
 

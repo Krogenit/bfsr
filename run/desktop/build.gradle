@@ -1,0 +1,9 @@
+jar {
+    archiveBaseName = 'run-desktop'
+    archiveVersion = '0.0.1-SNAPSHOT'
+}
+
+dependencies {
+    api project(':engine:desktop')
+    api project(':game-logic:client')
+}

@@ -2,11 +2,11 @@ package net.bfsr.editor.gui.component;
 
 import net.bfsr.client.gui.SimpleGuiObject;
 import net.bfsr.client.gui.button.Button;
-import net.bfsr.client.renderer.font.FontType;
+import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.util.PathHelper;
 import net.bfsr.property.PropertiesHolder;
-import net.bfsr.util.PathHelper;
 import net.bfsr.util.RunnableUtils;
-import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -30,7 +30,7 @@ public class PropertyFileSelector<P extends PropertiesHolder> extends PropertyCo
         button.setTextColor(TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, 1.0f);
         button.setOnMouseClickRunnable(() -> {
             try {
-                String selectedFilePath = TinyFileDialogs.tinyfd_openFileDialog("Select file", PathHelper.CLIENT_CONTENT.resolve(path).toString(), null, null, false);
+                String selectedFilePath = Engine.systemDialogs.openFileDialog("Select file", PathHelper.CLIENT_CONTENT.resolve(path).toString(), false);
                 if (selectedFilePath != null) {
                     setPath(selectedFilePath);
                 }

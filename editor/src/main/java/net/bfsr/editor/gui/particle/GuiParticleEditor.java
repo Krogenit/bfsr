@@ -1,21 +1,15 @@
 package net.bfsr.editor.gui.particle;
 
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.client.core.Core;
+import net.bfsr.client.Core;
 import net.bfsr.client.gui.AbstractGuiObject;
 import net.bfsr.client.gui.GuiObjectWithSubObjects;
 import net.bfsr.client.gui.button.Button;
-import net.bfsr.client.input.Mouse;
 import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.particle.config.ParticleEffect;
 import net.bfsr.client.particle.config.ParticleEffectConfig;
 import net.bfsr.client.particle.config.ParticleEffectsRegistry;
-import net.bfsr.client.renderer.SpriteRenderer;
-import net.bfsr.client.renderer.buffer.BufferType;
-import net.bfsr.client.renderer.font.FontType;
-import net.bfsr.client.renderer.font.StringOffsetType;
-import net.bfsr.client.renderer.gui.GUIRenderer;
-import net.bfsr.client.renderer.render.Render;
+import net.bfsr.client.renderer.Render;
 import net.bfsr.client.settings.Option;
 import net.bfsr.config.ConfigLoader;
 import net.bfsr.editor.ConfigurableGameObject;
@@ -27,11 +21,14 @@ import net.bfsr.editor.gui.control.Playble;
 import net.bfsr.editor.gui.inspection.InspectionEntry;
 import net.bfsr.editor.gui.inspection.InspectionPanel;
 import net.bfsr.editor.gui.property.PropertiesPanel;
+import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.StringOffsetType;
+import net.bfsr.engine.util.PathHelper;
 import net.bfsr.entity.GameObject;
-import net.bfsr.util.PathHelper;
 import net.bfsr.util.RunnableUtils;
 import org.joml.Vector2f;
-import org.lwjgl.glfw.GLFW;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +42,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import static net.bfsr.editor.gui.ColorScheme.*;
+import static net.bfsr.engine.input.Keys.KEY_ESCAPE;
 
 @Log4j2
 public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
@@ -57,7 +55,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
             if (particleEffect != null && playing && texture != null) {
                 Vector2f position = object.getPosition();
                 Vector2f scale = object.getSize();
-                SpriteRenderer.get().add(position.x, position.y, scale.x, scale.y, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
+                Engine.renderer.spriteRenderer.add(position.x, position.y, scale.x, scale.y, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
             }
         }
     };
@@ -96,7 +94,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
         propertiesPanel.initElements();
         initGameObject();
         initParticleEffects();
-        Core.get().getRenderer().addRender(testRender);
+        Core.get().getWorldRenderer().getRenderManager().addRender(testRender);
     }
 
     private void initGameObject() {
@@ -107,7 +105,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     private void initInspectionPanel(int x, int y) {
         inspectionPanel.setRightClickSupplier(() -> {
             if (!inspectionPanel.isMouseHover()) return false;
-            Vector2f mousePos = Mouse.getPosition();
+            Vector2f mousePos = Engine.mouse.getPosition();
             int x1 = (int) mousePos.x;
             int y1 = (int) mousePos.y;
 
@@ -136,7 +134,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
         });
         inspectionPanel.setEntryRightClickSupplier((inspectionEntry) -> {
             if (!inspectionEntry.isIntersectsWithMouse()) return false;
-            Vector2f mousePos = Mouse.getPosition();
+            Vector2f mousePos = Engine.mouse.getPosition();
             int x1 = (int) mousePos.x;
             int y1 = (int) mousePos.y;
             String addString = "Create Entry";
@@ -371,7 +369,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     public void input(int key) {
         super.input(key);
 
-        if (key == GLFW.GLFW_KEY_ESCAPE) {
+        if (key == KEY_ESCAPE) {
             Core.get().setCurrentGui(null);
         }
     }
@@ -394,7 +392,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
         super.update();
         inspectionPanel.update();
 
-        if (selectedEntry != null && playing && !Core.get().isPaused()) {
+        if (selectedEntry != null && playing && !Engine.isPaused()) {
             gameObject.init();
             textureObject.setPosition(gameObject.getPosX(), gameObject.getPosY());
             textureObject.setSize(gameObject.getSizeX(), gameObject.getSizeY());
@@ -437,11 +435,11 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     public void render() {
         if (propertiesPanel.hasComponents()) {
             propertiesPanel.render();
-            GUIRenderer.get().add(inspectionPanel.getWidth(), 0, width, topPanelHeight, BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
+            Engine.renderer.guiRenderer.add(inspectionPanel.getWidth(), 0, width, topPanelHeight, BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
         } else {
-            GUIRenderer.get().add(inspectionPanel.getWidth(), 0, width, topPanelHeight, BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
+            Engine.renderer.guiRenderer.add(inspectionPanel.getWidth(), 0, width, topPanelHeight, BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
         }
-        GUIRenderer.get().add(0, 0, inspectionPanel.getWidth(), height, BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
+        Engine.renderer.guiRenderer.add(0, 0, inspectionPanel.getWidth(), height, BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
         super.render();
 
         inspectionPanel.render();
@@ -459,7 +457,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
 
         if (value) {
             Option.CAMERA_FOLLOW_PLAYER.setValue(false);
-            Core.get().getRenderer().getCamera().getPosition().set(0);
+            Engine.renderer.camera.getPosition().set(0);
         }
 
         this.playing = value;
@@ -472,15 +470,15 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
 
     @Override
     public void setPause(boolean value) {
-        if (particleEffect != null && Core.get().isPaused()) {
+        if (particleEffect != null && Engine.isPaused()) {
             spawnAccumulator.resetTime();
         }
-        Core.get().setPaused(value);
+        Engine.setPaused(value);
     }
 
     @Override
     public boolean isPaused() {
-        return Core.get().isPaused();
+        return Engine.isPaused();
     }
 
     @Override

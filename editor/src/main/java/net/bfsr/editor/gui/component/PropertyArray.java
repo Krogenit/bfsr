@@ -1,14 +1,14 @@
 package net.bfsr.editor.gui.component;
 
-import net.bfsr.client.core.Core;
+import net.bfsr.client.Core;
 import net.bfsr.client.gui.AbstractGuiObject;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.GuiObjectsHandler;
 import net.bfsr.client.gui.SimpleGuiObject;
 import net.bfsr.client.gui.button.Button;
-import net.bfsr.client.renderer.font.FontType;
-import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.editor.gui.GuiEditor;
+import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.property.PropertiesHolder;
 import net.bfsr.util.RunnableUtils;
 
@@ -41,9 +41,9 @@ public abstract class PropertyArray<P extends PropertiesHolder, T extends Abstra
                 int centerY = y + height / 2;
                 int offsetX = 1;
                 int offsetY = 6;
-                GUIRenderer.get().addPrimitive(centerX - offsetX, centerY - offsetY, centerX - offsetX, centerY + offsetY, centerX + offsetX, centerY + offsetY, centerX + offsetX,
+                Engine.renderer.guiRenderer.addPrimitive(centerX - offsetX, centerY - offsetY, centerX - offsetX, centerY + offsetY, centerX + offsetX, centerY + offsetY, centerX + offsetX,
                         centerY - offsetY, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, 1.0f, 0);
-                GUIRenderer.get().addPrimitive(centerX - offsetY, centerY - offsetX, centerX - offsetY, centerY + offsetX, centerX + offsetY, centerY + offsetX, centerX + offsetY,
+                Engine.renderer.guiRenderer.addPrimitive(centerX - offsetY, centerY - offsetX, centerX - offsetY, centerY + offsetX, centerX + offsetY, centerY + offsetX, centerX + offsetY,
                         centerY - offsetX, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, 1.0f, 0);
             }
         };

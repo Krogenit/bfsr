@@ -1,18 +1,16 @@
 package net.bfsr.editor.gui.property;
 
-import net.bfsr.client.core.Core;
+import net.bfsr.client.font.StringObject;
 import net.bfsr.client.gui.AbstractGuiObject;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.GuiObjectsContainer;
 import net.bfsr.client.gui.button.Button;
-import net.bfsr.client.input.Mouse;
-import net.bfsr.client.renderer.font.FontType;
-import net.bfsr.client.renderer.font.StringOffsetType;
-import net.bfsr.client.renderer.font.string.StringObject;
-import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.editor.gui.component.MinimizableHolder;
 import net.bfsr.editor.gui.component.PropertyComponent;
 import net.bfsr.editor.property.PropertiesBuilder;
+import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.property.PropertiesHolder;
 import net.bfsr.util.RunnableUtils;
 import org.joml.Vector2f;
@@ -56,7 +54,7 @@ public class PropertiesPanel {
         rightHeader = new StringObject(fontType, string, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w).compile();
         rightHeader.atTopRightCorner(-width, fontType.getStringCache().getCenteredYOffset(string, elementHeight, fontSize) + stringYOffset);
         propertiesContainer.atTopRightCorner(-width, elementHeight).setHeightResizeFunction(
-                (width, height) -> Core.get().getRenderer().getScreenHeight() - (elementHeight << 1)
+                (width, height) -> Engine.renderer.getScreenHeight() - (elementHeight << 1)
         );
 
         int buttonWidth = width / 2;
@@ -81,7 +79,7 @@ public class PropertiesPanel {
         minimizableHolder.setOnMinimizeRunnable(this::updatePropertiesPositions);
         minimizableHolder.setOnRightClickSupplier(() -> {
             if (!minimizableHolder.isMouseHover()) return false;
-            Vector2f mousePos = Mouse.getPosition();
+            Vector2f mousePos = Engine.mouse.getPosition();
             int x1 = (int) mousePos.x;
             int y1 = (int) mousePos.y;
             String buttonName = "Copy";
@@ -172,7 +170,7 @@ public class PropertiesPanel {
     }
 
     public void render() {
-        GUIRenderer.get().add(propertiesContainer.getX(), propertiesContainer.getY(), propertiesContainer.getWidth(), propertiesContainer.getHeight(),
+        Engine.renderer.guiRenderer.add(propertiesContainer.getX(), propertiesContainer.getY(), propertiesContainer.getWidth(), propertiesContainer.getHeight(),
                 BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
     }
 

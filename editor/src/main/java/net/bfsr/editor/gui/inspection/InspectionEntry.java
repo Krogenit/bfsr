@@ -7,11 +7,10 @@ import net.bfsr.client.gui.GuiObject;
 import net.bfsr.client.gui.GuiObjectWithSubObjects;
 import net.bfsr.client.gui.GuiObjectsHandler;
 import net.bfsr.client.gui.input.InputBox;
-import net.bfsr.client.input.Mouse;
-import net.bfsr.client.renderer.font.FontType;
-import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.editor.gui.ColorScheme;
 import net.bfsr.editor.gui.component.MinimizableGuiObject;
+import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.property.ComponentHolder;
 import net.bfsr.property.PropertiesHolder;
 import org.joml.Vector2f;
@@ -82,8 +81,8 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
     public void update() {
         super.update();
 
-        if (clicked && Mouse.isLeftDown() && selectPosition.lengthSquared() > 0) {
-            Vector2f mousePosition = Mouse.getPosition();
+        if (clicked && Engine.mouse.isLeftDown() && selectPosition.lengthSquared() > 0) {
+            Vector2f mousePosition = Engine.mouse.getPosition();
             float moveThreshold = 40;
             if (mousePosition.distanceSquared(selectPosition.x, selectPosition.y) > moveThreshold) {
                 onStartMoving();
@@ -124,7 +123,7 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
             return false;
         }
 
-        Vector2f mousePosition = Mouse.getPosition();
+        Vector2f mousePosition = Engine.mouse.getPosition();
         int mouseX = (int) mousePosition.x;
         selectPosition.set(mouseX, (int) mousePosition.y);
         clicked = true;
@@ -145,7 +144,7 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
 
         if (!isMouseHover()) return;
 
-        Vector2f mousePosition = Mouse.getPosition();
+        Vector2f mousePosition = Engine.mouse.getPosition();
         int mouseX = (int) mousePosition.x;
         int selectOffsetX = canMaximize ? MINIMIZABLE_STRING_X_OFFSET : 0;
         if (canMaximize && mouseX >= x && mouseX < x + MINIMIZABLE_STRING_X_OFFSET) {
@@ -188,7 +187,7 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
             return false;
         }
 
-        Vector2f mousePosition = Mouse.getPosition();
+        Vector2f mousePosition = Engine.mouse.getPosition();
         int mouseX = (int) mousePosition.x;
 
         if (!selected && inputBox == null) {
@@ -204,9 +203,9 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
     @Override
     protected void renderBase() {
         if (selected) {
-            GUIRenderer.get().add(lastX, lastY, x, y, width, height, 35 / 255.0f, 74 / 255.0f, 108 / 255.0f, hoverColor.w);
+            Engine.renderer.guiRenderer.add(lastX, lastY, x, y, width, height, 35 / 255.0f, 74 / 255.0f, 108 / 255.0f, hoverColor.w);
         } else if (isMouseHover()) {
-            GUIRenderer.get().add(lastX, lastY, x, y, width, height, hoverColor.x, hoverColor.y, hoverColor.z, hoverColor.w);
+            Engine.renderer.guiRenderer.add(lastX, lastY, x, y, width, height, hoverColor.x, hoverColor.y, hoverColor.z, hoverColor.w);
         }
     }
 
@@ -242,7 +241,7 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
     @Override
     public void removeSubObject(AbstractGuiObject object) {
         super.removeSubObject(object);
-        if (subObjects.size() == 0) {
+        if (subObjects.isEmpty()) {
             setCanMaximize(false);
         }
     }

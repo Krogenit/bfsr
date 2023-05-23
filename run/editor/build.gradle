@@ -1,0 +1,9 @@
+jar {
+    archiveBaseName = 'run-editor'
+    archiveVersion = '0.0.1-SNAPSHOT'
+}
+
+dependencies {
+    implementation project(':run:desktop')
+    implementation project(':editor')
+}

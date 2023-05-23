@@ -1,10 +1,10 @@
 package net.bfsr.editor.gui.component;
 
 import net.bfsr.client.gui.button.Button;
-import net.bfsr.client.input.Mouse;
-import net.bfsr.client.renderer.font.FontType;
-import net.bfsr.client.renderer.font.StringOffsetType;
 import net.bfsr.editor.gui.builder.ComponentBuilder;
+import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.property.PropertiesHolder;
 import net.bfsr.property.PropertyGuiElementType;
 import net.bfsr.util.RunnableUtils;
@@ -44,7 +44,7 @@ public class PropertyPrimitiveArray<V extends PropertiesHolder, PRIMITIVE_TYPE> 
             propertyComponent.setOnRightClickSupplier(() -> {
                 if (!propertyComponent.isMouseHover()) return false;
                 String addString = "Remove";
-                Vector2f mousePos = Mouse.getPosition();
+                Vector2f mousePos = Engine.mouse.getPosition();
                 Button button = new Button(null, (int) mousePos.x, (int) mousePos.y, fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight,
                         addString, fontType, fontSize, 4, stringOffsetY, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
                 setupContextMenuButtonColors(button);

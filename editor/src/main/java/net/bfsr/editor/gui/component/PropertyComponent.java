@@ -2,13 +2,13 @@ package net.bfsr.editor.gui.component;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.bfsr.client.font.StringObject;
 import net.bfsr.client.gui.AbstractGuiObject;
 import net.bfsr.client.gui.GuiObjectWithSubObjects;
 import net.bfsr.client.gui.GuiObjectsHandler;
-import net.bfsr.client.renderer.font.FontType;
-import net.bfsr.client.renderer.font.string.StringObject;
-import net.bfsr.client.renderer.gui.GUIRenderer;
 import net.bfsr.editor.gui.ColorScheme;
+import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.property.PropertiesHolder;
 
 import java.lang.reflect.Field;
@@ -51,7 +51,7 @@ public abstract class PropertyComponent<P extends PropertiesHolder> extends GuiO
     @Override
     public void render() {
         if (isMouseHover()) {
-            GUIRenderer.get().add(lastX, lastY, x, y, width, height, hoverColor.x, hoverColor.y, hoverColor.z, hoverColor.w);
+            Engine.renderer.guiRenderer.add(lastX, lastY, x, y, width, height, hoverColor.x, hoverColor.y, hoverColor.z, hoverColor.w);
         }
     }
 

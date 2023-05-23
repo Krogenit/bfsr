@@ -1,6 +1,6 @@
 package net.bfsr.editor.hud;
 
-import net.bfsr.client.core.Core;
+import net.bfsr.client.Core;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.gui.ingame.GuiInGame;
 import net.bfsr.editor.gui.ColorScheme;
