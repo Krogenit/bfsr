@@ -133,6 +133,7 @@ public class Scroll extends SimpleGuiObject {
         viewHeight = viewHeightResizeFunction.apply(width, height);
         updateTotalHeight();
         updatePositionAndSize(scroll);
+        updateLastPosition();
     }
 
     @Override
