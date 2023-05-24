@@ -1,6 +1,6 @@
 package net.bfsr.event;
 
-import net.bfsr.util.Side;
+import net.bfsr.engine.util.Side;
 import net.engio.mbassy.bus.MBassador;
 import net.engio.mbassy.bus.config.BusConfiguration;
 import net.engio.mbassy.bus.config.Feature;
@@ -9,7 +9,7 @@ import net.engio.mbassy.bus.config.IBusConfiguration;
 public final class EventBus {
     private static final MBassador[] SIDED_BUS = new MBassador[2];
 
-    public static void register(Side side) {
+    public static void create(Side side) {
         SIDED_BUS[side.ordinal()] = createMBassador(side);
     }
 

@@ -1,6 +1,5 @@
 package net.bfsr.client.network;
 
-import com.google.common.collect.Queues;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.Core;
@@ -18,6 +17,7 @@ import net.bfsr.network.PacketOut;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class NetworkSystem {
     private final NetworkManagerTCP networkManagerTCP = new NetworkManagerTCP();
@@ -25,7 +25,7 @@ public class NetworkSystem {
 
     private final PacketRegistry packetRegistry = new PacketRegistry();
 
-    private final Queue<PacketIn> inboundPacketQueue = Queues.newConcurrentLinkedQueue();
+    private final Queue<PacketIn> inboundPacketQueue = new ConcurrentLinkedQueue<>();
 
     @Getter
     @Setter

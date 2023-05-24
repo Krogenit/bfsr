@@ -3,7 +3,6 @@ package net.bfsr.client.network.packet.server.login;
 import io.netty.buffer.ByteBuf;
 import net.bfsr.client.Core;
 import net.bfsr.client.network.packet.PacketIn;
-import net.bfsr.client.world.WorldClient;
 import net.bfsr.network.ConnectionState;
 import net.bfsr.network.PacketOut;
 
@@ -25,8 +24,7 @@ public class PacketJoinGame implements PacketIn, PacketOut {
     @Override
     public void processOnClientSide() {
         Core core = Core.get();
-        WorldClient world = core.createWorld();
-        world.setSeed(seed);
+        core.createWorld(seed);
         core.setCurrentGui(null);
         core.getNetworkSystem().setConnectionState(ConnectionState.PLAY);
     }

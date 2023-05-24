@@ -3,7 +3,7 @@ package net.bfsr.server.network.packet.client;
 import io.netty.buffer.ByteBuf;
 import lombok.NoArgsConstructor;
 import net.bfsr.command.Command;
-import net.bfsr.common.math.MathUtils;
+import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.entity.ship.ShipOutfitter;

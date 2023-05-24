@@ -1,10 +1,10 @@
 package net.bfsr.client.renderer.particle;
 
-import net.bfsr.common.render.RenderLayer;
-import net.bfsr.common.util.MutableInt;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
+import net.bfsr.engine.renderer.particle.RenderLayer;
+import net.bfsr.engine.util.MutableInt;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;

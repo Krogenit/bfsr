@@ -1,6 +1,6 @@
 package net.bfsr.engine.renderer.buffer;
 
-import net.bfsr.common.util.MutableInt;
+import net.bfsr.engine.util.MutableInt;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;

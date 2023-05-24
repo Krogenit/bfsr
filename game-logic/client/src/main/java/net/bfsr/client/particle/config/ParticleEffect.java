@@ -6,15 +6,15 @@ import net.bfsr.client.particle.Particle;
 import net.bfsr.client.particle.ParticleManager;
 import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.sound.SoundEffect;
-import net.bfsr.common.math.LUT;
-import net.bfsr.common.math.MathUtils;
-import net.bfsr.common.render.RenderLayer;
-import net.bfsr.common.util.RandomHelper;
 import net.bfsr.config.ConfigData;
 import net.bfsr.config.ConfigurableSound;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.math.LUT;
+import net.bfsr.engine.math.MathUtils;
+import net.bfsr.engine.renderer.particle.RenderLayer;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.util.PathHelper;
+import net.bfsr.engine.util.RandomHelper;
 import org.dyn4j.geometry.Rotation;
 import org.joml.Vector4f;
 
@@ -278,7 +278,7 @@ public class ParticleEffect extends ConfigData {
 
     public void debug(float x, float y, float sizeX, float sizeY, float sin, float cos, float velocityX, float velocityY, SpawnAccumulator spawnAccumulator) {
         checkParticles();
-        ParticleManager particleManager = Core.get().getWorld().getParticleManager();
+        ParticleManager particleManager = Core.get().getParticleManager();
         int particlesCount = particleManager.getParticlesCount();
 
         if (spawnTime > 0) {

@@ -3,6 +3,8 @@ package net.bfsr.world;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.Getter;
+import net.bfsr.engine.profiler.Profiler;
+import net.bfsr.engine.util.Side;
 import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
@@ -18,9 +20,7 @@ import net.bfsr.event.entity.wreck.WreckAddToWorldEvent;
 import net.bfsr.physics.CCDTransformHandler;
 import net.bfsr.physics.ContactListener;
 import net.bfsr.physics.CustomValueMixer;
-import net.bfsr.profiler.Profiler;
 import net.bfsr.util.ObjectPool;
-import net.bfsr.util.Side;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.ContinuousDetectionMode;
@@ -30,13 +30,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public abstract class World {
+public class World {
     public static final ObjectPool<Wreck> WREAK_POOL = new ObjectPool<>();
 
     private org.dyn4j.world.World<Body> physicWorld;
     private final CCDTransformHandler ccdTransformHandler = new CCDTransformHandler();
     @Getter
     protected final Side side;
+    @Getter
+    private final long seed;
 
     private final Profiler profiler;
     protected final Random rand = new Random();
@@ -49,9 +51,10 @@ public abstract class World {
     private final List<ShipWreck> shipWrecks = new ArrayList<>();
     private final List<Wreck> wrecks = new ArrayList<>();
 
-    protected World(Profiler profiler, Side side) {
+    protected World(Profiler profiler, Side side, long seed) {
         this.profiler = profiler;
         this.side = side;
+        this.seed = seed;
         initPhysicWorld();
     }
 
@@ -71,7 +74,6 @@ public abstract class World {
     public void update() {
         updateShips();
         updateBullets();
-        updateParticles();
         updateWrecks();
 
         profiler.endStartSection("physics");
@@ -81,8 +83,6 @@ public abstract class World {
         profiler.endStartSection("postPhysicsUpdate");
         postPhysicsUpdate();
     }
-
-    protected abstract void updateParticles();
 
     protected void updateShips() {
         for (int i = 0; i < ships.size(); i++) {

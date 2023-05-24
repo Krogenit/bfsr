@@ -4,9 +4,9 @@ import lombok.Getter;
 import net.bfsr.client.Core;
 import net.bfsr.client.renderer.particle.ParticleRender;
 import net.bfsr.client.renderer.particle.ParticleRenderer;
-import net.bfsr.common.math.LUT;
-import net.bfsr.common.render.RenderLayer;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.math.LUT;
+import net.bfsr.engine.renderer.particle.RenderLayer;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.GameObject;
@@ -29,7 +29,7 @@ public class Particle extends GameObject {
     private final Vector2f velocity = new Vector2f();
     private ParticleRender render;
     private final ParticleRenderer particleRenderer = Core.get().getWorldRenderer().getParticleRenderer();
-    private final ParticleManager particleManager = Core.get().getWorld().getParticleManager();
+    private final ParticleManager particleManager = Core.get().getParticleManager();
 
     public Particle init(TextureRegister texture, float x, float y, float velocityX, float velocityY, float sin, float cos, float angularVelocity,
                          float scaleX, float scaleY, float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero,

@@ -5,7 +5,7 @@ import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.module.weapon.BeamShotEvent;
 import net.bfsr.event.module.weapon.WeaponShotEvent;
-import net.bfsr.server.core.Server;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.network.packet.server.component.PacketWeaponShoot;
 import net.bfsr.server.world.WorldServer;
 import net.engio.mbassy.listener.Handler;
@@ -19,7 +19,7 @@ public class WeaponEventListener {
         WeaponSlot weaponSlot = event.weaponSlot();
         Ship ship = weaponSlot.getShip();
         weaponSlot.createBullet();
-        Server.getNetwork().sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), weaponSlot.getId()), ship.getPosition(),
+        ServerGameLogic.getNetwork().sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), weaponSlot.getId()), ship.getPosition(),
                 WorldServer.PACKET_SPAWN_DISTANCE);
     }
 
@@ -27,7 +27,7 @@ public class WeaponEventListener {
     public void event(BeamShotEvent event) {
         WeaponSlotBeam weaponSlot = event.weaponSlot();
         Ship ship = weaponSlot.getShip();
-        Server.getNetwork().sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), weaponSlot.getId()), ship.getPosition(),
+        ServerGameLogic.getNetwork().sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), weaponSlot.getId()), ship.getPosition(),
                 WorldServer.PACKET_SPAWN_DISTANCE);
     }
 }

@@ -3,6 +3,7 @@ package net.bfsr.client.renderer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.client.Core;
+import net.bfsr.client.event.ExitToMainMenuEvent;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.renderer.particle.ParticleRenderer;
 import net.bfsr.client.settings.Option;
@@ -15,10 +16,16 @@ import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.shader.AbstractShaderProgram;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
+import net.bfsr.engine.renderer.texture.TextureRegister;
+import net.bfsr.engine.util.Side;
+import net.bfsr.event.EventBus;
+import net.engio.mbassy.listener.Handler;
+import net.engio.mbassy.listener.Listener;
 
 import java.util.Random;
 
 @RequiredArgsConstructor
+@Listener
 public class WorldRenderer {
     private final Core core;
 
@@ -36,13 +43,16 @@ public class WorldRenderer {
 
     public void init() {
         Engine.renderer.setVSync(Option.V_SYNC.getBoolean());
-        backgroundTexture = Engine.assetsManager.textureLoader.createTexture(2560 << 1, 2560 << 1);
 
         if (Option.IS_DEBUG.getBoolean()) {
             Engine.renderer.setDebugWindow();
         }
 
+        Engine.assetsManager.textureLoader.getTexture(TextureRegister.damageFire, GL.GL_REPEAT, GL.GL_LINEAR).bind();
+        
         particleRenderer.init();
+
+        EventBus.subscribe(Side.CLIENT, this);
     }
 
     public void update() {
@@ -60,7 +70,7 @@ public class WorldRenderer {
     public void prepareRender(float interpolation) {
         WorldClient world = core.getWorld();
         if (world != null) {
-            particleRenderer.putBackgroundParticlesToBuffers(world.getParticlesCount());
+            particleRenderer.putBackgroundParticlesToBuffers(core.getParticlesCount());
             prepareAmbient(interpolation);
             spriteRenderer.addTask(renderManager::renderAlpha, BufferType.ENTITIES_ALPHA);
             spriteRenderer.addTask(renderManager::renderAdditive, BufferType.ENTITIES_ADDITIVE);
@@ -126,8 +136,7 @@ public class WorldRenderer {
     }
 
     public void createBackgroundTexture(long seed) {
-        backgroundTexture.delete();
-        backgroundTexture = Engine.renderer.textureGenerator.generateNebulaTexture(backgroundTexture.getWidth(), backgroundTexture.getHeight(), new Random(seed));
+        backgroundTexture = Engine.renderer.textureGenerator.generateNebulaTexture(2560 << 1, 2560 << 1, new Random(seed));
     }
 
     public void reloadShaders() {
@@ -136,8 +145,10 @@ public class WorldRenderer {
         shader.init();
     }
 
-    public void onExitToMainMenu() {
+    @Handler
+    public void event(ExitToMainMenuEvent event) {
         particleRenderer.onExitToMainMenu();
         renderManager.onExitToMainMenu();
+        backgroundTexture.delete();
     }
 }

@@ -1,7 +1,7 @@
 package net.bfsr.math;
 
-import net.bfsr.common.math.LUT;
-import net.bfsr.common.util.AABB;
+import net.bfsr.engine.math.LUT;
+import net.bfsr.engine.util.AABB;
 import org.joml.Vector2f;
 
 import static net.bfsr.math.MathUtils.ANGLE_TO_VELOCITY;

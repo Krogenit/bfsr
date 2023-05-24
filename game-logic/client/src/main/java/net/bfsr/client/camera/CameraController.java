@@ -1,6 +1,7 @@
 package net.bfsr.client.camera;
 
 import net.bfsr.client.Core;
+import net.bfsr.client.event.ExitToMainMenuEvent;
 import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.network.packet.client.PacketCameraPosition;
@@ -10,14 +11,19 @@ import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
+import net.bfsr.engine.util.Side;
 import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.event.EventBus;
+import net.engio.mbassy.listener.Handler;
+import net.engio.mbassy.listener.Listener;
 import org.joml.Vector2f;
 
 import java.util.List;
 
 import static net.bfsr.engine.input.Keys.*;
 
+@Listener
 public class CameraController {
     private final AbstractRenderer renderer = Engine.renderer;
     private Core core;
@@ -36,6 +42,7 @@ public class CameraController {
         guiManager = core.getGuiManager();
         camera = Engine.renderer.camera;
         position = camera.getPosition();
+        EventBus.subscribe(Side.CLIENT, this);
     }
 
     public void update() {
@@ -150,7 +157,8 @@ public class CameraController {
         }
     }
 
-    public void onExitToMainMenu() {
+    @Handler
+    public void event(ExitToMainMenuEvent event) {
         followShip = null;
     }
 }

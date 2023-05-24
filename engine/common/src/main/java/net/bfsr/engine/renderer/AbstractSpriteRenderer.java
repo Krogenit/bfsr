@@ -1,10 +1,10 @@
 package net.bfsr.engine.renderer;
 
-import net.bfsr.common.util.MutableInt;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractDamageMaskTexture;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
+import net.bfsr.engine.util.MutableInt;
 import org.joml.Vector4f;
 
 import java.nio.ByteBuffer;

@@ -2,9 +2,9 @@ package net.bfsr.client.particle.config;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.common.render.RenderLayer;
 import net.bfsr.config.Configurable;
 import net.bfsr.config.ConfigurableSound;
+import net.bfsr.engine.renderer.particle.RenderLayer;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.util.PathHelper;
 import net.bfsr.property.PropertiesHolder;

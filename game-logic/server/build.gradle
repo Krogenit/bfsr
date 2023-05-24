@@ -4,7 +4,7 @@ jar {
 }
 
 dependencies {
-    api project(':mongodb-service')
+    api project(':common-server-data-model')
 
     implementation 'org.mapstruct:mapstruct:1.5.4.Final'
     annotationProcessor "org.mapstruct:mapstruct-processor:1.5.4.Final", "org.projectlombok:lombok-mapstruct-binding:0.2.0"

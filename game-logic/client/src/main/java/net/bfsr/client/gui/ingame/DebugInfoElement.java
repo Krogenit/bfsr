@@ -12,13 +12,13 @@ import net.bfsr.component.reactor.Reactor;
 import net.bfsr.component.shield.Shield;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.input.AbstractMouse;
+import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.profiler.Profiler;
-import net.bfsr.server.core.Server;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.DecimalUtils;
 import org.joml.Vector2f;
@@ -52,7 +52,7 @@ public class DebugInfoElement {
         long totalMemoryMB = totalMemory / 1024L / 1024L;
         long freeMemoryMB = freeMemory / 1024L / 1024L;
 
-        Server server = Server.getInstance();
+        ServerGameLogic server = ServerGameLogic.getInstance();
         int ups = server != null ? server.getUps() : 0;
 
         stringBuilder.setLength(0);
@@ -100,7 +100,7 @@ public class DebugInfoElement {
         if (world != null) {
             int bulletsCount = world.getBulletsCount();
             int shipsCount = world.getShips().size();
-            int particlesCount = world.getParticlesCount();
+            int particlesCount = core.getParticlesCount();
             int wreckCount = world.getWreckCount();
             int shipWreckCount = world.getShipWreckCount();
             int bodyCount = world.getPhysicWorld().getBodyCount();

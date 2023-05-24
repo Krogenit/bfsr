@@ -1,6 +1,5 @@
 package net.bfsr.server.network.handler;
 
-import com.google.common.collect.Queues;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.DefaultAddressedEnvelope;
@@ -15,7 +14,7 @@ import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.network.ConnectionState;
 import net.bfsr.network.GuiType;
 import net.bfsr.network.PacketOut;
-import net.bfsr.server.core.Server;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.network.packet.PacketIn;
 import net.bfsr.server.network.packet.common.PacketKeepAlive;
 import net.bfsr.server.network.packet.server.gui.PacketOpenGui;
@@ -36,6 +35,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @RequiredArgsConstructor
 @Getter
@@ -50,7 +50,7 @@ public class PlayerNetworkHandler {
     @Setter
     private ConnectionState connectionState = ConnectionState.HANDSHAKE;
     private ConnectionState connectionStateBeforeDisconnect;
-    private final Queue<PacketIn> inboundPacketQueue = Queues.newConcurrentLinkedQueue();
+    private final Queue<PacketIn> inboundPacketQueue = new ConcurrentLinkedQueue<>();
 
     @Setter
     private long loginStartTime;
@@ -60,7 +60,7 @@ public class PlayerNetworkHandler {
     private String terminationReason;
 
     private final boolean singlePlayer;
-    private final Server server = Server.getInstance();
+    private final ServerGameLogic server = ServerGameLogic.getInstance();
     private final WorldServer world = server.getWorld();
     private final PlayerManager playerManager = server.getPlayerManager();
     private Player player;
@@ -150,7 +150,7 @@ public class PlayerNetworkHandler {
             byte[] digest = messageDigest.digest();
             log.debug("Player hash created");
             player.setDigest(digest);
-            Server.getInstance().getNetworkSystem().addHandler(username, this);
+            ServerGameLogic.getInstance().getNetworkSystem().addHandler(username, this);
             sendTCPPacket(new PacketLoginTCPSuccess(digest));
         } catch (NoSuchAlgorithmException e) {
             log.error("Couldn't create player hash", e);

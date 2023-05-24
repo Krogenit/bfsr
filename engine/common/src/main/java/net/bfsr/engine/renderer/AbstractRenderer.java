@@ -73,7 +73,6 @@ public abstract class AbstractRenderer {
     public abstract void setVSync(boolean value);
     public abstract void setDebugWindow();
     public abstract void resize(int width, int height);
-    public abstract void closeWindow();
     public abstract void clear();
 
     public abstract void glClear();

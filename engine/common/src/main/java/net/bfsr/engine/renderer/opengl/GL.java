@@ -99,4 +99,6 @@ public final class GL {
             GL_QUADS = 0x7,
             GL_QUAD_STRIP = 0x8,
             GL_POLYGON = 0x9;
+
+    public static final int GL_REPEAT = 0x2901;
 }

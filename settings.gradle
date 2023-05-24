@@ -1,4 +1,4 @@
 rootProject.name = 'BFSR'
-include 'common-utils', 'engine:common', 'engine:desktop', 'dyn4j', 'game-logic:common', 'game-logic:server', 'game-logic:client', 'editor', 'mongodb-service'
+include 'engine:common', 'engine:lwjgl3', 'dyn4j', 'game-logic:common', 'game-logic:server', 'game-logic:client', 'editor', 'mongodb-service'
 include 'common-server-data-model'
-include 'run:desktop', 'run:editor'
+include 'run:client', 'run:editor', 'run:server'

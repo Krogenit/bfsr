@@ -1,6 +1,6 @@
 package net.bfsr.engine.renderer.camera;
 
-import net.bfsr.common.util.AABB;
+import net.bfsr.engine.util.AABB;
 import org.joml.Vector2f;
 
 public abstract class AbstractCamera {

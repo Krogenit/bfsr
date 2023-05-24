@@ -1,12 +1,12 @@
 package net.bfsr.server.entity.wreck;
 
-import net.bfsr.common.math.LUT;
-import net.bfsr.common.math.MathUtils;
+import net.bfsr.engine.math.LUT;
+import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.entity.wreck.WreckType;
 import net.bfsr.math.RotationHelper;
-import net.bfsr.server.core.Server;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.network.packet.server.entity.wreck.PacketSpawnWreck;
 import net.bfsr.server.world.WorldServer;
 import net.bfsr.world.World;
@@ -15,7 +15,7 @@ import org.joml.Vector2f;
 import java.util.Random;
 
 public final class WreckSpawner {
-    private static final Random RAND = Server.getInstance().getWorld().getRand();
+    private static final Random RAND = ServerGameLogic.getInstance().getWorld().getRand();
 
     public static void spawnDestroyShipSmall(Ship ship) {
         Vector2f pos = ship.getPosition();
@@ -39,7 +39,7 @@ public final class WreckSpawner {
             Wreck wreck = World.WREAK_POOL.getOrCreate(Wreck::new).init(world, world.getNextId(), RAND.nextInt(6), false, isFire, isFireExplosion, x, y,
                     velocity.x, velocity.y, LUT.sin(angle), LUT.cos(angle), angleVel, size2, size2, alphaVel, WreckType.SMALL);
             world.addWreck(wreck);
-            Server.getNetwork().sendUDPPacketToAllNearby(new PacketSpawnWreck(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
+            ServerGameLogic.getNetwork().sendUDPPacketToAllNearby(new PacketSpawnWreck(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
         }
     }
 
@@ -54,7 +54,7 @@ public final class WreckSpawner {
             Wreck wreck = World.WREAK_POOL.getOrCreate(Wreck::new).init(world, world.getNextId(), RAND.nextInt(3), true, true, isFireExplosion, x, y,
                     velocity.x + velocityX * 0.7f, velocity.y + velocityY * 0.7f, LUT.sin(angle), LUT.cos(angle), angleVel, size, size, alphaVel, WreckType.DEFAULT);
             world.addWreck(wreck);
-            Server.getNetwork().sendUDPPacketToAllNearby(new PacketSpawnWreck(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
+            ServerGameLogic.getNetwork().sendUDPPacketToAllNearby(new PacketSpawnWreck(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
         }
     }
 }

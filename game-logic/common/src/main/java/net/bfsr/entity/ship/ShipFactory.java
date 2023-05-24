@@ -1,8 +1,8 @@
 package net.bfsr.entity.ship;
 
-import net.bfsr.common.math.LUT;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.config.entity.ship.ShipRegistry;
+import net.bfsr.engine.math.LUT;
 import net.bfsr.faction.Faction;
 import net.bfsr.world.World;
 

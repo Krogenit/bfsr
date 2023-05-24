@@ -2,15 +2,20 @@ package net.bfsr.client.input;
 
 import lombok.Getter;
 import net.bfsr.client.Core;
+import net.bfsr.client.event.ExitToMainMenuEvent;
 import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.gui.ingame.GuiInGame;
 import net.bfsr.client.network.packet.client.input.*;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
+import net.bfsr.engine.util.Side;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.event.EventBus;
 import net.bfsr.math.Direction;
 import net.bfsr.math.MathUtils;
+import net.engio.mbassy.listener.Handler;
+import net.engio.mbassy.listener.Listener;
 import org.dyn4j.dynamics.Body;
 import org.joml.Vector2f;
 
@@ -18,6 +23,7 @@ import java.util.List;
 
 import static net.bfsr.engine.input.Keys.*;
 
+@Listener
 public class PlayerInputController extends InputController {
     @Getter
     private Ship ship;
@@ -31,6 +37,7 @@ public class PlayerInputController extends InputController {
     public void init() {
         core = Core.get();
         guiManager = core.getGuiManager();
+        EventBus.subscribe(Side.CLIENT, this);
     }
 
     @Override
@@ -198,5 +205,10 @@ public class PlayerInputController extends InputController {
 
     public boolean isControllingShip() {
         return ship != null;
+    }
+
+    @Handler
+    public void event(ExitToMainMenuEvent event) {
+        ship = null;
     }
 }

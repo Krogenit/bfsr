@@ -2,11 +2,11 @@ package net.bfsr.client.renderer.particle;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.common.render.RenderLayer;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.opengl.GL;
+import net.bfsr.engine.renderer.particle.RenderLayer;
 import net.bfsr.engine.util.MultithreadingUtils;
 
 import java.nio.ByteBuffer;

@@ -6,10 +6,10 @@ import net.bfsr.client.font.StringObject;
 import net.bfsr.client.gui.AbstractGuiObject;
 import net.bfsr.client.gui.GuiObjectWithSubObjects;
 import net.bfsr.client.gui.GuiObjectsHandler;
-import net.bfsr.common.util.MutableInt;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.font.StringCache;
+import net.bfsr.engine.util.MutableInt;
 import net.bfsr.util.RunnableUtils;
 import org.joml.Vector4f;
 

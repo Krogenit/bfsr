@@ -7,6 +7,7 @@ import clipper2.offset.ClipperOffset;
 import clipper2.offset.EndType;
 import clipper2.offset.JoinType;
 import earcut4j.Earcut;
+import net.bfsr.engine.Engine;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.event.EventBus;
 import net.bfsr.event.damage.DamageEvent;
@@ -157,7 +158,8 @@ public final class DamageUtils {
                         if (damage != null) {
                             damage.getBody().setLinearVelocity(damageable.getBody().getLinearVelocity());
                             damage.getBody().setAngularVelocity(damageable.getBody().getAngularVelocity());
-                            damage.getWorld().addWreck(damage);
+                            World world = damage.getWorld();
+                            Engine.getGameLogic(world.getSide()).addFutureTask(() -> world.addWreck(damage));
                         }
                     }
                 }

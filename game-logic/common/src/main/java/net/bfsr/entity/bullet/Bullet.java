@@ -1,9 +1,10 @@
 package net.bfsr.entity.bullet;
 
 import lombok.Getter;
-import net.bfsr.common.math.LUT;
-import net.bfsr.common.math.MathUtils;
 import net.bfsr.config.entity.bullet.BulletData;
+import net.bfsr.engine.math.LUT;
+import net.bfsr.engine.math.MathUtils;
+import net.bfsr.engine.util.SideUtils;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
@@ -15,7 +16,6 @@ import net.bfsr.event.entity.bullet.BulletDeathEvent;
 import net.bfsr.event.entity.bullet.BulletHitShipEvent;
 import net.bfsr.event.entity.bullet.BulletReflectEvent;
 import net.bfsr.physics.filter.BulletFilter;
-import net.bfsr.util.SideUtils;
 import net.bfsr.util.SyncUtils;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;

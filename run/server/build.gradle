@@ -1,0 +1,9 @@
+jar {
+    archiveBaseName = 'run-server'
+    archiveVersion = '0.0.1-SNAPSHOT'
+}
+
+dependencies {
+    implementation project(':engine:common')
+    implementation project(':game-logic:server')
+}

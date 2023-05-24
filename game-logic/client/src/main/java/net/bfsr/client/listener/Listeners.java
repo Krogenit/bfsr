@@ -6,14 +6,10 @@ import net.bfsr.client.listener.entity.wreck.WreckEventListener;
 import net.bfsr.client.listener.module.shield.ShieldEventListener;
 import net.bfsr.client.listener.module.weapon.BeamEventListener;
 import net.bfsr.client.listener.module.weapon.WeaponEventListener;
+import net.bfsr.engine.util.Side;
 import net.bfsr.event.EventBus;
-import net.bfsr.util.Side;
 
 public final class Listeners {
-    public static void init() {
-        EventBus.register(Side.CLIENT);
-    }
-
     public static void registerListeners() {
         EventBus.subscribe(Side.CLIENT, new ShipEventListener());
         EventBus.subscribe(Side.CLIENT, new ShieldEventListener());

@@ -1,6 +1,6 @@
 package net.bfsr.editor.property;
 
-import net.bfsr.common.render.RenderLayer;
+import net.bfsr.engine.renderer.particle.RenderLayer;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 

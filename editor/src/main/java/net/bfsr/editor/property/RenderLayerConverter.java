@@ -1,6 +1,6 @@
 package net.bfsr.editor.property;
 
-import net.bfsr.common.render.RenderLayer;
+import net.bfsr.engine.renderer.particle.RenderLayer;
 
 public class RenderLayerConverter implements PropertyConverter<RenderLayer> {
     @Override

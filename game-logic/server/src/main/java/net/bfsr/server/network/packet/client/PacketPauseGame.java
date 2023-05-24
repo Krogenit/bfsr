@@ -1,6 +1,7 @@
 package net.bfsr.server.network.packet.client;
 
 import io.netty.buffer.ByteBuf;
+import net.bfsr.engine.Engine;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.PacketIn;
 
@@ -12,6 +13,6 @@ public class PacketPauseGame implements PacketIn {
 
     @Override
     public void processOnServerSide(PlayerNetworkHandler playerNetworkHandler) {
-        playerNetworkHandler.getServer().setPause(!playerNetworkHandler.getServer().isPause());
+        playerNetworkHandler.getServer().setPaused(!Engine.isPaused());
     }
 }

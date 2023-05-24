@@ -4,7 +4,7 @@ import clipper2.core.Path64;
 import net.bfsr.damage.DamageUtils;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.entity.ship.*;
-import net.bfsr.server.core.Server;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.network.packet.common.PacketObjectPosition;
@@ -25,8 +25,8 @@ import java.util.Random;
 
 @Listener(references = References.Strong)
 public class ShipEventListener {
-    private final NetworkSystem network = Server.getNetwork();
-    private final WorldServer world = Server.getInstance().getWorld();
+    private final NetworkSystem network = ServerGameLogic.getNetwork();
+    private final WorldServer world = ServerGameLogic.getInstance().getWorld();
 
     @Handler
     public void event(ShipAddToWorldEvent event) {

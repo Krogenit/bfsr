@@ -1,7 +1,7 @@
 package net.bfsr.client.renderer.texture;
 
-import net.bfsr.common.math.MathUtils;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.texture.AbstractDamageMaskTexture;
 import net.bfsr.engine.renderer.texture.AbstractTexture;

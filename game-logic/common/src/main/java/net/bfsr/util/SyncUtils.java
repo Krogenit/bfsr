@@ -1,6 +1,6 @@
 package net.bfsr.util;
 
-import net.bfsr.common.math.MathUtils;
+import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.RigidBody;
 import org.joml.Math;

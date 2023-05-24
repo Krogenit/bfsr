@@ -1,10 +1,10 @@
 package net.bfsr.client;
 
-import com.google.common.util.concurrent.ListenableFutureTask;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.camera.CameraController;
+import net.bfsr.client.event.ExitToMainMenuEvent;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.gui.ingame.GuiInGame;
@@ -16,25 +16,27 @@ import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.network.packet.client.PacketHandshake;
 import net.bfsr.client.network.packet.client.PacketLoginTCP;
 import net.bfsr.client.network.packet.client.PacketLoginUDP;
+import net.bfsr.client.particle.ParticleManager;
 import net.bfsr.client.particle.config.ParticleEffectsRegistry;
 import net.bfsr.client.renderer.WorldRenderer;
+import net.bfsr.client.server.LocalServer;
+import net.bfsr.client.server.LocalServerGameLogic;
+import net.bfsr.client.server.ThreadLocalServer;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.client.settings.Option;
 import net.bfsr.client.world.WorldClient;
 import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.GameLogic;
 import net.bfsr.engine.sound.AbstractSoundManager;
+import net.bfsr.engine.util.Side;
+import net.bfsr.event.EventBus;
 import net.bfsr.network.PacketOut;
-import net.bfsr.profiler.Profiler;
 
 import java.net.InetAddress;
-import java.util.Queue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executors;
 
 @Log4j2
-public class Core {
+public class Core extends GameLogic {
     private static Core instance;
 
     @Getter
@@ -43,14 +45,15 @@ public class Core {
     private final WorldRenderer worldRenderer;
     @Getter
     private final NetworkSystem networkSystem = new NetworkSystem();
-    @Getter
-    private final Profiler profiler = new Profiler();
+
     @Getter
     private final InputHandler inputHandler = new InputHandler();
     @Getter
     private final GuiManager guiManager = new GuiManager();
     @Getter
     private final CameraController cameraController = new CameraController();
+    @Getter
+    private final ParticleManager particleManager = new ParticleManager();
 
     @Getter
     private final ClientSettings settings = new ClientSettings();
@@ -63,8 +66,6 @@ public class Core {
     @Getter
     private LocalServer localServer;
 
-    private final Queue<ListenableFutureTask<?>> futureTasks = new ConcurrentLinkedQueue<>();
-
     public Core() {
         this.worldRenderer = new WorldRenderer(this);
         instance = this;
@@ -72,7 +73,7 @@ public class Core {
 
     public void init(Gui startGui, GuiInGame guiInGame) {
         Lang.load();
-        Listeners.init();
+        EventBus.create(Side.CLIENT);
         this.inputHandler.init();
         Engine.setInputHandler(inputHandler);
         this.settings.readSettings();
@@ -82,17 +83,16 @@ public class Core {
         this.cameraController.init();
         this.profiler.setEnable(Option.IS_PROFILING.getBoolean());
         this.soundManager.setGain(Option.SOUND_VOLUME.getFloat());
+        this.particleManager.init();
         ParticleEffectsRegistry.INSTANCE.init();
         ConfigConverterManager.INSTANCE.init();
         Listeners.registerListeners();
+        init();
     }
 
+    @Override
     public void update() {
-        profiler.endStartSection("tasks");
-        while (!futureTasks.isEmpty()) {
-            futureTasks.poll().run();
-        }
-
+        super.update();
         profiler.endStartSection("renderer");
         worldRenderer.update();
         profiler.endStartSection("inputHandler");
@@ -103,8 +103,12 @@ public class Core {
             profiler.endStartSection("soundManager");
             soundManager.updateListenerPosition(Engine.renderer.camera.getPosition());
             soundManager.updateGain(Option.SOUND_VOLUME.getFloat());
-            profiler.endStartSection("world");
-            if (!Engine.isPaused()) world.update();
+            if (!Engine.isPaused()) {
+                profiler.endStartSection("world");
+                world.update();
+                profiler.endStartSection("particles");
+                particleManager.update();
+            }
         }
 
         profiler.endStartSection("guiManager");
@@ -131,7 +135,7 @@ public class Core {
 
     private void startLocalServer() {
         playerName = "Local Player";
-        localServer = new LocalServer();
+        localServer = new LocalServer(new LocalServerGameLogic());
         ThreadLocalServer threadLocalServer = new ThreadLocalServer(localServer);
         threadLocalServer.setName("Local Server");
         threadLocalServer.start();
@@ -183,8 +187,7 @@ public class Core {
     }
 
     public void quitToMainMenu() {
-        cameraController.onExitToMainMenu();
-        worldRenderer.onExitToMainMenu();
+        EventBus.post(Side.CLIENT, new ExitToMainMenuEvent());
         clearNetwork();
         stopServer();
         if (world != null) {
@@ -205,9 +208,8 @@ public class Core {
         guiManager.resize(width, height);
     }
 
-    public WorldClient createWorld() {
-        this.world = new WorldClient();
-        return world;
+    public void createWorld(long seed) {
+        this.world = new WorldClient(profiler, seed);
     }
 
     public void setCurrentGui(Gui gui) {
@@ -220,18 +222,6 @@ public class Core {
 
     public void sendUDPPacket(PacketOut packet) {
         networkSystem.sendPacketUDP(packet);
-    }
-
-    public void addFutureTask(Runnable runnable) {
-        addFutureTask(Executors.callable(runnable));
-    }
-
-    private void addFutureTask(Callable<?> callable) {
-        futureTasks.add(ListenableFutureTask.create(callable));
-    }
-
-    public void stop() {
-        Engine.stop();
     }
 
     public void clear() {
@@ -253,5 +243,9 @@ public class Core {
 
     public boolean needSync() {
         return Option.MAX_FPS.getInteger() < Option.MAX_FPS.getMaxValue();
+    }
+
+    public int getParticlesCount() {
+        return particleManager.getParticlesCount();
     }
 }

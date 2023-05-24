@@ -1,7 +1,7 @@
 package net.bfsr.physics.filter;
 
+import net.bfsr.engine.util.SideUtils;
 import net.bfsr.entity.bullet.Bullet;
-import net.bfsr.util.SideUtils;
 
 public class BulletFilter extends CollisionFilter<Bullet> {
     public BulletFilter(Bullet bullet) {

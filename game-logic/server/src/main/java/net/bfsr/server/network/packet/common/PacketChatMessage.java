@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import net.bfsr.network.PacketOut;
 import net.bfsr.network.util.ByteBufUtils;
-import net.bfsr.server.core.Server;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.packet.PacketIn;
 
@@ -28,6 +28,6 @@ public class PacketChatMessage implements PacketIn, PacketOut {
 
     @Override
     public void processOnServerSide(PlayerNetworkHandler playerNetworkHandler) {
-        Server.getInstance().getNetworkSystem().sendTCPPacketToAll(new PacketChatMessage(message));
+        ServerGameLogic.getInstance().getNetworkSystem().sendTCPPacketToAll(new PacketChatMessage(message));
     }
 }

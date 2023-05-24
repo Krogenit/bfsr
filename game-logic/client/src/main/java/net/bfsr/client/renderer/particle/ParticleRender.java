@@ -2,8 +2,8 @@ package net.bfsr.client.renderer.particle;
 
 import net.bfsr.client.particle.Particle;
 import net.bfsr.client.renderer.Render;
-import net.bfsr.common.util.MutableInt;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
+import net.bfsr.engine.util.MutableInt;
 import net.bfsr.engine.util.TimeUtils;
 import org.joml.Vector2f;
 

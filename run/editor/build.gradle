@@ -4,6 +4,6 @@ jar {
 }
 
 dependencies {
-    implementation project(':run:desktop')
+    implementation project(':run:client')
     implementation project(':editor')
 }

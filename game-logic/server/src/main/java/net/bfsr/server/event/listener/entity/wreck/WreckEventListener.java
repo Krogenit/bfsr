@@ -5,7 +5,7 @@ import net.bfsr.damage.DamageUtils;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.event.entity.wreck.*;
-import net.bfsr.server.core.Server;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.network.packet.common.PacketObjectPosition;
 import net.bfsr.server.network.packet.server.entity.PacketRemoveObject;
@@ -18,8 +18,8 @@ import org.dyn4j.dynamics.Body;
 
 @Listener(references = References.Strong)
 public class WreckEventListener {
-    private final NetworkSystem network = Server.getNetwork();
-    private final WorldServer world = Server.getInstance().getWorld();
+    private final NetworkSystem network = ServerGameLogic.getNetwork();
+    private final WorldServer world = ServerGameLogic.getInstance().getWorld();
 
     @Handler
     public void event(WreckUpdateEvent event) {

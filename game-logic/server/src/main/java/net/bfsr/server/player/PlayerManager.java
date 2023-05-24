@@ -3,14 +3,14 @@ package net.bfsr.server.player;
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import lombok.Getter;
-import net.bfsr.common.math.MathUtils;
+import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.GuiType;
-import net.bfsr.server.core.Server;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.dto.PlayerModel;
 import net.bfsr.server.network.packet.server.gui.PacketOpenGui;
 import net.bfsr.server.rsocket.RSocketClient;
@@ -135,6 +135,6 @@ public class PlayerManager {
     }
 
     public static PlayerManager get() {
-        return Server.getInstance().getPlayerManager();
+        return ServerGameLogic.getInstance().getPlayerManager();
     }
 }
