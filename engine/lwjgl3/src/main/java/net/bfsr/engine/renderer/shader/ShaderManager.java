@@ -3,7 +3,6 @@ package net.bfsr.engine.renderer.shader;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.renderer.shader.loader.Definition;
 import net.bfsr.engine.renderer.shader.loader.FileManager;
-import net.bfsr.engine.renderer.shader.loader.IncludeID;
 import org.lwjgl.opengl.*;
 
 import java.util.ArrayList;
@@ -15,9 +14,7 @@ import static org.lwjgl.opengl.GL20.glShaderSource;
 @Log4j2
 public class ShaderManager {
     public static final ShaderManager INSTANCE = new ShaderManager();
-    private static final int PREPROCESS_ONLY_PROGRAM = 0;
     private final FileManager fileManager = new FileManager();
-    private boolean preprocessOnly;
     private final List<ShaderProgram> programs = new ArrayList<>();
 
     public ShaderProgram createProgram(ShaderProgram program) {
@@ -41,40 +38,22 @@ public class ShaderManager {
         Definition[] definitions = program.getDefinitions();
         for (int i = 0; i < definitions.length; i++) {
             Definition definition = definitions[i];
-            String strDefine = "";
-
-            switch (definition.getType()) {
-                case GL20.GL_VERTEX_SHADER:
-                    strDefine = "#define _VERTEX_SHADER_ 1\n";
-                    break;
-                case GL20.GL_FRAGMENT_SHADER:
-                    strDefine = "#define _FRAGMENT_SHADER_ 1\n";
-                    break;
-                case GL43.GL_COMPUTE_SHADER:
-                    strDefine = "#define _COMPUTE_SHADER_ 1\n";
-                    break;
-                case GL32.GL_GEOMETRY_SHADER:
-                    strDefine = "#define _GEOMETRY_SHADER_ 1\n";
-                    break;
-                case ARBTessellationShader.GL_TESS_CONTROL_SHADER:
-                    strDefine = "#define _TESS_CONTROL_SHADER_ 1\n";
-                    break;
-                case ARBTessellationShader.GL_TESS_EVALUATION_SHADER:
-                    strDefine = "#define _TESS_EVALUATION_SHADER_ 1\n";
-                    break;
-            }
+            String strDefine = switch (definition.getType()) {
+                case GL20.GL_VERTEX_SHADER -> "#define _VERTEX_SHADER_ 1\n";
+                case GL20.GL_FRAGMENT_SHADER -> "#define _FRAGMENT_SHADER_ 1\n";
+                case GL43.GL_COMPUTE_SHADER -> "#define _COMPUTE_SHADER_ 1\n";
+                case GL32.GL_GEOMETRY_SHADER -> "#define _GEOMETRY_SHADER_ 1\n";
+                case ARBTessellationShader.GL_TESS_CONTROL_SHADER -> "#define _TESS_CONTROL_SHADER_ 1\n";
+                case ARBTessellationShader.GL_TESS_EVALUATION_SHADER -> "#define _TESS_EVALUATION_SHADER_ 1\n";
+                default -> "";
+            };
 
             definition.setContent(fileManager.manualInclude(definition.getFilename(), definition.getFoundFile(), definition.getPrepend() + strDefine, new AtomicBoolean(false)));
 
             allFound = allFound && !definition.getContent().isEmpty();
         }
 
-        if (preprocessOnly) {
-            program.setProgram(PREPROCESS_ONLY_PROGRAM);
-            return true;
-        } else {
-            program.setProgram(GL20.glCreateProgram());
-        }
+        program.setProgram(GL20.glCreateProgram());
 
         String lastFileName = "";
         for (int i = 0; i < definitions.length; i++) {
@@ -139,47 +118,5 @@ public class ShaderManager {
         }
 
         return result == GL11.GL_TRUE;
-    }
-
-    public IncludeID registerInclude(String filename) {
-        return fileManager.registerInclude(filename);
-    }
-
-    public void reloadProgram(int programId) {
-        if (!isValid(programId)) return;
-
-        boolean old = preprocessOnly;
-
-        ShaderProgram program = programs.get(programId);
-        if (program.getProgram() != PREPROCESS_ONLY_PROGRAM) {
-            program.delete();
-        }
-
-        preprocessOnly = program.getProgram() == PREPROCESS_ONLY_PROGRAM;
-        program.setProgram(0);
-        if (program.getDefinitions() != null) {
-            setupProgram(program);
-        }
-        preprocessOnly = old;
-    }
-
-    public void reloadPrograms() {
-        for (int i = 0; i < programs.size(); i++) {
-            reloadProgram(i);
-        }
-    }
-
-    public void deletePrograms() {
-        for (int i = 0; i < programs.size(); i++) {
-            ShaderProgram program = programs.get(i);
-            if (program.getProgram() != PREPROCESS_ONLY_PROGRAM) {
-                program.delete();
-            }
-            program.setProgram(0);
-        }
-    }
-
-    private boolean isValid(int idx) {
-        return idx != 0 && (programs.get(idx).getDefinitions() == null || programs.get(idx).getProgram() != 0);
     }
 }

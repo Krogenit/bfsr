@@ -20,11 +20,6 @@ public class FileManager {
     private boolean lineMarkers = true;
     private boolean handleIncludePasting = true;
 
-    public IncludeID registerInclude(String filename) {
-        includes.add(new IncludeEntry(filename));
-        return new IncludeID(includes.size() - 1);
-    }
-
     private String getIncludeContent(IncludeID idx, FoundFile foundFile) {
         IncludeEntry entry = includes.get(idx.getValue());
         foundFile.setFilename(entry.getFilename());
@@ -47,7 +42,7 @@ public class FileManager {
             return "";
         }
 
-        StringBuilder text = new StringBuilder();
+        StringBuilder text = new StringBuilder(256);
 
         text.append(prepend);
         if (lineMarkers) {
@@ -89,8 +84,8 @@ public class FileManager {
                     if (commentOffset != -1 && commentOffset < offset)
                         continue;
 
-                    int firstQuote = line.indexOf("\"", offset);
-                    int secondQuote = line.indexOf("\"", firstQuote + 1);
+                    int firstQuote = line.indexOf('"', offset);
+                    int secondQuote = line.indexOf('"', firstQuote + 1);
 
                     String include = line.substring(firstQuote + 1, secondQuote);
 
@@ -140,7 +135,7 @@ public class FileManager {
 
     private String markerString(int line, String filename, int fileId) {
         if (GL.getCapabilities().GL_ARB_shading_language_include) {
-            StringBuilder fixedName = new StringBuilder();
+            StringBuilder fixedName = new StringBuilder(64);
             if (Platform.get() == Platform.WINDOWS) {
                 for (int i = 0; i < filename.length(); i++) {
                     char c = filename.charAt(i);
