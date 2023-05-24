@@ -70,7 +70,7 @@ bootJar {
 jar {
     manifest {
         attributes 'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
-                'Main-Class': 'net.bfsr.client.core.Main',
+                'Main-Class': 'net.bfsr.client.launch.LWJGL3Main',
                 'Multi-Release': true//log4j2 workaround
     }
 }
