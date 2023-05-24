@@ -7,9 +7,9 @@ import net.bfsr.client.gui.AbstractGuiObject;
 import net.bfsr.client.gui.GuiObjectWithSubObjects;
 import net.bfsr.client.gui.GuiObjectsHandler;
 import net.bfsr.editor.gui.ColorScheme;
+import net.bfsr.editor.property.PropertiesHolder;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.font.FontType;
-import net.bfsr.property.PropertiesHolder;
 
 import java.lang.reflect.Field;
 import java.util.List;

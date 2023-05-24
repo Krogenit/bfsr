@@ -1,6 +1,6 @@
-package net.bfsr.property;
+package net.bfsr.editor.property;
 
-import net.bfsr.property.event.PropertyReceiver;
+import net.bfsr.editor.property.event.PropertyReceiver;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

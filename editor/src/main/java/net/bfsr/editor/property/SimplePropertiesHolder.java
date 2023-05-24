@@ -1,15 +1,13 @@
-package net.bfsr.property;
+package net.bfsr.editor.property;
 
 import lombok.Getter;
-import net.bfsr.config.Configurable;
-import net.bfsr.property.event.ChangeNameEventListener;
+import net.bfsr.editor.property.event.ChangeNameEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("TransientFieldInNonSerializableClass")
 public abstract class SimplePropertiesHolder implements PropertiesHolder {
-    @Configurable
     @Property(elementType = PropertyGuiElementType.MAIN_NAME_INPUT_BOX)
     @Getter
     private String name;

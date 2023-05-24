@@ -8,7 +8,7 @@ import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.Direction;
-import net.bfsr.math.MathUtils;
+import net.bfsr.math.RigidBodyUtils;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;
@@ -87,7 +87,7 @@ public class AiAttackTarget extends AiTask {
             float targetToShip = targetFinalPos.distance(pos);
 
             if (targetToShip <= bulletToShip) {
-                if (Math.abs(MathUtils.getRotationDifference(ship, targetFinalPos)) <= 0.1f + shipSizeAverage / 25.0f) {
+                if (Math.abs(RigidBodyUtils.getRotationDifference(ship, targetFinalPos)) <= 0.1f + shipSizeAverage / 25.0f) {
                     slot.tryShoot();
                 }
             }
@@ -101,11 +101,11 @@ public class AiAttackTarget extends AiTask {
                 minTargetToShip = targetToShip;
         }
 
-        MathUtils.rotateToVector(ship, Objects.requireNonNullElse(pointToRotate, targetPos), ship.getEngine().getAngularVelocity());
+        RigidBodyUtils.rotateToVector(ship, Objects.requireNonNullElse(pointToRotate, targetPos), ship.getEngine().getAngularVelocity());
 
         directionsToAdd.clear();
         if (minTargetToShip >= maxDistance - targetSizeAverage - shipSizeAverage) {
-            List<Direction> dirs = MathUtils.calculateDirectionsToOtherObject(ship, targetPos.x, targetPos.y);
+            List<Direction> dirs = RigidBodyUtils.calculateDirectionsToOtherObject(ship, targetPos.x, targetPos.y);
 
             for (int i = 0; i < dirs.size(); i++) {
                 directionsToAdd.add(dirs.get(i));
@@ -113,7 +113,7 @@ public class AiAttackTarget extends AiTask {
 
             sideDirection = null;
         } else if (distanceToTarget < maxDistance - targetSizeAverage - shipSizeAverage) {
-            Direction dir = MathUtils.calculateDirectionToOtherObject(ship, targetPos.x, targetPos.y);
+            Direction dir = RigidBodyUtils.calculateDirectionToOtherObject(ship, targetPos.x, targetPos.y);
             if (dir == Direction.BACKWARD) {
                 dir = Direction.FORWARD;
             } else if (dir == Direction.FORWARD) {

@@ -2,14 +2,14 @@ package net.bfsr.editor;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.bfsr.editor.property.PropertiesHolder;
+import net.bfsr.editor.property.Property;
+import net.bfsr.editor.property.PropertyGuiElementType;
+import net.bfsr.editor.property.event.ChangeNameEventListener;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.util.PathHelper;
-import net.bfsr.property.PropertiesHolder;
-import net.bfsr.property.Property;
-import net.bfsr.property.PropertyGuiElementType;
-import net.bfsr.property.event.ChangeNameEventListener;
 
 @SuppressWarnings("TransientFieldInNonSerializableClass")
 @Getter

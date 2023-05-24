@@ -6,7 +6,6 @@ import net.bfsr.client.font.StringObject;
 import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.renderer.particle.ParticleRenderer;
-import net.bfsr.client.world.WorldClient;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.component.reactor.Reactor;
 import net.bfsr.component.shield.Shield;
@@ -19,8 +18,8 @@ import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.server.ServerGameLogic;
-import net.bfsr.server.world.WorldServer;
 import net.bfsr.util.DecimalUtils;
+import net.bfsr.world.World;
 import org.joml.Vector2f;
 
 public class DebugInfoElement {
@@ -96,7 +95,7 @@ public class DebugInfoElement {
         stringBuilder.append("\nParticle Renderer: ");
         stringBuilder.append(particleRenderer.getTaskCount() > 1 ? particleRenderer.getTaskCount() + " active threads" : "single-threaded");
 
-        WorldClient world = core.getWorld();
+        World world = core.getWorld();
         if (world != null) {
             int bulletsCount = world.getBulletsCount();
             int shipsCount = world.getShips().size();
@@ -105,7 +104,7 @@ public class DebugInfoElement {
             int shipWreckCount = world.getShipWreckCount();
             int bodyCount = world.getPhysicWorld().getBodyCount();
 
-            WorldServer sWorld = server != null ? server.getWorld() : null;
+            World sWorld = server != null ? server.getWorld() : null;
             int sBulletsCount = sWorld != null ? sWorld.getBulletsCount() : 0;
             int sShipsCount = sWorld != null ? sWorld.getShips().size() : 0;
             int sWrecksCount = sWorld != null ? sWorld.getWreckCount() : 0;

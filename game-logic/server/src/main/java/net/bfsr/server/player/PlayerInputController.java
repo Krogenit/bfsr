@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.Direction;
-import net.bfsr.math.MathUtils;
+import net.bfsr.math.RigidBodyUtils;
 import org.joml.Vector2f;
 
 @RequiredArgsConstructor
@@ -24,7 +24,7 @@ public class PlayerInputController {
 
     public void update() {
         if (ship != null) {
-            MathUtils.rotateToVector(ship, mousePosition, ship.getEngine().getAngularVelocity());
+            RigidBodyUtils.rotateToVector(ship, mousePosition, ship.getEngine().getAngularVelocity());
             ship.getMoveDirections().forEach(ship::move);
             if (mouseLeftDown) {
                 ship.shoot();

@@ -51,7 +51,7 @@ public class World {
     private final List<ShipWreck> shipWrecks = new ArrayList<>();
     private final List<Wreck> wrecks = new ArrayList<>();
 
-    protected World(Profiler profiler, Side side, long seed) {
+    public World(Profiler profiler, Side side, long seed) {
         this.profiler = profiler;
         this.side = side;
         this.seed = seed;

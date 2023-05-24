@@ -12,7 +12,7 @@ import net.bfsr.entity.GameObject;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.EventBus;
 import net.bfsr.math.Direction;
-import net.bfsr.math.MathUtils;
+import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.network.packet.input.*;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
@@ -118,7 +118,7 @@ public class PlayerInputController extends InputController {
             if (body.isAtRest()) body.setAtRest(false);
 
             Vector2f mouseWorldPosition = Engine.mouse.getWorldPosition(camera);
-            MathUtils.rotateToVector(ship, mouseWorldPosition, ship.getEngine().getAngularVelocity());
+            RigidBodyUtils.rotateToVector(ship, mouseWorldPosition, ship.getEngine().getAngularVelocity());
             if (mouseWorldPosition.x != lastMousePosition.x || mouseWorldPosition.y != lastMousePosition.y) {
                 core.sendUDPPacket(new PacketSyncPlayerMousePosition(mouseWorldPosition));
             }

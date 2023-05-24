@@ -1,7 +1,7 @@
-package net.bfsr.property.event;
+package net.bfsr.editor.property.event;
 
-import net.bfsr.property.ComponentHolder;
-import net.bfsr.property.PropertiesHolder;
+import net.bfsr.editor.property.ComponentHolder;
+import net.bfsr.editor.property.PropertiesHolder;
 
 public interface PropertyReceiver<T extends PropertiesHolder> {
     boolean canInsert(ComponentHolder<T> componentHolder);

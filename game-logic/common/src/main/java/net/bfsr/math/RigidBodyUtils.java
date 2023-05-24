@@ -2,31 +2,16 @@ package net.bfsr.math;
 
 import net.bfsr.entity.RigidBody;
 import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.AABB;
-import org.dyn4j.geometry.Transform;
 import org.joml.Math;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public final class MathUtils {
+public final class RigidBodyUtils {
     public static final Vector2f ROTATE_TO_VECTOR = new Vector2f();
     public static final Vector2f ANGLE_TO_VELOCITY = new Vector2f();
-    private static final Transform IDENTITY_TRANSFORM = new Transform();
-    private static final AABB CACHED_AABB_1 = new AABB(0, 0, 0, 0);
     private static final List<Direction> DIRECTIONS = new ArrayList<>();
-
-    public static void computeAABB(Body body, AABB aabb) {
-        List<BodyFixture> fixtures = body.getFixtures();
-        int size = fixtures.size();
-        fixtures.get(0).getShape().computeAABB(IDENTITY_TRANSFORM, aabb);
-        for (int i = 1; i < size; i++) {
-            fixtures.get(i).getShape().computeAABB(IDENTITY_TRANSFORM, CACHED_AABB_1);
-            aabb.union(CACHED_AABB_1);
-        }
-    }
 
     public static float getRotationDifference(RigidBody gameObject, Vector2f vector) {
         Vector2f position = gameObject.getPosition();

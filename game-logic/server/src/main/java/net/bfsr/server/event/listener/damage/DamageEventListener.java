@@ -4,7 +4,7 @@ import net.bfsr.damage.Damageable;
 import net.bfsr.event.damage.DamageEvent;
 import net.bfsr.network.packet.server.entity.wreck.PacketSyncDamage;
 import net.bfsr.server.ServerGameLogic;
-import net.bfsr.server.world.WorldServer;
+import net.bfsr.server.util.TrackingUtils;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
@@ -14,6 +14,6 @@ public class DamageEventListener {
     @Handler
     public void event(DamageEvent event) {
         Damageable damageable = event.damageable();
-        ServerGameLogic.getNetwork().sendTCPPacketToAllNearby(new PacketSyncDamage(damageable), damageable.getX(), damageable.getY(), WorldServer.PACKET_UPDATE_DISTANCE);
+        ServerGameLogic.getNetwork().sendTCPPacketToAllNearby(new PacketSyncDamage(damageable), damageable.getX(), damageable.getY(), TrackingUtils.PACKET_UPDATE_DISTANCE);
     }
 }

@@ -26,7 +26,7 @@ import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.network.pipeline.MessageHandlerUDP;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
-import net.bfsr.server.world.WorldServer;
+import net.bfsr.world.World;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -62,7 +62,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
 
     private final boolean singlePlayer;
     private final ServerGameLogic server = ServerGameLogic.getInstance();
-    private final WorldServer world = server.getWorld();
+    private final World world = server.getWorld();
     private final PlayerManager playerManager = server.getPlayerManager();
     private Player player;
     private final PacketRegistry<PlayerNetworkHandler> packetRegistry = ServerGameLogic.getNetwork().getPacketRegistry();

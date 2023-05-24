@@ -15,11 +15,12 @@ import net.bfsr.server.event.listener.Listeners;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
-import net.bfsr.server.world.WorldServer;
+import net.bfsr.world.World;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Random;
 
 @Log4j2
 public class ServerGameLogic extends GameLogic {
@@ -30,7 +31,7 @@ public class ServerGameLogic extends GameLogic {
     private int ups;
 
     @Getter
-    private final WorldServer world;
+    private final net.bfsr.world.World world;
     @Getter
     private final NetworkSystem networkSystem;
     private ServerSettings settings;
@@ -39,7 +40,7 @@ public class ServerGameLogic extends GameLogic {
     private final ShipSpawner shipSpawner;
 
     protected ServerGameLogic() {
-        this.world = new WorldServer(profiler);
+        this.world = new World(profiler, Side.SERVER, new Random().nextLong());
         this.playerManager = new PlayerManager(world);
         this.networkSystem = new NetworkSystem(playerManager);
         this.shipSpawner = new ShipSpawner(world);

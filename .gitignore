@@ -13,6 +13,7 @@
 /game-logic/server/src/main/generated/
 /editor/build/
 /editor/out/
+/editor/src/main/generated/
 /mongodb-service/build/
 /mongodb-service/out/
 /common-server-data-model/build/

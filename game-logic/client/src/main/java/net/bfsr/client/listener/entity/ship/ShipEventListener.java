@@ -21,7 +21,7 @@ import org.joml.Vector4f;
 
 import java.util.Random;
 
-import static net.bfsr.math.MathUtils.ANGLE_TO_VELOCITY;
+import static net.bfsr.math.RigidBodyUtils.ANGLE_TO_VELOCITY;
 
 @Listener(references = References.Strong)
 public class ShipEventListener {

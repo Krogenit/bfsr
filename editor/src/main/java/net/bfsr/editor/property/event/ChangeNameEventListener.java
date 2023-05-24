@@ -1,4 +1,4 @@
-package net.bfsr.property.event;
+package net.bfsr.editor.property.event;
 
 @FunctionalInterface
 public interface ChangeNameEventListener {

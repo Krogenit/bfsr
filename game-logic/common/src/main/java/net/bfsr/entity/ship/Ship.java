@@ -29,7 +29,7 @@ import net.bfsr.event.entity.ship.*;
 import net.bfsr.event.module.shield.ShieldDamageByCollision;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.Direction;
-import net.bfsr.math.MathUtils;
+import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.physics.filter.ShipFilter;
@@ -45,7 +45,7 @@ import org.joml.Vector2f;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.bfsr.math.MathUtils.ANGLE_TO_VELOCITY;
+import static net.bfsr.math.RigidBodyUtils.ANGLE_TO_VELOCITY;
 
 public class Ship extends RigidBody implements Damageable {
     @Getter
@@ -171,13 +171,13 @@ public class Ship extends RigidBody implements Damageable {
         double cos = body.getTransform().getCost();
 
         if (dir == Direction.FORWARD) {
-            addForce(MathUtils.ROTATE_TO_VECTOR.set(cos, sin), engine.getForwardAcceleration());
+            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(cos, sin), engine.getForwardAcceleration());
         } else if (dir == Direction.BACKWARD) {
-            addForce(MathUtils.ROTATE_TO_VECTOR.set(-cos, -sin), engine.getBackwardAcceleration());
+            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(-cos, -sin), engine.getBackwardAcceleration());
         } else if (dir == Direction.LEFT) {
-            addForce(MathUtils.ROTATE_TO_VECTOR.set(sin, -cos), engine.getSideAcceleration());
+            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(sin, -cos), engine.getSideAcceleration());
         } else if (dir == Direction.RIGHT) {
-            addForce(MathUtils.ROTATE_TO_VECTOR.set(-sin, cos), engine.getSideAcceleration());
+            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(-sin, cos), engine.getSideAcceleration());
         }
     }
 
@@ -329,7 +329,7 @@ public class Ship extends RigidBody implements Damageable {
         float hullDamage = impactPower;
         float armorDamage = impactPower;
         Vector2f otherPos = otherShip.getPosition();
-        Direction dir = MathUtils.calculateDirectionToOtherObject(this, otherPos.x, otherPos.y);
+        Direction dir = RigidBodyUtils.calculateDirectionToOtherObject(this, otherPos.x, otherPos.y);
 
         float reducedHullDamage = armor.reduceDamageByArmor(armorDamage, hullDamage, dir);
         hull.damage(reducedHullDamage);
@@ -360,7 +360,7 @@ public class Ship extends RigidBody implements Damageable {
 
         float hullDamage = damage.getHull() * multiplayer;
         float armorDamage = damage.getArmor() * multiplayer;
-        Direction dir = MathUtils.calculateDirectionToOtherObject(this, contactX, contactY);
+        Direction dir = RigidBodyUtils.calculateDirectionToOtherObject(this, contactX, contactY);
 
         float reducedHullDamage = armor.reduceDamageByArmor(armorDamage, hullDamage, dir);
         hull.damage(reducedHullDamage);

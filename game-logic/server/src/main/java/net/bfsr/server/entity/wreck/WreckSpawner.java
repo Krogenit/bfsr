@@ -8,7 +8,7 @@ import net.bfsr.entity.wreck.WreckType;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.server.entity.wreck.PacketSpawnWreck;
 import net.bfsr.server.ServerGameLogic;
-import net.bfsr.server.world.WorldServer;
+import net.bfsr.server.util.TrackingUtils;
 import net.bfsr.world.World;
 import org.joml.Vector2f;
 
@@ -20,13 +20,13 @@ public final class WreckSpawner {
     public static void spawnDestroyShipSmall(Ship ship) {
         Vector2f pos = ship.getPosition();
         Vector2f velocity = ship.getVelocity();
-        WorldServer w = ((WorldServer) ship.getWorld());
+        World w = ship.getWorld();
         Random rand = w.getRand();
         spawnDamageDebris(w, rand.nextInt(3), pos.x, pos.y, velocity.x * 0.025f, velocity.y * 0.025f, 1.0f);
         spawnDamageWrecks(w, rand.nextInt(2), pos.x, pos.y, velocity.x * 0.25f, velocity.y * 0.25f);
     }
 
-    public static void spawnDamageDebris(WorldServer world, int count, float x, float y, float velocityX, float velocityY, float size) {
+    public static void spawnDamageDebris(World world, int count, float x, float y, float velocityX, float velocityY, float size) {
         for (int i = 0; i < count; i++) {
             Vector2f velocity = RotationHelper.angleToVelocity(RAND.nextFloat() * MathUtils.TWO_PI, 4.0f + RAND.nextFloat() * 2.0f);
             velocity.add(velocityX, velocityY).mul(0.7f);
@@ -39,11 +39,11 @@ public final class WreckSpawner {
             Wreck wreck = World.WREAK_POOL.getOrCreate(Wreck::new).init(world, world.getNextId(), RAND.nextInt(6), false, isFire, isFireExplosion, x, y,
                     velocity.x, velocity.y, LUT.sin(angle), LUT.cos(angle), angleVel, size2, size2, alphaVel, WreckType.SMALL);
             world.addWreck(wreck);
-            ServerGameLogic.getNetwork().sendUDPPacketToAllNearby(new PacketSpawnWreck(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
+            ServerGameLogic.getNetwork().sendUDPPacketToAllNearby(new PacketSpawnWreck(wreck), x, y, TrackingUtils.PACKET_SPAWN_DISTANCE);
         }
     }
 
-    private static void spawnDamageWrecks(WorldServer world, int count, float x, float y, float velocityX, float velocityY) {
+    private static void spawnDamageWrecks(World world, int count, float x, float y, float velocityX, float velocityY) {
         for (int i = 0; i < count; i++) {
             Vector2f velocity = RotationHelper.angleToVelocity(RAND.nextFloat() * MathUtils.TWO_PI, 4.0f + RAND.nextFloat() * 2.0f);
             float angle = RAND.nextFloat() * MathUtils.TWO_PI;
@@ -54,7 +54,7 @@ public final class WreckSpawner {
             Wreck wreck = World.WREAK_POOL.getOrCreate(Wreck::new).init(world, world.getNextId(), RAND.nextInt(3), true, true, isFireExplosion, x, y,
                     velocity.x + velocityX * 0.7f, velocity.y + velocityY * 0.7f, LUT.sin(angle), LUT.cos(angle), angleVel, size, size, alphaVel, WreckType.DEFAULT);
             world.addWreck(wreck);
-            ServerGameLogic.getNetwork().sendUDPPacketToAllNearby(new PacketSpawnWreck(wreck), x, y, WorldServer.PACKET_SPAWN_DISTANCE);
+            ServerGameLogic.getNetwork().sendUDPPacketToAllNearby(new PacketSpawnWreck(wreck), x, y, TrackingUtils.PACKET_SPAWN_DISTANCE);
         }
     }
 }

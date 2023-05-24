@@ -15,14 +15,14 @@ import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.dto.PlayerModel;
 import net.bfsr.server.rsocket.RSocketClient;
 import net.bfsr.server.service.PlayerService;
-import net.bfsr.server.world.WorldServer;
+import net.bfsr.world.World;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerManager {
-    private final WorldServer world;
+    private final World world;
     @Getter
     private final List<Player> players = new ArrayList<>();
     private final TMap<String, Player> playerMap = new THashMap<>();
@@ -30,7 +30,7 @@ public class PlayerManager {
     @Getter
     private final PlayerService playerService = new PlayerService(databaseRSocketClient);
 
-    public PlayerManager(WorldServer world) {
+    public PlayerManager(World world) {
         this.world = world;
     }
 

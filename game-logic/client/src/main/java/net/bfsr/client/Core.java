@@ -21,7 +21,6 @@ import net.bfsr.client.server.LocalServerGameLogic;
 import net.bfsr.client.server.ThreadLocalServer;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.client.settings.Option;
-import net.bfsr.client.world.WorldClient;
 import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.GameLogic;
@@ -32,6 +31,7 @@ import net.bfsr.network.packet.Packet;
 import net.bfsr.network.packet.client.PacketHandshake;
 import net.bfsr.network.packet.client.PacketLoginTCP;
 import net.bfsr.network.packet.client.PacketLoginUDP;
+import net.bfsr.world.World;
 
 import java.net.InetAddress;
 
@@ -60,7 +60,7 @@ public class Core extends GameLogic {
 
     @Setter
     @Getter
-    private WorldClient world;
+    private World world;
     @Getter
     private String playerName;
     @Getter
@@ -209,7 +209,8 @@ public class Core extends GameLogic {
     }
 
     public void createWorld(long seed) {
-        this.world = new WorldClient(profiler, seed);
+        this.world = new World(profiler, Side.CLIENT, seed);
+        worldRenderer.createBackgroundTexture(seed);
     }
 
     public void setCurrentGui(Gui gui) {

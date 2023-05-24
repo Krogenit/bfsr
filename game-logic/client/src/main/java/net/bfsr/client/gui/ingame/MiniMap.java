@@ -5,7 +5,6 @@ import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.renderer.RenderManager;
 import net.bfsr.client.renderer.entity.ShipRender;
-import net.bfsr.client.world.WorldClient;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
@@ -13,6 +12,7 @@ import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
+import net.bfsr.world.World;
 import org.dyn4j.geometry.AABB;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -37,7 +37,7 @@ public class MiniMap {
         gui.registerGuiObject(map);
     }
 
-    public void render(WorldClient world) {
+    public void render(World world) {
         List<Ship> ships = world.getShips();
         Vector2f camPos = renderer.camera.getPosition();
         float mapOffsetX = 600;

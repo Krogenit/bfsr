@@ -3,10 +3,10 @@ package net.bfsr.editor.gui.component;
 import net.bfsr.client.gui.AbstractGuiObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.editor.property.PropertiesBuilder;
+import net.bfsr.editor.property.PropertiesHolder;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.font.StringOffsetType;
-import net.bfsr.property.PropertiesHolder;
 import net.bfsr.util.RunnableUtils;
 import org.joml.Vector2f;
 

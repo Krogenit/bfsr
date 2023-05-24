@@ -1,6 +1,6 @@
-package net.bfsr.property;
+package net.bfsr.editor.property;
 
-import net.bfsr.property.event.PropertyReceiver;
+import net.bfsr.editor.property.event.PropertyReceiver;
 
 public class DefaultReceiveHandler<T extends PropertiesHolder> implements PropertyReceiver<T> {
     @Override

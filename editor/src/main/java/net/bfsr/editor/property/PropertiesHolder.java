@@ -1,6 +1,6 @@
-package net.bfsr.property;
+package net.bfsr.editor.property;
 
-import net.bfsr.property.event.ChangeNameEventListener;
+import net.bfsr.editor.property.event.ChangeNameEventListener;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -21,7 +21,8 @@ public interface PropertiesHolder {
             PropertiesHolder propertiesHolder = aClass.getConstructor().newInstance();
             copyFields(this, propertiesHolder);
             return propertiesHolder;
-        } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NegativeArraySizeException | NoSuchMethodException | SecurityException |
+        } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NegativeArraySizeException | NoSuchMethodException |
+                 SecurityException |
                  InvocationTargetException e) {
             e.printStackTrace();
             return null;

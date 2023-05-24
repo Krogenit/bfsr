@@ -4,8 +4,8 @@ import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.util.AABB;
 import org.joml.Vector2f;
 
-import static net.bfsr.math.MathUtils.ANGLE_TO_VELOCITY;
-import static net.bfsr.math.MathUtils.ROTATE_TO_VECTOR;
+import static net.bfsr.math.RigidBodyUtils.ANGLE_TO_VELOCITY;
+import static net.bfsr.math.RigidBodyUtils.ROTATE_TO_VECTOR;
 
 public final class RotationHelper {
     private static final Vector2f[] AABB_POINTS = {new Vector2f(), new Vector2f(), new Vector2f()};

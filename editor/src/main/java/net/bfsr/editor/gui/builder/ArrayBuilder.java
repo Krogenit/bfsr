@@ -3,10 +3,10 @@ package net.bfsr.editor.gui.builder;
 import net.bfsr.editor.gui.component.PropertyComponent;
 import net.bfsr.editor.gui.component.PropertyObjectArray;
 import net.bfsr.editor.gui.component.PropertyPrimitiveArray;
+import net.bfsr.editor.property.PropertiesHolder;
+import net.bfsr.editor.property.Property;
+import net.bfsr.editor.property.PropertyGuiElementType;
 import net.bfsr.engine.renderer.font.FontType;
-import net.bfsr.property.PropertiesHolder;
-import net.bfsr.property.Property;
-import net.bfsr.property.PropertyGuiElementType;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

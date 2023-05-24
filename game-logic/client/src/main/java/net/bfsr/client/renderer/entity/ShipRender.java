@@ -21,6 +21,7 @@ import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.Direction;
+import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.math.RotationHelper;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.geometry.Vector2;
@@ -31,7 +32,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.bfsr.math.MathUtils.ROTATE_TO_VECTOR;
+import static net.bfsr.math.RigidBodyUtils.ROTATE_TO_VECTOR;
 
 public class ShipRender extends Render<Ship> {
     private static final AbstractTexture JUMP_TEXTURE = Engine.assetsManager.textureLoader.getTexture(TextureRegister.particleJump);
@@ -104,11 +105,11 @@ public class ShipRender extends Render<Ship> {
             float y = -(float) body.getLinearVelocity().y;
 
             if (Math.abs(x) > 10) {
-                spawnEngineParticles(net.bfsr.math.MathUtils.calculateDirectionToOtherObject(object, x + shipPos.x, shipPos.y));
+                spawnEngineParticles(RigidBodyUtils.calculateDirectionToOtherObject(object, x + shipPos.x, shipPos.y));
             }
 
             if (Math.abs(y) > 10) {
-                spawnEngineParticles(net.bfsr.math.MathUtils.calculateDirectionToOtherObject(object, shipPos.x, y + shipPos.y));
+                spawnEngineParticles(RigidBodyUtils.calculateDirectionToOtherObject(object, shipPos.x, y + shipPos.y));
             }
 
             return;

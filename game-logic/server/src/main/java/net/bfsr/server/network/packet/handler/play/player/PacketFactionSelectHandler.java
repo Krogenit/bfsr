@@ -10,14 +10,14 @@ import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.client.PacketFactionSelect;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.player.Player;
-import net.bfsr.server.world.WorldServer;
+import net.bfsr.world.World;
 
 import java.net.InetSocketAddress;
 
 public class PacketFactionSelectHandler extends PacketHandler<PacketFactionSelect, PlayerNetworkHandler> {
     @Override
     public void handle(PacketFactionSelect packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
-        WorldServer world = playerNetworkHandler.getWorld();
+        World world = playerNetworkHandler.getWorld();
         Faction faction = Faction.values()[packet.getFaction()];
         Ship playerShip = switch (faction) {
             case HUMAN -> ShipFactory.get().createPlayerShipHumanSmall(world, 0, 0, world.getRand().nextFloat() * MathUtils.TWO_PI);

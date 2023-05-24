@@ -3,13 +3,9 @@ package net.bfsr.editor.gui.component;
 import net.bfsr.client.gui.SimpleGuiObject;
 import net.bfsr.client.gui.input.InputBox;
 import net.bfsr.editor.gui.ColorScheme;
-import net.bfsr.editor.property.ConverterUtils;
-import net.bfsr.editor.property.PropertyConverter;
+import net.bfsr.editor.property.*;
+import net.bfsr.editor.property.event.PropertyReceiver;
 import net.bfsr.engine.renderer.font.FontType;
-import net.bfsr.property.ComponentHolder;
-import net.bfsr.property.PropertiesHolder;
-import net.bfsr.property.Property;
-import net.bfsr.property.event.PropertyReceiver;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

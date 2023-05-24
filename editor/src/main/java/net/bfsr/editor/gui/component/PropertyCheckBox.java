@@ -1,8 +1,8 @@
 package net.bfsr.editor.gui.component;
 
 import net.bfsr.client.gui.component.CheckBox;
+import net.bfsr.editor.property.PropertiesHolder;
 import net.bfsr.engine.renderer.font.FontType;
-import net.bfsr.property.PropertiesHolder;
 
 import java.lang.reflect.Field;
 import java.util.List;

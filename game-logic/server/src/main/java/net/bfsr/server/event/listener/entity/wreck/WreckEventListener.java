@@ -10,7 +10,8 @@ import net.bfsr.network.packet.server.entity.PacketRemoveObject;
 import net.bfsr.network.packet.server.entity.wreck.PacketShipWreck;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.network.NetworkSystem;
-import net.bfsr.server.world.WorldServer;
+import net.bfsr.server.util.TrackingUtils;
+import net.bfsr.world.World;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
@@ -19,12 +20,12 @@ import org.dyn4j.dynamics.Body;
 @Listener(references = References.Strong)
 public class WreckEventListener {
     private final NetworkSystem network = ServerGameLogic.getNetwork();
-    private final WorldServer world = ServerGameLogic.getInstance().getWorld();
+    private final World world = ServerGameLogic.getInstance().getWorld();
 
     @Handler
     public void event(WreckUpdateEvent event) {
         Wreck wreck = event.wreck();
-        network.sendUDPPacketToAllNearby(new PacketObjectPosition(wreck), wreck.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        network.sendUDPPacketToAllNearby(new PacketObjectPosition(wreck), wreck.getPosition(), TrackingUtils.PACKET_SPAWN_DISTANCE);
     }
 
     @Handler
@@ -36,7 +37,7 @@ public class WreckEventListener {
     @Handler
     public void event(ShipWreckAddToWorldEvent event) {
         ShipWreck wreck = event.wreck();
-        network.sendTCPPacketToAllNearby(new PacketShipWreck(wreck), wreck.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        network.sendTCPPacketToAllNearby(new PacketShipWreck(wreck), wreck.getPosition(), TrackingUtils.PACKET_SPAWN_DISTANCE);
     }
 
     @Handler

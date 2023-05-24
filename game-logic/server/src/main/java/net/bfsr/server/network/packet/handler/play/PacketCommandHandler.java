@@ -10,17 +10,19 @@ import net.bfsr.faction.Faction;
 import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.client.PacketCommand;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
-import net.bfsr.server.world.WorldServer;
+import net.bfsr.world.World;
 import org.joml.Vector2f;
 
 import java.net.InetSocketAddress;
 import java.util.Random;
 
 public class PacketCommandHandler extends PacketHandler<PacketCommand, PlayerNetworkHandler> {
+    private final Command[] commands = Command.values();
+
     @Override
     public void handle(PacketCommand packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
-        Command cmd = Command.values()[packet.getCommand()];
-        WorldServer world = playerNetworkHandler.getWorld();
+        Command cmd = commands[packet.getCommand()];
+        World world = playerNetworkHandler.getWorld();
         Random rand = world.getRand();
         if (cmd == Command.SPAWN_SHIP) {
             String[] args = packet.getArgs();

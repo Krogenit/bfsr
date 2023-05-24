@@ -13,7 +13,7 @@ import net.bfsr.network.packet.server.entity.ship.PacketSyncMoveDirection;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.network.NetworkSystem;
-import net.bfsr.server.world.WorldServer;
+import net.bfsr.server.util.TrackingUtils;
 import net.bfsr.world.World;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
@@ -26,40 +26,40 @@ import java.util.Random;
 @Listener(references = References.Strong)
 public class ShipEventListener {
     private final NetworkSystem network = ServerGameLogic.getNetwork();
-    private final WorldServer world = ServerGameLogic.getInstance().getWorld();
+    private final World world = ServerGameLogic.getInstance().getWorld();
 
     @Handler
     public void event(ShipAddToWorldEvent event) {
         Ship ship = event.ship();
-        network.sendTCPPacketToAllNearby(new PacketSpawnShip(ship), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        network.sendTCPPacketToAllNearby(new PacketSpawnShip(ship), ship.getPosition(), TrackingUtils.PACKET_SPAWN_DISTANCE);
     }
 
     @Handler
     public void event(ShipNewMoveDirectionEvent event) {
         Ship ship = event.ship();
         network.sendUDPPacketToAllNearby(new PacketSyncMoveDirection(ship.getId(), event.direction().ordinal(), false), ship.getPosition(),
-                WorldServer.PACKET_UPDATE_DISTANCE);
+                TrackingUtils.PACKET_UPDATE_DISTANCE);
     }
 
     @Handler
     public void event(ShipRemoveMoveDirectionEvent event) {
         Ship ship = event.ship();
         network.sendUDPPacketToAllNearby(new PacketSyncMoveDirection(ship.getId(), event.direction().ordinal(), true), ship.getPosition(),
-                WorldServer.PACKET_UPDATE_DISTANCE);
+                TrackingUtils.PACKET_UPDATE_DISTANCE);
     }
 
     @Handler
     public void event(ShipPostPhysicsUpdate event) {
         Ship ship = event.ship();
         Vector2f position = ship.getPosition();
-        network.sendUDPPacketToAllNearby(new PacketObjectPosition(ship), position, WorldServer.PACKET_UPDATE_DISTANCE);
-        network.sendUDPPacketToAllNearby(new PacketShipInfo(ship), position, WorldServer.PACKET_UPDATE_DISTANCE);
+        network.sendUDPPacketToAllNearby(new PacketObjectPosition(ship), position, TrackingUtils.PACKET_UPDATE_DISTANCE);
+        network.sendUDPPacketToAllNearby(new PacketShipInfo(ship), position, TrackingUtils.PACKET_UPDATE_DISTANCE);
     }
 
     @Handler
     public void event(ShipDestroyingEvent event) {
         Ship ship = event.ship();
-        network.sendTCPPacketToAllNearby(new PacketDestroyingShip(ship), ship.getPosition(), WorldServer.PACKET_SPAWN_DISTANCE);
+        network.sendTCPPacketToAllNearby(new PacketDestroyingShip(ship), ship.getPosition(), TrackingUtils.PACKET_SPAWN_DISTANCE);
     }
 
     @Handler
@@ -88,7 +88,7 @@ public class ShipEventListener {
         Vector2f position = ship.getPosition();
         Vector2f velocity = ship.getVelocity();
         Vector2f size = ship.getSize();
-        WreckSpawner.spawnDamageDebris(((WorldServer) world), 1, position.x - size.x / 2.5f + rand.nextInt((int) (size.x / 1.25f)),
+        WreckSpawner.spawnDamageDebris(world, 1, position.x - size.x / 2.5f + rand.nextInt((int) (size.x / 1.25f)),
                 position.y - size.y / 2.5f + rand.nextInt((int) (size.y / 1.25f)), velocity.x * 0.1f, velocity.y * 0.1f, 1.0f);
     }
 

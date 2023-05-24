@@ -1,6 +1,12 @@
 package net.bfsr.engine.math;
 
+import org.dyn4j.dynamics.Body;
+import org.dyn4j.dynamics.BodyFixture;
+import org.dyn4j.geometry.AABB;
+import org.dyn4j.geometry.Transform;
 import org.joml.Math;
+
+import java.util.List;
 
 public final class MathUtils {
     public static final float PI = (float) Math.PI;
@@ -8,6 +14,8 @@ public final class MathUtils {
     public static final float TWO_PI = (float) (Math.PI * 2.0);
     public static final float THREE_PI = (float) (Math.PI * 3.0);
     public static final float HALF_PI = (float) (Math.PI / 2.0);
+    private static final Transform IDENTITY_TRANSFORM = new Transform();
+    private static final AABB CACHED_AABB_1 = new AABB(0, 0, 0, 0);
 
     public static float lerpAngle(float start, float end) {
         return (((end - start) % TWO_PI) + THREE_PI) % TWO_PI - PI;
@@ -23,5 +31,15 @@ public final class MathUtils {
         if (x < 0.0)
             r = 3.14159274f - r;
         return y >= 0 ? r : -r;
+    }
+
+    public static void computeAABB(Body body, AABB aabb) {
+        List<BodyFixture> fixtures = body.getFixtures();
+        int size = fixtures.size();
+        fixtures.get(0).getShape().computeAABB(IDENTITY_TRANSFORM, aabb);
+        for (int i = 1; i < size; i++) {
+            fixtures.get(i).getShape().computeAABB(IDENTITY_TRANSFORM, CACHED_AABB_1);
+            aabb.union(CACHED_AABB_1);
+        }
     }
 }

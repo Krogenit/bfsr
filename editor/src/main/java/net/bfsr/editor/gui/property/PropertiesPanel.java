@@ -8,10 +8,10 @@ import net.bfsr.client.gui.button.Button;
 import net.bfsr.editor.gui.component.MinimizableHolder;
 import net.bfsr.editor.gui.component.PropertyComponent;
 import net.bfsr.editor.property.PropertiesBuilder;
+import net.bfsr.editor.property.PropertiesHolder;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.font.StringOffsetType;
-import net.bfsr.property.PropertiesHolder;
 import net.bfsr.util.RunnableUtils;
 import org.joml.Vector2f;
 

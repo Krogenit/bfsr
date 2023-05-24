@@ -7,7 +7,6 @@ import net.bfsr.client.event.ExitToMainMenuEvent;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.renderer.particle.ParticleRenderer;
 import net.bfsr.client.settings.Option;
-import net.bfsr.client.world.WorldClient;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
@@ -19,6 +18,7 @@ import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.util.Side;
 import net.bfsr.event.EventBus;
+import net.bfsr.world.World;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 
@@ -49,7 +49,7 @@ public class WorldRenderer {
         }
 
         Engine.assetsManager.textureLoader.getTexture(TextureRegister.damageFire, GL.GL_REPEAT, GL.GL_LINEAR).bind();
-        
+
         particleRenderer.init();
 
         EventBus.subscribe(Side.CLIENT, this);
@@ -68,7 +68,7 @@ public class WorldRenderer {
     }
 
     public void prepareRender(float interpolation) {
-        WorldClient world = core.getWorld();
+        World world = core.getWorld();
         if (world != null) {
             particleRenderer.putBackgroundParticlesToBuffers(core.getParticlesCount());
             prepareAmbient(interpolation);
@@ -99,7 +99,7 @@ public class WorldRenderer {
         spriteRenderer.bind();
         shader.enable();
 
-        WorldClient world = core.getWorld();
+        World world = core.getWorld();
         if (world != null) {
             spriteRenderer.render(BufferType.BACKGROUND);
             particleRenderer.renderBackground();
