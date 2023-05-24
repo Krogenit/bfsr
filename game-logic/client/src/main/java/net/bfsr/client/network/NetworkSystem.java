@@ -1,5 +1,6 @@
 package net.bfsr.client.network;
 
+import io.netty.channel.ChannelHandlerContext;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.Core;
@@ -7,25 +8,25 @@ import net.bfsr.client.gui.GuiDisconnected;
 import net.bfsr.client.gui.menu.GuiMainMenu;
 import net.bfsr.client.network.manager.NetworkManagerTCP;
 import net.bfsr.client.network.manager.NetworkManagerUDP;
-import net.bfsr.client.network.packet.PacketIn;
-import net.bfsr.client.network.packet.PacketRegistry;
-import net.bfsr.client.network.packet.common.PacketPing;
+import net.bfsr.engine.util.Side;
 import net.bfsr.network.ConnectionState;
-import net.bfsr.network.Packet;
-import net.bfsr.network.PacketOut;
+import net.bfsr.network.NetworkHandler;
+import net.bfsr.network.packet.Packet;
+import net.bfsr.network.packet.PacketRegistry;
+import net.bfsr.network.packet.common.PacketPing;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class NetworkSystem {
+public class NetworkSystem extends NetworkHandler {
     private final NetworkManagerTCP networkManagerTCP = new NetworkManagerTCP();
     private final NetworkManagerUDP networkManagerUDP = new NetworkManagerUDP();
 
-    private final PacketRegistry packetRegistry = new PacketRegistry();
+    private final PacketRegistry<NetworkSystem> packetRegistry = new PacketRegistry<>();
 
-    private final Queue<PacketIn> inboundPacketQueue = new ConcurrentLinkedQueue<>();
+    private final Queue<Packet> inboundPacketQueue = new ConcurrentLinkedQueue<>();
 
     @Getter
     @Setter
@@ -37,7 +38,7 @@ public class NetworkSystem {
     private long lastPingCheck;
 
     public void init() {
-        packetRegistry.registerPackets();
+        packetRegistry.registerPackets(Side.CLIENT);
     }
 
     public void connectTCP(InetAddress address, int port) {
@@ -56,7 +57,7 @@ public class NetworkSystem {
             if (connectionState == ConnectionState.PLAY) {
                 long now = System.currentTimeMillis();
                 if (now - lastPingCheck > 1000) {
-                    sendPacketUDP(new PacketPing());
+                    sendPacketUDP(new PacketPing(System.nanoTime() - handshakeTime));
                     lastPingCheck = now;
                 }
             }
@@ -65,20 +66,24 @@ public class NetworkSystem {
 
     private void processReceivedPackets() {
         for (int i = 1000; !inboundPacketQueue.isEmpty() && i >= 0; --i) {
-            PacketIn packet = inboundPacketQueue.poll();
+            Packet packet = inboundPacketQueue.poll();
             processPacket(packet);
         }
     }
 
-    private void processPacket(PacketIn packet) {
-        packet.processOnClientSide();
+    private void processPacket(Packet packet) {
+        packetRegistry.getPacketHandler(packet).handle(packet, this);
     }
 
-    public void sendPacketTCP(PacketOut packet) {
+    public void handle(Packet packet, ChannelHandlerContext ctx) {
+        packetRegistry.getPacketHandler(packet).handle(packet, this, ctx);
+    }
+
+    public void sendPacketTCP(Packet packet) {
         networkManagerTCP.sendPacket(packet);
     }
 
-    public void sendPacketUDP(PacketOut packet) {
+    public void sendPacketUDP(Packet packet) {
         networkManagerUDP.sendPacket(packet);
     }
 
@@ -101,11 +106,12 @@ public class NetworkSystem {
         Core.get().addFutureTask(() -> Core.get().stopServer());
     }
 
-    public void addPacketToInboundQueue(PacketIn packet) {
+    @Override
+    public void addPacketToQueue(Packet packet) {
         inboundPacketQueue.add(packet);
     }
 
-    public PacketIn createPacket(int packetId) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public Packet createPacket(int packetId) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         return packetRegistry.createPacket(packetId);
     }
 

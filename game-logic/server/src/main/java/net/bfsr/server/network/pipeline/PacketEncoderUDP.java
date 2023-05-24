@@ -6,7 +6,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import lombok.AllArgsConstructor;
-import net.bfsr.network.PacketOut;
+import net.bfsr.network.packet.Packet;
 import net.bfsr.server.network.NetworkSystem;
 
 import java.io.IOException;
@@ -14,12 +14,12 @@ import java.net.InetSocketAddress;
 import java.util.List;
 
 @AllArgsConstructor
-public class PacketEncoderUDP extends MessageToMessageEncoder<AddressedEnvelope<PacketOut, InetSocketAddress>> {
+public class PacketEncoderUDP extends MessageToMessageEncoder<AddressedEnvelope<Packet, InetSocketAddress>> {
     private final NetworkSystem networkSystem;
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, AddressedEnvelope<PacketOut, InetSocketAddress> msg, List<Object> out) throws IOException {
-        PacketOut packet = msg.content();
+    protected void encode(ChannelHandlerContext ctx, AddressedEnvelope<Packet, InetSocketAddress> msg, List<Object> out) throws IOException {
+        Packet packet = msg.content();
         ByteBuf buffer = ctx.alloc().buffer();
         buffer.writeByte(networkSystem.getPacketId(packet));
         packet.write(buffer);

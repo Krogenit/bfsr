@@ -13,15 +13,16 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.network.ConnectionState;
 import net.bfsr.network.GuiType;
-import net.bfsr.network.PacketOut;
+import net.bfsr.network.NetworkHandler;
+import net.bfsr.network.packet.Packet;
+import net.bfsr.network.packet.PacketRegistry;
+import net.bfsr.network.packet.common.PacketKeepAlive;
+import net.bfsr.network.packet.server.gui.PacketOpenGui;
+import net.bfsr.network.packet.server.login.PacketDisconnectLogin;
+import net.bfsr.network.packet.server.login.PacketJoinGame;
+import net.bfsr.network.packet.server.login.PacketLoginTCPSuccess;
+import net.bfsr.network.packet.server.login.PacketLoginUDPSuccess;
 import net.bfsr.server.ServerGameLogic;
-import net.bfsr.server.network.packet.PacketIn;
-import net.bfsr.server.network.packet.common.PacketKeepAlive;
-import net.bfsr.server.network.packet.server.gui.PacketOpenGui;
-import net.bfsr.server.network.packet.server.login.PacketDisconnectLogin;
-import net.bfsr.server.network.packet.server.login.PacketJoinGame;
-import net.bfsr.server.network.packet.server.login.PacketLoginTCPSuccess;
-import net.bfsr.server.network.packet.server.login.PacketLoginUDPSuccess;
 import net.bfsr.server.network.pipeline.MessageHandlerUDP;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
@@ -40,7 +41,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @RequiredArgsConstructor
 @Getter
 @Log4j2
-public class PlayerNetworkHandler {
+public class PlayerNetworkHandler extends NetworkHandler {
     private static final int LOGIN_TIMEOUT_IN_MILLS = 5000;
     private static final int KEEP_ALIVE_PERIOD_IN_MILLS = 2000;
 
@@ -50,7 +51,7 @@ public class PlayerNetworkHandler {
     @Setter
     private ConnectionState connectionState = ConnectionState.HANDSHAKE;
     private ConnectionState connectionStateBeforeDisconnect;
-    private final Queue<PacketIn> inboundPacketQueue = new ConcurrentLinkedQueue<>();
+    private final Queue<Packet> inboundPacketQueue = new ConcurrentLinkedQueue<>();
 
     @Setter
     private long loginStartTime;
@@ -64,6 +65,7 @@ public class PlayerNetworkHandler {
     private final WorldServer world = server.getWorld();
     private final PlayerManager playerManager = server.getPlayerManager();
     private Player player;
+    private final PacketRegistry<PlayerNetworkHandler> packetRegistry = ServerGameLogic.getNetwork().getPacketRegistry();
 
     public void update() {
         if (connectionState != ConnectionState.NOT_CONNECTED) {
@@ -85,21 +87,21 @@ public class PlayerNetworkHandler {
     }
 
     private void processReceivedPackets() {
-        for (int i = 1000; !inboundPacketQueue.isEmpty() && i >= 0; --i) {
-            PacketIn packet = inboundPacketQueue.poll();
-            processPacket(packet);
+        for (int i = 0; !inboundPacketQueue.isEmpty() && i < 1000; ++i) {
+            processPacket(inboundPacketQueue.poll());
         }
     }
 
-    private void processPacket(PacketIn packet) {
-        packet.processOnServerSide(this);
+    private void processPacket(Packet packet) {
+        packetRegistry.getPacketHandler(packet).handle(packet, this);
     }
 
-    public void addPacketToQueue(PacketIn packet) {
+    @Override
+    public void addPacketToQueue(Packet packet) {
         inboundPacketQueue.add(packet);
     }
 
-    public void sendTCPPacket(PacketOut packet) {
+    public void sendTCPPacket(Packet packet) {
         if (socketChannel.eventLoop().inEventLoop()) {
             socketChannel.writeAndFlush(packet).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         } else {
@@ -111,13 +113,13 @@ public class PlayerNetworkHandler {
         }
     }
 
-    public void sendUDPPacket(PacketOut packet) {
+    public void sendUDPPacket(Packet packet) {
         if (datagramChannel.eventLoop().inEventLoop()) {
-            datagramChannel.writeAndFlush(new DefaultAddressedEnvelope<PacketOut, SocketAddress>(packet, remoteAddress)).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+            datagramChannel.writeAndFlush(new DefaultAddressedEnvelope<Packet, SocketAddress>(packet, remoteAddress)).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         } else {
             datagramChannel.eventLoop().execute(() -> {
                 if (connectionState != ConnectionState.NOT_CONNECTED) {
-                    datagramChannel.writeAndFlush(new DefaultAddressedEnvelope<PacketOut, SocketAddress>(packet, remoteAddress))
+                    datagramChannel.writeAndFlush(new DefaultAddressedEnvelope<Packet, SocketAddress>(packet, remoteAddress))
                             .addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
                 }
             });
@@ -176,7 +178,7 @@ public class PlayerNetworkHandler {
         datagramChannel = (DatagramChannel) ctx.channel();
         this.remoteAddress = remoteAddress;
         ((MessageHandlerUDP) datagramChannel.pipeline().get("handler")).setPlayerNetworkHandler(this);
-        ctx.writeAndFlush(new DefaultAddressedEnvelope<PacketOut, SocketAddress>(new PacketLoginUDPSuccess(), remoteAddress)).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+        ctx.writeAndFlush(new DefaultAddressedEnvelope<Packet, SocketAddress>(new PacketLoginUDPSuccess(), remoteAddress)).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
     }
 
     public void joinGame() {

@@ -2,7 +2,7 @@ package net.bfsr.client.gui.input;
 
 import net.bfsr.client.Core;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.network.packet.common.PacketChatMessage;
+import net.bfsr.network.packet.common.PacketChatMessage;
 
 import static net.bfsr.engine.input.Keys.KEY_ENTER;
 

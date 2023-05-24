@@ -1,17 +1,17 @@
 package net.bfsr.server.network.pipeline;
 
 import io.netty.buffer.ByteBuf;
+import net.bfsr.network.packet.Packet;
 import net.bfsr.server.ServerGameLogic;
-import net.bfsr.server.network.packet.PacketIn;
 
 import java.io.IOException;
 
 public final class PacketDecodeUtils {
-    public static PacketIn decodePacket(ByteBuf buffer) throws IOException {
+    public static Packet decodePacket(ByteBuf buffer) throws IOException {
         int packetId = buffer.readByte();
 
         try {
-            PacketIn packet = ServerGameLogic.getInstance().getNetworkSystem().createPacket(packetId);
+            Packet packet = ServerGameLogic.getInstance().getNetworkSystem().createPacket(packetId);
             packet.read(buffer);
             return packet;
         } catch (Exception e) {

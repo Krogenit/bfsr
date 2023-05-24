@@ -10,7 +10,7 @@ import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.network.pipeline.MessageDecoderTCP;
 import net.bfsr.client.network.pipeline.MessageHandlerTCP;
 import net.bfsr.client.network.pipeline.PacketEncoder;
-import net.bfsr.network.PacketOut;
+import net.bfsr.network.packet.Packet;
 import net.bfsr.network.pipeline.tcp.FrameDecoder;
 import net.bfsr.network.pipeline.tcp.LengthPrepender;
 import org.jetbrains.annotations.NotNull;
@@ -45,7 +45,7 @@ public class NetworkManagerTCP {
         return channelFuture;
     }
 
-    public void sendPacket(PacketOut packet) {
+    public void sendPacket(Packet packet) {
         if (channel.eventLoop().inEventLoop()) {
             channel.writeAndFlush(packet).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         } else {

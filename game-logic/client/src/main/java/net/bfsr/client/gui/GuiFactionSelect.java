@@ -4,12 +4,12 @@ import net.bfsr.client.Core;
 import net.bfsr.client.font.StringObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.network.packet.client.PacketFactionSelect;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.faction.Faction;
+import net.bfsr.network.packet.client.PacketFactionSelect;
 import org.joml.Vector2f;
 
 public class GuiFactionSelect extends Gui {

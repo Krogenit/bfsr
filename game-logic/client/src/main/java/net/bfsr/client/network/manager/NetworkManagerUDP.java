@@ -10,7 +10,7 @@ import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.network.pipeline.MessageDecoderUDP;
 import net.bfsr.client.network.pipeline.MessageHandlerUDP;
 import net.bfsr.client.network.pipeline.PacketEncoder;
-import net.bfsr.network.PacketOut;
+import net.bfsr.network.packet.Packet;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;
@@ -40,7 +40,7 @@ public class NetworkManagerUDP {
         return channelFuture;
     }
 
-    public void sendPacket(PacketOut packet) {
+    public void sendPacket(Packet packet) {
         if (channel.eventLoop().inEventLoop()) {
             channel.writeAndFlush(packet).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         } else {

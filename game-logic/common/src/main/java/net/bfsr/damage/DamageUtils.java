@@ -153,9 +153,10 @@ public final class DamageUtils {
                     area = Clipper.Area(removedPath);
                     if (area > MIN_WRECK_AREA) {
                         DamageMask damageMask = createInvertedDamageMask(removedPaths64.get(i), mask, scale);
-                        ShipWreck damage = createDamage(damageable.getWorld(), idSupplier.get(), x, y, sin, cos, scale.x, scale.y, removedPath,
+                        ShipWreck damage = createDamage(x, y, sin, cos, scale.x, scale.y, removedPath,
                                 damageMask, damageable.getDataIndex());
                         if (damage != null) {
+                            damage.init(damageable.getWorld(), idSupplier.get());
                             damage.getBody().setLinearVelocity(damageable.getBody().getLinearVelocity());
                             damage.getBody().setAngularVelocity(damageable.getBody().getAngularVelocity());
                             World world = damage.getWorld();
@@ -510,7 +511,7 @@ public final class DamageUtils {
         return damagedTexture;
     }
 
-    public static ShipWreck createDamage(World world, int id, double x, double y, double sin, double cos, float scaleX, float scaleY, PathD contour,
+    public static ShipWreck createDamage(double x, double y, double sin, double cos, float scaleX, float scaleY, PathD contour,
                                          DamageMask damageMask, int dataIndex) {
         Vector2[] vectors = new Vector2[contour.size()];
         for (int i = 0; i < vectors.length; i++) {
@@ -523,7 +524,7 @@ public final class DamageUtils {
 
         if (vectors.length > 3) {
             try {
-                return createDamage(world, id, x, y, sin, cos, scaleX, scaleY, SWEEP_LINE.decompose(vectors), contours, damageMask, dataIndex);
+                return createDamage(x, y, sin, cos, scaleX, scaleY, SWEEP_LINE.decompose(vectors), contours, damageMask, dataIndex);
             } catch (Exception e) {
                 System.out.println("Error during decompose " + e.getMessage());
                 for (int i = 0; i < vectors.length; i++) {
@@ -532,11 +533,11 @@ public final class DamageUtils {
                 return null;
             }
         } else {
-            return createDamage(world, id, x, y, sin, cos, scaleX, scaleY, Collections.singletonList(Geometry.createPolygon(vectors)), contours, damageMask, dataIndex);
+            return createDamage(x, y, sin, cos, scaleX, scaleY, Collections.singletonList(Geometry.createPolygon(vectors)), contours, damageMask, dataIndex);
         }
     }
 
-    private static ShipWreck createDamage(World world, int id, double x, double y, double sin, double cos, float scaleX, float scaleY, List<Convex> convexes,
+    private static ShipWreck createDamage(double x, double y, double sin, double cos, float scaleX, float scaleY, List<Convex> convexes,
                                           PathsD contours, DamageMask damageMask, int dataIndex) {
         ShipWreck wreck = new ShipWreck((float) x, (float) y, (float) sin, (float) cos,
                 scaleX, scaleY, dataIndex, damageMask, contours);
@@ -552,9 +553,6 @@ public final class DamageUtils {
         body.setUserData(wreck);
         body.setLinearDamping(0.05f);
         body.setAngularDamping(0.01f);
-
-        wreck.init(world, id);
-
         return wreck;
     }
 

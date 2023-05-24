@@ -2,8 +2,8 @@ package net.bfsr.server.event.listener.damage;
 
 import net.bfsr.damage.Damageable;
 import net.bfsr.event.damage.DamageEvent;
+import net.bfsr.network.packet.server.entity.wreck.PacketSyncDamage;
 import net.bfsr.server.ServerGameLogic;
-import net.bfsr.server.network.packet.server.entity.wreck.PacketSyncDamage;
 import net.bfsr.server.world.WorldServer;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;

@@ -6,17 +6,21 @@ import io.netty.handler.timeout.TimeoutException;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.network.NetworkSystem;
-import net.bfsr.client.network.packet.PacketIn;
+import net.bfsr.network.packet.Packet;
 import org.jetbrains.annotations.NotNull;
 
 @Log4j2
 @AllArgsConstructor
-public class MessageHandlerTCP extends SimpleChannelInboundHandler<PacketIn> {
+public class MessageHandlerTCP extends SimpleChannelInboundHandler<Packet> {
     private final NetworkSystem networkSystem;
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, PacketIn msg) {
-        msg.handle(networkSystem, ctx);
+    protected void channelRead0(ChannelHandlerContext ctx, Packet msg) {
+        if (msg.isAsync()) {
+            networkSystem.handle(msg, ctx);
+        } else {
+            networkSystem.addPacketToQueue(msg);
+        }
     }
 
     @Override

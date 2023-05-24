@@ -4,9 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
+import net.bfsr.network.packet.server.player.PacketSetPlayerShip;
 import net.bfsr.server.dto.Default;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
-import net.bfsr.server.network.packet.server.player.PacketSetPlayerShip;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;

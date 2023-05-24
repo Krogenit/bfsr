@@ -13,9 +13,6 @@ import net.bfsr.client.input.InputHandler;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.listener.Listeners;
 import net.bfsr.client.network.NetworkSystem;
-import net.bfsr.client.network.packet.client.PacketHandshake;
-import net.bfsr.client.network.packet.client.PacketLoginTCP;
-import net.bfsr.client.network.packet.client.PacketLoginUDP;
 import net.bfsr.client.particle.ParticleManager;
 import net.bfsr.client.particle.config.ParticleEffectsRegistry;
 import net.bfsr.client.renderer.WorldRenderer;
@@ -31,7 +28,10 @@ import net.bfsr.engine.GameLogic;
 import net.bfsr.engine.sound.AbstractSoundManager;
 import net.bfsr.engine.util.Side;
 import net.bfsr.event.EventBus;
-import net.bfsr.network.PacketOut;
+import net.bfsr.network.packet.Packet;
+import net.bfsr.network.packet.client.PacketHandshake;
+import net.bfsr.network.packet.client.PacketLoginTCP;
+import net.bfsr.network.packet.client.PacketLoginUDP;
 
 import java.net.InetAddress;
 
@@ -216,11 +216,11 @@ public class Core extends GameLogic {
         guiManager.setCurrentGui(gui);
     }
 
-    public void sendTCPPacket(PacketOut packet) {
+    public void sendTCPPacket(Packet packet) {
         networkSystem.sendPacketTCP(packet);
     }
 
-    public void sendUDPPacket(PacketOut packet) {
+    public void sendUDPPacket(Packet packet) {
         networkSystem.sendPacketUDP(packet);
     }
 

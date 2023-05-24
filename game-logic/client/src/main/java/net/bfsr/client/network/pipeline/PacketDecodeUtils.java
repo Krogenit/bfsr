@@ -2,16 +2,16 @@ package net.bfsr.client.network.pipeline;
 
 import io.netty.buffer.ByteBuf;
 import net.bfsr.client.Core;
-import net.bfsr.client.network.packet.PacketIn;
+import net.bfsr.network.packet.Packet;
 
 import java.io.IOException;
 
 public final class PacketDecodeUtils {
-    public static PacketIn decodePacket(ByteBuf buffer) throws IOException {
+    public static Packet decodePacket(ByteBuf buffer) throws IOException {
         int packetId = buffer.readByte();
 
         try {
-            PacketIn packet = Core.get().getNetworkSystem().createPacket(packetId);
+            Packet packet = Core.get().getNetworkSystem().createPacket(packetId);
             packet.read(buffer);
             return packet;
         } catch (IOException e) {

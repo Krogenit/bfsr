@@ -2,13 +2,13 @@ package net.bfsr.client.input;
 
 import net.bfsr.client.Core;
 import net.bfsr.client.gui.GuiManager;
-import net.bfsr.client.network.packet.client.PacketCommand;
-import net.bfsr.client.network.packet.client.PacketPauseGame;
 import net.bfsr.client.settings.Option;
 import net.bfsr.command.Command;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
+import net.bfsr.network.packet.client.PacketCommand;
+import net.bfsr.network.packet.client.PacketPauseGame;
 import org.joml.Vector2f;
 
 import static net.bfsr.engine.input.Keys.*;

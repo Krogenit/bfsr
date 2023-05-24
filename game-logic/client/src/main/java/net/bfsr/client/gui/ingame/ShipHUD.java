@@ -8,7 +8,6 @@ import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.network.packet.client.PacketShipControl;
 import net.bfsr.client.renderer.RenderManager;
 import net.bfsr.client.renderer.entity.ShipRender;
 import net.bfsr.component.armor.Armor;
@@ -25,6 +24,7 @@ import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.RotationHelper;
+import net.bfsr.network.packet.client.PacketShipControl;
 import org.joml.Vector2f;
 
 public class ShipHUD {

@@ -4,12 +4,12 @@ import net.bfsr.client.Core;
 import net.bfsr.client.font.StringObject;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.network.packet.client.PacketRespawn;
 import net.bfsr.client.settings.Option;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
+import net.bfsr.network.packet.client.PacketRespawn;
 import org.joml.Vector2f;
 
 import static net.bfsr.engine.input.Keys.KEY_C;
