@@ -76,7 +76,7 @@ public class MiniMap {
                     color.z = 0.5f;
                 }
 
-                ShipRender render = ((ShipRender) renderManager.getRender(s.getId()));
+                ShipRender render = renderManager.getRender(s.getId());
                 Vector2f lastPosition = render.getLastPosition();
                 int lastX = (int) (miniMapX + (lastPosition.x - camPos.x) / mapScaleX);
                 int lastY = (int) (miniMapY + (lastPosition.y - camPos.y) / mapScaleY);

@@ -9,7 +9,6 @@ import net.bfsr.config.SoundData;
 import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.sound.AbstractSoundManager;
-import net.bfsr.engine.sound.SoundSource;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.module.weapon.BeamShotEvent;
 import net.bfsr.event.module.weapon.WeaponShotEvent;
@@ -46,7 +45,7 @@ public class WeaponEventListener {
         WeaponSlot weaponSlot = event.weaponSlot();
         Vector2f position = weaponSlot.getPosition();
         playSounds(weaponSlot.getGunData(), weaponSlot.getShip().getWorld().getRand(), position.x, position.y);
-        ShipRender shipRender = (ShipRender) renderManager.getRender(weaponSlot.getShip().getId());
+        ShipRender shipRender = renderManager.getRender(weaponSlot.getShip().getId());
         shipRender.onWeaponShot(weaponSlot);
     }
 
@@ -54,7 +53,7 @@ public class WeaponEventListener {
         SoundData[] sounds = gunData.getSounds();
         if (sounds.length > 0) {
             SoundData sound = sounds[random.nextInt(sounds.length)];
-            soundManager.play(new SoundSource(Engine.assetsManager.soundLoader.getBuffer(sound.path()), sound.volume(), x, y));
+            soundManager.play(Engine.assetsManager.soundLoader.getBuffer(sound.path()), sound.volume(), x, y);
         }
     }
 }

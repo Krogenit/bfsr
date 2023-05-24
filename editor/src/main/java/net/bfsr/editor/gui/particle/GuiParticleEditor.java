@@ -2,13 +2,13 @@ package net.bfsr.editor.gui.particle;
 
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.Core;
+import net.bfsr.client.config.particle.ParticleEffect;
+import net.bfsr.client.config.particle.ParticleEffectConfig;
+import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.gui.AbstractGuiObject;
 import net.bfsr.client.gui.GuiObjectWithSubObjects;
 import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.particle.SpawnAccumulator;
-import net.bfsr.client.particle.config.ParticleEffect;
-import net.bfsr.client.particle.config.ParticleEffectConfig;
-import net.bfsr.client.particle.config.ParticleEffectsRegistry;
 import net.bfsr.client.renderer.Render;
 import net.bfsr.client.settings.Option;
 import net.bfsr.config.ConfigLoader;

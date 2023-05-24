@@ -24,7 +24,8 @@ public class BeamEventListener {
     public void event(BeamDamageShipEvent event) {
         WeaponSlotBeam slot = event.slotBeam();
         Ship ship = event.ship();
-        ((WeaponSlotBeamRender) ((ShipRender) renderManager.getRender(slot.getShip().getId())).getWeaponRender(slot.getId()))
+        ShipRender render = renderManager.getRender(slot.getShip().getId());
+        ((WeaponSlotBeamRender) render.getWeaponRender(slot.getId()))
                 .onDamage(event.raycast(), event.hitX(), event.hitY());
 
         Shield shield = ship.getShield();
@@ -39,7 +40,8 @@ public class BeamEventListener {
     public void event(BeamDamageWreckEvent event) {
         Wreck wreck = event.wreck();
         WeaponSlotBeam slot = event.slotBeam();
-        ((WeaponSlotBeamRender) ((ShipRender) renderManager.getRender(slot.getShip().getId())).getWeaponRender(slot.getId()))
+        ShipRender render = renderManager.getRender(slot.getShip().getId());
+        ((WeaponSlotBeamRender) render.getWeaponRender(slot.getId()))
                 .onDamage(event.raycast(), event.hitX(), event.hitY());
         GarbageSpawner.beamHullDamage(event.hitX(), event.hitY(), wreck.getVelocity().x * 0.005f, wreck.getVelocity().y * 0.005f);
     }

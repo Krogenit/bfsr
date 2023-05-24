@@ -10,7 +10,7 @@ import org.joml.Vector2f;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
-public class ParticleRender extends Render<Particle> {
+public class ParticleRender extends Render<Particle> implements net.bfsr.engine.renderer.particle.ParticleRender {
     protected long textureHandle;
     protected Vector2f position;
     protected Vector2f size;
@@ -71,6 +71,7 @@ public class ParticleRender extends Render<Particle> {
         }
     }
 
+    @Override
     public void putToBuffer(AbstractSpriteRenderer spriteRenderer, FloatBuffer vertexBuffer, ByteBuffer materialBuffer, float interpolation,
                             MutableInt vertexBufferIndex, MutableInt materialBufferIndex) {
         spriteRenderer.putVertices(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, object.getSin(), object.getCos(),

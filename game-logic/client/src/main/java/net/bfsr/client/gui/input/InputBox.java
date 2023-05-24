@@ -3,10 +3,10 @@ package net.bfsr.client.gui.input;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.Core;
-import net.bfsr.client.font.StringObject;
 import net.bfsr.client.gui.GuiObject;
 import net.bfsr.client.gui.GuiObjectsHandler;
 import net.bfsr.client.gui.TexturedGuiObject;
+import net.bfsr.client.gui.font.StringObject;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
@@ -15,7 +15,6 @@ import net.bfsr.engine.renderer.font.StringCache;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.sound.SoundRegistry;
-import net.bfsr.engine.sound.SoundSource;
 import net.bfsr.util.RunnableUtils;
 import org.joml.Vector2i;
 import org.joml.Vector4f;
@@ -363,7 +362,7 @@ public class InputBox extends TexturedGuiObject {
     public void onMouseHover() {
         mouse.changeCursor(mouse.getInputCursor());
         if (collideSound != null) {
-            Core.get().getSoundManager().play(new SoundSource(collideSound));
+            Core.get().getSoundManager().play(collideSound);
         }
     }
 
@@ -483,7 +482,7 @@ public class InputBox extends TexturedGuiObject {
     public void enableTyping() {
         setCursorPositionByMouse();
         showCursor();
-        Core.get().getSoundManager().play(new SoundSource(SoundRegistry.buttonClick));
+        Core.get().getSoundManager().play(SoundRegistry.buttonClick);
         typing = true;
     }
 

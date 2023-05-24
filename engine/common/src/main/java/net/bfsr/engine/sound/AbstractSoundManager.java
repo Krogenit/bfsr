@@ -11,8 +11,8 @@ public abstract class AbstractSoundManager {
     public abstract void updateListenerPosition(Vector2f position);
     public abstract void updateGain(float value);
 
-    public abstract void play(SoundSource soundSource);
-    public abstract void play(int source);
+    public abstract SoundSource play(AbstractSoundBuffer soundBuffer, float volume, float x, float y);
+    public abstract SoundSource play(SoundRegistry sound);
 
     public abstract int createSoundSource(int bufferId, boolean loop, boolean relative);
 

@@ -1,7 +1,7 @@
 package net.bfsr.client.particle.effect;
 
-import net.bfsr.client.particle.config.ParticleEffect;
-import net.bfsr.client.particle.config.ParticleEffectsRegistry;
+import net.bfsr.client.config.particle.ParticleEffect;
+import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 
 public final class JumpEffects {
     private static final ParticleEffect jump = ParticleEffectsRegistry.INSTANCE.get("jump");

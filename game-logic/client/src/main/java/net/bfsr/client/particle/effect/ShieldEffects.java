@@ -1,7 +1,7 @@
 package net.bfsr.client.particle.effect;
 
-import net.bfsr.client.particle.config.ParticleEffect;
-import net.bfsr.client.particle.config.ParticleEffectsRegistry;
+import net.bfsr.client.config.particle.ParticleEffect;
+import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 
 public final class ShieldEffects {
     private static final ParticleEffect rebuild = ParticleEffectsRegistry.INSTANCE.get("shield/rebuild");

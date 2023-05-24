@@ -26,7 +26,9 @@ public abstract class Server extends AbstractLoop {
 
     @Override
     public void update() {
+        gameLogic.getProfiler().startSection("update");
         gameLogic.update();
+        gameLogic.getProfiler().endSection("update");
     }
 
     @Override

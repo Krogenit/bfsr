@@ -1,8 +1,9 @@
-package net.bfsr.engine.renderer.font.string;
+package net.bfsr.engine.renderer.font;
 
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
+import net.bfsr.engine.renderer.font.string.AbstractGLString;
 import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;

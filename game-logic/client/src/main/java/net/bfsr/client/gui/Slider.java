@@ -1,7 +1,7 @@
 package net.bfsr.client.gui;
 
 import net.bfsr.client.Core;
-import net.bfsr.client.font.StringObject;
+import net.bfsr.client.gui.font.StringObject;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.settings.Option;
 import net.bfsr.engine.Engine;
@@ -10,7 +10,6 @@ import net.bfsr.engine.renderer.font.StringCache;
 import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.sound.SoundRegistry;
-import net.bfsr.engine.sound.SoundSource;
 import net.bfsr.util.DecimalUtils;
 
 public class Slider extends TexturedGuiObject {
@@ -45,7 +44,7 @@ public class Slider extends TexturedGuiObject {
 
     @Override
     public void onMouseHover() {
-        Core.get().getSoundManager().play(new SoundSource(SoundRegistry.buttonCollide));
+        Core.get().getSoundManager().play(SoundRegistry.buttonCollide);
     }
 
     @Override
@@ -124,7 +123,7 @@ public class Slider extends TexturedGuiObject {
     public boolean onMouseLeftClick() {
         if (!isMouseHover()) return false;
         movingByMouse = true;
-        Core.get().getSoundManager().play(new SoundSource(SoundRegistry.buttonClick));
+        Core.get().getSoundManager().play(SoundRegistry.buttonClick);
         return true;
     }
 

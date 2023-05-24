@@ -1,4 +1,4 @@
-package net.bfsr.client.font;
+package net.bfsr.client.gui.font;
 
 import lombok.Getter;
 import lombok.Setter;

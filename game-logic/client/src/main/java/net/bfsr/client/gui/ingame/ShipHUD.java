@@ -2,10 +2,10 @@ package net.bfsr.client.gui.ingame;
 
 import lombok.Getter;
 import net.bfsr.client.Core;
-import net.bfsr.client.font.StringObject;
 import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.gui.button.Button;
+import net.bfsr.client.gui.font.StringObject;
 import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.renderer.RenderManager;
@@ -169,7 +169,8 @@ public class ShipHUD {
                 RotationHelper.rotate(-MathUtils.HALF_PI, pos.x, pos.y, rotationVector);
                 int slotWidth = (int) (slot.getSize().x * shipSize);
                 int slothHeight = (int) (slot.getSize().y * shipSize);
-                AbstractTexture texture = ((ShipRender) renderManager.getRender(ship.getId())).getWeaponSlotTexture(i);
+                ShipRender render = renderManager.getRender(ship.getId());
+                AbstractTexture texture = render.getWeaponSlotTexture(i);
                 renderQuad((int) (x + rotationVector.x * shipSize), (int) (y + rotationVector.y * shipSize), -MathUtils.HALF_PI, slotWidth, slothHeight,
                         reload, 0.0f, 1.0f - reload, 1.0f, texture);
             }

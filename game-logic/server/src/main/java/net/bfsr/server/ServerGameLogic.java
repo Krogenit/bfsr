@@ -84,9 +84,9 @@ public class ServerGameLogic extends GameLogic {
     @Override
     public void update() {
         super.update();
-        profiler.endStartSection("playerManager");
+        profiler.startSection("playerManager");
         playerManager.update();
-        profiler.endStartSection("update");
+        profiler.endStartSection("updateWorld");
         updateWorld();
         profiler.endStartSection("network");
         networkSystem.update();

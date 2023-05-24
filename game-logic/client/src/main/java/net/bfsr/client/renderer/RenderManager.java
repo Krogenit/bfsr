@@ -65,18 +65,13 @@ public class RenderManager {
         }
     }
 
-    public void onExitToMainMenu() {
-        renderList.clear();
-        renders.clear();
-    }
-
     public void addRender(Render<?> render) {
         renderList.add(render);
         renders.put(render.getObject().getId(), render);
     }
 
-    public Render<?> getRender(int id) {
-        return renders.get(id);
+    public <T extends Render<?>> T getRender(int id) {
+        return (T) renders.get(id);
     }
 
     public void clear() {

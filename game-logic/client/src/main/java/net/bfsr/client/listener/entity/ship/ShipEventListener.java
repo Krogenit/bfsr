@@ -55,7 +55,7 @@ public class ShipEventListener {
         Vector4f effectsColor = ship.getShipData().getEffectsColor();
         JumpEffects.jump(position.x, position.y, 32.0f + size.x * 0.25f, velocity.x * 0.5f, velocity.y * 0.5f,
                 effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
-        ShipRender render = ((ShipRender) renderManager.getRender(ship.getId()));
+        ShipRender render = renderManager.getRender(ship.getId());
         render.createName();
     }
 

@@ -1,4 +1,4 @@
-package net.bfsr.client.renderer.particle;
+package net.bfsr.engine.renderer.particle;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -6,7 +6,6 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.opengl.GL;
-import net.bfsr.engine.renderer.particle.RenderLayer;
 import net.bfsr.engine.util.MultithreadingUtils;
 
 import java.nio.ByteBuffer;
@@ -236,13 +235,13 @@ public class ParticleRenderer {
         getParticles(renderLayer).add(render);
     }
 
-    public void onExitToMainMenu() {
+    private List<ParticleRender> getParticles(RenderLayer renderLayer) {
+        return particlesByRenderLayer[renderLayer.ordinal()];
+    }
+
+    public void clear() {
         for (int i = 0; i < particlesByRenderLayer.length; i++) {
             particlesByRenderLayer[i].clear();
         }
-    }
-
-    private List<ParticleRender> getParticles(RenderLayer renderLayer) {
-        return particlesByRenderLayer[renderLayer.ordinal()];
     }
 }

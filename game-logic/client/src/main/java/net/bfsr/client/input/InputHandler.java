@@ -27,6 +27,7 @@ public class InputHandler extends AbstractInputHandler {
 
     public void update() {
         playerInputController.update();
+        cameraInputController.update();
     }
 
     @Override

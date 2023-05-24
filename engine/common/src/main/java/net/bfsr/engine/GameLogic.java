@@ -25,6 +25,7 @@ public class GameLogic {
         while (!futureTasks.isEmpty()) {
             futureTasks.poll().run();
         }
+        profiler.endSection();
     }
 
     public void addFutureTask(Runnable runnable) {

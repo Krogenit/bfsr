@@ -1,4 +1,4 @@
-package net.bfsr.client.particle.config;
+package net.bfsr.client.config.particle;
 
 import lombok.Getter;
 import net.bfsr.client.Core;
@@ -135,7 +135,8 @@ public class ParticleEffect extends ConfigData {
         if (soundEffects != null && soundEffects.length > 0) {
             spawnRunnables.add((x, y, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a) -> {
                 for (int i = 0; i < soundEffects.length; i++) {
-                    soundEffects[i].play(x, y);
+                    SoundEffect soundEffect = soundEffects[i];
+                    Engine.soundManager.play(soundEffect.getSoundBuffer(), soundEffect.getVolume(), x, y);
                 }
             });
         }

@@ -2,9 +2,9 @@ package net.bfsr.editor.gui.inspection;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.font.StringObject;
 import net.bfsr.client.gui.*;
 import net.bfsr.client.gui.button.Button;
+import net.bfsr.client.gui.font.StringObject;
 import net.bfsr.editor.gui.component.DragTarget;
 import net.bfsr.editor.gui.component.MinimizableGuiObject;
 import net.bfsr.editor.property.PropertiesHolder;

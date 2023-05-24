@@ -1,4 +1,4 @@
-package net.bfsr.client.particle.config;
+package net.bfsr.client.config.particle;
 
 import lombok.Getter;
 import lombok.Setter;

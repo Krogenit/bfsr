@@ -120,12 +120,15 @@ public class LWJGL3Main extends AbstractLoop {
 
     @Override
     public void update() {
+        core.getProfiler().startSection("update");
         Engine.renderer.update();
         core.update();
+        core.getProfiler().endSection("update");
     }
 
     @Override
     public void render(float interpolation) {
+        core.getProfiler().startSection("render");
         if (Engine.isPaused()) {
             interpolation = 1.0f;
         }
@@ -133,6 +136,7 @@ public class LWJGL3Main extends AbstractLoop {
         Engine.renderer.setInterpolation(interpolation);
 
         core.render(interpolation);
+        core.getProfiler().endSection("render");
     }
 
     @Override

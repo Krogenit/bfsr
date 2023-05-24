@@ -1,7 +1,7 @@
 package net.bfsr.client.renderer.entity;
 
 import lombok.Getter;
-import net.bfsr.client.font.StringObject;
+import net.bfsr.client.gui.font.StringObject;
 import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.particle.effect.EngineEffects;
 import net.bfsr.client.renderer.Render;

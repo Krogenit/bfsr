@@ -34,11 +34,15 @@ public class Profiler {
     }
 
     public void endSection() {
+        endSection(currentSectionName);
+    }
+
+    public void endSection(String name) {
         if (enable) {
-            Long prevTime = prevResults.get(currentSectionName);
+            Long prevTime = prevResults.get(name);
             long time = System.nanoTime();
             long dif = time - prevTime;
-            results.put(currentSectionName, dif / (float) 1000000);
+            results.put(name, dif / (float) 1000000);
         }
     }
 

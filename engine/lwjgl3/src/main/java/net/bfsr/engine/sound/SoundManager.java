@@ -58,14 +58,22 @@ public class SoundManager extends AbstractSoundManager {
     }
 
     @Override
-    public void play(SoundSource source) {
-        source.play();
-        this.playingSounds.add(source);
+    public SoundSource play(AbstractSoundBuffer soundBuffer, float volume, float x, float y) {
+        SoundSource soundSource = new SoundSource(soundBuffer, volume, x, y);
+        play(soundSource);
+        return soundSource;
     }
 
     @Override
-    public void play(int source) {
-        AL10.alSourcePlay(source);
+    public SoundSource play(SoundRegistry sound) {
+        SoundSource soundSource = new SoundSource(sound);
+        play(soundSource);
+        return soundSource;
+    }
+
+    private void play(SoundSource source) {
+        AL10.alSourcePlay(source.getSource());
+        playingSounds.add(source);
     }
 
     @Override

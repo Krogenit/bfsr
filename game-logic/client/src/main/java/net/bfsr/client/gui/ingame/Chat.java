@@ -79,9 +79,9 @@ public class Chat {
 
     public Chat() {
         scroll.setSize(12, 99);
-        scroll.setRepositionConsumer((width, height) -> scroll.setPosition(chat.getX() + chat.getWidth() - 24, chat.getY() + 10));
         scroll.setHeightResizeFunction((width, height) -> 122);
         scroll.setViewHeightResizeFunction((width, height) -> 122);
+        scroll.setRepositionConsumer((width, height) -> scroll.setPosition(chat.getX() + chat.getWidth() - 24, chat.getY() + 10));
     }
 
     public void init(GuiInGame gui) {

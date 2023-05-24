@@ -1,7 +1,9 @@
 package net.bfsr.engine.sound;
 
+import lombok.Getter;
 import net.bfsr.engine.Engine;
 
+@Getter
 public class SoundSource {
     private final int source;
 
@@ -39,10 +41,6 @@ public class SoundSource {
 
     public void setReferenceDistance(float value) {
         Engine.soundManager.setReferenceDistance(source, value);
-    }
-
-    public void play() {
-        Engine.soundManager.play(source);
     }
 
     public boolean isPlaying() {

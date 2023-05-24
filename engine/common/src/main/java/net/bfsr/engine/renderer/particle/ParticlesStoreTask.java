@@ -1,9 +1,8 @@
-package net.bfsr.client.renderer.particle;
+package net.bfsr.engine.renderer.particle;
 
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
-import net.bfsr.engine.renderer.particle.RenderLayer;
 import net.bfsr.engine.util.MutableInt;
 
 import java.nio.ByteBuffer;

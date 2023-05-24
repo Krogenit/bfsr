@@ -1,11 +1,13 @@
-package net.bfsr.engine.renderer.font.string;
+package net.bfsr.engine.renderer.font;
 
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
-import net.bfsr.engine.renderer.font.StringCache;
+import net.bfsr.engine.renderer.font.string.AbstractGLString;
+import net.bfsr.engine.renderer.font.string.AbstractStringGeometryBuilder;
+import net.bfsr.engine.renderer.font.string.AbstractStringRenderer;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;

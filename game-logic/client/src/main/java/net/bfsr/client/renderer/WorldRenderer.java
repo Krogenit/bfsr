@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import net.bfsr.client.Core;
 import net.bfsr.client.event.ExitToMainMenuEvent;
 import net.bfsr.client.gui.Gui;
-import net.bfsr.client.renderer.particle.ParticleRenderer;
 import net.bfsr.client.settings.Option;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
@@ -13,6 +12,7 @@ import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
 import net.bfsr.engine.renderer.opengl.GL;
+import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.shader.AbstractShaderProgram;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
@@ -147,8 +147,8 @@ public class WorldRenderer {
 
     @Handler
     public void event(ExitToMainMenuEvent event) {
-        particleRenderer.onExitToMainMenu();
-        renderManager.onExitToMainMenu();
+        particleRenderer.clear();
+        renderManager.clear();
         backgroundTexture.delete();
     }
 }

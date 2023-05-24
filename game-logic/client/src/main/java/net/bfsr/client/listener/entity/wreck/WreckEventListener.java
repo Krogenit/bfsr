@@ -37,7 +37,7 @@ public class WreckEventListener {
 
     @Handler
     public void event(ShipWreckFixturesEvent event) {
-        ShipWreckRenderer render = (ShipWreckRenderer) renderManager.getRender(event.wreck().getId());
+        ShipWreckRenderer render = renderManager.getRender(event.wreck().getId());
         render.computeAABB();
     }
 

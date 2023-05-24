@@ -8,7 +8,6 @@ import net.bfsr.client.gui.SimpleGuiObject;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.sound.SoundRegistry;
-import net.bfsr.engine.sound.SoundSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +78,7 @@ public class Scroll extends SimpleGuiObject {
     @Override
     public void onMouseHover() {
         if (collideSound != null) {
-            Core.get().getSoundManager().play(new SoundSource(collideSound));
+            Core.get().getSoundManager().play(collideSound);
         }
     }
 
@@ -143,7 +142,7 @@ public class Scroll extends SimpleGuiObject {
         movingByMouse = true;
         mouseStartClickY = (int) mouse.getPosition().y;
         clickStartScroll = scroll;
-        Core.get().getSoundManager().play(new SoundSource(SoundRegistry.buttonClick));
+        Core.get().getSoundManager().play(SoundRegistry.buttonClick);
         return true;
     }
 

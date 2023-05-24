@@ -1,6 +1,6 @@
 package net.bfsr.editor.particle;
 
-import net.bfsr.client.particle.config.ParticleEffectConfig;
+import net.bfsr.client.config.particle.ParticleEffectConfig;
 import org.mapstruct.Mapper;
 
 @Mapper

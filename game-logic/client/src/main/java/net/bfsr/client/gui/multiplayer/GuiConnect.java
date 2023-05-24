@@ -2,9 +2,9 @@ package net.bfsr.client.gui.multiplayer;
 
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.Core;
-import net.bfsr.client.font.StringObject;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.button.Button;
+import net.bfsr.client.gui.font.StringObject;
 import net.bfsr.client.gui.input.InputBox;
 import net.bfsr.client.language.Lang;
 import net.bfsr.engine.renderer.font.FontType;

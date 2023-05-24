@@ -1,8 +1,8 @@
 package net.bfsr.client.particle.effect;
 
+import net.bfsr.client.config.particle.ParticleEffect;
+import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.particle.SpawnAccumulator;
-import net.bfsr.client.particle.config.ParticleEffect;
-import net.bfsr.client.particle.config.ParticleEffectsRegistry;
 
 public final class EngineEffects {
     private static final ParticleEffect secondaryEngine = ParticleEffectsRegistry.INSTANCE.get("engine/secondary_engine");

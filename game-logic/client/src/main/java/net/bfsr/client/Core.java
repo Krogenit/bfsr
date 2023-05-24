@@ -3,7 +3,7 @@ package net.bfsr.client;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.client.camera.CameraController;
+import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.event.ExitToMainMenuEvent;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.GuiManager;
@@ -14,7 +14,6 @@ import net.bfsr.client.language.Lang;
 import net.bfsr.client.listener.Listeners;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.particle.ParticleManager;
-import net.bfsr.client.particle.config.ParticleEffectsRegistry;
 import net.bfsr.client.renderer.WorldRenderer;
 import net.bfsr.client.server.LocalServer;
 import net.bfsr.client.server.LocalServerGameLogic;
@@ -51,8 +50,6 @@ public class Core extends GameLogic {
     @Getter
     private final GuiManager guiManager = new GuiManager();
     @Getter
-    private final CameraController cameraController = new CameraController();
-    @Getter
     private final ParticleManager particleManager = new ParticleManager();
 
     @Getter
@@ -80,7 +77,6 @@ public class Core extends GameLogic {
         this.networkSystem.init();
         this.worldRenderer.init();
         this.guiManager.init(startGui, guiInGame);
-        this.cameraController.init();
         this.profiler.setEnable(Option.IS_PROFILING.getBoolean());
         this.soundManager.setGain(Option.SOUND_VOLUME.getFloat());
         this.particleManager.init();
@@ -93,12 +89,10 @@ public class Core extends GameLogic {
     @Override
     public void update() {
         super.update();
-        profiler.endStartSection("renderer");
+        profiler.startSection("renderer");
         worldRenderer.update();
         profiler.endStartSection("inputHandler");
         inputHandler.update();
-        profiler.endStartSection("cameraController");
-        cameraController.update();
         if (world != null) {
             profiler.endStartSection("soundManager");
             soundManager.updateListenerPosition(Engine.renderer.camera.getPosition());
@@ -117,12 +111,13 @@ public class Core extends GameLogic {
         networkSystem.update();
         profiler.endStartSection("renderer.postUpdate");
         worldRenderer.postUpdate();
+        profiler.endSection();
     }
 
     public void render(float interpolation) {
-        profiler.endStartSection("prepareRender");
+        profiler.startSection("prepareRender");
         worldRenderer.prepareRender(interpolation);
-        profiler.endStartSection("render");
+        profiler.endStartSection("worldRenderer.render");
         worldRenderer.render(interpolation);
         profiler.endSection();
     }

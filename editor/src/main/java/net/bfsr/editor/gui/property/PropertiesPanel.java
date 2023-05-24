@@ -1,10 +1,10 @@
 package net.bfsr.editor.gui.property;
 
-import net.bfsr.client.font.StringObject;
 import net.bfsr.client.gui.AbstractGuiObject;
 import net.bfsr.client.gui.Gui;
 import net.bfsr.client.gui.GuiObjectsContainer;
 import net.bfsr.client.gui.button.Button;
+import net.bfsr.client.gui.font.StringObject;
 import net.bfsr.editor.gui.component.MinimizableHolder;
 import net.bfsr.editor.gui.component.PropertyComponent;
 import net.bfsr.editor.property.PropertiesBuilder;
