@@ -193,8 +193,18 @@ public class Ship extends RigidBody implements Damageable {
         }
     }
 
+    public void removeAllMoveDirections() {
+        moveDirections.forEach(direction -> {
+            EventBus.post(world.getSide(), new ShipRemoveMoveDirectionEvent(this, direction));
+            return true;
+        });
+
+        moveDirections.clear();
+    }
+
     @Override
-    public void collision(Body body, float contactX, float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
+    public void collision(Body body, float contactX, float contactY, float normalX, float normalY,
+                          ContactCollisionData<Body> collision) {
         Object userData = body.getUserData();
         if (userData != null) {
             if (userData instanceof Ship otherShip) {
@@ -205,7 +215,8 @@ public class Ship extends RigidBody implements Damageable {
 
                 impactPowerForOther /= 400.0f;
 
-                if (impactPowerForOther > 0.25f) otherShip.damageByCollision(this, impactPowerForOther, contactX, contactY, normalX, normalY);
+                if (impactPowerForOther > 0.25f)
+                    otherShip.damageByCollision(this, impactPowerForOther, contactX, contactY, normalX, normalY);
             } else if (userData instanceof Wreck) {
                 if (collisionTimer <= 0) {
                     collisionTimer = 2 * TimeUtils.UPDATES_PER_SECOND;
@@ -309,7 +320,8 @@ public class Ship extends RigidBody implements Damageable {
         }
     }
 
-    private void damageByCollision(Ship otherShip, float impactPower, float contactX, float contactY, float normalX, float normalY) {
+    private void damageByCollision(Ship otherShip, float impactPower, float contactX, float contactY, float normalX,
+                                   float normalY) {
         if (collisionTimer > 0) {
             return;
         }
@@ -449,7 +461,8 @@ public class Ship extends RigidBody implements Damageable {
     }
 
     @Override
-    public void updateClientPositionFromPacket(Vector2f position, float sin, float cos, Vector2f velocity, float angularVelocity) {
+    public void updateClientPositionFromPacket(Vector2f position, float sin, float cos, Vector2f velocity,
+                                               float angularVelocity) {
         super.updateClientPositionFromPacket(position, sin, cos, velocity, angularVelocity);
 
         int size = weaponSlots.size();

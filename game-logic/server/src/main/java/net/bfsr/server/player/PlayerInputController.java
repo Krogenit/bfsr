@@ -45,8 +45,16 @@ public class PlayerInputController {
     }
 
     public void setShip(Ship ship) {
-        if (this.ship != null) this.ship.addAI();
+        if (this.ship != null) {
+            this.ship.addAI();
+            this.ship.removeAllMoveDirections();
+        }
+
         this.ship = ship;
-        if (ship != null) ship.removeAI();
+
+        if (ship != null) {
+            ship.removeAI();
+            ship.removeAllMoveDirections();
+        }
     }
 }
