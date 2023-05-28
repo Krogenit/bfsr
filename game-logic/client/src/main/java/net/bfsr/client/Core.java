@@ -4,128 +4,139 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
-import net.bfsr.client.event.ExitToMainMenuEvent;
-import net.bfsr.client.gui.Gui;
+import net.bfsr.client.damage.DamageHandler;
+import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.gui.GuiManager;
-import net.bfsr.client.gui.ingame.GuiInGame;
-import net.bfsr.client.gui.menu.GuiMainMenu;
+import net.bfsr.client.gui.main.GuiMainMenu;
 import net.bfsr.client.input.InputHandler;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.listener.Listeners;
+import net.bfsr.client.listener.entity.bullet.BulletEventListener;
+import net.bfsr.client.listener.entity.ship.ShipEventListener;
+import net.bfsr.client.listener.entity.wreck.WreckEventListener;
+import net.bfsr.client.listener.module.shield.ShieldEventListener;
+import net.bfsr.client.listener.module.weapon.BeamEventListener;
+import net.bfsr.client.listener.module.weapon.WeaponEventListener;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.particle.ParticleManager;
+import net.bfsr.client.renderer.GlobalRenderer;
+import net.bfsr.client.renderer.RenderManager;
 import net.bfsr.client.renderer.WorldRenderer;
 import net.bfsr.client.server.LocalServer;
 import net.bfsr.client.server.LocalServerGameLogic;
 import net.bfsr.client.server.ThreadLocalServer;
 import net.bfsr.client.settings.ClientSettings;
-import net.bfsr.client.settings.Option;
+import net.bfsr.client.settings.ConfigSettings;
+import net.bfsr.client.world.BlankWorld;
 import net.bfsr.config.ConfigConverterManager;
+import net.bfsr.engine.ClientGameLogic;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.GameLogic;
+import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.sound.AbstractSoundManager;
 import net.bfsr.engine.util.Side;
-import net.bfsr.event.EventBus;
 import net.bfsr.network.packet.Packet;
 import net.bfsr.network.packet.client.PacketHandshake;
 import net.bfsr.network.packet.client.PacketLoginTCP;
 import net.bfsr.network.packet.client.PacketLoginUDP;
 import net.bfsr.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;
 
 @Log4j2
-public class Core extends GameLogic {
+@Getter
+public class Core extends ClientGameLogic {
     private static Core instance;
 
-    @Getter
     private final AbstractSoundManager soundManager = Engine.soundManager;
-    @Getter
-    private final WorldRenderer worldRenderer;
-    @Getter
     private final NetworkSystem networkSystem = new NetworkSystem();
-
-    @Getter
     private final InputHandler inputHandler = new InputHandler();
-    @Getter
     private final GuiManager guiManager = new GuiManager();
-    @Getter
     private final ParticleManager particleManager = new ParticleManager();
-
-    @Getter
-    private final ClientSettings settings = new ClientSettings();
+    private final RenderManager renderManager = new RenderManager();
+    private final DamageHandler damageHandler = new DamageHandler(renderManager);
+    private final ConfigSettings settings = new ConfigSettings();
+    private final GlobalRenderer globalRenderer = new GlobalRenderer(
+            guiManager, profiler, renderManager, particleManager, new WorldRenderer(renderManager)
+    );
 
     @Setter
-    @Getter
-    private World world;
-    @Getter
+    private World world = BlankWorld.get();
     private String playerName;
-    @Getter
     private LocalServer localServer;
 
     public Core() {
-        this.worldRenderer = new WorldRenderer(this);
         instance = this;
     }
 
-    public void init(Gui startGui, GuiInGame guiInGame) {
+    @Override
+    public void init() {
         Lang.load();
-        EventBus.create(Side.CLIENT);
         this.inputHandler.init();
-        Engine.setInputHandler(inputHandler);
-        this.settings.readSettings();
+        this.settings.load();
         this.networkSystem.init();
-        this.worldRenderer.init();
-        this.guiManager.init(startGui, guiInGame);
-        this.profiler.setEnable(Option.IS_PROFILING.getBoolean());
-        this.soundManager.setGain(Option.SOUND_VOLUME.getFloat());
+        this.globalRenderer.init();
+        this.renderManager.init();
+        this.guiManager.init();
+        this.profiler.setEnable(ClientSettings.IS_PROFILING.getBoolean());
+        this.soundManager.setGain(ClientSettings.SOUND_VOLUME.getFloat());
         this.particleManager.init();
         ParticleEffectsRegistry.INSTANCE.init();
         ConfigConverterManager.INSTANCE.init();
-        Listeners.registerListeners();
-        init();
+        registerListeners();
+        super.init();
+        this.guiManager.openGui(new GuiMainMenu());
+    }
+
+    private void registerListeners() {
+        eventBus.subscribe(new ShipEventListener());
+        eventBus.subscribe(new ShieldEventListener());
+        eventBus.subscribe(new WeaponEventListener());
+        eventBus.subscribe(new BulletEventListener());
+        eventBus.subscribe(new WreckEventListener());
+        eventBus.subscribe(new BeamEventListener());
     }
 
     @Override
     public void update() {
         super.update();
         profiler.startSection("renderer");
-        worldRenderer.update();
+
+        if (!isPaused()) {
+            renderManager.update();
+            globalRenderer.update();
+        }
+
         profiler.endStartSection("inputHandler");
         inputHandler.update();
-        if (world != null) {
-            profiler.endStartSection("soundManager");
-            soundManager.updateListenerPosition(Engine.renderer.camera.getPosition());
-            soundManager.updateGain(Option.SOUND_VOLUME.getFloat());
-            if (!Engine.isPaused()) {
-                profiler.endStartSection("world");
-                world.update();
-                profiler.endStartSection("particles");
-                particleManager.update();
-            }
+        profiler.endStartSection("soundManager");
+        soundManager.updateListenerPosition(Engine.renderer.camera.getPosition());
+        soundManager.updateGain(ClientSettings.SOUND_VOLUME.getFloat());
+
+        if (!isPaused()) {
+            profiler.endStartSection("world");
+            world.update();
+            profiler.endStartSection("particles");
+            particleManager.update();
         }
 
         profiler.endStartSection("guiManager");
         guiManager.update();
         profiler.endStartSection("network");
         networkSystem.update();
-        profiler.endStartSection("renderer.postUpdate");
-        worldRenderer.postUpdate();
+        profiler.endStartSection("renderManager.postUpdate");
+        renderManager.postUpdate();
         profiler.endSection();
     }
 
+    @Override
     public void render(float interpolation) {
-        profiler.startSection("prepareRender");
-        worldRenderer.prepareRender(interpolation);
-        profiler.endStartSection("worldRenderer.render");
-        worldRenderer.render(interpolation);
-        profiler.endSection();
+        globalRenderer.render(interpolation);
     }
 
     public void startSinglePlayer() {
         startLocalServer();
         connectToLocalServerTCP();
-        setCurrentGui(null);
+        closeGui();
     }
 
     private void startLocalServer() {
@@ -182,15 +193,13 @@ public class Core extends GameLogic {
     }
 
     public void quitToMainMenu() {
-        EventBus.post(Side.CLIENT, new ExitToMainMenuEvent());
+        eventBus.publish(new ExitToMainMenuEvent());
         clearNetwork();
         stopServer();
-        if (world != null) {
-            world.clear();
-            world = null;
-        }
+        world.clear();
+        world = BlankWorld.get();
 
-        setCurrentGui(new GuiMainMenu());
+        openGui(new GuiMainMenu());
     }
 
     public void clearNetwork() {
@@ -199,17 +208,22 @@ public class Core extends GameLogic {
         networkSystem.clear();
     }
 
+    @Override
     public void resize(int width, int height) {
         guiManager.resize(width, height);
     }
 
     public void createWorld(long seed) {
-        this.world = new World(profiler, Side.CLIENT, seed);
-        worldRenderer.createBackgroundTexture(seed);
+        this.world = new World(profiler, Side.CLIENT, seed, eventBus);
+        globalRenderer.createBackgroundTexture(seed);
     }
 
-    public void setCurrentGui(Gui gui) {
-        guiManager.setCurrentGui(gui);
+    public void closeGui() {
+        guiManager.closeGui();
+    }
+
+    public void openGui(@NotNull Gui gui) {
+        guiManager.openGui(gui);
     }
 
     public void sendTCPPacket(Packet packet) {
@@ -220,6 +234,7 @@ public class Core extends GameLogic {
         networkSystem.sendPacketUDP(packet);
     }
 
+    @Override
     public void clear() {
         clearNetwork();
         stopServer();
@@ -229,19 +244,27 @@ public class Core extends GameLogic {
         return instance;
     }
 
+    @Override
     public boolean isVSync() {
-        return Option.V_SYNC.getBoolean() && Option.MAX_FPS.getMaxValue() - Option.MAX_FPS.getInteger() <= 0;
+        return ClientSettings.V_SYNC.getBoolean() &&
+                ClientSettings.MAX_FPS.getMaxValue() - ClientSettings.MAX_FPS.getInteger() <= 0;
     }
 
+    @Override
     public int getTargetFPS() {
-        return Option.MAX_FPS.getInteger();
+        return ClientSettings.MAX_FPS.getInteger();
     }
 
+    @Override
     public boolean needSync() {
-        return Option.MAX_FPS.getInteger() < Option.MAX_FPS.getMaxValue();
+        return ClientSettings.MAX_FPS.getInteger() < ClientSettings.MAX_FPS.getMaxValue();
     }
 
     public int getParticlesCount() {
         return particleManager.getParticlesCount();
+    }
+
+    public boolean isInWorld() {
+        return world != BlankWorld.get();
     }
 }

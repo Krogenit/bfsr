@@ -9,13 +9,9 @@ dependencies {
     annotationProcessor "org.mapstruct:mapstruct-processor:1.5.4.Final", "org.projectlombok:lombok-mapstruct-binding:0.2.0"
     testAnnotationProcessor "org.mapstruct:mapstruct-processor:1.5.4.Final"
 
-    implementation('org.springframework.boot:spring-boot-starter-rsocket') {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    }
+    implementation 'org.springframework.boot:spring-boot-starter-rsocket'
 
-    testImplementation('org.springframework.boot:spring-boot-starter-test') {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    }
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.testcontainers:testcontainers:1.18.0'
     testImplementation "org.testcontainers:junit-jupiter:1.18.0"
     testImplementation 'org.testcontainers:mongodb:1.18.0'

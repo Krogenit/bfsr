@@ -13,7 +13,7 @@ package clipper2.offset;
  * <li><b>Butt</b>: ends are squared off without any extension
  * </ul>
  * With both EndType.Polygon and EndType.Join, path closure will occur
- * regardless of whether or not the first and last vertices in the path match.
+ * regardless of whether the first and last vertices in the path match.
  */
 public enum EndType {
     Polygon, Joined, Butt, Square, Round

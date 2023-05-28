@@ -11,6 +11,6 @@ import java.net.InetSocketAddress;
 public class PacketPingHandler extends PacketHandler<PacketPing, NetworkSystem> {
     @Override
     public void handle(PacketPing packet, NetworkSystem netHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
-        Core.get().getGuiManager().getGuiInGame().setPing(packet.getTime() / 1_000_000.0f);
+        Core.get().getGuiManager().getHud().setPing(packet.getTime() / 1_000_000.0f);
     }
 }

@@ -6,7 +6,7 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.damage.DamageMask;
-import net.bfsr.damage.DamageUtils;
+import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.Damageable;
 import net.bfsr.engine.Engine;
 import net.bfsr.entity.wreck.ShipWreck;
@@ -20,6 +20,8 @@ import java.nio.ByteBuffer;
 @NoArgsConstructor
 @Getter
 public class PacketShipWreck extends PacketAdapter {
+    private static final DamageSystem DAMAGE_SYSTEM = new DamageSystem();
+
     private ShipWreck wreck;
     private int x, y;
     private int id;
@@ -65,13 +67,8 @@ public class PacketShipWreck extends PacketAdapter {
         data.writeShort(maxY);
         byte[] bytes = damageMask.getData();
         int width = maxX - x + 1;
-        try {
-            for (int i = y; i <= maxY; i++) {
-                data.writeBytes(bytes, i * damageMask.getHeight() + x, width);
-            }
-        } catch (IndexOutOfBoundsException e) {
-            System.out.println("width " + width + " height " + (maxY - y + 1) + " buffer size " + bytes.length);
-            e.printStackTrace();
+        for (int i = y; i <= maxY; i++) {
+            data.writeBytes(bytes, i * damageMask.getHeight() + x, width);
         }
 
         data.writeShort(path.size());
@@ -118,6 +115,6 @@ public class PacketShipWreck extends PacketAdapter {
         velocityY = data.readFloat();
         angularVelocity = data.readFloat();
 
-        wreck = DamageUtils.createDamage(posX, posY, sin, cos, sizeX, sizeY, pathD, null, dataIndex);
+        wreck = DAMAGE_SYSTEM.createDamage(posX, posY, sin, cos, sizeX, sizeY, pathD, null, dataIndex);
     }
 }

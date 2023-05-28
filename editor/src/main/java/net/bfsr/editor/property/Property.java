@@ -1,6 +1,8 @@
 package net.bfsr.editor.property;
 
-import net.bfsr.editor.property.event.PropertyReceiver;
+import net.bfsr.editor.gui.component.receive.DefaultReceiveHandler;
+import net.bfsr.editor.gui.component.receive.PropertyReceiver;
+import net.bfsr.editor.gui.property.PropertyGuiElementType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

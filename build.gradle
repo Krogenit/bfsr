@@ -40,6 +40,10 @@ subprojects {
         testImplementation 'org.assertj:assertj-core:3.24.2'
     }
 
+    configurations.configureEach {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+
     test {
         useJUnitPlatform()
     }

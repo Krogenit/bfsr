@@ -2,7 +2,7 @@ package net.bfsr.client.input;
 
 import net.bfsr.client.Core;
 import net.bfsr.client.gui.GuiManager;
-import net.bfsr.client.settings.Option;
+import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.command.Command;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.input.AbstractKeyboard;
@@ -27,26 +27,25 @@ public class DebugInputController extends InputController {
 
     @Override
     public boolean input(int key) {
-        if (guiManager.getCurrentGui() == null && !guiManager.getGuiInGame().isActive()) {
+        if (guiManager.isActive()) return false;
+
+        if (keyboard.isKeyDown(KEY_LEFT_CONTROL)) {
             if (key == KEY_F) {
                 Vector2f pos = mouse.getWorldPosition(Engine.renderer.camera);
-
-                if (core.getNetworkSystem() != null)
-                    core.sendTCPPacket(new PacketCommand(Command.SPAWN_SHIP, String.valueOf(pos.x), String.valueOf(pos.y)));
-
+                core.sendTCPPacket(
+                        new PacketCommand(Command.SPAWN_SHIP, String.valueOf((int) pos.x), String.valueOf((int) pos.y))
+                );
                 return true;
-            } else if (keyboard.isKeyDown(KEY_LEFT_CONTROL)) {
-                if (key == KEY_P) {
-                    Engine.setPaused(!Engine.isPaused());
-                    core.sendTCPPacket(new PacketPauseGame());
-                    return true;
-                } else if (key == KEY_R) {
-                    core.getWorldRenderer().reloadShaders();
-                    return true;
-                } else if (key == KEY_B) {
-                    Option.SHOW_DEBUG_BOXES.setValue(!Option.SHOW_DEBUG_BOXES.getBoolean());
-                    return true;
-                }
+            } else if (key == KEY_P) {
+                core.setPaused(!core.isPaused());
+                core.sendTCPPacket(new PacketPauseGame());
+                return true;
+            } else if (key == KEY_R) {
+                core.getGlobalRenderer().reloadShaders();
+                return true;
+            } else if (key == KEY_B) {
+                ClientSettings.SHOW_DEBUG_BOXES.setValue(!ClientSettings.SHOW_DEBUG_BOXES.getBoolean());
+                return true;
             }
         }
 

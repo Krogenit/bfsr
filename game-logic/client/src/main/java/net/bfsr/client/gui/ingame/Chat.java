@@ -2,15 +2,15 @@ package net.bfsr.client.gui.ingame;
 
 import net.bfsr.client.Core;
 import net.bfsr.client.gui.GuiManager;
-import net.bfsr.client.gui.TexturedGuiObject;
-import net.bfsr.client.gui.input.InputChat;
-import net.bfsr.client.gui.scroll.Scroll;
+import net.bfsr.client.gui.hud.HUD;
+import net.bfsr.client.gui.input.ChatInput;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.gui.object.TexturedGuiObject;
+import net.bfsr.engine.gui.scroll.Scroll;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.font.string.AbstractStringRenderer;
-import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 
@@ -19,7 +19,6 @@ import java.util.List;
 
 public class Chat {
     private final AbstractRenderer renderer = Engine.renderer;
-    private final AbstractGUIRenderer guiRenderer = Engine.renderer.guiRenderer;
     private final AbstractStringRenderer stringRenderer = Engine.renderer.stringRenderer;
     private final GuiManager guiManager = Core.get().getGuiManager();
     private final TexturedGuiObject chat = new TexturedGuiObject(TextureRegister.guiChat, 320, 170) {
@@ -39,10 +38,13 @@ public class Chat {
 
             for (int i = 0; i < lines.size(); i++) {
                 String string = lines.get(i);
-                int stringHeight = FontType.DEFAULT.getStringCache().getStringHeight(string, chatInput.getFontSize(), width - 40, -1);
-                if (lineY >= chatTop && lineY < chatBottom || lineY + stringHeight >= chatTop && lineY + stringHeight < chatBottom) {
+                int stringHeight =
+                        FontType.DEFAULT.getStringCache().getStringHeight(string, chatInput.getFontSize(), width - 40, -1);
+                if (lineY >= chatTop && lineY < chatBottom ||
+                        lineY + stringHeight >= chatTop && lineY + stringHeight < chatBottom) {
                     stringRenderer.render(string, FontType.DEFAULT.getStringCache(), chatInput.getFontSize(), lineX, y + lineY,
-                            chatInput.getTextColor().x, chatInput.getTextColor().y, chatInput.getTextColor().z, chatInput.getTextColor().w, width - 40, -1, BufferType.GUI);
+                            chatInput.getTextColor().x, chatInput.getTextColor().y, chatInput.getTextColor().z,
+                            chatInput.getTextColor().w, width - 40, -1, BufferType.GUI);
                 }
 
                 lineY += stringHeight;
@@ -52,10 +54,10 @@ public class Chat {
             renderer.glDisable(GL.GL_SCISSOR_TEST);
         }
     };
-    private final InputChat chatInput = new InputChat() {
+    private final ChatInput chatInput = new ChatInput() {
         @Override
         public void updateMouseHover() {
-            if (guiManager.getCurrentGui() == null) {
+            if (guiManager.noGui()) {
                 super.updateMouseHover();
             }
         }
@@ -63,15 +65,15 @@ public class Chat {
     private final List<String> lines = new ArrayList<>();
     private final Scroll scroll = new Scroll() {
         @Override
-        public void onMouseScroll(float y) {
-            if (chatInput.isTyping()) {
-                super.onMouseScroll(y);
-            }
+        public boolean onMouseScroll(float y) {
+            if (!chat.isMouseHover()) return false;
+            super.onMouseScroll(y);
+            return true;
         }
 
         @Override
         public void updateMouseHover() {
-            if (guiManager.getCurrentGui() == null) {
+            if (guiManager.noGui()) {
                 super.updateMouseHover();
             }
         }
@@ -84,7 +86,7 @@ public class Chat {
         scroll.setRepositionConsumer((width, height) -> scroll.setPosition(chat.getX() + chat.getWidth() - 24, chat.getY() + 10));
     }
 
-    public void init(GuiInGame gui) {
+    public void init(HUD gui) {
         gui.registerGuiObject(chat.atBottomLeftCorner(0, -chat.getHeight()));
         gui.registerGuiObject(chatInput.atBottomLeftCorner(10, -chatInput.getHeight() - 10));
         gui.registerGuiObject(scroll);
@@ -92,7 +94,8 @@ public class Chat {
 
     public void addChatMessage(String message) {
         lines.add(message);
-        scroll.setTotalHeight(scroll.getTotalHeight() + FontType.DEFAULT.getStringCache().getStringHeight(message, chatInput.getFontSize(), chatInput.getWidth() - 40, -1));
+        scroll.setTotalHeight(scroll.getTotalHeight() + FontType.DEFAULT.getStringCache()
+                .getStringHeight(message, chatInput.getFontSize(), chatInput.getWidth() - 40, -1));
         scroll.scrollBottom();
     }
 
@@ -104,12 +107,8 @@ public class Chat {
         return chatInput.isTyping() || scroll.isMovingByMouse();
     }
 
-    public void onMouseLeftRelease() {
-        chatInput.onMouseLeftRelease();
-    }
-
-    public void scroll(float y) {
-        chatInput.onMouseScroll(y);
+    public boolean onMouseLeftRelease() {
+        return chatInput.onMouseLeftRelease();
     }
 
     public void clear() {

@@ -2,15 +2,14 @@ package net.bfsr.editor.gui.component;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.gui.AbstractGuiObject;
-import net.bfsr.client.gui.GuiObjectWithSubObjects;
-import net.bfsr.client.gui.GuiObjectsHandler;
-import net.bfsr.client.gui.font.StringObject;
-import net.bfsr.engine.Engine;
+import net.bfsr.engine.gui.component.StringObject;
+import net.bfsr.engine.gui.object.AbstractGuiObject;
+import net.bfsr.engine.gui.object.GuiObjectWithSubObjects;
+import net.bfsr.engine.gui.object.GuiObjectsHandler;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.font.StringCache;
 import net.bfsr.engine.util.MutableInt;
-import net.bfsr.util.RunnableUtils;
+import net.bfsr.engine.util.RunnableUtils;
 import org.joml.Vector4f;
 
 public class MinimizableGuiObject extends GuiObjectWithSubObjects {
@@ -50,14 +49,16 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
     }
 
     @Override
-    public void onMouseLeftRelease() {
-        if (!isMouseHover()) return;
+    public boolean onMouseLeftRelease() {
+        if (!isMouseHover()) return false;
 
         if (maximized) {
             minimize();
         } else {
             maximize();
         }
+
+        return true;
     }
 
     public void maximize() {
@@ -93,7 +94,8 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
     public AbstractGuiObject atTopLeftCorner(int x, int y) {
         super.atTopLeftCorner(x, y);
         stringObject.atTopLeftCorner(
-                x + (canMaximize ? MINIMIZABLE_STRING_X_OFFSET : STATIC_STRING_X_OFFSET), y + stringCache.getCenteredYOffset(stringObject.getString(), height, fontSize) + stringYOffset
+                x + (canMaximize ? MINIMIZABLE_STRING_X_OFFSET : STATIC_STRING_X_OFFSET),
+                y + stringCache.getCenteredYOffset(stringObject.getString(), height, fontSize) + stringYOffset
         );
         return this;
     }
@@ -102,7 +104,8 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
     public AbstractGuiObject atTopRightCorner(int x, int y) {
         super.atTopRightCorner(x, y);
         stringObject.atTopRightCorner(
-                x + (canMaximize ? MINIMIZABLE_STRING_X_OFFSET : STATIC_STRING_X_OFFSET), y + stringCache.getCenteredYOffset(stringObject.getString(), height, fontSize) + stringYOffset
+                x + (canMaximize ? MINIMIZABLE_STRING_X_OFFSET : STATIC_STRING_X_OFFSET),
+                y + stringCache.getCenteredYOffset(stringObject.getString(), height, fontSize) + stringYOffset
         );
         return this;
     }
@@ -151,8 +154,9 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
         renderBase();
 
         if (canMaximize) {
-            float interpolation = Engine.renderer.getInterpolation();
-            renderTriangle((int) (lastX + (x - lastX) * interpolation + 10), (int) (lastY + (y - lastY) * interpolation + height / 2));
+            float interpolation = renderer.getInterpolation();
+            renderTriangle((int) (lastX + (x - lastX) * interpolation + 10),
+                    (int) (lastY + (y - lastY) * interpolation + height / 2));
         }
 
         stringObject.render();
@@ -160,7 +164,8 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
 
     protected void renderBase() {
         if (isMouseHover()) {
-            Engine.renderer.guiRenderer.add(lastX, lastY, x, y, width, height, hoverColor.x, hoverColor.y, hoverColor.z, hoverColor.w);
+            guiRenderer.add(lastX, lastY, x, y, width, height, hoverColor.x, hoverColor.y, hoverColor.z,
+                    hoverColor.w);
         }
     }
 
@@ -168,10 +173,14 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
         Vector4f textColor = stringObject.getColor();
 
         if (maximized) {
-            Engine.renderer.guiRenderer.addPrimitive(centerX - triangleHalfWidth, centerY - triangleHalfHeight, centerX, centerY + triangleHalfHeight, centerX + triangleHalfWidth, centerY - triangleHalfHeight, centerX - triangleHalfWidth, centerY - triangleHalfHeight,
+            guiRenderer.addPrimitive(centerX - triangleHalfWidth, centerY - triangleHalfHeight, centerX,
+                    centerY + triangleHalfHeight, centerX + triangleHalfWidth, centerY - triangleHalfHeight,
+                    centerX - triangleHalfWidth, centerY - triangleHalfHeight,
                     textColor.x, textColor.y, textColor.z, textColor.w, 0);
         } else {
-            Engine.renderer.guiRenderer.addPrimitive(centerX - triangleHalfWidth, centerY - triangleHalfHeight, centerX - triangleHalfWidth, centerY + triangleHalfHeight, centerX + triangleHalfWidth, centerY, centerX - triangleHalfWidth, centerY - triangleHalfHeight,
+            guiRenderer.addPrimitive(centerX - triangleHalfWidth, centerY - triangleHalfHeight,
+                    centerX - triangleHalfWidth, centerY + triangleHalfHeight, centerX + triangleHalfWidth, centerY,
+                    centerX - triangleHalfWidth, centerY - triangleHalfHeight,
                     textColor.x, textColor.y, textColor.z, textColor.w, 0);
         }
     }
@@ -187,9 +196,11 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
     @Override
     public MinimizableGuiObject setPosition(int x, int y) {
         super.setPosition(x, y);
-        stringObject.setPosition(x + (canMaximize ? MINIMIZABLE_STRING_X_OFFSET : STATIC_STRING_X_OFFSET), y + stringCache.getCenteredYOffset(stringObject.getString(), height, fontSize) + stringYOffset);
+        stringObject.setPosition(x + (canMaximize ? MINIMIZABLE_STRING_X_OFFSET : STATIC_STRING_X_OFFSET),
+                y + stringCache.getCenteredYOffset(stringObject.getString(), height, fontSize) + stringYOffset);
         MutableInt subObjectsY = new MutableInt(y + height);
-        forEachSubObject(guiObject -> guiObject.setPosition(x + MINIMIZABLE_STRING_X_OFFSET, subObjectsY.getAndAdd(guiObject.getHeight())));
+        forEachSubObject(guiObject -> guiObject.setPosition(x + MINIMIZABLE_STRING_X_OFFSET,
+                subObjectsY.getAndAdd(guiObject.getHeight())));
         return this;
     }
 

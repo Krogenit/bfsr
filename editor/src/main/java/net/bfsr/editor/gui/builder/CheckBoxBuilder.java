@@ -1,7 +1,7 @@
 package net.bfsr.editor.gui.builder;
 
-import net.bfsr.editor.gui.component.PropertyCheckBox;
-import net.bfsr.editor.gui.component.PropertyComponent;
+import net.bfsr.editor.gui.property.PropertyCheckBox;
+import net.bfsr.editor.gui.property.PropertyComponent;
 import net.bfsr.editor.property.PropertiesHolder;
 import net.bfsr.engine.renderer.font.FontType;
 

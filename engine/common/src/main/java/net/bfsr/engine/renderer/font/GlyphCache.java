@@ -106,7 +106,8 @@ public class GlyphCache {
      * images from the glyphCacheImage BufferedImage into OpenGL textures. This buffer uses big-endian byte ordering to ensure
      * that the integers holding packed RGBA colors are stored into memory in a predictable order.
      */
-    private final IntBuffer imageBuffer = ByteBuffer.allocateDirect(4 * TEXTURE_WIDTH * TEXTURE_HEIGHT).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
+    private final IntBuffer imageBuffer =
+            ByteBuffer.allocateDirect(4 * TEXTURE_WIDTH * TEXTURE_HEIGHT).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
 
     /**
      * List of all available physical fonts on the system. Used by lookupFont() to find alternate fonts.
@@ -401,7 +402,8 @@ public class GlyphCache {
                 vectorBounds.height += GLYPH_OFFSET << 1;
 
                 /* Enlage the stringImage if it is too small to store the entire rendered string */
-                if (stringImage == null || vectorBounds.width > stringImage.getWidth() || vectorBounds.height > stringImage.getHeight()) {
+                if (stringImage == null || vectorBounds.width > stringImage.getWidth() ||
+                        vectorBounds.height > stringImage.getHeight()) {
                     int width = Math.max(vectorBounds.width, stringImage.getWidth());
                     int height = Math.max(vectorBounds.height, stringImage.getHeight());
                     allocateStringImage(width, height);
@@ -517,7 +519,7 @@ public class GlyphCache {
         if (dirty != null) {
             /* Load imageBuffer with pixel data ready for transfer to OpenGL texture */
             updateImageBuffer(dirty.x, dirty.y, dirty.width, dirty.height);
-            Engine.assetsManager.textureLoader.subImage2D(texture.getId(), dirty.x, dirty.y, dirty.width, dirty.height, GL.GL_RGBA, imageBuffer);
+            Engine.renderer.subImage2D(texture.getId(), dirty.x, dirty.y, dirty.width, dirty.height, GL.GL_RGBA, imageBuffer);
         }
     }
 
@@ -563,7 +565,7 @@ public class GlyphCache {
         /* Initialize the background to all white but fully transparent. */
         glyphCacheGraphics.clearRect(0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT);
 
-        texture = Engine.assetsManager.textureLoader.createTexture(TEXTURE_WIDTH, TEXTURE_HEIGHT);
+        texture = Engine.assetsManager.createTexture(TEXTURE_WIDTH, TEXTURE_HEIGHT);
 
         /* Load imageBuffer with pixel data ready for transfer to OpenGL texture */
         updateImageBuffer(0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT);
@@ -572,7 +574,7 @@ public class GlyphCache {
          * Initialize texture with the now cleared BufferedImage. Using a texture with GL_ALPHA8 internal format may result in
          * faster rendering since the GPU has to only fetch 1 byte per texel instead of 4 with a regular RGBA texture.
          */
-        Engine.assetsManager.textureLoader.uploadTexture(texture, GL.GL_RGBA8, GL.GL_RGBA, GL.GL_CLAMP_TO_BORDER, GL.GL_NEAREST, imageBuffer);
+        Engine.renderer.uploadTexture(texture, GL.GL_RGBA8, GL.GL_RGBA, GL.GL_CLAMP_TO_BORDER, GL.GL_NEAREST, imageBuffer);
     }
 
     /**

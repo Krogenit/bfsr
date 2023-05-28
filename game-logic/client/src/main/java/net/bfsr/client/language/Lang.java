@@ -1,7 +1,7 @@
 package net.bfsr.client.language;
 
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.client.settings.Option;
+import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.util.PathHelper;
 
 import java.io.IOException;
@@ -47,7 +47,7 @@ public final class Lang {
     }
 
     public static String getString(String value) {
-        String lang = Option.LANGUAGE.getString();
+        String lang = ClientSettings.LANGUAGE.getString();
         if (TRANSLATIONS.containsKey(lang)) {
             HashMap<String, String> langData = TRANSLATIONS.get(lang);
             if (langData.containsKey(value)) {

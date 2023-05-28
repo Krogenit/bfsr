@@ -25,7 +25,7 @@ import static net.bfsr.math.RigidBodyUtils.ANGLE_TO_VELOCITY;
 
 @Listener(references = References.Strong)
 public class ShipEventListener {
-    private final RenderManager renderManager = Core.get().getWorldRenderer().getRenderManager();
+    private final RenderManager renderManager = Core.get().getRenderManager();
 
     @Handler
     public void event(ShipAddToWorldEvent event) {

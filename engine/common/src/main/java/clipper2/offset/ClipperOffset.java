@@ -3,7 +3,6 @@ package clipper2.offset;
 import clipper2.Clipper;
 import clipper2.core.*;
 import clipper2.engine.ClipperD;
-import tangible.RefObject;
 
 import java.util.ArrayList;
 import java.util.List;

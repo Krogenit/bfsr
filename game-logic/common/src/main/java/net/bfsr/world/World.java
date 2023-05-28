@@ -3,7 +3,9 @@ package net.bfsr.world;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.Getter;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.profiler.Profiler;
+import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.engine.util.Side;
 import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.RigidBody;
@@ -11,7 +13,6 @@ import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
-import net.bfsr.event.EventBus;
 import net.bfsr.event.entity.bullet.BulletAddToWorldEvent;
 import net.bfsr.event.entity.ship.ShipAddToWorldEvent;
 import net.bfsr.event.entity.ship.ShipSpawnEvent;
@@ -20,7 +21,6 @@ import net.bfsr.event.entity.wreck.WreckAddToWorldEvent;
 import net.bfsr.physics.CCDTransformHandler;
 import net.bfsr.physics.ContactListener;
 import net.bfsr.physics.CustomValueMixer;
-import net.bfsr.util.ObjectPool;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.ContinuousDetectionMode;
@@ -50,11 +50,14 @@ public class World {
     private final List<Bullet> bullets = new ArrayList<>();
     private final List<ShipWreck> shipWrecks = new ArrayList<>();
     private final List<Wreck> wrecks = new ArrayList<>();
+    @Getter
+    private final EventBus eventBus;
 
-    public World(Profiler profiler, Side side, long seed) {
+    public World(Profiler profiler, Side side, long seed, EventBus eventBus) {
         this.profiler = profiler;
         this.side = side;
         this.seed = seed;
+        this.eventBus = eventBus;
         initPhysicWorld();
     }
 
@@ -170,31 +173,31 @@ public class World {
     public void addShip(Ship ship) {
         entitiesById.put(ship.getId(), ship);
         ships.add(ship);
-        EventBus.post(side, new ShipAddToWorldEvent(ship));
+        eventBus.publish(new ShipAddToWorldEvent(ship));
     }
 
     public void spawnShip(Ship ship) {
         physicWorld.addBody(ship.getBody());
-        EventBus.post(side, new ShipSpawnEvent(ship));
+        eventBus.publish(new ShipSpawnEvent(ship));
     }
 
     public void addBullet(Bullet bullet) {
         entitiesById.put(bullet.getId(), bullet);
         bullets.add(bullet);
         physicWorld.addBody(bullet.getBody());
-        EventBus.post(side, new BulletAddToWorldEvent(bullet));
+        eventBus.publish(new BulletAddToWorldEvent(bullet));
     }
 
     public void addWreck(Wreck wreck) {
         wrecks.add(wreck);
         addPhysicObject(wreck);
-        EventBus.post(side, new WreckAddToWorldEvent(wreck));
+        eventBus.publish(new WreckAddToWorldEvent(wreck));
     }
 
     public void addWreck(ShipWreck wreck) {
         shipWrecks.add(wreck);
         addPhysicObject(wreck);
-        EventBus.post(side, new ShipWreckAddToWorldEvent(wreck));
+        eventBus.publish(new ShipWreckAddToWorldEvent(wreck));
     }
 
     public void addPhysicObject(RigidBody rigidBody) {

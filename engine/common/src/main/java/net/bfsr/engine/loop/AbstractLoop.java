@@ -10,7 +10,7 @@ public abstract class AbstractLoop implements Loop {
         final int maxUpdatesBeforeRender = 40;
         double lastUpdateTime = System.nanoTime();
 
-        int lastSecondTime = (int) (lastUpdateTime / 1000000000.0f);
+        int lastSecondTime = (int) (lastUpdateTime / 1_000_000_000.0f);
         int frameCount = 0;
 
         timeBetweenUpdates = 1_000_000_000.0f / getUpdatesPerSecond();
@@ -36,7 +36,7 @@ public abstract class AbstractLoop implements Loop {
 
             frameCount++;
 
-            int thisSecond = (int) (lastUpdateTime / 1000000000.0f);
+            int thisSecond = (int) (lastUpdateTime / 1_000_000_000.0f);
             if (thisSecond > lastSecondTime) {
                 setFps(frameCount);
                 frameCount = 0;

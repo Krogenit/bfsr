@@ -2,8 +2,6 @@ package clipper2.engine;
 
 import clipper2.core.*;
 import org.jetbrains.annotations.Nullable;
-import tangible.OutObject;
-import tangible.RefObject;
 
 import java.util.*;
 
@@ -170,7 +168,7 @@ public class ClipperBase {
         Vertex prev;
         int flags;
 
-        Vertex(Point64 pt, int flags, Vertex prev) {
+        Vertex(Point64 pt, int flags, @Nullable Vertex prev) {
             this.pt = pt.clone();
             this.flags = flags;
             next = null;

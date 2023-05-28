@@ -9,10 +9,11 @@ import net.bfsr.entity.bullet.Bullet;
 import org.joml.Vector2f;
 
 public class BulletRender extends Render<Bullet> {
-    private static final AbstractTexture LIGHT_TEXTURE = Engine.assetsManager.textureLoader.getTexture(TextureRegister.particleLight);
+    private static final AbstractTexture LIGHT_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.particleLight);
 
     public BulletRender(Bullet bullet) {
-        super(Engine.assetsManager.textureLoader.getTexture(bullet.getBulletData().getTexturePath()), bullet, bullet.getBulletData().getColor().x,
+        super(Engine.assetsManager.getTexture(bullet.getBulletData().getTexturePath()), bullet,
+                bullet.getBulletData().getColor().x,
                 bullet.getBulletData().getColor().y, bullet.getBulletData().getColor().z, bullet.getBulletData().getColor().w);
     }
 
@@ -35,9 +36,9 @@ public class BulletRender extends Render<Bullet> {
         float cos = object.getCos();
         Vector2f scale = object.getSize();
         float lightSize = 6.0f;
-        Engine.renderer.spriteRenderer.add(lastPosition.x, lastPosition.y, position.x, position.y, lightSize, lightSize,
+        spriteRenderer.add(lastPosition.x, lastPosition.y, position.x, position.y, lightSize, lightSize,
                 color.x / 1.5f, color.y / 1.5f, color.z / 1.5f, color.w / 4.0f, LIGHT_TEXTURE, BufferType.ENTITIES_ADDITIVE);
-        Engine.renderer.spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, sin, cos, scale.x, scale.y,
-                color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ADDITIVE);
+        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, sin, cos, scale.x,
+                scale.y, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ADDITIVE);
     }
 }

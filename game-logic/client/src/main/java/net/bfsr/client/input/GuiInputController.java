@@ -1,25 +1,50 @@
 package net.bfsr.client.input;
 
 import net.bfsr.client.Core;
-import net.bfsr.client.gui.Gui;
-import net.bfsr.client.gui.GuiManager;
+import net.bfsr.client.event.gui.CloseGuiEvent;
+import net.bfsr.client.event.gui.CloseHUDEvent;
+import net.bfsr.client.event.gui.OpenGuiEvent;
+import net.bfsr.client.event.gui.ShowHUDEvent;
+import net.bfsr.engine.gui.Gui;
+import net.engio.mbassy.listener.Handler;
+import net.engio.mbassy.listener.Listener;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+@Listener
 public class GuiInputController extends InputController {
-    private GuiManager guiManager;
+    private final Deque<Gui> guiStack = new ArrayDeque<>();
 
     @Override
     public void init() {
-        guiManager = Core.get().getGuiManager();
+        Core.get().subscribe(this);
+    }
+
+    @Handler
+    public void event(OpenGuiEvent event) {
+        guiStack.add(event.gui());
+    }
+
+    @Handler
+    public void event(CloseGuiEvent event) {
+        guiStack.remove(event.gui());
+    }
+
+    @Handler
+    public void event(ShowHUDEvent event) {
+        guiStack.add(event.hud());
+    }
+
+    @Handler
+    public void event(CloseHUDEvent event) {
+        guiStack.remove(event.hud());
     }
 
     @Override
     public boolean input(int key) {
-        Gui currentGui = guiManager.getCurrentGui();
-        if (currentGui != null) {
-            currentGui.input(key);
-            return true;
-        } else {
-            guiManager.getGuiInGame().input(key);
+        if (guiStack.size() > 0) {
+            return guiStack.getLast().input(key);
         }
 
         return false;
@@ -27,22 +52,15 @@ public class GuiInputController extends InputController {
 
     @Override
     public void textInput(int key) {
-        Gui gui = guiManager.getCurrentGui();
-        if (gui != null) {
-            gui.textInput(key);
-        } else {
-            guiManager.getGuiInGame().textInput(key);
+        if (guiStack.size() > 0) {
+            guiStack.getLast().textInput(key);
         }
     }
 
     @Override
     public boolean scroll(float y) {
-        Gui gui = guiManager.getCurrentGui();
-        if (gui != null) {
-            gui.onMouseScroll(y);
-            return true;
-        } else {
-            guiManager.getGuiInGame().onMouseScroll(y);
+        if (guiStack.size() > 0) {
+            return guiStack.getLast().onMouseScroll(y);
         }
 
         return false;
@@ -50,21 +68,17 @@ public class GuiInputController extends InputController {
 
     @Override
     public boolean onMouseLeftClick() {
-        Gui gui = guiManager.getCurrentGui();
-        if (gui != null) {
-            return gui.onMouseLeftClick();
-        } else {
-            return guiManager.getGuiInGame().onMouseLeftClick();
+        if (guiStack.size() > 0) {
+            return guiStack.getLast().onMouseLeftClick();
         }
+
+        return false;
     }
 
     @Override
     public boolean onMouseLeftRelease() {
-        Gui gui = guiManager.getCurrentGui();
-        if (gui != null) {
-            gui.onMouseLeftRelease();
-        } else {
-            guiManager.getGuiInGame().onMouseLeftRelease();
+        if (guiStack.size() > 0) {
+            return guiStack.getLast().onMouseLeftRelease();
         }
 
         return false;
@@ -72,21 +86,18 @@ public class GuiInputController extends InputController {
 
     @Override
     public boolean onMouseRightClick() {
-        Gui gui = guiManager.getCurrentGui();
-        if (gui != null) {
-            return gui.onMouseRightClick();
-        } else {
-            return guiManager.getGuiInGame().onMouseRightClick();
+        if (guiStack.size() > 0) {
+            return guiStack.getLast().onMouseRightClick();
         }
+
+        return false;
     }
 
     @Override
     public boolean onMouseRightRelease() {
-        Gui gui = guiManager.getCurrentGui();
-        if (gui != null) {
-            gui.onMouseRightRelease();
-        } else {
-            guiManager.getGuiInGame().onMouseRightRelease();
+        if (guiStack.size() > 0) {
+            guiStack.getLast().onMouseRightRelease();
+            return true;
         }
 
         return false;

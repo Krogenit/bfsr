@@ -17,7 +17,7 @@ public class DamageMaskTexture extends AbstractDamageMaskTexture {
     private boolean changeFire;
 
     public DamageMaskTexture(int width, int height, ByteBuffer byteBuffer) {
-        this.texture = Engine.assetsManager.textureLoader.newTexture(width, height);
+        this.texture = Engine.assetsManager.newTexture(width, height);
         this.byteBuffer = byteBuffer;
         this.lastFireAmount = fireAmount = 2.0f;
         this.lastFireUVAnimation = fireUVAnimation = (float) (Math.random() * MathUtils.TWO_PI);
@@ -32,16 +32,16 @@ public class DamageMaskTexture extends AbstractDamageMaskTexture {
             }
         }
 
-        Engine.assetsManager.textureLoader.uploadTexture(texture, GL.GL_R8, GL.GL_RED, GL.GL_CLAMP_TO_EDGE, GL.GL_LINEAR, byteBuffer);
+        Engine.renderer.uploadTexture(texture, GL.GL_R8, GL.GL_RED, GL.GL_CLAMP_TO_EDGE, GL.GL_LINEAR, byteBuffer);
     }
 
     public void createEmpty() {
         texture.create();
-        Engine.assetsManager.textureLoader.uploadEmpty(texture, GL.GL_R8, GL.GL_RED);
+        Engine.renderer.uploadEmpty(texture, GL.GL_R8, GL.GL_RED);
     }
 
     public void upload(int x, int y, int width, int height, ByteBuffer byteBuffer) {
-        Engine.assetsManager.textureLoader.subImage2D(texture.getId(), x, y, width, height, GL.GL_RED, byteBuffer);
+        Engine.renderer.subImage2D(texture.getId(), x, y, width, height, GL.GL_RED, byteBuffer);
     }
 
     public void updateEffects() {

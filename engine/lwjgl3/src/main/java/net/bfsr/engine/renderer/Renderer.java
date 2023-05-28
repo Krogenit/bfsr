@@ -7,12 +7,14 @@ import net.bfsr.engine.renderer.debug.OpenGLDebugUtils;
 import net.bfsr.engine.renderer.font.StringGeometryBuilder;
 import net.bfsr.engine.renderer.font.StringRenderer;
 import net.bfsr.engine.renderer.shader.BaseShader;
+import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureGenerator;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11C;
+import org.lwjgl.opengl.*;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.GL_ALPHA_TEST;
@@ -26,7 +28,8 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 @Log4j2
 public class Renderer extends AbstractRenderer {
     public Renderer() {
-        super(new Camera(), new BaseShader(), new StringGeometryBuilder(), new StringRenderer(), new SpriteRenderer(), new GUIRenderer(),
+        super(new Camera(), new BaseShader(), new StringGeometryBuilder(), new StringRenderer(), new SpriteRenderer(),
+                new GUIRenderer(),
                 new DebugRenderer(), new TextureGenerator());
     }
 
@@ -35,7 +38,8 @@ public class Renderer extends AbstractRenderer {
         glDebugMessageCallback((source, type, id, severity, length, message, userParam) -> {
             if (type != GL_DEBUG_TYPE_OTHER) {
                 log.info("GLDebug {} {}, {}, {}, {}", OpenGLDebugUtils.getDebugSeverity(severity), String.format("0x%X", id),
-                        OpenGLDebugUtils.getDebugSource(source), OpenGLDebugUtils.getDebugType(type), getMessage(length, message));
+                        OpenGLDebugUtils.getDebugSource(source), OpenGLDebugUtils.getDebugType(type),
+                        getMessage(length, message));
             }
         }, NULL);
 
@@ -100,13 +104,72 @@ public class Renderer extends AbstractRenderer {
     }
 
     @Override
-    public void glLineWidth(float value) {
+    public void lineWidth(float value) {
         GL11C.glLineWidth(value);
     }
 
     @Override
     public void glClear() {
         GL11C.glClear(GL_COLOR_BUFFER_BIT);
+    }
+
+    @Override
+    public void subImage2D(int id, int x, int y, int width, int height, int format, ByteBuffer byteBuffer) {
+        GL45C.glTextureSubImage2D(id, 0, x, y, width, height, format, GL11.GL_UNSIGNED_BYTE, byteBuffer);
+    }
+
+    @Override
+    public void subImage2D(int id, int x, int y, int width, int height, int format, IntBuffer buffer) {
+        GL45C.glTextureSubImage2D(id, 0, x, y, width, height, format, GL11.GL_UNSIGNED_BYTE, buffer);
+    }
+
+    @Override
+    public void uploadTexture(AbstractTexture texture, int internalFormat, int format, int wrap, int filter,
+                              ByteBuffer byteBuffer) {
+        int id = texture.getId();
+        int width = texture.getWidth();
+        int height = texture.getHeight();
+        GL45C.glTextureStorage2D(id, 1, internalFormat, width, height);
+        GL45C.glTextureSubImage2D(id, 0, 0, 0, width, height, format, GL11.GL_UNSIGNED_BYTE, byteBuffer);
+        GL45C.glTextureParameteri(id, GL11.GL_TEXTURE_WRAP_S, wrap);
+        GL45C.glTextureParameteri(id, GL11.GL_TEXTURE_WRAP_T, wrap);
+        GL45C.glTextureParameteri(id, GL11.GL_TEXTURE_MIN_FILTER, filter);
+        GL45C.glTextureParameteri(id, GL11.GL_TEXTURE_MAG_FILTER, filter);
+        long textureHandle = ARBBindlessTexture.glGetTextureHandleARB(id);
+        texture.setTextureHandle(textureHandle);
+        ARBBindlessTexture.glMakeTextureHandleResidentARB(textureHandle);
+    }
+
+    @Override
+    public void uploadTexture(AbstractTexture texture, int internalFormat, int format, int wrap, int filter, IntBuffer buffer) {
+        int id = texture.getId();
+        int width = texture.getWidth();
+        int height = texture.getHeight();
+        GL45C.glTextureStorage2D(id, 1, internalFormat, width, height);
+        GL45C.glTextureSubImage2D(id, 0, 0, 0, width, height, format, GL11.GL_UNSIGNED_BYTE, buffer);
+        GL45C.glTextureParameteri(id, GL11.GL_TEXTURE_WRAP_S, wrap);
+        GL45C.glTextureParameteri(id, GL11.GL_TEXTURE_WRAP_T, wrap);
+        GL45C.glTextureParameteri(id, GL11.GL_TEXTURE_MIN_FILTER, filter);
+        GL45C.glTextureParameteri(id, GL11.GL_TEXTURE_MAG_FILTER, filter);
+        long textureHandle = ARBBindlessTexture.glGetTextureHandleARB(id);
+        texture.setTextureHandle(textureHandle);
+        ARBBindlessTexture.glMakeTextureHandleResidentARB(textureHandle);
+    }
+
+    @Override
+    public void uploadEmpty(AbstractTexture texture, int internalFormat, int format) {
+        int id = texture.getId();
+        int width = texture.getWidth();
+        int height = texture.getHeight();
+        GL45C.glTextureStorage2D(id, 1, internalFormat, width, height);
+        GL45C.glTextureParameteri(id, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+        GL45C.glTextureParameteri(id, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+        GL45C.glTextureParameteri(id, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+        GL45C.glTextureParameteri(id, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+        GL44C.glClearTexImage(id, 0, format, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) null);
+        long textureHandle = ARBBindlessTexture.glGetTextureHandleARB(id);
+        texture.setTextureHandle(textureHandle);
+        ARBBindlessTexture.glMakeTextureHandleResidentARB(textureHandle);
     }
 
     @Override

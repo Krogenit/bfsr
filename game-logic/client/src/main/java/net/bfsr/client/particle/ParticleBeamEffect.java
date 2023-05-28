@@ -1,14 +1,13 @@
 package net.bfsr.client.particle;
 
 import lombok.Getter;
-import net.bfsr.client.Core;
 import net.bfsr.client.particle.effect.BeamEffects;
 import net.bfsr.client.renderer.particle.ParticleBeamRender;
 import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.engine.renderer.particle.RenderLayer;
 import net.bfsr.engine.renderer.texture.TextureRegister;
+import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.util.ObjectPool;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -40,9 +39,10 @@ public class ParticleBeamEffect extends Particle {
     }
 
     @Override
-    protected void addParticle(long textureHandle, float r, float g, float b, float a, boolean isAlphaFromZero, RenderLayer renderLayer) {
-        Core.get().getParticleManager().addParticle(this);
-        Core.get().getWorldRenderer().getParticleRenderer().addParticleToRenderLayer(
+    protected void addParticle(long textureHandle, float r, float g, float b, float a, boolean isAlphaFromZero,
+                               RenderLayer renderLayer) {
+        PARTICLE_MANAGER.addParticle(this);
+        PARTICLE_RENDERER.addParticleToRenderLayer(
                 RENDER_POOL.getOrCreate(RENDER_SUPPLIER).init(this, textureHandle, r, g, b, a), renderLayer
         );
     }

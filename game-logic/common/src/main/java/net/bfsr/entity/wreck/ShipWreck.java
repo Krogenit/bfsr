@@ -8,7 +8,6 @@ import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.Damageable;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
-import net.bfsr.event.EventBus;
 import net.bfsr.event.entity.wreck.BulletDamageShipWreckEvent;
 import net.bfsr.event.entity.wreck.ShipWreckDeathEvent;
 import net.bfsr.event.entity.wreck.ShipWreckFixturesEvent;
@@ -55,19 +54,19 @@ public class ShipWreck extends RigidBody implements Damageable {
     }
 
     public void bulletDamage(Bullet bullet, float contactX, float contactY, float normalX, float normalY) {
-        EventBus.post(world.getSide(), new BulletDamageShipWreckEvent(this, bullet, contactX, contactY, normalX, normalY));
+        eventBus.publish(new BulletDamageShipWreckEvent(this, bullet, contactX, contactY, normalX, normalY));
     }
 
     @Override
     public void setFixtures(List<BodyFixture> fixtures) {
         Damageable.super.setFixtures(fixtures);
-        EventBus.post(world.getSide(), new ShipWreckFixturesEvent(this));
+        eventBus.publish(new ShipWreckFixturesEvent(this));
     }
 
     @Override
     public void setDead() {
         super.setDead();
-        EventBus.post(world.getSide(), new ShipWreckDeathEvent(this));
+        eventBus.publish(new ShipWreckDeathEvent(this));
     }
 
     @Override

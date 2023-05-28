@@ -1,8 +1,8 @@
 package net.bfsr.editor.gui.builder;
 
-import net.bfsr.editor.gui.component.PropertyComponent;
+import net.bfsr.editor.gui.property.PropertyComponent;
+import net.bfsr.editor.gui.property.PropertyGuiElementType;
 import net.bfsr.editor.property.PropertiesHolder;
-import net.bfsr.editor.property.PropertyGuiElementType;
 import net.bfsr.engine.renderer.font.FontType;
 
 import java.lang.reflect.Field;
@@ -22,25 +22,41 @@ public abstract class ComponentBuilder {
         BUILDERS.put(PropertyGuiElementType.ARRAY, new ArrayBuilder());
     }
 
-    public abstract <P extends PropertiesHolder> PropertyComponent<P> build(int width, int height, String propertyName, int offsetX, FontType fontType, int fontSize,
-                                                                            int stringOffsetY, List<Field> fields, Object[] values,
+    public abstract <P extends PropertiesHolder> PropertyComponent<P> build(int width, int height, String propertyName,
+                                                                            int offsetX, FontType fontType, int fontSize,
+                                                                            int stringOffsetY, List<Field> fields,
+                                                                            Object[] values,
                                                                             P object) throws IllegalAccessException;
 
-    public <P extends PropertiesHolder, PRIMITIVE_TYPE> PropertyComponent<P> build(int width, int height, String propertyName, int offsetX, FontType fontType, int fontSize,
-                                                                                   int stringOffsetY, List<Field> fields, Object[] values,
-                                                                                   Consumer<PRIMITIVE_TYPE> valueConsumer, Class<?> fieldType) {
+    public <P extends PropertiesHolder, PRIMITIVE_TYPE> PropertyComponent<P> build(int width, int height, String propertyName,
+                                                                                   int offsetX, FontType fontType, int fontSize,
+                                                                                   int stringOffsetY, List<Field> fields,
+                                                                                   Object[] values,
+                                                                                   Consumer<PRIMITIVE_TYPE> valueConsumer,
+                                                                                   Class<?> fieldType) {
         throw new UnsupportedOperationException();
     }
 
-    public static <P extends PropertiesHolder> PropertyComponent<P> build(PropertyGuiElementType type, int width, int height, String propertyName, int offsetX,
-                                                                          FontType fontType, int fontSize, int stringOffsetY, List<Field> fields, Object[] values,
+    public static <P extends PropertiesHolder> PropertyComponent<P> build(PropertyGuiElementType type, int width, int height,
+                                                                          String propertyName, int offsetX,
+                                                                          FontType fontType, int fontSize, int stringOffsetY,
+                                                                          List<Field> fields, Object[] values,
                                                                           P object) throws IllegalAccessException {
-        return BUILDERS.get(type).build(width, height, propertyName, offsetX, fontType, fontSize, stringOffsetY, fields, values, object);
+        return BUILDERS.get(type)
+                .build(width, height, propertyName, offsetX, fontType, fontSize, stringOffsetY, fields, values, object);
     }
 
-    public static <P extends PropertiesHolder, PRIMITIVE_TYPE> PropertyComponent<P> build(PropertyGuiElementType type, int width, int height, String propertyName, int offsetX,
-                                                                                          FontType fontType, int fontSize, int stringOffsetY, List<Field> fields, Object[] values,
-                                                                                          Consumer<PRIMITIVE_TYPE> valueConsumer, Class<?> fieldType) throws IllegalAccessException {
-        return BUILDERS.get(type).build(width, height, propertyName, offsetX, fontType, fontSize, stringOffsetY, fields, values, valueConsumer, fieldType);
+    public static <P extends PropertiesHolder, PRIMITIVE_TYPE> PropertyComponent<P> build(PropertyGuiElementType type, int width,
+                                                                                          int height, String propertyName,
+                                                                                          int offsetX,
+                                                                                          FontType fontType, int fontSize,
+                                                                                          int stringOffsetY, List<Field> fields,
+                                                                                          Object[] values,
+                                                                                          Consumer<PRIMITIVE_TYPE> valueConsumer,
+                                                                                          Class<?> fieldType)
+            throws IllegalAccessException {
+        return BUILDERS.get(type)
+                .build(width, height, propertyName, offsetX, fontType, fontSize, stringOffsetY, fields, values, valueConsumer,
+                        fieldType);
     }
 }

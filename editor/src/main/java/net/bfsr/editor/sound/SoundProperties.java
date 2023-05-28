@@ -1,8 +1,8 @@
 package net.bfsr.editor.sound;
 
 import lombok.Getter;
+import net.bfsr.editor.gui.property.PropertyGuiElementType;
 import net.bfsr.editor.property.Property;
-import net.bfsr.editor.property.PropertyGuiElementType;
 import net.bfsr.editor.property.SimplePropertiesHolder;
 
 @Getter

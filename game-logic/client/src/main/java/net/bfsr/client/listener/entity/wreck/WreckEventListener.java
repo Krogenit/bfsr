@@ -18,7 +18,7 @@ import org.joml.Vector2f;
 
 @Listener(references = References.Strong)
 public class WreckEventListener {
-    private final RenderManager renderManager = Core.get().getWorldRenderer().getRenderManager();
+    private final RenderManager renderManager = Core.get().getRenderManager();
 
     @Handler
     public void event(WreckDeathEvent event) {

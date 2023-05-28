@@ -5,7 +5,6 @@ import net.bfsr.config.entity.wreck.WreckData;
 import net.bfsr.config.entity.wreck.WreckRegistry;
 import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.RigidBody;
-import net.bfsr.event.EventBus;
 import net.bfsr.event.entity.wreck.WreckDeathEvent;
 import net.bfsr.event.entity.wreck.WreckUpdateEvent;
 import net.bfsr.physics.PhysicsUtils;
@@ -44,8 +43,12 @@ public class Wreck extends RigidBody {
     @Getter
     protected WreckData wreckData;
 
-    public Wreck init(World world, int id, float x, float y, float velocityX, float velocityY, float sin, float cos, float angularVelocity, float scaleX, float scaleY,
-                      float lifeTimeVelocity, int wreckIndex, boolean fire, boolean light, boolean emitFire, float hull, int destroyedShipId, WreckType wreckType,
+    private final WreckUpdateEvent updateEvent = new WreckUpdateEvent(this);
+
+    public Wreck init(World world, int id, float x, float y, float velocityX, float velocityY, float sin, float cos,
+                      float angularVelocity, float scaleX, float scaleY,
+                      float lifeTimeVelocity, int wreckIndex, boolean fire, boolean light, boolean emitFire, float hull,
+                      int destroyedShipId, WreckType wreckType,
                       WreckData wreckData) {
         this.world = world;
         this.id = id;
@@ -66,14 +69,18 @@ public class Wreck extends RigidBody {
         this.wreckType = wreckType;
         this.wreckData = wreckData;
         this.isDead = false;
+        this.eventBus = world.getEventBus();
         createFixtures(angularVelocity);
         return this;
     }
 
-    public Wreck init(World world, int id, int wreckIndex, boolean light, boolean fire, boolean emitFire, float x, float y, float velocityX, float velocityY,
-                      float sin, float cos, float angularVelocity, float scaleX, float scaleY, float lifeTimeVelocity, WreckType wreckType) {
+    public Wreck init(World world, int id, int wreckIndex, boolean light, boolean fire, boolean emitFire, float x, float y,
+                      float velocityX, float velocityY,
+                      float sin, float cos, float angularVelocity, float scaleX, float scaleY, float lifeTimeVelocity,
+                      WreckType wreckType) {
         WreckData wreck = WreckRegistry.INSTANCE.getWreck(wreckType, wreckIndex);
-        return init(world, id, x, y, velocityX, velocityY, sin, cos, angularVelocity, scaleX, scaleY, lifeTimeVelocity, wreckIndex, fire, light, emitFire, 10,
+        return init(world, id, x, y, velocityX, velocityY, sin, cos, angularVelocity, scaleX, scaleY, lifeTimeVelocity,
+                wreckIndex, fire, light, emitFire, 10,
                 0, wreckType, wreck);
     }
 
@@ -116,7 +123,7 @@ public class Wreck extends RigidBody {
     @Override
     public void postPhysicsUpdate() {
         super.postPhysicsUpdate();
-        EventBus.post(world.getSide(), new WreckUpdateEvent(this));
+        eventBus.publish(updateEvent);
     }
 
     private void updateLifeTime() {
@@ -148,6 +155,6 @@ public class Wreck extends RigidBody {
     @Override
     public void setDead() {
         super.setDead();
-        EventBus.post(world.getSide(), new WreckDeathEvent(this));
+        eventBus.publish(new WreckDeathEvent(this));
     }
 }

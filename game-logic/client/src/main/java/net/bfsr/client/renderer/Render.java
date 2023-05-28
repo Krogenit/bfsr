@@ -9,10 +9,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.bfsr.client.Core;
 import net.bfsr.client.renderer.texture.DamageMaskTexture;
-import net.bfsr.damage.DamageUtils;
+import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.Damageable;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.MathUtils;
+import net.bfsr.engine.renderer.AbstractRenderer;
+import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.AbstractTextureLoader;
@@ -50,6 +52,9 @@ public class Render<T extends GameObject> {
     @Getter
     protected float lastSin, lastCos;
     protected final AABB aabb = new AABB();
+    protected final AbstractRenderer renderer = Engine.renderer;
+    protected final AbstractSpriteRenderer spriteRenderer = renderer.spriteRenderer;
+    protected final AbstractDebugRenderer debugRenderer = renderer.debugRenderer;
 
     public Render(AbstractTexture texture, T object, float r, float g, float b, float a) {
         this.object = object;
@@ -80,19 +85,21 @@ public class Render<T extends GameObject> {
 
     public void renderDebug() {
         if (object instanceof RigidBody rigidBody) {
-            renderDebug(Engine.renderer.debugRenderer, rigidBody);
+            renderDebug(rigidBody);
         }
     }
 
-    public void renderDebug(AbstractDebugRenderer debugRenderer, RigidBody rigidBody) {
+    public void renderDebug(RigidBody rigidBody) {
         Vector2f position = rigidBody.getPosition();
 
         rigidBody.getBody().computeAABB(DYN4J_AABB);
-        debugRenderer.renderAABB(AABB.set(DYN4J_AABB.getMinX(), DYN4J_AABB.getMinY(), DYN4J_AABB.getMaxX(), DYN4J_AABB.getMaxY()));
+        debugRenderer.renderAABB(
+                AABB.set(DYN4J_AABB.getMinX(), DYN4J_AABB.getMinY(), DYN4J_AABB.getMaxX(), DYN4J_AABB.getMaxY())
+        );
 
         float sin = (float) rigidBody.getBody().getTransform().getSint();
         float cos = (float) rigidBody.getBody().getTransform().getCost();
-        renderDebug(debugRenderer, rigidBody.getBody(), position.x, position.y, sin, cos);
+        renderDebug(rigidBody.getBody(), position.x, position.y, sin, cos);
         if (rigidBody instanceof Damageable damageable) {
             PathsD contours = damageable.getContours();
             if (contours != null) {
@@ -101,27 +108,29 @@ public class Render<T extends GameObject> {
                     debugRenderer.addCommand(pathD.size());
                     for (int i1 = 0; i1 < pathD.size(); i1++) {
                         PointD pointD = pathD.get(i1);
-                        debugRenderer.addVertex(position.x + RotationHelper.rotateX(sin, cos, (float) pointD.x, (float) pointD.y),
-                                position.y + RotationHelper.rotateY(sin, cos, (float) pointD.x, (float) pointD.y), CONTOUR_COLOR);
+                        debugRenderer.addVertex(
+                                position.x + RotationHelper.rotateX(sin, cos, (float) pointD.x, (float) pointD.y),
+                                position.y + RotationHelper.rotateY(sin, cos, (float) pointD.x, (float) pointD.y), CONTOUR_COLOR
+                        );
                     }
 
                     if (i == 0) {
                         ClipperOffset clipperOffset = new ClipperOffset();
                         Path64 path64 = new Path64(pathD.size());
                         for (int i1 = 0; i1 < pathD.size(); i1++) {
-                            path64.add(new Point64(pathD.get(i1), DamageUtils.SCALE));
+                            path64.add(new Point64(pathD.get(i1), DamageSystem.SCALE));
                         }
                         clipperOffset.AddPath(path64, JoinType.Miter, EndType.Polygon);
-                        Render<?> render = Core.get().getWorldRenderer().getRenderManager().getRender(damageable.getId());
+                        Render<?> render = Core.get().getRenderManager().getRender(damageable.getId());
                         float localScaleX = render.getMaskTexture().getWidth() / damageable.getSize().x;
-                        Path64 solution = clipperOffset.Execute(1.2f * DamageUtils.SCALE / (localScaleX * 0.5f)).get(0);
+                        Path64 solution = clipperOffset.Execute(1.2f * DamageSystem.SCALE / (localScaleX * 0.5f)).get(0);
                         debugRenderer.addCommand(solution.size());
                         for (int i2 = 0, path64Size = solution.size(); i2 < path64Size; i2++) {
                             Point64 pointD = solution.get(i2);
-                            float x = (float) (pointD.x * DamageUtils.INV_SCALE);
-                            float y = (float) (pointD.y * DamageUtils.INV_SCALE);
-                            debugRenderer.addVertex(position.x + RotationHelper.rotateX(sin, cos, x, y), position.y + RotationHelper.rotateY(sin, cos, x, y),
-                                    CONTOUR_OFFSET_COLOR);
+                            float x = (float) (pointD.x * DamageSystem.INV_SCALE);
+                            float y = (float) (pointD.y * DamageSystem.INV_SCALE);
+                            debugRenderer.addVertex(position.x + RotationHelper.rotateX(sin, cos, x, y),
+                                    position.y + RotationHelper.rotateY(sin, cos, x, y), CONTOUR_OFFSET_COLOR);
                         }
                     }
                 }
@@ -129,7 +138,7 @@ public class Render<T extends GameObject> {
         }
     }
 
-    public void renderDebug(AbstractDebugRenderer debugRenderer, Body body, float x, float y, float sin, float cos) {
+    public void renderDebug(Body body, float x, float y, float sin, float cos) {
         float velocityX = (float) body.getLinearVelocity().x * 0.05f;
         float velocityY = (float) body.getLinearVelocity().y * 0.05f;
         debugRenderer.addCommand(2);

@@ -3,9 +3,9 @@ package net.bfsr.editor.particle;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.ConfigurableSound;
+import net.bfsr.editor.gui.property.PropertyGuiElementType;
 import net.bfsr.editor.property.PropertiesHolder;
 import net.bfsr.editor.property.Property;
-import net.bfsr.editor.property.PropertyGuiElementType;
 import net.bfsr.editor.property.event.ChangeNameEventListener;
 import net.bfsr.engine.renderer.particle.RenderLayer;
 import net.bfsr.engine.renderer.texture.TextureRegister;
@@ -18,7 +18,8 @@ import java.util.List;
 @Getter
 public class ParticleEffectProperties implements PropertiesHolder {
     private String name;
-    @Property(elementType = PropertyGuiElementType.ARRAY, arrayElementType = PropertyGuiElementType.FILE_SELECTOR, arrayElementName = "assets/client/texture")
+    @Property(elementType = PropertyGuiElementType.ARRAY, arrayElementType = PropertyGuiElementType.FILE_SELECTOR,
+            arrayElementName = "assets/client/texture")
     private List<String> texturePaths;
     @Property
     private float spawnOverTime;

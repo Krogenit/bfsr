@@ -10,7 +10,6 @@ import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
-import net.bfsr.event.EventBus;
 import net.bfsr.event.entity.bullet.BulletDamageShipHullEvent;
 import net.bfsr.event.entity.bullet.BulletDeathEvent;
 import net.bfsr.event.entity.bullet.BulletHitShipEvent;
@@ -54,9 +53,11 @@ public class Bullet extends RigidBody {
     @Override
     public void init(World world, int id) {
         super.init(world, id);
+        this.eventBus = world.getEventBus();
 
         if (SideUtils.IS_SERVER && this.world.isServer()) {
-            body.getTransform().setTranslation(position.x + velocity.x / 500.0f, position.y + velocity.y / 500.0f);//TODO: посчитать точку появления пули правильно
+            body.getTransform().setTranslation(position.x + velocity.x / 500.0f,
+                    position.y + velocity.y / 500.0f);//TODO: посчитать точку появления пули правильно
         }
     }
 
@@ -91,14 +92,16 @@ public class Bullet extends RigidBody {
     }
 
     @Override
-    public void updateClientPositionFromPacket(Vector2f position, float sin, float cos, Vector2f velocity, float angularVelocity) {
+    public void updateClientPositionFromPacket(Vector2f position, float sin, float cos, Vector2f velocity,
+                                               float angularVelocity) {
         setRotation(sin, cos);
         SyncUtils.updatePos(this, position);
         body.setLinearVelocity(velocity.x, velocity.y);
     }
 
     @Override
-    public void collision(Body body, float contactX, float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
+    public void collision(Body body, float contactX, float contactY, float normalX, float normalY,
+                          ContactCollisionData<Body> collision) {
         collision.getContactConstraint().setEnabled(false);
 
         Object userData = body.getUserData();
@@ -108,7 +111,7 @@ public class Bullet extends RigidBody {
                     previousAObject = ship;
                     if (damageShip(ship, contactX, contactY)) {
                         //Hull damage
-                        EventBus.post(world.getSide(), new BulletDamageShipHullEvent(this, ship, contactX, contactY));
+                        eventBus.publish(new BulletDamageShipHullEvent(this, ship, contactX, contactY));
                         setDead();
                     } else {
                         //Shield reflection
@@ -116,7 +119,7 @@ public class Bullet extends RigidBody {
                         reflect(normalX, normalY);
                     }
 
-                    EventBus.post(world.getSide(), new BulletHitShipEvent(this, ship, contactX, contactY, normalX, normalY));
+                    eventBus.publish(new BulletHitShipEvent(this, ship, contactX, contactY, normalX, normalY));
                 }
             } else if (userData instanceof Bullet bullet) {
                 bullet.setDead();
@@ -139,7 +142,7 @@ public class Bullet extends RigidBody {
         sin = LUT.sin(rotateToVector);
         cos = LUT.cos(rotateToVector);
         body.getTransform().setRotation(sin, cos);
-        EventBus.post(world.getSide(), new BulletReflectEvent(this));
+        eventBus.publish(new BulletReflectEvent(this));
     }
 
     private void damage(Bullet bullet) {
@@ -183,6 +186,6 @@ public class Bullet extends RigidBody {
     @Override
     public void setDead() {
         super.setDead();
-        EventBus.post(world.getSide(), new BulletDeathEvent(this));
+        eventBus.publish(new BulletDeathEvent(this));
     }
 }

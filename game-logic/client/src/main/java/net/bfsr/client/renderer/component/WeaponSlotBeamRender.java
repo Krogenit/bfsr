@@ -16,7 +16,7 @@ import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
-    private static final AbstractTexture LIGHT_TEXTURE = Engine.assetsManager.textureLoader.getTexture(TextureRegister.particleLight);
+    private static final AbstractTexture LIGHT_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.particleLight);
 
     private final SpawnAccumulator weaponSpawnAccumulator = new SpawnAccumulator();
     private final SpawnAccumulator damageSpawnAccumulator = new SpawnAccumulator();
@@ -86,12 +86,14 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
             if (object.getReloadTimer() > object.getTimeToReload() / 3.0f) {
                 Vector2f position = object.getPosition();
                 Vector2f size = object.getSize();
-                Engine.renderer.spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos,
-                        lastSize.x * 2.5f, lastSize.y * 2.5f, size.x * 2.5f, size.y * 2.5f, effectsColor.x, effectsColor.y, effectsColor.z, 0.6f * effectsColor.w,
+                spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
+                        sin, cos,
+                        lastSize.x * 2.5f, lastSize.y * 2.5f, size.x * 2.5f, size.y * 2.5f, effectsColor.x, effectsColor.y,
+                        effectsColor.z, 0.6f * effectsColor.w,
                         LIGHT_TEXTURE, BufferType.ENTITIES_ADDITIVE);
             }
 
-            beam.render(lastSin, lastCos, sin, cos);
+            beam.render(spriteRenderer, lastSin, lastCos, sin, cos);
         }
     }
 

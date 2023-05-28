@@ -24,7 +24,7 @@ import java.util.Random;
 @Listener(references = References.Strong)
 public class WeaponEventListener {
     private final AbstractSoundManager soundManager = Engine.soundManager;
-    private final RenderManager renderManager = Core.get().getWorldRenderer().getRenderManager();
+    private final RenderManager renderManager = Core.get().getRenderManager();
 
     @Handler
     public void event(WeaponShotEvent event) {
@@ -53,7 +53,7 @@ public class WeaponEventListener {
         SoundData[] sounds = gunData.getSounds();
         if (sounds.length > 0) {
             SoundData sound = sounds[random.nextInt(sounds.length)];
-            soundManager.play(Engine.assetsManager.soundLoader.getBuffer(sound.path()), sound.volume(), x, y);
+            soundManager.play(Engine.assetsManager.getSound(sound.path()), sound.volume(), x, y);
         }
     }
 }

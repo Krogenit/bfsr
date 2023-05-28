@@ -56,14 +56,9 @@ public final class PointD {
         return InternalClipper.IsAlmostZero(lhs.x - rhs.x) && InternalClipper.IsAlmostZero(lhs.y - rhs.y);
     }
 
-    public static boolean opNotEquals(PointD lhs, PointD rhs) {
-        return !InternalClipper.IsAlmostZero(lhs.x - rhs.x) || !InternalClipper.IsAlmostZero(lhs.y - rhs.y);
-    }
-
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof PointD) {
-            PointD p = (PointD) obj;
+        if (obj instanceof PointD p) {
             return opEquals(this, p);
         }
         return false;

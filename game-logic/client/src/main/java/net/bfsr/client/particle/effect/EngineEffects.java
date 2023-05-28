@@ -13,13 +13,13 @@ public final class EngineEffects {
         secondaryEngine.emit(x, y, spawnAccumulator);
     }
 
-    public static void smallEngine(float x, float y, float sin, float cos, float size, float velocityX, float velocityY, float r, float g, float b, float a,
-                                   SpawnAccumulator spawnAccumulator) {
+    public static void smallEngine(float x, float y, float sin, float cos, float size, float velocityX, float velocityY, float r,
+                                   float g, float b, float a, SpawnAccumulator spawnAccumulator) {
         smallEngine.emit(x, y, size, size, sin, cos, velocityX, velocityY, r, g, b, a, spawnAccumulator);
     }
 
-    public static void smallEngineNoSmoke(float x, float y, float sin, float cos, float size, float velocityX, float velocityY, float r, float g, float b, float a,
-                                          SpawnAccumulator spawnAccumulator) {
+    public static void smallEngineNoSmoke(float x, float y, float sin, float cos, float size, float velocityX, float velocityY,
+                                          float r, float g, float b, float a, SpawnAccumulator spawnAccumulator) {
         smallEngineNoSmoke.emit(x, y, size, sin, cos, velocityX, velocityY, r, g, b, a, spawnAccumulator);
     }
 }

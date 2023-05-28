@@ -2,16 +2,16 @@ package net.bfsr.editor.gui.inspection;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.gui.AbstractGuiObject;
-import net.bfsr.client.gui.GuiObject;
-import net.bfsr.client.gui.GuiObjectWithSubObjects;
-import net.bfsr.client.gui.GuiObjectsHandler;
-import net.bfsr.client.gui.input.InputBox;
 import net.bfsr.editor.gui.ColorScheme;
+import net.bfsr.editor.gui.component.ComponentHolder;
 import net.bfsr.editor.gui.component.MinimizableGuiObject;
-import net.bfsr.editor.property.ComponentHolder;
 import net.bfsr.editor.property.PropertiesHolder;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.gui.component.InputBox;
+import net.bfsr.engine.gui.object.AbstractGuiObject;
+import net.bfsr.engine.gui.object.GuiObject;
+import net.bfsr.engine.gui.object.GuiObjectWithSubObjects;
+import net.bfsr.engine.gui.object.GuiObjectsHandler;
 import net.bfsr.engine.renderer.font.FontType;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
@@ -35,7 +35,8 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
     private final Vector2i selectPosition = new Vector2i();
     private InputBox inputBox;
 
-    public InspectionEntry(InspectionPanel<T> inspectionPanel, int width, int height, String name, FontType fontType, int fontSize, int stringYOffset) {
+    public InspectionEntry(InspectionPanel<T> inspectionPanel, int width, int height, String name, FontType fontType,
+                           int fontSize, int stringYOffset) {
         super(width, height, name, fontType, fontSize, stringYOffset);
         this.inspectionPanel = inspectionPanel;
         setupColors(this);
@@ -134,10 +135,10 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
     }
 
     @Override
-    public void onMouseLeftRelease() {
+    public boolean onMouseLeftRelease() {
         clicked = false;
 
-        if (!isMouseHover()) return;
+        if (!isMouseHover()) return false;
 
         Vector2f mousePosition = Engine.mouse.getPosition();
         int mouseX = (int) mousePosition.x;
@@ -148,10 +149,13 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
             } else {
                 maximize();
             }
+
+            return true;
         } else if (selected) {
             if (mouseX >= x + selectOffsetX && mouseX < x + width) {
                 if (wasSelected) {
-                    inputBox = new InputBox(width - selectOffsetX, height, "", stringObject.getStringCache(), fontSize, 3, stringYOffset, 300);
+                    inputBox = new InputBox(width - selectOffsetX, height, "", stringObject.getStringCache(), fontSize, 3,
+                            stringYOffset, 300);
                     inputBox.setOnUnselectedRunnable(() -> {
                         gui.unregisterGuiObject(inputBox);
                         onNameChanged(inputBox.getString());
@@ -166,8 +170,12 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
                 } else {
                     onSelected();
                 }
+
+                return true;
             }
         }
+
+        return false;
     }
 
     @Override
@@ -198,9 +206,11 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
     @Override
     protected void renderBase() {
         if (selected) {
-            Engine.renderer.guiRenderer.add(lastX, lastY, x, y, width, height, 35 / 255.0f, 74 / 255.0f, 108 / 255.0f, hoverColor.w);
+            guiRenderer.add(lastX, lastY, x, y, width, height, 35 / 255.0f, 74 / 255.0f, 108 / 255.0f,
+                    hoverColor.w);
         } else if (isMouseHover()) {
-            Engine.renderer.guiRenderer.add(lastX, lastY, x, y, width, height, hoverColor.x, hoverColor.y, hoverColor.z, hoverColor.w);
+            guiRenderer.add(lastX, lastY, x, y, width, height, hoverColor.x, hoverColor.y, hoverColor.z,
+                    hoverColor.w);
         }
     }
 

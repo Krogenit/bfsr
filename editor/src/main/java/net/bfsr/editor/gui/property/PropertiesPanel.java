@@ -1,18 +1,19 @@
 package net.bfsr.editor.gui.property;
 
-import net.bfsr.client.gui.AbstractGuiObject;
-import net.bfsr.client.gui.Gui;
-import net.bfsr.client.gui.GuiObjectsContainer;
-import net.bfsr.client.gui.button.Button;
-import net.bfsr.client.gui.font.StringObject;
 import net.bfsr.editor.gui.component.MinimizableHolder;
-import net.bfsr.editor.gui.component.PropertyComponent;
 import net.bfsr.editor.property.PropertiesBuilder;
 import net.bfsr.editor.property.PropertiesHolder;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.gui.Gui;
+import net.bfsr.engine.gui.component.Button;
+import net.bfsr.engine.gui.component.StringObject;
+import net.bfsr.engine.gui.object.AbstractGuiObject;
+import net.bfsr.engine.gui.object.GuiObjectsContainer;
+import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.font.StringOffsetType;
-import net.bfsr.util.RunnableUtils;
+import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
+import net.bfsr.engine.util.RunnableUtils;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;
@@ -21,6 +22,8 @@ import java.util.List;
 import static net.bfsr.editor.gui.ColorScheme.*;
 
 public class PropertiesPanel {
+    private final AbstractRenderer renderer = Engine.renderer;
+    private final AbstractGUIRenderer guiRenderer = renderer.guiRenderer;
     private final Gui gui;
     private final int width;
     private final FontType fontType;
@@ -38,12 +41,13 @@ public class PropertiesPanel {
 
     private PropertiesHolder clipboard;
 
-    public PropertiesPanel(Gui gui, int width, FontType fontType, int fontSize, int stringXOffset, int stringYOffset, int contextMenuStringXOffset) {
+    public PropertiesPanel(Gui gui, int width, FontType fontType, int fontSize, int stringXOffset, int stringYOffset,
+                           int contextMenuStringXOffset) {
         this.gui = gui;
         this.width = width;
         this.fontType = fontType;
         this.fontSize = fontSize;
-        this.propertiesContainer = new GuiObjectsContainer(width, 16);
+        this.propertiesContainer = new GuiObjectsContainer(gui, width, 16);
         this.stringXOffset = stringXOffset;
         this.stringYOffset = stringYOffset;
         this.contextMenuStringXOffset = contextMenuStringXOffset;
@@ -51,10 +55,12 @@ public class PropertiesPanel {
 
     public void initElements() {
         String string = "Properties";
-        rightHeader = new StringObject(fontType, string, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w).compile();
-        rightHeader.atTopRightCorner(-width, fontType.getStringCache().getCenteredYOffset(string, elementHeight, fontSize) + stringYOffset);
+        rightHeader =
+                new StringObject(fontType, string, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w).compile();
+        rightHeader.atTopRightCorner(-width,
+                fontType.getStringCache().getCenteredYOffset(string, elementHeight, fontSize) + stringYOffset);
         propertiesContainer.atTopRightCorner(-width, elementHeight).setHeightResizeFunction(
-                (width, height) -> Engine.renderer.getScreenHeight() - (elementHeight << 1)
+                (width, height) -> renderer.getScreenHeight() - (elementHeight << 1)
         );
 
         int buttonWidth = width / 2;
@@ -83,18 +89,23 @@ public class PropertiesPanel {
             int x1 = (int) mousePos.x;
             int y1 = (int) mousePos.y;
             String buttonName = "Copy";
-            Button copyButton = new Button(null, x1, y1, fontType.getStringCache().getStringWidth(buttonName, fontSize) + contextMenuStringXOffset, elementHeight,
-                    buttonName, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
+            Button copyButton = new Button(null, x1, y1,
+                    fontType.getStringCache().getStringWidth(buttonName, fontSize) + contextMenuStringXOffset, elementHeight,
+                    buttonName, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
+                    RunnableUtils.EMPTY_RUNNABLE);
             copyButton.setOnMouseClickRunnable(() -> clipboard = propertiesHolder.copy());
             y1 += elementHeight;
             buttonName = "Paste";
-            Button pastButton = new Button(null, x1, y1, fontType.getStringCache().getStringWidth(buttonName, fontSize) + contextMenuStringXOffset, elementHeight,
-                    buttonName, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
+            Button pastButton = new Button(null, x1, y1,
+                    fontType.getStringCache().getStringWidth(buttonName, fontSize) + contextMenuStringXOffset, elementHeight,
+                    buttonName, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
+                    RunnableUtils.EMPTY_RUNNABLE);
             pastButton.setOnMouseClickRunnable(() -> {
                 if (clipboard != null && clipboard.getClass() == propertiesHolder.getClass()) {
                     propertiesHolder.paste(clipboard);
                     minimizableHolder.removeAllSubObjects();
-                    PropertiesBuilder.createGuiProperties(propertiesHolder, width - MinimizableHolder.MINIMIZABLE_STRING_X_OFFSET, height,
+                    PropertiesBuilder.createGuiProperties(propertiesHolder, width - MinimizableHolder.MINIMIZABLE_STRING_X_OFFSET,
+                            height,
                             fontType, fontSize, propertyOffsetX, stringYOffset, minimizableHolder::addSubObject);
                     updatePropertiesPositions();
                 }
@@ -120,7 +131,8 @@ public class PropertiesPanel {
 
         for (int i = 0; i < minimizableProperties.size(); i++) {
             MinimizableHolder<PropertiesHolder> minimizable = minimizableProperties.get(i);
-            updatePropertiesOffsetAndWidth(minimizable, width - propertiesContainer.getScrollWidth() - MinimizableHolder.MINIMIZABLE_STRING_X_OFFSET);
+            updatePropertiesOffsetAndWidth(minimizable,
+                    width - propertiesContainer.getScrollWidth() - MinimizableHolder.MINIMIZABLE_STRING_X_OFFSET);
             minimizable.atTopRightCorner(x, y);
             y += minimizable.getHeight();
         }
@@ -128,7 +140,8 @@ public class PropertiesPanel {
         propertiesContainer.setWidth(width);
         propertiesContainer.atTopRightCorner(-width, elementHeight);
         propertiesContainer.updatePositionAndSize();
-        rightHeader.atTopRightCorner(-width, fontType.getStringCache().getCenteredYOffset(rightHeader.getString(), elementHeight, fontSize) + stringYOffset);
+        rightHeader.atTopRightCorner(-width,
+                fontType.getStringCache().getCenteredYOffset(rightHeader.getString(), elementHeight, fontSize) + stringYOffset);
         rightHeader.updatePositionAndSize();
         int buttonWidth = width / 2;
         x = -width;
@@ -170,7 +183,8 @@ public class PropertiesPanel {
     }
 
     public void render() {
-        Engine.renderer.guiRenderer.add(propertiesContainer.getX(), propertiesContainer.getY(), propertiesContainer.getWidth(), propertiesContainer.getHeight(),
+        guiRenderer.add(propertiesContainer.getX(), propertiesContainer.getY(), propertiesContainer.getWidth(),
+                propertiesContainer.getHeight(),
                 BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
     }
 

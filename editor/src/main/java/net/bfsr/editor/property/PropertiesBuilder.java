@@ -2,7 +2,8 @@ package net.bfsr.editor.property;
 
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.editor.gui.builder.ComponentBuilder;
-import net.bfsr.editor.gui.component.PropertyComponent;
+import net.bfsr.editor.gui.property.PropertyComponent;
+import net.bfsr.editor.gui.property.PropertyGuiElementType;
 import net.bfsr.engine.renderer.font.FontType;
 
 import java.lang.reflect.Field;

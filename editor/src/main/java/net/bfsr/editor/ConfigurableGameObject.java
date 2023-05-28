@@ -2,16 +2,15 @@ package net.bfsr.editor;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.bfsr.editor.gui.property.PropertyGuiElementType;
 import net.bfsr.editor.property.PropertiesHolder;
 import net.bfsr.editor.property.Property;
-import net.bfsr.editor.property.PropertyGuiElementType;
 import net.bfsr.editor.property.event.ChangeNameEventListener;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.util.PathHelper;
 
-@SuppressWarnings("TransientFieldInNonSerializableClass")
 @Getter
 @Setter
 public class ConfigurableGameObject implements PropertiesHolder {
@@ -24,7 +23,7 @@ public class ConfigurableGameObject implements PropertiesHolder {
     @Property(elementType = PropertyGuiElementType.FILE_SELECTOR)
     private String texturePath;
 
-    private transient AbstractTexture texture;
+    private AbstractTexture texture;
 
     @Override
     public void setDefaultValues() {
@@ -33,7 +32,7 @@ public class ConfigurableGameObject implements PropertiesHolder {
     }
 
     public void init() {
-        texture = Engine.assetsManager.textureLoader.getTexture(PathHelper.convertPath(texturePath));
+        texture = Engine.assetsManager.getTexture(PathHelper.convertPath(texturePath));
     }
 
     @Override

@@ -18,7 +18,7 @@ package clipper2.core;
  * By far the most widely used filling rules for polygons are EvenOdd and
  * NonZero, sometimes called Alternate and Winding respectively.
  * <p>
- * https://en.wikipedia.org/wiki/Nonzero-rule
+ * <a href="https://en.wikipedia.org/wiki/Nonzero-rule">Nonzero-rule</a>
  */
 public enum FillRule {
     /** Only odd numbered sub-regions are filled */

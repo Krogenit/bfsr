@@ -3,9 +3,7 @@ package net.bfsr.client.gui.ingame;
 import lombok.Getter;
 import net.bfsr.client.Core;
 import net.bfsr.client.gui.GuiManager;
-import net.bfsr.client.gui.TexturedGuiObject;
-import net.bfsr.client.gui.button.Button;
-import net.bfsr.client.gui.font.StringObject;
+import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.renderer.RenderManager;
@@ -16,6 +14,9 @@ import net.bfsr.component.reactor.Reactor;
 import net.bfsr.component.shield.Shield;
 import net.bfsr.component.weapon.WeaponSlot;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.gui.component.Button;
+import net.bfsr.engine.gui.component.StringObject;
+import net.bfsr.engine.gui.object.TexturedGuiObject;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.font.FontType;
@@ -46,15 +47,15 @@ public class ShipHUD {
     private Ship otherShip;
 
     private final Vector2f rotationVector = new Vector2f();
-    private final AbstractTexture shieldTexture = Engine.assetsManager.textureLoader.getTexture(TextureRegister.shieldSmall0);
+    private final AbstractTexture shieldTexture = Engine.assetsManager.getTexture(TextureRegister.shieldSmall0);
     private final Core core = Core.get();
     private final PlayerInputController playerInputController = core.getInputHandler().getPlayerInputController();
     private final AbstractRenderer renderer = Engine.renderer;
     private final AbstractGUIRenderer guiRenderer = renderer.guiRenderer;
-    private final RenderManager renderManager = core.getWorldRenderer().getRenderManager();
+    private final RenderManager renderManager = core.getRenderManager();
     private final GuiManager guiManager = core.getGuiManager();
 
-    public void init(GuiInGame gui) {
+    public void init(HUD gui) {
         int scaleX = 280;
         int scaleY = 220;
         hudShip.setSize(scaleX, scaleY);
@@ -76,7 +77,6 @@ public class ShipHUD {
             if (playerControlledShip != null) {
                 core.sendTCPPacket(new PacketShipControl(playerControlledShip.getId(), false));
                 playerInputController.setShip(null);
-                playerInputController.disableShipDeselection();
                 selectShip(playerControlledShip);
                 onShipControlCanceled();
             } else if (currentShip != null && canControlShip(currentShip)) {
@@ -86,7 +86,7 @@ public class ShipHUD {
         }) {
             @Override
             public void updateMouseHover() {
-                if (guiManager.getCurrentGui() == null) {
+                if (guiManager.noGui()) {
                     super.updateMouseHover();
                 }
             }
@@ -99,7 +99,8 @@ public class ShipHUD {
         } else {
             controlText.setString(Lang.getString("gui.control"));
         }
-        gui.registerGuiObject(controlText.atBottomRightCorner(-hudShip.getWidth() / 2 - controlText.getWidth() / 2, -hudShip.getHeight() - 1));
+        gui.registerGuiObject(
+                controlText.atBottomRightCorner(-hudShip.getWidth() / 2 - controlText.getWidth() / 2, -hudShip.getHeight() - 1));
         gui.registerGuiObject(buttonControl);
 
         shipCargo.setPosition(hudShipAdd0.getX() + 16, hudShipAdd0.getY() + 26);
@@ -125,7 +126,8 @@ public class ShipHUD {
     private void renderShipInHUD(Ship ship, int x, int y, float shipSize) {
         float hull = ship.getHull().getHull() / ship.getHull().getMaxHull();
         AbstractTexture texture = renderManager.getRender(ship.getId()).getTexture();
-        renderQuad(x, y, -MathUtils.HALF_PI, (int) (ship.getSize().x * shipSize), (int) (ship.getSize().y * shipSize), 1.0f - hull, hull, 0.0f, 1.0f, texture);
+        renderQuad(x, y, -MathUtils.HALF_PI, (int) (ship.getSize().x * shipSize), (int) (ship.getSize().y * shipSize),
+                1.0f - hull, hull, 0.0f, 1.0f, texture);
     }
 
     private void renderHullValue(Ship ship, int x, int y) {
@@ -154,7 +156,8 @@ public class ShipHUD {
                 rotationVector.x += x;
                 rotationVector.y += y;
                 float armorPlateValue = plate.getArmor() / plate.getArmorMax();
-                renderQuad((int) rotationVector.x, (int) rotationVector.y, rot + MathUtils.PI, 64, 64, 1.0f - armorPlateValue, armorPlateValue, 0.0f, 1.0f, armorPlate.getTexture());
+                renderQuad((int) rotationVector.x, (int) rotationVector.y, rot + MathUtils.PI, 64, 64, 1.0f - armorPlateValue,
+                        armorPlateValue, 0.0f, 1.0f, armorPlate.getTexture());
             }
         }
     }
@@ -171,8 +174,8 @@ public class ShipHUD {
                 int slothHeight = (int) (slot.getSize().y * shipSize);
                 ShipRender render = renderManager.getRender(ship.getId());
                 AbstractTexture texture = render.getWeaponSlotTexture(i);
-                renderQuad((int) (x + rotationVector.x * shipSize), (int) (y + rotationVector.y * shipSize), -MathUtils.HALF_PI, slotWidth, slothHeight,
-                        reload, 0.0f, 1.0f - reload, 1.0f, texture);
+                renderQuad((int) (x + rotationVector.x * shipSize), (int) (y + rotationVector.y * shipSize), -MathUtils.HALF_PI,
+                        slotWidth, slothHeight, reload, 0.0f, 1.0f - reload, 1.0f, texture);
             }
         }
     }
@@ -203,16 +206,20 @@ public class ShipHUD {
             RotationHelper.rotate(rot, -100, 0, rotationVector);
             rotationVector.x += x;
             rotationVector.y += y;
-            renderQuad((int) rotationVector.x, (int) rotationVector.y, -MathUtils.PI + rot, energyWidth, energyHeight, 0.0f, 0.0f, 0.0f, 1.0f, energyText);
+            renderQuad((int) rotationVector.x, (int) rotationVector.y, -MathUtils.PI + rot, energyWidth, energyHeight, 0.0f, 0.0f,
+                    0.0f, 1.0f, energyText);
             if (energy >= i) {
-                renderQuad((int) rotationVector.x, (int) rotationVector.y, (float) (-Math.PI + rot), energyWidth, energyHeight, 0.25f, 0.5f, 1.0f, 1.0f, energyText);
+                renderQuad((int) rotationVector.x, (int) rotationVector.y, (float) (-Math.PI + rot), energyWidth, energyHeight,
+                        0.25f, 0.5f, 1.0f, 1.0f, energyText);
             }
         }
 
-        shipCargo.setString(Lang.getString(Lang.getString("gui.shipCargo") + ": " + currentShip.getCargo().getCapacity() + "/" + currentShip.getCargo().getMaxCapacity()));
+        shipCargo.setString(Lang.getString(Lang.getString("gui.shipCargo") + ": " + currentShip.getCargo().getCapacity() + "/" +
+                currentShip.getCargo().getMaxCapacity()));
         shipCargo.renderNoInterpolation();
 
-        shipCrew.setString(Lang.getString(Lang.getString("gui.shipCrew") + ": " + currentShip.getCrew().getCrewSize() + "/" + currentShip.getCrew().getMaxCrewSize()));
+        shipCrew.setString(Lang.getString(Lang.getString("gui.shipCrew") + ": " + currentShip.getCrew().getCrewSize() + "/" +
+                currentShip.getCrew().getMaxCrewSize()));
         shipCrew.renderNoInterpolation();
 
         renderWeaponSlots(currentShip, x, y, shipSize);
@@ -266,7 +273,8 @@ public class ShipHUD {
         if (otherShip != null) renderOtherShipInfo();
     }
 
-    private void renderQuad(int x, int y, float rot, int width, int height, float r, float g, float b, float a, AbstractTexture texture) {
+    private void renderQuad(int x, int y, float rot, int width, int height, float r, float g, float b, float a,
+                            AbstractTexture texture) {
         guiRenderer.add(x, y, rot, width, height, r, g, b, a, texture);
     }
 

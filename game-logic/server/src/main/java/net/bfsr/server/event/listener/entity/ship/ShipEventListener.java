@@ -1,7 +1,7 @@
 package net.bfsr.server.event.listener.entity.ship;
 
 import clipper2.core.Path64;
-import net.bfsr.damage.DamageUtils;
+import net.bfsr.damage.DamageSystem;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.entity.ship.*;
 import net.bfsr.network.packet.common.PacketObjectPosition;
@@ -26,7 +26,7 @@ import java.util.Random;
 @Listener(references = References.Strong)
 public class ShipEventListener {
     private final NetworkSystem network = ServerGameLogic.getNetwork();
-    private final World world = ServerGameLogic.getInstance().getWorld();
+    private final DamageSystem damageSystem = ServerGameLogic.getInstance().getDamageSystem();
 
     @Handler
     public void event(ShipAddToWorldEvent event) {
@@ -37,15 +37,15 @@ public class ShipEventListener {
     @Handler
     public void event(ShipNewMoveDirectionEvent event) {
         Ship ship = event.ship();
-        network.sendUDPPacketToAllNearby(new PacketSyncMoveDirection(ship.getId(), event.direction().ordinal(), false), ship.getPosition(),
-                TrackingUtils.PACKET_UPDATE_DISTANCE);
+        network.sendUDPPacketToAllNearby(new PacketSyncMoveDirection(ship.getId(), event.direction().ordinal(), false),
+                ship.getPosition(), TrackingUtils.PACKET_UPDATE_DISTANCE);
     }
 
     @Handler
     public void event(ShipRemoveMoveDirectionEvent event) {
         Ship ship = event.ship();
-        network.sendUDPPacketToAllNearby(new PacketSyncMoveDirection(ship.getId(), event.direction().ordinal(), true), ship.getPosition(),
-                TrackingUtils.PACKET_UPDATE_DISTANCE);
+        network.sendUDPPacketToAllNearby(new PacketSyncMoveDirection(ship.getId(), event.direction().ordinal(), true),
+                ship.getPosition(), TrackingUtils.PACKET_UPDATE_DISTANCE);
     }
 
     @Handler
@@ -74,9 +74,9 @@ public class ShipEventListener {
         double sin = body.getTransform().getSint();
         double cos = body.getTransform().getCost();
 
-        Path64 clip = DamageUtils.createCirclePath(event.contactX() - x, event.contactY() - y, -sin, cos, 12, polygonRadius);
+        Path64 clip = damageSystem.createCirclePath(event.contactX() - x, event.contactY() - y, -sin, cos, 12, polygonRadius);
 
-        DamageUtils.damage(ship, event.contactX(), event.contactY(), clip, radius, world::getNextId);
+        damageSystem.damage(ship, event.contactX(), event.contactY(), clip, radius);
     }
 
     @Handler

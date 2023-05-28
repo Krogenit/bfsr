@@ -3,6 +3,7 @@ package net.bfsr.entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.util.SyncUtils;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;
@@ -25,6 +26,7 @@ public class RigidBody extends GameObject {
     @Getter
     protected float sin, cos;
     private final Transform savedTransform = new Transform();
+    protected EventBus eventBus;
 
     protected RigidBody(float x, float y, float sin, float cos, float scaleX, float scaleY) {
         super(x, y, scaleX, scaleY);
@@ -45,6 +47,7 @@ public class RigidBody extends GameObject {
     public void init(World world, int id) {
         this.world = world;
         this.id = id;
+        this.eventBus = world.getEventBus();
         initBody();
     }
 
@@ -58,7 +61,8 @@ public class RigidBody extends GameObject {
         position.y = (float) body.getTransform().getTranslationY();
     }
 
-    public void updateClientPositionFromPacket(Vector2f position, float sin, float cos, Vector2f velocity, float angularVelocity) {
+    public void updateClientPositionFromPacket(Vector2f position, float sin, float cos, Vector2f velocity,
+                                               float angularVelocity) {
         lifeTime = 0;
         body.setAtRest(false);
         SyncUtils.updatePos(this, position);

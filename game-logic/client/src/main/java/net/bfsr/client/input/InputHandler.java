@@ -1,6 +1,7 @@
 package net.bfsr.client.input;
 
 import lombok.Getter;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.input.AbstractInputHandler;
 
 public class InputHandler extends AbstractInputHandler {
@@ -23,6 +24,9 @@ public class InputHandler extends AbstractInputHandler {
         playerInputController.init();
         cameraInputController.init();
         debugInputController.init();
+
+        Engine.mouse.setInputHandler(this);
+        Engine.keyboard.setInputHandler(this);
     }
 
     public void update() {
@@ -82,7 +86,8 @@ public class InputHandler extends AbstractInputHandler {
 
     @Override
     public void scroll(float y) {
-        guiInputController.scroll(y);
-        cameraInputController.scroll(y);
+        if (!guiInputController.scroll(y)) {
+            cameraInputController.scroll(y);
+        }
     }
 }

@@ -8,7 +8,7 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.damage.DamageMask;
-import net.bfsr.damage.DamageUtils;
+import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.Damageable;
 import net.bfsr.engine.Engine;
 import net.bfsr.network.packet.PacketAdapter;
@@ -105,6 +105,6 @@ public class PacketSyncDamage extends PacketAdapter {
         byteBuffer.flip();
         fixtures = new ArrayList<>(32);
 
-        DamageUtils.decompose(contours, convex -> fixtures.add(new BodyFixture(convex)), new SweepLine(), new Earcut());
+        DamageSystem.decompose(contours, convex -> fixtures.add(new BodyFixture(convex)), new SweepLine(), new Earcut());
     }
 }

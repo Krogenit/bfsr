@@ -13,7 +13,9 @@ import net.engio.mbassy.listener.References;
 public class DamageEventListener {
     @Handler
     public void event(DamageEvent event) {
-        Damageable damageable = event.damageable();
-        ServerGameLogic.getNetwork().sendTCPPacketToAllNearby(new PacketSyncDamage(damageable), damageable.getX(), damageable.getY(), TrackingUtils.PACKET_UPDATE_DISTANCE);
+        Damageable damageable = event.getDamageable();
+        ServerGameLogic.getNetwork()
+                .sendTCPPacketToAllNearby(new PacketSyncDamage(damageable), damageable.getX(), damageable.getY(),
+                        TrackingUtils.PACKET_UPDATE_DISTANCE);
     }
 }

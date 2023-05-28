@@ -7,7 +7,6 @@ import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.Wreck;
-import net.bfsr.event.EventBus;
 import net.bfsr.event.module.weapon.BeamShotEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageShipEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageWreckEvent;
@@ -87,7 +86,7 @@ public class WeaponSlotBeam extends WeaponSlot {
     public void shoot() {
         reloadTimer = timeToReload;
         ship.getReactor().consume(energyCost);
-        EventBus.post(world.getSide(), new BeamShotEvent(this));
+        eventBus.publish(new BeamShotEvent(this));
     }
 
     private void rayCast() {
@@ -148,10 +147,10 @@ public class WeaponSlotBeam extends WeaponSlot {
     public void createBullet() {}
 
     private void onDamageShip(Ship ship, Raycast raycast, float hitX, float hitY) {
-        EventBus.post(world.getSide(), new BeamDamageShipEvent(this, ship, raycast, hitX, hitY));
+        eventBus.publish(new BeamDamageShipEvent(this, ship, raycast, hitX, hitY));
     }
 
     private void onDamageWreck(Raycast raycast, float hitX, float hitY, Wreck wreck) {
-        EventBus.post(world.getSide(), new BeamDamageWreckEvent(this, wreck, raycast, hitX, hitY));
+        eventBus.publish(new BeamDamageWreckEvent(this, wreck, raycast, hitX, hitY));
     }
 }

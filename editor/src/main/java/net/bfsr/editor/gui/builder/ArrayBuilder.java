@@ -1,11 +1,11 @@
 package net.bfsr.editor.gui.builder;
 
-import net.bfsr.editor.gui.component.PropertyComponent;
-import net.bfsr.editor.gui.component.PropertyObjectArray;
-import net.bfsr.editor.gui.component.PropertyPrimitiveArray;
+import net.bfsr.editor.gui.property.PropertyComponent;
+import net.bfsr.editor.gui.property.PropertyGuiElementType;
+import net.bfsr.editor.gui.property.PropertyObjectArray;
+import net.bfsr.editor.gui.property.PropertyPrimitiveArray;
 import net.bfsr.editor.property.PropertiesHolder;
 import net.bfsr.editor.property.Property;
-import net.bfsr.editor.property.PropertyGuiElementType;
 import net.bfsr.engine.renderer.font.FontType;
 
 import java.lang.reflect.Field;
@@ -15,7 +15,8 @@ import java.util.List;
 
 public class ArrayBuilder extends ComponentBuilder {
     @Override
-    public <V extends PropertiesHolder> PropertyComponent<V> build(int width, int height, String propertyName, int offsetX, FontType fontType, int fontSize, int stringOffsetY,
+    public <V extends PropertiesHolder> PropertyComponent<V> build(int width, int height, String propertyName, int offsetX,
+                                                                   FontType fontType, int fontSize, int stringOffsetY,
                                                                    List<Field> fields, Object[] values, V object) {
         Object value = values[0];
         List<?> objects = (List<?>) value;
@@ -24,13 +25,15 @@ public class ArrayBuilder extends ComponentBuilder {
         Class<?> listElementClass = (Class<?>) type.getActualTypeArguments()[0];
 
         if (PropertiesHolder.class.isAssignableFrom(listElementClass)) {
-            PropertyObjectArray<V> propertyObjectArray = new PropertyObjectArray<>(width, height, propertyName, fontType, fontSize, offsetX, stringOffsetY, () -> {
-                try {
-                    return (V) listElementClass.getConstructor().newInstance();
-                } catch (InstantiationException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
-                    throw new RuntimeException(e);
-                }
-            }, object, fields, values);
+            PropertyObjectArray<V> propertyObjectArray =
+                    new PropertyObjectArray<>(width, height, propertyName, fontType, fontSize, offsetX, stringOffsetY, () -> {
+                        try {
+                            return (V) listElementClass.getConstructor().newInstance();
+                        } catch (InstantiationException | InvocationTargetException | IllegalAccessException |
+                                 NoSuchMethodException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }, object, fields, values);
 
             for (int i = 0; i < objects.size(); i++) {
                 propertyObjectArray.add((V) objects.get(i));
@@ -42,13 +45,15 @@ public class ArrayBuilder extends ComponentBuilder {
             PropertyGuiElementType propertyGuiElementType = annotation.arrayElementType();
             String arrayElementPropertyName = annotation.arrayElementName();
 
-            PropertyPrimitiveArray propertyPrimitiveArray = new PropertyPrimitiveArray<>(width, height, propertyName, fontType, fontSize, offsetX, stringOffsetY, () -> {
-                try {
-                    return listElementClass.getConstructor().newInstance();
-                } catch (InstantiationException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
-                    throw new RuntimeException(e);
-                }
-            }, object, fields, values, propertyGuiElementType, arrayElementPropertyName);
+            PropertyPrimitiveArray propertyPrimitiveArray =
+                    new PropertyPrimitiveArray<>(width, height, propertyName, fontType, fontSize, offsetX, stringOffsetY, () -> {
+                        try {
+                            return listElementClass.getConstructor().newInstance();
+                        } catch (InstantiationException | InvocationTargetException | IllegalAccessException |
+                                 NoSuchMethodException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }, object, fields, values, propertyGuiElementType, arrayElementPropertyName);
 
             if (objects != null) {
                 for (int i = 0; i < objects.size(); i++) {

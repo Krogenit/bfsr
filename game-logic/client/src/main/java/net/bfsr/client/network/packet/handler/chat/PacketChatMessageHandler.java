@@ -10,7 +10,8 @@ import java.net.InetSocketAddress;
 
 public class PacketChatMessageHandler extends PacketHandler<PacketChatMessage, NetworkSystem> {
     @Override
-    public void handle(PacketChatMessage packet, NetworkSystem networkSystem, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
-        Core.get().getGuiManager().getGuiInGame().addChatMessage(packet.getMessage());
+    public void handle(PacketChatMessage packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
+        Core.get().getGuiManager().getHud().addChatMessage(packet.getMessage());
     }
 }

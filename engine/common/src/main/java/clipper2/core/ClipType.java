@@ -29,7 +29,6 @@ package clipper2.core;
  * </ul>
  */
 public enum ClipType {
-
     None,
     /** Preserves regions covered by both subject and clip polygons */
     Intersection,
@@ -38,6 +37,5 @@ public enum ClipType {
     /** Preserves regions covered by subject, but not clip polygons */
     Difference,
     /** Preserves regions covered by subject or clip polygons, but not both */
-    Xor;
-
+    Xor
 }

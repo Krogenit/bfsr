@@ -12,14 +12,19 @@ import net.bfsr.world.World;
 import java.net.InetSocketAddress;
 
 public class PacketShipWreckHandler extends PacketHandler<PacketShipWreck, NetworkSystem> {
+    private final Core core = Core.get();
+    private final DamageHandler damageHandler = core.getDamageHandler();
+
     @Override
-    public void handle(PacketShipWreck packet, NetworkSystem networkSystem, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketShipWreck packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         ShipWreck wreck = packet.getWreck();
         if (wreck != null) {
-            World world = Core.get().getWorld();
+            World world = core.getWorld();
             wreck.init(world, packet.getId());
             world.addWreck(wreck);
-            DamageHandler.updateDamage(wreck, packet.getX(), packet.getY(), packet.getWidth(), packet.getHeight(), packet.getByteBuffer());
+            damageHandler.updateDamage(wreck, packet.getX(), packet.getY(), packet.getWidth(), packet.getHeight(),
+                    packet.getByteBuffer());
             wreck.getBody().setLinearVelocity(packet.getVelocityX(), packet.getVelocityY());
             wreck.getBody().setAngularVelocity(packet.getAngularVelocity());
         }

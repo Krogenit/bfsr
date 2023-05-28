@@ -20,9 +20,11 @@ public class ShipWreckRenderer extends Render<ShipWreck> {
     private final DamageMaskTexture maskTexture;
 
     public ShipWreckRenderer(ShipWreck object) {
-        super(Engine.assetsManager.textureLoader.getTexture(ShipRegistry.INSTANCE.get(object.getDataIndex()).getTexture()), object, 0.25f, 0.25f, 0.25f, 1.0f);
+        super(Engine.assetsManager.getTexture(ShipRegistry.INSTANCE.get(object.getDataIndex()).getTexture()), object, 0.25f,
+                0.25f, 0.25f, 1.0f);
 
-        maskTexture = new DamageMaskTexture(texture.getWidth(), texture.getHeight(), Engine.renderer.createByteBuffer(texture.getWidth() * texture.getHeight()));
+        maskTexture = new DamageMaskTexture(texture.getWidth(), texture.getHeight(),
+                renderer.createByteBuffer(texture.getWidth() * texture.getHeight()));
         maskTexture.createEmpty();
     }
 
@@ -53,8 +55,8 @@ public class ShipWreckRenderer extends Render<ShipWreck> {
         float x = (float) body.getTransform().getTranslationX();
         float y = (float) body.getTransform().getTranslationY();
         Vector2f size = object.getSize();
-        Engine.renderer.spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, x, y, lastSin, lastCos, object.getSin(), object.getCos(),
-                size.x, size.y, 0.25f, 0.25f, 0.25f, 1.0f, texture, maskTexture, BufferType.ENTITIES_ALPHA);
+        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, x, y, lastSin, lastCos, object.getSin(),
+                object.getCos(), size.x, size.y, 0.25f, 0.25f, 0.25f, 1.0f, texture, maskTexture, BufferType.ENTITIES_ALPHA);
     }
 
     @Override

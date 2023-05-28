@@ -1,11 +1,11 @@
 package net.bfsr.client.gui.ingame;
 
 import net.bfsr.client.Core;
-import net.bfsr.client.gui.Gui;
-import net.bfsr.client.gui.TexturedGuiObject;
 import net.bfsr.client.renderer.RenderManager;
 import net.bfsr.client.renderer.entity.ShipRender;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.gui.Gui;
+import net.bfsr.engine.gui.object.TexturedGuiObject;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.renderer.opengl.GL;
@@ -22,7 +22,7 @@ import java.util.List;
 public class MiniMap {
     private final AbstractRenderer renderer = Engine.renderer;
     private final AbstractGUIRenderer guiRenderer = renderer.guiRenderer;
-    private final RenderManager renderManager = Core.get().getWorldRenderer().getRenderManager();
+    private final RenderManager renderManager = Core.get().getRenderManager();
     private final TexturedGuiObject map = new TexturedGuiObject(TextureRegister.guiHudShip);
 
     private final AABB boundingBox = new AABB(0);
@@ -49,7 +49,8 @@ public class MiniMap {
         renderer.glEnable(GL.GL_SCISSOR_TEST);
         int offsetY = 17;
         int offsetX = 22;
-        renderer.glScissor(map.getX() + offsetX, renderer.getScreenHeight() - map.getHeight() + offsetY, map.getWidth() - (offsetX << 1), map.getHeight() - (offsetY << 1));
+        renderer.glScissor(map.getX() + offsetX, renderer.getScreenHeight() - map.getHeight() + offsetY,
+                map.getWidth() - (offsetX << 1), map.getHeight() - (offsetY << 1));
 
         int miniMapX = map.getX() + map.getWidth() / 2;
         int miniMapY = map.getY() + map.getHeight() / 2;
@@ -84,7 +85,8 @@ public class MiniMap {
                 int y = (int) (miniMapY + (pos.y - camPos.y) / mapScaleY);
                 int sizeX = (int) (scale.x * shipSize);
                 int sizeY = (int) (scale.y * shipSize);
-                guiRenderer.add(lastX, lastY, x, y, render.getLastSin(), render.getLastCos(), s.getSin(), s.getCos(), sizeX, sizeY,
+                guiRenderer.add(lastX, lastY, x, y, render.getLastSin(), render.getLastCos(), s.getSin(), s.getCos(), sizeX,
+                        sizeY,
                         color.x, color.y, color.z, 1.0f, render.getTexture());
             }
         }

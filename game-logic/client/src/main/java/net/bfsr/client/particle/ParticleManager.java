@@ -1,9 +1,8 @@
 package net.bfsr.client.particle;
 
-import net.bfsr.client.event.ExitToMainMenuEvent;
-import net.bfsr.engine.util.Side;
-import net.bfsr.event.EventBus;
-import net.bfsr.util.ObjectPool;
+import net.bfsr.client.Core;
+import net.bfsr.client.event.gui.ExitToMainMenuEvent;
+import net.bfsr.engine.util.ObjectPool;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 import org.joml.Vector2f;
@@ -23,7 +22,7 @@ public class ParticleManager {
     private final List<Particle> particles = new ArrayList<>();
 
     public void init() {
-        EventBus.subscribe(Side.CLIENT, this);
+        Core.get().subscribe(this);
     }
 
     public void update() {

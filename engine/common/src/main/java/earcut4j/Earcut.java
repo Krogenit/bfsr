@@ -80,7 +80,8 @@ public final class Earcut {
             if (invSize == Double.MIN_VALUE ? isEar(ear) : isEarHashed(ear, minX, minY, invSize)) {
                 // cut off the triangle
                 if (area(prev, ear, next) < MIN_AREA) {
-                    consumer.accept(new Polygon(new Vector2(prev.x, prev.y), new Vector2(ear.x, ear.y), new Vector2(next.x, next.y)));
+                    consumer.accept(
+                            new Polygon(new Vector2(prev.x, prev.y), new Vector2(ear.x, ear.y), new Vector2(next.x, next.y)));
                 }
 
                 removeNode(ear);
@@ -194,10 +195,7 @@ public final class Earcut {
             return true; // p1, q1 and q2 are collinear and q2 lies on p1q1
         if (o3 == 0 && onSegment(p2, p1, q2))
             return true; // p2, q2 and p1 are collinear and p1 lies on p2q2
-        if (o4 == 0 && onSegment(p2, q1, q2))
-            return true; // p2, q2 and q1 are collinear and q1 lies on p2q2
-
-        return false;
+        return o4 == 0 && onSegment(p2, q1, q2); // p2, q2 and q1 are collinear and q1 lies on p2q2
     }
 
     // for collinear points p, q, r, check if point q lies on segment pr
@@ -232,16 +230,16 @@ public final class Earcut {
     }
 
     private boolean isEar(Node ear) {
-        Node a = ear.prev, b = ear, c = ear.next;
+        Node a = ear.prev, c = ear.next;
 
-        if (area(a, b, c) >= 0)
+        if (area(a, ear, c) >= 0)
             return false; // reflex, can't be an ear
 
         // now make sure we don't have other points inside the potential ear
         Node p = ear.next.next;
 
         while (p != ear.prev) {
-            if (pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) && area(p.prev, p, p.next) >= 0)
+            if (pointInTriangle(a.x, a.y, ear.x, ear.y, c.x, c.y, p.x, p.y) && area(p.prev, p, p.next) >= 0)
                 return false;
             p = p.next;
         }
@@ -251,15 +249,16 @@ public final class Earcut {
 
     private boolean isEarHashed(Node ear, double minX, double minY, double invSize) {
         Node a = ear.prev;
-        Node b = ear;
         Node c = ear.next;
 
-        if (area(a, b, c) >= 0)
+        if (area(a, ear, c) >= 0)
             return false; // reflex, can't be an ear
 
         // triangle bbox; min & max are calculated like this for speed
-        double minTX = a.x < b.x ? (a.x < c.x ? a.x : c.x) : (b.x < c.x ? b.x : c.x), minTY = a.y < b.y ? (a.y < c.y ? a.y : c.y) : (b.y < c.y ? b.y : c.y),
-                maxTX = a.x > b.x ? (a.x > c.x ? a.x : c.x) : (b.x > c.x ? b.x : c.x), maxTY = a.y > b.y ? (a.y > c.y ? a.y : c.y) : (b.y > c.y ? b.y : c.y);
+        double minTX = a.x < ear.x ? (a.x < c.x ? a.x : c.x) : (ear.x < c.x ? ear.x : c.x), minTY =
+                a.y < ear.y ? (a.y < c.y ? a.y : c.y) : (ear.y < c.y ? ear.y : c.y),
+                maxTX = a.x > ear.x ? (a.x > c.x ? a.x : c.x) : (ear.x > c.x ? ear.x : c.x), maxTY =
+                a.y > ear.y ? (a.y > c.y ? a.y : c.y) : (ear.y > c.y ? ear.y : c.y);
 
         // z-order range for the current triangle bbox;
         double minZ = zOrder(minTX, minTY, minX, minY, invSize);
@@ -270,25 +269,29 @@ public final class Earcut {
         Node n = ear.nextZ;
 
         while (p != null && p.z >= minZ && n != null && n.z <= maxZ) {
-            if (p != ear.prev && p != ear.next && pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) && area(p.prev, p, p.next) >= 0)
+            if (p != ear.prev && p != ear.next && pointInTriangle(a.x, a.y, ear.x, ear.y, c.x, c.y, p.x, p.y) &&
+                    area(p.prev, p, p.next) >= 0)
                 return false;
             p = p.prevZ;
 
-            if (n != ear.prev && n != ear.next && pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, n.x, n.y) && area(n.prev, n, n.next) >= 0)
+            if (n != ear.prev && n != ear.next && pointInTriangle(a.x, a.y, ear.x, ear.y, c.x, c.y, n.x, n.y) &&
+                    area(n.prev, n, n.next) >= 0)
                 return false;
             n = n.nextZ;
         }
 
         // look for remaining points in decreasing z-order
         while (p != null && p.z >= minZ) {
-            if (p != ear.prev && p != ear.next && pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) && area(p.prev, p, p.next) >= 0)
+            if (p != ear.prev && p != ear.next && pointInTriangle(a.x, a.y, ear.x, ear.y, c.x, c.y, p.x, p.y) &&
+                    area(p.prev, p, p.next) >= 0)
                 return false;
             p = p.prevZ;
         }
 
         // look for remaining points in increasing z-order
         while (n != null && n.z <= maxZ) {
-            if (n != ear.prev && n != ear.next && pointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, n.x, n.y) && area(n.prev, n, n.next) >= 0)
+            if (n != ear.prev && n != ear.next && pointInTriangle(a.x, a.y, ear.x, ear.y, c.x, c.y, n.x, n.y) &&
+                    area(n.prev, n, n.next) >= 0)
                 return false;
             n = n.nextZ;
         }
@@ -388,7 +391,7 @@ public final class Earcut {
             }
 
             tail.nextZ = null;
-            inSize *= 2;
+            inSize <<= 1;
 
         } while (numMerges > 1);
 
@@ -424,7 +427,7 @@ public final class Earcut {
 
     private Node filterPoints(Node start, Node end) {
         if (start == null)
-            return start;
+            return null;
         if (end == null)
             end = start;
 
@@ -542,7 +545,8 @@ public final class Earcut {
 
                 tan = Math.abs(hy - p.y) / (hx - p.x); // tangential
 
-                if (locallyInside(p, hole) && (tan < tanMin || (tan == tanMin && (p.x > m.x || (p.x == m.x && sectorContainsSector(m, p)))))) {
+                if (locallyInside(p, hole) &&
+                        (tan < tanMin || (tan == tanMin && (p.x > m.x || (p.x == m.x && sectorContainsSector(m, p)))))) {
                     m = p;
                     tanMin = tan;
                 }
@@ -555,7 +559,8 @@ public final class Earcut {
     }
 
     private boolean locallyInside(Node a, Node b) {
-        return area(a.prev, a, a.next) < 0 ? area(a, b, a.next) >= 0 && area(a, a.prev, b) >= 0 : area(a, b, a.prev) < 0 || area(a, a.next, b) < 0;
+        return area(a.prev, a, a.next) < 0 ? area(a, b, a.next) >= 0 && area(a, a.prev, b) >= 0 :
+                area(a, b, a.prev) < 0 || area(a, a.next, b) < 0;
     }
 
     // whether sector in vertex m contains sector in vertex p in the same
@@ -621,7 +626,7 @@ public final class Earcut {
         return p;
     }
 
-    private class Node {
+    private static class Node {
 
         int i;
         double x;
@@ -659,9 +664,7 @@ public final class Earcut {
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("{i: ").append(i).append(", x: ").append(x).append(", y: ").append(y).append(", prev: ").append(toString(prev)).append(", next: ").append(toString(next)).append("}");
-            return sb.toString();
+            return "{i: " + i + ", x: " + x + ", y: " + y + ", prev: " + toString(prev) + ", next: " + toString(next) + "}";
         }
 
         public String toString(Node node) {

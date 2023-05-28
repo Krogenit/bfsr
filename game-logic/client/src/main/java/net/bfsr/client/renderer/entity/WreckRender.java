@@ -32,15 +32,16 @@ public class WreckRender extends Render<Wreck> {
     private final SpawnAccumulator spawnAccumulator = new SpawnAccumulator();
 
     public WreckRender(Wreck object) {
-        super(Engine.assetsManager.textureLoader.getTexture(object.getWreckData().getTexture()), object, 0.5f, 0.5f, 0.5f, 1.0f);
+        super(Engine.assetsManager.getTexture(object.getWreckData().getTexture()), object, 0.5f, 0.5f, 0.5f, 1.0f);
 
         if (object.isEmitFire()) {
             spawnAccumulator.resetTime();
         }
 
         WreckData wreckData = object.getWreckData();
-        this.textureFire = Engine.assetsManager.textureLoader.getTexture(wreckData.getFireTexture());
-        this.textureLight = wreckData.getSparkleTexture() != null ? Engine.assetsManager.textureLoader.getTexture(wreckData.getSparkleTexture()) : null;
+        this.textureFire = Engine.assetsManager.getTexture(wreckData.getFireTexture());
+        this.textureLight =
+                wreckData.getSparkleTexture() != null ? Engine.assetsManager.getTexture(wreckData.getSparkleTexture()) : null;
         this.colorFire.set(object.isFire() ? 1.0f : 0.0f);
         this.lastColorFire.set(colorFire);
         this.colorLight.set(1.0f, 1.0f, 1.0f, 0.0f);
@@ -184,8 +185,9 @@ public class WreckRender extends Render<Wreck> {
     public void renderAlpha() {
         Vector2f position = object.getPosition();
         Vector2f size = object.getSize();
-        Engine.renderer.spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
-                object.getSin(), object.getCos(), size.x, size.y, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
+        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
+                object.getSin(), object.getCos(), size.x, size.y, color.x, color.y, color.z, color.w, texture,
+                BufferType.ENTITIES_ALPHA);
     }
 
     @Override
@@ -193,15 +195,17 @@ public class WreckRender extends Render<Wreck> {
         if (colorFire.w > 0) {
             Vector2f position = object.getPosition();
             Vector2f size = object.getSize();
-            Engine.renderer.spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
-                    object.getSin(), object.getCos(), size.x, size.y, lastColorFire, colorFire, textureFire, BufferType.ENTITIES_ADDITIVE);
+            spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
+                    object.getSin(), object.getCos(), size.x, size.y, lastColorFire, colorFire, textureFire,
+                    BufferType.ENTITIES_ADDITIVE);
         }
 
         if (colorLight.w > 0) {
             Vector2f position = object.getPosition();
             Vector2f size = object.getSize();
-            Engine.renderer.spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
-                    object.getSin(), object.getCos(), size.x, size.y, lastColorLight, colorLight, textureLight, BufferType.ENTITIES_ADDITIVE);
+            spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
+                    object.getSin(), object.getCos(), size.x, size.y, lastColorLight, colorLight, textureLight,
+                    BufferType.ENTITIES_ADDITIVE);
         }
     }
 }

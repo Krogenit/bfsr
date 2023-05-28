@@ -8,9 +8,9 @@ import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.particle.RenderLayer;
 import net.bfsr.engine.renderer.texture.TextureRegister;
+import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.GameObject;
-import net.bfsr.util.ObjectPool;
 import org.joml.Vector2f;
 
 import java.util.function.Supplier;
@@ -18,6 +18,8 @@ import java.util.function.Supplier;
 public class Particle extends GameObject {
     private static final ObjectPool<ParticleRender> RENDER_POOL = new ObjectPool<>();
     private static final Supplier<ParticleRender> RENDER_SUPPLIER = ParticleRender::new;
+    protected static final ParticleManager PARTICLE_MANAGER = Core.get().getParticleManager();
+    protected static final ParticleRenderer PARTICLE_RENDERER = Core.get().getGlobalRenderer().getParticleRenderer();
 
     @Getter
     protected float sin, cos;
@@ -28,18 +30,21 @@ public class Particle extends GameObject {
     protected boolean zeroVelocity;
     private final Vector2f velocity = new Vector2f();
     private ParticleRender render;
-    private final ParticleRenderer particleRenderer = Core.get().getWorldRenderer().getParticleRenderer();
-    private final ParticleManager particleManager = Core.get().getParticleManager();
 
-    public Particle init(TextureRegister texture, float x, float y, float velocityX, float velocityY, float sin, float cos, float angularVelocity,
-                         float scaleX, float scaleY, float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero,
+    public Particle init(TextureRegister texture, float x, float y, float velocityX, float velocityY, float sin, float cos,
+                         float angularVelocity,
+                         float scaleX, float scaleY, float sizeVelocity, float r, float g, float b, float a, float alphaVelocity,
+                         boolean isAlphaFromZero,
                          RenderLayer renderLayer) {
-        return init(Engine.assetsManager.textureLoader.getTexture(texture).getTextureHandle(), x, y, velocityX, velocityY, sin, cos, angularVelocity,
+        return init(Engine.assetsManager.getTexture(texture).getTextureHandle(), x, y, velocityX, velocityY, sin, cos,
+                angularVelocity,
                 scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, isAlphaFromZero, renderLayer);
     }
 
-    public Particle init(long textureHandle, float x, float y, float velocityX, float velocityY, float sin, float cos, float angularVelocity,
-                         float scaleX, float scaleY, float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero,
+    public Particle init(long textureHandle, float x, float y, float velocityX, float velocityY, float sin, float cos,
+                         float angularVelocity,
+                         float scaleX, float scaleY, float sizeVelocity, float r, float g, float b, float a, float alphaVelocity,
+                         boolean isAlphaFromZero,
                          RenderLayer renderLayer) {
         this.position.set(x, y);
         this.velocity.set(velocityX * TimeUtils.UPDATE_DELTA_TIME, velocityY * TimeUtils.UPDATE_DELTA_TIME);
@@ -56,10 +61,11 @@ public class Particle extends GameObject {
         return this;
     }
 
-    protected void addParticle(long textureHandle, float r, float g, float b, float a, boolean isAlphaFromZero, RenderLayer renderLayer) {
-        particleManager.addParticle(this);
+    protected void addParticle(long textureHandle, float r, float g, float b, float a, boolean isAlphaFromZero,
+                               RenderLayer renderLayer) {
+        PARTICLE_MANAGER.addParticle(this);
         render = RENDER_POOL.getOrCreate(RENDER_SUPPLIER).init(this, textureHandle, r, g, b, a, isAlphaFromZero);
-        particleRenderer.addParticleToRenderLayer(render, renderLayer);
+        PARTICLE_RENDERER.addParticleToRenderLayer(render, renderLayer);
     }
 
     @Override

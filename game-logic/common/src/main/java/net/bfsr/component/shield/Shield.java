@@ -3,14 +3,15 @@ package net.bfsr.component.shield;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.shield.ShieldData;
+import net.bfsr.engine.event.Event;
 import net.bfsr.engine.util.SideUtils;
 import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.event.EventBus;
 import net.bfsr.event.module.shield.ShieldRebuildEvent;
 import net.bfsr.event.module.shield.ShieldRemoveEvent;
 import net.bfsr.event.module.shield.ShieldResetRebuildingTimeEvent;
 import net.bfsr.physics.PhysicsUtils;
+import net.engio.mbassy.bus.MBassador;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Convex;
@@ -42,6 +43,7 @@ public class Shield {
     private Ship ship;
     @Getter
     private final ShieldData shieldData;
+    private MBassador<Event> eventBus;
 
     public Shield(ShieldData shieldData) {
         this.size = 1.0f;
@@ -56,6 +58,7 @@ public class Shield {
     public void init(Ship ship) {
         this.body = ship.getBody();
         this.ship = ship;
+        this.eventBus = ship.getWorld().getEventBus();
         createBody();
     }
 
@@ -144,7 +147,7 @@ public class Shield {
         shield = maxShield / 5.0f;
         rebuildingTime = timeToRebuild;
         createBody();
-        EventBus.post(ship.getWorld().getSide(), new ShieldRebuildEvent(this));
+        eventBus.publish(new ShieldRebuildEvent(this));
     }
 
     public boolean damage(float shieldDamage) {
@@ -163,7 +166,7 @@ public class Shield {
 
     private void resetRebuildingTime() {
         rebuildingTime = 0;
-        EventBus.post(ship.getWorld().getSide(), new ShieldResetRebuildingTimeEvent(this));
+        eventBus.publish(new ShieldResetRebuildingTimeEvent(this));
     }
 
     public void setRebuildingTime(int time) {
@@ -177,6 +180,6 @@ public class Shield {
         size = 0.0f;
         shield = 0;
         alive = false;
-        EventBus.post(ship.getWorld().getSide(), new ShieldRemoveEvent(this));
+        eventBus.publish(new ShieldRemoveEvent(this));
     }
 }

@@ -8,7 +8,7 @@ import org.joml.Vector2f;
 
 public class WeaponSlotRender<T extends WeaponSlot> extends Render<T> {
     public WeaponSlotRender(T object) {
-        super(Engine.assetsManager.textureLoader.getTexture(object.getGunData().getTexturePath()), object);
+        super(Engine.assetsManager.getTexture(object.getGunData().getTexturePath()), object);
     }
 
     @Override
@@ -19,8 +19,8 @@ public class WeaponSlotRender<T extends WeaponSlot> extends Render<T> {
     public void renderAlpha(float lastSin, float lastCos, float sin, float cos) {
         Vector2f position = object.getPosition();
         Vector2f scale = object.getSize();
-        Engine.renderer.spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos,
-                scale.x, scale.y, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
+        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin,
+                cos, scale.x, scale.y, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
     }
 
     public void renderAdditive(float lastSin, float lastCos, float sin, float cos) {}

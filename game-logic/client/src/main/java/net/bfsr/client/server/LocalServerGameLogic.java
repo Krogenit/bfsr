@@ -1,7 +1,6 @@
 package net.bfsr.client.server;
 
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.engine.Engine;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.player.Player;
 
@@ -9,7 +8,7 @@ import net.bfsr.server.player.Player;
 public class LocalServerGameLogic extends ServerGameLogic {
     @Override
     protected void updateWorld() {
-        if (!Engine.isPaused()) super.updateWorld();
+        if (!isPaused()) super.updateWorld();
     }
 
     @Override

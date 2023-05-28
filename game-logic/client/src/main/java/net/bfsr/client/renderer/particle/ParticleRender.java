@@ -2,7 +2,6 @@ package net.bfsr.client.renderer.particle;
 
 import net.bfsr.client.particle.Particle;
 import net.bfsr.client.renderer.Render;
-import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.util.MutableInt;
 import net.bfsr.engine.util.TimeUtils;
 import org.joml.Vector2f;
@@ -72,10 +71,10 @@ public class ParticleRender extends Render<Particle> implements net.bfsr.engine.
     }
 
     @Override
-    public void putToBuffer(AbstractSpriteRenderer spriteRenderer, FloatBuffer vertexBuffer, ByteBuffer materialBuffer, float interpolation,
+    public void putToBuffer(FloatBuffer vertexBuffer, ByteBuffer materialBuffer, float interpolation,
                             MutableInt vertexBufferIndex, MutableInt materialBufferIndex) {
-        spriteRenderer.putVertices(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, object.getSin(), object.getCos(),
-                lastSize.x, lastSize.y, size.x, size.y, interpolation, vertexBuffer, vertexBufferIndex);
+        spriteRenderer.putVertices(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, object.getSin(),
+                object.getCos(), lastSize.x, lastSize.y, size.x, size.y, interpolation, vertexBuffer, vertexBufferIndex);
         spriteRenderer.putColor(lastColor, color, materialBuffer, materialBufferIndex, interpolation);
         spriteRenderer.putTextureHandle(textureHandle, materialBuffer, materialBufferIndex);
         spriteRenderer.putMaterialData(0, 0.0f, 0.0f, materialBuffer, materialBufferIndex);

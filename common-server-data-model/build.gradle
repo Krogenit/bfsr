@@ -1,7 +1,5 @@
 dependencies {
     api project(':game-logic:common')
 
-    api('org.springframework.boot:spring-boot-starter-data-mongodb-reactive') {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    }
+    api 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
 }

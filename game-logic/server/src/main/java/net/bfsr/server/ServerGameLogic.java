@@ -3,15 +3,19 @@ package net.bfsr.server;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.config.ConfigConverterManager;
-import net.bfsr.engine.Engine;
+import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.GameLogic;
 import net.bfsr.engine.util.Side;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.event.EventBus;
 import net.bfsr.network.packet.server.entity.PacketRemoveObject;
 import net.bfsr.server.config.ServerSettings;
 import net.bfsr.server.entity.ship.ShipSpawner;
-import net.bfsr.server.event.listener.Listeners;
+import net.bfsr.server.event.listener.damage.DamageEventListener;
+import net.bfsr.server.event.listener.entity.bullet.BulletEventListener;
+import net.bfsr.server.event.listener.entity.ship.ShipEventListener;
+import net.bfsr.server.event.listener.entity.wreck.WreckEventListener;
+import net.bfsr.server.event.listener.module.shield.ShieldEventListener;
+import net.bfsr.server.event.listener.module.weapon.WeaponEventListener;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
@@ -38,9 +42,11 @@ public class ServerGameLogic extends GameLogic {
     @Getter
     private final PlayerManager playerManager;
     private final ShipSpawner shipSpawner;
+    @Getter
+    private final DamageSystem damageSystem = new DamageSystem();
 
     protected ServerGameLogic() {
-        this.world = new World(profiler, Side.SERVER, new Random().nextLong());
+        this.world = new World(profiler, Side.SERVER, new Random().nextLong(), eventBus);
         this.playerManager = new PlayerManager(world);
         this.networkSystem = new NetworkSystem(playerManager);
         this.shipSpawner = new ShipSpawner(world);
@@ -50,14 +56,22 @@ public class ServerGameLogic extends GameLogic {
 
     @Override
     public void init() {
-        EventBus.create(Side.SERVER);
         profiler.setEnable(true);
         networkSystem.init();
         loadConfigs();
         settings = createSettings();
         startupNetworkSystem(settings);
-        Listeners.init();
+        initListeners();
         super.init();
+    }
+
+    private void initListeners() {
+        eventBus.subscribe(new ShieldEventListener());
+        eventBus.subscribe(new ShipEventListener());
+        eventBus.subscribe(new WeaponEventListener());
+        eventBus.subscribe(new BulletEventListener());
+        eventBus.subscribe(new WreckEventListener());
+        eventBus.subscribe(new DamageEventListener());
     }
 
     protected void loadConfigs() {
@@ -75,7 +89,8 @@ public class ServerGameLogic extends GameLogic {
             networkSystem.startup(inetaddress, serverSettings.getPort());
             log.info("Set server address {}:{}", serverSettings.getHostName(), serverSettings.getPort());
         } catch (UnknownHostException e) {
-            throw new IllegalStateException("Can't start server on address " + serverSettings.getHostName() + ":" + serverSettings.getPort(), e);
+            throw new IllegalStateException(
+                    "Can't start server on address " + serverSettings.getHostName() + ":" + serverSettings.getPort(), e);
         }
 
         playerManager.connect(serverSettings.getDataBaseServiceHost(), serverSettings.getDatabaseServicePort());
@@ -114,15 +129,12 @@ public class ServerGameLogic extends GameLogic {
         ups = fps;
     }
 
-    public void setPaused(boolean pause) {
-        Engine.setPaused(pause);
-    }
-
     public static NetworkSystem getNetwork() {
         return instance.networkSystem;
     }
 
-    protected void clear() {
+    @Override
+    public void clear() {
         log.info("Saving database...");
         playerManager.saveAllSync();
         log.info("Clearing world...");

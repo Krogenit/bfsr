@@ -3,12 +3,12 @@ package net.bfsr.client.gui.ingame;
 import lombok.Setter;
 import net.bfsr.client.Core;
 import net.bfsr.client.gui.GuiManager;
-import net.bfsr.client.gui.font.StringObject;
 import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.component.hull.Hull;
 import net.bfsr.component.reactor.Reactor;
 import net.bfsr.component.shield.Shield;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.gui.component.StringObject;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
@@ -31,7 +31,7 @@ public class DebugInfoElement {
     private final StringObject stringObject = new StringObject(FontType.CONSOLA);
     private final Core core = Core.get();
     private final AbstractRenderer renderer = Engine.renderer;
-    private final ParticleRenderer particleRenderer = core.getWorldRenderer().getParticleRenderer();
+    private final ParticleRenderer particleRenderer = core.getGlobalRenderer().getParticleRenderer();
     private final GuiManager guiManager = core.getGuiManager();
     private final PlayerInputController playerInputController = core.getInputHandler().getPlayerInputController();
     private final AbstractMouse mouse = Engine.mouse;
@@ -57,13 +57,15 @@ public class DebugInfoElement {
         stringBuilder.setLength(0);
         stringBuilder.append("BFSR Client Dev 0.0.4 \n");
         stringBuilder.append("FPS ").append(renderer.getFps()).append(", Local Server UPS ").append(ups);
-        stringBuilder.append("\nMemory: ").append(totalMemoryMB - freeMemoryMB).append("MB / ").append(totalMemoryMB).append("MB up to ").append(maxMemoryMB).append("MB");
+        stringBuilder.append("\nMemory: ").append(totalMemoryMB - freeMemoryMB).append("MB / ").append(totalMemoryMB)
+                .append("MB up to ").append(maxMemoryMB).append("MB");
         stringBuilder.append("\nMouse screen pos: ");
         Vector2f mousePosition = mouse.getPosition();
         stringBuilder.append((int) mousePosition.x).append(", ").append((int) mousePosition.y);
         AbstractCamera camera = renderer.camera;
         Vector2f mouseWorldPosition = mouse.getWorldPosition(camera);
-        stringBuilder.append("\nMouse world pos: ").append(DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.x)).append(", ").append(DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.y));
+        stringBuilder.append("\nMouse world pos: ").append(DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.x))
+                .append(", ").append(DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.y));
         stringBuilder.append("\n\n---Profiler---");
         Profiler profiler = core.getProfiler();
         float updateTime = profiler.getResult("update");
@@ -79,10 +81,13 @@ public class DebugInfoElement {
             sPhysicsTime = server.getProfiler().getResult("physics");
             sNetworkTime = server.getProfiler().getResult("network");
         }
-        stringBuilder.append("\nUpdate: ").append(DecimalUtils.strictFormatWithToDigits(updateTime)).append("ms / ").append(DecimalUtils.strictFormatWithToDigits(sUpdateTime)).append("ms ");
-        stringBuilder.append("\nPhysics: ").append(DecimalUtils.strictFormatWithToDigits(physicsTime)).append("ms / ").append(DecimalUtils.strictFormatWithToDigits(sPhysicsTime)).append("ms ");
+        stringBuilder.append("\nUpdate: ").append(DecimalUtils.strictFormatWithToDigits(updateTime)).append("ms / ")
+                .append(DecimalUtils.strictFormatWithToDigits(sUpdateTime)).append("ms ");
+        stringBuilder.append("\nPhysics: ").append(DecimalUtils.strictFormatWithToDigits(physicsTime)).append("ms / ")
+                .append(DecimalUtils.strictFormatWithToDigits(sPhysicsTime)).append("ms ");
         stringBuilder.append("\nRender: ").append(DecimalUtils.strictFormatWithToDigits(renderTime)).append("ms ");
-        stringBuilder.append("\nNetwork: ").append(DecimalUtils.strictFormatWithToDigits(netTime)).append("ms / ").append(DecimalUtils.strictFormatWithToDigits(sNetworkTime)).append("ms ");
+        stringBuilder.append("\nNetwork: ").append(DecimalUtils.strictFormatWithToDigits(netTime)).append("ms / ")
+                .append(DecimalUtils.strictFormatWithToDigits(sNetworkTime)).append("ms ");
         stringBuilder.append("\nPing: ").append(DecimalUtils.strictFormatWithToDigits(ping)).append("ms");
 
         stringBuilder.append("\n\n---Render---");
@@ -90,56 +95,62 @@ public class DebugInfoElement {
         stringBuilder.append(" \nDrivers version ").append(openGlVersion);
         Vector2f camPos = camera.getPosition();
         stringBuilder.append("\nCamera pos: ");
-        stringBuilder.append(DecimalUtils.strictFormatWithToDigits(camPos.x)).append(", ").append(DecimalUtils.strictFormatWithToDigits(camPos.y));
+        stringBuilder.append(DecimalUtils.strictFormatWithToDigits(camPos.x)).append(", ")
+                .append(DecimalUtils.strictFormatWithToDigits(camPos.y));
         stringBuilder.append("\nDraw calls: ").append(drawCalls);
         stringBuilder.append("\nParticle Renderer: ");
-        stringBuilder.append(particleRenderer.getTaskCount() > 1 ? particleRenderer.getTaskCount() + " active threads" : "single-threaded");
+        stringBuilder.append(
+                particleRenderer.getTaskCount() > 1 ? particleRenderer.getTaskCount() + " active threads" : "single-threaded");
 
         World world = core.getWorld();
-        if (world != null) {
-            int bulletsCount = world.getBulletsCount();
-            int shipsCount = world.getShips().size();
-            int particlesCount = core.getParticlesCount();
-            int wreckCount = world.getWreckCount();
-            int shipWreckCount = world.getShipWreckCount();
-            int bodyCount = world.getPhysicWorld().getBodyCount();
+        int bulletsCount = world.getBulletsCount();
+        int shipsCount = world.getShips().size();
+        int particlesCount = core.getParticlesCount();
+        int wreckCount = world.getWreckCount();
+        int shipWreckCount = world.getShipWreckCount();
+        int bodyCount = world.getPhysicWorld().getBodyCount();
 
-            World sWorld = server != null ? server.getWorld() : null;
-            int sBulletsCount = sWorld != null ? sWorld.getBulletsCount() : 0;
-            int sShipsCount = sWorld != null ? sWorld.getShips().size() : 0;
-            int sWrecksCount = sWorld != null ? sWorld.getWreckCount() : 0;
-            int sShipWrecksCount = sWorld != null ? sWorld.getShipWreckCount() : 0;
-            int sBodyCount = sWorld != null ? sWorld.getPhysicWorld().getBodyCount() : 0;
-            stringBuilder.append("\n\n---World--- ");
-            stringBuilder.append("\nPhysic body count: ").append(bodyCount).append("/").append(sBodyCount);
-            stringBuilder.append("\nShips count: ").append(shipsCount).append("/").append(sShipsCount);
-            stringBuilder.append("\nBullets count: ").append(bulletsCount).append("/").append(sBulletsCount);
-            stringBuilder.append("\nParticles count: ").append(particlesCount);
-            stringBuilder.append("\nWrecks count: ").append(wreckCount).append("/").append(sWrecksCount);
-            stringBuilder.append("\nShip wrecks count: ").append(shipWreckCount).append("/").append(sShipWrecksCount);
+        World sWorld = server != null ? server.getWorld() : null;
+        int sBulletsCount = sWorld != null ? sWorld.getBulletsCount() : 0;
+        int sShipsCount = sWorld != null ? sWorld.getShips().size() : 0;
+        int sWrecksCount = sWorld != null ? sWorld.getWreckCount() : 0;
+        int sShipWrecksCount = sWorld != null ? sWorld.getShipWreckCount() : 0;
+        int sBodyCount = sWorld != null ? sWorld.getPhysicWorld().getBodyCount() : 0;
+        stringBuilder.append("\n\n---World--- ");
+        stringBuilder.append("\nPhysic body count: ").append(bodyCount).append("/").append(sBodyCount);
+        stringBuilder.append("\nShips count: ").append(shipsCount).append("/").append(sShipsCount);
+        stringBuilder.append("\nBullets count: ").append(bulletsCount).append("/").append(sBulletsCount);
+        stringBuilder.append("\nParticles count: ").append(particlesCount);
+        stringBuilder.append("\nWrecks count: ").append(wreckCount).append("/").append(sWrecksCount);
+        stringBuilder.append("\nShip wrecks count: ").append(shipWreckCount).append("/").append(sShipWrecksCount);
 
-            Ship playerShip = playerInputController.getShip();
-            if (playerShip != null) {
-                Vector2f pos = playerShip.getPosition();
-                Vector2f velocity = playerShip.getVelocity();
-                Hull hull = playerShip.getHull();
-                Shield shield = playerShip.getShield();
-                Reactor reactor = playerShip.getReactor();
-                stringBuilder.append("\n\n---Player Ship--- ");
-                stringBuilder.append("\nShip: ").append(playerShip.getClass().getSimpleName());
-                stringBuilder.append("\nPos: ").append(DecimalUtils.strictFormatWithToDigits(pos.x)).append(", ").append(DecimalUtils.strictFormatWithToDigits(pos.y));
-                stringBuilder.append("\nVelocity: ").append(DecimalUtils.strictFormatWithToDigits(velocity.x)).append(", ").append(DecimalUtils.strictFormatWithToDigits(velocity.y));
-                stringBuilder.append("\nMass: ").append(DecimalUtils.strictFormatWithToDigits(playerShip.getBody().getMass().getMass()));
-                stringBuilder.append("\nHull: ").append(DecimalUtils.strictFormatWithToDigits(hull.getHull())).append("/").append(DecimalUtils.strictFormatWithToDigits(hull.getMaxHull()));
-                stringBuilder.append("\nShield: ").append(DecimalUtils.strictFormatWithToDigits(shield.getShield())).append("/").append(DecimalUtils.strictFormatWithToDigits(shield.getMaxShield()));
-                stringBuilder.append("\nReactor: ").append(DecimalUtils.strictFormatWithToDigits(reactor.getEnergy())).append("/").append(DecimalUtils.strictFormatWithToDigits(reactor.getMaxEnergy()));
-            }
+        Ship playerShip = playerInputController.getShip();
+        if (playerShip != null) {
+            Vector2f pos = playerShip.getPosition();
+            Vector2f velocity = playerShip.getVelocity();
+            Hull hull = playerShip.getHull();
+            Shield shield = playerShip.getShield();
+            Reactor reactor = playerShip.getReactor();
+            stringBuilder.append("\n\n---Player Ship--- ");
+            stringBuilder.append("\nShip: ").append(playerShip.getClass().getSimpleName());
+            stringBuilder.append("\nPos: ").append(DecimalUtils.strictFormatWithToDigits(pos.x)).append(", ")
+                    .append(DecimalUtils.strictFormatWithToDigits(pos.y));
+            stringBuilder.append("\nVelocity: ").append(DecimalUtils.strictFormatWithToDigits(velocity.x)).append(", ")
+                    .append(DecimalUtils.strictFormatWithToDigits(velocity.y));
+            stringBuilder.append("\nMass: ")
+                    .append(DecimalUtils.strictFormatWithToDigits(playerShip.getBody().getMass().getMass()));
+            stringBuilder.append("\nHull: ").append(DecimalUtils.strictFormatWithToDigits(hull.getHull())).append("/")
+                    .append(DecimalUtils.strictFormatWithToDigits(hull.getMaxHull()));
+            stringBuilder.append("\nShield: ").append(DecimalUtils.strictFormatWithToDigits(shield.getShield())).append("/")
+                    .append(DecimalUtils.strictFormatWithToDigits(shield.getMaxShield()));
+            stringBuilder.append("\nReactor: ").append(DecimalUtils.strictFormatWithToDigits(reactor.getEnergy())).append("/")
+                    .append(DecimalUtils.strictFormatWithToDigits(reactor.getMaxEnergy()));
+        }
 
-            Ship ship = guiManager.getGuiInGame().getSelectedShip();
-            if (ship != null) {
-                stringBuilder.append("\n\n---Selected Ship--- ");
-                stringBuilder.append("\nId: ").append(ship.getId());
-            }
+        Ship ship = guiManager.getHud().getSelectedShip();
+        if (ship != null) {
+            stringBuilder.append("\n\n---Selected Ship--- ");
+            stringBuilder.append("\nId: ").append(ship.getId());
         }
 
         stringObject.setString(stringBuilder.toString());

@@ -31,7 +31,7 @@ public class PacketBulletHitShipHandler extends PacketHandler<PacketBulletHitShi
                         packet.getNormalX(), packet.getNormalY(), () -> hull.getHull() / hull.getMaxHull() < 0.5f);
             }
 
-            Vector4f color = Core.get().getWorldRenderer().getRenderManager().getRender(packet.getBulletId()).getColor();
+            Vector4f color = Core.get().getRenderManager().getRender(packet.getBulletId()).getColor();
             WeaponEffects.spawnDirectedSpark(packet.getContactX(), packet.getContactY(), packet.getNormalX(), packet.getNormalY(),
                     bulletSize.x * 1.5f, color.x, color.y, color.z, color.w);
         }

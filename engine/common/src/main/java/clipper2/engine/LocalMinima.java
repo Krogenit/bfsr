@@ -1,22 +1,21 @@
 package clipper2.engine;
 
 import clipper2.core.PathType;
-import clipper2.engine.ClipperBase.Vertex;
 
 final class LocalMinima {
 
-    Vertex vertex;
+    ClipperBase.Vertex vertex;
     PathType polytype;
     boolean isOpen;
 
     LocalMinima() {
     }
 
-    LocalMinima(Vertex vertex, PathType polytype) {
+    LocalMinima(ClipperBase.Vertex vertex, PathType polytype) {
         this(vertex, polytype, false);
     }
 
-    LocalMinima(Vertex vertex, PathType polytype, boolean isOpen) {
+    LocalMinima(ClipperBase.Vertex vertex, PathType polytype, boolean isOpen) {
         this.vertex = vertex;
         this.polytype = polytype;
         this.isOpen = isOpen;
@@ -24,8 +23,7 @@ final class LocalMinima {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof LocalMinima) {
-            LocalMinima minima = (LocalMinima) obj;
+        if (obj instanceof LocalMinima minima) {
             return this == minima;
         }
         return false;

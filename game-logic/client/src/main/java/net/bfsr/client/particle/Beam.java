@@ -3,6 +3,7 @@ package net.bfsr.client.particle;
 import net.bfsr.client.particle.effect.BeamEffects;
 import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
@@ -26,7 +27,7 @@ public class Beam extends GameObject {
     private final AbstractTexture texture;
 
     public Beam(WeaponSlotBeam slot, Vector4f color) {
-        this.texture = Engine.assetsManager.textureLoader.getTexture(TextureRegister.particleBeam);
+        this.texture = Engine.assetsManager.getTexture(TextureRegister.particleBeam);
         this.slot = slot;
         this.ship = slot.getShip();
         this.color = color;
@@ -106,10 +107,12 @@ public class Beam extends GameObject {
         lastPosition.set(position);
     }
 
-    public void render(float lastSin, float lastCos, float sin, float cos) {
-        Engine.renderer.spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos,
-                lastSize.x, lastSize.y, size.x, size.y, color.x, color.y, color.z, color.w * 0.3333f, texture, BufferType.ENTITIES_ADDITIVE);
-        Engine.renderer.spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin, cos,
-                lastSize.x, lastSize.y * 0.3333f, size.x, size.y * 0.3333f, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ADDITIVE);
+    public void render(AbstractSpriteRenderer spriteRenderer, float lastSin, float lastCos, float sin, float cos) {
+        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin,
+                cos, lastSize.x, lastSize.y, size.x, size.y, color.x, color.y, color.z, color.w * 0.3333f, texture,
+                BufferType.ENTITIES_ADDITIVE);
+        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin,
+                cos, lastSize.x, lastSize.y * 0.3333f, size.x, size.y * 0.3333f, color.x, color.y, color.z, color.w, texture,
+                BufferType.ENTITIES_ADDITIVE);
     }
 }

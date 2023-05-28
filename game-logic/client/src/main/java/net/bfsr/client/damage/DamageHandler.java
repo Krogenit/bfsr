@@ -1,15 +1,16 @@
 package net.bfsr.client.damage;
 
-import net.bfsr.client.Core;
+import lombok.RequiredArgsConstructor;
 import net.bfsr.client.renderer.RenderManager;
 import net.bfsr.damage.Damageable;
 
 import java.nio.ByteBuffer;
 
+@RequiredArgsConstructor
 public final class DamageHandler {
-    private static final RenderManager RENDER_MANAGER = Core.get().getWorldRenderer().getRenderManager();
+    private final RenderManager renderManager;
 
-    public static void updateDamage(Damageable damageable, int x, int y, int width, int height, ByteBuffer byteBuffer) {
-        RENDER_MANAGER.getRender(damageable.getId()).updateDamageMask(x, y, width, height, byteBuffer);
+    public void updateDamage(Damageable damageable, int x, int y, int width, int height, ByteBuffer byteBuffer) {
+        renderManager.getRender(damageable.getId()).updateDamageMask(x, y, width, height, byteBuffer);
     }
 }

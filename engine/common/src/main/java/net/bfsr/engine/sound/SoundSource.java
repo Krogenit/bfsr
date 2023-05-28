@@ -24,7 +24,7 @@ public class SoundSource {
     }
 
     public SoundSource(SoundRegistry soundName) {
-        this(Engine.assetsManager.soundLoader.getBuffer(soundName), soundName.getVolume(), false, true);
+        this(Engine.assetsManager.getSound(soundName), soundName.getVolume(), false, true);
     }
 
     public void setPosition(float x, float y) {

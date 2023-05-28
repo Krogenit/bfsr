@@ -4,8 +4,8 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.Core;
-import net.bfsr.client.gui.GuiDisconnected;
-import net.bfsr.client.gui.menu.GuiMainMenu;
+import net.bfsr.client.gui.connect.GuiDisconnected;
+import net.bfsr.client.gui.main.GuiMainMenu;
 import net.bfsr.client.network.manager.NetworkManagerTCP;
 import net.bfsr.client.network.manager.NetworkManagerUDP;
 import net.bfsr.engine.util.Side;
@@ -91,12 +91,12 @@ public class NetworkSystem extends NetworkHandler {
         if (connectionState == ConnectionState.PLAY) {
             Core.get().addFutureTask(() -> {
                 Core.get().setWorld(null);
-                Core.get().setCurrentGui(new GuiDisconnected(new GuiMainMenu(), "disconnect.lost", reason));
+                Core.get().openGui(new GuiDisconnected(new GuiMainMenu(), "disconnect.lost", reason));
             });
         } else if (connectionState == ConnectionState.LOGIN) {
-            Core.get().addFutureTask(() -> Core.get().setCurrentGui(new GuiDisconnected(new GuiMainMenu(), "login.failed", reason)));
+            Core.get().addFutureTask(() -> Core.get().openGui(new GuiDisconnected(new GuiMainMenu(), "login.failed", reason)));
         } else {
-            Core.get().addFutureTask(() -> Core.get().setCurrentGui(new GuiDisconnected(new GuiMainMenu(), "other", reason)));
+            Core.get().addFutureTask(() -> Core.get().openGui(new GuiDisconnected(new GuiMainMenu(), "other", reason)));
         }
 
         connectionState = ConnectionState.NOT_CONNECTED;
@@ -111,7 +111,8 @@ public class NetworkSystem extends NetworkHandler {
         inboundPacketQueue.add(packet);
     }
 
-    public Packet createPacket(int packetId) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public Packet createPacket(int packetId)
+            throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         return packetRegistry.createPacket(packetId);
     }
 

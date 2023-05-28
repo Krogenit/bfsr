@@ -1,10 +1,9 @@
 package net.bfsr.client.input;
 
 import net.bfsr.client.Core;
-import net.bfsr.client.event.ExitToMainMenuEvent;
-import net.bfsr.client.gui.Gui;
+import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.gui.GuiManager;
-import net.bfsr.client.settings.Option;
+import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
@@ -40,19 +39,17 @@ public class CameraInputController extends InputController {
         guiManager = core.getGuiManager();
         playerInputController = core.getInputHandler().getPlayerInputController();
         position = camera.getPosition();
+        core.subscribe(this);
     }
 
     @Override
     public void update() {
-        if (core.getWorld() != null) {
+        if (core.isInWorld()) {
             if (!guiManager.isActive()) {
-                if (Option.CAMERA_MOVE_BY_SCREEN_BORDERS.getBoolean()) moveByScreenBorders();
-            }
+                if (ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS.getBoolean()) moveByScreenBorders();
 
-            boolean noShip = !playerInputController.isControllingShip();
-            float keyMoveSpeed = Option.CAMERA_MOVE_BY_KEY_SPEED.getFloat() * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-            boolean noScreen = guiManager.getCurrentGui() == null;
-            if (noScreen) {
+                boolean noShip = !playerInputController.isControllingShip();
+                float keyMoveSpeed = ClientSettings.CAMERA_MOVE_BY_KEY_SPEED.getFloat() * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
                 if (keyboard.isKeyDown(KEY_LEFT) || (noShip && keyboard.isKeyDown(KEY_A))) {
                     position.x -= keyMoveSpeed;
                 } else if (keyboard.isKeyDown(KEY_RIGHT) || (noShip && keyboard.isKeyDown(KEY_D))) {
@@ -66,14 +63,15 @@ public class CameraInputController extends InputController {
                 }
             }
 
-            if (Option.CAMERA_FOLLOW_PLAYER.getBoolean()) followShip();
+            if (ClientSettings.CAMERA_FOLLOW_PLAYER.getBoolean()) followShip();
 
             Vector2f lastPosition = camera.getLastPosition();
             float zoom = camera.getZoom();
             float lastZoom = camera.getLastZoom();
             if (position.x != lastPosition.x || position.y != lastPosition.y || lastZoom != zoom) {
                 Vector2f origin = camera.getOrigin();
-                camera.setBoundingBox(position.x + origin.x / zoom, position.y + origin.y / zoom, position.x - origin.x / zoom, position.y - origin.y / zoom);
+                camera.setBoundingBox(position.x + origin.x / zoom, position.y + origin.y / zoom, position.x - origin.x / zoom,
+                        position.y - origin.y / zoom);
 
                 long time = System.currentTimeMillis();
                 if (time - lastSendTime > 500) {
@@ -139,8 +137,8 @@ public class CameraInputController extends InputController {
 
     private void moveByScreenBorders() {
         float moveSpeed = 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-        float screenMoveSpeed = Option.CAMERA_MOVE_BY_SCREEN_BORDERS_SPEED.getFloat() / camera.getZoom() * moveSpeed;
-        float offset = Option.CAMERA_MOVE_BY_SCREEN_BORDERS_OFFSET.getFloat();
+        float screenMoveSpeed = ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS_SPEED.getFloat() / camera.getZoom() * moveSpeed;
+        float offset = ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS_OFFSET.getFloat();
         Vector2f cursorPosition = mouse.getPosition();
         if (cursorPosition.x <= offset) {
             position.x -= screenMoveSpeed;
@@ -157,9 +155,8 @@ public class CameraInputController extends InputController {
 
     @Override
     public boolean scroll(float y) {
-        Gui gui = guiManager.getCurrentGui();
-        if (gui == null || gui.isAllowCameraZoom()) {
-            camera.zoom(y * Option.CAMERA_ZOOM_SPEED.getFloat());
+        if (guiManager.noGui() || guiManager.getGui().isAllowCameraZoom()) {
+            camera.zoom(y * ClientSettings.CAMERA_ZOOM_SPEED.getFloat());
             return true;
         }
 

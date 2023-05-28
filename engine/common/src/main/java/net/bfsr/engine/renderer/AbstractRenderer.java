@@ -9,10 +9,12 @@ import net.bfsr.engine.renderer.font.string.AbstractStringGeometryBuilder;
 import net.bfsr.engine.renderer.font.string.AbstractStringRenderer;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.renderer.shader.AbstractShaderProgram;
+import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.AbstractTextureGenerator;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 @RequiredArgsConstructor
 public abstract class AbstractRenderer {
@@ -75,13 +77,21 @@ public abstract class AbstractRenderer {
     public abstract void resize(int width, int height);
     public abstract void clear();
 
+    public abstract ByteBuffer createByteBuffer(int size);
+    public abstract FloatBuffer createFloatBuffer(int size);
+
     public abstract void glClear();
     public abstract String glGetString(int name);
     public abstract void glEnable(int target);
     public abstract void glDisable(int target);
     public abstract void glScissor(int x, int y, int width, int height);
     public abstract void glBlendFunc(int sFactor, int dFactor);
-    public abstract void glLineWidth(float value);
-    public abstract ByteBuffer createByteBuffer(int size);
-    public abstract FloatBuffer createFloatBuffer(int size);
+    public abstract void lineWidth(float value);
+    public abstract void subImage2D(int id, int x, int y, int width, int height, int format, ByteBuffer byteBuffer);
+    public abstract void subImage2D(int id, int x, int y, int width, int height, int format, IntBuffer buffer);
+    public abstract void uploadTexture(AbstractTexture texture, int internalFormat, int format, int wrap, int filter,
+                                       ByteBuffer byteBuffer);
+    public abstract void uploadTexture(AbstractTexture texture, int internalFormat, int format, int wrap, int filter,
+                                       IntBuffer buffer);
+    public abstract void uploadEmpty(AbstractTexture texture, int internalFormat, int format);
 }

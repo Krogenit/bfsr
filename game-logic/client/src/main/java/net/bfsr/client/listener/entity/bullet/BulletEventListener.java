@@ -10,7 +10,7 @@ import net.engio.mbassy.listener.References;
 
 @Listener(references = References.Strong)
 public class BulletEventListener {
-    private final RenderManager renderManager = Core.get().getWorldRenderer().getRenderManager();
+    private final RenderManager renderManager = Core.get().getRenderManager();
 
     @Handler
     public void event(BulletAddToWorldEvent event) {

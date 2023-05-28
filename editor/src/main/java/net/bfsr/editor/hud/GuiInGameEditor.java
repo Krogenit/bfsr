@@ -1,8 +1,8 @@
 package net.bfsr.editor.hud;
 
-import net.bfsr.client.gui.ingame.GuiInGame;
+import net.bfsr.client.gui.hud.HUD;
 
-public class GuiInGameEditor extends GuiInGame {
+public class GuiInGameEditor extends HUD {
     private final EditorControlButtons editorControlButtons = new EditorControlButtons();
 
     @Override

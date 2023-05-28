@@ -24,7 +24,6 @@ import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.wreck.Wreck;
-import net.bfsr.event.EventBus;
 import net.bfsr.event.entity.ship.*;
 import net.bfsr.event.module.shield.ShieldDamageByCollision;
 import net.bfsr.faction.Faction;
@@ -138,6 +137,8 @@ public class Ship extends RigidBody implements Damageable {
         if (SideUtils.IS_SERVER && world.isServer()) {
             addAI();
         }
+
+        eventBus = world.getEventBus();
     }
 
     @Override
@@ -183,19 +184,19 @@ public class Ship extends RigidBody implements Damageable {
 
     public void addMoveDirection(Direction direction) {
         if (moveDirections.add(direction)) {
-            EventBus.post(world.getSide(), new ShipNewMoveDirectionEvent(this, direction));
+            eventBus.publish(new ShipNewMoveDirectionEvent(this, direction));
         }
     }
 
     public void removeMoveDirection(Direction direction) {
         if (moveDirections.remove(direction)) {
-            EventBus.post(world.getSide(), new ShipRemoveMoveDirectionEvent(this, direction));
+            eventBus.publish(new ShipRemoveMoveDirectionEvent(this, direction));
         }
     }
 
     public void removeAllMoveDirections() {
         moveDirections.forEach(direction -> {
-            EventBus.post(world.getSide(), new ShipRemoveMoveDirectionEvent(this, direction));
+            eventBus.publish(new ShipRemoveMoveDirectionEvent(this, direction));
             return true;
         });
 
@@ -227,7 +228,7 @@ public class Ship extends RigidBody implements Damageable {
     }
 
     private void onCollidedWithWreck(float contactX, float contactY, float normalX, float normalY) {
-        EventBus.post(world.getSide(), new ShipCollisionWithWreckEvent(this, contactX, contactY, normalX, normalY));
+        eventBus.publish(new ShipCollisionWithWreckEvent(this, contactX, contactY, normalX, normalY));
     }
 
     @Override
@@ -299,7 +300,7 @@ public class Ship extends RigidBody implements Damageable {
 
         updateComponents();
 
-        EventBus.post(world.getSide(), new ShipPostPhysicsUpdate(this));
+        eventBus.publish(new ShipPostPhysicsUpdate(this));
     }
 
     public void shoot() {
@@ -349,7 +350,7 @@ public class Ship extends RigidBody implements Damageable {
     }
 
     private void onShieldDamageByCollision(float contactX, float contactY, float normalX, float normalY) {
-        EventBus.post(world.getSide(), new ShieldDamageByCollision(this, contactX, contactY, normalX, normalY));
+        eventBus.publish(new ShieldDamageByCollision(this, contactX, contactY, normalX, normalY));
     }
 
     private void onHullDamageByCollision(float contactX, float contactY, float normalX, float normalY) {
@@ -358,7 +359,7 @@ public class Ship extends RigidBody implements Damageable {
                 setDestroying();
             }
         } else {
-            EventBus.post(world.getSide(), new ShipHullDamageByCollisionEvent(this, contactX, contactY, normalX, normalY));
+            eventBus.publish(new ShipHullDamageByCollisionEvent(this, contactX, contactY, normalX, normalY));
         }
     }
 
@@ -385,7 +386,7 @@ public class Ship extends RigidBody implements Damageable {
             if (hull.getHull() <= 0) {
                 setDestroying();
             } else {
-                EventBus.post(world.getSide(), new ShipHullDamageEvent(this, contactX, contactY));
+                eventBus.publish(new ShipHullDamageEvent(this, contactX, contactY));
             }
         }
     }
@@ -398,7 +399,7 @@ public class Ship extends RigidBody implements Damageable {
     }
 
     private void spawnSmallExplosion() {
-        EventBus.post(world.getSide(), new ShipDestroyingExplosionEvent(this));
+        eventBus.publish(new ShipDestroyingExplosionEvent(this));
     }
 
     public void setHull(Hull hull) {
@@ -486,7 +487,7 @@ public class Ship extends RigidBody implements Damageable {
     public void setDestroying() {
         if (destroyingTimer == 0) {
             destroyingTimer = timeToDestroy;
-            EventBus.post(world.getSide(), new ShipDestroyingEvent(this));
+            eventBus.publish(new ShipDestroyingEvent(this));
         }
     }
 
@@ -497,7 +498,7 @@ public class Ship extends RigidBody implements Damageable {
     @Override
     public void setDead() {
         super.setDead();
-        EventBus.post(world.getSide(), new ShipDestroyEvent(this));
+        eventBus.publish(new ShipDestroyEvent(this));
     }
 
     public boolean isBot() {

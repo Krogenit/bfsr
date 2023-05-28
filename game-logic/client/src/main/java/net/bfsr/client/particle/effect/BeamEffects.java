@@ -7,7 +7,7 @@ import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.renderer.texture.TextureRegister;
-import net.bfsr.util.ObjectPool;
+import net.bfsr.engine.util.ObjectPool;
 import org.dyn4j.collision.narrowphase.Raycast;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector4f;

@@ -1,5 +1,14 @@
 package net.bfsr.event.entity.ship;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
+import net.bfsr.engine.event.Event;
 import net.bfsr.entity.ship.Ship;
 
-public record ShipPostPhysicsUpdate(Ship ship) {}
+@RequiredArgsConstructor
+@Getter
+@Accessors(fluent = true)
+public class ShipPostPhysicsUpdate extends Event {
+    private final Ship ship;
+}

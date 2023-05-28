@@ -5,12 +5,9 @@ import net.bfsr.client.Core;
 import net.bfsr.client.config.particle.ParticleEffect;
 import net.bfsr.client.config.particle.ParticleEffectConfig;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
-import net.bfsr.client.gui.AbstractGuiObject;
-import net.bfsr.client.gui.GuiObjectWithSubObjects;
-import net.bfsr.client.gui.button.Button;
 import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.renderer.Render;
-import net.bfsr.client.settings.Option;
+import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.config.ConfigLoader;
 import net.bfsr.editor.ConfigurableGameObject;
 import net.bfsr.editor.gui.GuiEditor;
@@ -24,12 +21,15 @@ import net.bfsr.editor.gui.property.PropertiesPanel;
 import net.bfsr.editor.particle.ParticleEffectConverter;
 import net.bfsr.editor.particle.ParticleEffectProperties;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.gui.component.Button;
+import net.bfsr.engine.gui.object.AbstractGuiObject;
+import net.bfsr.engine.gui.object.GuiObjectWithSubObjects;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.util.PathHelper;
+import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.entity.GameObject;
-import net.bfsr.util.RunnableUtils;
 import org.joml.Vector2f;
 import org.mapstruct.factory.Mappers;
 
@@ -49,6 +49,7 @@ import static net.bfsr.engine.input.Keys.KEY_ESCAPE;
 
 @Log4j2
 public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
+    private final Core core = Core.get();
     private InspectionEntry<ParticleEffectProperties> selectedEntry;
     private final ConfigurableGameObject gameObject = new ConfigurableGameObject();
     private final GameObject textureObject = new GameObject();
@@ -58,7 +59,8 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
             if (particleEffect != null && playing && texture != null) {
                 Vector2f position = object.getPosition();
                 Vector2f scale = object.getSize();
-                Engine.renderer.spriteRenderer.add(position.x, position.y, scale.x, scale.y, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
+                spriteRenderer.add(position.x, position.y, scale.x, scale.y, color.x, color.y, color.z, color.w, texture,
+                        BufferType.ENTITIES_ALPHA);
             }
         }
     };
@@ -74,8 +76,12 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     private boolean playing;
     private final List<InspectionEntry<ParticleEffectProperties>> particleEffects = new ArrayList<>();
     private final int contextMenuStringXOffset = 8;
-    private final InspectionPanel<ParticleEffectProperties> inspectionPanel = new InspectionPanel<>(this, "Particle Effects", leftPanelWidth, fontType, fontSize, stringYOffset);
-    private final PropertiesPanel propertiesPanel = new PropertiesPanel(this, propertiesContainerWidth, fontType, fontSize, stringXOffset, stringYOffset, contextMenuStringXOffset);
+    private final InspectionPanel<ParticleEffectProperties> inspectionPanel = new InspectionPanel<>(
+            this, "Particle Effects", leftPanelWidth, fontType, fontSize, stringYOffset
+    );
+    private final PropertiesPanel propertiesPanel = new PropertiesPanel(
+            this, propertiesContainerWidth, fontType, fontSize, stringXOffset, stringYOffset, contextMenuStringXOffset
+    );
     private final SpawnAccumulator spawnAccumulator = new SpawnAccumulator();
     private ParticleEffect particleEffect;
     private final ParticleEffectConverter converter = Mappers.getMapper(ParticleEffectConverter.class);
@@ -98,7 +104,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
         propertiesPanel.initElements();
         initGameObject();
         initParticleEffects();
-        Core.get().getWorldRenderer().getRenderManager().addRender(testRender);
+        Core.get().getRenderManager().addRender(testRender);
     }
 
     private void initGameObject() {
@@ -114,8 +120,10 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
             int y1 = (int) mousePos.y;
 
             String name = "Create Entry";
-            Button createEntryButton = new Button(null, x1, y1, fontType.getStringCache().getStringWidth(name, fontSize) + contextMenuStringXOffset, elementHeight,
-                    name, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
+            Button createEntryButton =
+                    new Button(null, x1, y1, fontType.getStringCache().getStringWidth(name, fontSize) + contextMenuStringXOffset,
+                            elementHeight, name, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
+                            RunnableUtils.EMPTY_RUNNABLE);
             createEntryButton.setOnMouseClickRunnable(() -> {
                 InspectionEntry<ParticleEffectProperties> entry = inspectionPanel.createEntry();
                 inspectionPanel.addSubObject(entry);
@@ -125,8 +133,10 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
             y1 += elementHeight;
 
             name = "Create Effect";
-            Button createEffectButton = new Button(null, x1, y1, fontType.getStringCache().getStringWidth(name, fontSize) + contextMenuStringXOffset, elementHeight,
-                    name, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
+            Button createEffectButton =
+                    new Button(null, x1, y1, fontType.getStringCache().getStringWidth(name, fontSize) + contextMenuStringXOffset,
+                            elementHeight, name, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
+                            RunnableUtils.EMPTY_RUNNABLE);
             createEffectButton.setOnMouseClickRunnable(() -> {
                 InspectionEntry<ParticleEffectProperties> particleEffect = createParticleEffectEntry();
                 inspectionPanel.addSubObject(particleEffect);
@@ -142,40 +152,46 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
             int x1 = (int) mousePos.x;
             int y1 = (int) mousePos.y;
             String addString = "Create Entry";
-            Button createEntryButton = new Button(null, x1, y1, fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringXOffset, elementHeight,
-                    addString, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
-            createEntryButton.setOnMouseClickRunnable(() -> {
-                InspectionEntry<ParticleEffectProperties> childEntry = inspectionPanel.createEntry();
-                inspectionEntry.addSubObject(childEntry);
-                inspectionEntry.maximize();
-                inspectionPanel.updatePositions();
-            });
+            Button createEntryButton = new Button(
+                    null, x1, y1, fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringXOffset,
+                    elementHeight, addString, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
+                    () -> {
+                        InspectionEntry<ParticleEffectProperties> childEntry = inspectionPanel.createEntry();
+                        inspectionEntry.addSubObject(childEntry);
+                        inspectionEntry.maximize();
+                        inspectionPanel.updatePositions();
+                    }
+            );
 
             y1 += elementHeight;
 
             addString = "Create Effect";
-            Button createEffectButton = new Button(null, x1, y1, fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringXOffset, elementHeight,
-                    addString, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
-            createEffectButton.setOnMouseClickRunnable(() -> {
-                InspectionEntry<ParticleEffectProperties> inspectionHolder = createParticleEffectEntry();
-                inspectionEntry.addSubObject(inspectionHolder);
-                inspectionEntry.maximize();
-                inspectionPanel.updatePositions();
-            });
-
+            Button createEffectButton = new Button(
+                    null, x1, y1, fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringXOffset,
+                    elementHeight, addString, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
+                    () -> {
+                        InspectionEntry<ParticleEffectProperties> inspectionHolder = createParticleEffectEntry();
+                        inspectionEntry.addSubObject(inspectionHolder);
+                        inspectionEntry.maximize();
+                        inspectionPanel.updatePositions();
+                    }
+            );
             y1 += elementHeight;
 
             addString = "Remove";
-            Button removeButton = new Button(null, x1, y1, fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringXOffset, elementHeight,
-                    addString, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
-            removeButton.setOnMouseClickRunnable(() -> {
-                GuiObjectWithSubObjects parent = inspectionEntry.getParent();
-                parent.removeSubObject(inspectionEntry);
-                remove(inspectionEntry);
-                inspectionPanel.updatePositions();
-            });
+            Button removeButton = new Button(
+                    null, x1, y1, fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringXOffset,
+                    elementHeight, addString, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
+                    () -> {
+                        GuiObjectWithSubObjects parent = inspectionEntry.getParent();
+                        parent.removeSubObject(inspectionEntry);
+                        remove(inspectionEntry);
+                        inspectionPanel.updatePositions();
+                    }
+            );
 
-            openContextMenu(setupContextMenuButtonColors(createEntryButton), setupContextMenuButtonColors(createEffectButton), setupContextMenuButtonColors(removeButton));
+            openContextMenu(setupContextMenuButtonColors(createEntryButton), setupContextMenuButtonColors(createEffectButton),
+                    setupContextMenuButtonColors(removeButton));
             return true;
         });
         inspectionPanel.setOnSelectConsumer(this::selectEntry);
@@ -233,11 +249,13 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
         return parent;
     }
 
-    private void addParticleEffectToEntry(InspectionEntry<ParticleEffectProperties> parent, ParticleEffectProperties particleEffect) {
+    private void addParticleEffectToEntry(InspectionEntry<ParticleEffectProperties> parent,
+                                          ParticleEffectProperties particleEffect) {
         boolean entryNotFound = true;
         List<AbstractGuiObject> subObjects = parent.getSubObjects();
         for (int i = 0; i < subObjects.size(); i++) {
-            InspectionEntry<ParticleEffectProperties> inspectionEntry = (InspectionEntry<ParticleEffectProperties>) subObjects.get(i);
+            InspectionEntry<ParticleEffectProperties> inspectionEntry =
+                    (InspectionEntry<ParticleEffectProperties>) subObjects.get(i);
             if (inspectionEntry.getName().equals(particleEffect.getName())) {
                 entryNotFound = false;
                 inspectionEntry.addComponent(particleEffect);
@@ -277,9 +295,11 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
             Files.walkFileTree(folder, new SimpleFileVisitor<>() {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    String filePath = PathHelper.getFileNameWithoutExtension(file.toString().replace(folder.toString(), "").replace(File.separator, "/").substring(1));
+                    String filePath = PathHelper.getFileNameWithoutExtension(
+                            file.toString().replace(folder.toString(), "").replace(File.separator, "/").substring(1));
                     if (particleEffects.stream().noneMatch(inspectionHolder -> {
-                        ParticleEffectProperties particleEffect = inspectionHolder.getComponentByType(ParticleEffectProperties.class);
+                        ParticleEffectProperties particleEffect =
+                                inspectionHolder.getComponentByType(ParticleEffectProperties.class);
                         return particleEffect.getPath().equals(filePath);
                     })) {
                         Files.delete(file);
@@ -322,7 +342,8 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
         Path folder = ParticleEffectsRegistry.INSTANCE.getFolder();
         Path effectFolder = folder.resolve(editorPath);
         effectFolder.toFile().mkdirs();
-        ConfigLoader.save(effectFolder.resolve(particleEffect.getName() + ".json"), particleEffectConfig, ParticleEffectConfig.class);
+        ConfigLoader.save(effectFolder.resolve(particleEffect.getName() + ".json"), particleEffectConfig,
+                ParticleEffectConfig.class);
     }
 
     private void remove(InspectionEntry<ParticleEffectProperties> buttonObjectHolder) {
@@ -371,12 +392,14 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     }
 
     @Override
-    public void input(int key) {
-        super.input(key);
+    public boolean input(int key) {
+        boolean input = super.input(key);
 
         if (key == KEY_ESCAPE) {
-            Core.get().setCurrentGui(null);
+            Core.get().closeGui();
         }
+
+        return input;
     }
 
     @Override
@@ -387,9 +410,14 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     }
 
     @Override
-    public void onMouseLeftRelease() {
-        inspectionPanel.onMouseLeftRelease();
-        super.onMouseLeftRelease();
+    public boolean onMouseLeftRelease() {
+        boolean leftRelease = inspectionPanel.onMouseLeftRelease();
+
+        if (super.onMouseLeftRelease()) {
+            leftRelease = true;
+        }
+
+        return leftRelease;
     }
 
     @Override
@@ -397,7 +425,7 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
         super.update();
         inspectionPanel.update();
 
-        if (selectedEntry != null && playing && !Engine.isPaused()) {
+        if (selectedEntry != null && playing && !core.isPaused()) {
             gameObject.init();
             textureObject.setPosition(gameObject.getPosX(), gameObject.getPosY());
             textureObject.setSize(gameObject.getSizeX(), gameObject.getSizeY());
@@ -409,7 +437,8 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
                     spawnAccumulator.resetTime();
                 }
                 particleEffect.init();
-                particleEffect.debug(gameObject.getPosX(), gameObject.getPosY(), gameObject.getSizeX(), gameObject.getSizeY(), 0.0f, 1.0f,
+                particleEffect.debug(gameObject.getPosX(), gameObject.getPosY(), gameObject.getSizeX(), gameObject.getSizeY(),
+                        0.0f, 1.0f,
                         gameObject.getVelocityX(), gameObject.getVelocityY(), spawnAccumulator);
             }
         }
@@ -440,11 +469,14 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
     public void render() {
         if (propertiesPanel.hasComponents()) {
             propertiesPanel.render();
-            Engine.renderer.guiRenderer.add(inspectionPanel.getWidth(), 0, width, topPanelHeight, BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
+            guiRenderer.add(inspectionPanel.getWidth(), 0, width, topPanelHeight, BACKGROUND_COLOR.x,
+                    BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
         } else {
-            Engine.renderer.guiRenderer.add(inspectionPanel.getWidth(), 0, width, topPanelHeight, BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
+            guiRenderer.add(inspectionPanel.getWidth(), 0, width, topPanelHeight, BACKGROUND_COLOR.x,
+                    BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
         }
-        Engine.renderer.guiRenderer.add(0, 0, inspectionPanel.getWidth(), height, BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
+        guiRenderer.add(0, 0, inspectionPanel.getWidth(), height, BACKGROUND_COLOR.x, BACKGROUND_COLOR.y,
+                BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
         super.render();
 
         inspectionPanel.render();
@@ -461,8 +493,8 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
         }
 
         if (value) {
-            Option.CAMERA_FOLLOW_PLAYER.setValue(false);
-            Engine.renderer.camera.getPosition().set(0);
+            ClientSettings.CAMERA_FOLLOW_PLAYER.setValue(false);
+            renderer.camera.getPosition().set(0);
         }
 
         this.playing = value;
@@ -475,15 +507,16 @@ public class GuiParticleEditor extends GuiEditor implements Playble, Pausable {
 
     @Override
     public void setPause(boolean value) {
-        if (particleEffect != null && Engine.isPaused()) {
+        if (particleEffect != null && core.isPaused()) {
             spawnAccumulator.resetTime();
         }
-        Engine.setPaused(value);
+
+        core.setPaused(value);
     }
 
     @Override
     public boolean isPaused() {
-        return Engine.isPaused();
+        return core.isPaused();
     }
 
     @Override

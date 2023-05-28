@@ -4,11 +4,11 @@ import lombok.Getter;
 import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.config.entity.bullet.BulletData;
 import net.bfsr.config.entity.bullet.BulletRegistry;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.event.EventBus;
 import net.bfsr.event.module.weapon.WeaponShotEvent;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.physics.filter.ShipFilter;
@@ -39,6 +39,7 @@ public class WeaponSlot extends GameObject {
     private final WeaponType type;
     @Getter
     private final BulletData bulletData;
+    protected EventBus eventBus;
 
     public WeaponSlot(GunData gunData, WeaponType type) {
         super(gunData.getSizeX(), gunData.getSizeY());
@@ -59,6 +60,7 @@ public class WeaponSlot extends GameObject {
         this.ship = ship;
         this.world = ship.getWorld();
         this.localPosition = ship.getWeaponSlotPosition(id);
+        this.eventBus = world.getEventBus();
         createBody();
         updatePos();
     }
@@ -84,7 +86,7 @@ public class WeaponSlot extends GameObject {
     public void shoot() {
         reloadTimer = timeToReload;
         ship.getReactor().consume(energyCost);
-        EventBus.post(world.getSide(), new WeaponShotEvent(this));
+        eventBus.publish(new WeaponShotEvent(this));
     }
 
     public void createBullet() {
