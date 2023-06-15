@@ -52,7 +52,7 @@ public class GlobalRenderer {
         profiler.endStartSection("worldRenderer.render");
         worldRenderer.render();
 
-        if (ClientSettings.IS_DEBUG.getBoolean()) {
+        if (ClientSettings.SHOW_DEBUG_BOXES.getBoolean()) {
             profiler.endStartSection("debugRenderer");
             renderDebug();
         }
