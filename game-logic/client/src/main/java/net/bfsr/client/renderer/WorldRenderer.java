@@ -40,7 +40,7 @@ public class WorldRenderer {
             renderer.setDebugWindow();
         }
 
-        Engine.assetsManager.getTexture(TextureRegister.damageFire, GL.GL_REPEAT, GL.GL_LINEAR).bind();
+        Engine.assetsManager.getTexture(TextureRegister.damageFire).bind();
 
         particleRenderer.init();
 

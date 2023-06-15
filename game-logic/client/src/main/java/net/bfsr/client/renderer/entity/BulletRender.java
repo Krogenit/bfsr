@@ -3,6 +3,7 @@ package net.bfsr.client.renderer.entity;
 import net.bfsr.client.renderer.Render;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.bullet.Bullet;
@@ -12,9 +13,9 @@ public class BulletRender extends Render<Bullet> {
     private static final AbstractTexture LIGHT_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.particleLight);
 
     public BulletRender(Bullet bullet) {
-        super(Engine.assetsManager.getTexture(bullet.getBulletData().getTexturePath()), bullet,
-                bullet.getBulletData().getColor().x,
-                bullet.getBulletData().getColor().y, bullet.getBulletData().getColor().z, bullet.getBulletData().getColor().w);
+        super(Engine.assetsManager.getTexture(bullet.getBulletData().getTexturePath(), GL.GL_CLAMP_TO_EDGE, GL.GL_LINEAR), bullet,
+                bullet.getBulletData().getColor().x, bullet.getBulletData().getColor().y, bullet.getBulletData().getColor().z,
+                bullet.getBulletData().getColor().w);
     }
 
     @Override

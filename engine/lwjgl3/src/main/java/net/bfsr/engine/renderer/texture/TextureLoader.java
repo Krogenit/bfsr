@@ -46,7 +46,7 @@ public final class TextureLoader extends AbstractTextureLoader {
 
     @Override
     public Texture getTexture(TextureRegister texture) {
-        return getTexture(texture.getPath(), DEFAULT_WRAP, DEFAULT_FILTER);
+        return getTexture(texture.getPath(), texture.getWrap(), texture.getFilter());
     }
 
     @Override
@@ -59,6 +59,7 @@ public final class TextureLoader extends AbstractTextureLoader {
         return getTexture(path, true, DEFAULT_WRAP, DEFAULT_FILTER);
     }
 
+    @Override
     public Texture getTexture(Path path, int wrap, int filter) {
         return getTexture(path, true, wrap, filter);
     }
@@ -119,7 +120,8 @@ public final class TextureLoader extends AbstractTextureLoader {
         Texture texture = new Texture(dds.getWidth(), dds.getHeight()).create();
 
         GL45C.glTextureStorage2D(texture.getId(), dds.getMipMapCount() + 1, dds.getDXTFormat(), dds.getWidth(), dds.getHeight());
-        GL45C.glCompressedTextureSubImage2D(texture.getId(), 0, 0, 0, dds.getWidth(), dds.getHeight(), dds.getDXTFormat(), dds.getBuffer());
+        GL45C.glCompressedTextureSubImage2D(texture.getId(), 0, 0, 0, dds.getWidth(), dds.getHeight(), dds.getDXTFormat(),
+                dds.getBuffer());
         int mipMapCount = dds.getMipMapCount();
         int textureMagFilter = GL11C.GL_LINEAR;
         int textureMinFilter = (mipMapCount > 0) ? GL11C.GL_LINEAR_MIPMAP_LINEAR : GL11C.GL_LINEAR;
@@ -135,7 +137,8 @@ public final class TextureLoader extends AbstractTextureLoader {
                 width /= 2;
                 height /= 2;
                 ByteBuffer mipmapBuffer = dds.getMipMapLevel(i);
-                GL45C.glCompressedTextureSubImage2D(texture.getId(), i + 1, 0, 0, width, height, dds.getDXTFormat(), mipmapBuffer);
+                GL45C.glCompressedTextureSubImage2D(texture.getId(), i + 1, 0, 0, width, height, dds.getDXTFormat(),
+                        mipmapBuffer);
             }
         }
 
@@ -143,7 +146,8 @@ public final class TextureLoader extends AbstractTextureLoader {
         GL45C.glTextureParameteri(texture.getId(), GL11C.GL_TEXTURE_WRAP_T, GL11C.GL_REPEAT);
         GL45C.glTextureParameteri(texture.getId(), GL11C.GL_TEXTURE_MAG_FILTER, textureMagFilter);
         GL45C.glTextureParameteri(texture.getId(), GL11C.GL_TEXTURE_MIN_FILTER, textureMinFilter);
-        GL45C.glTextureParameterf(texture.getId(), EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, GL11C.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
+        GL45C.glTextureParameterf(texture.getId(), EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                GL11C.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
 
         return texture;
     }
@@ -152,7 +156,8 @@ public final class TextureLoader extends AbstractTextureLoader {
         return createTexture(width, height, image, channels, createMips, DEFAULT_WRAP, DEFAULT_FILTER);
     }
 
-    private Texture createTexture(int width, int height, ByteBuffer image, int channels, boolean createMips, int wrap, int filter) {
+    private Texture createTexture(int width, int height, ByteBuffer image, int channels, boolean createMips, int wrap,
+                                  int filter) {
         Texture texture = new Texture(width, height).create();
 
         int internalFormat;
@@ -180,8 +185,9 @@ public final class TextureLoader extends AbstractTextureLoader {
 
         GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_WRAP_S, wrap);
         GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_WRAP_T, wrap);
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MIN_FILTER, createMips ? (filter == GL11.GL_NEAREST ? GL11.GL_NEAREST_MIPMAP_NEAREST :
-                GL11.GL_LINEAR_MIPMAP_LINEAR) : filter);
+        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MIN_FILTER,
+                createMips ? (filter == GL11.GL_NEAREST ? GL11.GL_NEAREST_MIPMAP_NEAREST :
+                        GL11.GL_LINEAR_MIPMAP_LINEAR) : filter);
         GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MAG_FILTER, filter);
         GL45C.glTextureParameterf(texture.getId(), EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT,
                 GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));

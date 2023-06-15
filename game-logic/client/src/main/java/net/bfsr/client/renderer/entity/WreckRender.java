@@ -7,6 +7,7 @@ import net.bfsr.client.renderer.Render;
 import net.bfsr.config.entity.wreck.WreckData;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.wreck.Wreck;
@@ -39,9 +40,9 @@ public class WreckRender extends Render<Wreck> {
         }
 
         WreckData wreckData = object.getWreckData();
-        this.textureFire = Engine.assetsManager.getTexture(wreckData.getFireTexture());
-        this.textureLight =
-                wreckData.getSparkleTexture() != null ? Engine.assetsManager.getTexture(wreckData.getSparkleTexture()) : null;
+        this.textureFire = Engine.assetsManager.getTexture(wreckData.getFireTexture(), GL.GL_CLAMP_TO_EDGE, GL.GL_LINEAR);
+        this.textureLight = wreckData.getSparkleTexture() != null ? Engine.assetsManager.getTexture(wreckData.getSparkleTexture(),
+                GL.GL_CLAMP_TO_EDGE, GL.GL_LINEAR) : null;
         this.colorFire.set(object.isFire() ? 1.0f : 0.0f);
         this.lastColorFire.set(colorFire);
         this.colorLight.set(1.0f, 1.0f, 1.0f, 0.0f);

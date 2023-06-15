@@ -35,6 +35,10 @@ public class AssetsManager {
         return textureLoader.getTexture(texture);
     }
 
+    public AbstractTexture getTexture(Path path, int wrap, int filter) {
+        return textureLoader.getTexture(path, wrap, filter);
+    }
+
     public AbstractTexture getTexture(Path path) {
         return textureLoader.getTexture(path);
     }

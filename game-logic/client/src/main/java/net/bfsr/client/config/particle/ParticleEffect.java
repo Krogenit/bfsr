@@ -11,6 +11,7 @@ import net.bfsr.config.ConfigurableSound;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
+import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.RenderLayer;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.util.PathHelper;
@@ -76,7 +77,8 @@ public class ParticleEffect extends ConfigData {
         List<String> texturePaths = config.getTexturePaths();
         textures = new AbstractTexture[texturePaths.size()];
         for (int i = 0; i < texturePaths.size(); i++) {
-            textures[i] = Engine.assetsManager.getTexture(PathHelper.convertPath(texturePaths.get(i)));
+            textures[i] = Engine.assetsManager.getTexture(PathHelper.convertPath(texturePaths.get(i)), GL.GL_CLAMP_TO_EDGE,
+                    GL.GL_LINEAR);
         }
 
         this.spawnOverTime = config.getSpawnOverTime();

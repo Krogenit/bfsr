@@ -16,6 +16,7 @@ import net.bfsr.engine.gui.component.StringObject;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.font.StringOffsetType;
+import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
@@ -64,7 +65,8 @@ public class ShipRender extends Render<Ship> {
                 Engine.renderer.createByteBuffer(texture.getWidth() * texture.getHeight()));
         maskTexture.createWhiteMask();
 
-        this.shieldTexture = Engine.assetsManager.getTexture(ship.getShield().getShieldData().getTexturePath());
+        this.shieldTexture = Engine.assetsManager.getTexture(ship.getShield().getShieldData().getTexturePath(),
+                GL.GL_CLAMP_TO_EDGE, GL.GL_LINEAR);
 
         List<WeaponSlot> weaponSlots1 = object.getWeaponSlots();
         for (int i = 0; i < weaponSlots1.size(); i++) {

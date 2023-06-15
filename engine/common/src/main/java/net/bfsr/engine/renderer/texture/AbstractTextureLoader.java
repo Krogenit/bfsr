@@ -11,5 +11,6 @@ public abstract class AbstractTextureLoader {
     public abstract AbstractTexture newTexture(int width, int height);
     public abstract AbstractTexture getTexture(TextureRegister texture, int wrap, int filter);
     public abstract AbstractTexture getTexture(TextureRegister texture);
+    public abstract AbstractTexture getTexture(Path path, int wrap, int filter);
     public abstract AbstractTexture getTexture(Path path);
 }
