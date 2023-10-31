@@ -73,6 +73,6 @@ public class ShipSpawner {
     }
 
     public void update() {
-        spawnShips();
+//        spawnShips();
     }
 }

@@ -4,12 +4,12 @@ import lombok.Getter;
 import net.bfsr.client.particle.Beam;
 import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.particle.effect.BeamEffects;
-import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.util.TimeUtils;
+import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.math.RotationHelper;
 import org.dyn4j.collision.narrowphase.Raycast;
 import org.joml.Vector2f;
@@ -87,10 +87,8 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
                 Vector2f position = object.getPosition();
                 Vector2f size = object.getSize();
                 spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
-                        sin, cos,
-                        lastSize.x * 2.5f, lastSize.y * 2.5f, size.x * 2.5f, size.y * 2.5f, effectsColor.x, effectsColor.y,
-                        effectsColor.z, 0.6f * effectsColor.w,
-                        LIGHT_TEXTURE, BufferType.ENTITIES_ADDITIVE);
+                        sin, cos, lastSize.x * 2.5f, lastSize.y * 2.5f, size.x * 2.5f, size.y * 2.5f, effectsColor.x, effectsColor.y,
+                        effectsColor.z, 0.6f * effectsColor.w, LIGHT_TEXTURE, BufferType.ENTITIES_ADDITIVE);
             }
 
             beam.render(spriteRenderer, lastSin, lastCos, sin, cos);

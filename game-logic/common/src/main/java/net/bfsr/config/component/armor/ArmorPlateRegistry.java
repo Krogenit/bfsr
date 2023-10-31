@@ -8,6 +8,6 @@ public class ArmorPlateRegistry extends ConfigToDataConverter<ArmorPlateConfig, 
     public static final ArmorPlateRegistry INSTANCE = new ArmorPlateRegistry();
 
     public ArmorPlateRegistry() {
-        super("module/armor", ArmorPlateConfig.class, ArmorPlateConfig::name, ArmorPlateData::new);
+        super("module/armor", ArmorPlateConfig.class, ArmorPlateConfig::getName, ArmorPlateData::new);
     }
 }

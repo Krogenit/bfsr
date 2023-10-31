@@ -1,7 +1,6 @@
 package net.bfsr.client.particle;
 
 import net.bfsr.client.particle.effect.BeamEffects;
-import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
@@ -9,6 +8,7 @@ import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 

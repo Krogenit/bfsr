@@ -117,8 +117,9 @@ public class PlayerInputController extends InputController {
         Body body = ship.getBody();
         if (body.isAtRest()) body.setAtRest(false);
 
-        Vector2f mouseWorldPosition = Engine.mouse.getWorldPosition(camera);
-        RigidBodyUtils.rotateToVector(ship, mouseWorldPosition, ship.getEngine().getAngularVelocity());
+//        Vector2f mouseWorldPosition = Engine.mouse.getWorldPosition(camera);
+        Vector2f mouseWorldPosition = new Vector2f(ship.getPosition().x - 100, ship.getPosition().y);
+        RigidBodyUtils.rotateToVector(ship, mouseWorldPosition, ship.getModules().getEngine().getAngularVelocity());
         if (mouseWorldPosition.x != lastMousePosition.x || mouseWorldPosition.y != lastMousePosition.y) {
             core.sendUDPPacket(new PacketSyncPlayerMousePosition(mouseWorldPosition));
         }

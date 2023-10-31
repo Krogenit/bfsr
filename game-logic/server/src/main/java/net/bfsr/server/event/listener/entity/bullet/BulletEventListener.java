@@ -1,8 +1,8 @@
 package net.bfsr.server.event.listener.entity.bullet;
 
-import net.bfsr.component.hull.Hull;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.event.entity.bullet.*;
 import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.math.RotationHelper;
@@ -44,10 +44,10 @@ public class BulletEventListener {
     @Handler
     public void event(BulletDamageShipHullEvent event) {
         Ship ship = event.ship();
-        Hull hull = ship.getHull();
+        Hull hull = ship.getModules().getHull();
         World world = ship.getWorld();
         Random rand = world.getRand();
-        if (hull.getHull() / hull.getMaxHull() < 0.25f && rand.nextInt(2) == 0) {
+        if (hull.getValue() / hull.getMaxValue() < 0.25f && rand.nextInt(2) == 0) {
             RotationHelper.angleToVelocity(net.bfsr.engine.math.MathUtils.TWO_PI * rand.nextFloat(), 1.5f, RigidBodyUtils.ANGLE_TO_VELOCITY);
             float velocityX = ship.getVelocity().x * 0.005f;
             float velocityY = ship.getVelocity().y * 0.005f;

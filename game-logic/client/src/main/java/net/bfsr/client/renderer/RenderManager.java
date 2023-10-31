@@ -5,6 +5,7 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.client.Core;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
+import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.engio.mbassy.listener.Handler;
@@ -64,6 +65,8 @@ public class RenderManager {
     }
 
     public void renderDebug() {
+        if (!ClientSettings.SHOW_DEBUG_BOXES.getBoolean()) return;
+
         for (int i = 0; i < renderList.size(); i++) {
             Render<?> render = renderList.get(i);
             if (render.getAabb().overlaps(camera.getBoundingBox())) {

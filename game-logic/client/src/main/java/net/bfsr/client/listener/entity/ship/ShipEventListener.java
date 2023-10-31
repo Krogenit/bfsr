@@ -7,9 +7,9 @@ import net.bfsr.client.particle.effect.JumpEffects;
 import net.bfsr.client.particle.effect.WeaponEffects;
 import net.bfsr.client.renderer.RenderManager;
 import net.bfsr.client.renderer.entity.ShipRender;
-import net.bfsr.component.shield.Shield;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.event.entity.ship.*;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.world.World;
@@ -35,7 +35,7 @@ public class ShipEventListener {
     @Handler
     public void event(ShipCollisionWithWreckEvent event) {
         Ship ship = event.ship();
-        Shield shield = ship.getShield();
+        Shield shield = ship.getModules().getShield();
         if (shield != null) {
             Vector4f color = ship.getShipData().getEffectsColor();
             WeaponEffects.spawnDirectedSpark(event.contactX(), event.contactY(), event.normalX(), event.normalY(), 4.5f,

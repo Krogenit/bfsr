@@ -5,11 +5,11 @@ import net.bfsr.client.Core;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.particle.effect.GarbageSpawner;
 import net.bfsr.client.particle.effect.WeaponEffects;
-import net.bfsr.component.hull.Hull;
-import net.bfsr.component.shield.Shield;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.hull.Hull;
+import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.server.effect.PacketBulletHitShip;
 import org.joml.Vector2f;
@@ -23,12 +23,12 @@ public class PacketBulletHitShipHandler extends PacketHandler<PacketBulletHitShi
         GameObject bulletGameObject = Core.get().getWorld().getEntityById(packet.getBulletId());
         GameObject shipGameObject = Core.get().getWorld().getEntityById(packet.getShipId());
         if (bulletGameObject instanceof Bullet bullet && shipGameObject instanceof Ship ship) {
-            Shield shield = ship.getShield();
+            Shield shield = ship.getModules().getShield();
             Vector2f bulletSize = bullet.getSize();
             if (shield == null || shield.getShield() <= 0) {
-                Hull hull = ship.getHull();
+                Hull hull = ship.getModules().getHull();
                 GarbageSpawner.bulletHullDamage(packet.getContactX(), packet.getContactY(), ship.getVelocity().x, ship.getVelocity().y,
-                        packet.getNormalX(), packet.getNormalY(), () -> hull.getHull() / hull.getMaxHull() < 0.5f);
+                        packet.getNormalX(), packet.getNormalY(), () -> hull.getValue() / hull.getMaxValue() < 0.5f);
             }
 
             Vector4f color = Core.get().getRenderManager().getRender(packet.getBulletId()).getColor();

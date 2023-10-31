@@ -8,14 +8,6 @@ import net.bfsr.ai.Ai;
 import net.bfsr.ai.AiAggressiveType;
 import net.bfsr.ai.task.AiAttackTarget;
 import net.bfsr.ai.task.AiSearchTarget;
-import net.bfsr.component.armor.Armor;
-import net.bfsr.component.cargo.Cargo;
-import net.bfsr.component.crew.Crew;
-import net.bfsr.component.engine.Engine;
-import net.bfsr.component.hull.Hull;
-import net.bfsr.component.reactor.Reactor;
-import net.bfsr.component.shield.Shield;
-import net.bfsr.component.weapon.WeaponSlot;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.Damageable;
@@ -23,6 +15,15 @@ import net.bfsr.engine.util.SideUtils;
 import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.BulletDamage;
+import net.bfsr.entity.ship.module.Modules;
+import net.bfsr.entity.ship.module.armor.Armor;
+import net.bfsr.entity.ship.module.cargo.Cargo;
+import net.bfsr.entity.ship.module.crew.Crew;
+import net.bfsr.entity.ship.module.engine.Engine;
+import net.bfsr.entity.ship.module.hull.Hull;
+import net.bfsr.entity.ship.module.reactor.Reactor;
+import net.bfsr.entity.ship.module.shield.Shield;
+import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.event.entity.ship.*;
 import net.bfsr.event.module.shield.ShieldDamageByCollision;
@@ -49,35 +50,18 @@ import static net.bfsr.math.RigidBodyUtils.ANGLE_TO_VELOCITY;
 public class Ship extends RigidBody implements Damageable {
     @Getter
     @Setter
-    private Armor armor;
-    @Getter
-    private Shield shield;
-    @Getter
-    @Setter
-    private Engine engine;
-    @Getter
-    @Setter
-    private Faction faction;
-    @Getter
-    @Setter
-    private Reactor reactor;
-    @Getter
-    private Crew crew;
-    @Getter
-    private Hull hull;
-    @Getter
-    @Setter
-    private Cargo cargo;
-
-    @Getter
-    @Setter
     private String name;
     @Getter
     @Setter
     private String owner;
 
     @Getter
-    private final List<WeaponSlot> weaponSlots = new ArrayList<>();
+    private final Modules modules = new Modules();
+
+    @Getter
+    @Setter
+    private Faction faction;
+
     @Getter
     private boolean spawned;
     @Getter
@@ -164,7 +148,7 @@ public class Ship extends RigidBody implements Damageable {
 
     public void move(Direction dir) {
         if (dir == Direction.STOP) {
-            body.getLinearVelocity().multiply(engine.getManeuverability() * 0.98f);
+            body.getLinearVelocity().multiply(modules.getEngine().getManeuverability() * 0.98f);
             return;
         }
 
@@ -172,13 +156,13 @@ public class Ship extends RigidBody implements Damageable {
         double cos = body.getTransform().getCost();
 
         if (dir == Direction.FORWARD) {
-            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(cos, sin), engine.getForwardAcceleration());
+            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(cos, sin), modules.getEngine().getForwardAcceleration());
         } else if (dir == Direction.BACKWARD) {
-            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(-cos, -sin), engine.getBackwardAcceleration());
+            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(-cos, -sin), modules.getEngine().getBackwardAcceleration());
         } else if (dir == Direction.LEFT) {
-            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(sin, -cos), engine.getSideAcceleration());
+            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(sin, -cos), modules.getEngine().getSideAcceleration());
         } else if (dir == Direction.RIGHT) {
-            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(-sin, cos), engine.getSideAcceleration());
+            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(-sin, cos), modules.getEngine().getSideAcceleration());
         }
     }
 
@@ -285,7 +269,7 @@ public class Ship extends RigidBody implements Damageable {
     public void postPhysicsUpdate() {
         super.postPhysicsUpdate();
 
-        float maxForwardSpeed = engine.getMaxForwardVelocity();
+        float maxForwardSpeed = modules.getEngine().getMaxForwardVelocity();
         float maxForwardSpeedSquared = maxForwardSpeed * maxForwardSpeed;
         double magnitudeSquared = body.getLinearVelocity().getMagnitudeSquared();
 
@@ -298,27 +282,13 @@ public class Ship extends RigidBody implements Damageable {
             body.getLinearVelocity().multiply(percent);
         }
 
-        updateComponents();
+        modules.update();
 
         eventBus.publish(new ShipPostPhysicsUpdate(this));
     }
 
     public void shoot() {
-        for (int i = 0, size = weaponSlots.size(); i < size; i++) {
-            weaponSlots.get(i).tryShoot();
-        }
-    }
-
-    private void updateComponents() {
-        if (shield != null) shield.update();
-        if (armor != null) armor.update();
-        if (reactor != null) reactor.update();
-        if (hull != null) hull.regenHull(crew.getCrewRegen());
-
-        int size = weaponSlots.size();
-        for (int i = 0; i < size; i++) {
-            weaponSlots.get(i).update();
-        }
+        modules.shoot();
     }
 
     private void damageByCollision(Ship otherShip, float impactPower, float contactX, float contactY, float normalX,
@@ -334,6 +304,7 @@ public class Ship extends RigidBody implements Damageable {
 
         collisionTimer = 2 * TimeUtils.UPDATES_PER_SECOND;
 
+        Shield shield = modules.getShield();
         if (shield != null && shield.damage(impactPower)) {
             onShieldDamageByCollision(contactX, contactY, normalX, normalY);
             return;
@@ -341,11 +312,9 @@ public class Ship extends RigidBody implements Damageable {
 
         float hullDamage = impactPower;
         float armorDamage = impactPower;
-        Vector2f otherPos = otherShip.getPosition();
-        Direction dir = RigidBodyUtils.calculateDirectionToOtherObject(this, otherPos.x, otherPos.y);
 
-        float reducedHullDamage = armor.reduceDamageByArmor(armorDamage, hullDamage, dir);
-        hull.damage(reducedHullDamage);
+        float reducedHullDamage = modules.getArmor().reduceDamageByArmor(armorDamage, hullDamage, contactX, contactY, this);
+        modules.getHull().damage(reducedHullDamage, contactX, contactY, this);
         onHullDamageByCollision(contactX, contactY, normalX, normalY);
     }
 
@@ -355,7 +324,7 @@ public class Ship extends RigidBody implements Damageable {
 
     private void onHullDamageByCollision(float contactX, float contactY, float normalX, float normalY) {
         if (SideUtils.IS_SERVER && world.isServer()) {
-            if (hull.getHull() <= 0) {
+            if (modules.getHull().badlyDamaged()) {
                 setDestroying();
             }
         } else {
@@ -367,23 +336,26 @@ public class Ship extends RigidBody implements Damageable {
         lastAttacker = attacker;
         float shieldDamage = damage.getShield() * multiplayer;
 
-        if ((shield != null && shield.damage(shieldDamage))) {
+        Shield shield = modules.getShield();
+        if (shield != null && shield.damage(shieldDamage)) {
             return false;
         }
 
         float hullDamage = damage.getHull() * multiplayer;
         float armorDamage = damage.getArmor() * multiplayer;
-        Direction dir = RigidBodyUtils.calculateDirectionToOtherObject(this, contactX, contactY);
 
-        float reducedHullDamage = armor.reduceDamageByArmor(armorDamage, hullDamage, dir);
-        hull.damage(reducedHullDamage);
-        onHullDamage(contactX, contactY);
+        float reducedHullDamage = modules.getArmor().reduceDamageByArmor(armorDamage, hullDamage, contactX, contactY, this);
+        if (reducedHullDamage == armorDamage) {
+            modules.getHull().damage(reducedHullDamage, contactX, contactY, this);
+            onHullDamage(contactX, contactY);
+        }
+
         return true;
     }
 
     private void onHullDamage(float contactX, float contactY) {
         if (SideUtils.IS_SERVER && world.isServer()) {
-            if (hull.getHull() <= 0) {
+            if (modules.getHull().badlyDamaged()) {
                 setDestroying();
             } else {
                 eventBus.publish(new ShipHullDamageEvent(this, contactX, contactY));
@@ -403,11 +375,32 @@ public class Ship extends RigidBody implements Damageable {
     }
 
     public void setHull(Hull hull) {
-        this.hull = hull;
+        modules.setHull(hull);
     }
 
     protected void setCrew(Crew crew) {
-        this.crew = crew;
+        modules.setCrew(crew);
+    }
+
+    public void setShield(Shield shield) {
+        shield.init(this);
+        modules.setShield(shield);
+    }
+
+    public void setEngine(Engine engine) {
+        modules.setEngine(engine);
+    }
+
+    public void setReactor(Reactor reactor) {
+        modules.setReactor(reactor);
+    }
+
+    public void setArmor(Armor armor) {
+        modules.setArmor(armor);
+    }
+
+    public void setCargo(Cargo cargo) {
+        modules.setCargo(cargo);
     }
 
     public Vector2f getWeaponSlotPosition(int id) {
@@ -415,22 +408,11 @@ public class Ship extends RigidBody implements Damageable {
     }
 
     public void addWeaponToSlot(int id, WeaponSlot slot) {
-        for (int i = 0; i < weaponSlots.size(); i++) {
-            WeaponSlot weaponSlot = weaponSlots.get(i);
-            if (weaponSlot.getId() == id) {
-                weaponSlot.clear();
-                weaponSlots.set(i, slot);
-                slot.init(id, this);
-                return;
-            }
-        }
-
-        slot.init(id, this);
-        weaponSlots.add(slot);
+        modules.addWeaponToSlot(id, slot, this);
     }
 
     public WeaponSlot getWeaponSlot(int i) {
-        return weaponSlots.get(i);
+        return modules.getWeaponSlot(i);
     }
 
     public void setSpawned() {
@@ -440,11 +422,6 @@ public class Ship extends RigidBody implements Damageable {
 
     private void setVelocity(float x, float y) {
         body.setLinearVelocity(x, y);
-    }
-
-    public void setShield(Shield shield) {
-        shield.init(this);
-        this.shield = shield;
     }
 
     @Override
@@ -465,23 +442,13 @@ public class Ship extends RigidBody implements Damageable {
     public void updateClientPositionFromPacket(Vector2f position, float sin, float cos, Vector2f velocity,
                                                float angularVelocity) {
         super.updateClientPositionFromPacket(position, sin, cos, velocity, angularVelocity);
-
-        int size = weaponSlots.size();
-        for (int i = 0; i < size; i++) {
-            WeaponSlot weaponSlot = weaponSlots.get(i);
-            if (weaponSlot != null) weaponSlot.updatePos();
-        }
+        modules.updateWeaponSlotPositions();
     }
 
     @Override
     public void updateServerPositionFromPacket(Vector2f pos, float sin, float cos, Vector2f velocity, float angularVelocity) {
         super.updateServerPositionFromPacket(pos, sin, cos, velocity, angularVelocity);
-
-        int size = weaponSlots.size();
-        for (int i = 0; i < size; i++) {
-            WeaponSlot weaponSlot = weaponSlots.get(i);
-            if (weaponSlot != null) weaponSlot.updatePos();
-        }
+        modules.updateWeaponSlotPositions();
     }
 
     public void setDestroying() {
@@ -507,11 +474,7 @@ public class Ship extends RigidBody implements Damageable {
 
     @Override
     public void clear() {
-        int size = weaponSlots.size();
-        for (int i = 0; i < size; i++) {
-            WeaponSlot slot = weaponSlots.get(i);
-            if (slot != null) slot.clear();
-        }
+        modules.clear();
     }
 
     public void removeAI() {

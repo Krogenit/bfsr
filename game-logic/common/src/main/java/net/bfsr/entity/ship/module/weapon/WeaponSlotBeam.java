@@ -1,4 +1,4 @@
-package net.bfsr.component.weapon;
+package net.bfsr.entity.ship.module.weapon;
 
 import lombok.Getter;
 import net.bfsr.config.component.weapon.beam.BeamData;
@@ -28,7 +28,6 @@ public class WeaponSlotBeam extends WeaponSlot {
     private float currentBeamRange;
     @Getter
     private float beamPower;
-    private boolean maxPower;
     @Getter
     private final Vector2f collisionPoint = new Vector2f();
     private final BulletDamage damage;
@@ -54,38 +53,30 @@ public class WeaponSlotBeam extends WeaponSlot {
         super.update();
 
         if (reloadTimer > 0) {
-            if (reloadTimer <= timeToReload / 3.0f) {
-                maxPower = false;
-                if (beamPower > 0.0f) {
-                    beamPower -= 3.5f * TimeUtils.UPDATE_DELTA_TIME;
-                    if (beamPower < 0) beamPower = 0;
+            if (beamPower < 1.0f) {
+                beamPower += 3.5f * TimeUtils.UPDATE_DELTA_TIME;
+                if (beamPower >= 1.0f) {
+                    beamPower = 1.0f;
                 }
             } else {
-                if (!maxPower && beamPower < 1.0f) {
-                    beamPower += 3.5f * TimeUtils.UPDATE_DELTA_TIME;
-                    if (beamPower > 1.0f) beamPower = 1.0f;
-                } else {
-                    maxPower = true;
-                }
-
-                if (maxPower) {
-                    beamPower = world.getRand().nextFloat() / 3.0f + 0.66f;
-                }
+                beamPower = world.getRand().nextFloat() / 3.0f + 0.66f;
             }
-
-            rayCast();
         } else {
             if (beamPower > 0.0f) {
                 beamPower -= 3.5f * TimeUtils.UPDATE_DELTA_TIME;
                 if (beamPower < 0) beamPower = 0;
             }
         }
+
+        if (beamPower > 0) {
+            rayCast();
+        }
     }
 
     @Override
     public void shoot() {
         reloadTimer = timeToReload;
-        ship.getReactor().consume(energyCost);
+        ship.getModules().getReactor().consume(energyCost);
         eventBus.publish(new BeamShotEvent(this));
     }
 

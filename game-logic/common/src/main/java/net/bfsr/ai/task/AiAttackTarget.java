@@ -1,12 +1,12 @@
 package net.bfsr.ai.task;
 
-import net.bfsr.component.weapon.WeaponSlot;
-import net.bfsr.component.weapon.WeaponSlotBeam;
-import net.bfsr.component.weapon.WeaponType;
 import net.bfsr.config.entity.bullet.BulletData;
 import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.weapon.WeaponSlot;
+import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
+import net.bfsr.entity.ship.module.weapon.WeaponType;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RigidBodyUtils;
 import org.joml.Vector2f;
@@ -51,13 +51,13 @@ public class AiAttackTarget extends AiTask {
 
         Vector2f targetVelocity = target.getVelocity();
 
-        List<WeaponSlot> slots = ship.getWeaponSlots();
+        List<WeaponSlot> slots = ship.getModules().getWeaponSlots();
         for (int i = 0, size = slots.size(); i < size; i++) {
             WeaponSlot slot = slots.get(i);
             float bulletToShip;
             Vector2f targetFinalPos;
 
-            if (slot.getType() == WeaponType.BEAM) {
+            if (slot.getWeaponType() == WeaponType.BEAM) {
                 bulletToShip = ((WeaponSlotBeam) slot).getBeamMaxRange();
                 targetFinalPos = new Vector2f(targetPos.x + 0, targetPos.y + 0);
             } else {
@@ -101,7 +101,7 @@ public class AiAttackTarget extends AiTask {
                 minTargetToShip = targetToShip;
         }
 
-        RigidBodyUtils.rotateToVector(ship, Objects.requireNonNullElse(pointToRotate, targetPos), ship.getEngine().getAngularVelocity());
+        RigidBodyUtils.rotateToVector(ship, Objects.requireNonNullElse(pointToRotate, targetPos), ship.getModules().getEngine().getAngularVelocity());
 
         directionsToAdd.clear();
         if (minTargetToShip >= maxDistance - targetSizeAverage - shipSizeAverage) {

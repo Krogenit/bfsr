@@ -8,6 +8,6 @@ public class HullRegistry extends ConfigToDataConverter<HullConfig, HullData> {
     public static final HullRegistry INSTANCE = new HullRegistry();
 
     public HullRegistry() {
-        super("module/hull", HullConfig.class, HullConfig::name, HullData::new);
+        super("module/hull", HullConfig.class, HullConfig::getName, HullData::new);
     }
 }

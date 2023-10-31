@@ -1,10 +1,12 @@
-package net.bfsr.component.reactor;
+package net.bfsr.entity.ship.module.reactor;
 
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.reactor.ReactorData;
+import net.bfsr.entity.ship.module.Module;
+import net.bfsr.entity.ship.module.ModuleType;
 
-public class Reactor {
+public class Reactor extends Module {
     @Getter
     @Setter
     private float energy;
@@ -38,5 +40,10 @@ public class Reactor {
         if (this.energy < 0) {
             this.energy = 0;
         }
+    }
+
+    @Override
+    public ModuleType getType() {
+        return ModuleType.REACTOR;
     }
 }

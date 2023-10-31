@@ -4,9 +4,6 @@ import lombok.Setter;
 import net.bfsr.client.Core;
 import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.input.PlayerInputController;
-import net.bfsr.component.hull.Hull;
-import net.bfsr.component.reactor.Reactor;
-import net.bfsr.component.shield.Shield;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.StringObject;
 import net.bfsr.engine.input.AbstractMouse;
@@ -17,6 +14,9 @@ import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.hull.Hull;
+import net.bfsr.entity.ship.module.reactor.Reactor;
+import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.util.DecimalUtils;
 import net.bfsr.world.World;
@@ -128,9 +128,9 @@ public class DebugInfoElement {
         if (playerShip != null) {
             Vector2f pos = playerShip.getPosition();
             Vector2f velocity = playerShip.getVelocity();
-            Hull hull = playerShip.getHull();
-            Shield shield = playerShip.getShield();
-            Reactor reactor = playerShip.getReactor();
+            Hull hull = playerShip.getModules().getHull();
+            Shield shield = playerShip.getModules().getShield();
+            Reactor reactor = playerShip.getModules().getReactor();
             stringBuilder.append("\n\n---Player Ship--- ");
             stringBuilder.append("\nShip: ").append(playerShip.getClass().getSimpleName());
             stringBuilder.append("\nPos: ").append(DecimalUtils.strictFormatWithToDigits(pos.x)).append(", ")
@@ -139,8 +139,8 @@ public class DebugInfoElement {
                     .append(DecimalUtils.strictFormatWithToDigits(velocity.y));
             stringBuilder.append("\nMass: ")
                     .append(DecimalUtils.strictFormatWithToDigits(playerShip.getBody().getMass().getMass()));
-            stringBuilder.append("\nHull: ").append(DecimalUtils.strictFormatWithToDigits(hull.getHull())).append("/")
-                    .append(DecimalUtils.strictFormatWithToDigits(hull.getMaxHull()));
+            stringBuilder.append("\nHull: ").append(DecimalUtils.strictFormatWithToDigits(hull.getValue())).append("/")
+                    .append(DecimalUtils.strictFormatWithToDigits(hull.getMaxValue()));
             stringBuilder.append("\nShield: ").append(DecimalUtils.strictFormatWithToDigits(shield.getShield())).append("/")
                     .append(DecimalUtils.strictFormatWithToDigits(shield.getMaxShield()));
             stringBuilder.append("\nReactor: ").append(DecimalUtils.strictFormatWithToDigits(reactor.getEnergy())).append("/")

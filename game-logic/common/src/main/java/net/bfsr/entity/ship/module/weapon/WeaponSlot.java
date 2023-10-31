@@ -1,4 +1,4 @@
-package net.bfsr.component.weapon;
+package net.bfsr.entity.ship.module.weapon;
 
 import lombok.Getter;
 import net.bfsr.config.component.weapon.gun.GunData;
@@ -6,9 +6,10 @@ import net.bfsr.config.entity.bullet.BulletData;
 import net.bfsr.config.entity.bullet.BulletRegistry;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.util.TimeUtils;
-import net.bfsr.entity.GameObject;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.Module;
+import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.event.module.weapon.WeaponShotEvent;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.physics.filter.ShipFilter;
@@ -21,7 +22,7 @@ import org.joml.Vector2f;
 
 import java.util.List;
 
-public class WeaponSlot extends GameObject {
+public class WeaponSlot extends Module {
     @Getter
     protected int id;
     protected World world;
@@ -36,16 +37,16 @@ public class WeaponSlot extends GameObject {
     @Getter
     private final GunData gunData;
     @Getter
-    private final WeaponType type;
+    private final WeaponType weaponType;
     @Getter
     private final BulletData bulletData;
     protected EventBus eventBus;
 
-    public WeaponSlot(GunData gunData, WeaponType type) {
+    public WeaponSlot(GunData gunData, WeaponType weaponType) {
         super(gunData.getSizeX(), gunData.getSizeY());
         this.timeToReload = (int) (gunData.getReloadTimeInSeconds() * TimeUtils.UPDATES_PER_SECOND);
         this.energyCost = gunData.getEnergyCost();
-        this.type = type;
+        this.weaponType = weaponType;
         this.polygon = gunData.getPolygon();
         this.bulletData = BulletRegistry.INSTANCE.get(gunData.getBulletData());
         this.gunData = gunData;
@@ -77,7 +78,7 @@ public class WeaponSlot extends GameObject {
     }
 
     public void tryShoot() {
-        float energy = ship.getReactor().getEnergy();
+        float energy = ship.getModules().getReactor().getEnergy();
         if (reloadTimer <= 0 && energy >= energyCost) {
             shoot();
         }
@@ -85,7 +86,7 @@ public class WeaponSlot extends GameObject {
 
     public void shoot() {
         reloadTimer = timeToReload;
-        ship.getReactor().consume(energyCost);
+        ship.getModules().getReactor().consume(energyCost);
         eventBus.publish(new WeaponShotEvent(this));
     }
 
@@ -127,5 +128,10 @@ public class WeaponSlot extends GameObject {
                 break;
             }
         }
+    }
+
+    @Override
+    public ModuleType getType() {
+        return ModuleType.WEAPON_SLOT;
     }
 }

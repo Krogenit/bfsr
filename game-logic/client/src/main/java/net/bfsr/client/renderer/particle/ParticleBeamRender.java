@@ -3,11 +3,11 @@ package net.bfsr.client.renderer.particle;
 
 import net.bfsr.client.particle.ParticleBeamEffect;
 import net.bfsr.client.particle.ParticleManager;
-import net.bfsr.component.weapon.WeaponSlotBeam;
+import org.joml.Vector4f;
 
 public class ParticleBeamRender extends ParticleRender {
-    private WeaponSlotBeam slot;
-    private boolean changeColor;
+    private boolean fadeIn;
+    private Vector4f beamColor;
 
     public ParticleBeamRender init(ParticleBeamEffect object, long textureHandle, float r, float g, float b, float a) {
         this.object = object;
@@ -20,8 +20,8 @@ public class ParticleBeamRender extends ParticleRender {
         this.color.set(r, g, b, a);
         this.lastColor.set(color);
         this.textureHandle = textureHandle;
-        this.changeColor = false;
-        this.slot = object.getSlot();
+        this.fadeIn = true;
+        this.beamColor = object.getBeamColor();
         return this;
     }
 
@@ -31,24 +31,27 @@ public class ParticleBeamRender extends ParticleRender {
         lastSin = object.getSin();
         lastCos = object.getCos();
 
-        float beamPower = slot.getBeamPower();
         float colorSpeed = 0.25f * ParticleManager.RAND.nextFloat();
-        if (changeColor) {
-            if (color.w > 0) {
-                color.w -= colorSpeed;
-            }
-        } else {
-            float maxAlphaColor = beamPower * 2.0f;
+        if (fadeIn) {
+            float maxAlphaColor = beamColor.w * 2.0f;
 
             if (color.w < maxAlphaColor) {
                 color.w += colorSpeed;
                 if (color.w >= maxAlphaColor) {
                     color.w = maxAlphaColor;
-                    changeColor = true;
+                    fadeIn = false;
                 }
             } else {
-                changeColor = true;
+                fadeIn = false;
             }
+        } else {
+            if (color.w > 0) {
+                color.w -= colorSpeed;
+            }
+        }
+
+        if (color.w > beamColor.w * 2.0f) {
+            color.w = beamColor.w * 2.0f;
         }
 
         if (color.w <= 0) {

@@ -1,4 +1,4 @@
-package net.bfsr.component.weapon;
+package net.bfsr.entity.ship.module.weapon;
 
 import net.bfsr.config.component.weapon.beam.BeamRegistry;
 import net.bfsr.config.component.weapon.gun.GunRegistry;

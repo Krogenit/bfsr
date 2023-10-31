@@ -43,7 +43,7 @@ public final class DamageSystem {
     private final Paths64 difference64 = new Paths64();
     private final ClipperD clipper = new ClipperD();
 
-    public void damage(Damageable damageable, double contactX, double contactY, Path64 clip, float radius) {
+    public void damage(Damageable damageable, float contactX, float contactY, Path64 clip, float radius) {
         if (damageable.isDead() || damageable.getContours().size() == 0) return;
 
         DamageMask mask = damageable.getMask();
@@ -414,10 +414,10 @@ public final class DamageSystem {
         fillTextureByPolygon(res, mask, (byte) 0);
     }
 
-    public void clipTexture(double x, double y, Damageable Damageable, float clipRadius, DamageMask mask, Random random) {
-        Vector2f scale = Damageable.getSize();
-        double sin = -Damageable.getBody().getTransform().getSint();
-        double cos = Damageable.getBody().getTransform().getCost();
+    public void clipTexture(float x, float y, Damageable damageable, float clipRadius, DamageMask mask, Random random) {
+        Vector2f scale = damageable.getSize();
+        float sin = (float) -damageable.getBody().getTransform().getSint();
+        float cos = (float) damageable.getBody().getTransform().getCost();
 
         float sizeX = scale.x / 2.0f;
         float sizeY = scale.y / 2.0f;
@@ -425,10 +425,10 @@ public final class DamageSystem {
         int height = mask.getHeight();
         int radius = (int) (clipRadius * (width / scale.x) / 2.0f);
 
-        double localPosX = x - Damageable.getBody().getTransform().getTranslationX();
-        double localPosY = y - Damageable.getBody().getTransform().getTranslationY();
-        double rotatedX = cos * localPosX - sin * localPosY;
-        double rotatedY = sin * localPosX + cos * localPosY;
+        float localPosX = x - (float) damageable.getBody().getTransform().getTranslationX();
+        float localPosY = y - (float) damageable.getBody().getTransform().getTranslationY();
+        float rotatedX = cos * localPosX - sin * localPosY;
+        float rotatedY = sin * localPosX + cos * localPosY;
         int localX = (int) ((rotatedX + sizeX) * (width / scale.x));
         int localY = (int) ((rotatedY + sizeY) * (height / scale.y));
         int startX = Math.max(localX - radius, 0);

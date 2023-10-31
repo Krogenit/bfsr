@@ -1,5 +1,5 @@
 {
   "name": "saimon",
-  "maxHullValue": 25.0,
+  "maxValue": 25.0,
   "regenAmountInSeconds": 0.025
 }

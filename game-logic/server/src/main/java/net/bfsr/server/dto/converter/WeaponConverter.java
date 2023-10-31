@@ -1,11 +1,11 @@
 package net.bfsr.server.dto.converter;
 
-import net.bfsr.component.weapon.WeaponSlot;
-import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.config.component.weapon.beam.BeamData;
 import net.bfsr.config.component.weapon.beam.BeamRegistry;
 import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.config.component.weapon.gun.GunRegistry;
+import net.bfsr.entity.ship.module.weapon.WeaponSlot;
+import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.server.dto.WeaponModel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

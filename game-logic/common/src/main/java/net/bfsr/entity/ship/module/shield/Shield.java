@@ -1,4 +1,4 @@
-package net.bfsr.component.shield;
+package net.bfsr.entity.ship.module.shield;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -7,6 +7,8 @@ import net.bfsr.engine.event.Event;
 import net.bfsr.engine.util.SideUtils;
 import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.Module;
+import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.event.module.shield.ShieldRebuildEvent;
 import net.bfsr.event.module.shield.ShieldRemoveEvent;
 import net.bfsr.event.module.shield.ShieldResetRebuildingTimeEvent;
@@ -22,7 +24,7 @@ import org.joml.Vector2f;
 
 import java.util.List;
 
-public class Shield {
+public class Shield extends Module {
     @Getter
     @Setter
     private float shield;
@@ -34,8 +36,6 @@ public class Shield {
     private final Vector2f diameter = new Vector2f();
     private final int timeToRebuild;
     private int rebuildingTime;
-    @Getter
-    private float size;
     private Body body;
     private boolean alive;
     private BodyFixture shieldFixture;
@@ -46,7 +46,7 @@ public class Shield {
     private MBassador<Event> eventBus;
 
     public Shield(ShieldData shieldData) {
-        this.size = 1.0f;
+        super(1.0f, 1.0f);
         this.maxShield = shieldData.getMaxShield();
         this.shieldRegen = shieldData.getRegenAmount();
         this.timeToRebuild = (int) shieldData.getRebuildTimeInTicks();
@@ -133,9 +133,9 @@ public class Shield {
     }
 
     private void onShieldAlive() {
-        if (size < 1.0f) {
-            size += 3.6f * TimeUtils.UPDATE_DELTA_TIME;
-            if (size > 1.0f) size = 1.0f;
+        if (size.x < 1.0f) {
+            size.x += 3.6f * TimeUtils.UPDATE_DELTA_TIME;
+            if (size.x > 1.0f) size.x = 1.0f;
         }
     }
 
@@ -177,9 +177,14 @@ public class Shield {
         body.removeFixture(shieldFixture);
         shieldFixture = null;
         rebuildingTime = 0;
-        size = 0.0f;
+        size.set(0.0f);
         shield = 0;
         alive = false;
         eventBus.publish(new ShieldRemoveEvent(this));
+    }
+
+    @Override
+    public ModuleType getType() {
+        return ModuleType.SHIELD;
     }
 }

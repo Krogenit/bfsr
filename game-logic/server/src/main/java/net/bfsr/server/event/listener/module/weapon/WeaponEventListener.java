@@ -1,8 +1,8 @@
 package net.bfsr.server.event.listener.module.weapon;
 
-import net.bfsr.component.weapon.WeaponSlot;
-import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.weapon.WeaponSlot;
+import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.event.module.weapon.BeamShotEvent;
 import net.bfsr.event.module.weapon.WeaponShotEvent;
 import net.bfsr.network.packet.server.component.PacketWeaponShoot;

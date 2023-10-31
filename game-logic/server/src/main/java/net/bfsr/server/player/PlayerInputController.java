@@ -24,7 +24,7 @@ public class PlayerInputController {
 
     public void update() {
         if (ship != null) {
-            RigidBodyUtils.rotateToVector(ship, mousePosition, ship.getEngine().getAngularVelocity());
+            RigidBodyUtils.rotateToVector(ship, mousePosition, ship.getModules().getEngine().getAngularVelocity());
             ship.getMoveDirections().forEach(ship::move);
             if (mouseLeftDown) {
                 ship.shoot();

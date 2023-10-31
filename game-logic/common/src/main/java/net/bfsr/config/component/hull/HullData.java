@@ -10,8 +10,8 @@ public class HullData extends ConfigData {
     private final float regenAmount;
 
     public HullData(HullConfig hullConfig, int dataIndex) {
-        super(hullConfig.name(), dataIndex);
-        this.maxHullValue = hullConfig.maxHullValue();
-        this.regenAmount = hullConfig.regenAmountInSeconds() * TimeUtils.UPDATE_DELTA_TIME;
+        super(hullConfig.getName(), dataIndex);
+        this.maxHullValue = hullConfig.getMaxValue();
+        this.regenAmount = hullConfig.getRegenAmountInSeconds() * TimeUtils.UPDATE_DELTA_TIME;
     }
 }

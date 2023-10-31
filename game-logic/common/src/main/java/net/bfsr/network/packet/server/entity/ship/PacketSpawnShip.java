@@ -4,8 +4,8 @@ import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.bfsr.component.weapon.WeaponSlot;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.network.packet.PacketAdapter;
 import net.bfsr.network.util.ByteBufUtils;
 import org.joml.Vector2f;
@@ -50,11 +50,11 @@ public class PacketSpawnShip extends PacketAdapter {
         data.writeShort(ship.getShipData().getDataIndex());
         data.writeBoolean(ship.isSpawned());
 
-        List<WeaponSlot> weaponSlots = ship.getWeaponSlots();
+        List<WeaponSlot> weaponSlots = ship.getModules().getWeaponSlots();
         data.writeByte(weaponSlots.size());
         for (int i = 0; i < weaponSlots.size(); i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
-            data.writeByte(weaponSlot.getType().ordinal());
+            data.writeByte(weaponSlot.getWeaponType().ordinal());
             data.writeShort(weaponSlot.getGunData().getDataIndex());
             data.writeInt(weaponSlot.getId());
         }

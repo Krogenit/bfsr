@@ -7,10 +7,6 @@ import net.bfsr.client.renderer.Render;
 import net.bfsr.client.renderer.component.WeaponSlotBeamRender;
 import net.bfsr.client.renderer.component.WeaponSlotRender;
 import net.bfsr.client.renderer.texture.DamageMaskTexture;
-import net.bfsr.component.hull.Hull;
-import net.bfsr.component.shield.Shield;
-import net.bfsr.component.weapon.WeaponSlot;
-import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.StringObject;
 import net.bfsr.engine.renderer.buffer.BufferType;
@@ -19,6 +15,10 @@ import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.hull.Hull;
+import net.bfsr.entity.ship.module.shield.Shield;
+import net.bfsr.entity.ship.module.weapon.WeaponSlot;
+import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RigidBodyUtils;
@@ -64,9 +64,9 @@ public class ShipRender extends Render<Ship> {
                 Engine.renderer.createByteBuffer(texture.getWidth() * texture.getHeight()));
         maskTexture.createWhiteMask();
 
-        this.shieldTexture = Engine.assetsManager.getTexture(ship.getShield().getShieldData().getTexturePath());
+        this.shieldTexture = Engine.assetsManager.getTexture(ship.getModules().getShield().getShieldData().getTexturePath());
 
-        List<WeaponSlot> weaponSlots1 = object.getWeaponSlots();
+        List<WeaponSlot> weaponSlots1 = object.getModules().getWeaponSlots();
         for (int i = 0; i < weaponSlots1.size(); i++) {
             WeaponSlot weaponSlot = weaponSlots1.get(i);
             if (weaponSlot.getClass() == WeaponSlotBeam.class) {
@@ -222,9 +222,9 @@ public class ShipRender extends Render<Ship> {
                     lastSin, lastCos, sin, cos, scale.x, scale.y, 1.0f, 1.0f, 1.0f, 1.0f, texture, maskTexture,
                     BufferType.ENTITIES_ALPHA);
 
-            Hull hull = object.getHull();
-            if (hull.getHull() < hull.getMaxHull()) {
-                float hp = hull.getHull() / hull.getMaxHull();
+            Hull hull = object.getModules().getHull();
+            if (hull.getValue() < hull.getMaxValue()) {
+                float hp = hull.getValue() / hull.getMaxValue();
                 spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y,
                         lastSin, lastCos, sin, cos, scale.x, scale.y, 1.0f, 1.0f, 1.0f, 1.0f - hp, textureDamage, maskTexture,
                         BufferType.ENTITIES_ALPHA);
@@ -241,7 +241,7 @@ public class ShipRender extends Render<Ship> {
     public void renderAdditive() {
         if (object.isSpawned()) {
             renderGunSlotsAdditive();
-            renderShield(object, object.getShield());
+            renderShield(object, object.getModules().getShield());
         } else {
             float delta = lastJumpDelta + (jumpDelta - lastJumpDelta) * renderer.getInterpolation();
             float size = 40.0f * delta;
@@ -277,7 +277,7 @@ public class ShipRender extends Render<Ship> {
     private void renderShield(Ship ship, Shield shield) {
         if (shield != null && shield.isShieldAlive()) {
             Vector2f diameter = shield.getDiameter();
-            float size = shield.getSize();
+            float size = shield.getSize().x;
             Vector4f color = ship.getShipData().getEffectsColor();
             spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, ship.getPosition().x, ship.getPosition().y,
                     lastSin, lastCos, ship.getSin(), ship.getCos(), diameter.x * size, diameter.y * size, color.x, color.y,
