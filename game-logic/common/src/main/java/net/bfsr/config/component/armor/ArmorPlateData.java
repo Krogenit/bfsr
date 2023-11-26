@@ -7,8 +7,8 @@ import net.bfsr.config.component.hull.HullData;
 public class ArmorPlateData extends HullData {
     private final float hullProtection;
 
-    public ArmorPlateData(ArmorPlateConfig config, int dataIndex) {
-        super(config, dataIndex);
+    ArmorPlateData(ArmorPlateConfig config, String name, int dataIndex) {
+        super(config, name, dataIndex);
         this.hullProtection = config.getProtection();
     }
 }

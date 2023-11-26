@@ -1,6 +1,6 @@
 package net.bfsr.entity.ship;
 
-import clipper2.core.PathsD;
+import clipper2.core.PathD;
 import gnu.trove.set.hash.THashSet;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,18 +9,24 @@ import net.bfsr.ai.AiAggressiveType;
 import net.bfsr.ai.task.AiAttackTarget;
 import net.bfsr.ai.task.AiSearchTarget;
 import net.bfsr.config.entity.ship.ShipData;
+import net.bfsr.config.entity.ship.ShipRegistry;
+import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.DamageMask;
-import net.bfsr.damage.Damageable;
+import net.bfsr.damage.DamageSystem;
+import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.util.SideUtils;
 import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.BulletDamage;
+import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.cargo.Cargo;
 import net.bfsr.entity.ship.module.crew.Crew;
 import net.bfsr.entity.ship.module.engine.Engine;
+import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.hull.Hull;
+import net.bfsr.entity.ship.module.hull.HullCell;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
@@ -31,23 +37,24 @@ import net.bfsr.faction.Faction;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.math.RotationHelper;
-import net.bfsr.physics.PhysicsUtils;
-import net.bfsr.physics.filter.ShipFilter;
+import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
+import net.bfsr.network.packet.common.entity.spawn.ShipSpawnData;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.Force;
 import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.MassType;
+import org.dyn4j.geometry.Vector2;
+import org.dyn4j.geometry.Wound;
 import org.dyn4j.world.ContactCollisionData;
 import org.joml.Vector2f;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static net.bfsr.math.RigidBodyUtils.ANGLE_TO_VELOCITY;
 
-public class Ship extends RigidBody implements Damageable {
+public class Ship extends DamageableRigidBody<ShipData> {
     @Getter
     @Setter
     private String name;
@@ -63,7 +70,7 @@ public class Ship extends RigidBody implements Damageable {
     private Faction faction;
 
     @Getter
-    private boolean spawned;
+    protected boolean spawned;
     @Getter
     private final int jumpTime = (int) (0.6f * TimeUtils.UPDATES_PER_SECOND);
     @Getter
@@ -81,28 +88,19 @@ public class Ship extends RigidBody implements Damageable {
     private boolean controlledByPlayer;
 
     @Getter
-    private RigidBody lastAttacker;
+    private RigidBody<?> lastAttacker;
 
     @Getter
     private final THashSet<Direction> moveDirections = new THashSet<>();
     @Getter
-    @Setter
-    private PathsD contours = new PathsD();
-    @Getter
-    private final List<BodyFixture> fixturesToAdd = new ArrayList<>();
-    @Getter
     private Ai ai;
     @Getter
     @Setter
-    private RigidBody target;
-    @Getter
-    private DamageMask mask;
-    @Getter
-    private final ShipData shipData;
+    private RigidBody<?> target;
 
     public Ship(ShipData shipData) {
-        super(shipData.getSize().x, shipData.getSize().y);
-        this.shipData = shipData;
+        super(shipData.getSizeX(), shipData.getSizeY(), shipData, ShipRegistry.INSTANCE.getId(), new DamageMask(32, 32),
+                shipData.getContour());
         this.timeToDestroy = shipData.getDestroyTimeInTicks();
         this.maxSparksTimer = timeToDestroy / 3;
         this.jumpTimer = jumpTime;
@@ -110,28 +108,18 @@ public class Ship extends RigidBody implements Damageable {
     }
 
     @Override
-    public int getDataIndex() {
-        return shipData.getDataIndex();
-    }
-
-    @Override
     public void init(World world, int id) {
         super.init(world, id);
+        modules.init(this);
 
         if (SideUtils.IS_SERVER && world.isServer()) {
             addAI();
         }
-
-        eventBus = world.getEventBus();
     }
 
     @Override
     protected void initBody() {
-        contours.add(shipData.getContour());
-
-        mask = new DamageMask(128, 128);
-
-        List<Convex> convexes = shipData.getConvexList();
+        List<Convex> convexes = configData.getConvexList();
         for (int i = 0; i < convexes.size(); i++) {
             body.addFixture(setupFixture(new BodyFixture(convexes.get(i))));
         }
@@ -148,7 +136,7 @@ public class Ship extends RigidBody implements Damageable {
 
     public void move(Direction dir) {
         if (dir == Direction.STOP) {
-            body.getLinearVelocity().multiply(modules.getEngine().getManeuverability() * 0.98f);
+            body.getLinearVelocity().multiply(modules.getEngines().getManeuverability() * 0.98f);
             return;
         }
 
@@ -156,13 +144,13 @@ public class Ship extends RigidBody implements Damageable {
         double cos = body.getTransform().getCost();
 
         if (dir == Direction.FORWARD) {
-            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(cos, sin), modules.getEngine().getForwardAcceleration());
+            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(cos, sin), modules.getEngines().getForwardAcceleration());
         } else if (dir == Direction.BACKWARD) {
-            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(-cos, -sin), modules.getEngine().getBackwardAcceleration());
+            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(-cos, -sin), modules.getEngines().getBackwardAcceleration());
         } else if (dir == Direction.LEFT) {
-            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(sin, -cos), modules.getEngine().getSideAcceleration());
+            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(sin, -cos), modules.getEngines().getSideAcceleration());
         } else if (dir == Direction.RIGHT) {
-            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(-sin, cos), modules.getEngine().getSideAcceleration());
+            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(-sin, cos), modules.getEngines().getSideAcceleration());
         }
     }
 
@@ -188,7 +176,23 @@ public class Ship extends RigidBody implements Damageable {
     }
 
     @Override
-    public void collision(Body body, float contactX, float contactY, float normalX, float normalY,
+    public void addConnectedObject(ConnectedObject connectedObject) {
+        super.addConnectedObject(connectedObject);
+        if (connectedObject instanceof WeaponSlot weaponSlot) {
+            modules.addWeaponToSlot(weaponSlot.getId(), weaponSlot);
+        }
+    }
+
+    @Override
+    public void removeConnectedObject(ConnectedObject connectedObject) {
+        super.removeConnectedObject(connectedObject);
+        if (connectedObject instanceof WeaponSlot weaponSlot) {
+            modules.removeWeaponSlot(weaponSlot.getId());
+        }
+    }
+
+    @Override
+    public void collision(Body body, BodyFixture fixture, float contactX, float contactY, float normalX, float normalY,
                           ContactCollisionData<Body> collision) {
         Object userData = body.getUserData();
         if (userData != null) {
@@ -205,22 +209,18 @@ public class Ship extends RigidBody implements Damageable {
             } else if (userData instanceof Wreck) {
                 if (collisionTimer <= 0) {
                     collisionTimer = 2 * TimeUtils.UPDATES_PER_SECOND;
-                    onCollidedWithWreck(contactX, contactY, normalX, normalY);
+                    eventBus.publish(new ShipCollisionWithWreckEvent(this, contactX, contactY, normalX, normalY));
                 }
             }
         }
     }
 
-    private void onCollidedWithWreck(float contactX, float contactY, float normalX, float normalY) {
-        eventBus.publish(new ShipCollisionWithWreckEvent(this, contactX, contactY, normalX, normalY));
-    }
-
     @Override
     public void update() {
-        super.update();
-
         if (spawned) {
+            updateFixtures();
             updateShip();
+            updateLifeTime();
         } else {
             updateJump();
         }
@@ -232,7 +232,7 @@ public class Ship extends RigidBody implements Damageable {
         if (destroyingTimer > 0) {
             sparksTimer -= 1;
             if (sparksTimer <= 0) {
-                spawnSmallExplosion();
+                eventBus.publish(new ShipDestroyingExplosionEvent(this));
                 sparksTimer = maxSparksTimer;
             }
 
@@ -243,17 +243,29 @@ public class Ship extends RigidBody implements Damageable {
                 }
             }
         } else {
-            if (fixturesToAdd.size() > 0) {
-                body.removeAllFixtures();
-                for (int i = 0; i < fixturesToAdd.size(); i++) {
-                    body.addFixture(fixturesToAdd.get(i));
-                }
-                fixturesToAdd.clear();
-            }
-
             if (ai != null) {
                 ai.update();
             }
+        }
+    }
+
+    @Override
+    protected void updateFixtures() {
+        if (fixturesToAdd.size() > 0) {
+            body.removeAllFixtures();
+            for (int i = 0; i < fixturesToAdd.size(); i++) {
+                body.addFixture(fixturesToAdd.get(i));
+            }
+            addConnectedObjectFixturesToBody();
+            fixturesToAdd.clear();
+            fixturesToRemove.clear();
+        }
+
+        if (fixturesToRemove.size() > 0) {
+            for (int i = 0; i < fixturesToRemove.size(); i++) {
+                body.removeFixture(fixturesToRemove.get(i));
+            }
+            fixturesToRemove.clear();
         }
     }
 
@@ -266,10 +278,17 @@ public class Ship extends RigidBody implements Damageable {
     }
 
     @Override
+    protected void updateLifeTime() {
+        if (world.isClient() && lifeTime++ >= 60) {
+            setDead();
+        }
+    }
+
+    @Override
     public void postPhysicsUpdate() {
         super.postPhysicsUpdate();
 
-        float maxForwardSpeed = modules.getEngine().getMaxForwardVelocity();
+        float maxForwardSpeed = modules.getEngines().getMaxForwardVelocity();
         float maxForwardSpeedSquared = maxForwardSpeed * maxForwardSpeed;
         double magnitudeSquared = body.getLinearVelocity().getMagnitudeSquared();
 
@@ -323,55 +342,85 @@ public class Ship extends RigidBody implements Damageable {
     }
 
     private void onHullDamageByCollision(float contactX, float contactY, float normalX, float normalY) {
-        if (SideUtils.IS_SERVER && world.isServer()) {
-            if (modules.getHull().badlyDamaged()) {
-                setDestroying();
-            }
-        } else {
-            eventBus.publish(new ShipHullDamageByCollisionEvent(this, contactX, contactY, normalX, normalY));
-        }
+        eventBus.publish(new ShipHullDamageByCollisionEvent(this, contactX, contactY, normalX, normalY));
     }
 
-    public boolean attackShip(BulletDamage damage, Ship attacker, float contactX, float contactY, float multiplayer) {
+    public void damage(BulletDamage damage, Ship attacker, float contactX, float contactY, float multiplayer,
+                       BodyFixture fixture, Runnable onShieldDamageRunnable, Runnable onArmorDamageRunnable,
+                       Runnable onHullDamageRunnable) {
         lastAttacker = attacker;
         float shieldDamage = damage.getShield() * multiplayer;
 
         Shield shield = modules.getShield();
         if (shield != null && shield.damage(shieldDamage)) {
-            return false;
+            onShieldDamageRunnable.run();
+            return;
         }
 
         float hullDamage = damage.getHull() * multiplayer;
         float armorDamage = damage.getArmor() * multiplayer;
 
         float reducedHullDamage = modules.getArmor().reduceDamageByArmor(armorDamage, hullDamage, contactX, contactY, this);
-        if (reducedHullDamage == armorDamage) {
-            modules.getHull().damage(reducedHullDamage, contactX, contactY, this);
-            onHullDamage(contactX, contactY);
-        }
 
-        return true;
-    }
+        if (reducedHullDamage == hullDamage) {
+            HullCell cell = modules.getHull().damage(reducedHullDamage, contactX, contactY, this);
 
-    private void onHullDamage(float contactX, float contactY) {
-        if (SideUtils.IS_SERVER && world.isServer()) {
-            if (modules.getHull().badlyDamaged()) {
-                setDestroying();
-            } else {
-                eventBus.publish(new ShipHullDamageEvent(this, contactX, contactY));
+            if (SideUtils.IS_SERVER && world.isServer()) {
+                Object userData = fixture.getUserData();
+                if (userData instanceof DamageableModule) {
+                    ((DamageableModule) userData).damage(reducedHullDamage);
+                }
             }
+
+            onHullDamageRunnable.run();
+            eventBus.publish(new ShipHullDamageEvent(this, contactX, contactY, cell));
+        } else {
+            onArmorDamageRunnable.run();
         }
     }
 
     @Override
-    public BodyFixture setupFixture(BodyFixture bodyFixture) {
-        bodyFixture.setFilter(new ShipFilter(this));
-        bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-        return bodyFixture;
+    public void addConnectedObjectFixturesToBody() {
+        super.addConnectedObjectFixturesToBody();
+        modules.addFixturesToBody();
     }
 
-    private void spawnSmallExplosion() {
-        eventBus.publish(new ShipDestroyingExplosionEvent(this));
+    @Override
+    public void onContourReconstructed(PathD contour) {
+        if (!DamageSystem.isPolygonConnectedToContour(configData.getReactorPolygon().getVertices(), contour)) {
+            modules.getReactor().setDead();
+            return;
+        }
+
+        List<Engine> engines = modules.getEngines().getEngines();
+        for (int i = 0; i < engines.size(); i++) {
+            Engine engine = engines.get(i);
+            Vector2[] vertices = ((Wound) engine.getFixture().getShape()).getVertices();
+            if (!DamageSystem.isPolygonConnectedToContour(vertices, contour)) {
+                engine.setDead();
+            }
+        }
+
+        Shield shield = modules.getShield();
+        if (!DamageSystem.isPolygonConnectedToContour(configData.getShieldPolygon().getVertices(), contour)) {
+            shield.setDead();
+        }
+    }
+
+    public void addAI() {
+        this.ai = new Ai();
+        this.ai.setAggressiveType(AiAggressiveType.ATTACK);
+        this.ai.addTask(new AiSearchTarget(this, 4000.0f));
+        this.ai.addTask(new AiAttackTarget(this, 4000.0f));
+    }
+
+    public void removeAI() {
+        this.ai = null;
+    }
+
+    @Override
+    public EntityPacketSpawnData createSpawnData() {
+        return new ShipSpawnData(this);
     }
 
     public void setHull(Hull hull) {
@@ -383,12 +432,11 @@ public class Ship extends RigidBody implements Damageable {
     }
 
     public void setShield(Shield shield) {
-        shield.init(this);
         modules.setShield(shield);
     }
 
-    public void setEngine(Engine engine) {
-        modules.setEngine(engine);
+    public void setEngine(Engines engines) {
+        modules.setEngines(engines);
     }
 
     public void setReactor(Reactor reactor) {
@@ -404,24 +452,30 @@ public class Ship extends RigidBody implements Damageable {
     }
 
     public Vector2f getWeaponSlotPosition(int id) {
-        return shipData.getWeaponSlotPositions()[id];
+        return configData.getWeaponSlotPositions()[id];
     }
 
     public void addWeaponToSlot(int id, WeaponSlot slot) {
-        modules.addWeaponToSlot(id, slot, this);
+        modules.addWeaponToSlot(id, slot);
+        super.addConnectedObject(slot);
     }
 
-    public WeaponSlot getWeaponSlot(int i) {
-        return modules.getWeaponSlot(i);
+    public WeaponSlot getWeaponSlot(int id) {
+        List<WeaponSlot> weaponSlots = modules.getWeaponSlots();
+        for (int i1 = 0; i1 < weaponSlots.size(); i1++) {
+            WeaponSlot weaponSlot = weaponSlots.get(i1);
+            if (weaponSlot.getId() == id) {
+                return weaponSlot;
+            }
+        }
+
+        return null;
     }
 
     public void setSpawned() {
         spawned = true;
-        world.spawnShip(this);
-    }
-
-    private void setVelocity(float x, float y) {
-        body.setLinearVelocity(x, y);
+        world.getPhysicWorld().addBody(body);
+        eventBus.publish(new ShipSpawnEvent(this));
     }
 
     @Override
@@ -445,12 +499,6 @@ public class Ship extends RigidBody implements Damageable {
         modules.updateWeaponSlotPositions();
     }
 
-    @Override
-    public void updateServerPositionFromPacket(Vector2f pos, float sin, float cos, Vector2f velocity, float angularVelocity) {
-        super.updateServerPositionFromPacket(pos, sin, cos, velocity, angularVelocity);
-        modules.updateWeaponSlotPositions();
-    }
-
     public void setDestroying() {
         if (destroyingTimer == 0) {
             destroyingTimer = timeToDestroy;
@@ -470,21 +518,5 @@ public class Ship extends RigidBody implements Damageable {
 
     public boolean isBot() {
         return owner == null;
-    }
-
-    @Override
-    public void clear() {
-        modules.clear();
-    }
-
-    public void removeAI() {
-        this.ai = null;
-    }
-
-    public void addAI() {
-        this.ai = new Ai();
-        this.ai.setAggressiveType(AiAggressiveType.ATTACK);
-        this.ai.addTask(new AiSearchTarget(this, 4000.0f));
-        this.ai.addTask(new AiAttackTarget(this, 4000.0f));
     }
 }

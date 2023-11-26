@@ -1,20 +1,20 @@
 package net.bfsr.editor.gui.property;
 
-import net.bfsr.editor.property.PropertiesHolder;
 import net.bfsr.engine.gui.component.ComboBox;
 import net.bfsr.engine.gui.component.CompoBoxElement;
 import net.bfsr.engine.gui.object.SimpleGuiObject;
-import net.bfsr.engine.renderer.font.FontType;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.function.BiConsumer;
 
-import static net.bfsr.editor.gui.ColorScheme.*;
+import static net.bfsr.editor.gui.EditorTheme.*;
 
-public class PropertyComboBox<V extends PropertiesHolder> extends PropertyComponent<V> {
-    public PropertyComboBox(int width, int height, String name, int propertyOffsetX, int fontSize, int stringOffsetY, V object,
-                            List<Field> fields, Object[] values) {
-        super(width, height, name, FontType.CONSOLA, fontSize, propertyOffsetX, 0, stringOffsetY, object, fields, values);
+public class PropertyComboBox extends PropertyComponent {
+    public PropertyComboBox(int width, int height, String name, int propertyOffsetX, int fontSize, int stringOffsetY,
+                            Object object, List<Field> fields, Object[] values, BiConsumer<Object, Integer> valueSetterConsumer) {
+        super(width, height, name, FONT_TYPE, fontSize, propertyOffsetX, 0, stringOffsetY, object, fields, values,
+                valueSetterConsumer);
 
         Field field = fields.get(0);
         Class<?> type = field.getType();
@@ -25,9 +25,8 @@ public class PropertyComboBox<V extends PropertiesHolder> extends PropertyCompon
             Enum<?>[] enums = enumValue.getClass().getEnumConstants();
             for (int i = 0; i < enums.length; i++) {
                 Enum<?> value = enums[i];
-                comboBox.addSubObject(
-                        new CompoBoxElement<>(width - propertyOffsetX, height, value, value.toString(), FontType.CONSOLA,
-                                fontSize, stringOffsetY, comboBox));
+                comboBox.addSubObject(new CompoBoxElement<>(width - propertyOffsetX, height, value, value.toString(), FONT_TYPE,
+                        fontSize, stringOffsetY, comboBox));
             }
 
             comboBox.setSelectedIndex(enumValue.ordinal());
@@ -40,8 +39,8 @@ public class PropertyComboBox<V extends PropertiesHolder> extends PropertyCompon
     }
 
     @Override
-    public void setSetting() throws IllegalAccessException {
-        fields.get(0).set(object, ((ComboBox<?>) subObjects.get(0)).getSelectedValue());
+    public void setSetting() {
+        valueConsumer.accept(((ComboBox<?>) subObjects.get(0)).getSelectedValue(), 0);
     }
 
     @Override

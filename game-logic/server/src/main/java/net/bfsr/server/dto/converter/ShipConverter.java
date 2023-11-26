@@ -10,7 +10,7 @@ import java.util.List;
 
 @Mapper(uses = ModulesConverter.class)
 public abstract class ShipConverter {
-    @Mapping(target = "name", expression = "java(ship.getShipData().getName())")
+    @Mapping(target = "name", expression = "java(ship.getConfigData().getFileName())")
     public abstract ShipModel to(Ship ship);
 
     @Mappings({@Mapping(target = "dead", ignore = true),
@@ -20,11 +20,17 @@ public abstract class ShipConverter {
             @Mapping(target = "name", ignore = true), @Mapping(target = "controlledByPlayer", ignore = true),
             @Mapping(target = "target", ignore = true), @Mapping(target = "owner", ignore = true),
             @Mapping(target = "fixtures", ignore = true), @Mapping(target = "moveDirections", ignore = true),
-            @Mapping(target = "contours", ignore = true), @Mapping(target = "fixturesToAdd", ignore = true)})
+            @Mapping(target = "contours", ignore = true), @Mapping(target = "fixturesToAdd", ignore = true),
+            @Mapping(target = "armor", ignore = true), @Mapping(target = "configData", ignore = true),
+            @Mapping(target = "engine", ignore = true), @Mapping(target = "health", ignore = true),
+            @Mapping(target = "hull", ignore = true), @Mapping(target = "reactor", ignore = true),
+            @Mapping(target = "registryId", ignore = true), @Mapping(target = "fixturesToRemove", ignore = true),
+            @Mapping(target = "connectedObjects", ignore = true)
+    })
     public abstract Ship from(ShipModel shipModel);
 
     @AfterMapping
-    public void initWeapons(ShipModel shipModel, @MappingTarget Ship ship) {
+    void initWeapons(ShipModel shipModel, @MappingTarget Ship ship) {
         List<WeaponSlot> weaponSlots = ship.getModules().getWeaponSlots();
         for (int i = 0; i < weaponSlots.size(); i++) {
             weaponSlots.get(i).init(i, ship);

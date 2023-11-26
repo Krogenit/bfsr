@@ -13,7 +13,7 @@ public abstract class ModuleWithCells<T> extends Module {
     protected final T[][] cells;
     protected final float width, height;
 
-    public ModuleWithCells(Ship ship, Class<T> componentType, Supplier<T> supplier) {
+    protected ModuleWithCells(Ship ship, Class<T> componentType, Supplier<T> supplier) {
         AABB aabb = new AABB(0);
         MathUtils.computeAABB(ship.getBody(), aabb);
         this.width = (float) aabb.getWidth();
@@ -29,7 +29,7 @@ public abstract class ModuleWithCells<T> extends Module {
         }
     }
 
-    public T getCell(float contactX, float contactY, Ship ship) {
+    protected T getCell(float contactX, float contactY, Ship ship) {
         float sin = (float) -ship.getBody().getTransform().getSint();
         float cos = (float) ship.getBody().getTransform().getCost();
 
@@ -40,8 +40,8 @@ public abstract class ModuleWithCells<T> extends Module {
         float localPosY = contactY - (float) ship.getBody().getTransform().getTranslationY();
         float rotatedX = cos * localPosX - sin * localPosY;
         float rotatedY = sin * localPosX + cos * localPosY;
-        int localX = Math.min((int) ((rotatedX + halfWidth) * (halfWidth / cells.length)), cells.length - 1);
-        int localY = Math.min((int) ((rotatedY + halfHeight) * (halfHeight / cells[0].length)), cells[0].length - 1);
+        int localX = Math.max(Math.min((int) ((rotatedX + halfWidth) * (halfWidth / cells.length)), cells.length - 1), 0);
+        int localY = Math.max(Math.min((int) ((rotatedY + halfHeight) * (halfHeight / cells[0].length)), cells[0].length - 1), 0);
 
         return cells[localX][localY];
     }

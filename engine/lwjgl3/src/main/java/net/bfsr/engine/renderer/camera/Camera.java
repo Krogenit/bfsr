@@ -27,7 +27,7 @@ public class Camera extends AbstractCamera {
 
     @Getter
     private final Vector2f position = new Vector2f();
-    private final Vector2f mouseMovingAccumulator = new Vector2f();
+    private final Vector2f movingAccumulator = new Vector2f();
     @Getter
     private final Vector2f lastPosition = new Vector2f();
     @Getter
@@ -77,9 +77,15 @@ public class Camera extends AbstractCamera {
     }
 
     @Override
+    public void move(float x, float y) {
+        movingAccumulator.x += x;
+        movingAccumulator.y += y;
+    }
+
+    @Override
     public void moveByMouse(float dx, float dy) {
-        mouseMovingAccumulator.x -= dx / zoom;
-        mouseMovingAccumulator.y -= dy / zoom;
+        movingAccumulator.x -= dx / zoom;
+        movingAccumulator.y -= dy / zoom;
     }
 
     @Override
@@ -88,9 +94,16 @@ public class Camera extends AbstractCamera {
 
         updateZoom();
 
-        position.x += mouseMovingAccumulator.x;
-        position.y += mouseMovingAccumulator.y;
-        mouseMovingAccumulator.set(0, 0);
+        position.x += movingAccumulator.x;
+        position.y += movingAccumulator.y;
+
+        if (movingAccumulator.x != 0 || movingAccumulator.y != 0 || zoomAccumulator != 0) {
+            setBoundingBox(position.x + origin.x / zoom, position.y + origin.y / zoom, position.x - origin.x / zoom,
+                    position.y - origin.y / zoom);
+        }
+
+        movingAccumulator.set(0, 0);
+        zoomAccumulator = 0;
     }
 
     private void updateZoom() {
@@ -106,8 +119,6 @@ public class Camera extends AbstractCamera {
         } else if (zoom < zoomMin) {
             zoom = zoomMin;
         }
-
-        zoomAccumulator = 0;
     }
 
     @Override

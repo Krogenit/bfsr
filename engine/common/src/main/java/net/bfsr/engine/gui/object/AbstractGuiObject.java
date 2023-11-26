@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 public abstract class AbstractGuiObject implements GuiObject {
     protected final AbstractRenderer renderer = Engine.renderer;
     protected final AbstractGUIRenderer guiRenderer = renderer.guiRenderer;
-    
+
     protected BiConsumer<Integer, Integer> repositionConsumer = (width, height) -> {};
     protected BiFunction<Integer, Integer, Integer> widthResizeFunction = (width, height) -> getWidth();
     protected BiFunction<Integer, Integer, Integer> heightResizeFunction = (width, height) -> getHeight();
@@ -68,8 +68,13 @@ public abstract class AbstractGuiObject implements GuiObject {
         return this;
     }
 
-    public AbstractGuiObject setHeightResizeFunction(BiFunction<Integer, Integer, Integer> resizeHeightFunction) {
-        this.heightResizeFunction = resizeHeightFunction;
+    public AbstractGuiObject setWidthResizeFunction(BiFunction<Integer, Integer, Integer> resizeFunction) {
+        this.widthResizeFunction = resizeFunction;
+        return this;
+    }
+
+    public AbstractGuiObject setHeightResizeFunction(BiFunction<Integer, Integer, Integer> resizeFunction) {
+        this.heightResizeFunction = resizeFunction;
         return this;
     }
 
@@ -125,6 +130,11 @@ public abstract class AbstractGuiObject implements GuiObject {
     @Override
     public boolean onMouseRightClick() {
         return onRightClickSupplier.get();
+    }
+
+    @Override
+    public boolean onMouseRightRelease() {
+        return false;
     }
 
     @Override

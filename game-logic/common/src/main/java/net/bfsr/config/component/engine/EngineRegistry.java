@@ -4,10 +4,10 @@ import net.bfsr.config.ConfigConverter;
 import net.bfsr.config.ConfigToDataConverter;
 
 @ConfigConverter
-public class EngineRegistry extends ConfigToDataConverter<EngineConfig, EngineData> {
+public final class EngineRegistry extends ConfigToDataConverter<EngineConfig, EnginesData> {
     public static final EngineRegistry INSTANCE = new EngineRegistry();
 
-    public EngineRegistry() {
-        super("module/engine", EngineConfig.class, EngineConfig::name, EngineData::new);
+    private EngineRegistry() {
+        super("module/engine", EngineConfig.class, (fileName, engineConfig) -> fileName, EnginesData::new);
     }
 }

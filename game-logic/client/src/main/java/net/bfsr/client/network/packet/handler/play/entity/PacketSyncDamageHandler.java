@@ -21,7 +21,7 @@ public class PacketSyncDamageHandler extends PacketHandler<PacketSyncDamage, Net
     public void handle(PacketSyncDamage packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
         GameObject gameObject = core.getWorld().getEntityById(packet.getId());
-        if (gameObject instanceof Damageable damageable) {
+        if (gameObject instanceof Damageable<?> damageable) {
             damageable.setContours(packet.getContours());
             List<BodyFixture> fixtures = packet.getFixtures();
             if (fixtures.size() > 0) {

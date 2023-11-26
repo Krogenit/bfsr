@@ -2,12 +2,14 @@ package net.bfsr.damage;
 
 import clipper2.Clipper;
 import clipper2.core.*;
+import clipper2.engine.ClipperBase;
 import clipper2.engine.ClipperD;
 import clipper2.offset.ClipperOffset;
 import clipper2.offset.EndType;
 import clipper2.offset.JoinType;
 import earcut4j.Earcut;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.engine.Engine;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.event.damage.DamageEvent;
@@ -31,6 +33,7 @@ import java.util.function.Consumer;
 public final class DamageSystem {
     public static final double SCALE = 10000.0;
     public static final double INV_SCALE = 1 / SCALE;
+    private static final float MIN_DISTANCE_BETWEEN_VERTICES_SQ = 0.15f;
 
     private final SweepLine sweepLine = new SweepLine();
     private final Earcut earcut = new Earcut();
@@ -43,7 +46,7 @@ public final class DamageSystem {
     private final Paths64 difference64 = new Paths64();
     private final ClipperD clipper = new ClipperD();
 
-    public void damage(Damageable damageable, float contactX, float contactY, Path64 clip, float radius) {
+    public void damage(Damageable<?> damageable, float contactX, float contactY, Path64 clip, float radius) {
         if (damageable.isDead() || damageable.getContours().size() == 0) return;
 
         DamageMask mask = damageable.getMask();
@@ -66,7 +69,7 @@ public final class DamageSystem {
                 Path64 scaledPath = new Path64(pathD.size());
                 for (int i1 = 0; i1 < pathD.size(); i1++) {
                     PointD point = pathD.get(i1);
-                    scaledPath.add(new Point64(point, this.SCALE));
+                    scaledPath.add(new Point64(point, SCALE));
                 }
                 clipper.AddPath(scaledPath, PathType.SUBJECT);
             }
@@ -90,7 +93,10 @@ public final class DamageSystem {
                         pathD.add(new PointD(point64, INV_SCALE));
                     }
 
-                    if (Clipper.Area(pathD) > 0) {
+                    optimizeContour(pathD);
+
+                    double area = Clipper.Area(pathD);
+                    if (area > minShipArea) {
                         Vector2 pathCenter = getPathCenter(pathD);
                         double distance = pathCenter.distanceSquared(0, 0);
                         if (distance < minDistance) {
@@ -105,12 +111,13 @@ public final class DamageSystem {
                             removedPaths.add(pathD);
                             removedPaths64.add(path64);
                         }
-                    } else {
+                    } else if (area < -minShipArea) {
                         holes.add(pathD);
                     }
                 }
 
-                double area = Clipper.Area(newHull);
+                List<ConnectedObject> removedConnectedObjects = new ArrayList<>();
+                double area = newHull64 != null ? Clipper.Area(newHull) : 0;
                 if (area > minShipArea) {
                     contours.add(newHull);
 
@@ -144,24 +151,50 @@ public final class DamageSystem {
                             for (int i = 0; i < vector2List.length; i++) {
                                 log.error("{} {}", vector2List[i].x, vector2List[i].y);
                             }
+                            damageable.setDead();
                         }
                     }
+
+                    List<ConnectedObject> connectedObjects = damageable.getConnectedObjects();
+                    for (int i = 0; i < connectedObjects.size(); i++) {
+                        ConnectedObject connectedObject = connectedObjects.get(i);
+                        if (!connectedObject.isInside(newHull)) {
+                            damageable.removeConnectedObject(connectedObject);
+                            removedConnectedObjects.add(connectedObject);
+                        }
+                    }
+
+                    damageable.onContourReconstructed(newHull);
                 } else {
                     damageable.setDead();
                 }
 
                 for (int i = 0; i < removedPaths.size(); i++) {
                     PathD removedPath = removedPaths.get(i);
+
+                    if (removedPath.size() > Short.MAX_VALUE) {
+                        System.out.println();
+                    }
+
                     area = Clipper.Area(removedPath);
                     if (area > minWreckArea) {
                         DamageMask damageMask = createInvertedDamageMask(removedPaths64.get(i), mask, scale);
                         ShipWreck damage = createDamage(x, y, sin, cos, scale.x, scale.y, removedPath,
-                                damageMask, damageable.getDataIndex());
+                                damageMask, (ShipData) damageable.getConfigData());
                         if (damage != null) {
                             damage.init(world, world.getNextId());
                             damage.getBody().setLinearVelocity(damageable.getBody().getLinearVelocity());
                             damage.getBody().setAngularVelocity(damageable.getBody().getAngularVelocity());
-                            Engine.getGameLogic(world.getSide()).addFutureTask(() -> world.addWreck(damage));
+                            Engine.getGameLogic(world.getSide()).addFutureTask(() -> world.add(damage));
+
+                            for (int j = 0; j < removedConnectedObjects.size(); j++) {
+                                ConnectedObject connectedObject = removedConnectedObjects.get(j);
+                                if (connectedObject.isInside(removedPath)) {
+                                    damage.addConnectedObject(connectedObject);
+                                } else {
+                                    connectedObject.spawn();
+                                }
+                            }
                         }
                     }
                 }
@@ -177,6 +210,7 @@ public final class DamageSystem {
                     path.add(new PointD(point64, INV_SCALE));
                 }
 
+                optimizeContour(path);
                 double area = Clipper.Area(path);
                 if (area > minShipArea) {
                     contours.add(path);
@@ -186,6 +220,7 @@ public final class DamageSystem {
                         PointD pointD = path.get(i1);
                         vector2List[i1] = new Vector2(pointD.x, pointD.y);
                     }
+
                     try {
                         if (vector2List.length > 3) {
                             try {
@@ -195,6 +230,7 @@ public final class DamageSystem {
                                 for (int i = 0; i < vector2List.length; i++) {
                                     log.error("{} {}", vector2List[i].x, vector2List[i].y);
                                 }
+                                damageable.setDead();
                             }
                         } else {
                             addFixture(damageable, Geometry.createPolygon(vector2List));
@@ -202,6 +238,17 @@ public final class DamageSystem {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+
+                    List<ConnectedObject> connectedObjects = damageable.getConnectedObjects();
+                    for (int i = 0; i < connectedObjects.size(); i++) {
+                        ConnectedObject connectedObject = connectedObjects.get(i);
+                        if (!connectedObject.isInside(path)) {
+                            damageable.removeConnectedObject(connectedObject);
+                            connectedObject.spawn();
+                        }
+                    }
+
+                    damageable.onContourReconstructed(path);
                 } else {
                     damageable.setDead();
                 }
@@ -217,20 +264,20 @@ public final class DamageSystem {
         }
     }
 
-    private void earCut(Damageable Damageable, PathsD contours) {
-        earcut.execute(contours, polygon -> addFixture(Damageable, polygon));
+    private void earCut(Damageable damageable, PathsD contours) {
+        earcut.execute(contours, polygon -> addFixture(damageable, polygon));
     }
 
-    private void addFixtures(Damageable Damageable, List<Convex> convexes) {
+    private void addFixtures(Damageable damageable, List<Convex> convexes) {
         for (int i = 0; i < convexes.size(); i++) {
-            addFixture(Damageable, convexes.get(i));
+            addFixture(damageable, convexes.get(i));
         }
     }
 
-    private void addFixture(Damageable shipDamageable, Convex convex) {
+    private void addFixture(Damageable damageable, Convex convex) {
         BodyFixture bodyFixture = new BodyFixture(convex);
-        shipDamageable.setupFixture(bodyFixture);
-        shipDamageable.getFixturesToAdd().add(bodyFixture);
+        damageable.setupFixture(bodyFixture);
+        damageable.getFixturesToAdd().add(bodyFixture);
     }
 
     private void fillTextureOutsidePolygon(PathD pathD, DamageMask damageMask, byte value) {
@@ -361,11 +408,7 @@ public final class DamageSystem {
         }
     }
 
-    public void clipTextureOutside(Path64 path, DamageMask mask, Vector2f scale) {
-        clipTextureOutside(path, mask, scale, 1.2 * this.SCALE);
-    }
-
-    public PathD clipTextureOutside(Path64 path, DamageMask mask, Vector2f scale, double offset) {
+    private PathD clipTextureOutside(Path64 path, DamageMask mask, Vector2f scale) {
         float sizeX = scale.x / 2.0f;
         float sizeY = scale.y / 2.0f;
         float localScaleX = mask.getWidth() / scale.x;
@@ -373,7 +416,7 @@ public final class DamageSystem {
 
         clipperOffset.Clear();
         clipperOffset.AddPath(path, JoinType.Miter, EndType.Polygon);
-        Paths64 paths = clipperOffset.Execute(offset / (localScaleX * 0.5f));
+        Paths64 paths = clipperOffset.Execute(0.25f * SCALE / (localScaleX * 0.25f));
         try {
             Path64 path64 = paths.get(0);
             PathD res = new PathD(path.size());
@@ -414,7 +457,7 @@ public final class DamageSystem {
         fillTextureByPolygon(res, mask, (byte) 0);
     }
 
-    public void clipTexture(float x, float y, Damageable damageable, float clipRadius, DamageMask mask, Random random) {
+    private void clipTexture(float x, float y, Damageable damageable, float clipRadius, DamageMask mask, Random random) {
         Vector2f scale = damageable.getSize();
         float sin = (float) -damageable.getBody().getTransform().getSint();
         float cos = (float) damageable.getBody().getTransform().getCost();
@@ -492,9 +535,9 @@ public final class DamageSystem {
         }
     }
 
-    public DamageMask createInvertedDamageMask(Path64 hull, DamageMask damageMask, Vector2f scale) {
+    private DamageMask createInvertedDamageMask(Path64 hull, DamageMask damageMask, Vector2f scale) {
         DamageMask damagedTexture = new DamageMask(damageMask.getWidth(), damageMask.getHeight(), damageMask.copy());
-        PathD path = clipTextureOutside(hull, damagedTexture, scale, this.SCALE);
+        PathD path = clipTextureOutside(hull, damagedTexture, scale);
         for (int i = 0; i < path.size(); i++) {
             PointD point = path.get(i);
             if (point.x < damagedTexture.getX()) damagedTexture.setX((int) point.x);
@@ -514,7 +557,7 @@ public final class DamageSystem {
     }
 
     public ShipWreck createDamage(double x, double y, double sin, double cos, float scaleX, float scaleY, PathD contour,
-                                  DamageMask damageMask, int dataIndex) {
+                                  DamageMask damageMask, ShipData shipData) {
         Vector2[] vectors = new Vector2[contour.size()];
         for (int i = 0; i < vectors.length; i++) {
             PointD pointD = contour.get(i);
@@ -527,7 +570,7 @@ public final class DamageSystem {
         if (vectors.length > 3) {
             try {
                 return createDamage(x, y, sin, cos, scaleX, scaleY, sweepLine.decompose(vectors), contours, damageMask,
-                        dataIndex);
+                        shipData);
             } catch (Exception e) {
                 log.error("Error during decompose {}", e.getMessage());
                 for (int i = 0; i < vectors.length; i++) {
@@ -537,21 +580,18 @@ public final class DamageSystem {
             }
         } else {
             return createDamage(x, y, sin, cos, scaleX, scaleY, Collections.singletonList(Geometry.createPolygon(vectors)),
-                    contours, damageMask, dataIndex);
+                    contours, damageMask, shipData);
         }
     }
 
     private ShipWreck createDamage(double x, double y, double sin, double cos, float scaleX, float scaleY,
-                                   List<Convex> convexes,
-                                   PathsD contours, DamageMask damageMask, int dataIndex) {
+                                   List<Convex> convexes, PathsD contours, DamageMask damageMask, ShipData shipData) {
         ShipWreck wreck = new ShipWreck((float) x, (float) y, (float) sin, (float) cos,
-                scaleX, scaleY, dataIndex, damageMask, contours);
+                scaleX, scaleY, shipData, damageMask, contours);
         Body body = wreck.getBody();
 
         for (int i = 0; i < convexes.size(); i++) {
-            BodyFixture bodyFixture = new BodyFixture(convexes.get(i));
-            wreck.setupFixture(bodyFixture);
-            body.addFixture(bodyFixture);
+            body.addFixture(wreck.setupFixture(new BodyFixture(convexes.get(i))));
         }
 
         body.setMass(MassType.NORMAL);
@@ -610,5 +650,32 @@ public final class DamageSystem {
         }
 
         return path;
+    }
+
+    public static boolean isPolygonConnectedToContour(Vector2[] vertices, PathD contour) {
+        for (int i = 0; i < vertices.length; i++) {
+            Vector2 vertex = vertices[i];
+            if (InternalClipper.PointInPolygonOptimized(vertex.x, vertex.y, contour)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static void optimizeContour(PathD contour) {
+        if (contour.size() > 3) {
+            for (int i = 0; i < contour.size() - 1; i++) {
+                PointD point1 = contour.get(i);
+                PointD point2 = contour.get(i + 1);
+
+                if (ClipperBase.DistanceSqr(point1, point2) < MIN_DISTANCE_BETWEEN_VERTICES_SQ) {
+                    point1.x = (point1.x + point2.x) / 2;
+                    point1.y = (point1.y + point2.y) / 2;
+                    contour.remove(i + 1);
+                    i -= 1;
+                }
+            }
+        }
     }
 }

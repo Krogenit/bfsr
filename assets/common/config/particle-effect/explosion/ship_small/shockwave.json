@@ -26,7 +26,6 @@
   "minSpawnCount": 1,
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
-  "name": "shockwave",
   "r": 0.5,
   "renderLayer": "DEFAULT_ADDITIVE",
   "soundEffects": [],

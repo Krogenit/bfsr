@@ -6,6 +6,7 @@ import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.language.Lang;
+import net.bfsr.client.renderer.Render;
 import net.bfsr.client.renderer.RenderManager;
 import net.bfsr.client.renderer.entity.ShipRender;
 import net.bfsr.engine.Engine;
@@ -35,7 +36,6 @@ import org.joml.Vector2f;
 import java.util.List;
 
 public class ShipHUD {
-    private final TexturedGuiObject armorPlate = new TexturedGuiObject(TextureRegister.guiArmorPlate);
     private final TexturedGuiObject energy = new TexturedGuiObject(TextureRegister.guiEnergy);
     private final TexturedGuiObject hudShip = new TexturedGuiObject(TextureRegister.guiHudShip);
     private final TexturedGuiObject hudShipSecondary = new TexturedGuiObject(TextureRegister.guiHudShip);
@@ -44,7 +44,6 @@ public class ShipHUD {
 
     private final StringObject shipCargo = new StringObject(FontType.CONSOLA);
     private final StringObject shipCrew = new StringObject(FontType.CONSOLA);
-    private final StringObject textHull = new StringObject(FontType.CONSOLA);
     private final StringObject textShield = new StringObject(FontType.CONSOLA);
 
     private final StringObject controlText = new StringObject(FontType.XOLONIUM, Lang.getString("gui.control"), 16);
@@ -85,7 +84,7 @@ public class ShipHUD {
                 playerInputController.setShip(null);
                 selectShip(playerControlledShip);
                 onShipControlCanceled();
-            } else if (currentShip != null && canControlShip(currentShip)) {
+            } else if (currentShip != null) {
                 playerInputController.setShip(currentShip);
                 core.sendTCPPacket(new PacketShipControl(currentShip.getId(), true));
             }
@@ -124,17 +123,9 @@ public class ShipHUD {
     }
 
     private void renderShield(Shield shield, int x, int y) {
-        float shieldValue = shield.getShield() / shield.getMaxShield();
+        float shieldValue = shield.getShieldHp() / shield.getShieldMaxHp();
         int shieldSize = (int) (220 * shield.getSize().x);
         renderQuad(x, y, shieldSize, shieldSize, 1.0f - shieldValue, shieldValue, 0.0f, 1.0f, this.shield.getTexture());
-    }
-
-    private void renderShipInHUD(Ship ship, int x, int y, float shipSize) {
-        Hull hullModule = ship.getModules().getHull();
-        float hull = hullModule.getValue() / hullModule.getMaxValue();
-        AbstractTexture texture = renderManager.getRender(ship.getId()).getTexture();
-        renderQuad(x, y, -MathUtils.HALF_PI, (int) (ship.getSize().x * shipSize), (int) (ship.getSize().y * shipSize),
-                1.0f - hull, hull, 0.0f, 1.0f, texture);
     }
 
     private void renderHullValue(Ship ship, int x, int y) {
@@ -144,7 +135,7 @@ public class ShipHUD {
         Hull hull = ship.getModules().getHull();
         HullCell[][] cells = hull.getCells();
         float startX = -cells[0].length * cellSize * 0.5f - (cells[0].length - 1) * offset * 0.5f;
-        float y1 = -cells.length * cellSize * 0.5f - (cells.length - 1) * offset * 0.5f;
+        float y1 = cells.length * cellSize * 0.5f + (cells.length - 1) * offset * 0.5f - cellSize;
         float x1;
 
         for (int i = 0; i < cells.length; i++) {
@@ -159,17 +150,12 @@ public class ShipHUD {
                 }
             }
 
-            y1 += cellSize + offset;
+            y1 -= cellSize + offset;
         }
-
-        textHull.setString(String.valueOf(Math.round(ship.getModules().getHull().getValue())));
-        textHull.setPosition(x - textHull.getWidth() / 2, y + 16);
-        guiRenderer.addCentered(x, y + 12, textHull.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture);
-        textHull.renderNoInterpolation();
     }
 
     private void renderShieldValue(Shield shield, int x, int y) {
-        textShield.setString(String.valueOf(Math.round(shield.getShield())));
+        textShield.setString(String.valueOf(Math.round(shield.getShieldHp())));
         textShield.setPosition(x - textShield.getWidth() / 2, y + 74);
         guiRenderer.addCentered(x, y + 70, textShield.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture);
         textShield.renderNoInterpolation();
@@ -181,7 +167,7 @@ public class ShipHUD {
         Armor armor = ship.getModules().getArmor();
         ArmorPlate[][] cells = armor.getCells();
         float startX = -cells[0].length * cellSize * 0.5f - (cells[0].length - 1) * offset * 0.5f;
-        float y1 = -cells.length * cellSize * 0.5f - (cells.length - 1) * offset * 0.5f;
+        float y1 = cells.length * cellSize * 0.5f + (cells.length - 1) * offset * 0.5f - cellSize;
         float x1;
 
         for (int i = 0; i < cells.length; i++) {
@@ -196,7 +182,7 @@ public class ShipHUD {
                 }
             }
 
-            y1 += cellSize + offset;
+            y1 -= cellSize + offset;
         }
     }
 
@@ -211,10 +197,12 @@ public class ShipHUD {
                 RotationHelper.rotate(-MathUtils.HALF_PI, pos.x, pos.y, rotationVector);
                 int slotWidth = (int) (slot.getSize().x * shipSize);
                 int slothHeight = (int) (slot.getSize().y * shipSize);
-                ShipRender render = renderManager.getRender(ship.getId());
-                AbstractTexture texture = render.getWeaponSlotTexture(i);
-                renderQuad((int) (x + rotationVector.x * shipSize), (int) (y + rotationVector.y * shipSize), -MathUtils.HALF_PI,
-                        slotWidth, slothHeight, reload, 0.0f, 1.0f - reload, 1.0f, texture);
+                Render<?> render = renderManager.getRender(ship.getId());
+                if (render instanceof ShipRender shipRender) {
+                    AbstractTexture texture = shipRender.getWeaponSlotTexture(i);
+                    renderQuad((int) (x + rotationVector.x * shipSize), (int) (y + rotationVector.y * shipSize),
+                            -MathUtils.HALF_PI, slotWidth, slothHeight, reload, 0.0f, 1.0f - reload, 1.0f, texture);
+                }
             }
         }
     }
@@ -224,7 +212,6 @@ public class ShipHUD {
         int y = hudShip.getY() + hudShip.getHeight() / 2;
         float shipSize = 10.0f;
 
-        renderShipInHUD(currentShip, x, y, shipSize);
         renderHullValue(currentShip, x, y);
 
         Shield shield = currentShip.getModules().getShield();
@@ -271,8 +258,6 @@ public class ShipHUD {
         int y = hudShipSecondary.getY() + hudShipSecondary.getHeight() / 2;
 
         float shipSize = 10.0f;
-
-        renderShipInHUD(otherShip, x, y, shipSize);
 
         Shield shield = otherShip.getModules().getShield();
         if (shield != null && shield.isShieldAlive()) {

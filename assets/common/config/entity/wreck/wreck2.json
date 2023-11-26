@@ -1,9 +1,13 @@
 {
   "name": "wreck2",
   "type": "DEFAULT",
-  "texturePath": "texture/particle/wreck/wreck2.png",
-  "fireTexturePath": "texture/particle/wreck/wreckfire2.png",
-  "sparkleTexturePath": "texture/particle/wreck/wrecklight2.png",
+  "texture": "texture/particle/wreck/wreck2.png",
+  "fireTexture": "texture/particle/wreck/wreckfire2.png",
+  "sparkleTexture": "texture/particle/wreck/wrecklight2.png",
+  "size": {
+    "x": 1.0,
+    "y": 1.0
+  },
   "vertices": [
     {
       "x": -0.1985,

@@ -3,7 +3,8 @@ package net.bfsr.engine.renderer.font;
 public enum FontType {
     DEFAULT(new StringCache()),
     XOLONIUM(new StringCache("Xolonium-Regular.ttf", true)),
-    CONSOLA(new StringCache("consola.ttf", true));
+    CONSOLA(new StringCache("consola.ttf", true)),
+    Segoe_UI(new StringCache("Segoe UI.ttf", true));
 
     private final StringCache stringCache;
 

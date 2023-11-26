@@ -61,7 +61,6 @@ public class SimpleGuiObject extends AbstractGuiObject {
     @Override
     public void render() {
         if (rotation != 0.0f) {
-            guiRenderer.add(lastX, lastY, x, y, lastRotation, rotation, width, height, color.x, color.y, color.z, color.w);
             if (isMouseHover()) {
                 guiRenderer.add(lastX + 1, lastY + 1, x + 1, y + 1, lastRotation, rotation, width - 2, height - 2, hoverColor.x,
                         hoverColor.y, hoverColor.z, hoverColor.w);
@@ -171,6 +170,14 @@ public class SimpleGuiObject extends AbstractGuiObject {
 
     public SimpleGuiObject setHoverColor(Vector4f color) {
         hoverColor.set(color);
+        return this;
+    }
+
+    public SimpleGuiObject setAllColors(float r, float g, float b, float a) {
+        setColor(r, g, b, a);
+        setHoverColor(r, g, b, a);
+        setOutlineColor(r, g, b, a);
+        setOutlineHoverColor(r, g, b, a);
         return this;
     }
 

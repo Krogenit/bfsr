@@ -10,12 +10,12 @@ import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.gui.main.GuiMainMenu;
 import net.bfsr.client.input.InputHandler;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.listener.entity.bullet.BulletEventListener;
 import net.bfsr.client.listener.entity.ship.ShipEventListener;
 import net.bfsr.client.listener.entity.wreck.WreckEventListener;
 import net.bfsr.client.listener.module.shield.ShieldEventListener;
 import net.bfsr.client.listener.module.weapon.BeamEventListener;
 import net.bfsr.client.listener.module.weapon.WeaponEventListener;
+import net.bfsr.client.listener.world.WorldEventListener;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.particle.ParticleManager;
 import net.bfsr.client.renderer.GlobalRenderer;
@@ -80,8 +80,8 @@ public class Core extends ClientGameLogic {
         this.profiler.setEnable(ClientSettings.IS_PROFILING.getBoolean());
         this.soundManager.setGain(ClientSettings.SOUND_VOLUME.getFloat());
         this.particleManager.init();
-        ParticleEffectsRegistry.INSTANCE.init();
         ConfigConverterManager.INSTANCE.init();
+        ConfigConverterManager.INSTANCE.registerConfigRegistry(ParticleEffectsRegistry.INSTANCE);
         registerListeners();
         super.init();
         this.guiManager.openGui(new GuiMainMenu());
@@ -91,9 +91,9 @@ public class Core extends ClientGameLogic {
         eventBus.subscribe(new ShipEventListener());
         eventBus.subscribe(new ShieldEventListener());
         eventBus.subscribe(new WeaponEventListener());
-        eventBus.subscribe(new BulletEventListener());
         eventBus.subscribe(new WreckEventListener());
         eventBus.subscribe(new BeamEventListener());
+        eventBus.subscribe(new WorldEventListener());
     }
 
     @Override

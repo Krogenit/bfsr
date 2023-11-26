@@ -15,8 +15,14 @@
     }
   ],
   "reloadTimeInSeconds": 0.5,
-  "energyCost": 5.0,
-  "bulletData": "plasm_small",
+  "energyCost": 4.0,
+  "hp": 15.0,
+  "damage": {
+    "armor": 5.0,
+    "average": 3.3333333,
+    "hull": 2.5,
+    "shield": 2.5
+  },
   "size": {
     "x": 2.6,
     "y": 1.4
@@ -44,6 +50,37 @@
     {
       "x": -1.2,
       "y": 0.7
+    }
+  ],
+  "bulletSpeed": 75.0,
+  "bulletLifeTimeInSeconds": 0.84,
+  "bulletSize": {
+    "x": 2.4,
+    "y": 2.4
+  },
+  "bulletTexture": "texture/entity/bullet/smallPlasm.png",
+  "bulletColor": {
+    "r": 0.5,
+    "g": 0.5,
+    "b": 1.0,
+    "a": 1.0
+  },
+  "bulletVertices": [
+    {
+      "x": -0.6,
+      "y": -0.2
+    },
+    {
+      "x": 0.6,
+      "y": -0.2
+    },
+    {
+      "x": 0.6,
+      "y": 0.2
+    },
+    {
+      "x": -0.6,
+      "y": 0.2
     }
   ]
 }

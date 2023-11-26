@@ -16,12 +16,15 @@ import java.net.InetSocketAddress;
 
 public class PacketFactionSelectHandler extends PacketHandler<PacketFactionSelect, PlayerNetworkHandler> {
     @Override
-    public void handle(PacketFactionSelect packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketFactionSelect packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         World world = playerNetworkHandler.getWorld();
         Faction faction = Faction.values()[packet.getFaction()];
         Ship playerShip = switch (faction) {
-            case HUMAN -> ShipFactory.get().createPlayerShipHumanSmall(world, 0, 0, world.getRand().nextFloat() * MathUtils.TWO_PI);
-            case SAIMON -> ShipFactory.get().createPlayerShipSaimonSmall(world, 0, 0, world.getRand().nextFloat() * MathUtils.TWO_PI);
+            case HUMAN -> ShipFactory.get().createPlayerShipHumanSmall(world, 0, 0,
+                    world.getRand().nextFloat() * MathUtils.TWO_PI);
+            case SAIMON -> ShipFactory.get().createPlayerShipSaimonSmall(world, 0, 0,
+                    world.getRand().nextFloat() * MathUtils.TWO_PI);
             case ENGI -> ShipFactory.get().createPlayerShipEngiSmall(world, 0, 0, world.getRand().nextFloat() * MathUtils.TWO_PI);
         };
 
@@ -29,7 +32,7 @@ public class PacketFactionSelectHandler extends PacketHandler<PacketFactionSelec
         Player player = playerNetworkHandler.getPlayer();
         playerShip.setOwner(player.getUsername());
         playerShip.setName(player.getUsername());
-        world.addShip(playerShip);
+        world.add(playerShip, false);
 
         player.setFaction(faction);
         player.addShip(playerShip);

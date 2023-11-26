@@ -1,27 +1,23 @@
 package net.bfsr.client.config.particle;
 
-import lombok.Getter;
 import net.bfsr.config.ConfigToDataConverter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ParticleEffectsRegistry extends ConfigToDataConverter<ParticleEffectConfig, ParticleEffect> {
     public static final ParticleEffectsRegistry INSTANCE = new ParticleEffectsRegistry();
 
-    @Getter
-    private final List<ParticleEffectConfig> allConfigs = new ArrayList<>();
-
     public ParticleEffectsRegistry() {
-        super("particle-effect", ParticleEffectConfig.class, ParticleEffectConfig::getPath, (config, dataIndex) -> {
-            config.processDeprecated();
-            return new ParticleEffect(config, dataIndex);
-        });
+        super("particle-effect", ParticleEffectConfig.class,
+                (fileName, particleEffectConfig) -> particleEffectConfig.getFullPath(), (config, fileName, index) -> {
+                    config.processDeprecated();
+                    return new ParticleEffect(config, fileName, index);
+                });
     }
 
     @Override
-    public void init() {
-        super.init();
+    public void init(int id) {
+        super.init(id);
 
         List<ParticleEffect> particleEffects = getAll();
         findChild(particleEffects);
@@ -29,12 +25,6 @@ public class ParticleEffectsRegistry extends ConfigToDataConverter<ParticleEffec
             ParticleEffect particleEffect = particleEffects.get(i);
             particleEffect.init();
         }
-    }
-
-    @Override
-    public void add(ParticleEffectConfig config) {
-        super.add(config);
-        allConfigs.add(config);
     }
 
     private void findChild(List<ParticleEffect> allEffects) {
@@ -49,11 +39,5 @@ public class ParticleEffectsRegistry extends ConfigToDataConverter<ParticleEffec
                 }
             }
         }
-    }
-
-    @Override
-    public void remove(String key) {
-        super.remove(key);
-        allConfigs.removeIf(particleEffectConfig -> particleEffectConfig.getPath().equals(key));
     }
 }

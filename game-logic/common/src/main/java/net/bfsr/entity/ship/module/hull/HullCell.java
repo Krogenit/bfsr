@@ -2,33 +2,27 @@ package net.bfsr.entity.ship.module.hull;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.config.component.hull.HullData;
 
+@Setter
+@Getter
 public class HullCell {
-    @Getter
-    @Setter
     protected float value;
-    @Getter
-    protected final float repairSpeed;
-    @Getter
-    protected final float maxValue;
-    @Setter
-    @Getter
+    protected float maxValue;
     private int id;
+    private int repairTimer;
 
-    public HullCell(HullData hullData) {
-        this.value = hullData.getMaxHullValue();
-        this.maxValue = value;
-        this.repairSpeed = hullData.getRegenAmount();
+    public void damage(float amount) {
+        value -= amount;
+        repairTimer = 300;
+
+        if (value < 0) {
+            value = 0;
+        }
     }
 
     public void update() {
-        if (value < maxValue) {
-            value += repairSpeed;
-
-            if (value > maxValue) {
-                value = maxValue;
-            }
+        if (repairTimer > 0) {
+            repairTimer--;
         }
     }
 }

@@ -1,25 +1,30 @@
 package net.bfsr.entity.ship.module;
 
 import lombok.Getter;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.cargo.Cargo;
 import net.bfsr.entity.ship.module.crew.Crew;
-import net.bfsr.entity.ship.module.engine.Engine;
+import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
+import net.bfsr.event.module.weapon.WeaponSlotRemovedEvent;
+import org.dyn4j.dynamics.Body;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 
 public class Modules {
     private final List<Module> moduleList = new ArrayList<>();
+    private final EnumMap<ModuleType, List<Module>> modulesByType = new EnumMap<>(ModuleType.class);
     @Getter
     private Shield shield;
     @Getter
-    private Engine engine;
+    private Engines engines;
     @Getter
     private Reactor reactor;
     @Getter
@@ -32,6 +37,13 @@ public class Modules {
     private Cargo cargo;
     @Getter
     private final List<WeaponSlot> weaponSlots = new ArrayList<>();
+    private EventBus eventBus;
+    private Ship ship;
+
+    public void init(Ship ship) {
+        this.ship = ship;
+        this.eventBus = ship.getWorld().getEventBus();
+    }
 
     public void update() {
         for (int i = 0; i < moduleList.size(); i++) {
@@ -46,10 +58,8 @@ public class Modules {
     }
 
     public void updateWeaponSlotPositions() {
-        int size = weaponSlots.size();
-        for (int i = 0; i < size; i++) {
-            WeaponSlot weaponSlot = weaponSlots.get(i);
-            if (weaponSlot != null) weaponSlot.updatePos();
+        for (int i = 0, size = weaponSlots.size(); i < size; i++) {
+            weaponSlots.get(i).updatePos();
         }
     }
 
@@ -59,27 +69,32 @@ public class Modules {
         }
     }
 
-    public void addWeaponToSlot(int id, WeaponSlot slot, Ship ship) {
+    public void addWeaponToSlot(int id, WeaponSlot slot) {
         for (int i = 0; i < weaponSlots.size(); i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
             if (weaponSlot.getId() == id) {
-                weaponSlot.clear();
+                weaponSlot.removeFixture();
+                ship.getConnectedObjects().remove(weaponSlot);
                 weaponSlots.set(i, slot);
                 slot.init(id, ship);
+                modulesByType.get(ModuleType.WEAPON_SLOT).set(i, slot);
                 return;
             }
         }
 
         slot.init(id, ship);
         weaponSlots.add(slot);
+        modulesByType.computeIfAbsent(ModuleType.WEAPON_SLOT, moduleType -> new ArrayList<>(2)).add(slot);
     }
 
-    public void setEngine(Engine engine) {
-        this.engine = engine;
-        addModule(engine);
+    public void setEngines(Engines engines) {
+        engines.init(ship);
+        this.engines = engines;
+        addModule(engines);
     }
 
     public void setShield(Shield shield) {
+        shield.init(ship);
         this.shield = shield;
         addModule(shield);
     }
@@ -95,6 +110,7 @@ public class Modules {
     }
 
     public void setReactor(Reactor reactor) {
+        reactor.init(ship);
         this.reactor = reactor;
         addModule(reactor);
     }
@@ -112,17 +128,37 @@ public class Modules {
     private void addModule(Module module) {
         moduleList.removeIf(module1 -> module1.getType() == module.getType());
         moduleList.add(module);
+        module.addToList(modulesByType.computeIfAbsent(module.getType(), moduleType -> new ArrayList<>(1)));
     }
 
-    public WeaponSlot getWeaponSlot(int i) {
-        return weaponSlots.get(i);
+    public void removeWeaponSlot(int id) {
+        for (int i = 0; i < weaponSlots.size(); i++) {
+            WeaponSlot weaponSlot = weaponSlots.get(i);
+            if (weaponSlot.getId() == id) {
+                ship.getFixturesToRemove().add(weaponSlot.getFixture());
+                weaponSlots.remove(i);
+                eventBus.publish(new WeaponSlotRemovedEvent(weaponSlot));
+                return;
+            }
+        }
     }
 
-    public void clear() {
-        int size = weaponSlots.size();
-        for (int i = 0; i < size; i++) {
-            WeaponSlot slot = weaponSlots.get(i);
-            if (slot != null) slot.clear();
+    public void addFixturesToBody() {
+        Body body = ship.getBody();
+        reactor.addFixtureToBody(body);
+        shield.addFixtureToBody(body);
+        engines.addFixtureToBody(body);
+    }
+
+    public void destroyModule(int id, ModuleType type) {
+        List<Module> modules = modulesByType.get(type);
+        for (int i = 0; i < modules.size(); i++) {
+            Module module = modules.get(i);
+            if (module.getId() == id) {
+                module.setDead();
+                modules.remove(i);
+                return;
+            }
         }
     }
 }

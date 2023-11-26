@@ -16,7 +16,7 @@ public class PacketShieldInfo extends PacketAdapter {
 
     public PacketShieldInfo(Ship ship) {
         this.id = ship.getId();
-        this.shieldValue = ship.getModules().getShield().getShield();
+        this.shieldValue = ship.getModules().getShield().getShieldHp();
     }
 
     @Override

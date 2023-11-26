@@ -5,8 +5,11 @@ import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.event.module.weapon.BeamShotEvent;
 import net.bfsr.event.module.weapon.WeaponShotEvent;
+import net.bfsr.event.module.weapon.WeaponSlotRemovedEvent;
+import net.bfsr.network.packet.server.component.PacketRemoveWeaponSlot;
 import net.bfsr.network.packet.server.component.PacketWeaponShoot;
 import net.bfsr.server.ServerGameLogic;
+import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.util.TrackingUtils;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
@@ -14,20 +17,30 @@ import net.engio.mbassy.listener.References;
 
 @Listener(references = References.Strong)
 public class WeaponEventListener {
+    private final NetworkSystem networkSystem = ServerGameLogic.getNetwork();
+
     @Handler
     public void event(WeaponShotEvent event) {
         WeaponSlot weaponSlot = event.weaponSlot();
         Ship ship = weaponSlot.getShip();
         weaponSlot.createBullet();
-        ServerGameLogic.getNetwork().sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), weaponSlot.getId()), ship.getPosition(),
-                TrackingUtils.PACKET_SPAWN_DISTANCE);
+        networkSystem.sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), weaponSlot.getId()), ship.getPosition(),
+                TrackingUtils.TRACKING_DISTANCE);
     }
 
     @Handler
     public void event(BeamShotEvent event) {
         WeaponSlotBeam weaponSlot = event.weaponSlot();
         Ship ship = weaponSlot.getShip();
-        ServerGameLogic.getNetwork().sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), weaponSlot.getId()), ship.getPosition(),
-                TrackingUtils.PACKET_SPAWN_DISTANCE);
+        networkSystem.sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), weaponSlot.getId()), ship.getPosition(),
+                TrackingUtils.TRACKING_DISTANCE);
+    }
+
+    @Handler
+    public void event(WeaponSlotRemovedEvent event) {
+        WeaponSlot weaponSlot = event.getWeaponSlot();
+        Ship ship = weaponSlot.getShip();
+        networkSystem.sendUDPPacketToAllNearby(new PacketRemoveWeaponSlot(ship.getId(), weaponSlot.getId()), ship.getPosition(),
+                TrackingUtils.TRACKING_DISTANCE);
     }
 }

@@ -8,7 +8,6 @@ import net.bfsr.config.Configurable;
 @AllArgsConstructor
 @Getter
 public class HullConfig {
-    private final String name;
     private final float maxValue;
     private final float regenAmountInSeconds;
 }

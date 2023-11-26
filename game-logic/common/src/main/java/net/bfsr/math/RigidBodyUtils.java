@@ -38,8 +38,9 @@ public final class RigidBodyUtils {
             float sin1 = Math.sin(addRot);
             float cos1 = Math.cos(addRot);
             gameObject.setRotation(sin * cos1 + cos * sin1, cos * cos1 - sin * sin1);
-            body.setAngularVelocity(body.getAngularVelocity() * 0.99f);
         }
+
+        body.setAngularVelocity(body.getAngularVelocity() * 0.99f);
     }
 
     public static List<Direction> calculateDirectionsToOtherObject(RigidBody gameObject, float x, float y) {

@@ -9,6 +9,6 @@ public abstract class AbstractDebugRenderer {
     public abstract void addCommand(int count);
     public abstract void addVertex(float x, float y, Vector4f color);
     public abstract void render(int mode);
-    public abstract void renderAABB(AABB aabb);
+    public abstract void renderAABB(AABB aabb, Vector4f color);
     public abstract void clear();
 }

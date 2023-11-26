@@ -743,7 +743,8 @@ public class ClipperBase {
             return true;
         }
         // compare turning direction of the alternate bound
-        return (InternalClipper.CrossProduct(PrevPrevVertex(resident).pt, newcomer.bot, PrevPrevVertex(newcomer).pt) > 0) == newcomerIsLeft;
+        return (InternalClipper.CrossProduct(PrevPrevVertex(resident).pt, newcomer.bot, PrevPrevVertex(newcomer).pt) > 0) ==
+                newcomerIsLeft;
     }
 
     private void InsertLeftEdge(Active ae) {
@@ -913,18 +914,21 @@ public class ClipperBase {
     private boolean TestJoinWithPrev1(Active e) {
         // this is marginally quicker than TestJoinWithPrev2
         // but can only be used when e.PrevInAEL.currX is accurate
-        return IsHotEdge(e) && (e.prevInAEL != null) && (e.prevInAEL.curX == e.curX) && IsHotEdge(e.prevInAEL) && (InternalClipper.CrossProduct(e.prevInAEL.top, e.bot, e.top) == 0);
+        return IsHotEdge(e) && (e.prevInAEL != null) && (e.prevInAEL.curX == e.curX) && IsHotEdge(e.prevInAEL) &&
+                (InternalClipper.CrossProduct(e.prevInAEL.top, e.bot, e.top) == 0);
     }
 
     private boolean TestJoinWithPrev2(Active e, Point64 currPt) {
         return IsHotEdge(e) && (e.prevInAEL != null) && IsHotEdge(e.prevInAEL)
-                && (e.prevInAEL.top.y < e.bot.y) && (Math.abs(TopX(e.prevInAEL, currPt.y) - currPt.x) < 2) && (InternalClipper.CrossProduct(e.prevInAEL.top, currPt, e.top) == 0);
+                && (e.prevInAEL.top.y < e.bot.y) && (Math.abs(TopX(e.prevInAEL, currPt.y) - currPt.x) < 2) &&
+                (InternalClipper.CrossProduct(e.prevInAEL.top, currPt, e.top) == 0);
     }
 
     private static boolean TestJoinWithNext1(Active e) {
         // this is marginally quicker than TestJoinWithNext2
         // but can only be used when e.NextInAEL.currX is accurate
-        return IsHotEdge(e) && (e.nextInAEL != null) && (e.nextInAEL.curX == e.curX) && IsHotEdge(e.nextInAEL) && (InternalClipper.CrossProduct(e.nextInAEL.top, e.bot, e.top) == 0);
+        return IsHotEdge(e) && (e.nextInAEL != null) && (e.nextInAEL.curX == e.curX) && IsHotEdge(e.nextInAEL) &&
+                (InternalClipper.CrossProduct(e.nextInAEL.top, e.bot, e.top) == 0);
     }
 
     private static boolean TestJoinWithNext2(Active e, Point64 currPt) {
@@ -2287,6 +2291,10 @@ public class ClipperBase {
     }
 
     private static double DistanceSqr(Point64 pt1, Point64 pt2) {
+        return (pt1.x - pt2.x) * (pt1.x - pt2.x) + (pt1.y - pt2.y) * (pt1.y - pt2.y);
+    }
+
+    public static double DistanceSqr(PointD pt1, PointD pt2) {
         return (pt1.x - pt2.x) * (pt1.x - pt2.x) + (pt1.y - pt2.y) * (pt1.y - pt2.y);
     }
 

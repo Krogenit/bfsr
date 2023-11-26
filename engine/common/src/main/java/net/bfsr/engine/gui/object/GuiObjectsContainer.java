@@ -97,7 +97,14 @@ public class GuiObjectsContainer extends GuiObjectWithSubObjects implements GuiO
 
     @Override
     public boolean onMouseRightRelease() {
-        return false;
+        boolean onMouseRightRelease = false;
+        for (int i = 0; i < guiObjects.size(); i++) {
+            if (guiObjects.get(i).onMouseRightRelease()) {
+                onMouseRightRelease = true;
+            }
+        }
+
+        return onMouseRightRelease;
     }
 
     private void onGuiObjectMouseLeftClick(GuiObject guiObject) {
@@ -202,6 +209,16 @@ public class GuiObjectsContainer extends GuiObjectWithSubObjects implements GuiO
     }
 
     @Override
+    public void registerGuiObjectBefore(GuiObject guiObject, GuiObject beforeObject) {
+        int index = guiObjects.indexOf(beforeObject);
+        if (index >= 0) {
+            guiObjects.add(index, guiObject);
+            guiObject.onRegistered(this);
+            scroll.registerGuiObject(guiObject);
+        }
+    }
+
+    @Override
     public void registerGuiObject(GuiObject guiObject) {
         guiObjects.add(guiObject);
         guiObject.onRegistered(this);
@@ -260,6 +277,11 @@ public class GuiObjectsContainer extends GuiObjectWithSubObjects implements GuiO
     @Override
     public boolean isContextMenuOpened() {
         return currentGui.isContextMenuOpened();
+    }
+
+    @Override
+    public boolean isObjectRegistered(GuiObject object) {
+        return guiObjects.contains(object);
     }
 
     public int getScrollWidth() {

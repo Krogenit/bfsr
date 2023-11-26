@@ -33,7 +33,7 @@ public class ShipFactory {
         return createBot(world, x, y, angle, Faction.ENGI, ShipRegistry.INSTANCE.get("engi_small"));
     }
 
-    public Ship create(World world, int id, float x, float y, float angle, Faction faction, ShipData shipData) {
+    private Ship create(World world, int id, float x, float y, float angle, Faction faction, ShipData shipData) {
         return create(world, id, x, y, LUT.sin(angle), LUT.cos(angle), faction, shipData);
     }
 
@@ -44,14 +44,14 @@ public class ShipFactory {
         return ship;
     }
 
-    public Ship createBot(World world, float x, float y, float angle, Faction faction, ShipData shipData) {
+    private Ship createBot(World world, float x, float y, float angle, Faction faction, ShipData shipData) {
         Ship ship = create(world, world.getNextId(), x, y, angle, faction, shipData);
         ship.setName("[BOT] " + ship.getFaction().toString());
         ShipOutfitter.get().outfit(ship);
         return ship;
     }
 
-    public Ship create(World world, int id, Faction faction, ShipData shipData) {
+    private Ship create(World world, int id, Faction faction, ShipData shipData) {
         Ship ship = new Ship(shipData);
         ship.init(world, id);
         ship.setFaction(faction);

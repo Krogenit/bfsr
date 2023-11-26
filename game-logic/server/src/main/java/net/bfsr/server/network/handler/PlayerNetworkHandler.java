@@ -115,7 +115,8 @@ public class PlayerNetworkHandler extends NetworkHandler {
 
     public void sendUDPPacket(Packet packet) {
         if (datagramChannel.eventLoop().inEventLoop()) {
-            datagramChannel.writeAndFlush(new DefaultAddressedEnvelope<Packet, SocketAddress>(packet, remoteAddress)).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+            datagramChannel.writeAndFlush(new DefaultAddressedEnvelope<Packet, SocketAddress>(packet, remoteAddress))
+                    .addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         } else {
             datagramChannel.eventLoop().execute(() -> {
                 if (connectionState != ConnectionState.NOT_CONNECTED) {
@@ -178,7 +179,8 @@ public class PlayerNetworkHandler extends NetworkHandler {
         datagramChannel = (DatagramChannel) ctx.channel();
         this.remoteAddress = remoteAddress;
         ((MessageHandlerUDP) datagramChannel.pipeline().get("handler")).setPlayerNetworkHandler(this);
-        ctx.writeAndFlush(new DefaultAddressedEnvelope<Packet, SocketAddress>(new PacketLoginUDPSuccess(), remoteAddress)).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+        ctx.writeAndFlush(new DefaultAddressedEnvelope<Packet, SocketAddress>(new PacketLoginUDPSuccess(), remoteAddress))
+                .addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
     }
 
     public void joinGame() {
@@ -216,7 +218,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
         List<Ship> ships = player.getShips();
         for (int i = 0; i < ships.size(); i++) {
             Ship ship = ships.get(i);
-            world.addShip(ship);
+            world.add(ship, false);
         }
     }
 

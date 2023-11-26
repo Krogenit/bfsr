@@ -28,6 +28,8 @@ import static net.bfsr.client.particle.ParticleManager.PARTICLE_SUPPLIER;
 
 @Getter
 public class ParticleEffect extends ConfigData {
+    private static final Random rand = new Random();
+
     private AbstractTexture[] textures;
     private float spawnOverTime;
     private int minSpawnCount, maxSpawnCount;
@@ -44,14 +46,12 @@ public class ParticleEffect extends ConfigData {
     private SoundEffect[] soundEffects;
     private float sourceSizeXMultiplier, sourceSizeYMultiplier;
     private float sourceVelocityXMultiplier, sourceVelocityYMultiplier;
-    private String editorPath;
+    private String path;
     private int treeIndex;
 
     private double spawnTime;
 
     private final List<Particle> aliveParticles = new ArrayList<>();
-
-    private static final Random rand = new Random();
 
     private final List<ParticleEffectSpawnRunnable> spawnRunnables = new ArrayList<>();
     private final List<ParticleEffect> childEffectsInstances = new ArrayList<>();
@@ -67,8 +67,8 @@ public class ParticleEffect extends ConfigData {
         float apply(float value);
     }
 
-    public ParticleEffect(ParticleEffectConfig config, int dataIndex) {
-        super(config.getName(), dataIndex);
+    public ParticleEffect(ParticleEffectConfig config, String fileName, int dataIndex) {
+        super(fileName, dataIndex);
         applyConfig(config);
     }
 
@@ -109,16 +109,15 @@ public class ParticleEffect extends ConfigData {
         this.sourceSizeYMultiplier = config.getSourceSizeYMultiplier();
         this.sourceVelocityXMultiplier = config.getSourceVelocityXMultiplier();
         this.sourceVelocityYMultiplier = config.getSourceVelocityYMultiplier();
-        this.editorPath = config.getEditorPath();
+        this.path = config.getPath();
         this.treeIndex = config.getTreeIndex();
         List<ConfigurableSound> effects = config.getSoundEffects();
         if (effects != null && effects.size() > 0) {
             this.soundEffects = new SoundEffect[effects.size()];
             for (int i = 0; i < effects.size(); i++) {
                 ConfigurableSound soundEffect = effects.get(i);
-                this.soundEffects[i] =
-                        new SoundEffect(Engine.assetsManager.getSound(PathHelper.convertPath(soundEffect.getPath())),
-                                soundEffect.getVolume());
+                this.soundEffects[i] = new SoundEffect(Engine.assetsManager.getSound(PathHelper.convertPath(soundEffect.path())),
+                        soundEffect.volume());
             }
         } else {
             this.soundEffects = null;
@@ -374,7 +373,7 @@ public class ParticleEffect extends ConfigData {
     }
 
     public String getPath() {
-        return editorPath != null ? editorPath.isEmpty() ? getName() : editorPath + "/" + getName() : "";
+        return path.isEmpty() ? getFileName() : path + "/" + getFileName();
     }
 
     public void clearChildEffects() {

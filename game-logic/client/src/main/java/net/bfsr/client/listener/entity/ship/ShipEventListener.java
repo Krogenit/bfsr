@@ -28,16 +28,11 @@ public class ShipEventListener {
     private final RenderManager renderManager = Core.get().getRenderManager();
 
     @Handler
-    public void event(ShipAddToWorldEvent event) {
-        renderManager.addRender(new ShipRender(event.ship()));
-    }
-
-    @Handler
     public void event(ShipCollisionWithWreckEvent event) {
         Ship ship = event.ship();
         Shield shield = ship.getModules().getShield();
         if (shield != null) {
-            Vector4f color = ship.getShipData().getEffectsColor();
+            Vector4f color = ship.getConfigData().getEffectsColor();
             WeaponEffects.spawnDirectedSpark(event.contactX(), event.contactY(), event.normalX(), event.normalY(), 4.5f,
                     color.x, color.y, color.z, color.w);
         } else {
@@ -52,7 +47,7 @@ public class ShipEventListener {
         Vector2f velocity = ship.getVelocity();
         Vector2f position = ship.getPosition();
         Vector2f size = ship.getSize();
-        Vector4f effectsColor = ship.getShipData().getEffectsColor();
+        Vector4f effectsColor = ship.getConfigData().getEffectsColor();
         JumpEffects.jump(position.x, position.y, 32.0f + size.x * 0.25f, velocity.x * 0.5f, velocity.y * 0.5f,
                 effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
         ShipRender render = renderManager.getRender(ship.getId());
@@ -65,7 +60,8 @@ public class ShipEventListener {
         World world = ship.getWorld();
         Random rand = world.getRand();
         Vector2f velocity = ship.getVelocity();
-        WeaponEffects.spawnDirectedSpark(event.contactX(), event.contactY(), event.normalX(), event.normalY(), 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
+        WeaponEffects.spawnDirectedSpark(event.contactX(), event.contactY(), event.normalX(), event.normalY(), 3.75f, 1.0f, 1.0f,
+                1.0f, 1.0f);
         RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.15f, ANGLE_TO_VELOCITY);
         GarbageSpawner.smallGarbage(rand.nextInt(4), event.contactX(), event.contactY(),
                 velocity.x * 0.25f + ANGLE_TO_VELOCITY.x, velocity.y * 0.25f + ANGLE_TO_VELOCITY.y, 2.0f * rand.nextFloat());

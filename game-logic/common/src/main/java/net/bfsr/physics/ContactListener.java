@@ -20,12 +20,12 @@ public class ContactListener extends ContactListenerAdapter<Body> {
 
         Object userData = body1.getUserData();
         if (userData instanceof GameObject gameObject) {
-            gameObject.collision(body2, pointX, pointY, -normalX, -normalY, collision);
+            gameObject.collision(body2, collision.getFixture2(), pointX, pointY, -normalX, -normalY, collision);
         }
 
         userData = body2.getUserData();
         if (userData instanceof GameObject gameObject) {
-            gameObject.collision(body1, pointX, pointY, normalX, normalY, collision);
+            gameObject.collision(body1, collision.getFixture1(), pointX, pointY, normalX, normalY, collision);
         }
     }
 }

@@ -3,7 +3,6 @@ package net.bfsr.client.renderer.entity;
 import lombok.Getter;
 import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.particle.effect.FireEffects;
-import net.bfsr.client.renderer.Render;
 import net.bfsr.config.entity.wreck.WreckData;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.buffer.BufferType;
@@ -13,7 +12,7 @@ import net.bfsr.entity.wreck.Wreck;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-public class WreckRender extends Render<Wreck> {
+public class WreckRender extends RigidBodyRender<Wreck> {
     @Getter
     private final AbstractTexture textureFire, textureLight;
 
@@ -32,13 +31,13 @@ public class WreckRender extends Render<Wreck> {
     private final SpawnAccumulator spawnAccumulator = new SpawnAccumulator();
 
     public WreckRender(Wreck object) {
-        super(Engine.assetsManager.getTexture(object.getWreckData().getTexture()), object, 0.5f, 0.5f, 0.5f, 1.0f);
+        super(Engine.assetsManager.getTexture(object.getConfigData().getTexture()), object, 0.5f, 0.5f, 0.5f, 1.0f);
 
         if (object.isEmitFire()) {
             spawnAccumulator.resetTime();
         }
 
-        WreckData wreckData = object.getWreckData();
+        WreckData wreckData = object.getConfigData();
         this.textureFire = Engine.assetsManager.getTexture(wreckData.getFireTexture());
         this.textureLight =
                 wreckData.getSparkleTexture() != null ? Engine.assetsManager.getTexture(wreckData.getSparkleTexture()) : null;
@@ -64,11 +63,6 @@ public class WreckRender extends Render<Wreck> {
         updateLifeTime();
         updateFireAndExplosion();
         updateSparkle();
-    }
-
-    @Override
-    public void postWorldUpdate() {
-        updateAABB(object.getSin(), object.getCos());
     }
 
     protected void updateLifeTime() {

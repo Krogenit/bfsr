@@ -10,4 +10,8 @@ public enum Side {
     public boolean isClient() {
         return this == CLIENT;
     }
+
+    public Side getOpposite() {
+        return this == CLIENT ? SERVER : CLIENT;
+    }
 }

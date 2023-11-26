@@ -52,7 +52,7 @@ public class PacketShipInfo extends PacketAdapter {
 
         this.crew = modules.getCrew() != null ? modules.getCrew().getCrewSize() : 0;
         this.energy = modules.getReactor().getEnergy();
-        this.shield = modules.getShield() != null ? modules.getShield().getShield() : 0;
+        this.shield = modules.getShield() != null ? modules.getShield().getShieldHp() : 0;
     }
 
     @Override

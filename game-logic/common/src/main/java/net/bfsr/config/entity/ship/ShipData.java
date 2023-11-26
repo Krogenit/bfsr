@@ -1,54 +1,58 @@
 package net.bfsr.config.entity.ship;
 
-import clipper2.core.PathD;
-import clipper2.core.PointD;
+import gnu.trove.map.TMap;
 import lombok.Getter;
-import net.bfsr.config.ConfigData;
+import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.config.Vector2fConfigurable;
-import net.bfsr.engine.util.PathHelper;
+import net.bfsr.config.component.ModulesPolygonsConfig;
 import net.bfsr.engine.util.TimeUtils;
-import org.dyn4j.geometry.Convex;
-import org.dyn4j.geometry.decompose.SweepLine;
+import net.bfsr.math.Direction;
+import org.dyn4j.geometry.Polygon;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class ShipData extends ConfigData {
-    private static final SweepLine SWEEP_LINE = new SweepLine();
-
-    private final Vector2f size;
+public class ShipData extends GameObjectConfigData {
     private final int destroyTimeInTicks;
-    private final Path texture;
-    private final Path damageTexture;
     private final Vector4f effectsColor;
-    private final PathD contour;
-    private final List<Convex> convexList;
     private final Vector2f[] weaponSlotPositions;
+    private final Polygon reactorPolygon;
+    private final Polygon shieldPolygon;
+    private final TMap<Direction, EnginesData> engines;
 
-    public ShipData(ShipConfig shipConfig, int dataIndex) {
-        super(shipConfig.name(), dataIndex);
-        this.size = convert(shipConfig.size());
-        this.destroyTimeInTicks = (int) (shipConfig.destroyTimeInSeconds() * TimeUtils.UPDATES_PER_SECOND);
-        this.texture = PathHelper.convertPath(shipConfig.texture());
-        this.damageTexture = PathHelper.convertPath(shipConfig.damageTexture());
-        this.effectsColor = convert(shipConfig.effectsColor());
+    public ShipData(ShipConfig shipConfig, String fileName, int id) {
+        super(shipConfig, fileName, id);
+        this.destroyTimeInTicks = (int) (shipConfig.getDestroyTimeInSeconds() * TimeUtils.UPDATES_PER_SECOND);
+        this.effectsColor = convert(shipConfig.getEffectsColor());
 
-        Vector2fConfigurable[] vertices = shipConfig.vertices();
-        this.contour = new PathD(vertices.length);
-        for (int i = 0; i < vertices.length; i++) {
-            Vector2fConfigurable vertex = vertices[i];
-            this.contour.add(new PointD(vertex.x(), vertex.y()));
-        }
-
-        this.convexList = SWEEP_LINE.decompose(convertVertices(vertices));
-
-        Vector2fConfigurable[] slotPositions = shipConfig.weaponSlotPositions();
+        Vector2fConfigurable[] slotPositions = shipConfig.getWeaponSlotPositions();
         this.weaponSlotPositions = new Vector2f[slotPositions.length];
         for (int i = 0; i < slotPositions.length; i++) {
             this.weaponSlotPositions[i] = convert(slotPositions[i]);
         }
+
+        ModulesPolygonsConfig modules = shipConfig.getModules();
+
+        this.reactorPolygon = convertToPolygon(modules.getReactor().getVertices());
+        this.shieldPolygon = convertToPolygon(modules.getShield().getVertices());
+        this.engines = convert(modules.getEngines(), direction -> direction, this::convert);
+    }
+
+    private EnginesData convert(EnginesConfig enginesConfig) {
+        List<EngineConfig> configEngines = enginesConfig.getEngines();
+        List<EngineData> engines = new ArrayList<>(configEngines.size());
+
+        for (int i = 0; i < configEngines.size(); i++) {
+            engines.add(convert(configEngines.get(i)));
+        }
+
+        return new EnginesData(engines);
+    }
+
+    private EngineData convert(EngineConfig engineConfig) {
+        return new EngineData(convert(engineConfig.getPolygons()), convert(engineConfig.getEffectPosition()));
     }
 }

@@ -81,14 +81,53 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
     }
 
     @Override
+    protected void updateAABB() {
+        super.updateAABB();
+
+        if (object.getReloadTimer() > 0 && effectsColor.w > 0) {
+            Vector2f position = object.getPosition();
+            float sin = object.getShip().getSin();
+            float cos = object.getShip().getCos();
+            float currentBeamRange = object.getCurrentBeamRange();
+
+            float beamX = cos * currentBeamRange;
+            float beamY = sin * currentBeamRange;
+            float x1 = position.x;
+            float y1 = position.y;
+            float x2 = position.x + beamX;
+            float y2 = position.y + beamY;
+
+            float minX, minY, maxX, maxY;
+
+            if (x1 < x2) {
+                minX = x1;
+                maxX = x2;
+            } else {
+                minX = x2;
+                maxX = x1;
+            }
+
+            if (y1 < y2) {
+                minY = y1;
+                maxY = y2;
+            } else {
+                minY = y2;
+                maxY = y1;
+            }
+
+            aabb.union(minX, minY, maxX, maxY);
+        }
+    }
+
+    @Override
     public void renderAdditive(float lastSin, float lastCos, float sin, float cos) {
         if (object.getReloadTimer() > 0 && effectsColor.w > 0) {
             if (object.getReloadTimer() > object.getTimeToReload() / 3.0f) {
                 Vector2f position = object.getPosition();
                 Vector2f size = object.getSize();
                 spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
-                        sin, cos, lastSize.x * 2.5f, lastSize.y * 2.5f, size.x * 2.5f, size.y * 2.5f, effectsColor.x, effectsColor.y,
-                        effectsColor.z, 0.6f * effectsColor.w, LIGHT_TEXTURE, BufferType.ENTITIES_ADDITIVE);
+                        sin, cos, lastSize.x * 2.5f, lastSize.y * 2.5f, size.x * 2.5f, size.y * 2.5f, effectsColor.x,
+                        effectsColor.y, effectsColor.z, 0.6f * effectsColor.w, LIGHT_TEXTURE, BufferType.ENTITIES_ADDITIVE);
             }
 
             beam.render(spriteRenderer, lastSin, lastCos, sin, cos);

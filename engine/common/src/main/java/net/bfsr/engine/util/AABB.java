@@ -24,4 +24,15 @@ public class AABB {
     public boolean overlaps(AABB aabb) {
         return this.minX <= aabb.maxX && this.maxX >= aabb.minX && this.minY <= aabb.maxY && this.maxY >= aabb.minY;
     }
+
+    public void union(float minX, float minY, float maxX, float maxY) {
+        this.minX = Math.min(this.minX, minX);
+        this.minY = Math.min(this.minY, minY);
+        this.maxX = Math.max(this.maxX, maxX);
+        this.maxY = Math.max(this.maxY, maxY);
+    }
+
+    public void union(AABB aabb) {
+        union(aabb.minX, aabb.minY, aabb.maxX, aabb.maxY);
+    }
 }

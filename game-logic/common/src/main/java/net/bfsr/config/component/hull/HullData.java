@@ -9,8 +9,8 @@ public class HullData extends ConfigData {
     private final float maxHullValue;
     private final float regenAmount;
 
-    public HullData(HullConfig hullConfig, int dataIndex) {
-        super(hullConfig.getName(), dataIndex);
+    public HullData(HullConfig hullConfig, String fileName, int id) {
+        super(fileName, id);
         this.maxHullValue = hullConfig.getMaxValue();
         this.regenAmount = hullConfig.getRegenAmountInSeconds() * TimeUtils.UPDATE_DELTA_TIME;
     }

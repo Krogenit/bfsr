@@ -1,11 +1,12 @@
 package net.bfsr.world;
 
 import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.TMap;
+import gnu.trove.map.hash.THashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.Getter;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.profiler.Profiler;
-import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.engine.util.Side;
 import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.RigidBody;
@@ -13,16 +14,11 @@ import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
-import net.bfsr.event.entity.bullet.BulletAddToWorldEvent;
-import net.bfsr.event.entity.ship.ShipAddToWorldEvent;
-import net.bfsr.event.entity.ship.ShipSpawnEvent;
-import net.bfsr.event.entity.wreck.ShipWreckAddToWorldEvent;
-import net.bfsr.event.entity.wreck.WreckAddToWorldEvent;
+import net.bfsr.event.entity.RigidBodyAddToWorldEvent;
 import net.bfsr.physics.CCDTransformHandler;
 import net.bfsr.physics.ContactListener;
 import net.bfsr.physics.CustomValueMixer;
 import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.ContinuousDetectionMode;
 import org.dyn4j.world.PhysicsWorld;
 
@@ -31,8 +27,7 @@ import java.util.List;
 import java.util.Random;
 
 public class World {
-    public static final ObjectPool<Wreck> WREAK_POOL = new ObjectPool<>();
-
+    @Getter
     private org.dyn4j.world.World<Body> physicWorld;
     private final CCDTransformHandler ccdTransformHandler = new CCDTransformHandler();
     @Getter
@@ -41,15 +36,13 @@ public class World {
     private final long seed;
 
     private final Profiler profiler;
+    @Getter
     protected final Random rand = new Random();
 
     private int nextId;
-    private final TIntObjectMap<RigidBody> entitiesById = new TIntObjectHashMap<>();
-
-    protected final List<Ship> ships = new ArrayList<>();
-    private final List<Bullet> bullets = new ArrayList<>();
-    private final List<ShipWreck> shipWrecks = new ArrayList<>();
-    private final List<Wreck> wrecks = new ArrayList<>();
+    private final TIntObjectMap<RigidBody<?>> entitiesById = new TIntObjectHashMap<>();
+    private final TMap<Class<? extends RigidBody>, List<RigidBody<?>>> entitiesByClass = new THashMap<>();
+    private final List<RigidBody<?>> entities = new ArrayList<>();
     @Getter
     private final EventBus eventBus;
 
@@ -58,6 +51,11 @@ public class World {
         this.side = side;
         this.seed = seed;
         this.eventBus = eventBus;
+        this.entitiesByClass.put(RigidBody.class, new ArrayList<>());
+        this.entitiesByClass.put(Ship.class, new ArrayList<>());
+        this.entitiesByClass.put(Bullet.class, new ArrayList<>());
+        this.entitiesByClass.put(ShipWreck.class, new ArrayList<>());
+        this.entitiesByClass.put(Wreck.class, new ArrayList<>());
         initPhysicWorld();
     }
 
@@ -75,10 +73,7 @@ public class World {
     }
 
     public void update() {
-        updateShips();
-        updateBullets();
-        updateWrecks();
-
+        updateEntities();
         profiler.endStartSection("physics");
         ccdTransformHandler.clear();
         physicWorld.step(1);
@@ -87,174 +82,85 @@ public class World {
         postPhysicsUpdate();
     }
 
-    protected void updateShips() {
-        for (int i = 0; i < ships.size(); i++) {
-            Ship ship = ships.get(i);
-            if (ship.isDead()) {
-                removeShip(ship, i--);
+    private void updateEntities() {
+        for (int i = 0; i < entities.size(); i++) {
+            RigidBody<?> rigidBody = entities.get(i);
+            if (rigidBody.isDead()) {
+                remove(i--, rigidBody);
             } else {
-                ship.update();
+                rigidBody.update();
             }
         }
     }
 
-    private void updateBullets() {
-        for (int i = 0; i < bullets.size(); i++) {
-            RigidBody bullet = bullets.get(i);
-
-            if (bullet.isDead()) {
-                removeObjectById(bullet.getId());
-                physicWorld.removeBody(bullet.getBody());
-                bullets.remove(i--);
-            } else {
-                bullet.update();
-            }
+    private void postPhysicsUpdate() {
+        for (int i = 0; i < entities.size(); i++) {
+            entities.get(i).postPhysicsUpdate();
         }
     }
 
-    private void updateWrecks() {
-        for (int i = 0; i < wrecks.size(); i++) {
-            Wreck wreck = wrecks.get(i);
-            if (wreck.isDead()) {
-                removePhysicObject(wreck);
-                wrecks.remove(i--);
-                WREAK_POOL.returnBack(wreck);
-            } else {
-                wreck.update();
-            }
+    public void add(RigidBody<?> entity) {
+        add(entity, true);
+    }
+
+    public void add(RigidBody<?> entity, boolean addToPhysicWorld) {
+        if (entitiesById.containsKey(entity.getId())) {
+            throw new RuntimeException("Entity with id " + entity.getId() + " already registered!");
         }
 
-        for (int i = 0; i < shipWrecks.size(); i++) {
-            ShipWreck wreck = shipWrecks.get(i);
-            if (wreck.isDead()) {
-                shipWrecks.remove(i--);
-                removePhysicObject(wreck);
-            } else {
-                wreck.update();
+        entitiesById.put(entity.getId(), entity);
+        entities.add(entity);
+        entitiesByClass.get(entity.getClass()).add(entity);
 
-                if (wreck.getFixturesToAdd().size() > 0) {
-                    wreck.getBody().removeAllFixtures();
-                    List<BodyFixture> fixturesToAdd = wreck.getFixturesToAdd();
-                    while (fixturesToAdd.size() > 0) {
-                        wreck.getBody().addFixture(fixturesToAdd.remove(0));
-                    }
-
-                    wreck.getBody().updateMass();
-                }
-            }
-        }
-    }
-
-    protected void postPhysicsUpdate() {
-        for (int i = 0, size = ships.size(); i < size; i++) {
-            ships.get(i).postPhysicsUpdate();
+        if (addToPhysicWorld) {
+            physicWorld.addBody(entity.getBody());
         }
 
-        for (int i = 0, size = bullets.size(); i < size; i++) {
-            bullets.get(i).postPhysicsUpdate();
-        }
-
-        for (int i = 0, size = shipWrecks.size(); i < size; i++) {
-            shipWrecks.get(i).postPhysicsUpdate();
-        }
-
-        for (int i = 0, size = wrecks.size(); i < size; i++) {
-            wrecks.get(i).postPhysicsUpdate();
-        }
+        entity.onAddedToWorld();
+        eventBus.publish(new RigidBodyAddToWorldEvent(entity));
     }
 
-    protected void removeShip(Ship ship, int index) {
-        physicWorld.removeBody(ship.getBody());
-        ship.clear();
-        ships.remove(index);
-        removeObjectById(ship.getId());
-    }
-
-    public void addShip(Ship ship) {
-        entitiesById.put(ship.getId(), ship);
-        ships.add(ship);
-        eventBus.publish(new ShipAddToWorldEvent(ship));
-    }
-
-    public void spawnShip(Ship ship) {
-        physicWorld.addBody(ship.getBody());
-        eventBus.publish(new ShipSpawnEvent(ship));
-    }
-
-    public void addBullet(Bullet bullet) {
-        entitiesById.put(bullet.getId(), bullet);
-        bullets.add(bullet);
-        physicWorld.addBody(bullet.getBody());
-        eventBus.publish(new BulletAddToWorldEvent(bullet));
-    }
-
-    public void addWreck(Wreck wreck) {
-        wrecks.add(wreck);
-        addPhysicObject(wreck);
-        eventBus.publish(new WreckAddToWorldEvent(wreck));
-    }
-
-    public void addWreck(ShipWreck wreck) {
-        shipWrecks.add(wreck);
-        addPhysicObject(wreck);
-        eventBus.publish(new ShipWreckAddToWorldEvent(wreck));
-    }
-
-    public void addPhysicObject(RigidBody rigidBody) {
-        entitiesById.put(rigidBody.getId(), rigidBody);
-        physicWorld.addBody(rigidBody.getBody());
-    }
-
-    public void removePhysicObject(RigidBody rigidBody) {
-        removeObjectById(rigidBody.getId());
-        physicWorld.removeBody(rigidBody.getBody());
-    }
-
-    protected void removeObjectById(int id) {
-        entitiesById.remove(id);
-    }
-
-    public org.dyn4j.world.World<Body> getPhysicWorld() {
-        return physicWorld;
-    }
-
-    public Random getRand() {
-        return rand;
+    public void remove(int index, RigidBody<?> entity) {
+        entities.remove(index);
+        entitiesById.remove(entity.getId());
+        physicWorld.removeBody(entity.getBody());
+        entity.onRemovedFromWorld();
+        entitiesByClass.get(entity.getClass()).remove(entity);
     }
 
     public void clear() {
-        for (int i = 0; i < ships.size(); i++) {
-            ships.get(i).clear();
+        for (int i = 0; i < entities.size(); i++) {
+            entities.get(i).onRemovedFromWorld();
         }
 
-        ships.clear();
-        bullets.clear();
+        entities.clear();
+        entitiesById.clear();
+        physicWorld.removeAllBodies();
 
-        for (int i = 0; i < wrecks.size(); i++) {
-            WREAK_POOL.returnBack(wrecks.get(i));
-        }
-
-        wrecks.clear();
+        entitiesByClass.forEachValue(rigidBodies -> {
+            rigidBodies.clear();
+            return true;
+        });
     }
 
     public int getBulletsCount() {
-        return bullets.size();
+        return entitiesByClass.get(Bullet.class).size();
     }
 
     public int getWreckCount() {
-        return wrecks.size();
+        return entitiesByClass.get(Wreck.class).size();
     }
 
     public int getShipWreckCount() {
-        return shipWrecks.size();
+        return entitiesByClass.get(ShipWreck.class).size();
     }
 
-    public List<Ship> getShips() {
-        return ships;
-    }
-
-    public RigidBody getEntityById(int id) {
+    public RigidBody<?> getEntityById(int id) {
         return entitiesById.get(id);
+    }
+
+    public <T extends RigidBody<?>> List<T> getEntitiesByType(Class<T> classType) {
+        return (List<T>) entitiesByClass.get(classType);
     }
 
     public int getNextId() {

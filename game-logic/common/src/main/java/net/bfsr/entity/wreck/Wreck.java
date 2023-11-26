@@ -3,12 +3,14 @@ package net.bfsr.entity.wreck;
 import lombok.Getter;
 import net.bfsr.config.entity.wreck.WreckData;
 import net.bfsr.config.entity.wreck.WreckRegistry;
+import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.event.entity.wreck.WreckDeathEvent;
-import net.bfsr.event.entity.wreck.WreckUpdateEvent;
+import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
+import net.bfsr.network.packet.common.entity.spawn.WreckSpawnData;
 import net.bfsr.physics.PhysicsUtils;
-import net.bfsr.physics.filter.WreckFilter;
+import net.bfsr.physics.filter.ShipFilter;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
@@ -17,7 +19,9 @@ import org.dyn4j.geometry.Polygon;
 
 import java.util.Random;
 
-public class Wreck extends RigidBody {
+public class Wreck extends RigidBody<WreckData> {
+    public static final ObjectPool<Wreck> WREAK_POOL = new ObjectPool<>();
+
     @Getter
     protected float lifeTimeVelocity;
     @Getter
@@ -31,7 +35,7 @@ public class Wreck extends RigidBody {
     protected boolean emitFire;
 
     @Getter
-    protected float explosionTimer, hull;
+    protected float explosionTimer;
 
     protected Random random;
 
@@ -40,10 +44,6 @@ public class Wreck extends RigidBody {
 
     @Getter
     private WreckType wreckType;
-    @Getter
-    protected WreckData wreckData;
-
-    private final WreckUpdateEvent updateEvent = new WreckUpdateEvent(this);
 
     public Wreck init(World world, int id, float x, float y, float velocityX, float velocityY, float sin, float cos,
                       float angularVelocity, float scaleX, float scaleY,
@@ -62,12 +62,12 @@ public class Wreck extends RigidBody {
         this.emitFire = emitFire;
         this.fire = fire;
         this.light = light;
-        this.hull = hull;
+        this.health = hull;
         this.destroyedShipId = destroyedShipId;
         this.random = world.getRand();
         this.lifeTime = 0;
         this.wreckType = wreckType;
-        this.wreckData = wreckData;
+        this.configData = wreckData;
         this.isDead = false;
         this.eventBus = world.getEventBus();
         createFixtures(angularVelocity);
@@ -108,53 +108,38 @@ public class Wreck extends RigidBody {
     }
 
     private void createFixture() {
-        Polygon p = Geometry.scale(wreckData.getPolygon(), size.x);
+        Polygon p = Geometry.scale(configData.getPolygon(), size.x);
         BodyFixture bodyFixture = new BodyFixture(p);
         bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-        bodyFixture.setFilter(new WreckFilter(this));
+        bodyFixture.setFilter(new ShipFilter(this));
         body.addFixture(bodyFixture);
     }
 
     @Override
-    public void update() {
-        updateLifeTime();
-    }
-
-    @Override
-    public void postPhysicsUpdate() {
-        super.postPhysicsUpdate();
-        eventBus.publish(updateEvent);
-    }
-
-    private void updateLifeTime() {
+    protected void updateLifeTime() {
         if (lifeTime > 0.8f) {
             lifeTime += lifeTimeVelocity * 0.05f;
             if (lifeTime >= 1.0f) {
-                onLifeTimeEnded();
+                setDead();
             }
         } else {
             lifeTime += lifeTimeVelocity * TimeUtils.UPDATE_DELTA_TIME;
         }
     }
 
-    private void onLifeTimeEnded() {
-        setDead();
-    }
-
-    public void damage(float damage) {
-        hull -= damage;
-        onHullDamage();
-    }
-
-    private void onHullDamage() {
-        if (hull <= 0) {
-            setDead();
-        }
+    @Override
+    public EntityPacketSpawnData createSpawnData() {
+        return new WreckSpawnData(this);
     }
 
     @Override
     public void setDead() {
         super.setDead();
         eventBus.publish(new WreckDeathEvent(this));
+    }
+
+    @Override
+    public void onRemovedFromWorld() {
+        WREAK_POOL.returnBack(this);
     }
 }

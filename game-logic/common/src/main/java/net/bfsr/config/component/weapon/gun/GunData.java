@@ -1,35 +1,45 @@
 package net.bfsr.config.component.weapon.gun;
 
 import lombok.Getter;
-import net.bfsr.config.ConfigData;
+import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.config.SoundData;
 import net.bfsr.engine.util.PathHelper;
+import net.bfsr.engine.util.TimeUtils;
+import net.bfsr.entity.bullet.BulletDamage;
 import org.dyn4j.geometry.Polygon;
 import org.joml.Vector4f;
 
 import java.nio.file.Path;
 
 @Getter
-public class GunData extends ConfigData {
-    private final float sizeX, sizeY;
-    private final Path texturePath;
-    private final SoundData[] sounds;
-    private final float reloadTimeInSeconds;
+public class GunData extends GameObjectConfigData {
+    private final int reloadTimeInTicks;
     private final float energyCost;
+    private final BulletDamage damage;
     private final Vector4f color;
     private final Polygon polygon;
-    private final String bulletData;
+    private final SoundData[] sounds;
+    private final float bulletSpeed;
+    private final int bulletLifeTimeInTicks;
+    private final float bulletSizeX, bulletSizeY;
+    private final Path bulletTexture;
+    private final Polygon bulletPolygon;
+    private final float hp;
 
-    public GunData(GunConfig config, int dataIndex) {
-        super(config.name(), dataIndex);
-        this.sizeX = config.size().x();
-        this.sizeY = config.size().y();
-        this.texturePath = PathHelper.CLIENT_CONTENT.resolve(config.texture());
-        this.color = convert(config.color());
-        this.polygon = new Polygon(convertVertices(config.vertices()));
-        this.sounds = convert(config.sounds());
-        this.reloadTimeInSeconds = config.reloadTimeInSeconds();
-        this.energyCost = config.energyCost();
-        this.bulletData = config.bulletData();
+    public GunData(GunConfig config, String fileName, int id) {
+        super(config, fileName, id);
+        this.reloadTimeInTicks = (int) (config.getReloadTimeInSeconds() * TimeUtils.UPDATES_PER_SECOND);
+        this.energyCost = config.getEnergyCost();
+        this.damage = new BulletDamage(config.getDamage());
+        this.color = convert(config.getColor());
+        this.polygon = convertToPolygon(config.getVertices());
+        this.sounds = convert(config.getSounds());
+        this.bulletSpeed = config.getBulletSpeed();
+        this.bulletLifeTimeInTicks = (int) (config.getBulletLifeTimeInSeconds() * TimeUtils.UPDATES_PER_SECOND);
+        this.bulletSizeX = config.getBulletSize().x();
+        this.bulletSizeY = config.getBulletSize().y();
+        this.bulletTexture = PathHelper.CLIENT_CONTENT.resolve(config.getBulletTexture());
+        this.bulletPolygon = convertToPolygon(config.getBulletVertices());
+        this.hp = config.getHp();
     }
 }

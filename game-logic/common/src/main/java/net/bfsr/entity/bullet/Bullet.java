@@ -1,7 +1,8 @@
 package net.bfsr.entity.bullet;
 
 import lombok.Getter;
-import net.bfsr.config.entity.bullet.BulletData;
+import net.bfsr.config.component.weapon.gun.GunData;
+import net.bfsr.config.component.weapon.gun.GunRegistry;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.util.SideUtils;
@@ -10,43 +11,40 @@ import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
+import net.bfsr.event.entity.bullet.BulletDamageShipArmorEvent;
 import net.bfsr.event.entity.bullet.BulletDamageShipHullEvent;
-import net.bfsr.event.entity.bullet.BulletDeathEvent;
-import net.bfsr.event.entity.bullet.BulletHitShipEvent;
+import net.bfsr.event.entity.bullet.BulletDamageShipShieldEvent;
 import net.bfsr.event.entity.bullet.BulletReflectEvent;
+import net.bfsr.network.packet.common.entity.spawn.BulletSpawnData;
+import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.physics.filter.BulletFilter;
 import net.bfsr.util.SyncUtils;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Polygon;
-import org.dyn4j.geometry.Vector2;
 import org.dyn4j.world.ContactCollisionData;
 import org.joml.Vector2f;
 
-public class Bullet extends RigidBody {
+public class Bullet extends RigidBody<GunData> {
     @Getter
     protected final Ship ship;
     private final float bulletSpeed;
     private final BulletDamage damage;
     private final Polygon polygon;
-    @Getter
-    private final BulletData bulletData;
-    private float energy;
     private Object previousAObject;
     @Getter
     private final float startLifeTime;
 
-    public Bullet(float x, float y, float sin, float cos, Ship ship, BulletData bulletData) {
-        super(x, y, sin, cos, bulletData.getSizeX(), bulletData.getSizeY());
+    public Bullet(float x, float y, float sin, float cos, GunData gunData, Ship ship, BulletDamage damage) {
+        super(x, y, sin, cos, gunData.getBulletSizeX(), gunData.getBulletSizeY(), gunData, GunRegistry.INSTANCE.getId());
         this.ship = ship;
-        this.lifeTime = bulletData.getLifeTimeInTicks();
+        this.lifeTime = gunData.getBulletLifeTimeInTicks();
         this.startLifeTime = lifeTime;
-        this.bulletSpeed = bulletData.getBulletSpeed();
-        this.damage = new BulletDamage(bulletData.getBulletDamage());
-        this.energy = damage.getAverage();
-        this.polygon = bulletData.getPolygon();
-        this.bulletData = bulletData;
+        this.bulletSpeed = gunData.getBulletSpeed();
+        this.damage = damage;
+        this.health = damage.getAverage();
+        this.polygon = gunData.getBulletPolygon();
         this.velocity.set(cos * bulletSpeed, sin * bulletSpeed);
     }
 
@@ -100,7 +98,7 @@ public class Bullet extends RigidBody {
     }
 
     @Override
-    public void collision(Body body, float contactX, float contactY, float normalX, float normalY,
+    public void collision(Body body, BodyFixture fixture, float contactX, float contactY, float normalX, float normalY,
                           ContactCollisionData<Body> collision) {
         collision.getContactConstraint().setEnabled(false);
 
@@ -109,39 +107,46 @@ public class Bullet extends RigidBody {
             if (userData instanceof Ship ship) {
                 if (canDamageShip(ship)) {
                     previousAObject = ship;
-                    if (damageShip(ship, contactX, contactY)) {
-                        //Hull damage
-                        eventBus.publish(new BulletDamageShipHullEvent(this, ship, contactX, contactY));
-                        setDead();
-                    } else {
-                        //Shield reflection
-                        damage(this);
-                        reflect(normalX, normalY);
-                    }
+                    ship.damage(damage, ship, contactX, contactY, ship.getFaction() == ship.getFaction() ? 0.5f : 1.0f,
+                            fixture, () -> {
+                                //Shield
+                                damage(this);
+                                reflect(normalX, normalY);
+                                eventBus.publish(
+                                        new BulletDamageShipShieldEvent(this, ship, contactX, contactY, normalX, normalY));
+                            }, () -> {
+                                //Armor
+                                setDead();
+                                eventBus.publish(
+                                        new BulletDamageShipArmorEvent(this, ship, contactX, contactY, normalX, normalY));
+                            },
+                            () -> {
+                                //Hull
+                                setDead();
+                                eventBus.publish(new BulletDamageShipHullEvent(this, ship, contactX, contactY, normalX, normalY));
+                            });
 
-                    eventBus.publish(new BulletHitShipEvent(this, ship, contactX, contactY, normalX, normalY));
                 }
             } else if (userData instanceof Bullet bullet) {
                 bullet.setDead();
             } else if (userData instanceof Wreck wreck) {
-                wreck.damage(damage.getHull());
+                wreck.damage(damage.getHull(), contactX, contactY, normalX, normalY);
                 setDead();
             } else if (userData instanceof ShipWreck wreck) {
-                wreck.bulletDamage(this, contactX, contactY, normalX, normalY);
+                wreck.damage(this, contactX, contactY, normalX, normalY);
+                setDead();
+            } else if (userData instanceof RigidBody<?> rigidBody) {
+                rigidBody.damage(damage.getHull(), contactX, contactY, normalX, normalY);
                 setDead();
             }
         }
     }
 
     private void reflect(float normalX, float normalY) {
-        Vector2 velocity = body.getLinearVelocity();
-        double dot = velocity.dot(normalX, normalY);
-        velocity.x = velocity.x - 2 * dot * normalX;
-        velocity.y = velocity.y - 2 * dot * normalY;
+        float dot = velocity.x * normalX + velocity.y * normalY;
+        setVelocity(velocity.x - 2 * dot * normalX, velocity.y - 2 * dot * normalY);
         float rotateToVector = (float) Math.atan2(-velocity.x, velocity.y) + MathUtils.HALF_PI;
-        sin = LUT.sin(rotateToVector);
-        cos = LUT.cos(rotateToVector);
-        body.getTransform().setRotation(sin, cos);
+        setRotation(LUT.sin(rotateToVector), LUT.cos(rotateToVector));
         eventBus.publish(new BulletReflectEvent(this));
     }
 
@@ -158,12 +163,17 @@ public class Bullet extends RigidBody {
         else if (this.damage.getShield() < 0) setDead();
 
         if (bullet != this) {
-            energy -= damage;
+            health -= damage;
 
-            if (energy <= 0) {
+            if (health <= 0) {
                 setDead();
             }
         }
+    }
+
+    @Override
+    public EntityPacketSpawnData createSpawnData() {
+        return new BulletSpawnData(this);
     }
 
     private boolean canDamageShip(Ship ship) {
@@ -177,15 +187,5 @@ public class Bullet extends RigidBody {
         } else {
             return false;
         }
-    }
-
-    private boolean damageShip(Ship ship, float contactX, float contactY) {
-        return ship.attackShip(damage, ship, contactX, contactY, ship.getFaction() == ship.getFaction() ? 0.5f : 1.0f);
-    }
-
-    @Override
-    public void setDead() {
-        super.setDead();
-        eventBus.publish(new BulletDeathEvent(this));
     }
 }

@@ -9,8 +9,8 @@ import net.bfsr.config.component.hull.HullConfig;
 public class ArmorPlateConfig extends HullConfig {
     private final float protection;
 
-    public ArmorPlateConfig(String name, float maxValue, float regenAmountInSeconds, float protection) {
-        super(name, maxValue, regenAmountInSeconds);
+    public ArmorPlateConfig(float maxValue, float regenAmountInSeconds, float protection) {
+        super(maxValue, regenAmountInSeconds);
         this.protection = protection;
     }
 }

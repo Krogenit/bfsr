@@ -8,7 +8,7 @@ import org.joml.Vector2f;
 
 public class WeaponSlotRender<T extends WeaponSlot> extends Render<T> {
     public WeaponSlotRender(T object) {
-        super(Engine.assetsManager.getTexture(object.getGunData().getTexturePath()), object);
+        super(Engine.assetsManager.getTexture(object.getGunData().getTexture()), object);
     }
 
     @Override

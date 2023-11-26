@@ -104,7 +104,7 @@ public class DebugInfoElement {
 
         World world = core.getWorld();
         int bulletsCount = world.getBulletsCount();
-        int shipsCount = world.getShips().size();
+        int shipsCount = world.getEntitiesByType(Ship.class).size();
         int particlesCount = core.getParticlesCount();
         int wreckCount = world.getWreckCount();
         int shipWreckCount = world.getShipWreckCount();
@@ -112,7 +112,7 @@ public class DebugInfoElement {
 
         World sWorld = server != null ? server.getWorld() : null;
         int sBulletsCount = sWorld != null ? sWorld.getBulletsCount() : 0;
-        int sShipsCount = sWorld != null ? sWorld.getShips().size() : 0;
+        int sShipsCount = sWorld != null ? sWorld.getEntitiesByType(Ship.class).size() : 0;
         int sWrecksCount = sWorld != null ? sWorld.getWreckCount() : 0;
         int sShipWrecksCount = sWorld != null ? sWorld.getShipWreckCount() : 0;
         int sBodyCount = sWorld != null ? sWorld.getPhysicWorld().getBodyCount() : 0;
@@ -139,10 +139,8 @@ public class DebugInfoElement {
                     .append(DecimalUtils.strictFormatWithToDigits(velocity.y));
             stringBuilder.append("\nMass: ")
                     .append(DecimalUtils.strictFormatWithToDigits(playerShip.getBody().getMass().getMass()));
-            stringBuilder.append("\nHull: ").append(DecimalUtils.strictFormatWithToDigits(hull.getValue())).append("/")
-                    .append(DecimalUtils.strictFormatWithToDigits(hull.getMaxValue()));
-            stringBuilder.append("\nShield: ").append(DecimalUtils.strictFormatWithToDigits(shield.getShield())).append("/")
-                    .append(DecimalUtils.strictFormatWithToDigits(shield.getMaxShield()));
+            stringBuilder.append("\nShield: ").append(DecimalUtils.strictFormatWithToDigits(shield.getShieldHp())).append("/")
+                    .append(DecimalUtils.strictFormatWithToDigits(shield.getMaxHp()));
             stringBuilder.append("\nReactor: ").append(DecimalUtils.strictFormatWithToDigits(reactor.getEnergy())).append("/")
                     .append(DecimalUtils.strictFormatWithToDigits(reactor.getMaxEnergy()));
         }

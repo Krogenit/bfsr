@@ -2,8 +2,10 @@ package net.bfsr.editor.gui.property;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.editor.gui.ColorScheme;
-import net.bfsr.editor.property.PropertiesHolder;
+import net.bfsr.client.Core;
+import net.bfsr.editor.gui.EditorTheme;
+import net.bfsr.editor.gui.GuiEditor;
+import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.StringObject;
 import net.bfsr.engine.gui.object.AbstractGuiObject;
 import net.bfsr.engine.gui.object.GuiObjectWithSubObjects;
@@ -12,23 +14,27 @@ import net.bfsr.engine.renderer.font.FontType;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.function.BiConsumer;
 
-public abstract class PropertyComponent<P extends PropertiesHolder> extends GuiObjectWithSubObjects {
-    protected final P object;
+public abstract class PropertyComponent extends GuiObjectWithSubObjects {
+    @Getter
+    protected final Object object;
     protected final Object[] values;
     protected final List<Field> fields;
     @Getter
-    private final StringObject stringObject;
+    protected final StringObject stringObject;
     @Setter
     protected int propertyOffsetX;
-    protected final int propertyYOffset;
+    final int propertyYOffset;
     protected final FontType fontType;
     protected final int fontSize;
+    int stringOffsetX;
     protected final int stringOffsetY;
+    protected final BiConsumer<Object, Integer> valueConsumer;
 
     protected PropertyComponent(int width, int height, String name, FontType fontType, int fontSize, int propertyOffsetX,
-                                int propertyOffsetY, int stringOffsetY, P object, List<Field> fields,
-                                Object[] values) {
+                                int propertyOffsetY, int stringOffsetY, Object object, List<Field> fields,
+                                Object[] values, BiConsumer<Object, Integer> valueConsumer) {
         super(width, height);
         this.object = object;
         this.fields = fields;
@@ -36,19 +42,33 @@ public abstract class PropertyComponent<P extends PropertiesHolder> extends GuiO
         this.fontType = fontType;
         this.fontSize = fontSize;
         this.stringOffsetY = stringOffsetY;
-        this.stringObject =
-                new StringObject(fontType, name, fontSize).setColor(ColorScheme.TEXT_COLOR_GRAY, ColorScheme.TEXT_COLOR_GRAY,
-                        ColorScheme.TEXT_COLOR_GRAY, 1.0f).compile();
+        this.stringObject = new StringObject(fontType, name, fontSize).setColor(EditorTheme.TEXT_COLOR_GRAY,
+                EditorTheme.TEXT_COLOR_GRAY, EditorTheme.TEXT_COLOR_GRAY, 1.0f).compile();
         this.propertyOffsetX = propertyOffsetX;
         this.propertyYOffset = propertyOffsetY;
+        this.valueConsumer = valueConsumer;
         setHoverColor(0.3f, 0.3f, 0.3f, 0.5f);
     }
 
     protected PropertyComponent(AbstractGuiObject guiObject, int width, int height, String name, FontType fontType, int fontSize,
                                 int propertyOffsetX, int propertyOffsetY, int stringOffsetY,
-                                P object, List<Field> fields, Object[] values) {
-        this(width, height, name, fontType, fontSize, propertyOffsetX, propertyOffsetY, stringOffsetY, object, fields, values);
+                                Object object, List<Field> fields, Object[] values, BiConsumer<Object, Integer> valueConsumer) {
+        this(width, height, name, fontType, fontSize, propertyOffsetX, propertyOffsetY, stringOffsetY, object, fields, values,
+                valueConsumer);
         addSubObject(guiObject);
+    }
+
+    @Override
+    public void update() {
+        super.update();
+        stringObject.update();
+    }
+
+    public void updatePositions() {
+        Gui currentGui = Core.get().getGuiManager().getGui();
+        if (currentGui instanceof GuiEditor) {
+            ((GuiEditor<?, ?>) currentGui).updatePositions();
+        }
     }
 
     @Override
@@ -60,28 +80,28 @@ public abstract class PropertyComponent<P extends PropertiesHolder> extends GuiO
 
     @Override
     protected void registerSubElements(GuiObjectsHandler gui) {
-        gui.registerGuiObject(stringObject);
         super.registerSubElements(gui);
+        gui.registerGuiObject(stringObject);
     }
 
     @Override
     protected void unregisterSubElements(GuiObjectsHandler gui) {
-        gui.unregisterGuiObject(stringObject);
         super.unregisterSubElements(gui);
+        gui.unregisterGuiObject(stringObject);
     }
 
     @Override
-    public PropertyComponent<P> atTopLeftCorner(int x, int y) {
+    public PropertyComponent atTopLeftCorner(int x, int y) {
         super.atTopLeftCorner(x, y);
-        stringObject.atTopLeftCorner(x,
+        stringObject.atTopLeftCorner(x + stringOffsetX,
                 y + stringOffsetY + fontType.getStringCache().getCenteredYOffset(stringObject.getString(), 20, fontSize));
         return this;
     }
 
     @Override
-    public PropertyComponent<P> atTopRightCorner(int x, int y) {
+    public PropertyComponent atTopRightCorner(int x, int y) {
         super.atTopRightCorner(x, y);
-        stringObject.atTopRightCorner(x,
+        stringObject.atTopRightCorner(x + stringOffsetX,
                 y + stringOffsetY + fontType.getStringCache().getCenteredYOffset(stringObject.getString(), 20, fontSize));
         return this;
     }
@@ -90,8 +110,9 @@ public abstract class PropertyComponent<P extends PropertiesHolder> extends GuiO
     protected void setRepositionConsumerForSubObjects() {
         int offsetX = propertyOffsetX;
         for (int i = 0; i < subObjects.size(); i++) {
-            subObjectsRepositionConsumer.setup(subObjects.get(i), offsetX, propertyYOffset);
-            offsetX += subObjects.get(i).getWidth();
+            AbstractGuiObject guiObject = subObjects.get(i);
+            subObjectsRepositionConsumer.setup(guiObject, offsetX, propertyYOffset);
+            offsetX += guiObject.getWidth();
         }
     }
 

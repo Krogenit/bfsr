@@ -1,9 +1,9 @@
 package net.bfsr.physics.filter;
 
-import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.RigidBody;
 
-public class ShipFilter extends CollisionFilter<Ship> {
-    public ShipFilter(Ship userData) {
+public class ShipFilter extends CollisionFilter {
+    public ShipFilter(RigidBody userData) {
         super(userData, Categories.SHIP_CATEGORY, Categories.all());
     }
 }

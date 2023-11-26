@@ -1,17 +1,18 @@
 package net.bfsr.server.event.listener.entity.bullet;
 
+import net.bfsr.damage.DamageType;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.entity.ship.module.hull.Hull;
-import net.bfsr.event.entity.bullet.*;
-import net.bfsr.math.RigidBodyUtils;
+import net.bfsr.event.entity.bullet.BulletDamageShipArmorEvent;
+import net.bfsr.event.entity.bullet.BulletDamageShipHullEvent;
+import net.bfsr.event.entity.bullet.BulletDamageShipShieldEvent;
+import net.bfsr.event.entity.bullet.BulletReflectEvent;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.common.PacketObjectPosition;
 import net.bfsr.network.packet.server.effect.PacketBulletHitShip;
-import net.bfsr.network.packet.server.entity.PacketRemoveObject;
-import net.bfsr.network.packet.server.entity.bullet.PacketSpawnBullet;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.wreck.WreckSpawner;
+import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.util.TrackingUtils;
 import net.bfsr.world.World;
 import net.engio.mbassy.listener.Handler;
@@ -20,45 +21,50 @@ import net.engio.mbassy.listener.References;
 
 import java.util.Random;
 
+import static net.bfsr.math.RigidBodyUtils.ANGLE_TO_VELOCITY;
+
 @Listener(references = References.Strong)
 public class BulletEventListener {
-    @Handler
-    public void event(BulletAddToWorldEvent event) {
-        Bullet bullet = event.bullet();
-        ServerGameLogic.getNetwork().sendUDPPacketToAllNearby(new PacketSpawnBullet(bullet), bullet.getPosition(), TrackingUtils.PACKET_SPAWN_DISTANCE);
-    }
+    private final NetworkSystem network = ServerGameLogic.getNetwork();
 
     @Handler
     public void event(BulletReflectEvent event) {
         Bullet bullet = event.bullet();
-        ServerGameLogic.getNetwork().sendUDPPacketToAllNearby(new PacketObjectPosition(bullet), bullet.getPosition(), TrackingUtils.PACKET_UPDATE_DISTANCE);
+        network.sendUDPPacketToAllNearby(new PacketObjectPosition(bullet), bullet.getPosition(), TrackingUtils.TRACKING_DISTANCE);
     }
 
     @Handler
-    public void event(BulletHitShipEvent event) {
-        Bullet bullet = event.bullet();
-        ServerGameLogic.getNetwork().sendUDPPacketToAllNearby(new PacketBulletHitShip(bullet, event.ship(), event.contactX(), event.contactY(),
-                event.normalX(), event.normalY()), bullet.getPosition(), TrackingUtils.PACKET_UPDATE_DISTANCE);
+    public void event(BulletDamageShipShieldEvent event) {
+        sendHitPacket(event.getBullet(), event.getShip(), event.getContactX(), event.getContactY(), event.getNormalX(),
+                event.getNormalY(), DamageType.SHIELD);
+    }
+
+    @Handler
+    public void event(BulletDamageShipArmorEvent event) {
+        sendHitPacket(event.getBullet(), event.getShip(), event.getContactX(), event.getContactY(), event.getNormalX(),
+                event.getNormalY(), DamageType.ARMOR);
     }
 
     @Handler
     public void event(BulletDamageShipHullEvent event) {
-        Ship ship = event.ship();
-        Hull hull = ship.getModules().getHull();
+        Ship ship = event.getShip();
         World world = ship.getWorld();
         Random rand = world.getRand();
-        if (hull.getValue() / hull.getMaxValue() < 0.25f && rand.nextInt(2) == 0) {
-            RotationHelper.angleToVelocity(net.bfsr.engine.math.MathUtils.TWO_PI * rand.nextFloat(), 1.5f, RigidBodyUtils.ANGLE_TO_VELOCITY);
+        if (rand.nextInt(2) == 0) {
+            RotationHelper.angleToVelocity(net.bfsr.engine.math.MathUtils.TWO_PI * rand.nextFloat(), 1.5f, ANGLE_TO_VELOCITY);
             float velocityX = ship.getVelocity().x * 0.005f;
             float velocityY = ship.getVelocity().y * 0.005f;
-            WreckSpawner.spawnDamageDebris(world, rand.nextInt(2), event.contactX(), event.contactY(),
-                    velocityX + RigidBodyUtils.ANGLE_TO_VELOCITY.x, velocityY + RigidBodyUtils.ANGLE_TO_VELOCITY.y, 0.75f);
+            WreckSpawner.spawnDamageDebris(world, rand.nextInt(2), event.getContactX(), event.getContactY(),
+                    velocityX + ANGLE_TO_VELOCITY.x, velocityY + ANGLE_TO_VELOCITY.y, 0.75f);
         }
+
+        sendHitPacket(event.getBullet(), event.getShip(), event.getContactX(), event.getContactY(), event.getNormalX(),
+                event.getNormalY(), DamageType.HULL);
     }
 
-    @Handler
-    public void event(BulletDeathEvent event) {
-        Bullet bullet = event.bullet();
-        ServerGameLogic.getNetwork().sendTCPPacketToAll(new PacketRemoveObject(bullet));
+    private void sendHitPacket(Bullet bullet, Ship ship, float contactX, float contactY, float normalX, float normalY,
+                               DamageType damageType) {
+        network.sendUDPPacketToAllNearby(new PacketBulletHitShip(bullet, ship, contactX, contactY, normalX, normalY, damageType),
+                bullet.getPosition(), TrackingUtils.TRACKING_DISTANCE);
     }
 }

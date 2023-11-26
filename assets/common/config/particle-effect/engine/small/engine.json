@@ -26,7 +26,6 @@
   "minSpawnCount": 1,
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
-  "name": "engine",
   "r": 1.0,
   "renderLayer": "BACKGROUND_ADDITIVE",
   "soundEffects": [],

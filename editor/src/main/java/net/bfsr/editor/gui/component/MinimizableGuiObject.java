@@ -14,7 +14,9 @@ import org.joml.Vector4f;
 
 public class MinimizableGuiObject extends GuiObjectWithSubObjects {
     public static final int MINIMIZABLE_STRING_X_OFFSET = 20;
-    public static final int STATIC_STRING_X_OFFSET = 6;
+    private static final int STATIC_STRING_X_OFFSET = 6;
+    public static final int TRIANGLE_HALF_WIDTH = 4;
+    public static final int TRIANGLE_HALF_HEIGHT = 4;
 
     @Getter
     protected boolean maximized;
@@ -23,8 +25,6 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
     protected final int fontSize;
     private final StringCache stringCache;
     protected final int stringYOffset;
-    private final int triangleHalfWidth = 4;
-    private final int triangleHalfHeight = 4;
     @Setter
     private Runnable onMaximizeRunnable = RunnableUtils.EMPTY_RUNNABLE;
     @Setter
@@ -173,14 +173,14 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
         Vector4f textColor = stringObject.getColor();
 
         if (maximized) {
-            guiRenderer.addPrimitive(centerX - triangleHalfWidth, centerY - triangleHalfHeight, centerX,
-                    centerY + triangleHalfHeight, centerX + triangleHalfWidth, centerY - triangleHalfHeight,
-                    centerX - triangleHalfWidth, centerY - triangleHalfHeight,
+            guiRenderer.addPrimitive(centerX - TRIANGLE_HALF_WIDTH, centerY - TRIANGLE_HALF_HEIGHT, centerX,
+                    centerY + TRIANGLE_HALF_HEIGHT, centerX + TRIANGLE_HALF_WIDTH, centerY - TRIANGLE_HALF_HEIGHT,
+                    centerX - TRIANGLE_HALF_WIDTH, centerY - TRIANGLE_HALF_HEIGHT,
                     textColor.x, textColor.y, textColor.z, textColor.w, 0);
         } else {
-            guiRenderer.addPrimitive(centerX - triangleHalfWidth, centerY - triangleHalfHeight,
-                    centerX - triangleHalfWidth, centerY + triangleHalfHeight, centerX + triangleHalfWidth, centerY,
-                    centerX - triangleHalfWidth, centerY - triangleHalfHeight,
+            guiRenderer.addPrimitive(centerX - TRIANGLE_HALF_WIDTH, centerY - TRIANGLE_HALF_HEIGHT,
+                    centerX - TRIANGLE_HALF_WIDTH, centerY + TRIANGLE_HALF_HEIGHT, centerX + TRIANGLE_HALF_WIDTH, centerY,
+                    centerX - TRIANGLE_HALF_WIDTH, centerY - TRIANGLE_HALF_HEIGHT,
                     textColor.x, textColor.y, textColor.z, textColor.w, 0);
         }
     }

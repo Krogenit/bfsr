@@ -13,12 +13,13 @@ import java.net.InetSocketAddress;
 
 public class PacketShieldInfoHandler extends PacketHandler<PacketShieldInfo, NetworkSystem> {
     @Override
-    public void handle(PacketShieldInfo packet, NetworkSystem networkSystem, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketShieldInfo packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         GameObject obj = Core.get().getWorld().getEntityById(packet.getId());
         if (obj instanceof Ship ship) {
             Shield shield = ship.getModules().getShield();
             if (shield != null) {
-                shield.setShield(packet.getShieldValue());
+                shield.setHp(packet.getShieldValue());
             }
         }
     }

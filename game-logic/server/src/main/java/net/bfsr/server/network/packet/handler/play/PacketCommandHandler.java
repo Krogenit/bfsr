@@ -20,7 +20,8 @@ public class PacketCommandHandler extends PacketHandler<PacketCommand, PlayerNet
     private final Command[] commands = Command.values();
 
     @Override
-    public void handle(PacketCommand packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketCommand packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         Command cmd = commands[packet.getCommand()];
         World world = playerNetworkHandler.getWorld();
         Random rand = world.getRand();
@@ -34,7 +35,7 @@ public class PacketCommandHandler extends PacketHandler<PacketCommand, PlayerNet
                 case ENGI -> ShipFactory.get().createBotEngiSmall(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI);
             };
             ShipOutfitter.get().outfit(ship);
-            world.addShip(ship);
+            world.add(ship, false);
         }
     }
 }

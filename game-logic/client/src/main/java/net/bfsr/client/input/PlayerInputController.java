@@ -9,6 +9,7 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.network.packet.input.*;
@@ -46,7 +47,7 @@ public class PlayerInputController extends InputController {
             return;
         }
 
-        if (ship.isSpawned() && ship.getDestroyingTimer() == 0) {
+        if (!core.isPaused() && ship.isSpawned() && ship.getDestroyingTimer() == 0) {
             controlShip();
         }
     }
@@ -55,27 +56,28 @@ public class PlayerInputController extends InputController {
     public boolean input(int key) {
         if (ship == null || guiManager.isActive()) return false;
 
-        if (key == KEY_W) {
+        Engines engines = ship.getModules().getEngines();
+        if (key == KEY_W && engines.isEngineAlive(Direction.FORWARD)) {
             core.sendUDPPacket(new PacketShipMove(Direction.FORWARD));
             ship.addMoveDirection(Direction.FORWARD);
         }
 
-        if (key == KEY_S) {
+        if (key == KEY_S && engines.isEngineAlive(Direction.BACKWARD)) {
             core.sendUDPPacket(new PacketShipMove(Direction.BACKWARD));
             ship.addMoveDirection(Direction.BACKWARD);
         }
 
-        if (key == KEY_A) {
+        if (key == KEY_A && engines.isEngineAlive(Direction.LEFT)) {
             core.sendUDPPacket(new PacketShipMove(Direction.LEFT));
             ship.addMoveDirection(Direction.LEFT);
         }
 
-        if (key == KEY_D) {
+        if (key == KEY_D && engines.isEngineAlive(Direction.RIGHT)) {
             core.sendUDPPacket(new PacketShipMove(Direction.RIGHT));
             ship.addMoveDirection(Direction.RIGHT);
         }
 
-        if (key == KEY_X) {
+        if (key == KEY_X && engines.isSomeEngineAlive()) {
             core.sendUDPPacket(new PacketShipMove(Direction.STOP));
             ship.addMoveDirection(Direction.STOP);
         }
@@ -117,9 +119,8 @@ public class PlayerInputController extends InputController {
         Body body = ship.getBody();
         if (body.isAtRest()) body.setAtRest(false);
 
-//        Vector2f mouseWorldPosition = Engine.mouse.getWorldPosition(camera);
-        Vector2f mouseWorldPosition = new Vector2f(ship.getPosition().x - 100, ship.getPosition().y);
-        RigidBodyUtils.rotateToVector(ship, mouseWorldPosition, ship.getModules().getEngine().getAngularVelocity());
+        Vector2f mouseWorldPosition = Engine.mouse.getWorldPosition(camera);
+        RigidBodyUtils.rotateToVector(ship, mouseWorldPosition, ship.getModules().getEngines().getAngularVelocity());
         if (mouseWorldPosition.x != lastMousePosition.x || mouseWorldPosition.y != lastMousePosition.y) {
             core.sendUDPPacket(new PacketSyncPlayerMousePosition(mouseWorldPosition));
         }
@@ -135,7 +136,7 @@ public class PlayerInputController extends InputController {
             HUDAdapter guiInGame = guiManager.getHud();
             guiInGame.selectShip(null);
             Vector2f mousePosition = Engine.mouse.getWorldPosition(camera);
-            List<Ship> ships = core.getWorld().getShips();
+            List<Ship> ships = core.getWorld().getEntitiesByType(Ship.class);
             for (int i = 0, size = ships.size(); i < size; i++) {
                 Ship ship = ships.get(i);
                 if (isMouseIntersectsWith(ship, mousePosition.x, mousePosition.y)) {
@@ -165,7 +166,7 @@ public class PlayerInputController extends InputController {
         HUDAdapter guiInGame = guiManager.getHud();
         guiInGame.selectShipSecondary(null);
         Vector2f mousePosition = Engine.mouse.getWorldPosition(camera);
-        List<Ship> ships = core.getWorld().getShips();
+        List<Ship> ships = core.getWorld().getEntitiesByType(Ship.class);
         for (int i = 0, size = ships.size(); i < size; i++) {
             Ship ship = ships.get(i);
             if (isMouseIntersectsWith(ship, mousePosition.x, mousePosition.y)) {

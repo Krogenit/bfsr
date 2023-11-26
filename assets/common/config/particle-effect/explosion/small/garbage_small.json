@@ -26,7 +26,6 @@
   "minSpawnCount": 2,
   "minVelocityX": -0.25,
   "minVelocityY": -0.25,
-  "name": "garbage_small",
   "r": 0.5,
   "renderLayer": "DEFAULT_ALPHA_BLENDED",
   "soundEffects": [],

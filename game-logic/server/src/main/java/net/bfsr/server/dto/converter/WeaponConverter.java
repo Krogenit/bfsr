@@ -14,9 +14,10 @@ import org.mapstruct.TargetType;
 
 @Mapper
 public interface WeaponConverter {
-    @Mapping(target = "name", expression = "java(weaponSlot.getGunData().getName())")
+    @Mapping(target = "name", expression = "java(weaponSlot.getGunData().getFileName())")
     WeaponModel to(WeaponSlot weaponSlot);
 
+    @Mapping(target = "hp", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "ship", ignore = true)
     @Mapping(target = "localPosition", ignore = true)

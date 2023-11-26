@@ -26,7 +26,6 @@
   "minSpawnCount": 1,
   "minVelocityX": -1.25,
   "minVelocityY": -1.25,
-  "name": "ost",
   "r": 0.5,
   "renderLayer": "DEFAULT_ALPHA_BLENDED",
   "soundEffects": [],

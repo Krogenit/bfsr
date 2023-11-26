@@ -14,8 +14,8 @@ public class ShieldData extends ConfigData {
     private final float regenAmount;
     private final float rebuildTimeInTicks;
 
-    public ShieldData(ShieldConfig config, int dataIndex) {
-        super(config.name(), dataIndex);
+    ShieldData(ShieldConfig config, String fileName, int id) {
+        super(fileName, id);
         this.texturePath = PathHelper.convertPath(config.texture());
         this.maxShield = config.maxShield();
         this.regenAmount = config.regenInSeconds() * TimeUtils.UPDATE_DELTA_TIME;

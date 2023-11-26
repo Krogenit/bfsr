@@ -19,7 +19,8 @@ import java.net.InetSocketAddress;
 
 public class PacketShipInfoHandler extends PacketHandler<PacketShipInfo, NetworkSystem> {
     @Override
-    public void handle(PacketShipInfo packet, NetworkSystem networkSystem, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketShipInfo packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         GameObject obj = Core.get().getWorld().getEntityById(packet.getId());
         if (obj instanceof Ship ship) {
             Modules modules = ship.getModules();
@@ -48,7 +49,7 @@ public class PacketShipInfoHandler extends PacketHandler<PacketShipInfo, Network
             modules.getCrew().setCrewSize(packet.getCrew());
             modules.getReactor().setEnergy(packet.getEnergy());
             Shield shipShield = modules.getShield();
-            if (shipShield != null) shipShield.setShield(packet.getShield());
+            if (shipShield != null) shipShield.setShieldHp(packet.getShield());
         } else {
             Core.get().sendUDPPacket(new PacketNeedObjectInfo(packet.getId()));
         }

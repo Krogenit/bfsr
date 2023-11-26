@@ -2,10 +2,10 @@ package net.bfsr.editor.gui.inspection;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.editor.gui.ColorScheme;
+import net.bfsr.editor.gui.EditorTheme;
 import net.bfsr.editor.gui.component.ComponentHolder;
 import net.bfsr.editor.gui.component.MinimizableGuiObject;
-import net.bfsr.editor.property.PropertiesHolder;
+import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.InputBox;
 import net.bfsr.engine.gui.object.AbstractGuiObject;
@@ -20,9 +20,9 @@ import org.joml.Vector2i;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.bfsr.editor.gui.ColorScheme.setupColors;
+import static net.bfsr.editor.gui.EditorTheme.setupColors;
 
-public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiObject implements ComponentHolder<T> {
+public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiObject implements ComponentHolder {
     private final InspectionPanel<T> inspectionPanel;
 
     private final List<T> components = new ArrayList<>();
@@ -161,7 +161,7 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
                         onNameChanged(inputBox.getString());
                         inputBox = null;
                     });
-                    ColorScheme.setupInputBoxColors(inputBox);
+                    EditorTheme.setupInputBoxColors(inputBox);
                     inputBox.setString(getName());
                     subObjectsRepositionConsumer.setup(inputBox, selectOffsetX, 0);
                     gui.registerGuiObject(inputBox);
@@ -253,11 +253,11 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
 
     @Nullable
     @Override
-    public T getComponentByType(Class<T> type) {
+    public <COMPONENT_TYPE extends PropertiesHolder> COMPONENT_TYPE getComponentByType(Class<COMPONENT_TYPE> type) {
         for (int i = 0; i < components.size(); i++) {
             T t = components.get(i);
             if (t.getClass() == type) {
-                return t;
+                return (COMPONENT_TYPE) t;
             }
         }
 

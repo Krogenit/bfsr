@@ -1,6 +1,6 @@
 package net.bfsr.editor.property.converter;
 
-import net.bfsr.engine.renderer.particle.RenderLayer;
+import net.bfsr.config.Vector2fConfigurable;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -17,10 +17,17 @@ public final class ConverterUtils {
         CONVERTER_MAP.put(int.class, new IntegerConverter());
         CONVERTER_MAP.put(Vector2f.class, new Vector2fConverter());
         CONVERTER_MAP.put(Vector4f.class, new Vector4fConverter());
-        CONVERTER_MAP.put(RenderLayer.class, new RenderLayerConverter());
+        CONVERTER_MAP.put(Enum.class, new EnumConverter());
+        CONVERTER_MAP.put(Vector2fConfigurable.class, new Vector2fConfigurableConverter());
     }
 
     public static PropertyConverter<?> getConverter(Class<?> clazz) {
-        return CONVERTER_MAP.get(clazz);
+        for (Map.Entry<Class<?>, PropertyConverter<?>> entry : CONVERTER_MAP.entrySet()) {
+            if (entry.getKey().isAssignableFrom(clazz)) {
+                return entry.getValue();
+            }
+        }
+
+        return null;
     }
 }

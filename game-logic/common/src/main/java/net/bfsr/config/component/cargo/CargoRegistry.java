@@ -4,10 +4,10 @@ import net.bfsr.config.ConfigConverter;
 import net.bfsr.config.ConfigToDataConverter;
 
 @ConfigConverter
-public class CargoRegistry extends ConfigToDataConverter<CargoConfig, CargoData> {
+public final class CargoRegistry extends ConfigToDataConverter<CargoConfig, CargoData> {
     public static final CargoRegistry INSTANCE = new CargoRegistry();
 
-    public CargoRegistry() {
-        super("module/cargo", CargoConfig.class, CargoConfig::name, CargoData::new);
+    private CargoRegistry() {
+        super("module/cargo", CargoConfig.class, (fileName, cargoConfig) -> fileName, CargoData::new);
     }
 }

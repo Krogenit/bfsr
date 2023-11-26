@@ -4,7 +4,6 @@ import net.bfsr.config.Configurable;
 
 @Configurable
 public record ShieldConfig(
-        String name,
         String texture,
         float maxShield,
         float regenInSeconds,

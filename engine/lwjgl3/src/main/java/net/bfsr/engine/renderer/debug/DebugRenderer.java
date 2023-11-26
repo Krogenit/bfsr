@@ -18,8 +18,6 @@ public class DebugRenderer extends AbstractDebugRenderer {
     private static final int VERTEX_DATA_SIZE_IN_BYTES = VERTEX_DATA_SIZE << 2;
     private static final int COMMAND_SIZE_IN_BYTES = 16;
 
-    private static final Vector4f AABB_COLOR = new Vector4f(1.0f, 1.0f, 1.0f, 0.1f);
-
     private final DebugShader debugShader = new DebugShader();
     private VAO vao;
     private FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(16);
@@ -44,12 +42,12 @@ public class DebugRenderer extends AbstractDebugRenderer {
     }
 
     @Override
-    public void renderAABB(AABB aabb) {
+    public void renderAABB(AABB aabb, Vector4f color) {
         addCommand(4);
-        addVertex(aabb.getMinX(), aabb.getMinY(), AABB_COLOR);
-        addVertex(aabb.getMinX(), aabb.getMaxY(), AABB_COLOR);
-        addVertex(aabb.getMaxX(), aabb.getMaxY(), AABB_COLOR);
-        addVertex(aabb.getMaxX(), aabb.getMinY(), AABB_COLOR);
+        addVertex(aabb.getMinX(), aabb.getMinY(), color);
+        addVertex(aabb.getMinX(), aabb.getMaxY(), color);
+        addVertex(aabb.getMaxX(), aabb.getMaxY(), color);
+        addVertex(aabb.getMaxX(), aabb.getMinY(), color);
     }
 
     @Override

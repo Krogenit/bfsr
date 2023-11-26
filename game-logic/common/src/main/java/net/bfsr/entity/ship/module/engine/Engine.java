@@ -1,24 +1,41 @@
 package net.bfsr.entity.ship.module.engine;
 
-import lombok.Getter;
-import net.bfsr.config.component.engine.EngineData;
-import net.bfsr.entity.ship.module.Module;
+import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
+import net.bfsr.physics.PhysicsUtils;
+import net.bfsr.physics.filter.ShipFilter;
+import org.dyn4j.dynamics.BodyFixture;
+import org.dyn4j.geometry.Polygon;
 
-@Getter
-public class Engine extends Module {
-    private final float forwardAcceleration, backwardAcceleration, sideAcceleration;
-    private final float maxForwardVelocity;
-    private final float maneuverability;
-    private final float angularVelocity;
+public class Engine extends DamageableModule {
+    private final Ship ship;
+    private final Polygon polygon;
 
-    public Engine(EngineData engineData) {
-        this.forwardAcceleration = engineData.getForwardAcceleration();
-        this.backwardAcceleration = engineData.getBackwardAcceleration();
-        this.sideAcceleration = engineData.getSideAcceleration();
-        this.maxForwardVelocity = engineData.getMaxForwardVelocity();
-        this.maneuverability = engineData.getManeuverability();
-        this.angularVelocity = engineData.getAngularVelocity();
+    public Engine(Ship ship, Polygon polygon) {
+        super(5.0f);
+        this.ship = ship;
+        this.polygon = polygon;
+    }
+
+    public void init(Ship ship, int id) {
+        init(ship);
+        this.id = id;
+    }
+
+    @Override
+    protected void createFixture() {
+        fixture = new BodyFixture(polygon);
+        fixture.setUserData(this);
+        fixture.setFilter(new ShipFilter(ship));
+        fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
+        ship.getBody().addFixture(fixture);
+    }
+
+    @Override
+    protected void destroy() {
+        super.destroy();
+        ship.getFixturesToRemove().add(fixture);
     }
 
     @Override

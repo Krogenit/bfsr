@@ -26,12 +26,10 @@
   "minSpawnCount": 0,
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
-  "name": "jump",
   "r": 1.0,
   "renderLayer": "DEFAULT_ADDITIVE",
   "soundEffects": [
     {
-      "name": "Sound Effect",
       "path": "sound/jump/jump.ogg",
       "volume": 1.0
     }
@@ -42,5 +40,5 @@
   "sourceVelocityYMultiplier": 1.0,
   "spawnOverTime": 0.0,
   "texturePaths": [],
-  "treeIndex": 5
+  "treeIndex": 4
 }

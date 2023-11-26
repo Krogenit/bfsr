@@ -18,10 +18,9 @@ public final class SyncUtils {
             float y = pos.y + (newPos.y - pos.y) * interpolationAmount;
             gameObject.setPosition(x, y);
         } else {
-            float alpha = Math.max(dist / 400, 0.0f);
+            float alpha = Math.max(dist / 400, 0.1f);
             float x = pos.x + (newPos.x - pos.x) * alpha;
             float y = pos.y + (newPos.y - pos.y) * alpha;
-
             gameObject.setPosition(x, y);
         }
     }
@@ -42,7 +41,7 @@ public final class SyncUtils {
         if (diffAbs > 0.06f) {
             interpolationAmount = 1.0f;
         } else {
-            interpolationAmount = Math.max(diffAbs / 0.06f, 0.0f);
+            interpolationAmount = Math.max(diffAbs / 0.06f, 0.01f);
         }
 
         gameObject.setRotation(currSin + sinDiff * interpolationAmount, currCos + cosDiff * interpolationAmount);

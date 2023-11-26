@@ -12,6 +12,10 @@ public enum TextureRegister {
 
     shieldSmall0("texture/component/shield/small0.png"),
 
+    moduleReactor("texture/component/reactor/reactor.png"),
+    moduleShield("texture/component/shield/shield.png"),
+    moduleEngine("texture/component/engine/engine.png"),
+
     guiBfsrText2("texture/gui/bfsr_text2.png"),
     guiButtonBase("texture/gui/buttonBase.png"),
     guiLogoBFSR("texture/gui/logoBFSR.png"),

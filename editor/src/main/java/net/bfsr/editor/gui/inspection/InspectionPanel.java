@@ -4,28 +4,26 @@ import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.editor.gui.component.MinimizableGuiObject;
 import net.bfsr.editor.gui.component.receive.DragTarget;
-import net.bfsr.editor.property.PropertiesHolder;
+import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.StringObject;
-import net.bfsr.engine.gui.object.AbstractGuiObject;
-import net.bfsr.engine.gui.object.GuiObject;
-import net.bfsr.engine.gui.object.GuiObjectWithSubObjects;
-import net.bfsr.engine.gui.object.GuiObjectsContainer;
+import net.bfsr.engine.gui.object.*;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.util.MutableInt;
 import org.joml.Vector2f;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static net.bfsr.editor.gui.ColorScheme.*;
+import static net.bfsr.editor.gui.EditorTheme.*;
 
 public class InspectionPanel<T extends PropertiesHolder> {
     private static final long HOVER_TIME_FOR_MAXIMIZE = 500L;
@@ -38,6 +36,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
     private final FontType fontType;
     private final int fontSize;
     private final int stringYOffset;
+    private final int minWidth = 100;
     private final int elementHeight = 20;
     private final int betweenObjectsLineHeight = 4;
     private final int exactObjectSelectionOffsetY = 6;
@@ -55,9 +54,10 @@ public class InspectionPanel<T extends PropertiesHolder> {
     @Setter
     private Consumer<InspectionEntry<T>> onSelectConsumer = t -> {};
 
-    private Button saveAllButton, addButton;
     private MinimizableGuiObject lastHoverObject, hoverObject;
     private long hoverTime;
+    private final List<Button> bottomButtons = new ArrayList<>();
+    private final SimpleGuiObject background = new SimpleGuiObject();
 
     public InspectionPanel(Gui gui, String name, int width, FontType fontType, int fontSize, int stringYOffset) {
         this.gui = gui;
@@ -68,32 +68,32 @@ public class InspectionPanel<T extends PropertiesHolder> {
         this.stringYOffset = stringYOffset;
     }
 
-    public void initElements(int x, int y, Runnable saveAllRunnable, Supplier<InspectionEntry<T>> objectSupplier) {
+    public void initElements(int x, int y) {
+        gui.registerGuiObject(
+                background.setAllColors(BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w)
+                        .setWidthResizeFunction((integer, integer2) -> getWidth())
+                        .setHeightResizeFunction((integer, integer2) -> Engine.renderer.getScreenHeight()));
         gui.registerGuiObject(
                 new StringObject(fontType, name, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w).compile()
                         .atTopLeftCorner(x,
                                 y + fontType.getStringCache().getCenteredYOffset(name, elementHeight, fontSize) + stringYOffset));
         gui.registerGuiObject(objectsContainer.atTopLeftCorner(x, elementHeight).setHeightResizeFunction(
-                (width, height) -> renderer.getScreenHeight() - elementHeight * 3)
+                (width, height) -> renderer.getScreenHeight() - elementHeight)
         );
+    }
 
-        y -= elementHeight;
-        saveAllButton = new Button(objectsContainer.getWidth(), elementHeight, "Save All", fontType, fontSize, stringYOffset,
-                saveAllRunnable);
-        gui.registerGuiObject(setupButtonColors(saveAllButton).atBottomLeftCorner(x, y));
-        y -= elementHeight;
-        addButton = new Button(objectsContainer.getWidth(), elementHeight, "Add", fontType, fontSize, stringYOffset, () -> {
-            InspectionEntry<T> minimizableHolder = objectSupplier.get();
-            addSubObject(minimizableHolder);
-            updatePositions();
-        });
-        gui.registerGuiObject(setupButtonColors(addButton).atBottomLeftCorner(x, y));
+    public void addBottomButton(int x, int y, String name, Runnable runnable) {
+        Button button = new Button(objectsContainer.getWidth(), elementHeight, name, fontType, fontSize, stringYOffset, runnable);
+        gui.registerGuiObject(setupButtonColors(button).atBottomLeftCorner(x, y));
+        bottomButtons.add(button);
+        objectsContainer.setHeight(renderer.getScreenHeight() - elementHeight - bottomButtons.size() * elementHeight);
+        objectsContainer.setHeightResizeFunction((width, height) -> renderer.getScreenHeight() - elementHeight -
+                bottomButtons.size() * elementHeight);
     }
 
     public InspectionEntry<T> createEntry(String name) {
-        InspectionEntry<T> entry =
-                new InspectionEntry<>(this, objectsContainer.getWidth() - objectsContainer.getScrollWidth(), elementHeight, name,
-                        fontType, fontSize, stringYOffset);
+        InspectionEntry<T> entry = new InspectionEntry<>(this, objectsContainer.getWidth() - objectsContainer.getScrollWidth(),
+                elementHeight, name, fontType, fontSize, stringYOffset);
         entry.setOnRightClickSupplier(() -> entryRightClickSupplier.apply(entry));
         return entry;
     }
@@ -122,16 +122,18 @@ public class InspectionPanel<T extends PropertiesHolder> {
     }
 
     public boolean onMouseLeftRelease() {
+        boolean leftRelease = false;
+
         if (movableObject != null) {
             if (isIntersectsWithMouse()) {
                 onEntryMoved(movableObject);
-                return true;
+                leftRelease = true;
             } else {
                 GuiObject hoveredGuiObject = gui.getHoveredGuiObject();
                 if (hoveredGuiObject instanceof DragTarget dragTarget) {
                     if (dragTarget.canAcceptDraggable(movableObject)) {
                         dragTarget.acceptDraggable(movableObject);
-                        return true;
+                        leftRelease = true;
                     }
                 }
             }
@@ -139,7 +141,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
             setMovableObject(null);
         }
 
-        return false;
+        return leftRelease;
     }
 
     public void onEntryMoved(InspectionEntry<T> entry) {
@@ -274,15 +276,19 @@ public class InspectionPanel<T extends PropertiesHolder> {
 
         objectsContainer.updateScrollObjectsY();
 
-        MutableInt width = new MutableInt(0);
+        MutableInt width = new MutableInt(minWidth);
         calculateMinWidth(width, objectsContainer);
         int smallOffsetX = 10;
         int panelWidth = width.get() + objectsContainer.getScrollWidth() + smallOffsetX;
         objectsContainer.setWidth(panelWidth);
-        addButton.setStringXOffset(panelWidth / 2);
-        addButton.setWidth(panelWidth);
-        saveAllButton.setStringXOffset(panelWidth / 2);
-        saveAllButton.setWidth(panelWidth);
+        background.setWidth(panelWidth);
+
+        int stringXOffset = panelWidth / 2;
+        for (int i = 0; i < bottomButtons.size(); i++) {
+            Button button = bottomButtons.get(i);
+            button.setStringXOffset(stringXOffset);
+            button.setWidth(panelWidth);
+        }
 
         int maxContainerX = objectsContainer.getX() + objectsContainer.getWidth() - objectsContainer.getScrollWidth();
 
@@ -340,7 +346,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
                 renderSelection(inspectionGuiObject.getX(), inspectionGuiObject.getY() - betweenObjectsLineHeight / 2,
                         inspectionGuiObject.getWidth(), betweenObjectsLineHeight);
             } else if (mouseY >= inspectionGuiObject.getY() + elementHeight - exactObjectSelectionOffsetY) {
-                if (inspectionGuiObject.isMaximized()) {
+                if (inspectionGuiObject.isMaximized() && inspectionGuiObject.getSubObjects().size() > 0) {
                     AbstractGuiObject guiObject = inspectionGuiObject.getSubObjects().get(0);
                     renderSelection(guiObject.getX(), inspectionGuiObject.getY() + elementHeight - betweenObjectsLineHeight / 2,
                             guiObject.getWidth(), betweenObjectsLineHeight);
@@ -461,7 +467,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
         return objectsContainer.isIntersectsWithMouse();
     }
 
-    public float getWidth() {
+    public int getWidth() {
         return objectsContainer.getWidth();
     }
 }

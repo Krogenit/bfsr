@@ -8,7 +8,9 @@ import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.event.module.weapon.BeamShotEvent;
-import net.bfsr.event.module.weapon.beam.BeamDamageShipEvent;
+import net.bfsr.event.module.weapon.beam.BeamDamageShipArmorEvent;
+import net.bfsr.event.module.weapon.beam.BeamDamageShipHullEvent;
+import net.bfsr.event.module.weapon.beam.BeamDamageShipShieldEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageWreckEvent;
 import net.bfsr.physics.filter.BeamFilter;
 import org.dyn4j.collision.narrowphase.Raycast;
@@ -105,6 +107,7 @@ public class WeaponSlotBeam extends WeaponSlot {
         Body body = result.getBody();
         Raycast raycast = result.getRaycast();
         Vector2 point = raycast.getPoint();
+        Vector2 normal = raycast.getNormal();
         collisionPoint.x = (float) point.x;
         collisionPoint.y = (float) point.y;
         currentBeamRange = (float) raycast.getDistance();
@@ -120,28 +123,21 @@ public class WeaponSlotBeam extends WeaponSlot {
         float hitX = position.x + posX;
         float hitY = position.y + posY;
         if (userData instanceof Ship ship) {
-            if (SideUtils.IS_SERVER && world.isServer()) {
-                ship.attackShip(damage, this.ship, collisionPoint.x, collisionPoint.y,
-                        ship.getFaction() == this.ship.getFaction() ? beamPower / 2.0f * 60.0f * TimeUtils.UPDATE_DELTA_TIME :
-                                beamPower * 60.0f * TimeUtils.UPDATE_DELTA_TIME);
-            }
-            onDamageShip(ship, raycast, hitX, hitY);
+            ship.damage(damage, this.ship, collisionPoint.x, collisionPoint.y,
+                    ship.getFaction() == this.ship.getFaction() ? beamPower / 2.0f * TimeUtils.UPDATE_DELTA_TIME :
+                            beamPower * TimeUtils.UPDATE_DELTA_TIME, result.getFixture(),
+                    () -> eventBus.publish(new BeamDamageShipShieldEvent(this, ship, raycast, hitX, hitY)),
+                    () -> eventBus.publish(new BeamDamageShipArmorEvent(this, ship, raycast, hitX, hitY)),
+                    () -> eventBus.publish(new BeamDamageShipHullEvent(this, ship, raycast, hitX, hitY)));
         } else if (userData instanceof Wreck wreck) {
             if (SideUtils.IS_SERVER && world.isServer()) {
-                wreck.damage(damage.getHull() * beamPower);
+                wreck.damage(damage.getHull() * beamPower * TimeUtils.UPDATE_DELTA_TIME, collisionPoint.x, collisionPoint.y,
+                        (float) normal.x, (float) normal.y);
             }
-            onDamageWreck(raycast, hitX, hitY, wreck);
+            eventBus.publish(new BeamDamageWreckEvent(this, wreck, raycast, hitX, hitY));
         }
     }
 
     @Override
     public void createBullet() {}
-
-    private void onDamageShip(Ship ship, Raycast raycast, float hitX, float hitY) {
-        eventBus.publish(new BeamDamageShipEvent(this, ship, raycast, hitX, hitY));
-    }
-
-    private void onDamageWreck(Raycast raycast, float hitX, float hitY, Wreck wreck) {
-        eventBus.publish(new BeamDamageWreckEvent(this, wreck, raycast, hitX, hitY));
-    }
 }

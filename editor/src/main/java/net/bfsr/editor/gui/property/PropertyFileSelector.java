@@ -1,28 +1,31 @@
 package net.bfsr.editor.gui.property;
 
-import net.bfsr.editor.property.PropertiesHolder;
+import net.bfsr.editor.gui.EditorTheme;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.object.SimpleGuiObject;
-import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.util.PathHelper;
 import net.bfsr.engine.util.RunnableUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.function.BiConsumer;
 
-import static net.bfsr.editor.gui.ColorScheme.*;
+import static net.bfsr.editor.gui.EditorTheme.*;
 
-public class PropertyFileSelector<P extends PropertiesHolder> extends PropertyComponent<P> {
+public class PropertyFileSelector extends PropertyComponent {
     private final Button button;
-    protected String path;
+    private String path;
 
     public PropertyFileSelector(int width, int height, String name, int propertyOffsetX, int fontSize, int stringOffsetY,
-                                P object, List<Field> fields, Object[] values) {
-        super(new Button(null, width - propertyOffsetX, height, (String) values[0], FontType.CONSOLA, fontSize, stringOffsetY,
+                                Object object, List<Field> fields, Object[] values,
+                                BiConsumer<Object, Integer> valueSetterConsumer) {
+        super(new Button(null, width - propertyOffsetX, height, (String) values[0], EditorTheme.FONT_TYPE, fontSize,
+                        stringOffsetY,
                         RunnableUtils.EMPTY_RUNNABLE),
-                width, height, name, FontType.CONSOLA, fontSize, propertyOffsetX, 0, stringOffsetY, object, fields, values);
+                width, height, name, EditorTheme.FONT_TYPE, fontSize, propertyOffsetX, 0, stringOffsetY, object, fields, values,
+                valueSetterConsumer);
         this.path = (String) values[0];
         button = ((Button) subObjects.get(0));
         button.setColor(INPUT_COLOR_GRAY, INPUT_COLOR_GRAY, INPUT_COLOR_GRAY, 1.0f);
@@ -46,11 +49,11 @@ public class PropertyFileSelector<P extends PropertiesHolder> extends PropertyCo
     }
 
     @Override
-    public void setSetting() throws IllegalAccessException {
-        fields.get(0).set(object, path);
+    public void setSetting() {
+        valueConsumer.accept(path, 0);
     }
 
-    public void setPath(String path) throws IOException {
+    private void setPath(String path) throws IOException {
         this.path = PathHelper.convertToLocalPath(path);
         button.setString(this.path);
     }

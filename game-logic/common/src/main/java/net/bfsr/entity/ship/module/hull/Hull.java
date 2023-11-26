@@ -6,20 +6,39 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.entity.ship.module.ModuleWithCells;
 
+@Getter
 public class Hull extends ModuleWithCells<HullCell> {
-    @Getter
     private final float maxValue;
+    protected final float repairSpeed;
 
     public Hull(HullData hullData, Ship ship) {
-        super(ship, HullCell.class, () -> new HullCell(hullData));
-        this.maxValue = width * height * hullData.getMaxHullValue();
+        super(ship, HullCell.class, HullCell::new);
+        this.maxValue = hullData.getMaxHullValue();
+        this.repairSpeed = hullData.getRegenAmount();
+
+        for (int i = 0; i < cells.length; i++) {
+            for (int i1 = 0; i1 < cells[0].length; i1++) {
+                HullCell cell = cells[i][i1];
+                cell.value = cell.maxValue = maxValue / (cells.length * cells[0].length);
+            }
+        }
+    }
+
+    @Override
+    public void update() {
+        for (int i = 0; i < cells.length; i++) {
+            for (int i1 = 0; i1 < cells[0].length; i1++) {
+                HullCell cell = cells[i][i1];
+                cell.update();
+            }
+        }
     }
 
     public void repair(float repairAmount) {
         HullCell cell = getMostDamagedCell();
         if (cell != null) {
             if (cell.value < cell.maxValue) {
-                cell.value += cell.repairSpeed + repairAmount;
+                cell.value += repairSpeed + repairAmount;
 
                 if (cell.value > cell.maxValue) {
                     cell.value = cell.maxValue;
@@ -28,26 +47,20 @@ public class Hull extends ModuleWithCells<HullCell> {
         }
     }
 
-    public void damage(float amount, float contactX, float contactY, Ship ship) {
+    public HullCell damage(float amount, float contactX, float contactY, Ship ship) {
         HullCell cell = getCell(contactX, contactY, ship);
-        if (cell != null) {
-            cell.value -= amount;
-        } else {
-            System.out.println();
-        }
-    }
+        cell.damage(amount);
 
-    public boolean badlyDamaged() {
-        return getValue() / maxValue <= 0.1f;
+        return cell;
     }
 
     private HullCell getMostDamagedCell() {
-        float minValue = maxValue;
+        float minValue = Float.MAX_VALUE;
         HullCell cell = null;
         for (int i = 0; i < cells.length; i++) {
             for (int j = 0; j < cells[0].length; j++) {
                 HullCell hullCell = cells[i][j];
-                if (hullCell != null && hullCell.getValue() < minValue) {
+                if (hullCell != null && hullCell.getRepairTimer() == 0 && hullCell.getValue() < minValue) {
                     minValue = hullCell.getValue();
                     cell = hullCell;
                 }
@@ -55,20 +68,6 @@ public class Hull extends ModuleWithCells<HullCell> {
         }
 
         return cell;
-    }
-
-    public float getValue() {
-        float value = 0;
-        for (int i = 0; i < cells.length; i++) {
-            for (int j = 0; j < cells[0].length; j++) {
-                HullCell hullCell = cells[i][j];
-                if (hullCell != null) {
-                    value += hullCell.getValue();
-                }
-            }
-        }
-
-        return value;
     }
 
     @Override

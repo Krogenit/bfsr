@@ -1,12 +1,14 @@
 package net.bfsr.entity.bullet;
 
+import lombok.Getter;
 import net.bfsr.config.entity.bullet.DamageConfigurable;
 
 public class BulletDamage {
+    @Getter
     private float armor, hull, shield;
     private final float average;
 
-    public BulletDamage(float armor, float hull, float shield) {
+    private BulletDamage(float armor, float hull, float shield) {
         this.armor = armor;
         this.hull = hull;
         this.shield = shield;
@@ -17,31 +19,23 @@ public class BulletDamage {
         this(bulletDamage.armor(), bulletDamage.hull(), bulletDamage.shield());
     }
 
-    public float getArmor() {
-        return armor;
-    }
-
-    public void reduceBulletDamageArmor(float amount) {
+    void reduceBulletDamageArmor(float amount) {
         this.armor -= amount;
     }
 
-    public float getHull() {
-        return hull;
-    }
-
-    public void reduceBulletDamageHull(float amount) {
+    void reduceBulletDamageHull(float amount) {
         this.hull -= amount;
     }
 
-    public float getShield() {
-        return shield;
-    }
-
-    public void reduceBulletDamageShield(float amount) {
+    void reduceBulletDamageShield(float amount) {
         this.shield -= amount;
     }
 
-    public float getAverage() {
+    float getAverage() {
         return average;
+    }
+
+    public BulletDamage copy() {
+        return new BulletDamage(armor, hull, shield);
     }
 }

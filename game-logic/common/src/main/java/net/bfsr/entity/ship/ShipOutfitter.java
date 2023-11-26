@@ -10,7 +10,7 @@ import net.bfsr.config.component.shield.ShieldRegistry;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.cargo.Cargo;
 import net.bfsr.entity.ship.module.crew.Crew;
-import net.bfsr.entity.ship.module.engine.Engine;
+import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
@@ -43,11 +43,11 @@ public class ShipOutfitter {
     }
 
     private void outfit(Ship ship, String factionName) {
-        ship.setEngine(new Engine(EngineRegistry.INSTANCE.get(factionName)));
-        ship.setReactor(new Reactor(ReactorRegistry.INSTANCE.get(factionName)));
+        ship.setEngine(new Engines(EngineRegistry.INSTANCE.get(factionName), ship));
+        ship.setReactor(new Reactor(ReactorRegistry.INSTANCE.get(factionName), ship));
         ship.setHull(new Hull(HullRegistry.INSTANCE.get(factionName), ship));
         ship.setArmor(new Armor(ArmorPlateRegistry.INSTANCE.get(factionName), ship));
-        ship.setShield(new Shield(ShieldRegistry.INSTANCE.get(factionName)));
+        ship.setShield(new Shield(ShieldRegistry.INSTANCE.get(factionName), ship));
         ship.setCrew(new Crew(CrewRegistry.INSTANCE.get(factionName)));
         ship.setCargo(new Cargo(CargoRegistry.INSTANCE.get(factionName)));
         addWeapons(ship);

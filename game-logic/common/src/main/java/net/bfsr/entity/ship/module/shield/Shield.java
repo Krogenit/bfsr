@@ -7,12 +7,13 @@ import net.bfsr.engine.event.Event;
 import net.bfsr.engine.util.SideUtils;
 import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.entity.ship.module.Module;
+import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.event.module.shield.ShieldRebuildEvent;
 import net.bfsr.event.module.shield.ShieldRemoveEvent;
 import net.bfsr.event.module.shield.ShieldResetRebuildingTimeEvent;
 import net.bfsr.physics.PhysicsUtils;
+import net.bfsr.physics.filter.ShipFilter;
 import net.engio.mbassy.bus.MBassador;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
@@ -24,45 +25,52 @@ import org.joml.Vector2f;
 
 import java.util.List;
 
-public class Shield extends Module {
-    @Getter
-    @Setter
-    private float shield;
-    @Getter
-    private final float maxShield;
+public class Shield extends DamageableModule {
     private final float shieldRegen;
     private final Vector2f radius = new Vector2f();
     @Getter
     private final Vector2f diameter = new Vector2f();
     private final int timeToRebuild;
+    @Setter
     private int rebuildingTime;
-    private Body body;
+    private final Body body;
     private boolean alive;
-    private BodyFixture shieldFixture;
     @Getter
-    private Ship ship;
+    private final Ship ship;
     @Getter
     private final ShieldData shieldData;
-    private MBassador<Event> eventBus;
+    private final MBassador<Event> eventBus;
+    private BodyFixture shieldFixture;
+    @Getter
+    @Setter
+    private float shieldHp;
+    @Getter
+    private float shieldMaxHp;
 
-    public Shield(ShieldData shieldData) {
-        super(1.0f, 1.0f);
-        this.maxShield = shieldData.getMaxShield();
+    public Shield(ShieldData shieldData, Ship ship) {
+        super(5.0f, 1.0f, 1.0f);
+        this.shieldHp = shieldMaxHp = shieldData.getMaxShield();
         this.shieldRegen = shieldData.getRegenAmount();
         this.timeToRebuild = (int) shieldData.getRebuildTimeInTicks();
         this.rebuildingTime = timeToRebuild;
-        this.shield = maxShield;
         this.shieldData = shieldData;
-    }
-
-    public void init(Ship ship) {
-        this.body = ship.getBody();
         this.ship = ship;
+        this.body = ship.getBody();
         this.eventBus = ship.getWorld().getEventBus();
-        createBody();
     }
 
-    public void createBody() {
+    @Override
+    public void createFixture() {
+        fixture = new BodyFixture(ship.getConfigData().getShieldPolygon());
+        fixture.setUserData(this);
+        fixture.setFilter(new ShipFilter(ship));
+        fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
+        body.addFixture(fixture);
+
+        createShieldFixture();
+    }
+
+    private void createShieldFixture() {
         List<BodyFixture> fixtures = body.getFixtures();
         if (shieldFixture != null) {
             body.removeFixture(shieldFixture);
@@ -94,7 +102,7 @@ public class Shield extends Module {
         Polygon ellipse = Geometry.createPolygonalEllipse(12, diameter.x, diameter.y);
         shieldFixture = new BodyFixture(ellipse);
         shieldFixture.setUserData(this);
-        shieldFixture.setDensity(PhysicsUtils.SHIELD_FIXTURE_DENSITY);
+        shieldFixture.setDensity(PhysicsUtils.ZERO_FIXTURE_DENSITY);
         shieldFixture.setFriction(0.0f);
         shieldFixture.setRestitution(0.1f);
         shieldFixture.setFilter(body.getFixture(0).getFilter());
@@ -104,20 +112,23 @@ public class Shield extends Module {
         alive = true;
     }
 
+    @Override
     public void update() {
+        if (isDead) return;
+
         if (SideUtils.IS_SERVER && ship.getWorld().isServer()) {
-            if (alive && shield <= 0) {
+            if (alive && shieldHp <= 0) {
                 removeShield();
             }
         }
 
-        if (shield < maxShield && isShieldAlive()) {
-            shield += shieldRegen;
+        if (shieldHp < shieldMaxHp && isShieldAlive()) {
+            shieldHp += shieldRegen;
 
             onShieldAlive();
 
-            if (shield > maxShield) {
-                shield = maxShield;
+            if (shieldHp > shieldMaxHp) {
+                shieldHp = shieldMaxHp;
             }
         }
 
@@ -129,6 +140,14 @@ public class Shield extends Module {
                     rebuildShield();
                 }
             }
+        }
+    }
+
+    @Override
+    public void addFixtureToBody(Body body) {
+        super.addFixtureToBody(body);
+        if (shieldFixture != null) {
+            body.addFixture(shieldFixture);
         }
     }
 
@@ -144,20 +163,38 @@ public class Shield extends Module {
     }
 
     public void rebuildShield() {
-        shield = maxShield / 5.0f;
+        shieldHp = shieldMaxHp / 5.0f;
         rebuildingTime = timeToRebuild;
-        createBody();
+        createShieldFixture();
         eventBus.publish(new ShieldRebuildEvent(this));
     }
 
-    public boolean damage(float shieldDamage) {
-        if (shield > 0) {
-            shield -= shieldDamage;
-            return true;
-        }
+    @Override
+    public boolean damage(float amount) {
+        if (isDead) return false;
 
-        onNoShieldDamage();
-        return false;
+        if (SideUtils.IS_SERVER && ship.getWorld().isServer()) {
+            if (shieldHp > 0) {
+                shieldHp -= amount;
+
+                if (shieldHp < 0) {
+                    shieldHp = 0;
+                }
+
+                return true;
+            }
+
+            onNoShieldDamage();
+            return false;
+        } else {
+            return shieldHp > 0;
+        }
+    }
+
+    @Override
+    protected void destroy() {
+        super.destroy();
+        ship.getFixturesToRemove().add(fixture);
     }
 
     private void onNoShieldDamage() {
@@ -169,16 +206,12 @@ public class Shield extends Module {
         eventBus.publish(new ShieldResetRebuildingTimeEvent(this));
     }
 
-    public void setRebuildingTime(int time) {
-        rebuildingTime = time;
-    }
-
     public void removeShield() {
         body.removeFixture(shieldFixture);
         shieldFixture = null;
         rebuildingTime = 0;
         size.set(0.0f);
-        shield = 0;
+        shieldHp = 0;
         alive = false;
         eventBus.publish(new ShieldRemoveEvent(this));
     }

@@ -26,7 +26,6 @@
   "minSpawnCount": 1,
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
-  "name": "medium",
   "r": 0.7,
   "renderLayer": "DEFAULT_ALPHA_BLENDED",
   "soundEffects": [],
