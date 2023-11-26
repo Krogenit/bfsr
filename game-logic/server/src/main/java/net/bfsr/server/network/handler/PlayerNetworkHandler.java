@@ -44,7 +44,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
     private DatagramChannel datagramChannel;
     private InetSocketAddress remoteAddress;
     @Setter
-    private ConnectionState connectionState = ConnectionState.HANDSHAKE;
+    private ConnectionState connectionState = ConnectionState.CONNECTING;
     private ConnectionState connectionStateBeforeDisconnect;
     private final Queue<Packet> inboundPacketQueue = new ConcurrentLinkedQueue<>();
 
@@ -63,10 +63,10 @@ public class PlayerNetworkHandler extends NetworkHandler {
     private final PacketRegistry<PlayerNetworkHandler> packetRegistry = ServerGameLogic.getNetwork().getPacketRegistry();
 
     public void update() {
-        if (connectionState != ConnectionState.NOT_CONNECTED) {
+        if (connectionState != ConnectionState.DISCONNECTED) {
             processReceivedPackets();
 
-            if (connectionState == ConnectionState.PLAY) {
+            if (connectionState == ConnectionState.CONNECTED) {
                 long now = System.currentTimeMillis();
                 if (now - lastKeepAlivePacketTime > KEEP_ALIVE_PERIOD_IN_MILLS) {
                     sendUDPPacket(new PacketKeepAlive());
@@ -101,7 +101,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
             socketChannel.writeAndFlush(packet).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         } else {
             socketChannel.eventLoop().execute(() -> {
-                if (connectionState != ConnectionState.NOT_CONNECTED) {
+                if (connectionState != ConnectionState.DISCONNECTED) {
                     socketChannel.writeAndFlush(packet).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
                 }
             });
@@ -114,7 +114,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
                     .addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         } else {
             datagramChannel.eventLoop().execute(() -> {
-                if (connectionState != ConnectionState.NOT_CONNECTED) {
+                if (connectionState != ConnectionState.DISCONNECTED) {
                     datagramChannel.writeAndFlush(new DefaultAddressedEnvelope<Packet, SocketAddress>(packet, remoteAddress))
                             .addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
                 }
@@ -146,7 +146,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
     }
 
     public void joinGame() {
-        connectionState = ConnectionState.PLAY;
+        connectionState = ConnectionState.CONNECTED;
         player.setNetworkHandler(this);
         playerManager.addPlayer(player);
         sendTCPPacket(new PacketJoinGame(world.getSeed()));
@@ -201,7 +201,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
     }
 
     public void onDisconnected() {
-        if (connectionStateBeforeDisconnect == ConnectionState.PLAY) {
+        if (connectionStateBeforeDisconnect == ConnectionState.CONNECTED) {
             log.info("{} lost connection: {}", player, terminationReason);
             server.onPlayerDisconnected(player);
         } else {
@@ -213,7 +213,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
         socketChannel.close();
         terminationReason = reason;
         connectionStateBeforeDisconnect = connectionState;
-        connectionState = ConnectionState.NOT_CONNECTED;
+        connectionState = ConnectionState.DISCONNECTED;
     }
 
     public boolean isClosed() {

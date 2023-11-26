@@ -18,7 +18,7 @@ public class PacketJoinGameHandler extends PacketHandler<PacketJoinGame, Network
                        InetSocketAddress remoteAddress) {
         core.createWorld(packet.getSeed());
         core.closeGui();
-        core.getNetworkSystem().setConnectionState(ConnectionState.PLAY);
+        core.getNetworkSystem().setConnectionState(ConnectionState.CONNECTED);
         core.publish(new PlayerJoinGameEvent());
     }
 }

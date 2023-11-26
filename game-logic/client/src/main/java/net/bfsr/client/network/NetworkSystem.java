@@ -33,7 +33,7 @@ public class NetworkSystem extends NetworkHandler {
 
     @Getter
     @Setter
-    private ConnectionState connectionState = ConnectionState.NOT_CONNECTED;
+    private ConnectionState connectionState = ConnectionState.DISCONNECTED;
 
     @Setter
     @Getter
@@ -47,7 +47,7 @@ public class NetworkSystem extends NetworkHandler {
     public void connect(InetAddress address, int port) {
         networkManagerTCP.connect(this, address, port);
         networkManagerUDP.connect(this, address, port);
-        connectionState = ConnectionState.HANDSHAKE;
+        connectionState = ConnectionState.CONNECTING;
 
         sendPacketTCP(new PacketRegisterTCP());
     }
@@ -58,10 +58,10 @@ public class NetworkSystem extends NetworkHandler {
     }
 
     public void update() {
-        if (connectionState != ConnectionState.NOT_CONNECTED) {
+        if (connectionState != ConnectionState.DISCONNECTED) {
             processReceivedPackets();
 
-            if (connectionState == ConnectionState.PLAY) {
+            if (connectionState == ConnectionState.CONNECTED) {
                 long now = System.currentTimeMillis();
                 if (now - lastPingCheck > 1000) {
                     sendPacketUDP(new PacketPing(System.nanoTime() - handshakeTime));
@@ -95,7 +95,7 @@ public class NetworkSystem extends NetworkHandler {
     }
 
     public void onDisconnect(String reason) {
-        if (connectionState == ConnectionState.PLAY) {
+        if (connectionState == ConnectionState.CONNECTED) {
             Core.get().addFutureTask(() -> {
                 Core.get().setWorld(null);
                 Core.get().openGui(new GuiDisconnected(new GuiMainMenu(), "disconnect.lost", reason));
@@ -106,7 +106,7 @@ public class NetworkSystem extends NetworkHandler {
             Core.get().addFutureTask(() -> Core.get().openGui(new GuiDisconnected(new GuiMainMenu(), "other", reason)));
         }
 
-        connectionState = ConnectionState.NOT_CONNECTED;
+        connectionState = ConnectionState.DISCONNECTED;
 
         shutdown();
         clear();
@@ -143,6 +143,6 @@ public class NetworkSystem extends NetworkHandler {
 
     public void clear() {
         inboundPacketQueue.clear();
-        setConnectionState(ConnectionState.NOT_CONNECTED);
+        setConnectionState(ConnectionState.DISCONNECTED);
     }
 }
