@@ -22,8 +22,6 @@ public class Player {
     private final Vector2f position = new Vector2f();
     @Setter
     private Faction faction;
-    @Setter
-    private byte[] digest;
     private final PlayerInputController playerInputController;
 
     @Default

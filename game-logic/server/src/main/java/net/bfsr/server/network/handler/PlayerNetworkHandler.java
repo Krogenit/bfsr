@@ -1,7 +1,6 @@
 package net.bfsr.server.network.handler;
 
 import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.DefaultAddressedEnvelope;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.SocketChannel;
@@ -20,8 +19,7 @@ import net.bfsr.network.packet.common.PacketKeepAlive;
 import net.bfsr.network.packet.server.gui.PacketOpenGui;
 import net.bfsr.network.packet.server.login.PacketDisconnectLogin;
 import net.bfsr.network.packet.server.login.PacketJoinGame;
-import net.bfsr.network.packet.server.login.PacketLoginTCPSuccess;
-import net.bfsr.network.packet.server.login.PacketLoginUDPSuccess;
+import net.bfsr.network.packet.server.login.PacketLoginSuccess;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.network.pipeline.MessageHandlerUDP;
 import net.bfsr.server.player.Player;
@@ -30,10 +28,6 @@ import net.bfsr.world.World;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -45,6 +39,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
     private static final int LOGIN_TIMEOUT_IN_MILLS = 5000;
     private static final int KEEP_ALIVE_PERIOD_IN_MILLS = 2000;
 
+    private final int connectionId;
     private final SocketChannel socketChannel;
     private DatagramChannel datagramChannel;
     private InetSocketAddress remoteAddress;
@@ -147,40 +142,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
             return;
         }
 
-        try {
-            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-            messageDigest.update(username.getBytes(StandardCharsets.UTF_8));
-            byte[] digest = messageDigest.digest();
-            log.debug("Player hash created");
-            player.setDigest(digest);
-            ServerGameLogic.getInstance().getNetworkSystem().addHandler(username, this);
-            sendTCPPacket(new PacketLoginTCPSuccess(digest));
-        } catch (NoSuchAlgorithmException e) {
-            log.error("Couldn't create player hash", e);
-            disconnect("Player's hash creation error");
-        }
-    }
-
-    public void loginUDP(String login, byte[] digest, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
-        if (player == null) {
-            log.error("Player object not found for login {} {}", login, remoteAddress);
-            sendTCPPacket(new PacketDisconnectLogin("Player object not found"));
-            closeChannel("Player object not found");
-            return;
-        }
-
-        if (!Arrays.equals(digest, player.getDigest())) {
-            log.error("Player {} sent wrong digest", login);
-            sendTCPPacket(new PacketDisconnectLogin("Wrong digest"));
-            closeChannel("Wrong digest");
-            return;
-        }
-
-        datagramChannel = (DatagramChannel) ctx.channel();
-        this.remoteAddress = remoteAddress;
-        ((MessageHandlerUDP) datagramChannel.pipeline().get("handler")).setPlayerNetworkHandler(this);
-        ctx.writeAndFlush(new DefaultAddressedEnvelope<Packet, SocketAddress>(new PacketLoginUDPSuccess(), remoteAddress))
-                .addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+        sendTCPPacket(new PacketLoginSuccess());
     }
 
     public void joinGame() {
@@ -220,6 +182,12 @@ public class PlayerNetworkHandler extends NetworkHandler {
             Ship ship = ships.get(i);
             world.add(ship, false);
         }
+    }
+
+    public void setDatagramChannel(DatagramChannel datagramChannel, InetSocketAddress remoteAddress) {
+        this.datagramChannel = datagramChannel;
+        this.remoteAddress = remoteAddress;
+        ((MessageHandlerUDP) datagramChannel.pipeline().get("handler")).setPlayerNetworkHandler(this);
     }
 
     private void disconnect(String reason) {

@@ -1,4 +1,4 @@
-package net.bfsr.network.packet.client;
+package net.bfsr.network.packet.common;
 
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
@@ -11,16 +11,21 @@ import java.io.IOException;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PacketHandshake extends PacketAdapter {
-    private long handshakeClientTime;
+public class PacketRegisterUDP extends PacketAdapter {
+    private int connectionId;
 
     @Override
     public void write(ByteBuf data) throws IOException {
-        data.writeLong(handshakeClientTime);
+        data.writeInt(connectionId);
     }
 
     @Override
     public void read(ByteBuf data) throws IOException {
-        handshakeClientTime = data.readLong();
+        connectionId = data.readInt();
+    }
+
+    @Override
+    public boolean isAsync() {
+        return true;
     }
 }

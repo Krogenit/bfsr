@@ -13,7 +13,10 @@ import net.bfsr.network.ConnectionState;
 import net.bfsr.network.NetworkHandler;
 import net.bfsr.network.packet.Packet;
 import net.bfsr.network.packet.PacketRegistry;
+import net.bfsr.network.packet.client.PacketHandshake;
+import net.bfsr.network.packet.client.PacketLogin;
 import net.bfsr.network.packet.common.PacketPing;
+import net.bfsr.network.packet.common.PacketRegisterTCP;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
@@ -41,13 +44,17 @@ public class NetworkSystem extends NetworkHandler {
         packetRegistry.registerPackets(Side.CLIENT);
     }
 
-    public void connectTCP(InetAddress address, int port) {
+    public void connect(InetAddress address, int port) {
         networkManagerTCP.connect(this, address, port);
+        networkManagerUDP.connect(this, address, port);
         connectionState = ConnectionState.HANDSHAKE;
+
+        sendPacketTCP(new PacketRegisterTCP());
     }
 
-    public void connectUDP(InetAddress address, int port) {
-        networkManagerUDP.connect(this, address, port);
+    public void onChannelsRegistered() {
+        sendPacketTCP(new PacketHandshake(handshakeTime = System.nanoTime()));
+        sendPacketTCP(new PacketLogin("Local Player"));
     }
 
     public void update() {

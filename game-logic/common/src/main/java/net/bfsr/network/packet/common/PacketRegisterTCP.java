@@ -1,27 +1,31 @@
-package net.bfsr.network.packet.client;
+package net.bfsr.network.packet.common;
 
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.network.packet.PacketAdapter;
-import net.bfsr.network.util.ByteBufUtils;
 
 import java.io.IOException;
 
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-public class PacketLoginTCP extends PacketAdapter {
-    private String login;
+public class PacketRegisterTCP extends PacketAdapter {
+    private int connectionId;
 
     @Override
     public void write(ByteBuf data) throws IOException {
-        ByteBufUtils.writeString(data, login);
+        data.writeInt(connectionId);
     }
 
     @Override
     public void read(ByteBuf data) throws IOException {
-        login = ByteBufUtils.readString(data);
+        connectionId = data.readInt();
+    }
+
+    @Override
+    public boolean isAsync() {
+        return true;
     }
 }

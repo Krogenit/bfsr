@@ -1,7 +1,7 @@
 package net.bfsr.server.network;
 
-import gnu.trove.map.TMap;
-import gnu.trove.map.hash.THashMap;
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class NetworkSystem {
     private final PacketRegistry<PlayerNetworkHandler> packetRegistry = new PacketRegistry<>();
 
     private final List<PlayerNetworkHandler> networkHandlers = new ArrayList<>();
-    private final TMap<String, PlayerNetworkHandler> networkHandlerMap = new THashMap<>();
+    private final TIntObjectMap<PlayerNetworkHandler> networkHandlerMap = new TIntObjectHashMap<>();
     private final PlayerManager playerManager;
 
     public void init() {
@@ -52,7 +52,7 @@ public class NetworkSystem {
                     networkHandlers.remove(i--);
 
                     if (networkHandler.getPlayer() != null) {
-                        networkHandlerMap.remove(networkHandler.getPlayer().getUsername());
+                        networkHandlerMap.remove(networkHandler.getConnectionId());
                     }
 
                     networkHandler.onDisconnected();
@@ -61,7 +61,8 @@ public class NetworkSystem {
         }
     }
 
-    public void handle(Packet packet, PlayerNetworkHandler networkHandler, ChannelHandlerContext ctx, InetSocketAddress recipient) {
+    public void handle(Packet packet, PlayerNetworkHandler networkHandler, ChannelHandlerContext ctx,
+                       InetSocketAddress recipient) {
         packetRegistry.getPacketHandler(packet).handle(packet, networkHandler, ctx, recipient);
     }
 
@@ -120,14 +121,17 @@ public class NetworkSystem {
     }
 
     public void sendTCPPacketToAllNearbyExcept(Packet packet, Vector2f pos, float dist, Player player1) {
-        this.sendPacketToAllNearbyExcept(pos.x, pos.y, dist, player1, playerNetworkHandler -> playerNetworkHandler.sendTCPPacket(packet));
+        this.sendPacketToAllNearbyExcept(pos.x, pos.y, dist, player1,
+                playerNetworkHandler -> playerNetworkHandler.sendTCPPacket(packet));
     }
 
     public void sendUDPPacketToAllNearbyExcept(Packet packet, Vector2f pos, float dist, Player player1) {
-        this.sendPacketToAllNearbyExcept(pos.x, pos.y, dist, player1, playerNetworkHandler -> playerNetworkHandler.sendUDPPacket(packet));
+        this.sendPacketToAllNearbyExcept(pos.x, pos.y, dist, player1,
+                playerNetworkHandler -> playerNetworkHandler.sendUDPPacket(packet));
     }
 
-    private void sendPacketToAllNearbyExcept(float x, float y, float dist, Player player1, Consumer<PlayerNetworkHandler> protocol) {
+    private void sendPacketToAllNearbyExcept(float x, float y, float dist, Player player1,
+                                             Consumer<PlayerNetworkHandler> protocol) {
         List<Player> players = playerManager.getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
             Player player = players.get(i);
@@ -152,21 +156,19 @@ public class NetworkSystem {
         }
     }
 
-    public void addHandler(PlayerNetworkHandler playerNetworkHandler) {
+    public void registerHandler(PlayerNetworkHandler playerNetworkHandler) {
         synchronized (networkHandlers) {
             networkHandlers.add(playerNetworkHandler);
+            networkHandlerMap.put(playerNetworkHandler.getConnectionId(), playerNetworkHandler);
         }
     }
 
-    public void addHandler(String login, PlayerNetworkHandler playerNetworkHandler) {
-        networkHandlerMap.put(login, playerNetworkHandler);
+    public PlayerNetworkHandler getHandler(int connectionId) {
+        return networkHandlerMap.get(connectionId);
     }
 
-    public PlayerNetworkHandler getHandler(String login) {
-        return networkHandlerMap.get(login);
-    }
-
-    public Packet createPacket(int packetId) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public Packet createPacket(int packetId)
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         return packetRegistry.createPacket(packetId);
     }
 

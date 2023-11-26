@@ -34,9 +34,6 @@ import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.sound.AbstractSoundManager;
 import net.bfsr.engine.util.Side;
 import net.bfsr.network.packet.Packet;
-import net.bfsr.network.packet.client.PacketHandshake;
-import net.bfsr.network.packet.client.PacketLoginTCP;
-import net.bfsr.network.packet.client.PacketLoginUDP;
 import net.bfsr.world.World;
 import org.jetbrains.annotations.NotNull;
 
@@ -159,30 +156,17 @@ public class Core extends ClientGameLogic {
         }
     }
 
-    public void connectToLocalServerTCP() {
+    private void connectToLocalServerTCP() {
         try {
             InetAddress inetaddress = InetAddress.getByName("127.0.0.1");
             connectToServer(inetaddress, 34000);
         } catch (Exception e) {
-            log.error("Couldn't connect to local TCP server", e);
+            log.error("Couldn't connect to local server", e);
         }
     }
 
     public void connectToServer(InetAddress inetaddress, int port) {
-        networkSystem.connectTCP(inetaddress, port);
-        networkSystem.setHandshakeTime(System.nanoTime());
-        networkSystem.sendPacketTCP(new PacketHandshake(5, networkSystem.getHandshakeTime()));
-        networkSystem.sendPacketTCP(new PacketLoginTCP("Local Player"));
-    }
-
-    public void establishUDPConnection(byte[] digest) {
-        try {
-            InetAddress inetaddress = InetAddress.getByName("127.0.0.1");
-            networkSystem.connectUDP(inetaddress, 34000);
-            networkSystem.sendPacketUDP(new PacketLoginUDP("Local Player", digest));
-        } catch (Exception e) {
-            log.error("Couldn't connect to local UDP server", e);
-        }
+        networkSystem.connect(inetaddress, port);
     }
 
     public void stopServer() {

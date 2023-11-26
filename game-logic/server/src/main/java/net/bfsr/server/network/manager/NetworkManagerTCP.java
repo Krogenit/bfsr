@@ -18,6 +18,7 @@ import java.net.InetAddress;
 
 @Log4j2
 public class NetworkManagerTCP {
+    private int connectionIds;
     private final EventLoopGroup bossLoopGroup = new NioEventLoopGroup();
     private final EventLoopGroup workerLoopGroup = new NioEventLoopGroup();
     private Channel channel;
@@ -30,7 +31,7 @@ public class NetworkManagerTCP {
         bootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel socketChannel) {
-                PlayerNetworkHandler playerNetworkHandler = new PlayerNetworkHandler(socketChannel, true);
+                PlayerNetworkHandler playerNetworkHandler = new PlayerNetworkHandler(connectionIds++, socketChannel, true);
                 socketChannel.pipeline().addLast("slicer", new FrameDecoder());
                 socketChannel.pipeline().addLast("prepender", new LengthPrepender());
 
@@ -38,7 +39,7 @@ public class NetworkManagerTCP {
                 socketChannel.pipeline().addLast("encoder", new PacketEncoderTCP(networkSystem));
 
                 socketChannel.pipeline().addLast("handler", new MessageHandlerTCP(playerNetworkHandler));
-                networkSystem.addHandler(playerNetworkHandler);
+                networkSystem.registerHandler(playerNetworkHandler);
             }
         });
 
