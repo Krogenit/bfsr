@@ -72,8 +72,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject {
     @Override
     public void spawn() {
         if (SideUtils.IS_SERVER && world.isServer()) {
-            Vector2f shipPosition = ship.getPosition();
-            RigidBody<GunData> rigidBody = new RigidBody<>(shipPosition.x + position.x, shipPosition.y + position.y,
+            RigidBody<GunData> rigidBody = new RigidBody<>(position.x, position.y,
                     ship.getSin(), ship.getCos(), gunData.getSizeX(), gunData.getSizeY(), gunData,
                     weaponType == WeaponType.GUN ? GunRegistry.INSTANCE.getId() : BeamRegistry.INSTANCE.getId());
             rigidBody.setHealth(5.0f);
