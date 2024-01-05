@@ -9,7 +9,10 @@ import java.net.InetSocketAddress;
 
 public class PacketPingHandler extends PacketHandler<PacketPing, PlayerNetworkHandler> {
     @Override
-    public void handle(PacketPing packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
-        ctx.writeAndFlush(new PacketPing(System.nanoTime() - (playerNetworkHandler.getHandshakeClientTime() + packet.getTime())));
+    public void handle(PacketPing packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
+        playerNetworkHandler.sendUDPPacket(new PacketPing(
+                System.nanoTime() - (playerNetworkHandler.getHandshakeClientTime() + packet.getTime())
+        ));
     }
 }

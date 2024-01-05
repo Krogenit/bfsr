@@ -1,12 +1,18 @@
 package net.bfsr.editor.sound;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.bfsr.editor.gui.property.PropertyGuiElementType;
 import net.bfsr.editor.property.Property;
-import net.bfsr.editor.property.SimplePropertiesHolder;
+import net.bfsr.editor.property.holder.PropertiesHolderAdapter;
 
 @Getter
-public class SoundProperties extends SimplePropertiesHolder {
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class SoundProperties extends PropertiesHolderAdapter {
     @Property(elementType = PropertyGuiElementType.FILE_SELECTOR)
     private String path;
     @Property
@@ -14,7 +20,12 @@ public class SoundProperties extends SimplePropertiesHolder {
 
     @Override
     public void setDefaultValues() {
-        setName("Sound Effect");
         path = "sound/gui/buttonClick.ogg";
+        volume = 1.0f;
+    }
+
+    @Override
+    public String getName() {
+        return path.substring(path.lastIndexOf("/") + 1);
     }
 }

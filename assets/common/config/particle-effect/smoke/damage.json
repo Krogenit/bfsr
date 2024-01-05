@@ -26,7 +26,6 @@
   "minSpawnCount": 1,
   "minVelocityX": -1.5,
   "minVelocityY": -1.5,
-  "name": "damage",
   "r": 1.0,
   "renderLayer": "DEFAULT_ALPHA_BLENDED",
   "soundEffects": [],

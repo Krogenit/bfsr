@@ -1,6 +1,6 @@
 {
   "name": "saimon",
-  "maxArmorValue": 20.0,
-  "regenSpeedInSeconds": 0.3,
-  "hullProtection": 1.1
+  "maxValue": 5.0,
+  "regenAmountInSeconds": 0.1,
+  "protection": 1.1
 }

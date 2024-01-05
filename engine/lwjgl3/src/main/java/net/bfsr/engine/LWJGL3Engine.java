@@ -133,9 +133,11 @@ public class LWJGL3Engine extends AbstractLoop implements EngineConfiguration {
         }
 
         renderer.setInterpolation(interpolation);
-
         gameLogic.render(interpolation);
-        profiler.endSection("render");
+        GLFW.glfwSwapBuffers(window);
+        profiler.endStartSection("pollEvents");
+        GLFW.glfwPollEvents();
+        profiler.endSection("pollEvents");
     }
 
     @Override
@@ -146,12 +148,6 @@ public class LWJGL3Engine extends AbstractLoop implements EngineConfiguration {
     @Override
     public void setFps(int fps) {
         renderer.setFps(fps);
-    }
-
-    @Override
-    public void onPostRender() {
-        GLFW.glfwSwapBuffers(window);
-        GLFW.glfwPollEvents();
     }
 
     @Override

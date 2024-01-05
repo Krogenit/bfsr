@@ -29,7 +29,6 @@ public class CameraInputController extends InputController {
     private final AbstractKeyboard keyboard = Engine.keyboard;
     private Core core;
     private Ship followShip;
-    private Vector2f position;
     private PlayerInputController playerInputController;
     private long lastSendTime;
 
@@ -38,7 +37,6 @@ public class CameraInputController extends InputController {
         core = Core.get();
         guiManager = core.getGuiManager();
         playerInputController = core.getInputHandler().getPlayerInputController();
-        position = camera.getPosition();
         core.subscribe(this);
     }
 
@@ -51,28 +49,23 @@ public class CameraInputController extends InputController {
                 boolean noShip = !playerInputController.isControllingShip();
                 float keyMoveSpeed = ClientSettings.CAMERA_MOVE_BY_KEY_SPEED.getFloat() * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
                 if (keyboard.isKeyDown(KEY_LEFT) || (noShip && keyboard.isKeyDown(KEY_A))) {
-                    position.x -= keyMoveSpeed;
+                    camera.move(-keyMoveSpeed, 0);
                 } else if (keyboard.isKeyDown(KEY_RIGHT) || (noShip && keyboard.isKeyDown(KEY_D))) {
-                    position.x += keyMoveSpeed;
+                    camera.move(keyMoveSpeed, 0);
                 }
 
                 if (keyboard.isKeyDown(KEY_UP) || (noShip && keyboard.isKeyDown(KEY_W))) {
-                    position.y -= keyMoveSpeed;
+                    camera.move(0, -keyMoveSpeed);
                 } else if (keyboard.isKeyDown(KEY_DOWN) || (noShip && keyboard.isKeyDown(KEY_S))) {
-                    position.y += keyMoveSpeed;
+                    camera.move(0, keyMoveSpeed);
                 }
             }
 
             if (ClientSettings.CAMERA_FOLLOW_PLAYER.getBoolean()) followShip();
 
+            Vector2f position = camera.getPosition();
             Vector2f lastPosition = camera.getLastPosition();
-            float zoom = camera.getZoom();
-            float lastZoom = camera.getLastZoom();
-            if (position.x != lastPosition.x || position.y != lastPosition.y || lastZoom != zoom) {
-                Vector2f origin = camera.getOrigin();
-                camera.setBoundingBox(position.x + origin.x / zoom, position.y + origin.y / zoom, position.x - origin.x / zoom,
-                        position.y - origin.y / zoom);
-
+            if (position.x != lastPosition.x || position.y != lastPosition.y) {
                 long time = System.currentTimeMillis();
                 if (time - lastSendTime > 500) {
                     core.sendUDPPacket(new PacketCameraPosition(position.x, position.y));
@@ -83,35 +76,34 @@ public class CameraInputController extends InputController {
     }
 
     private void followShip() {
+        Vector2f position = camera.getPosition();
         Ship playerShip = playerInputController.getShip();
         if (playerShip != null) {
             Vector2f shipPosition = playerShip.getPosition();
             float minDistance = 0.04f;
-            double dis = shipPosition.distanceSquared(position);
+            float dis = shipPosition.distanceSquared(position);
             if (dis > minDistance) {
-                double mDx = shipPosition.x - position.x;
-                double mDy = shipPosition.y - position.y;
-                position.x += mDx * 3.0f * TimeUtils.UPDATE_DELTA_TIME;
-                position.y += mDy * 3.0f * TimeUtils.UPDATE_DELTA_TIME;
+                float mDx = shipPosition.x - position.x;
+                float mDy = shipPosition.y - position.y;
+                camera.move(mDx * 3.0f * TimeUtils.UPDATE_DELTA_TIME, mDy * 3.0f * TimeUtils.UPDATE_DELTA_TIME);
             }
         } else {
             if (followShip == null || followShip.isDead()) {
                 findShipToFollow();
             } else {
                 Vector2f shipPosition = followShip.getPosition();
-                double dis = shipPosition.distanceSquared(position);
+                float dis = shipPosition.distanceSquared(position);
                 float minDistance = 0.04f;
                 if (dis > minDistance) {
-                    double mDx = shipPosition.x - position.x;
-                    double mDy = shipPosition.y - position.y;
+                    float mDx = shipPosition.x - position.x;
+                    float mDy = shipPosition.y - position.y;
                     float max = 400.0f;
                     if (mDx < -max) mDx = -max;
                     else if (mDx > max) mDx = max;
                     if (mDy < -max) mDy = -max;
                     else if (mDy > max) mDy = max;
 
-                    position.x += mDx * 3.0f * TimeUtils.UPDATE_DELTA_TIME;
-                    position.y += mDy * 3.0f * TimeUtils.UPDATE_DELTA_TIME;
+                    camera.move(mDx * 3.0f * TimeUtils.UPDATE_DELTA_TIME, mDy * 3.0f * TimeUtils.UPDATE_DELTA_TIME);
                 }
             }
         }
@@ -119,12 +111,12 @@ public class CameraInputController extends InputController {
 
     private void findShipToFollow() {
         Ship newShip = null;
-        if (core.getWorld().getShips().size() > 0) {
+        List<Ship> ships = core.getWorld().getEntitiesByType(Ship.class);
+        if (ships.size() > 0) {
             float minDist = Float.MAX_VALUE;
-            List<Ship> ships = core.getWorld().getShips();
             for (int i = 0; i < ships.size(); i++) {
                 Ship s = ships.get(i);
-                float dist = s.getPosition().distance(position.x, position.y);
+                float dist = s.getPosition().distance(camera.getPosition());
                 if (dist < minDist) {
                     newShip = s;
                     minDist = dist;
@@ -141,15 +133,15 @@ public class CameraInputController extends InputController {
         float offset = ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS_OFFSET.getFloat();
         Vector2f cursorPosition = mouse.getPosition();
         if (cursorPosition.x <= offset) {
-            position.x -= screenMoveSpeed;
+            camera.move(-screenMoveSpeed, 0);
         } else if (cursorPosition.x >= renderer.getScreenWidth() - offset) {
-            position.x += screenMoveSpeed;
+            camera.move(screenMoveSpeed, 0);
         }
 
         if (cursorPosition.y <= offset) {
-            position.y -= screenMoveSpeed;
+            camera.move(0, -screenMoveSpeed);
         } else if (cursorPosition.y >= renderer.getScreenHeight() - offset) {
-            position.y += screenMoveSpeed;
+            camera.move(0, screenMoveSpeed);
         }
     }
 

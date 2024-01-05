@@ -5,7 +5,6 @@ public interface Loop {
     void run();
     void update();
     void render(float interpolation);
-    void onPostRender();
     void setFps(int fps);
     int getUpdatesPerSecond();
     boolean isRunning();

@@ -5,11 +5,15 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.client.Core;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
+import net.bfsr.client.settings.ClientSettings;
+import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
+import net.bfsr.entity.RigidBody;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +21,8 @@ import java.util.List;
 @Listener
 public class RenderManager {
     private final AbstractCamera camera = Engine.renderer.camera;
+
+    private final RenderRegistry renderRegistry = new RenderRegistry();
 
     private final List<Render<?>> renderList = new ArrayList<>();
     private final TIntObjectMap<Render<?>> renders = new TIntObjectHashMap<>();
@@ -64,11 +70,21 @@ public class RenderManager {
     }
 
     public void renderDebug() {
+        if (!ClientSettings.SHOW_DEBUG_BOXES.getBoolean()) return;
+
         for (int i = 0; i < renderList.size(); i++) {
             Render<?> render = renderList.get(i);
             if (render.getAabb().overlaps(camera.getBoundingBox())) {
                 render.renderDebug();
             }
+        }
+    }
+
+    public void createRender(RigidBody<? extends GameObjectConfigData> rigidBody) {
+        try {
+            addRender(renderRegistry.getRenderConstructor(rigidBody.getClass()).newInstance(rigidBody));
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -79,6 +95,10 @@ public class RenderManager {
 
     public <T extends Render<?>> T getRender(int id) {
         return (T) renders.get(id);
+    }
+
+    public void removeRenderById(int id) {
+        renderList.remove(renders.remove(id));
     }
 
     @Handler

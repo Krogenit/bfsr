@@ -15,7 +15,9 @@ public class PlayerInputController {
     private Ship ship;
 
     public void move(Direction direction) {
-        ship.addMoveDirection(direction);
+        if (ship.getModules().getEngines().isEngineAlive(direction)) {
+            ship.addMoveDirection(direction);
+        }
     }
 
     public void stopMove(Direction direction) {
@@ -24,7 +26,7 @@ public class PlayerInputController {
 
     public void update() {
         if (ship != null) {
-            RigidBodyUtils.rotateToVector(ship, mousePosition, ship.getEngine().getAngularVelocity());
+            RigidBodyUtils.rotateToVector(ship, mousePosition, ship.getModules().getEngines().getAngularVelocity());
             ship.getMoveDirections().forEach(ship::move);
             if (mouseLeftDown) {
                 ship.shoot();

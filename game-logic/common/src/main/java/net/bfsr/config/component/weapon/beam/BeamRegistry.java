@@ -4,10 +4,10 @@ import net.bfsr.config.ConfigConverter;
 import net.bfsr.config.ConfigToDataConverter;
 
 @ConfigConverter
-public class BeamRegistry extends ConfigToDataConverter<BeamConfig, BeamData> {
+public final class BeamRegistry extends ConfigToDataConverter<BeamConfig, BeamData> {
     public static final BeamRegistry INSTANCE = new BeamRegistry();
 
-    public BeamRegistry() {
-        super("module/weapon/beam", BeamConfig.class, BeamConfig::name, BeamData::new);
+    private BeamRegistry() {
+        super("module/weapon/beam", BeamConfig.class, (fileName, beamConfig) -> fileName, BeamData::new);
     }
 }

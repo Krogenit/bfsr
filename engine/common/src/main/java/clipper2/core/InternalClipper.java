@@ -105,27 +105,31 @@ public final class InternalClipper {
         return val > 0 ? 1 : 2;
     }
 
-    public static boolean doIntersect(PointD p1, PointD q1, PointD p2, PointD q2) {
+    private static boolean doIntersect(PointD p1, PointD q1, PointD p2, PointD q2) {
         return orientation(p1, q1, p2) != orientation(p1, q1, q2) && orientation(p2, q2, p1) != orientation(p2, q2, q1);
     }
 
-    public static boolean PointInPolygonOptimized(PointD pt, PathD polygon) {
+    private static boolean PointInPolygonOptimized(PointD pt, PathD polygon) {
+        return PointInPolygonOptimized(pt.x, pt.y, polygon);
+    }
+
+    public static boolean PointInPolygonOptimized(double x, double y, PathD polygon) {
         int len = polygon.size(), i = len - 1;
 
         int val = 0;
-        boolean isAbove = polygon.get(i).y < pt.y;
+        boolean isAbove = polygon.get(i).y < y;
         i = 0;
 
         while (i < len) {
             if (isAbove) {
-                while (i < len && polygon.get(i).y < pt.y) {
+                while (i < len && polygon.get(i).y < y) {
                     i++;
                 }
                 if (i == len) {
                     break;
                 }
             } else {
-                while (i < len && polygon.get(i).y > pt.y) {
+                while (i < len && polygon.get(i).y > y) {
                     i++;
                 }
                 if (i == len) {
@@ -142,20 +146,20 @@ public final class InternalClipper {
                 prev = polygon.get(len - 1);
             }
 
-            if (curr.y == pt.y) {
-                if (curr.x == pt.x || (curr.y == prev.y && ((pt.x < prev.x) != (pt.x < curr.x)))) {
+            if (curr.y == y) {
+                if (curr.x == x || (curr.y == prev.y && ((x < prev.x) != (x < curr.x)))) {
                     return false;
                 }
                 i++;
                 continue;
             }
 
-            if (pt.x < curr.x && pt.x < prev.x) {
+            if (x < curr.x && x < prev.x) {
                 // we're only interested in edges crossing on the left
-            } else if (pt.x > prev.x && pt.x > curr.x) {
+            } else if (x > prev.x && x > curr.x) {
                 val = 1 - val; // toggle val
             } else {
-                double d = CrossProduct(prev, curr, pt);
+                double d = CrossProduct(prev, curr, x, y);
                 if (d == 0) {
                     return false;
                 }
@@ -169,8 +173,8 @@ public final class InternalClipper {
         return val != 0;
     }
 
-    public static double CrossProduct(PointD pt1, PointD pt2, PointD pt3) {
-        return ((pt2.x - pt1.x) * (pt3.y - pt2.y) - (pt2.y - pt1.y) * (pt3.x - pt2.x));
+    private static double CrossProduct(PointD pt1, PointD pt2, double x, double y) {
+        return ((pt2.x - pt1.x) * (y - pt2.y) - (pt2.y - pt1.y) * (x - pt2.x));
     }
 
     public static double CrossProduct(Point64 pt1, Point64 pt2, Point64 pt3) {

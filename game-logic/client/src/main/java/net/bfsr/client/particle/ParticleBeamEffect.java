@@ -3,11 +3,11 @@ package net.bfsr.client.particle;
 import lombok.Getter;
 import net.bfsr.client.particle.effect.BeamEffects;
 import net.bfsr.client.renderer.particle.ParticleBeamRender;
-import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.engine.renderer.particle.RenderLayer;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -18,15 +18,18 @@ public class ParticleBeamEffect extends Particle {
     private static final ObjectPool<ParticleBeamRender> RENDER_POOL = new ObjectPool<>();
     private static final Supplier<ParticleBeamRender> RENDER_SUPPLIER = ParticleBeamRender::new;
 
-    @Getter
     private WeaponSlotBeam slot;
     private Ship ship;
     private final Vector2f addPos = new Vector2f();
     private Random rand;
+    private ParticleBeamRender render;
+    @Getter
+    private Vector4f beamColor;
 
     public ParticleBeamEffect init(WeaponSlotBeam slot, TextureRegister texture, Vector4f color) {
         Ship ship = slot.getShip();
         Random random = ship.getWorld().getRand();
+        this.beamColor = color;
         this.slot = slot;
         this.ship = ship;
         this.rand = random;
@@ -42,9 +45,8 @@ public class ParticleBeamEffect extends Particle {
     protected void addParticle(long textureHandle, float r, float g, float b, float a, boolean isAlphaFromZero,
                                RenderLayer renderLayer) {
         PARTICLE_MANAGER.addParticle(this);
-        PARTICLE_RENDERER.addParticleToRenderLayer(
-                RENDER_POOL.getOrCreate(RENDER_SUPPLIER).init(this, textureHandle, r, g, b, a), renderLayer
-        );
+        render = RENDER_POOL.getOrCreate(RENDER_SUPPLIER).init(this, textureHandle, r, g, b, a);
+        PARTICLE_RENDERER.addParticleToRenderLayer(render, renderLayer);
     }
 
     @Override
@@ -73,5 +75,6 @@ public class ParticleBeamEffect extends Particle {
     @Override
     public void onRemoved() {
         BeamEffects.PARTICLE_BEAM_EFFECT_POOL.returnBack(this);
+        RENDER_POOL.returnBack(render);
     }
 }

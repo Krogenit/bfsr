@@ -13,6 +13,7 @@ public abstract class AbstractCamera {
     public abstract void bindGUI();
 
     public abstract void zoom(float v);
+    public abstract void move(float x, float y);
     public abstract void moveByMouse(float x, float y);
 
     public abstract void setBoundingBox(float minX, float minY, float maxX, float maxY);

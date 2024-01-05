@@ -14,9 +14,15 @@
       "volume": 1.0
     }
   ],
+  "hp": 15.0,
   "reloadTimeInSeconds": 0.5,
-  "energyCost": 5.0,
-  "bulletData": "gaus_small",
+  "energyCost": 4.0,
+  "damage": {
+    "armor": 2.5,
+    "average": 3.3333333,
+    "hull": 5.0,
+    "shield": 2.5
+  },
   "size": {
     "x": 2.6,
     "y": 1.4
@@ -44,6 +50,31 @@
     {
       "x": -1.2,
       "y": 0.7
+    }
+  ],
+  "bulletSpeed": 70.0,
+  "bulletLifeTimeInSeconds": 0.78,
+  "bulletSize": {
+    "x": 2.4,
+    "y": 2.4
+  },
+  "bulletTexture": "texture/entity/bullet/smallGaus.png",
+  "bulletVertices": [
+    {
+      "x": -0.6,
+      "y": -0.2
+    },
+    {
+      "x": 0.6,
+      "y": -0.2
+    },
+    {
+      "x": 0.6,
+      "y": 0.2
+    },
+    {
+      "x": -0.6,
+      "y": 0.2
     }
   ]
 }

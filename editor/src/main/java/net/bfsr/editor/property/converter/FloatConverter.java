@@ -10,7 +10,7 @@ public class FloatConverter implements PropertyConverter<Float> {
     }
 
     @Override
-    public Float fromString(String value) {
+    public Float fromString(Class<Float> classType, String value) {
         if (value.isEmpty()) return 0.0f;
         try {
             return Float.parseFloat(value);

@@ -1,7 +1,6 @@
 package net.bfsr.client.particle;
 
 import net.bfsr.client.particle.effect.BeamEffects;
-import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
@@ -9,6 +8,7 @@ import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -56,21 +56,11 @@ public class Beam extends GameObject {
         float startX = cos * startRange;
         float startY = sin * startRange;
 
-        float posX;
-        float posY;
+        float posX = startX + cos * slot.getCurrentBeamRange();
+        float posY = startY + sin * slot.getCurrentBeamRange();
 
-        Vector2f collisionPoint = slot.getCollisionPoint();
-        if (collisionPoint.x != 0 || collisionPoint.y != 0) {
-            posX = (startX + cos * slot.getCurrentBeamRange());
-            posY = (startY + sin * slot.getCurrentBeamRange());
-            position.x = slotPos.x + posX / 2.0f;
-            position.y = slotPos.y + posY / 2.0f;
-        } else {
-            posX = startX + cos * slot.getBeamMaxRange();
-            posY = startY + sin * slot.getBeamMaxRange();
-            position.x = slotPos.x + posX / 2.0f;
-            position.y = slotPos.y + posY / 2.0f;
-        }
+        position.x = slotPos.x + posX / 2.0f;
+        position.y = slotPos.y + posY / 2.0f;
 
         size.x = (float) Math.sqrt((posX - startX) * (posX - startX) + (posY - startY) * (posY - startY));
         size.y = slotScale.y;
@@ -93,7 +83,7 @@ public class Beam extends GameObject {
         }
     }
 
-    public void updateEffects() {
+    private void updateEffects() {
         for (int i = 0; i < particlesEffects.size(); i++) {
             Particle p = particlesEffects.get(i);
             if (p.isDead()) {

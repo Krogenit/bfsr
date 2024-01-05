@@ -7,15 +7,16 @@ import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.GameLogic;
 import net.bfsr.engine.util.Side;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.network.packet.server.entity.PacketRemoveObject;
 import net.bfsr.server.config.ServerSettings;
 import net.bfsr.server.entity.ship.ShipSpawner;
 import net.bfsr.server.event.listener.damage.DamageEventListener;
 import net.bfsr.server.event.listener.entity.bullet.BulletEventListener;
 import net.bfsr.server.event.listener.entity.ship.ShipEventListener;
 import net.bfsr.server.event.listener.entity.wreck.WreckEventListener;
+import net.bfsr.server.event.listener.module.ModuleEventListener;
 import net.bfsr.server.event.listener.module.shield.ShieldEventListener;
 import net.bfsr.server.event.listener.module.weapon.WeaponEventListener;
+import net.bfsr.server.event.listener.world.WorldEventListener;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
@@ -72,6 +73,8 @@ public class ServerGameLogic extends GameLogic {
         eventBus.subscribe(new BulletEventListener());
         eventBus.subscribe(new WreckEventListener());
         eventBus.subscribe(new DamageEventListener());
+        eventBus.subscribe(new WorldEventListener());
+        eventBus.subscribe(new ModuleEventListener());
     }
 
     protected void loadConfigs() {
@@ -82,7 +85,7 @@ public class ServerGameLogic extends GameLogic {
         return new ServerSettings();
     }
 
-    protected void startupNetworkSystem(ServerSettings serverSettings) {
+    private void startupNetworkSystem(ServerSettings serverSettings) {
         InetAddress inetaddress;
         try {
             inetaddress = InetAddress.getByName(serverSettings.getHostName());
@@ -118,14 +121,11 @@ public class ServerGameLogic extends GameLogic {
         playerManager.save(player);
         List<Ship> ships = player.getShips();
         for (int i = 0, shipsSize = ships.size(); i < shipsSize; i++) {
-            Ship s = ships.get(i);
-            s.setOwner(null);
-            s.setDead();
-            networkSystem.sendTCPPacketToAll(new PacketRemoveObject(s));
+            ships.get(i).setDead();
         }
     }
 
-    protected void setFps(int fps) {
+    void setFps(int fps) {
         ups = fps;
     }
 

@@ -7,8 +7,8 @@ import net.bfsr.config.ConfigData;
 public class CrewData extends ConfigData {
     private final int maxCapacity;
 
-    public CrewData(CrewConfig crewConfig, int dataIndex) {
-        super(crewConfig.name(), dataIndex);
+    CrewData(CrewConfig crewConfig, String fileName, int id) {
+        super(fileName, id);
         this.maxCapacity = crewConfig.maxCapacity();
     }
 }

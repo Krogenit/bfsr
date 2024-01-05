@@ -3,6 +3,7 @@ package net.bfsr.entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.dyn4j.dynamics.Body;
+import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.world.ContactCollisionData;
 import org.joml.Vector2f;
@@ -28,11 +29,16 @@ public class GameObject {
 
     public void postPhysicsUpdate() {}
 
-    public void collision(Body body, float contactX, float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {}
+    public void collision(Body body, BodyFixture fixture, float contactX, float contactY, float normalX, float normalY,
+                          ContactCollisionData<Body> collision) {}
 
     public void saveTransform(Transform transform) {}
 
     public void restoreTransform() {}
+
+    public void onAddedToWorld() {}
+
+    public void onRemovedFromWorld() {}
 
     public boolean canCollideWith(GameObject gameObject) {
         return this != gameObject;

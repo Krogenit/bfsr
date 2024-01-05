@@ -1,10 +1,12 @@
 package net.bfsr.config.component.reactor;
 
+import lombok.Getter;
 import net.bfsr.config.Configurable;
+import net.bfsr.config.component.DamageableModuleConfig;
 
+@Getter
 @Configurable
-public record ReactorConfig(
-        String name,
-        float maxEnergyCapacity,
-        float regenAmountInSeconds
-) {}
+final class ReactorConfig extends DamageableModuleConfig {
+    private float maxEnergyCapacity;
+    private float regenAmountInSeconds;
+}

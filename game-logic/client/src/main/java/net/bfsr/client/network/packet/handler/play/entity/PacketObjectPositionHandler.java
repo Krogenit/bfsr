@@ -12,11 +12,13 @@ import java.net.InetSocketAddress;
 
 public class PacketObjectPositionHandler extends PacketHandler<PacketObjectPosition, NetworkSystem> {
     @Override
-    public void handle(PacketObjectPosition packet, NetworkSystem networkSystem, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketObjectPosition packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         Core core = Core.get();
-        RigidBody obj = core.getWorld().getEntityById(packet.getId());
+        RigidBody<?> obj = core.getWorld().getEntityById(packet.getId());
         if (obj != null) {
-            obj.updateClientPositionFromPacket(packet.getPosition(), packet.getSin(), packet.getCos(), packet.getVelocity(), packet.getAngularVelocity());
+            obj.updateClientPositionFromPacket(packet.getPosition(), packet.getSin(), packet.getCos(), packet.getVelocity(),
+                    packet.getAngularVelocity());
         } else {
             core.sendUDPPacket(new PacketNeedObjectInfo(packet.getId()));
         }

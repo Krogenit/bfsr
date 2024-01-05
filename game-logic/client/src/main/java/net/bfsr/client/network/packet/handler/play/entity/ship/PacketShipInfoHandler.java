@@ -3,11 +3,14 @@ package net.bfsr.client.network.packet.handler.play.entity.ship;
 import io.netty.channel.ChannelHandlerContext;
 import net.bfsr.client.Core;
 import net.bfsr.client.network.NetworkSystem;
-import net.bfsr.component.armor.Armor;
-import net.bfsr.component.armor.ArmorPlate;
-import net.bfsr.component.shield.Shield;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.Modules;
+import net.bfsr.entity.ship.module.armor.Armor;
+import net.bfsr.entity.ship.module.armor.ArmorPlate;
+import net.bfsr.entity.ship.module.hull.Hull;
+import net.bfsr.entity.ship.module.hull.HullCell;
+import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.client.PacketNeedObjectInfo;
 import net.bfsr.network.packet.server.entity.ship.PacketShipInfo;
@@ -16,22 +19,37 @@ import java.net.InetSocketAddress;
 
 public class PacketShipInfoHandler extends PacketHandler<PacketShipInfo, NetworkSystem> {
     @Override
-    public void handle(PacketShipInfo packet, NetworkSystem networkSystem, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketShipInfo packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         GameObject obj = Core.get().getWorld().getEntityById(packet.getId());
         if (obj instanceof Ship ship) {
-            Armor shipArmor = ship.getArmor();
-            ArmorPlate[] plates = shipArmor.getArmorPlates();
-            float[] armor = packet.getArmor();
-            for (int i = 0; i < plates.length; i++) {
-                if (plates[i] != null) {
-                    plates[i].setArmor(armor[i]);
+            Modules modules = ship.getModules();
+
+            Hull hull = modules.getHull();
+            HullCell[][] hullCells = hull.getCells();
+            float[][] hullValues = packet.getHull();
+            for (int i = 0; i < hullCells.length; i++) {
+                for (int j = 0; j < hullCells[0].length; j++) {
+                    if (hullCells[i][j] != null) {
+                        hullCells[i][j].setValue(hullValues[i][j]);
+                    }
                 }
             }
-            ship.getCrew().setCrewSize(packet.getCrew());
-            ship.getReactor().setEnergy(packet.getEnergy());
-            ship.getHull().setHull(packet.getHull());
-            Shield shipShield = ship.getShield();
-            if (shipShield != null) shipShield.setShield(packet.getShield());
+
+            Armor shipArmor = modules.getArmor();
+            ArmorPlate[][] plates = shipArmor.getCells();
+            float[][] armor = packet.getArmor();
+            for (int i = 0; i < plates.length; i++) {
+                for (int j = 0; j < plates[0].length; j++) {
+                    if (plates[i][j] != null) {
+                        plates[i][j].setValue(armor[i][j]);
+                    }
+                }
+            }
+            modules.getCrew().setCrewSize(packet.getCrew());
+            modules.getReactor().setEnergy(packet.getEnergy());
+            Shield shipShield = modules.getShield();
+            if (shipShield != null) shipShield.setShieldHp(packet.getShield());
         } else {
             Core.get().sendUDPPacket(new PacketNeedObjectInfo(packet.getId()));
         }

@@ -24,6 +24,10 @@ public class MutableInt {
         return oldValue;
     }
 
+    public void add(int value) {
+        this.value += value;
+    }
+
     public int get() {
         return value;
     }

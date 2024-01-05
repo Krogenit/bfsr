@@ -24,7 +24,7 @@ public class ShipSpawner {
         boolean sameFaction = true;
         int botCount = 0;
         Faction lastFaction = null;
-        List<Ship> ships = world.getShips();
+        List<Ship> ships = world.getEntitiesByType(Ship.class);
         Random rand = world.getRand();
         for (int i = 0, shipsSize = ships.size(); i < shipsSize; i++) {
             Ship s = ships.get(i);
@@ -38,7 +38,7 @@ public class ShipSpawner {
         }
 
         if (botCount < 50 || sameFaction) {
-            timer = 10;
+            timer = 30;
             int maxCount = 1;
             int count = maxCount;
 
@@ -49,7 +49,8 @@ public class ShipSpawner {
             for (int i = 0; i < count; i++) {
                 float addX = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 float addY = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
-                world.addShip(ShipFactory.get().createBotHumanSmall(world, pos.x + addX, pos.y + addY, rand.nextFloat() * MathUtils.TWO_PI));
+                world.add(ShipFactory.get()
+                        .createBotHumanSmall(world, pos.x + addX, pos.y + addY, rand.nextFloat() * MathUtils.TWO_PI), false);
             }
 
             RotationHelper.rotate(rotation, pos.x, pos.y, pos);
@@ -58,7 +59,8 @@ public class ShipSpawner {
             for (int i = 0; i < count; i++) {
                 float addX = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 float addY = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
-                world.addShip(ShipFactory.get().createBotSaimonSmall(world, pos.x + addX, pos.y + addY, rand.nextFloat() * MathUtils.TWO_PI));
+                world.add(ShipFactory.get()
+                        .createBotSaimonSmall(world, pos.x + addX, pos.y + addY, rand.nextFloat() * MathUtils.TWO_PI), false);
             }
 
             RotationHelper.rotate(rotation, pos.x, pos.y, pos);
@@ -67,7 +69,8 @@ public class ShipSpawner {
             for (int i = 0; i < count; i++) {
                 float addX = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 float addY = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
-                world.addShip(ShipFactory.get().createBotEngiSmall(world, pos.x + addX, pos.y + addY, rand.nextFloat() * MathUtils.TWO_PI));
+                world.add(ShipFactory.get()
+                        .createBotEngiSmall(world, pos.x + addX, pos.y + addY, rand.nextFloat() * MathUtils.TWO_PI), false);
             }
         }
     }

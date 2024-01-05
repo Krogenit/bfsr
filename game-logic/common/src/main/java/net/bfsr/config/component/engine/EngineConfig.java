@@ -4,7 +4,6 @@ import net.bfsr.config.Configurable;
 
 @Configurable
 public record EngineConfig(
-        String name,
         float forwardAcceleration,
         float backwardAcceleration,
         float sideAcceleration,

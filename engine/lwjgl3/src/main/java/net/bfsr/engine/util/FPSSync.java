@@ -72,7 +72,7 @@ public class FPSSync {
             slots = new long[slotCount];
         }
 
-        public void init(long value) {
+        void init(long value) {
             while (offset < slots.length) {
                 slots[offset++] = value;
             }
@@ -80,18 +80,18 @@ public class FPSSync {
             sum = value * slots.length;
         }
 
-        public void add(long value) {
+        void add(long value) {
             int index = offset++ % slots.length;
             sum = sum - slots[index] + value;
             slots[index] = value;
             offset %= slots.length;
         }
 
-        public long avg() {
+        long avg() {
             return sum / slots.length;
         }
 
-        public void dampenForLowResTicker() {
+        void dampenForLowResTicker() {
             if (avg() > DAMPEN_THRESHOLD) {
                 for (int i = 0; i < slots.length; i++) {
                     slots[i] *= DAMPEN_FACTOR;

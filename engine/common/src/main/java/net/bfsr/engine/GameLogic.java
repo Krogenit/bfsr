@@ -2,6 +2,7 @@ package net.bfsr.engine;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.event.Event;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.profiler.Profiler;
@@ -12,6 +13,7 @@ import net.engio.mbassy.bus.config.IBusConfiguration;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+@Log4j2
 public class GameLogic {
     @Getter
     private boolean isRunning;
@@ -67,7 +69,7 @@ public class GameLogic {
                 .addFeature(Feature.AsynchronousHandlerInvocation.Default())
                 .addFeature(Feature.AsynchronousMessageDispatch.Default())
                 .setProperty(IBusConfiguration.Properties.BusId, "Main Event Bus")
-                .addPublicationErrorHandler(error -> {throw new RuntimeException(error.getMessage(), error.getCause());});
+                .addPublicationErrorHandler(error -> log.error(error.getMessage(), error.getCause()));
 
         return new EventBus(config);
     }

@@ -1,17 +1,17 @@
 package net.bfsr.config.component.reactor;
 
 import lombok.Getter;
-import net.bfsr.config.ConfigData;
+import net.bfsr.config.component.DamageableModuleData;
 import net.bfsr.engine.util.TimeUtils;
 
 @Getter
-public class ReactorData extends ConfigData {
+public class ReactorData extends DamageableModuleData {
     private final float maxEnergyCapacity;
     private final float regenAmount;
 
-    public ReactorData(ReactorConfig reactorConfig, int dataIndex) {
-        super(reactorConfig.name(), dataIndex);
-        this.maxEnergyCapacity = reactorConfig.maxEnergyCapacity();
-        this.regenAmount = reactorConfig.regenAmountInSeconds() * TimeUtils.UPDATE_DELTA_TIME;
+    ReactorData(ReactorConfig reactorConfig, String fileName, int id) {
+        super(reactorConfig, fileName, id);
+        this.maxEnergyCapacity = reactorConfig.getMaxEnergyCapacity();
+        this.regenAmount = reactorConfig.getRegenAmountInSeconds() * TimeUtils.UPDATE_DELTA_TIME;
     }
 }

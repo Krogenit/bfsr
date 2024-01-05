@@ -1,19 +1,48 @@
 package net.bfsr.config;
 
+import gnu.trove.map.TMap;
+import gnu.trove.map.hash.THashMap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.bfsr.engine.util.PathHelper;
+import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
 @AllArgsConstructor
 @Getter
 public class ConfigData {
-    private final String name;
-    private final int dataIndex;
+    private final String fileName;
+    private final int id;
 
-    protected Vector2[] convertVertices(Vector2fConfigurable[] configurableVertices) {
+    protected Polygon convertToPolygon(Vector2fConfigurable[] configurableVertices) {
+        Vector2[] vertices = convert(configurableVertices);
+        if (vertices.length > 0) {
+            return new Polygon(vertices);
+        }
+
+        return null;
+    }
+
+    protected Polygon convert(PolygonConfigurable polygonConfigurable) {
+        return new Polygon(convert(polygonConfigurable.getVertices()));
+    }
+
+    protected List<Polygon> convert(List<PolygonConfigurable> configPolygons) {
+        ArrayList<Polygon> polygons = new ArrayList<>(configPolygons.size());
+        for (int i = 0; i < configPolygons.size(); i++) {
+            polygons.add(convert(configPolygons.get(i)));
+        }
+        return polygons;
+    }
+
+    protected Vector2[] convert(Vector2fConfigurable[] configurableVertices) {
         Vector2[] vertices = new Vector2[configurableVertices.length];
         for (int i = 0; i < vertices.length; i++) {
             Vector2fConfigurable configurableVertex = configurableVertices[i];
@@ -35,9 +64,17 @@ public class ConfigData {
         SoundData[] sounds = new SoundData[configurableSounds.length];
         for (int i = 0; i < configurableSounds.length; i++) {
             ConfigurableSound configurableSound = configurableSounds[i];
-            sounds[i] = new SoundData(PathHelper.convertPath(configurableSound.getPath()), configurableSound.getVolume());
+            sounds[i] = new SoundData(PathHelper.convertPath(configurableSound.path()), configurableSound.volume());
         }
 
         return sounds;
+    }
+
+    protected <DEST_KEY, DEST_VALUE, SRC_KEY, SRC_VALUE> TMap<DEST_KEY, DEST_VALUE> convert(Map<SRC_KEY, SRC_VALUE> map,
+                                                                                            Function<SRC_KEY, DEST_KEY> keyFunction,
+                                                                                            Function<SRC_VALUE, DEST_VALUE> valueFunction) {
+        TMap<DEST_KEY, DEST_VALUE> tMap = new THashMap<>();
+        map.forEach((srcKey, srcValue) -> tMap.put(keyFunction.apply(srcKey), valueFunction.apply(srcValue)));
+        return tMap;
     }
 }

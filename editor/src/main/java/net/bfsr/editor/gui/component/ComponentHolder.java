@@ -1,7 +1,7 @@
 package net.bfsr.editor.gui.component;
 
-import net.bfsr.editor.property.PropertiesHolder;
+import net.bfsr.editor.property.holder.PropertiesHolder;
 
-public interface ComponentHolder<T extends PropertiesHolder> {
-    T getComponentByType(Class<T> type);
+public interface ComponentHolder {
+    <COMPONENT_TYPE extends PropertiesHolder> COMPONENT_TYPE getComponentByType(Class<COMPONENT_TYPE> type);
 }

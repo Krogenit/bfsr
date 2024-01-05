@@ -6,7 +6,7 @@ import net.bfsr.damage.Damageable;
 import net.bfsr.engine.event.Event;
 
 @RequiredArgsConstructor
-@Getter()
+@Getter
 public final class DamageEvent extends Event {
-    private final Damageable damageable;
+    private final Damageable<?> damageable;
 }

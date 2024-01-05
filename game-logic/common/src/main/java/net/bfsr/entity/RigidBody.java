@@ -3,16 +3,25 @@ package net.bfsr.entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.util.SideUtils;
+import net.bfsr.event.entity.RigidBodyDeathEvent;
+import net.bfsr.event.entity.RigidBodyPostPhysicsUpdateEvent;
+import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
+import net.bfsr.network.packet.common.entity.spawn.RigidBodySpawnData;
+import net.bfsr.physics.PhysicsUtils;
+import net.bfsr.physics.filter.ShipFilter;
 import net.bfsr.util.SyncUtils;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;
+import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
 @NoArgsConstructor
-public class RigidBody extends GameObject {
+public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObject {
     @Getter
     protected World world;
     @Getter
@@ -20,6 +29,7 @@ public class RigidBody extends GameObject {
     @Getter
     @Setter
     protected int id;
+    @Getter
     protected Vector2f velocity = new Vector2f();
     @Getter
     protected float lifeTime;
@@ -27,21 +37,35 @@ public class RigidBody extends GameObject {
     protected float sin, cos;
     private final Transform savedTransform = new Transform();
     protected EventBus eventBus;
+    @Setter
+    @Getter
+    protected CONFIG_DATA configData;
+    @Setter
+    @Getter
+    protected int registryId;
+    @Setter
+    protected float health;
 
-    protected RigidBody(float x, float y, float sin, float cos, float scaleX, float scaleY) {
-        super(x, y, scaleX, scaleY);
+    public RigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, CONFIG_DATA configData, int registryId) {
+        super(x, y, sizeX, sizeY);
         this.sin = sin;
         this.cos = cos;
         this.body.getTransform().setTranslation(x, y);
         this.body.getTransform().setRotation(sin, cos);
+        this.configData = configData;
+        this.registryId = registryId;
     }
 
-    protected RigidBody(float x, float y, float scaleX, float scaleY) {
-        this(x, y, 0.0f, 1.0f, scaleX, scaleY);
+    public RigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY) {
+        this(x, y, sin, cos, sizeX, sizeY, null, -1);
     }
 
-    protected RigidBody(float scaleX, float scaleY) {
-        this(0, 0, scaleX, scaleY);
+    protected RigidBody(float x, float y, float sizeX, float sizeY) {
+        this(x, y, 0.0f, 1.0f, sizeX, sizeY);
+    }
+
+    protected RigidBody(float sizeX, float sizeY) {
+        this(0, 0, sizeX, sizeY);
     }
 
     public void init(World world, int id) {
@@ -53,12 +77,43 @@ public class RigidBody extends GameObject {
 
     protected void initBody() {}
 
+    public BodyFixture setupFixture(BodyFixture bodyFixture) {
+        bodyFixture.setUserData(this);
+        bodyFixture.setFilter(new ShipFilter(this));
+        bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
+        return bodyFixture;
+    }
+
+    @Override
+    public void update() {
+        updateLifeTime();
+    }
+
+    protected void updateLifeTime() {
+        lifeTime++;
+
+        if (SideUtils.IS_SERVER && world.isServer()) {
+            if (lifeTime >= 1200) {
+                setDead();
+            }
+        } else {
+            if (lifeTime >= 60) {
+                setDead();
+            }
+        }
+    }
+
     @Override
     public void postPhysicsUpdate() {
         sin = (float) body.getTransform().getSint();
         cos = (float) body.getTransform().getCost();
         position.x = (float) body.getTransform().getTranslationX();
         position.y = (float) body.getTransform().getTranslationY();
+        Vector2 vel = body.getLinearVelocity();
+        velocity.x = (float) vel.x;
+        velocity.y = (float) vel.y;
+
+        eventBus.publish(new RigidBodyPostPhysicsUpdateEvent(this));
     }
 
     public void updateClientPositionFromPacket(Vector2f position, float sin, float cos, Vector2f velocity,
@@ -71,14 +126,6 @@ public class RigidBody extends GameObject {
         setAngularVelocity(angularVelocity);
     }
 
-    public void updateServerPositionFromPacket(Vector2f pos, float sin, float cos, Vector2f velocity, float angularVelocity) {
-        body.setAtRest(false);
-        setPosition(pos.x, pos.y);
-        setRotation(sin, cos);
-        body.setLinearVelocity(velocity.x, velocity.y);
-        body.setAngularVelocity(angularVelocity);
-    }
-
     @Override
     public void saveTransform(Transform transform) {
         savedTransform.set(transform);
@@ -87,6 +134,17 @@ public class RigidBody extends GameObject {
     @Override
     public void restoreTransform() {
         body.setTransform(savedTransform);
+    }
+
+    public EntityPacketSpawnData createSpawnData() {
+        return new RigidBodySpawnData(this);
+    }
+
+    public void damage(float amount, float contactX, float contactY, float normalX, float normalY) {
+        health -= amount;
+        if (health <= 0) {
+            setDead();
+        }
     }
 
     @Override
@@ -101,33 +159,34 @@ public class RigidBody extends GameObject {
         body.getTransform().setRotation(sin, cos);
     }
 
+    public void setVelocity(float x, float y) {
+        velocity.set(x, y);
+        body.setLinearVelocity(x, y);
+    }
+
     private void setAngularVelocity(float angularVelocity) {
         body.setAngularVelocity(angularVelocity);
     }
 
     @Override
-    public Vector2f getPosition() {
-        position.x = (float) body.getTransform().getTranslationX();
-        position.y = (float) body.getTransform().getTranslationY();
-        return position;
+    public void setDead() {
+        super.setDead();
+        eventBus.publish(new RigidBodyDeathEvent(this));
     }
 
     public float getX() {
-        return (float) body.getTransform().getTranslationX();
+        return position.x;
     }
 
     public float getY() {
-        return (float) body.getTransform().getTranslationY();
-    }
-
-    public Vector2f getVelocity() {
-        Vector2 vel = body.getLinearVelocity();
-        velocity.x = (float) vel.x;
-        velocity.y = (float) vel.y;
-        return velocity;
+        return position.y;
     }
 
     public float getAngularVelocity() {
         return (float) body.getAngularVelocity();
+    }
+
+    public int getDataId() {
+        return configData.getId();
     }
 }

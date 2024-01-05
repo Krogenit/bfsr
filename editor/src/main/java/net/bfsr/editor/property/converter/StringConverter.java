@@ -7,7 +7,7 @@ public class StringConverter implements PropertyConverter<String> {
     }
 
     @Override
-    public String fromString(String value) {
+    public String fromString(Class<String> classType, String value) {
         return value;
     }
 }

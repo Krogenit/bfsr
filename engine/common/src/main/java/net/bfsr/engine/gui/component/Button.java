@@ -97,6 +97,11 @@ public class Button extends TexturedGuiObject {
 
     @Override
     public boolean onMouseLeftClick() {
+        return isMouseHover();
+    }
+
+    @Override
+    public boolean onMouseLeftRelease() {
         if (!isMouseHover()) return false;
 
         onMouseClickRunnable.run();
@@ -106,6 +111,11 @@ public class Button extends TexturedGuiObject {
 
     @Override
     public boolean onMouseRightClick() {
+        return isMouseHover();
+    }
+
+    @Override
+    public boolean onMouseRightRelease() {
         if (!isMouseHover()) return false;
         onMouseRightClickRunnable.run();
         return true;

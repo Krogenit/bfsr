@@ -45,6 +45,15 @@ public abstract class Gui implements GuiObjectsHandler {
     protected abstract void initElements();
 
     @Override
+    public void registerGuiObjectBefore(GuiObject guiObject, GuiObject beforeObject) {
+        int index = guiObjects.indexOf(beforeObject);
+        if (index >= 0) {
+            guiObjects.add(index, guiObject);
+            guiObject.onRegistered(this);
+        }
+    }
+
+    @Override
     public void registerGuiObject(GuiObject guiObject) {
         guiObjects.add(guiObject);
         guiObject.onRegistered(this);
@@ -122,7 +131,7 @@ public abstract class Gui implements GuiObjectsHandler {
     public boolean onMouseLeftRelease() {
         if (contextMenu.size() > 0) {
             for (int i = 0; i < contextMenu.size(); i++) {
-                if (contextMenu.get(i).onMouseLeftClick()) {
+                if (contextMenu.get(i).onMouseLeftRelease()) {
                     break;
                 }
             }
@@ -173,7 +182,14 @@ public abstract class Gui implements GuiObjectsHandler {
 
     @Override
     public boolean onMouseRightRelease() {
-        return false;
+        boolean onMouseRightRelease = false;
+        for (int i = 0; i < guiObjects.size(); i++) {
+            if (guiObjects.get(i).onMouseRightRelease()) {
+                onMouseRightRelease = true;
+            }
+        }
+
+        return onMouseRightRelease;
     }
 
     @Override
@@ -280,6 +296,11 @@ public abstract class Gui implements GuiObjectsHandler {
     @Override
     public boolean isContextMenuOpened() {
         return contextMenu.size() > 0;
+    }
+
+    @Override
+    public boolean isObjectRegistered(GuiObject object) {
+        return guiObjects.contains(object);
     }
 
     @Override

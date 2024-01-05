@@ -3,7 +3,7 @@ package net.bfsr.engine.loop;
 import net.bfsr.engine.util.TimeUtils;
 
 public abstract class AbstractLoop implements Loop {
-    private float timeBetweenUpdates;
+    private final float timeBetweenUpdates = 1_000_000_000.0f / getUpdatesPerSecond();
 
     @Override
     public void loop() {
@@ -11,35 +11,32 @@ public abstract class AbstractLoop implements Loop {
         double lastUpdateTime = System.nanoTime();
 
         int lastSecondTime = (int) (lastUpdateTime / 1_000_000_000.0f);
-        int frameCount = 0;
-
-        timeBetweenUpdates = 1_000_000_000.0f / getUpdatesPerSecond();
+        int framesCount = 0;
 
         while (isRunning()) {
             long now = System.nanoTime();
 
             int updateCount = 0;
-
-            while (now - lastUpdateTime > timeBetweenUpdates && updateCount < maxUpdatesBeforeRender) {
+            while (now - lastUpdateTime >= timeBetweenUpdates) {
                 update();
                 lastUpdateTime += timeBetweenUpdates;
-                updateCount++;
+
+                if (++updateCount == maxUpdatesBeforeRender) {
+                    if (now - lastUpdateTime > timeBetweenUpdates) {
+                        lastUpdateTime = now;
+                    }
+
+                    break;
+                }
             }
 
-            if (now - lastUpdateTime > timeBetweenUpdates) {
-                lastUpdateTime = now;
-            }
-
-            float interpolation = Math.min(1.0f, (float) (now - lastUpdateTime) / timeBetweenUpdates);
-            render(interpolation);
-            onPostRender();
-
-            frameCount++;
+            render((float) (now - lastUpdateTime) / timeBetweenUpdates);
+            framesCount++;
 
             int thisSecond = (int) (lastUpdateTime / 1_000_000_000.0f);
             if (thisSecond > lastSecondTime) {
-                setFps(frameCount);
-                frameCount = 0;
+                setFps(framesCount);
+                framesCount = 0;
                 lastSecondTime = thisSecond;
             }
 
@@ -69,9 +66,6 @@ public abstract class AbstractLoop implements Loop {
 
     @Override
     public void render(float interpolation) {}
-
-    @Override
-    public void onPostRender() {}
 
     @Override
     public void setFps(int fps) {}

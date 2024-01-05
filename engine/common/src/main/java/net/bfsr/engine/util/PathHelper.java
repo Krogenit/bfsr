@@ -18,11 +18,27 @@ public final class PathHelper {
     }
 
     public static String convertToLocalPath(Path path) {
-        return path.toString().replace(CLIENT_CONTENT.toString(), "").replace(File.separator, "/").substring(1);
+        return convertToLocalPath(CLIENT_CONTENT, path);
     }
 
     public static String convertToLocalPath(String canonicalPath) throws IOException {
         return canonicalPath.replace(CLIENT_CONTENT.toFile().getCanonicalPath(), "").replace(File.separator, "/").substring(1);
+    }
+
+    public static String convertToLocalPath(Path folder, Path path) {
+        return path.toString().replace(folder.toString(), "").replace(File.separator, "/").substring(1);
+    }
+
+    public static String getLocalFileFolderPath(Path folder, Path filePath) {
+        String filePathString = filePath.toString();
+        String replace = filePathString.substring(0, filePathString.lastIndexOf(File.separator)).replace(folder.toString(), "")
+                .replace(File.separator, "/");
+
+        if (replace.isEmpty()) {
+            return replace;
+        } else {
+            return replace.substring(1);
+        }
     }
 
     public static String getFileNameWithoutExtension(String fileName) {

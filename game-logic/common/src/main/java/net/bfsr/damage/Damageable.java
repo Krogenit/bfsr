@@ -1,6 +1,8 @@
 package net.bfsr.damage;
 
+import clipper2.core.PathD;
 import clipper2.core.PathsD;
+import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
@@ -8,7 +10,7 @@ import org.joml.Vector2f;
 
 import java.util.List;
 
-public interface Damageable {
+public interface Damageable<CONFIG_DATA extends GameObjectConfigData> {
     DamageMask getMask();
     BodyFixture setupFixture(BodyFixture bodyFixture);
     void setContours(PathsD contours);
@@ -20,9 +22,7 @@ public interface Damageable {
         }
 
         for (int i = 0; i < fixtures.size(); i++) {
-            BodyFixture bodyFixture = fixtures.get(i);
-            setupFixture(bodyFixture);
-            body.addFixture(bodyFixture);
+            body.addFixture(setupFixture(fixtures.get(i)));
         }
     }
     int getId();
@@ -37,5 +37,9 @@ public interface Damageable {
     float getY();
     float getSin();
     float getCos();
-    int getDataIndex();
+    CONFIG_DATA getConfigData();
+    List<ConnectedObject> getConnectedObjects();
+    void removeConnectedObject(ConnectedObject connectedObject);
+    void addConnectedObject(ConnectedObject connectedObject);
+    void onContourReconstructed(PathD contour);
 }

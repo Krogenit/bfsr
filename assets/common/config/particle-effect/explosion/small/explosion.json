@@ -26,7 +26,6 @@
   "minSpawnCount": 2,
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
-  "name": "explosion",
   "r": 1.0,
   "renderLayer": "DEFAULT_ADDITIVE",
   "soundEffects": [],

@@ -1,14 +1,14 @@
 package net.bfsr.client.renderer.component;
 
 import net.bfsr.client.renderer.Render;
-import net.bfsr.component.weapon.WeaponSlot;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import org.joml.Vector2f;
 
 public class WeaponSlotRender<T extends WeaponSlot> extends Render<T> {
     public WeaponSlotRender(T object) {
-        super(Engine.assetsManager.getTexture(object.getGunData().getTexturePath()), object);
+        super(Engine.assetsManager.getTexture(object.getGunData().getTexture()), object);
     }
 
     @Override

@@ -1,48 +1,58 @@
 package net.bfsr.client.renderer.entity;
 
+import gnu.trove.map.TMap;
 import lombok.Getter;
 import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.particle.effect.EngineEffects;
-import net.bfsr.client.renderer.Render;
 import net.bfsr.client.renderer.component.WeaponSlotBeamRender;
 import net.bfsr.client.renderer.component.WeaponSlotRender;
 import net.bfsr.client.renderer.texture.DamageMaskTexture;
-import net.bfsr.component.hull.Hull;
-import net.bfsr.component.shield.Shield;
-import net.bfsr.component.weapon.WeaponSlot;
-import net.bfsr.component.weapon.WeaponSlotBeam;
+import net.bfsr.config.entity.ship.EngineData;
+import net.bfsr.config.entity.ship.EnginesData;
+import net.bfsr.damage.DamageMask;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.StringObject;
+import net.bfsr.engine.math.LUT;
+import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.font.StringOffsetType;
-import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.faction.Faction;
+import net.bfsr.entity.ship.module.Modules;
+import net.bfsr.entity.ship.module.engine.Engines;
+import net.bfsr.entity.ship.module.shield.Shield;
+import net.bfsr.entity.ship.module.weapon.WeaponSlot;
+import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.math.RotationHelper;
 import org.dyn4j.dynamics.Body;
+import org.dyn4j.geometry.AABB;
+import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 
 import static net.bfsr.math.RigidBodyUtils.ROTATE_TO_VECTOR;
 
-public class ShipRender extends Render<Ship> {
+public class ShipRender extends RigidBodyRender<Ship> {
     private static final AbstractTexture JUMP_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.particleJump);
+    private static final AbstractTexture REACTOR_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.moduleReactor);
+    private static final AbstractTexture ENGINE_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.moduleEngine);
+    private static final AbstractTexture SHIELD_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.moduleShield);
 
     private final StringObject stringObject = new StringObject(FontType.XOLONIUM, 14, StringOffsetType.CENTERED);
     @Getter
     private final DamageMaskTexture maskTexture;
-    private final AbstractTexture textureDamage;
-    private final List<WeaponSlotRender<?>> weaponSlots = new ArrayList<>();
+    private final List<WeaponSlotRender<? extends WeaponSlot>> weaponSlots = new ArrayList<>();
     private final AbstractTexture shieldTexture;
 
     private final Vector2f jumpPosition = new Vector2f();
@@ -50,25 +60,19 @@ public class ShipRender extends Render<Ship> {
     private float lastJumpDelta;
     private float jumpDelta;
 
-    private final SpawnAccumulator engineSpawnAccumulator = new SpawnAccumulator();
-    private final SpawnAccumulator leftEngineSpawnAccumulator = new SpawnAccumulator();
-    private final SpawnAccumulator rightEngineSpawnAccumulator = new SpawnAccumulator();
-    private final SpawnAccumulator frontEngineSpawnAccumulator = new SpawnAccumulator();
-    private final SpawnAccumulator leftBackEngineSpawnAccumulator = new SpawnAccumulator();
-    private final SpawnAccumulator rightBackEngineSpawnAccumulator = new SpawnAccumulator();
+    private final EnumMap<Direction, List<SpawnAccumulator>> engineAccumulators = new EnumMap<>(Direction.class);
 
     public ShipRender(Ship ship) {
-        super(Engine.assetsManager.getTexture(ship.getShipData().getTexture()), ship);
-        textureDamage = Engine.assetsManager.getTexture(ship.getShipData().getDamageTexture());
+        super(Engine.assetsManager.getTexture(ship.getConfigData().getTexture()), ship);
 
-        maskTexture = new DamageMaskTexture(texture.getWidth(), texture.getHeight(),
-                Engine.renderer.createByteBuffer(texture.getWidth() * texture.getHeight()));
+        DamageMask mask = ship.getMask();
+        maskTexture = new DamageMaskTexture(mask.getWidth(), mask.getHeight(),
+                Engine.renderer.createByteBuffer(mask.getWidth() * mask.getHeight()));
         maskTexture.createWhiteMask();
 
-        this.shieldTexture = Engine.assetsManager.getTexture(ship.getShield().getShieldData().getTexturePath(),
-                GL.GL_CLAMP_TO_EDGE, GL.GL_LINEAR);
+        shieldTexture = Engine.assetsManager.getTexture(ship.getModules().getShield().getShieldData().getTexturePath());
 
-        List<WeaponSlot> weaponSlots1 = object.getWeaponSlots();
+        List<WeaponSlot> weaponSlots1 = object.getModules().getWeaponSlots();
         for (int i = 0; i < weaponSlots1.size(); i++) {
             WeaponSlot weaponSlot = weaponSlots1.get(i);
             if (weaponSlot.getClass() == WeaponSlotBeam.class) {
@@ -77,6 +81,17 @@ public class ShipRender extends Render<Ship> {
                 weaponSlots.add(new WeaponSlotRender<>(weaponSlot));
             }
         }
+
+        TMap<Direction, EnginesData> engines = ship.getConfigData().getEngines();
+        engines.forEachEntry((direction, enginesData) -> {
+            int size = enginesData.engines().size();
+            ArrayList<SpawnAccumulator> accumulators = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
+                accumulators.add(new SpawnAccumulator());
+            }
+            engineAccumulators.put(direction, accumulators);
+            return true;
+        });
     }
 
     @Override
@@ -120,85 +135,39 @@ public class ShipRender extends Render<Ship> {
 
         float sin = object.getSin();
         float cos = object.getCos();
-        Vector4f effectsColor = object.getShipData().getEffectsColor();
+        Vector4f effectsColor = object.getConfigData().getEffectsColor();
 
-        if (object.getFaction() == Faction.HUMAN) {
-            if (direction == Direction.FORWARD) {
-                RotationHelper.rotate(sin, cos, -2.3f, 0, ROTATE_TO_VECTOR);
-                Vector2 shipVelocity = body.getLinearVelocity();
+        EnginesData enginesData = object.getConfigData().getEngines().get(direction);
+        if (enginesData == null) return;
+
+        List<EngineData> engines = enginesData.engines();
+        Vector2 shipVelocity = body.getLinearVelocity();
+        List<net.bfsr.entity.ship.module.engine.Engine> engineModules = object.getModules().getEngines().getEngines(direction);
+
+        List<SpawnAccumulator> accumulators = engineAccumulators.get(direction);
+        if (direction == Direction.FORWARD) {
+            for (int i = 0; i < engines.size(); i++) {
+                if (engineModules.get(i).isDead()) continue;
+                Vector2f effectPosition = engines.get(i).effectPosition();
+                RotationHelper.rotate(sin, cos, effectPosition.x, effectPosition.y, ROTATE_TO_VECTOR);
                 EngineEffects.smallEngine(shipPos.x + ROTATE_TO_VECTOR.x, shipPos.y + ROTATE_TO_VECTOR.y, sin, cos, 10.0f,
                         (float) shipVelocity.x / 50.0f, (float) shipVelocity.y / 50.0f,
-                        effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, engineSpawnAccumulator);
-            } else if (direction == Direction.LEFT) {
-                RotationHelper.rotate(sin, cos, -0.5f, 3.0f, ROTATE_TO_VECTOR);
-                EngineEffects.secondaryEngine(shipPos.x + ROTATE_TO_VECTOR.x, shipPos.y + ROTATE_TO_VECTOR.y,
-                        leftEngineSpawnAccumulator);
-            } else if (direction == Direction.RIGHT) {
-                RotationHelper.rotate(sin, cos, -0.5f, -3.0f, ROTATE_TO_VECTOR);
-                EngineEffects.secondaryEngine(shipPos.x + ROTATE_TO_VECTOR.x, shipPos.y + ROTATE_TO_VECTOR.y,
-                        rightEngineSpawnAccumulator);
-            } else if (direction == Direction.BACKWARD) {
-                RotationHelper.rotate(sin, cos, 3.0f, 0, ROTATE_TO_VECTOR);
-                EngineEffects.secondaryEngine(shipPos.x + ROTATE_TO_VECTOR.x, shipPos.y + ROTATE_TO_VECTOR.y,
-                        frontEngineSpawnAccumulator);
-            }
-        } else if (object.getFaction() == Faction.SAIMON) {
-            if (direction == Direction.FORWARD) {
-                RotationHelper.rotate(sin, cos, -3.3f, 0, ROTATE_TO_VECTOR);
-                Vector2 shipVelocity = body.getLinearVelocity();
-                EngineEffects.smallEngine(shipPos.x + ROTATE_TO_VECTOR.x, shipPos.y + ROTATE_TO_VECTOR.y, sin, cos, 10.0f,
-                        (float) shipVelocity.x / 50.0f, (float) shipVelocity.y / 50.0f,
-                        effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, engineSpawnAccumulator);
-            } else if (direction == Direction.LEFT) {
-                RotationHelper.rotate(sin, cos, -0, 3.0f, ROTATE_TO_VECTOR);
-                EngineEffects.secondaryEngine(shipPos.x + ROTATE_TO_VECTOR.x, shipPos.y + ROTATE_TO_VECTOR.y,
-                        leftEngineSpawnAccumulator);
-            } else if (direction == Direction.RIGHT) {
-                RotationHelper.rotate(sin, cos, -0, -3.0f, ROTATE_TO_VECTOR);
-                EngineEffects.secondaryEngine(shipPos.x + ROTATE_TO_VECTOR.x, shipPos.y + ROTATE_TO_VECTOR.y,
-                        rightEngineSpawnAccumulator);
-            } else if (direction == Direction.BACKWARD) {
-                RotationHelper.rotate(sin, cos, 5.0f, 0, ROTATE_TO_VECTOR);
-                EngineEffects.secondaryEngine(shipPos.x + ROTATE_TO_VECTOR.x, shipPos.y + ROTATE_TO_VECTOR.y,
-                        frontEngineSpawnAccumulator);
+                        effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, accumulators.get(i));
             }
         } else {
-            if (direction == Direction.FORWARD) {
-                RotationHelper.rotate(sin, cos, -3.7f, 0, ROTATE_TO_VECTOR);
-                Vector2 shipVelocity = body.getLinearVelocity();
-                float velocityX = (float) shipVelocity.x / 50.0f;
-                float velocityY = (float) shipVelocity.y / 50.0f;
-                EngineEffects.smallEngine(shipPos.x + ROTATE_TO_VECTOR.x, shipPos.y + ROTATE_TO_VECTOR.y, sin, cos, 10.0f,
-                        velocityX, velocityY,
-                        effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, engineSpawnAccumulator);
-
-                RotationHelper.rotate(sin, cos, -3.0f, 1.1f, ROTATE_TO_VECTOR);
-                EngineEffects.smallEngineNoSmoke(shipPos.x + ROTATE_TO_VECTOR.x, shipPos.y + ROTATE_TO_VECTOR.y, sin, cos, 10.0f,
-                        velocityX, velocityY,
-                        effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, leftBackEngineSpawnAccumulator);
-                RotationHelper.rotate(sin, cos, -3.0f, -1.1f, ROTATE_TO_VECTOR);
-                EngineEffects.smallEngineNoSmoke(shipPos.x + ROTATE_TO_VECTOR.x, shipPos.y + ROTATE_TO_VECTOR.y, sin, cos, 10.0f,
-                        velocityX, velocityY,
-                        effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, rightBackEngineSpawnAccumulator);
-            } else if (direction == Direction.LEFT) {
-                RotationHelper.rotate(sin, cos, 0, 2.1f, ROTATE_TO_VECTOR);
+            for (int i = 0; i < engines.size(); i++) {
+                if (engineModules.get(i).isDead()) continue;
+                Vector2f effectPosition = engines.get(i).effectPosition();
+                RotationHelper.rotate(sin, cos, effectPosition.x, effectPosition.y, ROTATE_TO_VECTOR);
                 EngineEffects.secondaryEngine(shipPos.x + ROTATE_TO_VECTOR.x, shipPos.y + ROTATE_TO_VECTOR.y,
-                        leftEngineSpawnAccumulator);
-            } else if (direction == Direction.RIGHT) {
-                RotationHelper.rotate(sin, cos, 0, -2.1f, ROTATE_TO_VECTOR);
-                EngineEffects.secondaryEngine(shipPos.x + ROTATE_TO_VECTOR.x, shipPos.y + ROTATE_TO_VECTOR.y,
-                        rightEngineSpawnAccumulator);
-            } else if (direction == Direction.BACKWARD) {
-                RotationHelper.rotate(sin, cos, 3.7f, 0, ROTATE_TO_VECTOR);
-                EngineEffects.secondaryEngine(shipPos.x + ROTATE_TO_VECTOR.x, shipPos.y + ROTATE_TO_VECTOR.y,
-                        frontEngineSpawnAccumulator);
+                        accumulators.get(i));
             }
         }
     }
 
     @Override
     public void postWorldUpdate() {
-        updateAABB(object.getSin(), object.getCos());
+        super.postWorldUpdate();
 
         for (int i = 0; i < weaponSlots.size(); i++) {
             weaponSlots.get(i).postWorldUpdate();
@@ -214,23 +183,51 @@ public class ShipRender extends Render<Ship> {
     }
 
     @Override
+    protected void updateAABB() {
+        super.updateAABB();
+
+        int halfStringWidth = stringObject.getWidth() / (stringObject.getFontSize() * 3);
+        aabb.union(aabb.getMinX() - halfStringWidth, aabb.getMinY(), aabb.getMaxX() + halfStringWidth,
+                aabb.getMaxY() + 1.5f);
+
+        for (int i = 0; i < weaponSlots.size(); i++) {
+            WeaponSlotRender<? extends WeaponSlot> render = weaponSlots.get(i);
+            aabb.union(render.getAabb());
+        }
+    }
+
+    @Override
     public void renderAlpha() {
         if (object.isSpawned()) {
             float sin = object.getSin();
             float cos = object.getCos();
             Vector2f position = object.getPosition();
+
+            renderModule(object.getConfigData().getReactorPolygon(), REACTOR_TEXTURE, position, sin, cos);
+
+            Modules modules = object.getModules();
+            if (!modules.getShield().isDead()) {
+                renderModule(object.getConfigData().getShieldPolygon(), SHIELD_TEXTURE, position, sin, cos);
+            }
+
+            Engines enginesModule = modules.getEngines();
+            TMap<Direction, EnginesData> engines = object.getConfigData().getEngines();
+            engines.forEachEntry((direction, enginesData) -> {
+                List<EngineData> engineDataList = enginesData.engines();
+                for (int i = 0; i < engineDataList.size(); i++) {
+                    EngineData engineData = engineDataList.get(i);
+                    if (!enginesModule.getEngines(direction).get(i).isDead()) {
+                        renderModule(engineData.polygons().get(0), ENGINE_TEXTURE, position, sin, cos, direction);
+                    }
+                }
+
+                return true;
+            });
+
             Vector2f scale = object.getSize();
             spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y,
                     lastSin, lastCos, sin, cos, scale.x, scale.y, 1.0f, 1.0f, 1.0f, 1.0f, texture, maskTexture,
                     BufferType.ENTITIES_ALPHA);
-
-            Hull hull = object.getHull();
-            if (hull.getHull() < hull.getMaxHull()) {
-                float hp = hull.getHull() / hull.getMaxHull();
-                spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y,
-                        lastSin, lastCos, sin, cos, scale.x, scale.y, 1.0f, 1.0f, 1.0f, 1.0f - hp, textureDamage, maskTexture,
-                        BufferType.ENTITIES_ALPHA);
-            }
 
             renderGunSlots();
             float yOffset = 3.2f + scale.y / 4.0f;
@@ -239,15 +236,92 @@ public class ShipRender extends Render<Ship> {
         }
     }
 
+    private void renderModule(Polygon polygon, AbstractTexture texture, Vector2f position, float sin, float cos,
+                              Direction direction) {
+        Vector2 center = polygon.getCenter();
+        float centerX = (float) center.x;
+        float centerY = (float) center.y;
+        org.dyn4j.geometry.AABB aabb1 = new AABB(0, 0, 0, 0);
+        polygon.computeAABB(aabb1);
+        float sizeX = (float) (aabb1.getMaxX() - aabb1.getMinX());
+        float sizeY = (float) (aabb1.getMaxY() - aabb1.getMinY());
+
+        float lastX = lastCos * centerX - lastSin * centerY + lastPosition.x;
+        float lastY = lastSin * centerX + lastCos * centerY + lastPosition.y;
+        float x = cos * centerX - sin * centerY + position.x;
+        float y = sin * centerX + cos * centerY + position.y;
+
+        float sin1;
+        float cos1;
+        if (direction == Direction.FORWARD) {
+            sin1 = LUT.sin(-MathUtils.HALF_PI);
+            cos1 = LUT.cos(-MathUtils.HALF_PI);
+        } else if (direction == Direction.BACKWARD) {
+            sin1 = LUT.sin(MathUtils.HALF_PI);
+            cos1 = LUT.cos(MathUtils.HALF_PI);
+        } else if (direction == Direction.LEFT) {
+            sin1 = LUT.sin(MathUtils.PI);
+            cos1 = LUT.cos(MathUtils.PI);
+        } else {
+            sin1 = 0;
+            cos1 = 1;
+        }
+
+        if (sizeY > sizeX) {
+            float temp = sizeX;
+            sizeX = sizeY;
+            sizeY = temp;
+        }
+
+        float cost = cos1 * cos - sin1 * sin;
+        float sint = sin1 * cos + cos1 * sin;
+        float lastcost = cos1 * lastCos - sin1 * lastSin;
+        float lastsint = sin1 * lastCos + cos1 * lastSin;
+
+        spriteRenderer.addToRenderPipeLineSinCos(lastX, lastY, x, y, lastsint, lastcost, sint, cost, sizeX, sizeY, 1.0f, 1.0f,
+                1.0f, 1.0f, texture, BufferType.ENTITIES_ALPHA);
+    }
+
+    private void renderModule(Polygon polygon, AbstractTexture texture, Vector2f position, float sin, float cos) {
+        Vector2 center = polygon.getCenter();
+        float centerX = (float) center.x;
+        float centerY = (float) center.y;
+        org.dyn4j.geometry.AABB aabb1 = new AABB(0, 0, 0, 0);
+        polygon.computeAABB(aabb1);
+        float sizeX = (float) (aabb1.getMaxX() - aabb1.getMinX());
+        float sizeY = (float) (aabb1.getMaxY() - aabb1.getMinY());
+
+        float lastX = lastCos * centerX - lastSin * centerY + lastPosition.x;
+        float lastY = lastSin * centerX + lastCos * centerY + lastPosition.y;
+        float x = cos * centerX - sin * centerY + position.x;
+        float y = sin * centerX + cos * centerY + position.y;
+
+        if (sizeY > sizeX) {
+            spriteRenderer.addToRenderPipeLineSinCos(lastX, lastY, x, y, lastSin, lastCos, sin, cos, sizeX, sizeY, 1.0f, 1.0f,
+                    1.0f, 1.0f, texture, BufferType.ENTITIES_ALPHA);
+        } else {
+            float sin1 = LUT.sin(MathUtils.HALF_PI);
+            float cos1 = LUT.cos(MathUtils.HALF_PI);
+
+            float cost = cos1 * cos - sin1 * sin;
+            float sint = sin1 * cos + cos1 * sin;
+            float lastcost = cos1 * lastCos - sin1 * lastSin;
+            float lastsint = sin1 * lastCos + cos1 * lastSin;
+
+            spriteRenderer.addToRenderPipeLineSinCos(lastX, lastY, x, y, lastsint, lastcost, sint, cost, sizeY, sizeX, 1.0f, 1.0f,
+                    1.0f, 1.0f, texture, BufferType.ENTITIES_ALPHA);
+        }
+    }
+
     @Override
     public void renderAdditive() {
         if (object.isSpawned()) {
             renderGunSlotsAdditive();
-            renderShield(object, object.getShield());
+            renderShield(object, object.getModules().getShield());
         } else {
             float delta = lastJumpDelta + (jumpDelta - lastJumpDelta) * renderer.getInterpolation();
             float size = 40.0f * delta;
-            Vector4f effectsColor = object.getShipData().getEffectsColor();
+            Vector4f effectsColor = object.getConfigData().getEffectsColor();
 
             spriteRenderer.addToRenderPipeLineSinCos(lastJumpPosition.x, lastJumpPosition.y, jumpPosition.x, jumpPosition.y,
                     object.getSin(), object.getCos(), size, size, effectsColor.x, effectsColor.y, effectsColor.z, delta,
@@ -279,8 +353,8 @@ public class ShipRender extends Render<Ship> {
     private void renderShield(Ship ship, Shield shield) {
         if (shield != null && shield.isShieldAlive()) {
             Vector2f diameter = shield.getDiameter();
-            float size = shield.getSize();
-            Vector4f color = ship.getShipData().getEffectsColor();
+            float size = shield.getSize().x;
+            Vector4f color = ship.getConfigData().getEffectsColor();
             spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, ship.getPosition().x, ship.getPosition().y,
                     lastSin, lastCos, ship.getSin(), ship.getCos(), diameter.x * size, diameter.y * size, color.x, color.y,
                     color.z, color.w, shieldTexture, BufferType.ENTITIES_ADDITIVE);
@@ -297,11 +371,29 @@ public class ShipRender extends Render<Ship> {
     }
 
     public void onWeaponShot(WeaponSlot weaponSlot) {
-        weaponSlots.get(weaponSlot.getId()).onShot();
+        for (int i = 0; i < weaponSlots.size(); i++) {
+            WeaponSlotRender<? extends WeaponSlot> render = weaponSlots.get(i);
+            if (render.getObject().getId() == weaponSlot.getId()) {
+                render.onShot();
+                break;
+            }
+        }
     }
 
-    public WeaponSlotRender<?> getWeaponRender(int id) {
-        return weaponSlots.get(id);
+    public void removeWeaponRender(int id) {
+        weaponSlots.removeIf(weaponSlotRender -> weaponSlotRender.getObject().getId() == id);
+    }
+
+    @Nullable
+    public WeaponSlotRender<? extends WeaponSlot> getWeaponRender(int id) {
+        for (int i = 0; i < weaponSlots.size(); i++) {
+            WeaponSlotRender<? extends WeaponSlot> render = weaponSlots.get(i);
+            if (render.getObject().getId() == id) {
+                return render;
+            }
+        }
+
+        return null;
     }
 
     public AbstractTexture getWeaponSlotTexture(int id) {

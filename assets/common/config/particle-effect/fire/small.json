@@ -26,7 +26,6 @@
   "minSpawnCount": 0,
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
-  "name": "small",
   "r": 1.0,
   "renderLayer": "DEFAULT_ADDITIVE",
   "soundEffects": [],

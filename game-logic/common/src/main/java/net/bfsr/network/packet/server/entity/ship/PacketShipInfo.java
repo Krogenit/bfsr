@@ -3,9 +3,12 @@ package net.bfsr.network.packet.server.entity.ship;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.bfsr.component.armor.Armor;
-import net.bfsr.component.armor.ArmorPlate;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.Modules;
+import net.bfsr.entity.ship.module.armor.Armor;
+import net.bfsr.entity.ship.module.armor.ArmorPlate;
+import net.bfsr.entity.ship.module.hull.Hull;
+import net.bfsr.entity.ship.module.hull.HullCell;
 import net.bfsr.network.packet.PacketAdapter;
 
 import java.io.IOException;
@@ -14,42 +17,65 @@ import java.io.IOException;
 @Getter
 public class PacketShipInfo extends PacketAdapter {
     private int id;
-    private float[] armor;
+    private float[][] armor;
     private int crew;
-    private float hull;
+    private float[][] hull;
     private float energy;
     private float shield;
 
     public PacketShipInfo(Ship ship) {
         this.id = ship.getId();
 
-        Armor armor = ship.getArmor();
-        ArmorPlate[] plates = armor.getArmorPlates();
-        this.armor = new float[plates.length];
-        for (int i = 0; i < plates.length; i++) {
-            if (plates[i] != null) {
-                this.armor[i] = plates[i].getArmor();
+        Modules modules = ship.getModules();
+
+        Hull hull = modules.getHull();
+        HullCell[][] hullCells = hull.getCells();
+        this.hull = new float[hullCells.length][hullCells[0].length];
+        for (int i = 0; i < hullCells.length; i++) {
+            for (int j = 0; j < hullCells[0].length; j++) {
+                if (hullCells[i][j] != null) {
+                    this.hull[i][j] = hullCells[i][j].getValue();
+                }
             }
         }
 
-        this.crew = ship.getCrew() != null ? ship.getCrew().getCrewSize() : 0;
-        this.hull = ship.getHull().getHull();
-        this.energy = ship.getReactor().getEnergy();
-        this.shield = ship.getShield() != null ? ship.getShield().getShield() : 0;
+        Armor armor = modules.getArmor();
+        ArmorPlate[][] plates = armor.getCells();
+        this.armor = new float[plates.length][plates[0].length];
+        for (int i = 0; i < plates.length; i++) {
+            for (int j = 0; j < plates[0].length; j++) {
+                if (plates[i][j] != null) {
+                    this.armor[i][j] = plates[i][j].getValue();
+                }
+            }
+        }
+
+        this.crew = modules.getCrew() != null ? modules.getCrew().getCrewSize() : 0;
+        this.energy = modules.getReactor().getEnergy();
+        this.shield = modules.getShield() != null ? modules.getShield().getShieldHp() : 0;
     }
 
     @Override
     public void write(ByteBuf data) throws IOException {
         data.writeInt(id);
 
-        data.writeInt(armor.length);
+        data.writeShort(hull.length);
+        data.writeShort(hull[0].length);
+        for (int i = 0; i < hull.length; i++) {
+            for (int j = 0; j < hull[0].length; j++) {
+                data.writeFloat(hull[i][j]);
+            }
+        }
+
+        data.writeShort(armor.length);
+        data.writeShort(armor[0].length);
         for (int i = 0; i < armor.length; i++) {
-            float v = armor[i];
-            data.writeFloat(v);
+            for (int j = 0; j < armor[0].length; j++) {
+                data.writeFloat(armor[i][j]);
+            }
         }
 
         data.writeInt(crew);
-        data.writeFloat(hull);
         data.writeFloat(energy);
         data.writeFloat(shield);
     }
@@ -58,13 +84,25 @@ public class PacketShipInfo extends PacketAdapter {
     public void read(ByteBuf data) throws IOException {
         id = data.readInt();
 
-        armor = new float[data.readInt()];
-        for (int i = 0; i < armor.length; i++) {
-            armor[i] = data.readFloat();
+        int width = data.readShort();
+        int height = data.readShort();
+        hull = new float[width][height];
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                hull[i][j] = data.readFloat();
+            }
+        }
+
+        width = data.readShort();
+        height = data.readShort();
+        armor = new float[width][height];
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                armor[i][j] = data.readFloat();
+            }
         }
 
         crew = data.readInt();
-        hull = data.readFloat();
         energy = data.readFloat();
         shield = data.readFloat();
     }

@@ -1,7 +1,6 @@
 {
   "a": 1.0,
   "b": 1.0,
-  "editorPath": "engine",
   "g": 1.0,
   "isAlphaFromZero": false,
   "maxAlphaVelocity": 0.5,
@@ -27,6 +26,7 @@
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
   "name": "small",
+  "path": "engine",
   "r": 1.0,
   "renderLayer": "DEFAULT_ADDITIVE",
   "soundEffects": [],

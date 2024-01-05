@@ -4,14 +4,15 @@ import net.bfsr.client.Core;
 import net.bfsr.client.particle.effect.WeaponEffects;
 import net.bfsr.client.renderer.RenderManager;
 import net.bfsr.client.renderer.entity.ShipRender;
-import net.bfsr.component.weapon.WeaponSlot;
 import net.bfsr.config.SoundData;
 import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.sound.AbstractSoundManager;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.event.module.weapon.BeamShotEvent;
 import net.bfsr.event.module.weapon.WeaponShotEvent;
+import net.bfsr.event.module.weapon.WeaponSlotRemovedEvent;
 import net.bfsr.math.RotationHelper;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
@@ -54,6 +55,15 @@ public class WeaponEventListener {
         if (sounds.length > 0) {
             SoundData sound = sounds[random.nextInt(sounds.length)];
             soundManager.play(Engine.assetsManager.getSound(sound.path()), sound.volume(), x, y);
+        }
+    }
+
+    @Handler
+    public void event(WeaponSlotRemovedEvent event) {
+        WeaponSlot weaponSlot = event.getWeaponSlot();
+        ShipRender render = renderManager.getRender(weaponSlot.getShip().getId());
+        if (render != null) {
+            render.removeWeaponRender(weaponSlot.getId());
         }
     }
 }

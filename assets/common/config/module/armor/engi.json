@@ -1,6 +1,6 @@
 {
   "name": "engi",
-  "maxArmorValue": 17.5,
-  "regenSpeedInSeconds": 0.25,
-  "hullProtection": 1.05
+  "maxValue": 5.0,
+  "regenAmountInSeconds": 0.1,
+  "protection": 1.1
 }

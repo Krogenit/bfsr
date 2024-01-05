@@ -2,13 +2,14 @@ package net.bfsr.editor.gui.property;
 
 import net.bfsr.editor.gui.component.MinimizableHolder;
 import net.bfsr.editor.property.PropertiesBuilder;
-import net.bfsr.editor.property.PropertiesHolder;
+import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.StringObject;
 import net.bfsr.engine.gui.object.AbstractGuiObject;
 import net.bfsr.engine.gui.object.GuiObjectsContainer;
+import net.bfsr.engine.gui.object.SimpleGuiObject;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.font.StringOffsetType;
@@ -19,7 +20,7 @@ import org.joml.Vector2f;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.bfsr.editor.gui.ColorScheme.*;
+import static net.bfsr.editor.gui.EditorTheme.*;
 
 public class PropertiesPanel {
     private final AbstractRenderer renderer = Engine.renderer;
@@ -33,6 +34,7 @@ public class PropertiesPanel {
     private final int stringYOffset;
     private final int contextMenuStringXOffset;
 
+    private final SimpleGuiObject background = new SimpleGuiObject();
     private final GuiObjectsContainer propertiesContainer;
     private final List<MinimizableHolder<PropertiesHolder>> minimizableProperties = new ArrayList<>();
 
@@ -54,13 +56,20 @@ public class PropertiesPanel {
     }
 
     public void initElements() {
+        background.setAllColors(BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
+        background.setWidthResizeFunction((width, height) -> propertiesContainer.getWidth());
+
         String string = "Properties";
-        rightHeader =
-                new StringObject(fontType, string, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w).compile();
+        rightHeader = new StringObject(fontType, string, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w)
+                .compile();
         rightHeader.atTopRightCorner(-width,
                 fontType.getStringCache().getCenteredYOffset(string, elementHeight, fontSize) + stringYOffset);
         propertiesContainer.atTopRightCorner(-width, elementHeight).setHeightResizeFunction(
-                (width, height) -> renderer.getScreenHeight() - (elementHeight << 1)
+                (screenWidth, screenHeight) -> {
+                    int height = renderer.getScreenHeight() - (elementHeight << 1);
+                    background.setHeight(height + elementHeight);
+                    return height;
+                }
         );
 
         int buttonWidth = width / 2;
@@ -105,8 +114,7 @@ public class PropertiesPanel {
                     propertiesHolder.paste(clipboard);
                     minimizableHolder.removeAllSubObjects();
                     PropertiesBuilder.createGuiProperties(propertiesHolder, width - MinimizableHolder.MINIMIZABLE_STRING_X_OFFSET,
-                            height,
-                            fontType, fontSize, propertyOffsetX, stringYOffset, minimizableHolder::addSubObject);
+                            height, fontType, fontSize, propertyOffsetX, stringYOffset, minimizableHolder::addSubObject);
                     updatePropertiesPositions();
                 }
             });
@@ -121,7 +129,12 @@ public class PropertiesPanel {
 
         setupColors(minimizableHolder);
         propertiesContainer.addSubObject(minimizableHolder);
-        this.minimizableProperties.add(minimizableHolder);
+        minimizableProperties.add(minimizableHolder);
+
+        if (!gui.isObjectRegistered(background)) {
+            gui.registerGuiObjectBefore(background, rightHeader);
+        }
+
         minimizableHolder.maximize();
     }
 
@@ -145,24 +158,25 @@ public class PropertiesPanel {
         rightHeader.updatePositionAndSize();
         int buttonWidth = width / 2;
         x = -width;
-        saveButton.setWidth(buttonWidth).atBottomRightCorner(x, -elementHeight);
-        saveButton.updatePositionAndSize();
-        removeButton.setWidth(buttonWidth).atBottomRightCorner(x + buttonWidth, -elementHeight);
-        removeButton.updatePositionAndSize();
+        saveButton.setWidth(buttonWidth).atBottomRightCorner(x, -elementHeight)
+                .updatePositionAndSize();
+        removeButton.setWidth(buttonWidth).atBottomRightCorner(x + buttonWidth, -elementHeight)
+                .updatePositionAndSize();
+        background.setWidth(width).atTopRightCorner(-width, 0).updatePositionAndSize();
     }
 
     private void updatePropertiesOffsetAndWidth(MinimizableHolder<PropertiesHolder> guiObject, int width) {
         List<AbstractGuiObject> guiObjects = guiObject.getSubObjects();
-        int maxStringWidth = ((PropertyComponent<?>) guiObjects.get(0)).getStringObject().getWidth();
+        int maxStringWidth = ((PropertyComponent) guiObjects.get(0)).getStringObject().getWidth();
         for (int i = 1; i < guiObjects.size(); i++) {
-            PropertyComponent<?> propertyComponent = ((PropertyComponent<?>) guiObjects.get(i));
+            PropertyComponent propertyComponent = ((PropertyComponent) guiObjects.get(i));
             maxStringWidth = Math.max(maxStringWidth, propertyComponent.getStringObject().getWidth());
         }
 
         int propertyOffsetX = maxStringWidth;
 
         for (int i = 0; i < guiObjects.size(); i++) {
-            PropertyComponent<?> propertyComponent = (PropertyComponent<?>) guiObjects.get(i);
+            PropertyComponent propertyComponent = (PropertyComponent) guiObjects.get(i);
             propertyComponent.setPropertyOffsetX(propertyOffsetX);
             propertyComponent.setWidth(width);
         }
@@ -174,18 +188,12 @@ public class PropertiesPanel {
                 MinimizableHolder<PropertiesHolder> minimizable = minimizableProperties.get(i);
                 List<AbstractGuiObject> propertyComponent = minimizable.getSubObjects();
                 for (int j = 0; j < propertyComponent.size(); j++) {
-                    ((PropertyComponent<?>) propertyComponent.get(j)).setSetting();
+                    ((PropertyComponent) propertyComponent.get(j)).setSetting();
                 }
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public void render() {
-        guiRenderer.add(propertiesContainer.getX(), propertiesContainer.getY(), propertiesContainer.getWidth(),
-                propertiesContainer.getHeight(),
-                BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
     }
 
     public boolean isIntersectsWithMouse() {
@@ -197,6 +205,7 @@ public class PropertiesPanel {
     }
 
     public void close() {
+        gui.unregisterGuiObject(background);
         gui.unregisterGuiObject(rightHeader);
         gui.unregisterGuiObject(saveButton);
         gui.unregisterGuiObject(removeButton);
@@ -205,6 +214,10 @@ public class PropertiesPanel {
     }
 
     public void open(Runnable saveRunnable, Runnable removeRunnable) {
+        if (hasComponents()) {
+            gui.registerGuiObject(background);
+        }
+
         gui.registerGuiObject(rightHeader);
         gui.registerGuiObject(propertiesContainer);
         saveButton.setOnMouseClickRunnable(saveRunnable);

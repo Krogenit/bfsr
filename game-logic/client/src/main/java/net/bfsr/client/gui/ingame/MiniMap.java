@@ -1,8 +1,8 @@
 package net.bfsr.client.gui.ingame;
 
 import net.bfsr.client.Core;
+import net.bfsr.client.renderer.Render;
 import net.bfsr.client.renderer.RenderManager;
-import net.bfsr.client.renderer.entity.ShipRender;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.object.TexturedGuiObject;
@@ -38,7 +38,7 @@ public class MiniMap {
     }
 
     public void render(World world) {
-        List<Ship> ships = world.getShips();
+        List<Ship> ships = world.getEntitiesByType(Ship.class);
         Vector2f camPos = renderer.camera.getPosition();
         float mapOffsetX = 600;
         float mapOffsetY = 600;
@@ -77,17 +77,19 @@ public class MiniMap {
                     color.z = 0.5f;
                 }
 
-                ShipRender render = renderManager.getRender(s.getId());
-                Vector2f lastPosition = render.getLastPosition();
-                int lastX = (int) (miniMapX + (lastPosition.x - camPos.x) / mapScaleX);
-                int lastY = (int) (miniMapY + (lastPosition.y - camPos.y) / mapScaleY);
-                int x = (int) (miniMapX + (pos.x - camPos.x) / mapScaleX);
-                int y = (int) (miniMapY + (pos.y - camPos.y) / mapScaleY);
-                int sizeX = (int) (scale.x * shipSize);
-                int sizeY = (int) (scale.y * shipSize);
-                guiRenderer.add(lastX, lastY, x, y, render.getLastSin(), render.getLastCos(), s.getSin(), s.getCos(), sizeX,
-                        sizeY,
-                        color.x, color.y, color.z, 1.0f, render.getTexture());
+                Render<?> render = renderManager.getRender(s.getId());
+                if (render != null) {
+                    Vector2f lastPosition = render.getLastPosition();
+                    int lastX = (int) (miniMapX + (lastPosition.x - camPos.x) / mapScaleX);
+                    int lastY = (int) (miniMapY + (lastPosition.y - camPos.y) / mapScaleY);
+                    int x = (int) (miniMapX + (pos.x - camPos.x) / mapScaleX);
+                    int y = (int) (miniMapY + (pos.y - camPos.y) / mapScaleY);
+                    int sizeX = (int) (scale.x * shipSize);
+                    int sizeY = (int) (scale.y * shipSize);
+                    guiRenderer.add(lastX, lastY, x, y, render.getLastSin(), render.getLastCos(), s.getSin(), s.getCos(), sizeX,
+                            sizeY,
+                            color.x, color.y, color.z, 1.0f, render.getTexture());
+                }
             }
         }
 

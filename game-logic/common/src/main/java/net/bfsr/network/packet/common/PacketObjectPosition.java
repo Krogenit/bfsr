@@ -17,7 +17,7 @@ public class PacketObjectPosition extends PacketAdapter {
     private Vector2f velocity;
     private float angularVelocity;
 
-    public PacketObjectPosition(RigidBody obj) {
+    public PacketObjectPosition(RigidBody<?> obj) {
         this.id = obj.getId();
         this.position = obj.getPosition();
         this.sin = obj.getSin();

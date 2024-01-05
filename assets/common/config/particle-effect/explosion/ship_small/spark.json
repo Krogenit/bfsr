@@ -26,7 +26,6 @@
   "minSpawnCount": 3,
   "minVelocityX": -1.2,
   "minVelocityY": -1.2,
-  "name": "spark",
   "r": 1.0,
   "renderLayer": "DEFAULT_ADDITIVE",
   "soundEffects": [],

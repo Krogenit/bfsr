@@ -28,7 +28,7 @@ public class PacketRegistry<NET_HANDLER extends NetworkHandler> {
         Set<Class<?>> subTypes = reflections.get(SubTypes.of(PacketAdapter.class).asClass());
         subTypes.forEach(aClass -> registerPacket((Class<? extends Packet>) aClass));
 
-        reflections = new Reflections("net.bfsr." + side.toString().toLowerCase(Locale.ROOT) + ".network.packet.handler");
+        reflections = new Reflections("net.bfsr." + side.toString().toLowerCase(Locale.ENGLISH) + ".network.packet.handler");
 
         Set<Class<?>> singletons = reflections.get(SubTypes.of(PacketHandler.class).asClass());
         singletons.forEach(aClass -> {
@@ -39,6 +39,21 @@ public class PacketRegistry<NET_HANDLER extends NetworkHandler> {
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 throw new RuntimeException("Can't register packet handler " + aClass.getName(), e);
             }
+        });
+
+        String oppositeSideName = side.getOpposite().toString().toLowerCase(Locale.ENGLISH);
+        packetRegistry.forEachValue(aClass -> {
+            if (aClass.getPackageName().contains(oppositeSideName))
+                try {
+                    PacketHandler<Packet, NET_HANDLER> packetHandler = getPacketHandler(aClass.getConstructor().newInstance());
+                    if (packetHandler == null) {
+                        throw new RuntimeException("Can't find packet handler for packet class " + aClass);
+                    }
+                } catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+
+            return true;
         });
     }
 
@@ -55,7 +70,8 @@ public class PacketRegistry<NET_HANDLER extends NetworkHandler> {
         return packetRegistryInverse.get(packet.getClass());
     }
 
-    public Packet createPacket(int packetId) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public Packet createPacket(int packetId)
+            throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         return packetRegistry.get(packetId).getConstructor().newInstance();
     }
 

@@ -10,9 +10,10 @@ import java.net.InetSocketAddress;
 
 public class PacketHandshakeHandler extends PacketHandler<PacketHandshake, PlayerNetworkHandler> {
     @Override
-    public void handle(PacketHandshake packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
-        playerNetworkHandler.setConnectionState(ConnectionState.LOGIN);
-        playerNetworkHandler.setHandshakeClientTime(packet.getHandshakeClientTime());
-        playerNetworkHandler.setLoginStartTime(System.currentTimeMillis());
+    public void handle(PacketHandshake packet, PlayerNetworkHandler networkHandler, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
+        networkHandler.setConnectionState(ConnectionState.LOGIN);
+        networkHandler.setHandshakeClientTime(packet.getHandshakeClientTime());
+        networkHandler.setLoginStartTime(System.currentTimeMillis());
     }
 }

@@ -3,8 +3,8 @@ package net.bfsr.event.module.weapon.beam;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
-import net.bfsr.component.weapon.WeaponSlotBeam;
 import net.bfsr.engine.event.Event;
+import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.entity.wreck.Wreck;
 import org.dyn4j.collision.narrowphase.Raycast;
 
