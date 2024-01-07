@@ -2,8 +2,8 @@ package net.bfsr.config.component.shield;
 
 import lombok.Getter;
 import net.bfsr.config.ConfigData;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.util.PathHelper;
-import net.bfsr.engine.util.TimeUtils;
 
 import java.nio.file.Path;
 
@@ -18,7 +18,7 @@ public class ShieldData extends ConfigData {
         super(fileName, id);
         this.texturePath = PathHelper.convertPath(config.texture());
         this.maxShield = config.maxShield();
-        this.regenAmount = config.regenInSeconds() * TimeUtils.UPDATE_DELTA_TIME;
-        this.rebuildTimeInTicks = config.rebuildTimeInSeconds() * TimeUtils.UPDATES_PER_SECOND;
+        this.regenAmount = Engine.convertToDeltaTime(config.regenInSeconds());
+        this.rebuildTimeInTicks = Engine.convertToTicks(config.rebuildTimeInSeconds());
     }
 }

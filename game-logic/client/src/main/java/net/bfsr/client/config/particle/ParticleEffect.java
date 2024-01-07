@@ -24,7 +24,6 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 import static net.bfsr.client.particle.ParticleManager.PARTICLE_POOL;
-import static net.bfsr.client.particle.ParticleManager.PARTICLE_SUPPLIER;
 
 @Getter
 public class ParticleEffect extends ConfigData {
@@ -181,13 +180,12 @@ public class ParticleEffect extends ConfigData {
                     Rotation rotation = angleSupplier.get();
                     float cos1 = cos * (float) rotation.getCost() - sin * (float) rotation.getSint();
                     float sin1 = sin * (float) rotation.getCost() + cos * (float) rotation.getSint();
-                    PARTICLE_POOL.getOrCreate(PARTICLE_SUPPLIER)
-                            .init(textureSupplier.get(), x + localXSupplier.get(), y + localYSupplier.get(),
-                                    velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), sin1, cos1,
-                                    angularVelocitySupplier.get(),
-                                    sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sizeVelocitySupplier.get(), r * color.x,
-                                    g * color.y, b * color.z, a * color.w, alphaVellocitySupplier.get(),
-                                    isAlphaFromZero, renderLayer);
+                    PARTICLE_POOL.get().init(textureSupplier.get(), x + localXSupplier.get(), y + localYSupplier.get(),
+                            velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), sin1, cos1,
+                            angularVelocitySupplier.get(),
+                            sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sizeVelocitySupplier.get(), r * color.x,
+                            g * color.y, b * color.z, a * color.w, alphaVellocitySupplier.get(),
+                            isAlphaFromZero, renderLayer);
                 }
             });
         } else {
@@ -197,13 +195,12 @@ public class ParticleEffect extends ConfigData {
                         Rotation rotation = angleSupplier.get();
                         float cos1 = cos * (float) rotation.getCost() - sin * (float) rotation.getSint();
                         float sin1 = sin * (float) rotation.getCost() + cos * (float) rotation.getSint();
-                        PARTICLE_POOL.getOrCreate(PARTICLE_SUPPLIER)
-                                .init(textureSupplier.get(), x + localXSupplier.get(), y + localYSupplier.get(),
-                                        velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), sin1, cos1,
-                                        angularVelocitySupplier.get(),
-                                        sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sizeVelocitySupplier.get(), r * color.x,
-                                        g * color.y, b * color.z, a * color.w, alphaVellocitySupplier.get(),
-                                        isAlphaFromZero, renderLayer);
+                        PARTICLE_POOL.get().init(textureSupplier.get(), x + localXSupplier.get(), y + localYSupplier.get(),
+                                velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), sin1, cos1,
+                                angularVelocitySupplier.get(),
+                                sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sizeVelocitySupplier.get(), r * color.x,
+                                g * color.y, b * color.z, a * color.w, alphaVellocitySupplier.get(),
+                                isAlphaFromZero, renderLayer);
                     }
                 });
             } else if (minSpawnCount > 0) {
@@ -211,13 +208,12 @@ public class ParticleEffect extends ConfigData {
                     Rotation rotation = angleSupplier.get();
                     float cos1 = cos * (float) rotation.getCost() - sin * (float) rotation.getSint();
                     float sin1 = sin * (float) rotation.getCost() + cos * (float) rotation.getSint();
-                    PARTICLE_POOL.getOrCreate(PARTICLE_SUPPLIER)
-                            .init(textureSupplier.get(), x + localXSupplier.get(), y + localYSupplier.get(),
-                                    velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), sin1, cos1,
-                                    angularVelocitySupplier.get(),
-                                    sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sizeVelocitySupplier.get(), r * color.x,
-                                    g * color.y, b * color.z, a * color.w,
-                                    alphaVellocitySupplier.get(), isAlphaFromZero, renderLayer);
+                    PARTICLE_POOL.get().init(textureSupplier.get(), x + localXSupplier.get(), y + localYSupplier.get(),
+                            velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), sin1, cos1,
+                            angularVelocitySupplier.get(),
+                            sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sizeVelocitySupplier.get(), r * color.x,
+                            g * color.y, b * color.z, a * color.w,
+                            alphaVellocitySupplier.get(), isAlphaFromZero, renderLayer);
                 });
             }
         }

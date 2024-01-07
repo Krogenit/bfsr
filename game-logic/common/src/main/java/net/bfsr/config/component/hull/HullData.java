@@ -2,7 +2,7 @@ package net.bfsr.config.component.hull;
 
 import lombok.Getter;
 import net.bfsr.config.ConfigData;
-import net.bfsr.engine.util.TimeUtils;
+import net.bfsr.engine.Engine;
 
 @Getter
 public class HullData extends ConfigData {
@@ -12,6 +12,6 @@ public class HullData extends ConfigData {
     public HullData(HullConfig hullConfig, String fileName, int id) {
         super(fileName, id);
         this.maxHullValue = hullConfig.getMaxValue();
-        this.regenAmount = hullConfig.getRegenAmountInSeconds() * TimeUtils.UPDATE_DELTA_TIME;
+        this.regenAmount = Engine.convertToDeltaTime(hullConfig.getRegenAmountInSeconds());
     }
 }

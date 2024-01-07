@@ -4,7 +4,6 @@ import lombok.Getter;
 import net.bfsr.config.entity.wreck.WreckData;
 import net.bfsr.config.entity.wreck.WreckRegistry;
 import net.bfsr.engine.util.ObjectPool;
-import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.event.entity.wreck.WreckDeathEvent;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
@@ -20,7 +19,7 @@ import org.dyn4j.geometry.Polygon;
 import java.util.Random;
 
 public class Wreck extends RigidBody<WreckData> {
-    public static final ObjectPool<Wreck> WREAK_POOL = new ObjectPool<>();
+    public static final ObjectPool<Wreck> WREAK_POOL = new ObjectPool<>(Wreck::new);
 
     @Getter
     protected float lifeTimeVelocity;
@@ -118,12 +117,12 @@ public class Wreck extends RigidBody<WreckData> {
     @Override
     protected void updateLifeTime() {
         if (lifeTime > 0.8f) {
-            lifeTime += lifeTimeVelocity * 0.05f;
+            lifeTime += lifeTimeVelocity * 2.0f;
             if (lifeTime >= 1.0f) {
                 setDead();
             }
         } else {
-            lifeTime += lifeTimeVelocity * TimeUtils.UPDATE_DELTA_TIME;
+            lifeTime += lifeTimeVelocity;
         }
     }
 

@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.engine.util.Side;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.network.ConnectionState;
@@ -15,13 +16,12 @@ import net.bfsr.network.GuiType;
 import net.bfsr.network.NetworkHandler;
 import net.bfsr.network.packet.Packet;
 import net.bfsr.network.packet.PacketRegistry;
-import net.bfsr.network.packet.common.PacketKeepAlive;
+import net.bfsr.network.packet.common.PacketPing;
 import net.bfsr.network.packet.server.gui.PacketOpenGui;
 import net.bfsr.network.packet.server.login.PacketDisconnectLogin;
 import net.bfsr.network.packet.server.login.PacketJoinGame;
 import net.bfsr.network.packet.server.login.PacketLoginSuccess;
 import net.bfsr.server.ServerGameLogic;
-import net.bfsr.server.network.pipeline.MessageHandlerUDP;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
 import net.bfsr.world.World;
@@ -37,11 +37,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Log4j2
 public class PlayerNetworkHandler extends NetworkHandler {
     private static final int LOGIN_TIMEOUT_IN_MILLS = 5000;
-    private static final int KEEP_ALIVE_PERIOD_IN_MILLS = 2000;
+    private static final int PING_PERIOD_IN_MILLS = 2000;
 
     private final int connectionId;
     private final SocketChannel socketChannel;
-    private DatagramChannel datagramChannel;
+    private final DatagramChannel datagramChannel;
+    @Setter
     private InetSocketAddress remoteAddress;
     @Setter
     private ConnectionState connectionState = ConnectionState.CONNECTING;
@@ -52,7 +53,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
     private long loginStartTime;
     @Setter
     private long handshakeClientTime;
-    private long lastKeepAlivePacketTime;
+    private long lastPingCheckTime;
     private String terminationReason;
 
     private final boolean singlePlayer;
@@ -61,6 +62,8 @@ public class PlayerNetworkHandler extends NetworkHandler {
     private final PlayerManager playerManager = server.getPlayerManager();
     private Player player;
     private final PacketRegistry<PlayerNetworkHandler> packetRegistry = ServerGameLogic.getNetwork().getPacketRegistry();
+    @Setter
+    private double ping;
 
     public void update() {
         if (connectionState != ConnectionState.DISCONNECTED) {
@@ -68,9 +71,9 @@ public class PlayerNetworkHandler extends NetworkHandler {
 
             if (connectionState == ConnectionState.CONNECTED) {
                 long now = System.currentTimeMillis();
-                if (now - lastKeepAlivePacketTime > KEEP_ALIVE_PERIOD_IN_MILLS) {
-                    sendUDPPacket(new PacketKeepAlive());
-                    lastKeepAlivePacketTime = now;
+                if (now - lastPingCheckTime > PING_PERIOD_IN_MILLS) {
+                    sendUDPPacket(new PacketPing(Side.SERVER, System.nanoTime()));
+                    lastPingCheckTime = now;
                 }
             } else if (connectionState == ConnectionState.LOGIN) {
                 long now = System.currentTimeMillis();
@@ -182,12 +185,6 @@ public class PlayerNetworkHandler extends NetworkHandler {
             Ship ship = ships.get(i);
             world.add(ship, false);
         }
-    }
-
-    public void setDatagramChannel(DatagramChannel datagramChannel, InetSocketAddress remoteAddress) {
-        this.datagramChannel = datagramChannel;
-        this.remoteAddress = remoteAddress;
-        ((MessageHandlerUDP) datagramChannel.pipeline().get("handler")).setPlayerNetworkHandler(this);
     }
 
     private void disconnect(String reason) {

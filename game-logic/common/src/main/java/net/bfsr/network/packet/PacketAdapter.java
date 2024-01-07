@@ -15,4 +15,9 @@ public class PacketAdapter implements Packet {
     public boolean isAsync() {
         return false;
     }
+
+    @Override
+    public boolean canProcess(double time) {
+        return true;
+    }
 }

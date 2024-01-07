@@ -15,7 +15,6 @@ import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.util.SideUtils;
-import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.ship.module.DamageableModule;
@@ -51,6 +50,7 @@ import org.dyn4j.world.ContactCollisionData;
 import org.joml.Vector2f;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import static net.bfsr.math.RigidBodyUtils.ANGLE_TO_VELOCITY;
 
@@ -72,7 +72,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
     @Getter
     protected boolean spawned;
     @Getter
-    private final int jumpTime = (int) (0.6f * TimeUtils.UPDATES_PER_SECOND);
+    private final int jumpTimeInTicks = net.bfsr.engine.Engine.convertToTicks(0.6f);
     @Getter
     private int jumpTimer;
     @Getter
@@ -97,13 +97,17 @@ public class Ship extends DamageableRigidBody<ShipData> {
     @Getter
     @Setter
     private RigidBody<?> target;
+    @Setter
+    private Consumer<Double> positionCalculator = super::calcPosition;
+    @Setter
+    private Consumer<Double> chronologicalDataProcessor = super::processChronologicalData;
 
     public Ship(ShipData shipData) {
         super(shipData.getSizeX(), shipData.getSizeY(), shipData, ShipRegistry.INSTANCE.getId(), new DamageMask(32, 32),
                 shipData.getContour());
         this.timeToDestroy = shipData.getDestroyTimeInTicks();
         this.maxSparksTimer = timeToDestroy / 3;
-        this.jumpTimer = jumpTime;
+        this.jumpTimer = jumpTimeInTicks;
         setJumpPosition();
     }
 
@@ -208,7 +212,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
                     otherShip.damageByCollision(this, impactPowerForOther, contactX, contactY, normalX, normalY);
             } else if (userData instanceof Wreck) {
                 if (collisionTimer <= 0) {
-                    collisionTimer = 2 * TimeUtils.UPDATES_PER_SECOND;
+                    collisionTimer = net.bfsr.engine.Engine.convertToTicks(2);
                     eventBus.publish(new ShipCollisionWithWreckEvent(this, contactX, contactY, normalX, normalY));
                 }
             }
@@ -306,8 +310,8 @@ public class Ship extends DamageableRigidBody<ShipData> {
         eventBus.publish(new ShipPostPhysicsUpdate(this));
     }
 
-    public void shoot() {
-        modules.shoot();
+    public void shoot(Consumer<WeaponSlot> onShotEvent) {
+        modules.shoot(onShotEvent);
     }
 
     private void damageByCollision(Ship otherShip, float impactPower, float contactX, float contactY, float normalX,
@@ -321,7 +325,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
             impactPower /= 2.0f;
         }
 
-        collisionTimer = 2 * TimeUtils.UPDATES_PER_SECOND;
+        collisionTimer = net.bfsr.engine.Engine.convertToTicks(2);
 
         Shield shield = modules.getShield();
         if (shield != null && shield.damage(impactPower)) {
@@ -407,6 +411,21 @@ public class Ship extends DamageableRigidBody<ShipData> {
         }
     }
 
+    @Override
+    public void calcPosition(double timestamp) {
+        positionCalculator.accept(timestamp);
+    }
+
+    @Override
+    public void processChronologicalData(double timestamp) {
+        chronologicalDataProcessor.accept(timestamp);
+    }
+
+    public void resetPositionCalculatorAndChronologicalProcessor() {
+        positionCalculator = super::calcPosition;
+        chronologicalDataProcessor = super::processChronologicalData;
+    }
+
     public void addAI() {
         this.ai = new Ai();
         this.ai.setAggressiveType(AiAggressiveType.ATTACK);
@@ -490,13 +509,6 @@ public class Ship extends DamageableRigidBody<ShipData> {
     private void setJumpPosition() {
         RotationHelper.angleToVelocity(sin, cos, -100.0f, jumpPosition);
         jumpPosition.add(position);
-    }
-
-    @Override
-    public void updateClientPositionFromPacket(Vector2f position, float sin, float cos, Vector2f velocity,
-                                               float angularVelocity) {
-        super.updateClientPositionFromPacket(position, sin, cos, velocity, angularVelocity);
-        modules.updateWeaponSlotPositions();
     }
 
     public void setDestroying() {

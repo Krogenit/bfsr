@@ -78,11 +78,10 @@ public final class GarbageSpawner {
             Vector2f localVelocity = localVelocitySupplier.get();
             float angularVelocity = RandomHelper.randomFloat(RAND, -0.06f, 0.06f);
             float angle = MathUtils.TWO_PI * RAND.nextFloat();
-            ParticleManager.PARTICLE_POOL.getOrCreate(ParticleManager.PARTICLE_SUPPLIER)
-                    .init(TextureRegister.particleGarbage0, x, y,
-                            velocityX + localVelocity.x, velocityY + localVelocity.y, LUT.sin(angle), LUT.cos(angle),
-                            angularVelocity, size, size, sizeVel,
-                            0.6f, 0.6f, 0.6f, 1.0f, alphaVel, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
+            ParticleManager.PARTICLE_POOL.get().init(TextureRegister.particleGarbage0, x, y,
+                    velocityX + localVelocity.x, velocityY + localVelocity.y, LUT.sin(angle), LUT.cos(angle),
+                    angularVelocity, size, size, sizeVel,
+                    0.6f, 0.6f, 0.6f, 1.0f, alphaVel, false, RenderLayer.DEFAULT_ALPHA_BLENDED);
         }
     }
 }

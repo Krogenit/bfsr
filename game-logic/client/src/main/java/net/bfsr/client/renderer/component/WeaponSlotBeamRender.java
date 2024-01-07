@@ -8,7 +8,6 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
-import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.math.RotationHelper;
 import org.dyn4j.collision.narrowphase.Raycast;
@@ -24,6 +23,7 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
     private boolean maxPower;
     @Getter
     private final Vector4f effectsColor = new Vector4f();
+    private final float effectsAlphaAnimationSpeed = Engine.convertToDeltaTime(3.5f);
 
     public WeaponSlotBeamRender(WeaponSlotBeam object) {
         super(object);
@@ -41,12 +41,12 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
             if (object.getReloadTimer() <= object.getTimeToReload() * 0.3333f) {
                 maxPower = false;
                 if (effectsColor.w > 0.0f) {
-                    effectsColor.w -= 3.5f * TimeUtils.UPDATE_DELTA_TIME;
+                    effectsColor.w -= effectsAlphaAnimationSpeed;
                     if (effectsColor.w < 0) effectsColor.w = 0;
                 }
             } else {
                 if (!maxPower && effectsColor.w < 1.0f) {
-                    effectsColor.w += 3.5f * TimeUtils.UPDATE_DELTA_TIME;
+                    effectsColor.w += effectsAlphaAnimationSpeed;
                     if (effectsColor.w > 1.0f) effectsColor.w = 1.0f;
                 } else {
                     maxPower = true;
@@ -65,7 +65,7 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
             }
         } else {
             if (effectsColor.w > 0.0f) {
-                effectsColor.w -= 3.5f * TimeUtils.UPDATE_DELTA_TIME;
+                effectsColor.w -= effectsAlphaAnimationSpeed;
                 if (effectsColor.w < 0) effectsColor.w = 0;
             }
         }

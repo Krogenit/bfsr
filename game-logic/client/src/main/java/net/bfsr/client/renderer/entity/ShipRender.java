@@ -122,11 +122,11 @@ public class ShipRender extends RigidBodyRender<Ship> {
             float x = -(float) body.getLinearVelocity().x;
             float y = -(float) body.getLinearVelocity().y;
 
-            if (Math.abs(x) > 10) {
+            if (Math.abs(x) > 0.5f) {
                 spawnEngineParticles(RigidBodyUtils.calculateDirectionToOtherObject(object, x + shipPos.x, shipPos.y));
             }
 
-            if (Math.abs(y) > 10) {
+            if (Math.abs(y) > 0.5f) {
                 spawnEngineParticles(RigidBodyUtils.calculateDirectionToOtherObject(object, shipPos.x, y + shipPos.y));
             }
 
@@ -176,7 +176,7 @@ public class ShipRender extends RigidBodyRender<Ship> {
         if (!object.isSpawned()) {
             Vector2f position = object.getPosition();
             Vector2f objectJumpPosition = object.getJumpPosition();
-            jumpDelta = 1.0f - object.getJumpTimer() / (float) object.getJumpTime();
+            jumpDelta = 1.0f - object.getJumpTimer() / (float) object.getJumpTimeInTicks();
             jumpPosition.set(objectJumpPosition.x + (position.x - objectJumpPosition.x) * jumpDelta * 0.9f,
                     objectJumpPosition.y + (position.y - objectJumpPosition.y) * jumpDelta * 0.9f);
         }
@@ -186,9 +186,10 @@ public class ShipRender extends RigidBodyRender<Ship> {
     protected void updateAABB() {
         super.updateAABB();
 
-        int halfStringWidth = stringObject.getWidth() / (stringObject.getFontSize() * 3);
-        aabb.union(aabb.getMinX() - halfStringWidth, aabb.getMinY(), aabb.getMaxX() + halfStringWidth,
-                aabb.getMaxY() + 1.5f);
+        Vector2f position = object.getPosition();
+        float halfStringWidth = stringObject.getWidth() / (stringObject.getFontSize() * 1.4f);
+        aabb.union(position.x - halfStringWidth, aabb.getMinY(), position.x + halfStringWidth,
+                position.y + 3.2f + object.getSize().y / 4.0f);
 
         for (int i = 0; i < weaponSlots.size(); i++) {
             WeaponSlotRender<? extends WeaponSlot> render = weaponSlots.get(i);

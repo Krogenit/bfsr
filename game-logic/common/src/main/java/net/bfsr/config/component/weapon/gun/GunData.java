@@ -3,8 +3,8 @@ package net.bfsr.config.component.weapon.gun;
 import lombok.Getter;
 import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.config.SoundData;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.util.PathHelper;
-import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.bullet.BulletDamage;
 import org.dyn4j.geometry.Polygon;
 import org.joml.Vector4f;
@@ -28,14 +28,14 @@ public class GunData extends GameObjectConfigData {
 
     public GunData(GunConfig config, String fileName, int id) {
         super(config, fileName, id);
-        this.reloadTimeInTicks = (int) (config.getReloadTimeInSeconds() * TimeUtils.UPDATES_PER_SECOND);
+        this.reloadTimeInTicks = Engine.convertToTicks(config.getReloadTimeInSeconds());
         this.energyCost = config.getEnergyCost();
         this.damage = new BulletDamage(config.getDamage());
         this.color = convert(config.getColor());
         this.polygon = convertToPolygon(config.getVertices());
         this.sounds = convert(config.getSounds());
         this.bulletSpeed = config.getBulletSpeed();
-        this.bulletLifeTimeInTicks = (int) (config.getBulletLifeTimeInSeconds() * TimeUtils.UPDATES_PER_SECOND);
+        this.bulletLifeTimeInTicks = Engine.convertToTicks(config.getBulletLifeTimeInSeconds());
         this.bulletSizeX = config.getBulletSize().x();
         this.bulletSizeY = config.getBulletSize().y();
         this.bulletTexture = PathHelper.CLIENT_CONTENT.resolve(config.getBulletTexture());

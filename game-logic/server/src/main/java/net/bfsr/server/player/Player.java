@@ -15,7 +15,6 @@ import java.util.List;
 @Getter
 public class Player {
     private final String id;
-    @Setter
     private PlayerNetworkHandler networkHandler;
     private final List<Ship> ships = new ArrayList<>();
     private final String username;
@@ -28,7 +27,7 @@ public class Player {
     public Player(String id, String username) {
         this.id = id;
         this.username = username;
-        this.playerInputController = new PlayerInputController();
+        this.playerInputController = new PlayerInputController(this);
     }
 
     public Player(String username) {
@@ -36,7 +35,7 @@ public class Player {
     }
 
     public void setShip(Ship ship) {
-        this.playerInputController.setShip(ship);
+        playerInputController.setShip(ship);
         networkHandler.sendTCPPacket(new PacketSetPlayerShip(ship.getId()));
     }
 
@@ -47,6 +46,11 @@ public class Player {
 
     public void addShip(Ship ship) {
         this.ships.add(ship);
+    }
+
+    public void setNetworkHandler(PlayerNetworkHandler networkHandler) {
+        this.networkHandler = networkHandler;
+        playerInputController.setNetworkHandler(networkHandler);
     }
 
     public Ship getShip(int i) {

@@ -5,16 +5,16 @@ import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.Getter;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.util.Side;
-import net.bfsr.engine.util.TimeUtils;
+import net.bfsr.entity.EntityIdManager;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
-import net.bfsr.event.entity.RigidBodyAddToWorldEvent;
 import net.bfsr.physics.CCDTransformHandler;
 import net.bfsr.physics.ContactListener;
 import net.bfsr.physics.CustomValueMixer;
@@ -39,18 +39,22 @@ public class World {
     @Getter
     protected final Random rand = new Random();
 
-    private int nextId;
     private final TIntObjectMap<RigidBody<?>> entitiesById = new TIntObjectHashMap<>();
     private final TMap<Class<? extends RigidBody>, List<RigidBody<?>>> entitiesByClass = new THashMap<>();
+    @Getter
     private final List<RigidBody<?>> entities = new ArrayList<>();
     @Getter
     private final EventBus eventBus;
+    @Getter
+    private double timestamp;
+    private final EntityIdManager entityIdManager;
 
-    public World(Profiler profiler, Side side, long seed, EventBus eventBus) {
+    public World(Profiler profiler, Side side, long seed, EventBus eventBus, EntityIdManager entityIdManager) {
         this.profiler = profiler;
         this.side = side;
         this.seed = seed;
         this.eventBus = eventBus;
+        this.entityIdManager = entityIdManager;
         this.entitiesByClass.put(RigidBody.class, new ArrayList<>());
         this.entitiesByClass.put(Ship.class, new ArrayList<>());
         this.entitiesByClass.put(Bullet.class, new ArrayList<>());
@@ -65,14 +69,16 @@ public class World {
         physicWorld.getSettings().setMaximumTranslation(30);
         physicWorld.getSettings().setPositionConstraintSolverIterations(1);
         physicWorld.getSettings().setVelocityConstraintSolverIterations(1);
-        physicWorld.getSettings().setStepFrequency(TimeUtils.UPDATE_DELTA_TIME);
+        physicWorld.getSettings().setStepFrequency(Engine.getUpdateDeltaTime());
         physicWorld.getSettings().setContinuousDetectionMode(ContinuousDetectionMode.BULLETS_ONLY);
         physicWorld.addContactListener(new ContactListener());
         physicWorld.addTimeOfImpactListener(ccdTransformHandler);
         physicWorld.setValueMixer(new CustomValueMixer());
     }
 
-    public void update() {
+    public void update(double timestamp) {
+        this.timestamp = timestamp;
+
         updateEntities();
         profiler.endStartSection("physics");
         ccdTransformHandler.clear();
@@ -117,7 +123,6 @@ public class World {
         }
 
         entity.onAddedToWorld();
-        eventBus.publish(new RigidBodyAddToWorldEvent(entity));
     }
 
     public void remove(int index, RigidBody<?> entity) {
@@ -164,7 +169,7 @@ public class World {
     }
 
     public int getNextId() {
-        return nextId++;
+        return entityIdManager.getNextId();
     }
 
     public boolean isServer() {

@@ -1,6 +1,6 @@
 package net.bfsr.physics;
 
-import net.bfsr.entity.GameObject;
+import net.bfsr.entity.RigidBody;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.geometry.Vector2;
 import org.dyn4j.world.ContactCollisionData;
@@ -19,13 +19,13 @@ public class ContactListener extends ContactListenerAdapter<Body> {
         float normalY = (float) normal.y;
 
         Object userData = body1.getUserData();
-        if (userData instanceof GameObject gameObject) {
-            gameObject.collision(body2, collision.getFixture2(), pointX, pointY, -normalX, -normalY, collision);
+        if (userData instanceof RigidBody<?> rigidBody) {
+            rigidBody.collision(body2, collision.getFixture2(), pointX, pointY, -normalX, -normalY, collision);
         }
 
         userData = body2.getUserData();
-        if (userData instanceof GameObject gameObject) {
-            gameObject.collision(body1, collision.getFixture1(), pointX, pointY, normalX, normalY, collision);
+        if (userData instanceof RigidBody<?> rigidBody) {
+            rigidBody.collision(body1, collision.getFixture1(), pointX, pointY, normalX, normalY, collision);
         }
     }
 }

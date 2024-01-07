@@ -11,6 +11,7 @@ import net.bfsr.network.NetworkHandler;
 import org.reflections.Reflections;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.Locale;
 import java.util.Set;
@@ -26,12 +27,17 @@ public class PacketRegistry<NET_HANDLER extends NetworkHandler> {
     public void registerPackets(Side side) {
         Reflections reflections = new Reflections("net.bfsr.network.packet");
         Set<Class<?>> subTypes = reflections.get(SubTypes.of(PacketAdapter.class).asClass());
-        subTypes.forEach(aClass -> registerPacket((Class<? extends Packet>) aClass));
+        subTypes.forEach(aClass -> {
+            if (Modifier.isAbstract(aClass.getModifiers())) return;
+            registerPacket((Class<? extends Packet>) aClass);
+        });
 
         reflections = new Reflections("net.bfsr." + side.toString().toLowerCase(Locale.ENGLISH) + ".network.packet.handler");
 
         Set<Class<?>> singletons = reflections.get(SubTypes.of(PacketHandler.class).asClass());
         singletons.forEach(aClass -> {
+            if (Modifier.isAbstract(aClass.getModifiers())) return;
+
             try {
                 ParameterizedType genericSuperclass = ((ParameterizedType) aClass.getGenericSuperclass());
                 Class<? extends Packet> packetType = (Class<? extends Packet>) genericSuperclass.getActualTypeArguments()[0];

@@ -1,30 +1,29 @@
 package net.bfsr.entity.bullet;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.config.component.weapon.gun.GunRegistry;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
-import net.bfsr.engine.util.SideUtils;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
+import net.bfsr.event.entity.RigidBodyPostPhysicsUpdateEvent;
 import net.bfsr.event.entity.bullet.BulletDamageShipArmorEvent;
 import net.bfsr.event.entity.bullet.BulletDamageShipHullEvent;
 import net.bfsr.event.entity.bullet.BulletDamageShipShieldEvent;
-import net.bfsr.event.entity.bullet.BulletReflectEvent;
 import net.bfsr.network.packet.common.entity.spawn.BulletSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.physics.filter.BulletFilter;
-import net.bfsr.util.SyncUtils;
-import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Polygon;
 import org.dyn4j.world.ContactCollisionData;
-import org.joml.Vector2f;
+
+import java.util.function.Consumer;
 
 public class Bullet extends RigidBody<GunData> {
     @Getter
@@ -33,14 +32,11 @@ public class Bullet extends RigidBody<GunData> {
     private final BulletDamage damage;
     private final Polygon polygon;
     private Object previousAObject;
-    @Getter
-    private final float startLifeTime;
 
     public Bullet(float x, float y, float sin, float cos, GunData gunData, Ship ship, BulletDamage damage) {
         super(x, y, sin, cos, gunData.getBulletSizeX(), gunData.getBulletSizeY(), gunData, GunRegistry.INSTANCE.getId());
         this.ship = ship;
-        this.lifeTime = gunData.getBulletLifeTimeInTicks();
-        this.startLifeTime = lifeTime;
+        this.maxLifeTime = gunData.getBulletLifeTimeInTicks();
         this.bulletSpeed = gunData.getBulletSpeed();
         this.damage = damage;
         this.health = damage.getAverage();
@@ -49,36 +45,22 @@ public class Bullet extends RigidBody<GunData> {
     }
 
     @Override
-    public void init(World world, int id) {
-        super.init(world, id);
-        this.eventBus = world.getEventBus();
-
-        if (SideUtils.IS_SERVER && this.world.isServer()) {
-            body.getTransform().setTranslation(position.x + velocity.x / 500.0f,
-                    position.y + velocity.y / 500.0f);//TODO: посчитать точку появления пули правильно
-        }
-    }
-
-    @Override
     protected void initBody() {
         BodyFixture bodyFixture = new BodyFixture(polygon);
         bodyFixture.setFilter(new BulletFilter(this));
         bodyFixture.setSensor(true);
 
-        if (SideUtils.IS_SERVER && world.isServer()) {
-            body.setBullet(true);
-        }
-
+        body.setBullet(true);
         body.addFixture(bodyFixture);
         body.setUserData(this);
         body.setLinearVelocity(velocity.x, velocity.y);
     }
 
     @Override
-    public void update() {
-        lifeTime -= 1;
+    protected void updateLifeTime() {
+        lifeTime++;
 
-        if (lifeTime <= 0) {
+        if (lifeTime >= maxLifeTime) {
             setDead();
         }
     }
@@ -87,14 +69,16 @@ public class Bullet extends RigidBody<GunData> {
     public void postPhysicsUpdate() {
         position.x = (float) body.getTransform().getTranslationX();
         position.y = (float) body.getTransform().getTranslationY();
+
+        eventBus.publish(new RigidBodyPostPhysicsUpdateEvent(this));
     }
 
+    @Setter
+    private Consumer<Bullet> onAddedToWorldConsumer = bullet -> {};
+
     @Override
-    public void updateClientPositionFromPacket(Vector2f position, float sin, float cos, Vector2f velocity,
-                                               float angularVelocity) {
-        setRotation(sin, cos);
-        SyncUtils.updatePos(this, position);
-        body.setLinearVelocity(velocity.x, velocity.y);
+    public void onAddedToWorld() {
+        onAddedToWorldConsumer.accept(this);
     }
 
     @Override
@@ -147,7 +131,6 @@ public class Bullet extends RigidBody<GunData> {
         setVelocity(velocity.x - 2 * dot * normalX, velocity.y - 2 * dot * normalY);
         float rotateToVector = (float) Math.atan2(-velocity.x, velocity.y) + MathUtils.HALF_PI;
         setRotation(LUT.sin(rotateToVector), LUT.cos(rotateToVector));
-        eventBus.publish(new BulletReflectEvent(this));
     }
 
     private void damage(Bullet bullet) {
@@ -182,10 +165,6 @@ public class Bullet extends RigidBody<GunData> {
 
     @Override
     public boolean canCollideWith(GameObject gameObject) {
-        if (SideUtils.IS_SERVER && world.isServer()) {
-            return ship != gameObject && previousAObject != gameObject;
-        } else {
-            return false;
-        }
+        return ship != gameObject && previousAObject != gameObject;
     }
 }

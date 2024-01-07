@@ -24,6 +24,8 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class NetworkSystem extends NetworkHandler {
+    private static final long PING_CHECK_INTERVAL = 5000;
+
     private final NetworkManagerTCP networkManagerTCP = new NetworkManagerTCP();
     private final NetworkManagerUDP networkManagerUDP = new NetworkManagerUDP();
 
@@ -39,12 +41,19 @@ public class NetworkSystem extends NetworkHandler {
     @Getter
     private long handshakeTime;
     private long lastPingCheck;
+    @Setter
+    @Getter
+    private int connectionId;
+
+    private String login;
 
     public void init() {
         packetRegistry.registerPackets(Side.CLIENT);
     }
 
-    public void connect(InetAddress address, int port) {
+    public void connect(InetAddress address, int port, String login) {
+        this.login = login;
+
         networkManagerTCP.connect(this, address, port);
         networkManagerUDP.connect(this, address, port);
         connectionState = ConnectionState.CONNECTING;
@@ -54,27 +63,31 @@ public class NetworkSystem extends NetworkHandler {
 
     public void onChannelsRegistered() {
         sendPacketTCP(new PacketHandshake(handshakeTime = System.nanoTime()));
-        sendPacketTCP(new PacketLogin("Local Player"));
+        sendPacketTCP(new PacketLogin(login));
     }
 
-    public void update() {
+    public void update(double time) {
         if (connectionState != ConnectionState.DISCONNECTED) {
-            processReceivedPackets();
+            processReceivedPackets(time);
 
             if (connectionState == ConnectionState.CONNECTED) {
                 long now = System.currentTimeMillis();
-                if (now - lastPingCheck > 1000) {
-                    sendPacketUDP(new PacketPing(System.nanoTime() - handshakeTime));
+                if (now - lastPingCheck > PING_CHECK_INTERVAL) {
+                    sendPacketUDP(new PacketPing(Side.CLIENT, System.nanoTime() - handshakeTime));
                     lastPingCheck = now;
                 }
             }
         }
     }
 
-    private void processReceivedPackets() {
-        for (int i = 1000; !inboundPacketQueue.isEmpty() && i >= 0; --i) {
+    private void processReceivedPackets(double time) {
+        for (int i = 0; !inboundPacketQueue.isEmpty() && i < 1000; i++) {
             Packet packet = inboundPacketQueue.poll();
-            processPacket(packet);
+            if (packet.canProcess(time)) {
+                processPacket(packet);
+            } else {
+                inboundPacketQueue.add(packet);
+            }
         }
     }
 
@@ -97,7 +110,7 @@ public class NetworkSystem extends NetworkHandler {
     public void onDisconnect(String reason) {
         if (connectionState == ConnectionState.CONNECTED) {
             Core.get().addFutureTask(() -> {
-                Core.get().setWorld(null);
+                Core.get().quitToMainMenu();
                 Core.get().openGui(new GuiDisconnected(new GuiMainMenu(), "disconnect.lost", reason));
             });
         } else if (connectionState == ConnectionState.LOGIN) {
@@ -110,7 +123,7 @@ public class NetworkSystem extends NetworkHandler {
 
         shutdown();
         clear();
-        Core.get().addFutureTask(() -> Core.get().stopServer());
+        Core.get().addFutureTask(() -> Core.get().stopLocalServer());
     }
 
     @Override

@@ -6,9 +6,7 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.entity.bullet.BulletDamageShipArmorEvent;
 import net.bfsr.event.entity.bullet.BulletDamageShipHullEvent;
 import net.bfsr.event.entity.bullet.BulletDamageShipShieldEvent;
-import net.bfsr.event.entity.bullet.BulletReflectEvent;
 import net.bfsr.math.RotationHelper;
-import net.bfsr.network.packet.common.PacketObjectPosition;
 import net.bfsr.network.packet.server.effect.PacketBulletHitShip;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.wreck.WreckSpawner;
@@ -26,12 +24,6 @@ import static net.bfsr.math.RigidBodyUtils.ANGLE_TO_VELOCITY;
 @Listener(references = References.Strong)
 public class BulletEventListener {
     private final NetworkSystem network = ServerGameLogic.getNetwork();
-
-    @Handler
-    public void event(BulletReflectEvent event) {
-        Bullet bullet = event.bullet();
-        network.sendUDPPacketToAllNearby(new PacketObjectPosition(bullet), bullet.getPosition(), TrackingUtils.TRACKING_DISTANCE);
-    }
 
     @Handler
     public void event(BulletDamageShipShieldEvent event) {

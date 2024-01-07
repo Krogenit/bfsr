@@ -12,11 +12,9 @@ import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 import java.util.Random;
-import java.util.function.Supplier;
 
 public class ParticleBeamEffect extends Particle {
-    private static final ObjectPool<ParticleBeamRender> RENDER_POOL = new ObjectPool<>();
-    private static final Supplier<ParticleBeamRender> RENDER_SUPPLIER = ParticleBeamRender::new;
+    private static final ObjectPool<ParticleBeamRender> RENDER_POOL = new ObjectPool<>(ParticleBeamRender::new);
 
     private WeaponSlotBeam slot;
     private Ship ship;
@@ -45,7 +43,7 @@ public class ParticleBeamEffect extends Particle {
     protected void addParticle(long textureHandle, float r, float g, float b, float a, boolean isAlphaFromZero,
                                RenderLayer renderLayer) {
         PARTICLE_MANAGER.addParticle(this);
-        render = RENDER_POOL.getOrCreate(RENDER_SUPPLIER).init(this, textureHandle, r, g, b, a);
+        render = RENDER_POOL.get().init(this, textureHandle, r, g, b, a);
         PARTICLE_RENDERER.addParticleToRenderLayer(render, renderLayer);
     }
 

@@ -17,6 +17,7 @@ import org.dyn4j.dynamics.Body;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class Modules {
     private final List<Module> moduleList = new ArrayList<>();
@@ -63,9 +64,9 @@ public class Modules {
         }
     }
 
-    public void shoot() {
+    public void shoot(Consumer<WeaponSlot> onShotEvent) {
         for (int i = 0, size = weaponSlots.size(); i < size; i++) {
-            weaponSlots.get(i).tryShoot();
+            weaponSlots.get(i).tryShoot(onShotEvent);
         }
     }
 

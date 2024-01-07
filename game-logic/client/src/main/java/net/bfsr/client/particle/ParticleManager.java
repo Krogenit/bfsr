@@ -10,14 +10,12 @@ import org.joml.Vector2f;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.function.Supplier;
 
 @Listener
 public class ParticleManager {
     public static final Random RAND = new Random();
-    public static final ObjectPool<Particle> PARTICLE_POOL = new ObjectPool<>();
+    public static final ObjectPool<Particle> PARTICLE_POOL = new ObjectPool<>(Particle::new);
     public static final Vector2f CACHED_VECTOR = new Vector2f();
-    public static final Supplier<Particle> PARTICLE_SUPPLIER = Particle::new;
 
     private final List<Particle> particles = new ArrayList<>();
 

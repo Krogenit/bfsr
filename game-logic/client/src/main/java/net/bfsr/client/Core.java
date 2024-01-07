@@ -27,6 +27,7 @@ import net.bfsr.client.server.ThreadLocalServer;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.client.settings.ConfigSettings;
 import net.bfsr.client.world.BlankWorld;
+import net.bfsr.client.world.entity.ClientEntityIdManager;
 import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.engine.ClientGameLogic;
 import net.bfsr.engine.Engine;
@@ -35,6 +36,7 @@ import net.bfsr.engine.sound.AbstractSoundManager;
 import net.bfsr.engine.util.Side;
 import net.bfsr.network.packet.Packet;
 import net.bfsr.world.World;
+import org.dyn4j.dynamics.Body;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;
@@ -56,10 +58,15 @@ public class Core extends ClientGameLogic {
             guiManager, profiler, renderManager, particleManager, new WorldRenderer(renderManager)
     );
 
-    @Setter
     private World world = BlankWorld.get();
     private String playerName;
     private LocalServer localServer;
+
+    @Setter
+    private double clientToServerDiffTime;
+    @Getter
+    private double renderTime, serverTime;
+    private final double clientRenderDelayMillis = 100.0 * 1_000_000;
 
     public Core() {
         instance = this;
@@ -70,6 +77,7 @@ public class Core extends ClientGameLogic {
         Lang.load();
         this.inputHandler.init();
         this.settings.load();
+        updateTimeBetweenUpdate(ClientSettings.MAX_FPS.getInteger());
         this.networkSystem.init();
         this.globalRenderer.init();
         this.renderManager.init();
@@ -94,8 +102,8 @@ public class Core extends ClientGameLogic {
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void update(double time) {
+        super.update(time);
         profiler.startSection("renderer");
 
         if (!isPaused()) {
@@ -109,20 +117,39 @@ public class Core extends ClientGameLogic {
         soundManager.updateListenerPosition(Engine.renderer.camera.getPosition());
         soundManager.updateGain(ClientSettings.SOUND_VOLUME.getFloat());
 
+        serverTime = time + clientToServerDiffTime;
+        renderTime = time - clientRenderDelayMillis;
+
+        profiler.endStartSection("network");
+        networkSystem.update(renderTime);
+
         if (!isPaused()) {
             profiler.endStartSection("world");
-            world.update();
+            world.update(renderTime);
             profiler.endStartSection("particles");
             particleManager.update();
         }
 
+        profiler.endStartSection("inputHandler");
+        inputHandler.postUpdate(renderTime);
         profiler.endStartSection("guiManager");
         guiManager.update();
-        profiler.endStartSection("network");
-        networkSystem.update();
         profiler.endStartSection("renderManager.postUpdate");
         renderManager.postUpdate();
         profiler.endSection();
+    }
+
+    public void updateTimeBetweenUpdate(int maxFps) {
+        int updatesPerSecond = Math.min(maxFps, 60);
+        Engine.setUpdatesPerSecond(updatesPerSecond);
+        float updateDeltaTime = 1.0f / updatesPerSecond;
+        Engine.setUpdateDeltaTime(updateDeltaTime);
+        Engine.setTimeBetweenUpdates(1_000_000_000.0 / updatesPerSecond);
+
+        org.dyn4j.world.World<Body> physicWorld = world.getPhysicWorld();
+        if (physicWorld != null) {
+            physicWorld.getSettings().setStepFrequency(updateDeltaTime);
+        }
     }
 
     @Override
@@ -159,17 +186,17 @@ public class Core extends ClientGameLogic {
     private void connectToLocalServerTCP() {
         try {
             InetAddress inetaddress = InetAddress.getByName("127.0.0.1");
-            connectToServer(inetaddress, 34000);
+            connectToServer(inetaddress, 34000, "Local Player");
         } catch (Exception e) {
             log.error("Couldn't connect to local server", e);
         }
     }
 
-    public void connectToServer(InetAddress inetaddress, int port) {
-        networkSystem.connect(inetaddress, port);
+    public void connectToServer(InetAddress inetaddress, int port, String login) {
+        networkSystem.connect(inetaddress, port, login);
     }
 
-    public void stopServer() {
+    public void stopLocalServer() {
         if (localServer != null) {
             localServer.stop();
             localServer = null;
@@ -179,9 +206,8 @@ public class Core extends ClientGameLogic {
     public void quitToMainMenu() {
         eventBus.publish(new ExitToMainMenuEvent());
         clearNetwork();
-        stopServer();
-        world.clear();
-        world = BlankWorld.get();
+        stopLocalServer();
+        setBlankWorld();
 
         openGui(new GuiMainMenu());
     }
@@ -198,7 +224,7 @@ public class Core extends ClientGameLogic {
     }
 
     public void createWorld(long seed) {
-        this.world = new World(profiler, Side.CLIENT, seed, eventBus);
+        this.world = new World(profiler, Side.CLIENT, seed, eventBus, new ClientEntityIdManager());
         globalRenderer.createBackgroundTexture(seed);
     }
 
@@ -221,7 +247,12 @@ public class Core extends ClientGameLogic {
     @Override
     public void clear() {
         clearNetwork();
-        stopServer();
+        stopLocalServer();
+    }
+
+    public void setBlankWorld() {
+        world.clear();
+        world = BlankWorld.get();
     }
 
     public static Core get() {

@@ -2,10 +2,6 @@ package net.bfsr.entity;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.Transform;
-import org.dyn4j.world.ContactCollisionData;
 import org.joml.Vector2f;
 
 @Getter
@@ -13,7 +9,6 @@ import org.joml.Vector2f;
 public class GameObject {
     protected final Vector2f position = new Vector2f();
     protected final Vector2f size = new Vector2f();
-    @Getter
     protected boolean isDead;
 
     public GameObject(float x, float y, float sizeX, float sizeY) {
@@ -29,27 +24,12 @@ public class GameObject {
 
     public void postPhysicsUpdate() {}
 
-    public void collision(Body body, BodyFixture fixture, float contactX, float contactY, float normalX, float normalY,
-                          ContactCollisionData<Body> collision) {}
-
-    public void saveTransform(Transform transform) {}
-
-    public void restoreTransform() {}
-
-    public void onAddedToWorld() {}
-
-    public void onRemovedFromWorld() {}
-
-    public boolean canCollideWith(GameObject gameObject) {
-        return this != gameObject;
-    }
-
     public void setPosition(float x, float y) {
-        this.position.set(x, y);
+        position.set(x, y);
     }
 
     public void setSize(float x, float y) {
-        this.size.set(x, y);
+        size.set(x, y);
     }
 
     public void setDead() {
@@ -59,6 +39,4 @@ public class GameObject {
     public int getId() {
         return -1;
     }
-
-    public void clear() {}
 }

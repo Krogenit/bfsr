@@ -2,7 +2,7 @@ package net.bfsr.config.component.reactor;
 
 import lombok.Getter;
 import net.bfsr.config.component.DamageableModuleData;
-import net.bfsr.engine.util.TimeUtils;
+import net.bfsr.engine.Engine;
 
 @Getter
 public class ReactorData extends DamageableModuleData {
@@ -12,6 +12,6 @@ public class ReactorData extends DamageableModuleData {
     ReactorData(ReactorConfig reactorConfig, String fileName, int id) {
         super(reactorConfig, fileName, id);
         this.maxEnergyCapacity = reactorConfig.getMaxEnergyCapacity();
-        this.regenAmount = reactorConfig.getRegenAmountInSeconds() * TimeUtils.UPDATE_DELTA_TIME;
+        this.regenAmount = Engine.convertToDeltaTime(reactorConfig.getRegenAmountInSeconds());
     }
 }

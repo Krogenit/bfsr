@@ -3,9 +3,9 @@ package net.bfsr.entity.ship.module.shield;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.shield.ShieldData;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.Event;
 import net.bfsr.engine.util.SideUtils;
-import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
@@ -46,6 +46,7 @@ public class Shield extends DamageableModule {
     private float shieldHp;
     @Getter
     private float shieldMaxHp;
+    private final float scaleAnimation = Engine.convertToDeltaTime(3.6f);
 
     public Shield(ShieldData shieldData, Ship ship) {
         super(5.0f, 1.0f, 1.0f);
@@ -123,13 +124,7 @@ public class Shield extends DamageableModule {
         }
 
         if (shieldHp < shieldMaxHp && isShieldAlive()) {
-            shieldHp += shieldRegen;
-
             onShieldAlive();
-
-            if (shieldHp > shieldMaxHp) {
-                shieldHp = shieldMaxHp;
-            }
         }
 
         if (SideUtils.IS_SERVER && ship.getWorld().getSide().isServer()) {
@@ -152,9 +147,18 @@ public class Shield extends DamageableModule {
     }
 
     private void onShieldAlive() {
+        regenHp();
+
         if (size.x < 1.0f) {
-            size.x += 3.6f * TimeUtils.UPDATE_DELTA_TIME;
+            size.x += scaleAnimation;
             if (size.x > 1.0f) size.x = 1.0f;
+        }
+    }
+
+    private void regenHp() {
+        if (shieldHp < shieldMaxHp) {
+            shieldHp += shieldRegen;
+            if (shieldHp > shieldMaxHp) shieldHp = shieldMaxHp;
         }
     }
 

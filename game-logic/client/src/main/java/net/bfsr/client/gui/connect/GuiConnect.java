@@ -30,7 +30,7 @@ public class GuiConnect extends Gui {
         int offsetX = 24;
 
         InputBox hostInputBox = new InputBox(TextureRegister.guiButtonBase, Lang.getString("gui.connect.host"),
-                fontSize, offsetX, 0).setString("127.0.0.1:25565");
+                fontSize, offsetX, 0).setString("192.168.2.4:34000");
         registerGuiObject(hostInputBox.atCenter(buttonOffsetX, -100));
         InputBox usernameInputBox = new InputBox(TextureRegister.guiButtonBase, Lang.getString("gui.connect.username"),
                 fontSize, offsetX, 0).setString("Krogenit");
@@ -72,7 +72,7 @@ public class GuiConnect extends Gui {
 
                         try {
                             inetaddress = InetAddress.getByName(host);
-                            Core.get().connectToServer(inetaddress, port);
+                            Core.get().connectToServer(inetaddress, port, playerName);
                         } catch (UnknownHostException unknownhostexception) {
                             log.error("Couldn't connect to server", unknownhostexception);
                             Core.get().addFutureTask(() -> setErrorMessage(Lang.getString("connect.failed") + " Unknown Host"));
