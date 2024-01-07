@@ -9,15 +9,11 @@ import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.particle.RenderLayer;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.util.ObjectPool;
-import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.GameObject;
 import org.joml.Vector2f;
 
-import java.util.function.Supplier;
-
 public class Particle extends GameObject {
-    private static final ObjectPool<ParticleRender> RENDER_POOL = new ObjectPool<>();
-    private static final Supplier<ParticleRender> RENDER_SUPPLIER = ParticleRender::new;
+    private static final ObjectPool<ParticleRender> RENDER_POOL = new ObjectPool<>(ParticleRender::new);
     protected static final ParticleManager PARTICLE_MANAGER = Core.get().getParticleManager();
     protected static final ParticleRenderer PARTICLE_RENDERER = Core.get().getGlobalRenderer().getParticleRenderer();
 
@@ -47,14 +43,15 @@ public class Particle extends GameObject {
                          boolean isAlphaFromZero,
                          RenderLayer renderLayer) {
         this.position.set(x, y);
-        this.velocity.set(velocityX * TimeUtils.UPDATE_DELTA_TIME, velocityY * TimeUtils.UPDATE_DELTA_TIME);
+        this.velocity.set(Engine.convertToDeltaTime(velocityX), Engine.convertToDeltaTime(velocityY));
         this.sin = sin;
         this.cos = cos;
-        this.angularVelocitySin = LUT.sin(angularVelocity * TimeUtils.UPDATE_DELTA_TIME);
-        this.angularVelocityCos = LUT.cos(angularVelocity * TimeUtils.UPDATE_DELTA_TIME);
+        float angularVelocityInTick = Engine.convertToDeltaTime(angularVelocity);
+        this.angularVelocitySin = LUT.sin(angularVelocityInTick);
+        this.angularVelocityCos = LUT.cos(angularVelocityInTick);
         this.size.set(scaleX, scaleY);
-        this.sizeVelocity = sizeVelocity * TimeUtils.UPDATE_DELTA_TIME;
-        this.alphaVelocity = alphaVelocity;
+        this.sizeVelocity = Engine.convertToDeltaTime(sizeVelocity);
+        this.alphaVelocity = Engine.convertToDeltaTime(alphaVelocity);
         this.zeroVelocity = velocity.lengthSquared() <= 0.01f;
         this.isDead = false;
         addParticle(textureHandle, r, g, b, a, isAlphaFromZero, renderLayer);
@@ -64,7 +61,7 @@ public class Particle extends GameObject {
     protected void addParticle(long textureHandle, float r, float g, float b, float a, boolean isAlphaFromZero,
                                RenderLayer renderLayer) {
         PARTICLE_MANAGER.addParticle(this);
-        render = RENDER_POOL.getOrCreate(RENDER_SUPPLIER).init(this, textureHandle, r, g, b, a, isAlphaFromZero);
+        render = RENDER_POOL.get().init(this, textureHandle, r, g, b, a, isAlphaFromZero);
         PARTICLE_RENDERER.addParticleToRenderLayer(render, renderLayer);
     }
 

@@ -1,13 +1,14 @@
 package net.bfsr.ai.task;
 
 import net.bfsr.config.component.weapon.gun.GunData;
-import net.bfsr.engine.util.TimeUtils;
+import net.bfsr.engine.Engine;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.entity.ship.module.weapon.WeaponType;
+import net.bfsr.event.module.weapon.WeaponShotEvent;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.math.RotationHelper;
@@ -32,7 +33,7 @@ public class AiAttackTarget extends AiTask {
 
     @Override
     public void execute() {
-        RigidBody target = ship.getTarget();
+        RigidBody<?> target = ship.getTarget();
         AABB aabb = new AABB(0, 0, 0, 0);
         target.getBody().computeAABB(aabb);
         Vector2f targetPos = new Vector2f((float) ((aabb.getMinX() + aabb.getMaxX()) / 2),
@@ -81,7 +82,7 @@ public class AiAttackTarget extends AiTask {
                     float bulletSpeed = gunData.getBulletSpeed();
                     int totalIterations = gunData.getBulletLifeTimeInTicks();
 
-                    Vector2f totalVelocity = new Vector2f(-cos, -sin).mul(bulletSpeed * TimeUtils.UPDATE_DELTA_TIME)
+                    Vector2f totalVelocity = new Vector2f(-cos, -sin).mul(bulletSpeed * Engine.getUpdateDeltaTime())
                             .mul(totalIterations);
                     Vector2f bulletFinalPos = new Vector2f(pos.x - xPos + totalVelocity.x, pos.y - yPos + totalVelocity.y);
 
@@ -91,8 +92,8 @@ public class AiAttackTarget extends AiTask {
                         totalIterations *= distanceToTarget / bulletToShip;
                     }
 
-                    Vector2f totalTargetVelocity = new Vector2f(targetVelocity.x * TimeUtils.UPDATE_DELTA_TIME,
-                            targetVelocity.y * TimeUtils.UPDATE_DELTA_TIME).mul(totalIterations);
+                    Vector2f totalTargetVelocity = new Vector2f(targetVelocity.x * Engine.getUpdateDeltaTime(),
+                            targetVelocity.y * Engine.getUpdateDeltaTime()).mul(totalIterations);
                     targetFinalPos = new Vector2f(targetPos.x + totalTargetVelocity.x - xPos,
                             targetPos.y + totalTargetVelocity.y - yPos);
                 }
@@ -101,7 +102,7 @@ public class AiAttackTarget extends AiTask {
 
                 if (targetToShip <= bulletToShip) {
                     if (Math.abs(RigidBodyUtils.getRotationDifference(ship, targetFinalPos)) <= 0.1f + shipSizeAverage / 25.0f) {
-                        slot.tryShoot();
+                        slot.tryShoot(weaponSlot -> ship.getWorld().getEventBus().publish(new WeaponShotEvent(weaponSlot)));
                     }
                 }
 
@@ -169,7 +170,7 @@ public class AiAttackTarget extends AiTask {
                             sideDirection = Direction.RIGHT;
                         }
 
-                        changeDirTimer = (int) ((1 + rand.nextFloat() * 2) * TimeUtils.UPDATES_PER_SECOND);
+                        changeDirTimer = Engine.convertToTicks(1 + rand.nextFloat() * 2);
                     }
                 } else {
                     if (isLeftEnginesAlive) {
@@ -193,7 +194,7 @@ public class AiAttackTarget extends AiTask {
                             sideDirection = Direction.RIGHT;
                         }
 
-                        changeDirTimer = (int) ((1 + rand.nextFloat() * 2) * TimeUtils.UPDATES_PER_SECOND);
+                        changeDirTimer = Engine.convertToTicks(1 + rand.nextFloat() * 2);
                     }
                 } else {
                     if (isLeftEnginesAlive) {

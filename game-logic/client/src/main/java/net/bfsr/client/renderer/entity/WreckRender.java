@@ -7,7 +7,6 @@ import net.bfsr.config.entity.wreck.WreckData;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
-import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.wreck.Wreck;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -22,13 +21,15 @@ public class WreckRender extends RigidBodyRender<Wreck> {
     @Getter
     private final Vector4f lastColorFire = new Vector4f(), lastColorLight = new Vector4f();
     private boolean fireFadingOut;
-    private float sparkleActivationTimer;
+    private int sparkleActivationTimerInTicks;
     private final float lifeTimeVelocity;
     private boolean fire;
     private boolean light;
     private float sparkleBlinkTimer;
 
     private final SpawnAccumulator spawnAccumulator = new SpawnAccumulator();
+    private final float fireAnimationSpeed = Engine.convertToDeltaTime(0.18f);
+    private final float lightAnimationSpeed = Engine.convertToDeltaTime(12.0f);
 
     public WreckRender(Wreck object) {
         super(Engine.assetsManager.getTexture(object.getConfigData().getTexture()), object, 0.5f, 0.5f, 0.5f, 1.0f);
@@ -45,7 +46,8 @@ public class WreckRender extends RigidBodyRender<Wreck> {
         this.lastColorFire.set(colorFire);
         this.colorLight.set(1.0f, 1.0f, 1.0f, 0.0f);
         this.lastColorLight.set(colorLight);
-        this.sparkleActivationTimer = object.isLight() ? 200.0f + object.getWorld().getRand().nextInt(200) : 0.0f;
+        this.sparkleActivationTimerInTicks = object.isLight() ?
+                Engine.convertToTicks(200.0f + object.getWorld().getRand().nextInt(200)) : 0;
         this.lifeTimeVelocity = object.getLifeTimeVelocity();
         this.fire = object.isFire();
         this.light = object.isLight();
@@ -67,12 +69,12 @@ public class WreckRender extends RigidBodyRender<Wreck> {
 
     protected void updateLifeTime() {
         if (color.w < 0.2f) {
-            color.w -= lifeTimeVelocity * 0.05f;
+            color.w -= lifeTimeVelocity * 2.0f;
             if (color.w <= 0.0f) {
                 color.w = 0.0f;
             }
         } else {
-            color.w -= lifeTimeVelocity * TimeUtils.UPDATE_DELTA_TIME;
+            color.w -= lifeTimeVelocity;
             if (color.w < 0.0f) color.w = 0.0f;
         }
     }
@@ -94,11 +96,9 @@ public class WreckRender extends RigidBodyRender<Wreck> {
 
     protected void updateFire() {
         if (fire) {
-            float fireSpeed = 0.180f * TimeUtils.UPDATE_DELTA_TIME;
-
             if (fireFadingOut) {
                 if (colorFire.w > 0.4f) {
-                    colorFire.w -= fireSpeed;
+                    colorFire.w -= fireAnimationSpeed;
                     if (colorFire.w < 0.0f) {
                         colorFire.w = 0.0f;
                     }
@@ -107,7 +107,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
                 }
             } else {
                 if (colorFire.w < 1.0f) {
-                    colorFire.w += fireSpeed;
+                    colorFire.w += fireAnimationSpeed;
                 } else {
                     fireFadingOut = true;
                 }
@@ -116,7 +116,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
 
         if (color.w <= 0.5f) {
             if (colorFire.w > 0.0f) {
-                float fireSpeed = lifeTimeVelocity * 4.0f * TimeUtils.UPDATE_DELTA_TIME;
+                float fireSpeed = lifeTimeVelocity * 4.0f;
 
                 fire = false;
                 colorFire.w -= fireSpeed;
@@ -129,12 +129,11 @@ public class WreckRender extends RigidBodyRender<Wreck> {
 
     protected void updateSparkle() {
         if (light) {
-            float lightSpeed = 12.0f * TimeUtils.UPDATE_DELTA_TIME;
-            sparkleActivationTimer -= 60.0f * TimeUtils.UPDATE_DELTA_TIME;
-            if (sparkleActivationTimer <= 0.0f) {
+            sparkleActivationTimerInTicks -= 1;
+            if (sparkleActivationTimerInTicks <= 0.0f) {
                 if (changeLight) {
                     if (colorLight.w > 0.0f) {
-                        colorLight.w -= lightSpeed;
+                        colorLight.w -= lightAnimationSpeed;
                         if (colorLight.w < 0.0f) {
                             colorLight.w = 0.0f;
                         }
@@ -144,7 +143,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
                     }
                 } else {
                     if (colorLight.w < color.w) {
-                        colorLight.w += lightSpeed;
+                        colorLight.w += lightAnimationSpeed;
                     } else {
                         changeLight = true;
                         sparkleBlinkTimer += 25.0f;
@@ -153,7 +152,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
             }
 
             if (sparkleBlinkTimer >= 100.0f) {
-                sparkleActivationTimer = 200.0f + object.getWorld().getRand().nextInt(200);
+                sparkleActivationTimerInTicks = Engine.convertToTicks(200.0f + object.getWorld().getRand().nextInt(200));
                 sparkleBlinkTimer = 0.0f;
             }
         }
@@ -164,10 +163,8 @@ public class WreckRender extends RigidBodyRender<Wreck> {
     protected void updateSparkleFading() {
         if (color.w < 0.3f) {
             if (colorLight.w > 0.0f) {
-                float lightSpeed = 12.0f * TimeUtils.UPDATE_DELTA_TIME;
-
                 light = false;
-                colorLight.w -= lightSpeed;
+                colorLight.w -= lightAnimationSpeed;
                 if (colorLight.w < 0.0f) {
                     colorLight.w = 0.0f;
                 }

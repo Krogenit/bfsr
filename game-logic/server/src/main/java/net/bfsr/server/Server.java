@@ -3,12 +3,12 @@ package net.bfsr.server;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.loop.AbstractLoop;
+import net.bfsr.engine.loop.AbstractGameLoop;
 import net.bfsr.engine.util.Side;
 
 @Log4j2
 @AllArgsConstructor
-public abstract class Server extends AbstractLoop {
+public abstract class Server extends AbstractGameLoop {
     protected final ServerGameLogic gameLogic;
 
     @Override
@@ -16,7 +16,7 @@ public abstract class Server extends AbstractLoop {
         log.info("Server initialization...");
         init();
         log.info("Initialized");
-        loop();
+        super.run();
     }
 
     protected void init() {
@@ -25,9 +25,9 @@ public abstract class Server extends AbstractLoop {
     }
 
     @Override
-    public void update() {
+    public void update(double time) {
         gameLogic.getProfiler().startSection("update");
-        gameLogic.update();
+        gameLogic.update(time);
         gameLogic.getProfiler().endSection("update");
     }
 

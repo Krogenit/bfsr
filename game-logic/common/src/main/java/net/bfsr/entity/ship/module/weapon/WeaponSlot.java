@@ -8,14 +8,13 @@ import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.config.component.weapon.gun.GunRegistry;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.DamageSystem;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
-import net.bfsr.engine.util.SideUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
-import net.bfsr.event.module.weapon.WeaponShotEvent;
 import net.bfsr.network.util.ByteBufUtils;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.physics.filter.ShipFilter;
@@ -28,6 +27,7 @@ import org.dyn4j.geometry.Polygon;
 import org.joml.Vector2f;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class WeaponSlot extends DamageableModule implements ConnectedObject {
     protected World world;
@@ -71,30 +71,27 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject {
 
     @Override
     public void spawn() {
-        if (SideUtils.IS_SERVER && world.isServer()) {
-            Vector2f shipPosition = ship.getPosition();
-            RigidBody<GunData> rigidBody = new RigidBody<>(shipPosition.x + position.x, shipPosition.y + position.y,
-                    ship.getSin(), ship.getCos(), gunData.getSizeX(), gunData.getSizeY(), gunData,
-                    weaponType == WeaponType.GUN ? GunRegistry.INSTANCE.getId() : BeamRegistry.INSTANCE.getId());
-            rigidBody.setHealth(5.0f);
+        RigidBody<GunData> rigidBody = new RigidBody<>(position.x, position.y, ship.getSin(), ship.getCos(),
+                gunData.getSizeX(), gunData.getSizeY(), gunData, weaponType == WeaponType.GUN ? GunRegistry.INSTANCE.getId()
+                : BeamRegistry.INSTANCE.getId());
+        rigidBody.setHealth(5.0f);
 
-            Polygon polygon = Geometry.createPolygon(this.polygon.getVertices());
-            BodyFixture fixture = new BodyFixture(polygon);
-            fixture.setUserData(this);
-            fixture.setFilter(new ShipFilter(rigidBody));
-            fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-            Body body = rigidBody.getBody();
-            body.addFixture(fixture);
-            rigidBody.init(world, world.getNextId());
-            body.setMass(MassType.NORMAL);
-            body.setUserData(rigidBody);
-            body.setLinearDamping(0.05f);
-            body.setAngularDamping(0.005f);
-            body.setLinearVelocity(ship.getBody().getLinearVelocity());
-            body.setAngularVelocity(ship.getBody().getAngularVelocity());
+        Polygon polygon = Geometry.createPolygon(this.polygon.getVertices());
+        BodyFixture fixture = new BodyFixture(polygon);
+        fixture.setUserData(this);
+        fixture.setFilter(new ShipFilter(rigidBody));
+        fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
+        Body body = rigidBody.getBody();
+        body.addFixture(fixture);
+        rigidBody.init(world, world.getNextId());
+        body.setMass(MassType.NORMAL);
+        body.setUserData(rigidBody);
+        body.setLinearDamping(0.05f);
+        body.setAngularDamping(0.005f);
+        body.setLinearVelocity(ship.getBody().getLinearVelocity());
+        body.setAngularVelocity(ship.getBody().getAngularVelocity());
 
-            world.add(rigidBody);
-        }
+        world.add(rigidBody);
     }
 
     @Override
@@ -111,23 +108,36 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject {
         body.addFixture(fixture);
     }
 
-    public void tryShoot() {
+    public void tryShoot(Consumer<WeaponSlot> onShotEvent) {
         float energy = ship.getModules().getReactor().getEnergy();
         if (reloadTimer <= 0 && energy >= energyCost) {
-            shoot();
+            shoot(onShotEvent);
         }
     }
 
-    public void shoot() {
+    public void shoot(Consumer<WeaponSlot> onShotEvent) {
         reloadTimer = timeToReload;
         ship.getModules().getReactor().consume(energyCost);
-        eventBus.publish(new WeaponShotEvent(this));
+        onShotEvent.accept(this);
     }
 
-    public void createBullet() {
-        Bullet bullet = new Bullet(position.x, position.y, ship.getSin(), ship.getCos(), gunData, ship,
-                gunData.getDamage().copy());
+    public void createBullet(float fastForwardTime, Consumer<Bullet> syncLogic) {
+        float cos = ship.getCos();
+        float sin = ship.getSin();
+        float x = position.x + size.x * cos;
+        float y = position.y + size.x * sin;
+
+        float updateDeltaTime = Engine.getUpdateDeltaTime();
+        float updateDeltaTimeInMills = updateDeltaTime * 1000;
+        while (fastForwardTime > 0) {
+            x += cos * gunData.getBulletSpeed() * updateDeltaTime;
+            y += sin * gunData.getBulletSpeed() * updateDeltaTime;
+            fastForwardTime -= updateDeltaTimeInMills;
+        }
+
+        Bullet bullet = new Bullet(x, y, sin, cos, gunData, ship, gunData.getDamage().copy());
         bullet.init(world, world.getNextId());
+        bullet.setOnAddedToWorldConsumer(syncLogic);
         world.add(bullet);
     }
 

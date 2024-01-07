@@ -3,7 +3,6 @@ package net.bfsr.client.renderer.particle;
 import net.bfsr.client.particle.Particle;
 import net.bfsr.client.renderer.Render;
 import net.bfsr.engine.util.MutableInt;
-import net.bfsr.engine.util.TimeUtils;
 import org.joml.Vector2f;
 
 import java.nio.ByteBuffer;
@@ -52,20 +51,15 @@ public class ParticleRender extends Render<Particle> implements net.bfsr.engine.
             lastColor.w = color.w;
             if (isAlphaFromZero) {
                 if (maxAlpha != 0) {
-                    color.w += alphaVelocity * TimeUtils.UPDATE_DELTA_TIME;
-
-                    if (color.w >= maxAlpha) {
-                        maxAlpha = 0.0f;
-                    }
+                    color.w += alphaVelocity;
+                    if (color.w >= maxAlpha) maxAlpha = 0.0f;
                 } else {
-                    color.w -= alphaVelocity * TimeUtils.UPDATE_DELTA_TIME;
-                    if (color.w <= 0)
-                        object.setDead();
+                    color.w -= alphaVelocity;
+                    if (color.w <= 0) object.setDead();
                 }
             } else {
-                color.w -= alphaVelocity * TimeUtils.UPDATE_DELTA_TIME;
-                if (color.w <= 0)
-                    object.setDead();
+                color.w -= alphaVelocity;
+                if (color.w <= 0) object.setDead();
             }
         }
     }

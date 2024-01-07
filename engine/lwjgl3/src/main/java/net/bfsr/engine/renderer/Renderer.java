@@ -10,6 +10,7 @@ import net.bfsr.engine.renderer.shader.BaseShader;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureGenerator;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.opengl.*;
 
 import java.nio.ByteBuffer;
@@ -189,5 +190,13 @@ public class Renderer extends AbstractRenderer {
     @Override
     public void clear() {
         spriteRenderer.clear();
+
+        // Free the window callbacks and destroy the window
+        Callbacks.glfwFreeCallbacks(window);
+        glfwDestroyWindow(window);
+
+        // Terminate GLFW and free the error callback
+        glfwTerminate();
+        glfwSetErrorCallback(null).free();
     }
 }

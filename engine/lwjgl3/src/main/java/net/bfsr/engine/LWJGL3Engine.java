@@ -7,7 +7,7 @@ import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.input.Keyboard;
 import net.bfsr.engine.input.Mouse;
-import net.bfsr.engine.loop.AbstractLoop;
+import net.bfsr.engine.loop.AbstractGameLoop;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.Renderer;
@@ -18,7 +18,6 @@ import net.bfsr.engine.sound.SoundManager;
 import net.bfsr.engine.util.FPSSync;
 import net.bfsr.engine.util.Side;
 import org.joml.Vector2i;
-import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -31,7 +30,7 @@ import java.nio.IntBuffer;
 import static org.lwjgl.glfw.GLFW.glfwShowWindow;
 
 @RequiredArgsConstructor
-public class LWJGL3Engine extends AbstractLoop implements EngineConfiguration {
+public class LWJGL3Engine extends AbstractGameLoop implements EngineConfiguration {
     private long window;
     private GLFWVidMode vidMode;
     private final FPSSync fpsSync = new FPSSync();
@@ -45,21 +44,14 @@ public class LWJGL3Engine extends AbstractLoop implements EngineConfiguration {
     public void run() {
         Thread.currentThread().setName("Client Thread");
         init();
-        loop();
-
-        // Free the window callbacks and destroy the window
-        Callbacks.glfwFreeCallbacks(window);
-        GLFW.glfwDestroyWindow(window);
-
-        // Terminate GLFW and free the error callback
-        GLFW.glfwTerminate();
-        GLFW.glfwSetErrorCallback(null).free();
+        super.run();
     }
 
     protected void init() {
         Vector2i windowSize = initGLFW();
 
         create();
+        Engine.instance = this;
         Engine.renderer.init(window, windowSize.x, windowSize.y);
         Engine.soundManager.init();
         Engine.assetsManager.init();
@@ -118,10 +110,10 @@ public class LWJGL3Engine extends AbstractLoop implements EngineConfiguration {
     }
 
     @Override
-    public void update() {
+    public void update(double time) {
         profiler.startSection("update");
         renderer.update();
-        gameLogic.update();
+        gameLogic.update(time);
         profiler.endSection("update");
     }
 

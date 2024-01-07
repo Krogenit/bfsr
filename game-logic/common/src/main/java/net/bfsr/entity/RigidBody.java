@@ -6,22 +6,26 @@ import lombok.Setter;
 import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.util.SideUtils;
+import net.bfsr.event.entity.RigidBodyAddToWorldEvent;
 import net.bfsr.event.entity.RigidBodyDeathEvent;
 import net.bfsr.event.entity.RigidBodyPostPhysicsUpdateEvent;
+import net.bfsr.network.packet.common.entity.PacketWorldSnapshot;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.RigidBodySpawnData;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.physics.filter.ShipFilter;
-import net.bfsr.util.SyncUtils;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.world.ContactCollisionData;
 import org.joml.Vector2f;
 
 @NoArgsConstructor
 public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObject {
+    public static final long HISTORY_DURATION_MILLIS = 5000;
+
     @Getter
     protected World world;
     @Getter
@@ -32,7 +36,7 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
     @Getter
     protected Vector2f velocity = new Vector2f();
     @Getter
-    protected float lifeTime;
+    protected float lifeTime, maxLifeTime = 1200;
     @Getter
     protected float sin, cos;
     private final Transform savedTransform = new Transform();
@@ -45,6 +49,11 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
     protected int registryId;
     @Setter
     protected float health;
+
+    @Getter
+    protected final PositionHistory historicalPositionData = new PositionHistory(HISTORY_DURATION_MILLIS);
+    private final ChronologicalEntityDataManager<PacketWorldSnapshot.EntityData> chronologicalLookup = new ChronologicalEntityDataManager<>(
+            HISTORY_DURATION_MILLIS);
 
     public RigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, CONFIG_DATA configData, int registryId) {
         super(x, y, sizeX, sizeY);
@@ -93,7 +102,7 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
         lifeTime++;
 
         if (SideUtils.IS_SERVER && world.isServer()) {
-            if (lifeTime >= 1200) {
+            if (lifeTime >= maxLifeTime) {
                 setDead();
             }
         } else {
@@ -116,24 +125,17 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
         eventBus.publish(new RigidBodyPostPhysicsUpdateEvent(this));
     }
 
-    public void updateClientPositionFromPacket(Vector2f position, float sin, float cos, Vector2f velocity,
-                                               float angularVelocity) {
-        lifeTime = 0;
-        body.setAtRest(false);
-        SyncUtils.updatePos(this, position);
-        SyncUtils.updateRot(this, sin, cos);
-        body.setLinearVelocity(velocity.x, velocity.y);
-        setAngularVelocity(angularVelocity);
+    public void onAddedToWorld() {
+        eventBus.publish(new RigidBodyAddToWorldEvent(this));
     }
 
-    @Override
-    public void saveTransform(Transform transform) {
-        savedTransform.set(transform);
-    }
+    public void onRemovedFromWorld() {}
 
-    @Override
-    public void restoreTransform() {
-        body.setTransform(savedTransform);
+    public void collision(Body body, BodyFixture fixture, float contactX, float contactY, float normalX, float normalY,
+                          ContactCollisionData<Body> collision) {}
+
+    public boolean canCollideWith(GameObject gameObject) {
+        return this != gameObject;
     }
 
     public EntityPacketSpawnData createSpawnData() {
@@ -145,6 +147,14 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
         if (health <= 0) {
             setDead();
         }
+    }
+
+    public void saveTransform(Transform transform) {
+        savedTransform.set(transform);
+    }
+
+    public void restoreTransform() {
+        body.setTransform(savedTransform);
     }
 
     @Override
@@ -188,5 +198,28 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
 
     public int getDataId() {
         return configData.getId();
+    }
+
+    public void addPositionData(PacketWorldSnapshot.EntityData entityData, double timestamp) {
+        historicalPositionData.addPositionData(entityData.getPosition(), entityData.getSin(), entityData.getCos(), timestamp);
+        chronologicalLookup.addData(entityData);
+        lifeTime = 0;
+    }
+
+    public void calcPosition(double timestamp) {
+        TransformData epd = historicalPositionData.get(timestamp);
+        if (epd != null) {
+            Vector2f epdPosition = epd.getPosition();
+            setPosition(epdPosition.x, epdPosition.y);
+        }
+    }
+
+    public void processChronologicalData(double timestamp) {
+        PacketWorldSnapshot.EntityData epd = chronologicalLookup.get(timestamp);
+        if (epd != null) {
+            Vector2f velocity = epd.getVelocity();
+            setVelocity(velocity.x, velocity.y);
+            setAngularVelocity(epd.getAngularVelocity());
+        }
     }
 }

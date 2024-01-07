@@ -3,6 +3,7 @@ package net.bfsr.server.network.manager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.log4j.Log4j2;
@@ -15,6 +16,7 @@ import net.bfsr.server.network.pipeline.MessageHandlerTCP;
 import net.bfsr.server.network.pipeline.PacketEncoderTCP;
 
 import java.net.InetAddress;
+import java.util.function.Supplier;
 
 @Log4j2
 public class NetworkManagerTCP {
@@ -23,7 +25,8 @@ public class NetworkManagerTCP {
     private final EventLoopGroup workerLoopGroup = new NioEventLoopGroup();
     private Channel channel;
 
-    public void startup(NetworkSystem networkSystem, InetAddress address, int port) {
+    public void startup(NetworkSystem networkSystem, InetAddress address, int port,
+                        Supplier<DatagramChannel> datagramChannelSupplier) {
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossLoopGroup, workerLoopGroup);
         bootstrap.channel(NioServerSocketChannel.class);
@@ -31,7 +34,8 @@ public class NetworkManagerTCP {
         bootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel socketChannel) {
-                PlayerNetworkHandler playerNetworkHandler = new PlayerNetworkHandler(connectionIds++, socketChannel, true);
+                PlayerNetworkHandler playerNetworkHandler = new PlayerNetworkHandler(connectionIds++, socketChannel,
+                        datagramChannelSupplier.get(), true);
                 socketChannel.pipeline().addLast("slicer", new FrameDecoder());
                 socketChannel.pipeline().addLast("prepender", new LengthPrepender());
 

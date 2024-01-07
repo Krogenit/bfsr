@@ -34,6 +34,10 @@ public class InputHandler extends AbstractInputHandler {
         cameraInputController.update();
     }
 
+    public void postUpdate(double timestamp) {
+        playerInputController.postUpdate(timestamp);
+    }
+
     @Override
     public void input(int key) {
         if (!guiInputController.input(key)) {

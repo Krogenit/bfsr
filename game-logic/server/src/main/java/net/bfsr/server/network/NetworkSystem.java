@@ -1,7 +1,9 @@
 package net.bfsr.server.network;
 
 import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.TLongObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.map.hash.TLongObjectHashMap;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +32,10 @@ public class NetworkSystem {
     @Getter
     private final PacketRegistry<PlayerNetworkHandler> packetRegistry = new PacketRegistry<>();
 
+    @Getter
     private final List<PlayerNetworkHandler> networkHandlers = new ArrayList<>();
     private final TIntObjectMap<PlayerNetworkHandler> networkHandlerMap = new TIntObjectHashMap<>();
+    private final TLongObjectMap<PlayerNetworkHandler> networkHandlerByAddressMap = new TLongObjectHashMap<>();
     private final PlayerManager playerManager;
 
     public void init() {
@@ -39,7 +43,7 @@ public class NetworkSystem {
     }
 
     public void startup(InetAddress address, int port) {
-        networkManagerTCP.startup(this, address, port);
+        networkManagerTCP.startup(this, address, port, networkManagerUDP::getChannel);
         networkManagerUDP.startup(this, address, port);
     }
 
@@ -53,6 +57,7 @@ public class NetworkSystem {
 
                     if (networkHandler.getPlayer() != null) {
                         networkHandlerMap.remove(networkHandler.getConnectionId());
+                        networkHandlerByAddressMap.remove(networkHandler.getRemoteAddress().getPort());
                     }
 
                     networkHandler.onDisconnected();
@@ -167,6 +172,10 @@ public class NetworkSystem {
         return networkHandlerMap.get(connectionId);
     }
 
+    public PlayerNetworkHandler getHandler(long address) {
+        return networkHandlerByAddressMap.get(address);
+    }
+
     public Packet createPacket(int packetId)
             throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         return packetRegistry.createPacket(packetId);
@@ -179,5 +188,20 @@ public class NetworkSystem {
     public void shutdown() {
         networkManagerTCP.shutdown();
         networkManagerUDP.shutdown();
+    }
+
+    public void registerUDPRemoteAddress(PlayerNetworkHandler handler, InetSocketAddress remoteAddress) {
+        handler.setRemoteAddress(remoteAddress);
+
+        long address = convertAddress(remoteAddress);
+        synchronized (networkHandlers) {
+            networkHandlerByAddressMap.put(address, handler);
+        }
+    }
+
+    public static long convertAddress(InetSocketAddress socketAddress) {
+        int ip = socketAddress.getAddress().hashCode();
+        int port = socketAddress.getPort();
+        return (((long) ip) << 32) | (port & 0xffffffffL);
     }
 }

@@ -18,7 +18,8 @@ public class PacketEncoderUDP extends MessageToMessageEncoder<AddressedEnvelope<
     private final NetworkSystem networkSystem;
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, AddressedEnvelope<Packet, InetSocketAddress> msg, List<Object> out) throws IOException {
+    protected void encode(ChannelHandlerContext ctx, AddressedEnvelope<Packet, InetSocketAddress> msg, List<Object> out)
+            throws IOException {
         Packet packet = msg.content();
         ByteBuf buffer = ctx.alloc().buffer();
         buffer.writeByte(networkSystem.getPacketId(packet));

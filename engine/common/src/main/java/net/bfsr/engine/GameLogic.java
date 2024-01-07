@@ -26,7 +26,7 @@ public class GameLogic {
     /**
      * Queue of Runnable which will execute in next game logic update step
      *
-     * @see GameLogic#update()
+     * @see GameLogic#update(double)
      */
     private final Queue<Runnable> futureTasks = new ConcurrentLinkedQueue<>();
 
@@ -37,7 +37,7 @@ public class GameLogic {
         isRunning = true;
     }
 
-    public void update() {
+    public void update(double time) {
         profiler.startSection("tasks");
         while (!futureTasks.isEmpty()) {
             futureTasks.poll().run();

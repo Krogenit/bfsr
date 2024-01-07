@@ -17,6 +17,7 @@ public class BulletSpawnLogic implements EntitySpawnLogic {
         Bullet bullet = new Bullet(spawnData.getPosX(), spawnData.getPosY(), spawnData.getSin(), spawnData.getCos(), gunData,
                 null, gunData.getDamage());
         bullet.init(world, spawnData.getEntityId());
+        bullet.setOnAddedToWorldConsumer((bullet1) -> Core.get().getRenderManager().createRender(bullet1));
         world.add(bullet);
     }
 }

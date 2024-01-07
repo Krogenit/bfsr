@@ -1,21 +1,25 @@
 package net.bfsr.engine.util;
 
+import lombok.RequiredArgsConstructor;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.function.Supplier;
 
+@RequiredArgsConstructor
 public class ObjectPool<T> {
-    private final Deque<T> particles = new ArrayDeque<>();
+    private final Deque<T> objects = new ArrayDeque<>();
+    private final Supplier<T> supplier;
 
-    public T getOrCreate(Supplier<T> supplier) {
-        if (particles.isEmpty()) {
+    public T get() {
+        if (objects.isEmpty()) {
             return supplier.get();
         } else {
-            return particles.pollFirst();
+            return objects.pollFirst();
         }
     }
 
     public void returnBack(T particle) {
-        particles.addFirst(particle);
+        objects.addFirst(particle);
     }
 }

@@ -5,7 +5,7 @@ import lombok.Getter;
 import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.config.Vector2fConfigurable;
 import net.bfsr.config.component.ModulesPolygonsConfig;
-import net.bfsr.engine.util.TimeUtils;
+import net.bfsr.engine.Engine;
 import net.bfsr.math.Direction;
 import org.dyn4j.geometry.Polygon;
 import org.joml.Vector2f;
@@ -25,7 +25,7 @@ public class ShipData extends GameObjectConfigData {
 
     public ShipData(ShipConfig shipConfig, String fileName, int id) {
         super(shipConfig, fileName, id);
-        this.destroyTimeInTicks = (int) (shipConfig.getDestroyTimeInSeconds() * TimeUtils.UPDATES_PER_SECOND);
+        this.destroyTimeInTicks = Engine.convertToTicks(shipConfig.getDestroyTimeInSeconds());
         this.effectsColor = convert(shipConfig.getEffectsColor());
 
         Vector2fConfigurable[] slotPositions = shipConfig.getWeaponSlotPositions();

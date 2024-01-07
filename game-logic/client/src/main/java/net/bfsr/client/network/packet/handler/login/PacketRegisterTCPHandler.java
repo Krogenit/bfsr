@@ -12,6 +12,7 @@ public class PacketRegisterTCPHandler extends PacketHandler<PacketRegisterTCP, N
     @Override
     public void handle(PacketRegisterTCP packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
+        networkSystem.setConnectionId(packet.getConnectionId());
         networkSystem.sendPacketUDP(new PacketRegisterUDP(packet.getConnectionId()));
     }
 }

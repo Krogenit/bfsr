@@ -9,7 +9,6 @@ import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
-import net.bfsr.engine.util.TimeUtils;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.network.packet.client.PacketCameraPosition;
 import net.engio.mbassy.listener.Handler;
@@ -47,7 +46,7 @@ public class CameraInputController extends InputController {
                 if (ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS.getBoolean()) moveByScreenBorders();
 
                 boolean noShip = !playerInputController.isControllingShip();
-                float keyMoveSpeed = ClientSettings.CAMERA_MOVE_BY_KEY_SPEED.getFloat() * 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+                float keyMoveSpeed = ClientSettings.CAMERA_MOVE_BY_KEY_SPEED.getFloat() * Engine.convertToDeltaTime(60.0f);
                 if (keyboard.isKeyDown(KEY_LEFT) || (noShip && keyboard.isKeyDown(KEY_A))) {
                     camera.move(-keyMoveSpeed, 0);
                 } else if (keyboard.isKeyDown(KEY_RIGHT) || (noShip && keyboard.isKeyDown(KEY_D))) {
@@ -85,7 +84,8 @@ public class CameraInputController extends InputController {
             if (dis > minDistance) {
                 float mDx = shipPosition.x - position.x;
                 float mDy = shipPosition.y - position.y;
-                camera.move(mDx * 3.0f * TimeUtils.UPDATE_DELTA_TIME, mDy * 3.0f * TimeUtils.UPDATE_DELTA_TIME);
+                float animationSpeed = Engine.convertToDeltaTime(3.0f);
+                camera.move(mDx * animationSpeed, mDy * animationSpeed);
             }
         } else {
             if (followShip == null || followShip.isDead()) {
@@ -103,7 +103,8 @@ public class CameraInputController extends InputController {
                     if (mDy < -max) mDy = -max;
                     else if (mDy > max) mDy = max;
 
-                    camera.move(mDx * 3.0f * TimeUtils.UPDATE_DELTA_TIME, mDy * 3.0f * TimeUtils.UPDATE_DELTA_TIME);
+                    float animationSpeed = Engine.convertToDeltaTime(3.0f);
+                    camera.move(mDx * animationSpeed, mDy * animationSpeed);
                 }
             }
         }
@@ -128,7 +129,7 @@ public class CameraInputController extends InputController {
     }
 
     private void moveByScreenBorders() {
-        float moveSpeed = 60.0f * TimeUtils.UPDATE_DELTA_TIME;
+        float moveSpeed = Engine.convertToDeltaTime(60.0f);
         float screenMoveSpeed = ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS_SPEED.getFloat() / camera.getZoom() * moveSpeed;
         float offset = ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS_OFFSET.getFloat();
         Vector2f cursorPosition = mouse.getPosition();

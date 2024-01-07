@@ -2,16 +2,16 @@ package net.bfsr.physics.filter;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.entity.GameObject;
+import net.bfsr.entity.RigidBody;
 import org.dyn4j.collision.CategoryFilter;
 import org.dyn4j.collision.Filter;
 
 @Getter
 @Setter
 public class CollisionFilter extends CategoryFilter {
-    protected GameObject userData;
+    protected RigidBody<?> userData;
 
-    CollisionFilter(GameObject userData, long category, long mask) {
+    CollisionFilter(RigidBody<?> userData, long category, long mask) {
         super(category, mask);
         this.userData = userData;
     }

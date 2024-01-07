@@ -7,8 +7,8 @@ import net.bfsr.server.player.Player;
 @Log4j2
 public class LocalServerGameLogic extends ServerGameLogic {
     @Override
-    protected void updateWorld() {
-        if (!isPaused()) super.updateWorld();
+    protected void updateWorld(double time) {
+        if (!isPaused()) super.updateWorld(time);
     }
 
     @Override

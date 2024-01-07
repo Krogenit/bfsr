@@ -1,0 +1,93 @@
+package net.bfsr.network.packet.common.entity;
+
+import io.netty.buffer.ByteBuf;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import net.bfsr.entity.ChronologicalEntityData;
+import net.bfsr.entity.RigidBody;
+import net.bfsr.network.packet.common.PacketScheduled;
+import net.bfsr.network.util.ByteBufUtils;
+import org.joml.Vector2f;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+@NoArgsConstructor
+public class PacketWorldSnapshot extends PacketScheduled {
+    private List<EntityData> entityDataList;
+
+    public PacketWorldSnapshot(List<EntityData> entityDataList, double timestamp) {
+        super(timestamp);
+        this.entityDataList = entityDataList;
+    }
+
+    @Override
+    public void write(ByteBuf data) throws IOException {
+        super.write(data);
+        data.writeShort(entityDataList.size());
+
+        for (int i = 0; i < entityDataList.size(); i++) {
+            EntityData entityData = entityDataList.get(i);
+            entityData.write(data);
+        }
+    }
+
+    @Override
+    public void read(ByteBuf data) throws IOException {
+        super.read(data);
+        int size = data.readShort();
+        entityDataList = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            entityDataList.add(new EntityData(data));
+        }
+    }
+
+    @Override
+    public boolean canProcess(double time) {
+        return true;
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    public static class EntityData extends ChronologicalEntityData {
+        private final int entityId;
+        private final Vector2f position;
+        private final float sin;
+        private final float cos;
+        private final Vector2f velocity;
+        private final float angularVelocity;
+
+        public EntityData(RigidBody<?> rigidBody, double time) {
+            super(time);
+            entityId = rigidBody.getId();
+            position = new Vector2f(rigidBody.getPosition());
+            sin = rigidBody.getSin();
+            cos = rigidBody.getCos();
+            velocity = new Vector2f(rigidBody.getVelocity());
+            angularVelocity = rigidBody.getAngularVelocity();
+        }
+
+        EntityData(ByteBuf data) {
+            super(data.readDouble());
+            entityId = data.readInt();
+            ByteBufUtils.readVector(data, position = new Vector2f());
+            sin = data.readFloat();
+            cos = data.readFloat();
+            ByteBufUtils.readVector(data, velocity = new Vector2f());
+            angularVelocity = data.readFloat();
+        }
+
+        public void write(ByteBuf data) {
+            data.writeDouble(time);
+            data.writeInt(entityId);
+            ByteBufUtils.writeVector(data, position);
+            data.writeFloat(sin);
+            data.writeFloat(cos);
+            ByteBufUtils.writeVector(data, velocity);
+            data.writeFloat(angularVelocity);
+        }
+    }
+}

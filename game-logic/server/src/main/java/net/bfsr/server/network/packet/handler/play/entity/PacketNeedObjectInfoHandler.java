@@ -7,6 +7,7 @@ import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.client.PacketNeedObjectInfo;
 import net.bfsr.network.packet.server.entity.PacketSpawnEntity;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
+import net.bfsr.world.World;
 
 import java.net.InetSocketAddress;
 
@@ -14,9 +15,10 @@ public class PacketNeedObjectInfoHandler extends PacketHandler<PacketNeedObjectI
     @Override
     public void handle(PacketNeedObjectInfo packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
-        GameObject obj = playerNetworkHandler.getWorld().getEntityById(packet.getObjectId());
+        World world = playerNetworkHandler.getWorld();
+        GameObject obj = world.getEntityById(packet.getObjectId());
         if (obj instanceof RigidBody<?> rigidBody && !rigidBody.isDead()) {
-            playerNetworkHandler.sendTCPPacket(new PacketSpawnEntity(rigidBody.createSpawnData()));
+            playerNetworkHandler.sendTCPPacket(new PacketSpawnEntity(rigidBody.createSpawnData(), world.getTimestamp()));
         }
     }
 }

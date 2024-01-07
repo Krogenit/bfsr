@@ -5,7 +5,6 @@ import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.texture.AbstractDamageMaskTexture;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
-import net.bfsr.engine.util.TimeUtils;
 
 import java.nio.ByteBuffer;
 
@@ -15,6 +14,8 @@ public class DamageMaskTexture extends AbstractDamageMaskTexture {
     private float lastFireAmount, lastFireUVAnimation;
     private float fireAmount, fireUVAnimation;
     private boolean changeFire;
+    private final float fireAnimationSpeed = Engine.convertToDeltaTime(0.24f);
+    private final float uvAnimationSpeed = Engine.convertToDeltaTime(0.12f);
 
     public DamageMaskTexture(int width, int height, ByteBuffer byteBuffer) {
         this.texture = Engine.assetsManager.newTexture(width, height);
@@ -45,20 +46,17 @@ public class DamageMaskTexture extends AbstractDamageMaskTexture {
     }
 
     public void updateEffects() {
-        float speed = 0.24f * TimeUtils.UPDATE_DELTA_TIME;
-        float uvAnimationSpeed = 0.12f * TimeUtils.UPDATE_DELTA_TIME;
-
         lastFireAmount = fireAmount;
         lastFireUVAnimation = fireUVAnimation;
 
         if (changeFire) {
-            fireAmount -= speed;
+            fireAmount -= fireAnimationSpeed;
             if (fireAmount < 0.6f) {
                 fireAmount = 0.6f;
                 changeFire = false;
             }
         } else {
-            fireAmount += speed;
+            fireAmount += fireAnimationSpeed;
             if (fireAmount > 1.75f) {
                 fireAmount = 1.75f;
                 changeFire = true;
