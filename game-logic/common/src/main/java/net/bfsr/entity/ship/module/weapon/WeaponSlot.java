@@ -71,6 +71,8 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject {
 
     @Override
     public void spawn() {
+        if (world.isClient()) return;
+
         RigidBody<GunData> rigidBody = new RigidBody<>(position.x, position.y, ship.getSin(), ship.getCos(),
                 gunData.getSizeX(), gunData.getSizeY(), gunData, weaponType == WeaponType.GUN ? GunRegistry.INSTANCE.getId()
                 : BeamRegistry.INSTANCE.getId());

@@ -10,9 +10,9 @@ public class ArmorPlate extends HullCell {
         this.armorHullProtection = armorPlateData.getHullProtection();
     }
 
-    float reduceDamage(float damageToArmor, float damageToHull) {
+    float reduceDamage(float damageToArmor, float damageToHull, boolean isServer) {
         if (value > 0) {
-            damage(damageToArmor);
+            if (isServer) damage(damageToArmor);
             return damageToHull / armorHullProtection;
         } else {
             return damageToHull;
