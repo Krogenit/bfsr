@@ -5,6 +5,7 @@ import org.joml.Vector2f;
 
 public final class PositionHistory extends ChronologicalEntityDataManager<TransformData> {
     private final ObjectPool<TransformData> cache = new ObjectPool<>(TransformData::new);
+    private final TransformData cachedTransformData = new TransformData();
 
     public PositionHistory(double historyLengthMillis) {
         super(historyLengthMillis);
@@ -20,12 +21,12 @@ public final class PositionHistory extends ChronologicalEntityDataManager<Transf
     }
 
     @Override
-    public TransformData get(double serverTimeToUse) {
+    public TransformData get(double time) {
         if (dataList.size() == 0) return null;
 
-        if (dataList.getFirst().getTime() < serverTimeToUse) {
+        if (dataList.getFirst().getTime() < time) {
             return null;
-        } else if (dataList.getLast().getTime() > serverTimeToUse) {
+        } else if (dataList.getLast().getTime() > time) {
             return null;
         }
 
@@ -33,8 +34,9 @@ public final class PositionHistory extends ChronologicalEntityDataManager<Transf
         for (int i = 0, positionDataSize = dataList.size(); i < positionDataSize; i++) {
             TransformData secondEPD = dataList.get(i);
             if (firstEPD != null) {
-                if (firstEPD.getTime() >= serverTimeToUse && secondEPD.getTime() <= serverTimeToUse) {
-                    return firstEPD.getInterpol(secondEPD, serverTimeToUse);
+                if (firstEPD.getTime() >= time && secondEPD.getTime() <= time) {
+                    firstEPD.getInterpol(secondEPD, time, cachedTransformData);
+                    return cachedTransformData;
                 }
             }
 
@@ -55,5 +57,10 @@ public final class PositionHistory extends ChronologicalEntityDataManager<Transf
                 break;
             }
         }
+    }
+
+    public void clear() {
+        dataList.clear();
+        cache.clear();
     }
 }

@@ -130,8 +130,6 @@ public class Core extends ClientGameLogic {
             particleManager.update();
         }
 
-        profiler.endStartSection("inputHandler");
-        inputHandler.postUpdate(renderTime);
         profiler.endStartSection("guiManager");
         guiManager.update();
         profiler.endStartSection("renderManager.postUpdate");

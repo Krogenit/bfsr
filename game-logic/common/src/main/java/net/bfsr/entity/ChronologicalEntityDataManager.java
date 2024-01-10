@@ -40,12 +40,12 @@ public class ChronologicalEntityDataManager<T extends ChronologicalEntityData> {
         }
     }
 
-    public T get(double serverTimeToUse) {
+    public T get(double time) {
         if (dataList.size() == 0) return null;
 
-        if (dataList.getFirst().getTime() < serverTimeToUse) {
+        if (dataList.getFirst().getTime() < time) {
             return null;
-        } else if (dataList.getLast().getTime() > serverTimeToUse) {
+        } else if (dataList.getLast().getTime() > time) {
             return dataList.getLast();
         }
 
@@ -53,7 +53,7 @@ public class ChronologicalEntityDataManager<T extends ChronologicalEntityData> {
         for (int i = 0, size = dataList.size(); i < size; i++) {
             T secondEPD = dataList.get(i);
             if (firstEPD != null) {
-                if (firstEPD.getTime() >= serverTimeToUse && secondEPD.getTime() <= serverTimeToUse) {
+                if (firstEPD.getTime() >= time && secondEPD.getTime() <= time) {
                     return secondEPD;
                 }
             }

@@ -22,4 +22,8 @@ public class ObjectPool<T> {
     public void returnBack(T particle) {
         objects.addFirst(particle);
     }
+
+    public void clear() {
+        objects.clear();
+    }
 }

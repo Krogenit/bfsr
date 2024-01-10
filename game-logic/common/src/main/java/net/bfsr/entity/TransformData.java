@@ -10,16 +10,13 @@ public class TransformData extends ChronologicalEntityData {
     @Setter
     private float sin, cos;
 
-    TransformData getInterpol(TransformData other, double time) {
+    void getInterpol(TransformData other, double time, TransformData destination) {
         float interpolation = (float) ((this.time - time) / (this.time - other.time));
-        TransformData epd = new TransformData();
-        epd.position.set(position.x + (other.position.x - position.x) * interpolation,
+        destination.position.set(position.x + (other.position.x - position.x) * interpolation,
                 position.y + (other.position.y - position.y) * interpolation);
-        epd.setSin(sin + (other.sin - sin) * interpolation);
-        epd.setCos(cos + (other.cos - cos) * interpolation);
-        epd.time = time;
-
-        return epd;
+        destination.setSin(sin + (other.sin - sin) * interpolation);
+        destination.setCos(cos + (other.cos - cos) * interpolation);
+        destination.time = time;
     }
 
     public void setPosition(Vector2f pos) {

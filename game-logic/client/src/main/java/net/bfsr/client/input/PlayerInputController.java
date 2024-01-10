@@ -6,7 +6,6 @@ import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.gui.hud.HUDAdapter;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.PositionHistory;
@@ -56,12 +55,6 @@ public class PlayerInputController extends InputController {
 
         if (!core.isPaused() && ship.isSpawned() && ship.getDestroyingTimer() == 0) {
             controlShip();
-        }
-    }
-
-    void postUpdate(double timestamp) {
-        if (ship != null && !core.isPaused() && ship.isSpawned() && ship.getDestroyingTimer() == 0) {
-            positionHistory.addPositionData(ship.getPosition(), ship.getSin(), ship.getCos(), timestamp);
         }
     }
 
@@ -212,6 +205,8 @@ public class PlayerInputController extends InputController {
     public void setShip(Ship ship) {
         if (this.ship != null) {
             this.ship.resetPositionCalculatorAndChronologicalProcessor();
+            this.ship.setControlledByPlayer(false);
+            positionHistory.clear();
         }
 
         this.ship = ship;
@@ -220,55 +215,28 @@ public class PlayerInputController extends InputController {
 
         if (ship != null) {
             ship.setPositionCalculator(timestamp -> {
-                Vector2f position = ship.getPosition();
-                PositionHistory historicalPositionData = ship.getHistoricalPositionData();
-                TransformData serverEPD = historicalPositionData.get(timestamp);
-                if (serverEPD != null) {
-                    Vector2f serverPosition = serverEPD.getPosition();
-                    float dx = serverPosition.x - position.x;
-                    float dy = serverPosition.y - position.y;
-                    float diff = dx * dx + dy * dy;
+                PositionHistory historicalPositionData = ship.getPositionHistory();
+                TransformData serverTransformData = historicalPositionData.get(timestamp);
 
-                    if (diff > 2.0f) {
-                        TransformData epd = historicalPositionData.get(timestamp);
-                        Vector2f position1;
-                        if (epd != null) {
-                            position1 = epd.getPosition();
-                        } else {
-                            position1 = historicalPositionData.getMostRecent().getPosition();
-                        }
-
-                        ship.setPosition(position1.x, position1.y);
-                    } else {
-                        float interpolation = Math.max(diff / 2.0f, 0.1f);
-                        ship.setPosition(position.x + dx * interpolation, position.y + dy * interpolation);
-                    }
-
-                    float currSin = ship.getSin();
-                    float currCos = ship.getCos();
-                    float sinDiff = serverEPD.getSin() - currSin;
-                    float cosDiff = serverEPD.getCos() - currCos;
-                    float remoteAngle = MathUtils.fastAtan2(serverEPD.getSin(), serverEPD.getCos());
-                    float localAngle = MathUtils.fastAtan2(currSin, currCos);
-                    float angleDiff = remoteAngle - localAngle;
-                    if (angleDiff < MathUtils.MINUS_PI) angleDiff += MathUtils.TWO_PI;
-                    if (angleDiff > MathUtils.PI) angleDiff -= MathUtils.TWO_PI;
-
-                    if (Math.abs(angleDiff) > 0.1f) {
-                        TransformData epd = historicalPositionData.get(timestamp);
-                        if (epd != null) {
-                            ship.setRotation(epd.getSin(), epd.getCos());
-                        } else {
-                            TransformData mostRecent = historicalPositionData.getMostRecent();
-                            ship.setRotation(mostRecent.getSin(), mostRecent.getCos());
-                        }
-                    } else {
-                        float interpolation = Math.max(diff / 0.1f, 0.01f);
-                        ship.setRotation(currSin + sinDiff * interpolation, currCos + cosDiff * interpolation);
-                    }
+                if (serverTransformData == null) {
+                    serverTransformData = historicalPositionData.getMostRecent();
+                    if (serverTransformData == null) return;
                 }
+
+                Vector2f position = ship.getPosition();
+                Vector2f serverPosition = serverTransformData.getPosition();
+                float dx = serverPosition.x - position.x;
+                float dy = serverPosition.y - position.y;
+                ship.setPosition(position.x + dx, position.y + dy);
+
+                float currSin = ship.getSin();
+                float currCos = ship.getCos();
+                float sinDiff = serverTransformData.getSin() - currSin;
+                float cosDiff = serverTransformData.getCos() - currCos;
+                ship.setRotation(currSin + sinDiff, currCos + cosDiff);
             });
             ship.setChronologicalDataProcessor(timestamp -> {});
+            ship.setControlledByPlayer(true);
         }
     }
 

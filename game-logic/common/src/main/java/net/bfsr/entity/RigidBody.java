@@ -51,8 +51,8 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
     protected float health;
 
     @Getter
-    protected final PositionHistory historicalPositionData = new PositionHistory(HISTORY_DURATION_MILLIS);
-    private final ChronologicalEntityDataManager<PacketWorldSnapshot.EntityData> chronologicalLookup = new ChronologicalEntityDataManager<>(
+    protected final PositionHistory positionHistory = new PositionHistory(HISTORY_DURATION_MILLIS);
+    private final ChronologicalEntityDataManager<PacketWorldSnapshot.EntityData> chronologicalEntityDataManager = new ChronologicalEntityDataManager<>(
             HISTORY_DURATION_MILLIS);
 
     public RigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, CONFIG_DATA configData, int registryId) {
@@ -200,22 +200,27 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
         return configData.getId();
     }
 
-    public void addPositionData(PacketWorldSnapshot.EntityData entityData, double timestamp) {
-        historicalPositionData.addPositionData(entityData.getPosition(), entityData.getSin(), entityData.getCos(), timestamp);
-        chronologicalLookup.addData(entityData);
+    public void addData(PacketWorldSnapshot.EntityData entityData, double timestamp) {
+        positionHistory.addPositionData(entityData.getPosition(), entityData.getSin(), entityData.getCos(), timestamp);
+        chronologicalEntityDataManager.addData(entityData);
+        onDataAdded();
+    }
+
+    protected void onDataAdded() {
         lifeTime = 0;
     }
 
     public void calcPosition(double timestamp) {
-        TransformData epd = historicalPositionData.get(timestamp);
+        TransformData epd = positionHistory.get(timestamp);
         if (epd != null) {
             Vector2f epdPosition = epd.getPosition();
             setPosition(epdPosition.x, epdPosition.y);
+            setRotation(epd.getSin(), epd.getCos());
         }
     }
 
     public void processChronologicalData(double timestamp) {
-        PacketWorldSnapshot.EntityData epd = chronologicalLookup.get(timestamp);
+        PacketWorldSnapshot.EntityData epd = chronologicalEntityDataManager.get(timestamp);
         if (epd != null) {
             Vector2f velocity = epd.getVelocity();
             setVelocity(velocity.x, velocity.y);
