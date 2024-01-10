@@ -29,23 +29,23 @@ public class WeaponEventListener {
         weaponSlot.createBullet(0, bullet -> networkSystem.sendTCPPacketToAllNearby(
                 new PacketSpawnEntity(bullet.createSpawnData(), world.getTimestamp()), bullet.getPosition(),
                 TrackingUtils.TRACKING_DISTANCE));
-        networkSystem.sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), weaponSlot.getId()), ship.getPosition(),
-                TrackingUtils.TRACKING_DISTANCE);
+        networkSystem.sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), weaponSlot.getId(), world.getTimestamp()),
+                ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
     }
 
     @Handler
     public void event(BeamShotEvent event) {
         WeaponSlotBeam weaponSlot = event.weaponSlot();
         Ship ship = weaponSlot.getShip();
-        networkSystem.sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), weaponSlot.getId()), ship.getPosition(),
-                TrackingUtils.TRACKING_DISTANCE);
+        networkSystem.sendUDPPacketToAllNearby(new PacketWeaponShoot(ship.getId(), weaponSlot.getId(), world.getTimestamp()),
+                ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
     }
 
     @Handler
     public void event(WeaponSlotRemovedEvent event) {
         WeaponSlot weaponSlot = event.getWeaponSlot();
         Ship ship = weaponSlot.getShip();
-        networkSystem.sendTCPPacketToAllNearby(new PacketRemoveWeaponSlot(ship.getId(), weaponSlot.getId()), ship.getPosition(),
-                TrackingUtils.TRACKING_DISTANCE);
+        networkSystem.sendTCPPacketToAllNearby(new PacketRemoveWeaponSlot(ship.getId(), weaponSlot.getId(), world.getTimestamp()),
+                ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
     }
 }

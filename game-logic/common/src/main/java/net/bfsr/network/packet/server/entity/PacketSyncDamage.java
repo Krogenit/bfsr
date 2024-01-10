@@ -1,4 +1,4 @@
-package net.bfsr.network.packet.server.entity.wreck;
+package net.bfsr.network.packet.server.entity;
 
 import clipper2.core.PathD;
 import clipper2.core.PathsD;
@@ -11,7 +11,7 @@ import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.Damageable;
 import net.bfsr.engine.Engine;
-import net.bfsr.network.packet.PacketAdapter;
+import net.bfsr.network.packet.common.PacketScheduled;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.decompose.SweepLine;
 
@@ -22,8 +22,8 @@ import java.util.List;
 
 @NoArgsConstructor
 @Getter
-public class PacketSyncDamage extends PacketAdapter {
-    private Damageable damagable;
+public class PacketSyncDamage extends PacketScheduled {
+    private Damageable<?> damageable;
     private int x, y, maxX, maxY;
     private PathsD contours;
     private byte[] bytes;
@@ -33,16 +33,17 @@ public class PacketSyncDamage extends PacketAdapter {
     private int width, height;
     private List<BodyFixture> fixtures;
 
-    public PacketSyncDamage(Damageable damagable) {
-        this.damagable = damagable;
-        DamageMask damageMask = damagable.getMask();
+    public PacketSyncDamage(Damageable<?> damageable) {
+        super(damageable.getWorld().getTimestamp());
+        this.damageable = damageable;
+        DamageMask damageMask = damageable.getMask();
         x = damageMask.getX();
         y = damageMask.getY();
         maxX = damageMask.getMaxX();
         maxY = damageMask.getMaxY();
         contours = new PathsD();
 
-        PathsD contours = damagable.getContours();
+        PathsD contours = damageable.getContours();
         for (int i = 0; i < contours.size(); i++) {
             this.contours.add(contours.get(i));
         }
@@ -52,7 +53,8 @@ public class PacketSyncDamage extends PacketAdapter {
 
     @Override
     public void write(ByteBuf data) throws IOException {
-        data.writeInt(damagable.getId());
+        super.write(data);
+        data.writeInt(damageable.getId());
 
         data.writeByte(contours.size());
         for (int i = 0; i < contours.size(); i++) {
@@ -72,12 +74,13 @@ public class PacketSyncDamage extends PacketAdapter {
 
         int width = maxX - x + 1;
         for (int i = y; i <= maxY; i++) {
-            data.writeBytes(bytes, i * damagable.getMask().getHeight() + x, width);
+            data.writeBytes(bytes, i * damageable.getMask().getHeight() + x, width);
         }
     }
 
     @Override
     public void read(ByteBuf data) throws IOException {
+        super.read(data);
         id = data.readInt();
         byte contoursCount = data.readByte();
         contours = new PathsD(contoursCount);

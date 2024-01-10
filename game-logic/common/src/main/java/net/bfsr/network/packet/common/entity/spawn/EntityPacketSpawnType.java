@@ -12,9 +12,15 @@ public enum EntityPacketSpawnType {
     WRECK(WreckSpawnData::new),
     BULLET(BulletSpawnData::new);
 
+    private static final EntityPacketSpawnType[] VALUES = values();
+
     private final Supplier<EntityPacketSpawnData> supplier;
 
     public EntityPacketSpawnData createSpawnData() {
         return supplier.get();
+    }
+
+    public static EntityPacketSpawnType get(byte index) {
+        return VALUES[index];
     }
 }

@@ -12,8 +12,6 @@ import java.io.IOException;
 @NoArgsConstructor
 @Getter
 public class PacketSpawnEntity extends PacketScheduled {
-    private static final EntityPacketSpawnType[] PACKET_SPAWN_TYPES = EntityPacketSpawnType.values();
-
     private EntityPacketSpawnData entityPacketSpawnData;
 
     public PacketSpawnEntity(EntityPacketSpawnData entityPacketSpawnData, double timestamp) {
@@ -24,14 +22,14 @@ public class PacketSpawnEntity extends PacketScheduled {
     @Override
     public void write(ByteBuf data) throws IOException {
         super.write(data);
-        data.writeShort(entityPacketSpawnData.getType().ordinal());
+        data.writeByte(entityPacketSpawnData.getType().ordinal());
         entityPacketSpawnData.writeData(data);
     }
 
     @Override
     public void read(ByteBuf data) throws IOException {
         super.read(data);
-        entityPacketSpawnData = PACKET_SPAWN_TYPES[data.readShort()].createSpawnData();
+        entityPacketSpawnData = EntityPacketSpawnType.get(data.readByte()).createSpawnData();
         entityPacketSpawnData.readData(data);
     }
 }

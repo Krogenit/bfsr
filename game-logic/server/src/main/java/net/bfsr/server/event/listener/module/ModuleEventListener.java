@@ -21,7 +21,7 @@ public class ModuleEventListener {
         DamageableModule module = event.getModule();
         Ship ship = module.getShip();
         Vector2f position = ship.getPosition();
-        networkSystem.sendTCPPacketToAllNearby(new PacketDestroyModule(ship.getId(), module.getId(), module.getType()),
-                position.x, position.y, TrackingUtils.TRACKING_DISTANCE);
+        networkSystem.sendTCPPacketToAllNearby(new PacketDestroyModule(ship.getId(), module.getId(), module.getType(),
+                ship.getWorld().getTimestamp()), position.x, position.y, TrackingUtils.TRACKING_DISTANCE);
     }
 }

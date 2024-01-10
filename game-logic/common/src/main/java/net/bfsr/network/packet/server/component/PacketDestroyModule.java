@@ -1,26 +1,30 @@
 package net.bfsr.network.packet.server.component;
 
 import io.netty.buffer.ByteBuf;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.entity.ship.module.ModuleType;
-import net.bfsr.network.packet.PacketAdapter;
+import net.bfsr.network.packet.common.PacketScheduled;
 
 import java.io.IOException;
 
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
-public class PacketDestroyModule extends PacketAdapter {
-    private static final ModuleType[] TYPES = ModuleType.values();
-
+public class PacketDestroyModule extends PacketScheduled {
     private int entityId;
     private int id;
     private ModuleType type;
 
+    public PacketDestroyModule(int entityId, int id, ModuleType type, double timestamp) {
+        super(timestamp);
+        this.entityId = entityId;
+        this.id = id;
+        this.type = type;
+    }
+
     @Override
     public void write(ByteBuf data) throws IOException {
+        super.write(data);
         data.writeInt(entityId);
         data.writeShort(id);
         data.writeByte(type.ordinal());
@@ -28,8 +32,9 @@ public class PacketDestroyModule extends PacketAdapter {
 
     @Override
     public void read(ByteBuf data) throws IOException {
+        super.read(data);
         entityId = data.readInt();
         id = data.readShort();
-        type = TYPES[data.readByte()];
+        type = ModuleType.get(data.readByte());
     }
 }

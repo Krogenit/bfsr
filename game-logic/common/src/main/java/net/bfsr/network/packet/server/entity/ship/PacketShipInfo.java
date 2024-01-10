@@ -9,13 +9,13 @@ import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.armor.ArmorPlate;
 import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.entity.ship.module.hull.HullCell;
-import net.bfsr.network.packet.PacketAdapter;
+import net.bfsr.network.packet.common.PacketScheduled;
 
 import java.io.IOException;
 
-@NoArgsConstructor
 @Getter
-public class PacketShipInfo extends PacketAdapter {
+@NoArgsConstructor
+public class PacketShipInfo extends PacketScheduled {
     private int id;
     private float[][] armor;
     private int crew;
@@ -23,7 +23,8 @@ public class PacketShipInfo extends PacketAdapter {
     private float energy;
     private float shield;
 
-    public PacketShipInfo(Ship ship) {
+    public PacketShipInfo(Ship ship, double timestamp) {
+        super(timestamp);
         this.id = ship.getId();
 
         Modules modules = ship.getModules();
@@ -57,6 +58,7 @@ public class PacketShipInfo extends PacketAdapter {
 
     @Override
     public void write(ByteBuf data) throws IOException {
+        super.write(data);
         data.writeInt(id);
 
         data.writeShort(hull.length);
@@ -82,6 +84,7 @@ public class PacketShipInfo extends PacketAdapter {
 
     @Override
     public void read(ByteBuf data) throws IOException {
+        super.read(data);
         id = data.readInt();
 
         int width = data.readShort();

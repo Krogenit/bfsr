@@ -21,21 +21,21 @@ public class ShieldEventListener {
     @Handler
     public void event(ShieldRebuildEvent event) {
         Ship ship = event.shield().getShip();
-        networkSystem.sendUDPPacketToAllNearby(new PacketShieldRebuild(ship.getId()), ship.getPosition(),
-                TrackingUtils.TRACKING_DISTANCE);
+        networkSystem.sendUDPPacketToAllNearby(new PacketShieldRebuild(ship.getId(), ship.getWorld().getTimestamp()),
+                ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
     }
 
     @Handler
     public void event(ShieldResetRebuildingTimeEvent event) {
         Ship ship = event.shield().getShip();
-        networkSystem.sendUDPPacketToAllNearby(new PacketShieldRebuildingTime(ship.getId(), 0), ship.getPosition(),
-                TrackingUtils.TRACKING_DISTANCE);
+        networkSystem.sendUDPPacketToAllNearby(new PacketShieldRebuildingTime(ship.getId(), 0, ship.getWorld().getTimestamp()),
+                ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
     }
 
     @Handler
     public void event(ShieldRemoveEvent event) {
         Ship ship = event.shield().getShip();
-        networkSystem.sendUDPPacketToAllNearby(new PacketShieldRemove(ship.getId()), ship.getPosition(),
-                TrackingUtils.TRACKING_DISTANCE);
+        networkSystem.sendUDPPacketToAllNearby(new PacketShieldRemove(ship.getId(), ship.getWorld().getTimestamp()),
+                ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
     }
 }

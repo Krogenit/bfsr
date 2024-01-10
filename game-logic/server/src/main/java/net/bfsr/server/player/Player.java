@@ -36,7 +36,7 @@ public class Player {
 
     public void setShip(Ship ship) {
         playerInputController.setShip(ship);
-        networkHandler.sendTCPPacket(new PacketSetPlayerShip(ship.getId()));
+        networkHandler.sendTCPPacket(new PacketSetPlayerShip(ship.getId(), ship.getWorld().getTimestamp()));
     }
 
     public void setPosition(float x, float y) {

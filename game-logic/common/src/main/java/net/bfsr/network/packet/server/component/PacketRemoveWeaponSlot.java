@@ -1,28 +1,34 @@
 package net.bfsr.network.packet.server.component;
 
 import io.netty.buffer.ByteBuf;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.bfsr.network.packet.PacketAdapter;
+import net.bfsr.network.packet.common.PacketScheduled;
 
 import java.io.IOException;
 
-@AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class PacketRemoveWeaponSlot extends PacketAdapter {
+public class PacketRemoveWeaponSlot extends PacketScheduled {
     private int shipId;
     private int slotId;
 
+    public PacketRemoveWeaponSlot(int shipId, int slotId, double timestamp) {
+        super(timestamp);
+        this.shipId = shipId;
+        this.slotId = slotId;
+    }
+
     @Override
     public void write(ByteBuf data) throws IOException {
+        super.write(data);
         data.writeInt(shipId);
         data.writeByte(slotId);
     }
 
     @Override
     public void read(ByteBuf data) throws IOException {
+        super.read(data);
         shipId = data.readInt();
         slotId = data.readByte();
     }

@@ -48,8 +48,8 @@ public class PlayerInputController {
                             bullet -> network.sendUDPPacketToAllNearbyExcept(new PacketSpawnEntity(bullet.createSpawnData(),
                                             world.getTimestamp()), bullet.getPosition(),
                                     TrackingUtils.TRACKING_DISTANCE, player));
-                    network.sendUDPPacketToAllNearbyExcept(new PacketWeaponShoot(ship.getId(),
-                            weaponSlot.getId()), ship.getPosition(), TrackingUtils.TRACKING_DISTANCE, player);
+                    network.sendUDPPacketToAllNearbyExcept(new PacketWeaponShoot(ship.getId(), weaponSlot.getId(),
+                            world.getTimestamp()), ship.getPosition(), TrackingUtils.TRACKING_DISTANCE, player);
                 });
             }
         }
