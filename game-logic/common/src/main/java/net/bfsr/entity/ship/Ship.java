@@ -328,7 +328,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
         collisionTimer = net.bfsr.engine.Engine.convertToTicks(2);
 
         Shield shield = modules.getShield();
-        if (shield != null && shield.damage(impactPower)) {
+        if (shield != null && shield.damageToShield(impactPower)) {
             onShieldDamageByCollision(contactX, contactY, normalX, normalY);
             return;
         }
@@ -356,7 +356,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
         float shieldDamage = damage.getShield() * multiplayer;
 
         Shield shield = modules.getShield();
-        if (shield != null && shield.damage(shieldDamage)) {
+        if (shield != null && shield.damageToShield(shieldDamage)) {
             onShieldDamageRunnable.run();
             return;
         }

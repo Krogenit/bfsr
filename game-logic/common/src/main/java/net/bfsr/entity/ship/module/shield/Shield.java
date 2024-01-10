@@ -173,8 +173,7 @@ public class Shield extends DamageableModule {
         eventBus.publish(new ShieldRebuildEvent(this));
     }
 
-    @Override
-    public boolean damage(float amount) {
+    public boolean damageToShield(float amount) {
         if (isDead) return false;
 
         if (SideUtils.IS_SERVER && ship.getWorld().isServer()) {
