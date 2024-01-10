@@ -38,28 +38,28 @@ public class ServerGameLogic extends GameLogic {
     private int ups;
 
     @Getter
-    private final net.bfsr.world.World world;
+    private net.bfsr.world.World world;
     @Getter
-    private final NetworkSystem networkSystem;
+    private NetworkSystem networkSystem;
     private ServerSettings settings;
     @Getter
-    private final PlayerManager playerManager;
-    private final ShipSpawner shipSpawner;
+    private PlayerManager playerManager;
+    private ShipSpawner shipSpawner;
     @Getter
     private final DamageSystem damageSystem = new DamageSystem();
     private final EntitySyncManager entitySyncManager = new EntitySyncManager();
 
     protected ServerGameLogic() {
-        this.world = new World(profiler, Side.SERVER, new Random().nextLong(), eventBus, new EntityIdManager());
-        this.playerManager = new PlayerManager(world);
-        this.networkSystem = new NetworkSystem(playerManager);
-        this.shipSpawner = new ShipSpawner(world);
-
         instance = this;
     }
 
     @Override
     public void init() {
+        world = new World(profiler, Side.SERVER, new Random().nextLong(), eventBus, new EntityIdManager());
+        playerManager = new PlayerManager(world);
+        networkSystem = new NetworkSystem(playerManager);
+        shipSpawner = new ShipSpawner(world);
+
         profiler.setEnable(true);
         networkSystem.init();
         loadConfigs();

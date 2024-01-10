@@ -20,6 +20,7 @@ public abstract class Server extends AbstractGameLoop {
     }
 
     protected void init() {
+        Engine.instance = this;
         gameLogic.init();
         Engine.setGameLogic(Side.SERVER, gameLogic);
     }
