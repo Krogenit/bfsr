@@ -47,7 +47,10 @@ public class PacketShipInfoHandler extends PacketHandler<PacketShipInfo, Network
                 }
             }
             modules.getCrew().setCrewSize(packet.getCrew());
-            modules.getReactor().setEnergy(packet.getEnergy());
+
+            if (!ship.isControlledByPlayer()) //Fixed desync in fire speed
+                modules.getReactor().setEnergy(packet.getEnergy());
+
             Shield shipShield = modules.getShield();
             if (shipShield != null) shipShield.setShieldHp(packet.getShield());
         } else {
