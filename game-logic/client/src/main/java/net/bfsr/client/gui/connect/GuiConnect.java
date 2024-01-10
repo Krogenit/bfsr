@@ -30,7 +30,7 @@ public class GuiConnect extends Gui {
         int offsetX = 24;
 
         InputBox hostInputBox = new InputBox(TextureRegister.guiButtonBase, Lang.getString("gui.connect.host"),
-                fontSize, offsetX, 0).setString("192.168.2.4:34000");
+                fontSize, offsetX, 0).setString("192.168.2.2:34000");
         registerGuiObject(hostInputBox.atCenter(buttonOffsetX, -100));
         InputBox usernameInputBox = new InputBox(TextureRegister.guiButtonBase, Lang.getString("gui.connect.username"),
                 fontSize, offsetX, 0).setString("Krogenit");
