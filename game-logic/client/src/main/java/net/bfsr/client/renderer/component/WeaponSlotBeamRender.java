@@ -20,10 +20,8 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
     private final SpawnAccumulator weaponSpawnAccumulator = new SpawnAccumulator();
     private final SpawnAccumulator damageSpawnAccumulator = new SpawnAccumulator();
     private final Beam beam;
-    private boolean maxPower;
     @Getter
     private final Vector4f effectsColor = new Vector4f();
-    private final float effectsAlphaAnimationSpeed = Engine.convertToDeltaTime(3.5f);
 
     public WeaponSlotBeamRender(WeaponSlotBeam object) {
         super(object);
@@ -37,45 +35,26 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
         super.update();
         beam.update();
 
-        if (object.getReloadTimer() > 0) {
-            if (object.getReloadTimer() <= object.getTimeToReload() * 0.3333f) {
-                maxPower = false;
-                if (effectsColor.w > 0.0f) {
-                    effectsColor.w -= effectsAlphaAnimationSpeed;
-                    if (effectsColor.w < 0) effectsColor.w = 0;
-                }
-            } else {
-                if (!maxPower && effectsColor.w < 1.0f) {
-                    effectsColor.w += effectsAlphaAnimationSpeed;
-                    if (effectsColor.w > 1.0f) effectsColor.w = 1.0f;
-                } else {
-                    maxPower = true;
-                }
+        lastColor.w = effectsColor.w;
 
-                if (maxPower) {
-                    effectsColor.w = object.getShip().getWorld().getRand().nextFloat() / 3.0f + 0.66f;
-                }
-
-                float sin = object.getShip().getSin();
-                float cos = object.getShip().getCos();
-                Vector2f angleToVelocity = RotationHelper.angleToVelocity(sin, cos, 10.0f);
-                Vector2f position = object.getPosition();
-                BeamEffects.beam(position.x, position.y, 2.0f, sin, cos, angleToVelocity.x, angleToVelocity.y,
-                        effectsColor.x, effectsColor.y, effectsColor.z, effectsColor.w, weaponSpawnAccumulator);
-            }
-        } else {
-            if (effectsColor.w > 0.0f) {
-                effectsColor.w -= effectsAlphaAnimationSpeed;
-                if (effectsColor.w < 0) effectsColor.w = 0;
-            }
+        if (object.getBeamPower() > 0.0f) {
+            float sin = object.getShip().getSin();
+            float cos = object.getShip().getCos();
+            Vector2f angleToVelocity = RotationHelper.angleToVelocity(sin, cos, 10.0f);
+            Vector2f position = object.getPosition();
+            BeamEffects.beam(position.x, position.y, 2.0f, sin, cos, angleToVelocity.x, angleToVelocity.y, effectsColor.x,
+                    effectsColor.y, effectsColor.z, lastColor.w + (effectsColor.w - lastColor.w)
+                            * Engine.renderer.getInterpolation(), weaponSpawnAccumulator);
         }
+
+        effectsColor.w = object.getBeamPower();
     }
 
     @Override
     public void postWorldUpdate() {
         super.postWorldUpdate();
 
-        if (object.getReloadTimer() > 0) {
+        if (effectsColor.w > 0) {
             beam.postPhysicsUpdate();
         }
     }
@@ -84,7 +63,7 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
     protected void updateAABB() {
         super.updateAABB();
 
-        if (object.getReloadTimer() > 0 && effectsColor.w > 0) {
+        if (effectsColor.w > 0) {
             Vector2f position = object.getPosition();
             float sin = object.getShip().getSin();
             float cos = object.getShip().getCos();
@@ -121,14 +100,13 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
 
     @Override
     public void renderAdditive(float lastSin, float lastCos, float sin, float cos) {
-        if (object.getReloadTimer() > 0 && effectsColor.w > 0) {
-            if (object.getReloadTimer() > object.getTimeToReload() / 3.0f) {
-                Vector2f position = object.getPosition();
-                Vector2f size = object.getSize();
-                spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
-                        sin, cos, lastSize.x * 2.5f, lastSize.y * 2.5f, size.x * 2.5f, size.y * 2.5f, effectsColor.x,
-                        effectsColor.y, effectsColor.z, 0.6f * effectsColor.w, LIGHT_TEXTURE, BufferType.ENTITIES_ADDITIVE);
-            }
+        if (effectsColor.w > 0.0f) {
+            Vector2f position = object.getPosition();
+            Vector2f size = object.getSize();
+            spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
+                    sin, cos, lastSize.x * 2.5f, lastSize.y * 2.5f, size.x * 2.5f, size.y * 2.5f, effectsColor.x,
+                    effectsColor.y, effectsColor.z, (lastColor.w + (effectsColor.w - lastColor.w)
+                            * Engine.renderer.getInterpolation()) * 0.6f, LIGHT_TEXTURE, BufferType.ENTITIES_ADDITIVE);
 
             beam.render(spriteRenderer, lastSin, lastCos, sin, cos);
         }

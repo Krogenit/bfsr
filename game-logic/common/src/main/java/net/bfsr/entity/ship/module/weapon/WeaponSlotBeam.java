@@ -41,11 +41,15 @@ public class WeaponSlotBeam extends WeaponSlot {
     private DetectFilter<Body, BodyFixture> detectFilter;
     private final Vector2 rayDirection = new Vector2();
     private final float powerAnimationSpeed = Engine.convertToDeltaTime(3.5f);
+    @Getter
+    private float aliveTimerInTicks;
+    private final float maxAliveTimerInTicks;
 
     public WeaponSlotBeam(BeamData beamData) {
         super(beamData, WeaponType.BEAM);
         this.beamMaxRange = beamData.getBeamMaxRange();
         this.damage = beamData.getDamage();
+        this.maxAliveTimerInTicks = beamData.getAliveTimeInTicks();
     }
 
     @Override
@@ -56,9 +60,11 @@ public class WeaponSlotBeam extends WeaponSlot {
 
     @Override
     public void update() {
-        super.update();
+        updatePos();
 
-        if (reloadTimer > 0) {
+        if (aliveTimerInTicks > 0) {
+            aliveTimerInTicks--;
+
             if (beamPower < 1.0f) {
                 beamPower += powerAnimationSpeed;
                 if (beamPower >= 1.0f) {
@@ -70,7 +76,11 @@ public class WeaponSlotBeam extends WeaponSlot {
         } else {
             if (beamPower > 0.0f) {
                 beamPower -= powerAnimationSpeed;
-                if (beamPower < 0) beamPower = 0;
+                if (beamPower <= 0) {
+                    beamPower = 0;
+                }
+            } else {
+                if (reloadTimer > 0) reloadTimer--;
             }
         }
 
@@ -82,6 +92,7 @@ public class WeaponSlotBeam extends WeaponSlot {
     @Override
     public void shoot(Consumer<WeaponSlot> onShotEvent) {
         reloadTimer = timeToReload;
+        aliveTimerInTicks = maxAliveTimerInTicks;
         ship.getModules().getReactor().consume(energyCost);
         eventBus.publish(new BeamShotEvent(this));
     }

@@ -15,17 +15,18 @@
     }
   ],
   "hp": 15.0,
-  "reloadTimeInSeconds": 2.0,
-  "energyCost": 6.0,
+  "reloadTimeInSeconds": 1.0,
+  "aliveTimeInSeconds": 2.0,
+  "energyCost": 15.0,
   "size": {
     "x": 1.4,
     "y": 1.0
   },
   "beamMaxRange": 40.0,
   "damage": {
-    "armor": 5.0,
-    "hull": 5.0,
-    "shield": 6.0
+    "armor": 4.0,
+    "hull": 4.0,
+    "shield": 5.0
   },
   "texture": "texture/component/weapon/beam1.png",
   "color": {

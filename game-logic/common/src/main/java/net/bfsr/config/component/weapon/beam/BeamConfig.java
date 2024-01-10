@@ -8,4 +8,5 @@ import net.bfsr.config.component.weapon.gun.GunConfig;
 @Configurable
 final class BeamConfig extends GunConfig {
     private float beamMaxRange;
+    private float aliveTimeInSeconds;
 }
