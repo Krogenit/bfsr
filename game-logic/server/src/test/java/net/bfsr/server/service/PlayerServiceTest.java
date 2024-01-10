@@ -2,6 +2,7 @@ package net.bfsr.server.service;
 
 import net.bfsr.database.Main;
 import net.bfsr.faction.Faction;
+import net.bfsr.server.DedicatedServerGameLogic;
 import net.bfsr.server.dto.PlayerModel;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.rsocket.RSocketClient;
@@ -42,8 +43,10 @@ public class PlayerServiceTest {
     }
 
     @BeforeAll
-    static void setup(@Autowired RSocketRequester.Builder builder, @LocalRSocketServerPort Integer port, @Autowired RSocketStrategies strategies) {
+    static void setup(@Autowired RSocketRequester.Builder builder, @LocalRSocketServerPort Integer port,
+                      @Autowired RSocketStrategies strategies) {
         rSocketClient.connect("localhost", port);
+        new DedicatedServerGameLogic();
     }
 
     @BeforeEach
