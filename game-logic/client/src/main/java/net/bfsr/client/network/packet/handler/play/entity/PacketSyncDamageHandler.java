@@ -7,7 +7,7 @@ import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.damage.Damageable;
 import net.bfsr.entity.GameObject;
 import net.bfsr.network.packet.PacketHandler;
-import net.bfsr.network.packet.server.entity.wreck.PacketSyncDamage;
+import net.bfsr.network.packet.server.entity.PacketSyncDamage;
 import org.dyn4j.dynamics.BodyFixture;
 
 import java.net.InetSocketAddress;

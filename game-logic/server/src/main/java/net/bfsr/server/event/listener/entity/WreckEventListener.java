@@ -1,4 +1,4 @@
-package net.bfsr.server.event.listener.entity.wreck;
+package net.bfsr.server.event.listener.entity;
 
 import clipper2.core.Path64;
 import net.bfsr.damage.DamageSystem;

@@ -1,4 +1,4 @@
-package net.bfsr.server.event.listener.entity.ship;
+package net.bfsr.server.event.listener.entity;
 
 import clipper2.core.Path64;
 import net.bfsr.damage.DamageSystem;
@@ -28,28 +28,30 @@ public class ShipEventListener {
     @Handler
     public void event(ShipNewMoveDirectionEvent event) {
         Ship ship = event.ship();
-        network.sendUDPPacketToAllNearby(new PacketSyncMoveDirection(ship.getId(), event.direction().ordinal(), false),
-                ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
+        network.sendUDPPacketToAllNearby(new PacketSyncMoveDirection(ship.getId(), event.direction().ordinal(), false,
+                ship.getWorld().getTimestamp()), ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
     }
 
     @Handler
     public void event(ShipRemoveMoveDirectionEvent event) {
         Ship ship = event.ship();
-        network.sendUDPPacketToAllNearby(new PacketSyncMoveDirection(ship.getId(), event.direction().ordinal(), true),
-                ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
+        network.sendUDPPacketToAllNearby(new PacketSyncMoveDirection(ship.getId(), event.direction().ordinal(), true,
+                ship.getWorld().getTimestamp()), ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
     }
 
     @Handler
     public void event(ShipPostPhysicsUpdate event) {
         Ship ship = event.ship();
         Vector2f position = ship.getPosition();
-        network.sendUDPPacketToAllNearby(new PacketShipInfo(ship), position, TrackingUtils.TRACKING_DISTANCE);
+        network.sendUDPPacketToAllNearby(new PacketShipInfo(ship, ship.getWorld().getTimestamp()), position,
+                TrackingUtils.TRACKING_DISTANCE);
     }
 
     @Handler
     public void event(ShipDestroyingEvent event) {
         Ship ship = event.ship();
-        network.sendTCPPacketToAllNearby(new PacketDestroyingShip(ship), ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
+        network.sendTCPPacketToAllNearby(new PacketDestroyingShip(ship, ship.getWorld().getTimestamp()), ship.getPosition(),
+                TrackingUtils.TRACKING_DISTANCE);
     }
 
     @Handler

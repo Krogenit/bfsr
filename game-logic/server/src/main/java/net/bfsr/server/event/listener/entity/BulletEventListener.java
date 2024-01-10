@@ -1,4 +1,4 @@
-package net.bfsr.server.event.listener.entity.bullet;
+package net.bfsr.server.event.listener.entity;
 
 import net.bfsr.damage.DamageType;
 import net.bfsr.entity.bullet.Bullet;

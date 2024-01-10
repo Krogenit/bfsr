@@ -2,7 +2,7 @@ package net.bfsr.server.event.listener.damage;
 
 import net.bfsr.damage.Damageable;
 import net.bfsr.event.damage.DamageEvent;
-import net.bfsr.network.packet.server.entity.wreck.PacketSyncDamage;
+import net.bfsr.network.packet.server.entity.PacketSyncDamage;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.util.TrackingUtils;

@@ -1,4 +1,4 @@
-package net.bfsr.client.listener.entity.wreck;
+package net.bfsr.client.listener.entity;
 
 import net.bfsr.client.Core;
 import net.bfsr.client.particle.effect.ExplosionEffects;
