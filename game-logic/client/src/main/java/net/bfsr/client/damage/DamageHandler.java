@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 public final class DamageHandler {
     private final RenderManager renderManager;
 
-    public void updateDamage(Damageable damageable, int x, int y, int width, int height, ByteBuffer byteBuffer) {
+    public void updateDamage(Damageable<?> damageable, int x, int y, int width, int height, ByteBuffer byteBuffer) {
         renderManager.getRender(damageable.getId()).updateDamageMask(x, y, width, height, byteBuffer);
     }
 }

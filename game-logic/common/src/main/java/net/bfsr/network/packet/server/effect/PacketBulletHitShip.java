@@ -6,15 +6,13 @@ import lombok.NoArgsConstructor;
 import net.bfsr.damage.DamageType;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.network.packet.PacketAdapter;
+import net.bfsr.network.packet.common.PacketScheduled;
 
 import java.io.IOException;
 
 @NoArgsConstructor
 @Getter
-public class PacketBulletHitShip extends PacketAdapter {
-    private static final DamageType[] DAMAGE_TYPES = DamageType.values();
-
+public class PacketBulletHitShip extends PacketScheduled {
     private Bullet bullet;
     private Ship ship;
     private int bulletId, shipId;
@@ -24,6 +22,7 @@ public class PacketBulletHitShip extends PacketAdapter {
 
     public PacketBulletHitShip(Bullet bullet, Ship ship, float contactX, float contactY, float normalX, float normalY,
                                DamageType damageType) {
+        super(ship.getWorld().getTimestamp());
         this.bullet = bullet;
         this.ship = ship;
         this.contactX = contactX;
@@ -35,6 +34,7 @@ public class PacketBulletHitShip extends PacketAdapter {
 
     @Override
     public void write(ByteBuf data) throws IOException {
+        super.write(data);
         data.writeInt(bullet.getId());
         data.writeInt(ship.getId());
         data.writeFloat(contactX);
@@ -46,12 +46,13 @@ public class PacketBulletHitShip extends PacketAdapter {
 
     @Override
     public void read(ByteBuf data) throws IOException {
+        super.read(data);
         bulletId = data.readInt();
         shipId = data.readInt();
         contactX = data.readFloat();
         contactY = data.readFloat();
         normalX = data.readFloat();
         normalY = data.readFloat();
-        damageType = DAMAGE_TYPES[data.readByte()];
+        damageType = DamageType.get(data.readByte());
     }
 }

@@ -24,15 +24,19 @@ public class BulletRender extends RigidBodyRender<Bullet> {
     }
 
     @Override
+    public void renderAlpha() {}
+
+    @Override
     public void renderAdditive() {
         Vector2f position = object.getPosition();
         float sin = object.getSin();
         float cos = object.getCos();
         Vector2f scale = object.getSize();
         float lightSize = 6.0f;
+        float colorAlpha = lastColor.w + (color.w - lastColor.w) * Engine.renderer.getInterpolation();
         spriteRenderer.add(lastPosition.x, lastPosition.y, position.x, position.y, lightSize, lightSize,
-                color.x / 1.5f, color.y / 1.5f, color.z / 1.5f, color.w / 4.0f, LIGHT_TEXTURE, BufferType.ENTITIES_ADDITIVE);
+                color.x / 1.5f, color.y / 1.5f, color.z / 1.5f, colorAlpha / 4.0f, LIGHT_TEXTURE, BufferType.ENTITIES_ADDITIVE);
         spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, sin, cos, scale.x,
-                scale.y, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ADDITIVE);
+                scale.y, color.x, color.y, color.z, colorAlpha, texture, BufferType.ENTITIES_ADDITIVE);
     }
 }

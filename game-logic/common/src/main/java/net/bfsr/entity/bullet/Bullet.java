@@ -109,7 +109,6 @@ public class Bullet extends RigidBody<GunData> {
                                 setDead();
                                 eventBus.publish(new BulletDamageShipHullEvent(this, ship, contactX, contactY, normalX, normalY));
                             });
-
                 }
             } else if (userData instanceof Bullet bullet) {
                 bullet.setDead();
@@ -134,6 +133,8 @@ public class Bullet extends RigidBody<GunData> {
     }
 
     private void damage(Bullet bullet) {
+        if (!world.isServer()) return;
+
         float damage = bullet.damage.getAverage();
         damage /= 3.0f;
 
@@ -158,6 +159,9 @@ public class Bullet extends RigidBody<GunData> {
     public EntityPacketSpawnData createSpawnData() {
         return new BulletSpawnData(this);
     }
+
+    @Override
+    protected void onDataAdded() {}
 
     private boolean canDamageShip(Ship ship) {
         return this.ship != ship && previousAObject != ship || previousAObject != null && previousAObject != ship;

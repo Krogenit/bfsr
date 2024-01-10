@@ -5,7 +5,6 @@ import net.bfsr.client.Core;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.particle.effect.GarbageSpawner;
 import net.bfsr.client.particle.effect.WeaponEffects;
-import net.bfsr.client.renderer.Render;
 import net.bfsr.damage.DamageType;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.bullet.Bullet;
@@ -32,13 +31,10 @@ public class PacketBulletHitShipHandler extends PacketHandler<PacketBulletHitShi
                         ship.getVelocity().y, packet.getNormalX(), packet.getNormalY());
             }
 
-            Render<?> render = Core.get().getRenderManager().getRender(packet.getBulletId());
-            if (render != null) {
-                Vector4f color = render.getColor();
-                WeaponEffects.spawnDirectedSpark(packet.getContactX(), packet.getContactY(), packet.getNormalX(),
-                        packet.getNormalY(),
-                        bullet.getSize().x * 1.5f, color.x, color.y, color.z, color.w);
-            }
+            Vector4f color = bullet.getConfigData().getColor();
+            WeaponEffects.spawnDirectedSpark(packet.getContactX(), packet.getContactY(), packet.getNormalX(),
+                    packet.getNormalY(), bullet.getSize().x * 1.5f, color.x, color.y, color.z,
+                    (1.0f - bullet.getLifeTime() / bullet.getMaxLifeTime()) * 1.5f);
         }
     }
 }
