@@ -18,7 +18,6 @@ import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
-import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
 import org.dyn4j.geometry.decompose.SweepLine;
 import org.joml.Vector2f;
@@ -179,7 +178,7 @@ public final class DamageSystem {
                     area = Clipper.Area(removedPath);
                     if (area > minWreckArea) {
                         DamageMask damageMask = createInvertedDamageMask(removedPaths64.get(i), mask, scale);
-                        ShipWreck damage = createDamage(x, y, sin, cos, scale.x, scale.y, removedPath,
+                        ShipWreck damage = createWreck(x, y, sin, cos, scale.x, scale.y, removedPath,
                                 damageMask, (ShipData) damageable.getConfigData());
                         if (damage != null) {
                             damage.init(world, world.getNextId());
@@ -547,17 +546,13 @@ public final class DamageSystem {
         }
         if (damagedTexture.getX() < 0) damagedTexture.setX(0);
         if (damagedTexture.getY() < 0) damagedTexture.setY(0);
-        if (damagedTexture.getMaxY() >= damageMask.getHeight()) {
-            damagedTexture.setMaxY(damageMask.getHeight() - 1);
-        }
-        if (damagedTexture.getMaxX() >= damageMask.getWidth()) {
-            damagedTexture.setMaxX(damageMask.getWidth() - 1);
-        }
+        if (damagedTexture.getMaxY() >= damageMask.getHeight()) damagedTexture.setMaxY(damageMask.getHeight() - 1);
+        if (damagedTexture.getMaxX() >= damageMask.getWidth()) damagedTexture.setMaxX(damageMask.getWidth() - 1);
         return damagedTexture;
     }
 
-    public ShipWreck createDamage(double x, double y, double sin, double cos, float scaleX, float scaleY, PathD contour,
-                                  DamageMask damageMask, ShipData shipData) {
+    public ShipWreck createWreck(double x, double y, double sin, double cos, float scaleX, float scaleY, PathD contour,
+                                 DamageMask damageMask, ShipData shipData) {
         Vector2[] vectors = new Vector2[contour.size()];
         for (int i = 0; i < vectors.length; i++) {
             PointD pointD = contour.get(i);
@@ -569,7 +564,7 @@ public final class DamageSystem {
 
         if (vectors.length > 3) {
             try {
-                return createDamage(x, y, sin, cos, scaleX, scaleY, sweepLine.decompose(vectors), contours, damageMask,
+                return createWreck(x, y, sin, cos, scaleX, scaleY, sweepLine.decompose(vectors), contours, damageMask,
                         shipData);
             } catch (Exception e) {
                 log.error("Error during decompose {}", e.getMessage());
@@ -579,13 +574,13 @@ public final class DamageSystem {
                 return null;
             }
         } else {
-            return createDamage(x, y, sin, cos, scaleX, scaleY, Collections.singletonList(Geometry.createPolygon(vectors)),
+            return createWreck(x, y, sin, cos, scaleX, scaleY, Collections.singletonList(Geometry.createPolygon(vectors)),
                     contours, damageMask, shipData);
         }
     }
 
-    private ShipWreck createDamage(double x, double y, double sin, double cos, float scaleX, float scaleY,
-                                   List<Convex> convexes, PathsD contours, DamageMask damageMask, ShipData shipData) {
+    private ShipWreck createWreck(double x, double y, double sin, double cos, float scaleX, float scaleY,
+                                  List<Convex> convexes, PathsD contours, DamageMask damageMask, ShipData shipData) {
         ShipWreck wreck = new ShipWreck((float) x, (float) y, (float) sin, (float) cos,
                 scaleX, scaleY, shipData, damageMask, contours);
         Body body = wreck.getBody();
@@ -594,10 +589,6 @@ public final class DamageSystem {
             body.addFixture(wreck.setupFixture(new BodyFixture(convexes.get(i))));
         }
 
-        body.setMass(MassType.NORMAL);
-        body.setUserData(wreck);
-        body.setLinearDamping(0.05f);
-        body.setAngularDamping(0.01f);
         return wreck;
     }
 

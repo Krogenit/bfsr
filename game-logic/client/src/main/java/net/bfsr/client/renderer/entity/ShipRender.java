@@ -66,9 +66,8 @@ public class ShipRender extends RigidBodyRender<Ship> {
         super(Engine.assetsManager.getTexture(ship.getConfigData().getTexture()), ship);
 
         DamageMask mask = ship.getMask();
-        maskTexture = new DamageMaskTexture(mask.getWidth(), mask.getHeight(),
-                Engine.renderer.createByteBuffer(mask.getWidth() * mask.getHeight()));
-        maskTexture.createWhiteMask();
+        maskTexture = new DamageMaskTexture(mask.getWidth(), mask.getHeight(), null);
+        maskTexture.createEmpty();
 
         shieldTexture = Engine.assetsManager.getTexture(ship.getModules().getShield().getShieldData().getTexturePath());
 

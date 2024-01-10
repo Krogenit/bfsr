@@ -25,7 +25,7 @@ public class DamageMask {
         Arrays.fill(this.data = new byte[width * height], (byte) 255);
     }
 
-    public void reset() {
+    void reset() {
         x = Integer.MAX_VALUE;
         y = Integer.MAX_VALUE;
         maxX = 0;
@@ -39,7 +39,7 @@ public class DamageMask {
         return copy;
     }
 
-    public boolean dirty() {
+    boolean dirty() {
         return maxX > 0 && maxY > 0;
     }
 }

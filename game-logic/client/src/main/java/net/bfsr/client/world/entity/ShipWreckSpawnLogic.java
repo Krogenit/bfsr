@@ -24,9 +24,8 @@ public class ShipWreckSpawnLogic implements EntitySpawnLogic {
             body.setAngularVelocity(shipWreckSpawnData.getAngularVelocity());
 
             world.add(wreck);
-            damageHandler.updateDamage(wreck, shipWreckSpawnData.getX(), shipWreckSpawnData.getY(),
-                    shipWreckSpawnData.getBufferWidth(),
-                    shipWreckSpawnData.getBufferHeight(), shipWreckSpawnData.getByteBuffer());
+            damageHandler.updateDamage(wreck, 0, 0, shipWreckSpawnData.getMaskWidth(), shipWreckSpawnData.getMaskHeight(),
+                    shipWreckSpawnData.getByteBuffer());
         }
     }
 }

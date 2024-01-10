@@ -21,15 +21,12 @@ import java.nio.ByteBuffer;
 public class ShipWreckSpawnData extends DamageableRigidBodySpawnData {
     private static final DamageSystem DAMAGE_SYSTEM = new DamageSystem();
 
-    private int x, y;
     private float velocityX, velocityY;
     private float angularVelocity;
     private PathD pathD;
     private int maskWidth, maskHeight;
-    private int bufferWidth, bufferHeight;
     private ByteBuffer byteBuffer;
 
-    private int maxX, maxY;
     private PathD path;
     private DamageMask damageMask;
     private ShipWreck wreck;
@@ -37,10 +34,6 @@ public class ShipWreckSpawnData extends DamageableRigidBodySpawnData {
     public ShipWreckSpawnData(ShipWreck wreck) {
         super(wreck);
         this.damageMask = wreck.getMask();
-        this.x = damageMask.getX();
-        this.y = damageMask.getY();
-        this.maxX = damageMask.getMaxX();
-        this.maxY = damageMask.getMaxY();
         this.path = wreck.getContours().get(0);
         Vector2f velocity = wreck.getVelocity();
         this.velocityX = velocity.x;
@@ -54,15 +47,12 @@ public class ShipWreckSpawnData extends DamageableRigidBodySpawnData {
     public void writeData(ByteBuf data) {
         super.writeData(data);
 
-        data.writeShort(x);
-        data.writeShort(y);
-        data.writeShort(maxX);
-        data.writeShort(maxY);
-
+        int damageMaskWidth = damageMask.getWidth();
+        int damageMaskHeight = damageMask.getHeight();
+        data.writeInt(damageMaskWidth * damageMaskHeight);
         byte[] bytes = damageMask.getData();
-        int width = maxX - x + 1;
-        for (int i = y; i <= maxY; i++) {
-            data.writeBytes(bytes, i * damageMask.getHeight() + x, width);
+        for (int i = 0; i < damageMaskHeight; i++) {
+            data.writeBytes(bytes, i * damageMaskHeight, damageMaskWidth);
         }
 
         data.writeShort(path.size());
@@ -84,13 +74,8 @@ public class ShipWreckSpawnData extends DamageableRigidBodySpawnData {
         super.readData(data);
 
         ShipData shipData = ShipRegistry.INSTANCE.get(dataId);
-        x = data.readShort();
-        y = data.readShort();
-        int maxX = data.readShort();
-        int maxY = data.readShort();
-        bufferWidth = maxX - x + 1;
-        bufferHeight = maxY - y + 1;
-        byteBuffer = Engine.renderer.createByteBuffer(bufferWidth * bufferHeight);
+        int bufferSize = data.readInt();
+        byteBuffer = Engine.renderer.createByteBuffer(bufferSize);
         data.readBytes(byteBuffer);
         byteBuffer.position(0);
 
@@ -106,7 +91,7 @@ public class ShipWreckSpawnData extends DamageableRigidBodySpawnData {
         maskWidth = data.readShort();
         maskHeight = data.readShort();
 
-        wreck = DAMAGE_SYSTEM.createDamage(posX, posY, sin, cos, shipData.getSizeX(), shipData.getSizeY(), pathD,
+        wreck = DAMAGE_SYSTEM.createWreck(posX, posY, sin, cos, shipData.getSizeX(), shipData.getSizeY(), pathD,
                 new DamageMask(maskWidth, maskHeight, null), shipData);
 
         if (connectedObjects.size() > 0) {

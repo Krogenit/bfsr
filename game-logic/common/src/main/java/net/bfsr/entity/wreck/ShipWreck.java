@@ -5,32 +5,24 @@ import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageableRigidBody;
-import net.bfsr.engine.util.SideUtils;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.event.entity.wreck.BulletDamageShipWreckEvent;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.ShipWreckSpawnData;
+import org.dyn4j.geometry.MassType;
 
 public class ShipWreck extends DamageableRigidBody<ShipData> {
-    private final int maxLifeTime = 1200;
-
     public ShipWreck(float x, float y, float sin, float cos, float sizeX, float sizeY, ShipData shipData,
                      DamageMask mask, PathsD contours) {
         super(x, y, sin, cos, sizeX, sizeY, shipData, ShipRegistry.INSTANCE.getId(), mask, contours);
     }
 
     @Override
-    protected void updateLifeTime() {
-        lifeTime++;
-        if (SideUtils.IS_SERVER && world.isServer()) {
-            if (lifeTime >= maxLifeTime) {
-                setDead();
-            }
-        } else {
-            if (lifeTime >= 60) {
-                setDead();
-            }
-        }
+    protected void initBody() {
+        body.setMass(MassType.NORMAL);
+        body.setUserData(this);
+        body.setLinearDamping(0.05f);
+        body.setAngularDamping(0.01f);
     }
 
     public void damage(Bullet bullet, float contactX, float contactY, float normalX, float normalY) {
