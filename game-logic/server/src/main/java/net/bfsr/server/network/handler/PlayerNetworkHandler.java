@@ -131,11 +131,9 @@ public class PlayerNetworkHandler extends NetworkHandler {
             return;
         }
 
-        log.debug("Player logging in");
         try {
             if (singlePlayer) {
                 player = playerManager.getPlayerService().authUser(username, "test");
-                log.debug("Player created");
             } else {
                 player = playerManager.getPlayerService().authUser(username, "password");
             }
@@ -199,7 +197,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
 
     public void onDisconnected() {
         if (connectionStateBeforeDisconnect == ConnectionState.CONNECTED) {
-            log.info("{} lost connection: {}", player, terminationReason);
+            log.info("{} lost connection: {}", player.getUsername(), terminationReason);
             server.onPlayerDisconnected(player);
         } else {
             log.info("{} lost connection: {}", socketChannel.remoteAddress(), terminationReason);

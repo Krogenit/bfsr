@@ -19,7 +19,7 @@ public class PacketWorldSnapshotHandler extends PacketHandler<PacketWorldSnapsho
             PacketWorldSnapshot.EntityData entityData = entityDataList.get(i);
             RigidBody<?> entity = Core.get().getWorld().getEntityById(entityData.getEntityId());
             if (entity != null) {
-                entity.addPositionData(entityData, packet.getTimestamp());
+                entity.addData(entityData, packet.getTimestamp());
             }
         }
     }
