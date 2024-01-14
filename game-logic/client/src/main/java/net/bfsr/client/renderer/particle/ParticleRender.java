@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 public class ParticleRender extends Render<Particle> implements net.bfsr.engine.renderer.particle.ParticleRender {
-    protected long textureHandle;
+    long textureHandle;
     protected Vector2f position;
     protected Vector2f size;
     private boolean isAlphaFromZero;

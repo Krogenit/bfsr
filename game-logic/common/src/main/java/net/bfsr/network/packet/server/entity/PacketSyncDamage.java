@@ -9,11 +9,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
-import net.bfsr.damage.Damageable;
+import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
 import net.bfsr.network.packet.common.PacketScheduled;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.decompose.SweepLine;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -23,7 +22,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 public class PacketSyncDamage extends PacketScheduled {
-    private Damageable<?> damageable;
+    private DamageableRigidBody<?> damageable;
     private int x, y, maxX, maxY;
     private PathsD contours;
     private byte[] bytes;
@@ -33,7 +32,7 @@ public class PacketSyncDamage extends PacketScheduled {
     private int width, height;
     private List<BodyFixture> fixtures;
 
-    public PacketSyncDamage(Damageable<?> damageable) {
+    public PacketSyncDamage(DamageableRigidBody<?> damageable) {
         super(damageable.getWorld().getTimestamp());
         this.damageable = damageable;
         DamageMask damageMask = damageable.getMask();
@@ -108,6 +107,6 @@ public class PacketSyncDamage extends PacketScheduled {
         byteBuffer.flip();
         fixtures = new ArrayList<>(32);
 
-        DamageSystem.decompose(contours, convex -> fixtures.add(new BodyFixture(convex)), new SweepLine(), new Earcut());
+        DamageSystem.decompose(contours, convex -> fixtures.add(new BodyFixture(convex)), new Earcut());
     }
 }

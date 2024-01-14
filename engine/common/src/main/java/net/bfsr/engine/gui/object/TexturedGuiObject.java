@@ -4,6 +4,7 @@ import lombok.Getter;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
+import org.joml.Vector4f;
 
 public class TexturedGuiObject extends SimpleGuiObject {
     @Getter
@@ -33,11 +34,12 @@ public class TexturedGuiObject extends SimpleGuiObject {
     @Override
     public void render() {
         if (texture != null) {
+            Vector4f color = isMouseHover() ? hoverColor : this.color;
+
             if (rotation != 0.0f) {
                 if (centered) {
                     guiRenderer.add(lastX + width / 2, lastY + height / 2, x + width / 2, y + height / 2, lastRotation, rotation,
-                            width, height,
-                            color.x, color.y, color.z, color.w, texture);
+                            width, height, color.x, color.y, color.z, color.w, texture);
                 } else {
                     guiRenderer.add(lastX, lastY, x, y, lastRotation, rotation, width, height, color.x, color.y, color.z, color.w,
                             texture);

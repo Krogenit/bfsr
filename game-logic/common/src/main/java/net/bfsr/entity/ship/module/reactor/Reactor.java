@@ -3,12 +3,13 @@ package net.bfsr.entity.ship.module.reactor;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.reactor.ReactorData;
-import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.physics.filter.ShipFilter;
 import org.dyn4j.dynamics.BodyFixture;
+import org.dyn4j.geometry.Convex;
 
 public class Reactor extends DamageableModule {
     @Getter
@@ -17,23 +18,25 @@ public class Reactor extends DamageableModule {
     @Getter
     private final float maxEnergy;
     private final float regenEnergy;
-    private final Ship ship;
+    private final Convex reactorConvex;
+    private final Runnable onDestroyRunnable;
 
-    public Reactor(ReactorData reactorData, Ship ship) {
+    public Reactor(ReactorData reactorData, Convex reactorConvex, Runnable onDestroyRunnable) {
         super(reactorData.getHp());
         this.energy = reactorData.getMaxEnergyCapacity();
         this.maxEnergy = reactorData.getMaxEnergyCapacity();
         this.regenEnergy = reactorData.getRegenAmount();
-        this.ship = ship;
+        this.reactorConvex = reactorConvex;
+        this.onDestroyRunnable = onDestroyRunnable;
     }
 
     @Override
-    protected void createFixture() {
-        fixture = new BodyFixture(ship.getConfigData().getReactorPolygon());
+    protected void createFixture(RigidBody<?> rigidBody) {
+        fixture = new BodyFixture(reactorConvex);
         fixture.setUserData(this);
-        fixture.setFilter(new ShipFilter(ship));
+        fixture.setFilter(new ShipFilter(rigidBody));
         fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-        ship.getBody().addFixture(fixture);
+        rigidBody.getBody().addFixture(fixture);
     }
 
     @Override
@@ -63,7 +66,7 @@ public class Reactor extends DamageableModule {
     protected void destroy() {
         super.destroy();
         ship.getFixturesToRemove().add(fixture);
-        ship.setDestroying();
+        onDestroyRunnable.run();
     }
 
     @Override

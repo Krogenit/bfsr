@@ -5,7 +5,6 @@ import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.ConfigToDataConverter;
 import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.entity.RigidBody;
-import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.RigidBodySpawnData;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;
@@ -15,17 +14,14 @@ import org.dyn4j.geometry.MassType;
 
 import java.util.List;
 
-public class RigidBodySpawnLogic implements EntitySpawnLogic {
+public class RigidBodySpawnLogic implements EntitySpawnLogic<RigidBodySpawnData> {
     @Override
-    public void spawn(EntityPacketSpawnData spawnData) {
-        RigidBodySpawnData rigidBodySpawnData = (RigidBodySpawnData) spawnData;
+    public void spawn(RigidBodySpawnData spawnData) {
         World world = Core.get().getWorld();
-        ConfigToDataConverter<?, ?> converter = ConfigConverterManager.INSTANCE.getConverter(
-                rigidBodySpawnData.getRegistryId());
-        GameObjectConfigData configData = (GameObjectConfigData) converter.get(rigidBodySpawnData.getDataId());
-        RigidBody<GameObjectConfigData> rigidBody = new RigidBody<>(spawnData.getPosX(), spawnData.getPosY(),
-                spawnData.getSin(), spawnData.getCos(), configData.getSizeX(), configData.getSizeY(), configData,
-                rigidBodySpawnData.getRegistryId());
+        ConfigToDataConverter<?, ?> converter = ConfigConverterManager.INSTANCE.getConverter(spawnData.getRegistryId());
+        GameObjectConfigData configData = (GameObjectConfigData) converter.get(spawnData.getDataId());
+        RigidBody<GameObjectConfigData> rigidBody = new RigidBody<>(spawnData.getPosX(), spawnData.getPosY(), spawnData.getSin(),
+                spawnData.getCos(), configData.getSizeX(), configData.getSizeY(), configData, spawnData.getRegistryId());
         List<Convex> convexList = configData.getConvexList();
         Body body = rigidBody.getBody();
         for (int i = 0; i < convexList.size(); i++) {

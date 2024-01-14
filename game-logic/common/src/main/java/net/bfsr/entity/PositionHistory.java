@@ -11,7 +11,7 @@ public final class PositionHistory extends ChronologicalEntityDataManager<Transf
         super(historyLengthMillis);
     }
 
-    public void addPositionData(Vector2f pos, float sin, float cos, double time) {
+    void addPositionData(Vector2f pos, float sin, float cos, double time) {
         TransformData positionData = cache.get();
         positionData.setPosition(pos);
         positionData.setSin(sin);

@@ -1,5 +1,6 @@
 package net.bfsr.entity.ship.module.engine;
 
+import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
@@ -9,12 +10,10 @@ import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Polygon;
 
 public class Engine extends DamageableModule {
-    private final Ship ship;
     private final Polygon polygon;
 
-    public Engine(Ship ship, Polygon polygon) {
+    public Engine(Polygon polygon) {
         super(5.0f);
-        this.ship = ship;
         this.polygon = polygon;
     }
 
@@ -24,12 +23,12 @@ public class Engine extends DamageableModule {
     }
 
     @Override
-    protected void createFixture() {
+    protected void createFixture(RigidBody<?> rigidBody) {
         fixture = new BodyFixture(polygon);
         fixture.setUserData(this);
-        fixture.setFilter(new ShipFilter(ship));
+        fixture.setFilter(new ShipFilter(rigidBody));
         fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-        ship.getBody().addFixture(fixture);
+        rigidBody.getBody().addFixture(fixture);
     }
 
     @Override

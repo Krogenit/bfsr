@@ -21,7 +21,7 @@ public class ParticlesStoreTask implements Runnable {
     private final RenderLayer renderLayer;
     private final AbstractRenderer renderer = Engine.renderer;
 
-    public ParticlesStoreTask(List<ParticleRender>[] particlesByRenderLayer, RenderLayer renderLayer) {
+    ParticlesStoreTask(List<ParticleRender>[] particlesByRenderLayer, RenderLayer renderLayer) {
         this.particlesByRenderLayer = particlesByRenderLayer;
         this.renderLayer = renderLayer;
     }
@@ -30,7 +30,7 @@ public class ParticlesStoreTask implements Runnable {
         initRunnable(vertexBuffers, materialBuffers);
     }
 
-    public void initRunnable(FloatBuffer[] vertexBuffers, ByteBuffer[] materialBuffers) {
+    void initRunnable(FloatBuffer[] vertexBuffers, ByteBuffer[] materialBuffers) {
         FloatBuffer defaultAlphaBlendedVertexBuffer = vertexBuffers[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()];
         FloatBuffer defaultAdditiveBlendedVertexBuffer = vertexBuffers[RenderLayer.DEFAULT_ADDITIVE.ordinal()];
         FloatBuffer backgroundAlphaBlendedVertexBuffer = vertexBuffers[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()];

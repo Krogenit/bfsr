@@ -1,6 +1,7 @@
 package net.bfsr.client.renderer.entity;
 
 import lombok.Getter;
+import net.bfsr.client.Core;
 import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.particle.effect.FireEffects;
 import net.bfsr.config.entity.wreck.WreckData;
@@ -28,8 +29,8 @@ public class WreckRender extends RigidBodyRender<Wreck> {
     private float sparkleBlinkTimer;
 
     private final SpawnAccumulator spawnAccumulator = new SpawnAccumulator();
-    private final float fireAnimationSpeed = Engine.convertToDeltaTime(0.18f);
-    private final float lightAnimationSpeed = Engine.convertToDeltaTime(12.0f);
+    private final float fireAnimationSpeed = Core.get().convertToDeltaTime(0.18f);
+    private final float lightAnimationSpeed = Core.get().convertToDeltaTime(12.0f);
 
     public WreckRender(Wreck object) {
         super(Engine.assetsManager.getTexture(object.getConfigData().getTexture()), object, 0.5f, 0.5f, 0.5f, 1.0f);
@@ -47,7 +48,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
         this.colorLight.set(1.0f, 1.0f, 1.0f, 0.0f);
         this.lastColorLight.set(colorLight);
         this.sparkleActivationTimerInTicks = object.isLight() ?
-                Engine.convertToTicks(200.0f + object.getWorld().getRand().nextInt(200)) : 0;
+                Core.get().convertToTicks(200.0f + object.getWorld().getRand().nextInt(200)) : 0;
         this.lifeTimeVelocity = object.getLifeTimeVelocity();
         this.fire = object.isFire();
         this.light = object.isLight();
@@ -152,7 +153,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
             }
 
             if (sparkleBlinkTimer >= 100.0f) {
-                sparkleActivationTimerInTicks = Engine.convertToTicks(200.0f + object.getWorld().getRand().nextInt(200));
+                sparkleActivationTimerInTicks = Core.get().convertToTicks(200.0f + object.getWorld().getRand().nextInt(200));
                 sparkleBlinkTimer = 0.0f;
             }
         }

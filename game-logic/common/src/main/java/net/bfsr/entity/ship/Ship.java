@@ -102,8 +102,8 @@ public class Ship extends DamageableRigidBody<ShipData> {
     @Setter
     private Consumer<Double> chronologicalDataProcessor = super::processChronologicalData;
 
-    public Ship(ShipData shipData) {
-        super(shipData.getSizeX(), shipData.getSizeY(), shipData, ShipRegistry.INSTANCE.getId(), new DamageMask(32, 32),
+    public Ship(ShipData shipData, DamageMask damageMask) {
+        super(shipData.getSizeX(), shipData.getSizeY(), shipData, ShipRegistry.INSTANCE.getId(), damageMask,
                 shipData.getContour());
         this.timeToDestroy = shipData.getDestroyTimeInTicks();
         this.maxSparksTimer = timeToDestroy / 3;
@@ -180,7 +180,16 @@ public class Ship extends DamageableRigidBody<ShipData> {
     }
 
     @Override
-    public void addConnectedObject(ConnectedObject connectedObject) {
+    public void initConnectedObject(ConnectedObject<?> connectedObject) {
+        if (connectedObject instanceof WeaponSlot weaponSlot) {
+            weaponSlot.init(weaponSlot.getId(), this);
+        } else {
+            super.initConnectedObject(connectedObject);
+        }
+    }
+
+    @Override
+    public void addConnectedObject(ConnectedObject<?> connectedObject) {
         super.addConnectedObject(connectedObject);
         if (connectedObject instanceof WeaponSlot weaponSlot) {
             modules.addWeaponToSlot(weaponSlot.getId(), weaponSlot);
@@ -188,7 +197,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
     }
 
     @Override
-    public void removeConnectedObject(ConnectedObject connectedObject) {
+    public void removeConnectedObject(ConnectedObject<?> connectedObject) {
         super.removeConnectedObject(connectedObject);
         if (connectedObject instanceof WeaponSlot weaponSlot) {
             modules.removeWeaponSlot(weaponSlot.getId());
@@ -212,7 +221,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
                     otherShip.damageByCollision(this, impactPowerForOther, contactX, contactY, normalX, normalY);
             } else if (userData instanceof Wreck) {
                 if (collisionTimer <= 0) {
-                    collisionTimer = net.bfsr.engine.Engine.convertToTicks(2);
+                    collisionTimer = world.convertToTicks(2);
                     eventBus.publish(new ShipCollisionWithWreckEvent(this, contactX, contactY, normalX, normalY));
                 }
             }
@@ -223,6 +232,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
     public void update() {
         if (spawned) {
             updateFixtures();
+            updateConnectedObjects();
             updateShip();
             updateLifeTime();
         } else {
@@ -325,7 +335,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
             impactPower /= 2.0f;
         }
 
-        collisionTimer = net.bfsr.engine.Engine.convertToTicks(2);
+        collisionTimer = world.convertToTicks(2);
 
         Shield shield = modules.getShield();
         if (shield != null && shield.damageToShield(impactPower)) {

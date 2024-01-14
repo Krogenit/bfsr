@@ -28,7 +28,7 @@ public class Scroll extends SimpleGuiObject {
     @Setter
     private int scrollAmount = 40;
     private int accumulator;
-    private int minObjectY = Integer.MAX_VALUE, maxObjectY = Integer.MIN_VALUE;
+    private int minObjectY, maxObjectY = Integer.MIN_VALUE;
     private final AbstractMouse mouse = Engine.mouse;
 
     public void registerGuiObject(GuiObject guiObject) {
@@ -38,23 +38,25 @@ public class Scroll extends SimpleGuiObject {
         minObjectY = Math.min(guiObject.getY(), minObjectY);
         maxObjectY = Math.max(guiObject.getY() + guiObject.getHeight(), maxObjectY);
         totalHeight = maxObjectY - minObjectY;
+        updateScrollPositionAndSize();
     }
 
     public void unregisterGuiObject(GuiObject guiObject) {
         if (scrollableElements.remove(new ScrollableGuiObject(guiObject))) {
             updateTotalHeight();
+            updateScrollPositionAndSize();
         }
     }
 
     private void updateTotalHeight() {
         if (scrollableElements.size() > 0) {
-            ScrollableGuiObject guiObject = scrollableElements.get(0);
-            minObjectY = guiObject.getGuiObject().getY();
-            maxObjectY = guiObject.getGuiObject().getY() + guiObject.getGuiObject().getHeight();
+            GuiObject guiObject = scrollableElements.get(0).getGuiObject();
+            minObjectY = guiObject.getY();
+            maxObjectY = guiObject.getY() + guiObject.getHeight();
             for (int i = 0; i < scrollableElements.size(); i++) {
-                guiObject = scrollableElements.get(i);
-                minObjectY = Math.min(guiObject.getGuiObject().getY(), minObjectY);
-                maxObjectY = Math.max(guiObject.getGuiObject().getY() + guiObject.getGuiObject().getHeight(), maxObjectY);
+                guiObject = scrollableElements.get(i).getGuiObject();
+                minObjectY = Math.min(guiObject.getY(), minObjectY);
+                maxObjectY = Math.max(guiObject.getY() + guiObject.getHeight(), maxObjectY);
             }
             totalHeight = maxObjectY - minObjectY;
         } else {
@@ -69,7 +71,7 @@ public class Scroll extends SimpleGuiObject {
     }
 
     public void scrollBottom() {
-        updatePositionAndSize(Integer.MAX_VALUE);
+        updateScroll(Integer.MAX_VALUE);
     }
 
     @Override
@@ -77,21 +79,17 @@ public class Scroll extends SimpleGuiObject {
         super.update();
 
         if (accumulator != 0) {
-            updatePositionAndSize(scroll + accumulator);
+            updateScroll(scroll + accumulator);
             accumulator = 0;
         }
 
         if (movingByMouse) {
-            updatePositionAndSize(
-                    (int) (clickStartScroll + (mouse.getPosition().y - mouseStartClickY) / (scrollHeight / (float) totalHeight)));
+            updateScroll((int) (clickStartScroll + (mouse.getPosition().y - mouseStartClickY) /
+                    (scrollHeight / (float) totalHeight)));
         }
     }
 
-    public void updateScroll() {
-        updatePositionAndSize(scroll);
-    }
-
-    private void updatePositionAndSize(int newValue) {
+    private void updateScroll(int newValue) {
         int heightDiff = totalHeight - viewHeight;
         if (heightDiff < 0) heightDiff = 0;
 
@@ -106,6 +104,10 @@ public class Scroll extends SimpleGuiObject {
             scrollable.setY(scrollableGuiObject.getY() - scroll);
         }
 
+        updateScrollPositionAndSize();
+    }
+
+    private void updateScrollPositionAndSize() {
         float scrollValue = viewHeight / (float) totalHeight;
         float scrollYValue = scrollHeight / (float) totalHeight;
         if (scrollValue > 1) scrollValue = 1.0f;
@@ -122,7 +124,7 @@ public class Scroll extends SimpleGuiObject {
         super.updatePositionAndSize(width, height);
         viewHeight = viewHeightResizeFunction.apply(width, height);
         updateTotalHeight();
-        updatePositionAndSize(scroll);
+        updateScrollPositionAndSize();
         updateLastPosition();
     }
 

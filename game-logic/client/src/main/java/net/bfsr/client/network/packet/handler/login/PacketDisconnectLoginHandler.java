@@ -9,9 +9,12 @@ import net.bfsr.network.packet.server.login.PacketDisconnectLogin;
 import java.net.InetSocketAddress;
 
 public class PacketDisconnectLoginHandler extends PacketHandler<PacketDisconnectLogin, NetworkSystem> {
+    private final NetworkSystem networkSystem = Core.get().getNetworkSystem();
+
     @Override
-    public void handle(PacketDisconnectLogin packet, NetworkSystem networkSystem, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
-        Core.get().getNetworkSystem().closeChannels();
-        Core.get().getNetworkSystem().onDisconnect(packet.getMessage());
+    public void handle(PacketDisconnectLogin packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
+        this.networkSystem.closeChannels();
+        this.networkSystem.onDisconnect(packet.getMessage());
     }
 }

@@ -87,8 +87,7 @@ public class MiniMap {
                     int sizeX = (int) (scale.x * shipSize);
                     int sizeY = (int) (scale.y * shipSize);
                     guiRenderer.add(lastX, lastY, x, y, render.getLastSin(), render.getLastCos(), s.getSin(), s.getCos(), sizeX,
-                            sizeY,
-                            color.x, color.y, color.z, 1.0f, render.getTexture());
+                            sizeY, color.x, color.y, color.z, 1.0f, render.getTexture());
                 }
             }
         }

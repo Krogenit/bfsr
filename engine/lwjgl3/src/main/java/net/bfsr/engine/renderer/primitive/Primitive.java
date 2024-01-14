@@ -2,10 +2,11 @@ package net.bfsr.engine.renderer.primitive;
 
 import lombok.Getter;
 import net.bfsr.engine.Engine;
-import org.lwjgl.opengl.GL11;
+
+import static org.lwjgl.opengl.GL11.*;
 
 public class Primitive {
-    protected final VAO vao;
+    final VAO vao;
     @Getter
     private final int vertexCount;
     @Getter
@@ -18,12 +19,12 @@ public class Primitive {
     }
 
     public void renderIndexed() {
-        renderIndexed(GL11.GL_TRIANGLES);
+        renderIndexed(GL_TRIANGLES);
     }
 
     public void renderIndexed(int renderMode) {
         vao.bind();
-        GL11.glDrawElements(renderMode, indexCount, GL11.GL_UNSIGNED_INT, 0);
+        glDrawElements(renderMode, indexCount, GL_UNSIGNED_INT, 0);
         Engine.renderer.increaseDrawCalls();
     }
 

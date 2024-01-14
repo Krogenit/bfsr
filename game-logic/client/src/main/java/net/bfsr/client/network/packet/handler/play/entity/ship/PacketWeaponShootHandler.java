@@ -22,7 +22,8 @@ public class PacketWeaponShootHandler extends PacketHandler<PacketWeaponShoot, N
         if (obj instanceof Ship ship && ship != Core.get().getInputHandler().getPlayerInputController().getShip()) {
             WeaponSlot weaponSlot = ship.getWeaponSlot(packet.getSlot());
             if (weaponSlot != null) {
-                weaponSlot.shoot(weaponSlot1 -> world.getEventBus().publish(new WeaponShotEvent(weaponSlot1)));
+                weaponSlot.shoot(weaponSlot1 -> world.getEventBus().publish(new WeaponShotEvent(weaponSlot1)),
+                        ship.getModules().getReactor());
             }
         }
     }

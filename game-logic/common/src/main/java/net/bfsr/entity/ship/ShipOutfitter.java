@@ -15,6 +15,7 @@ import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponFactory;
+import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.faction.Faction;
 
 public class ShipOutfitter {
@@ -44,10 +45,11 @@ public class ShipOutfitter {
 
     private void outfit(Ship ship, String factionName) {
         ship.setEngine(new Engines(EngineRegistry.INSTANCE.get(factionName), ship));
-        ship.setReactor(new Reactor(ReactorRegistry.INSTANCE.get(factionName), ship));
+        ship.setReactor(new Reactor(ReactorRegistry.INSTANCE.get(factionName), ship.getConfigData().getReactorPolygon(),
+                ship::setDestroying));
         ship.setHull(new Hull(HullRegistry.INSTANCE.get(factionName), ship));
         ship.setArmor(new Armor(ArmorPlateRegistry.INSTANCE.get(factionName), ship));
-        ship.setShield(new Shield(ShieldRegistry.INSTANCE.get(factionName), ship));
+        ship.setShield(new Shield(ShieldRegistry.INSTANCE.get(factionName), ship.getConfigData().getShieldPolygon()));
         ship.setCrew(new Crew(CrewRegistry.INSTANCE.get(factionName)));
         ship.setCargo(new Cargo(CargoRegistry.INSTANCE.get(factionName)));
         addWeapons(ship);
@@ -65,12 +67,17 @@ public class ShipOutfitter {
 
     private void addRandomWeapons(Ship ship, String gunName) {
         if (ship.getWorld().getRand().nextInt(3) == 0) {
-            ship.addWeaponToSlot(0, WeaponFactory.createBeam("beam_small"));
-            ship.addWeaponToSlot(1, WeaponFactory.createBeam("beam_small"));
+            initAndAddWeaponToShip(ship, WeaponFactory.createBeam("beam_small"), 0);
+            initAndAddWeaponToShip(ship, WeaponFactory.createBeam("beam_small"), 1);
         } else {
-            ship.addWeaponToSlot(0, WeaponFactory.createGun(gunName));
-            ship.addWeaponToSlot(1, WeaponFactory.createGun(gunName));
+            initAndAddWeaponToShip(ship, WeaponFactory.createGun(gunName), 0);
+            initAndAddWeaponToShip(ship, WeaponFactory.createGun(gunName), 1);
         }
+    }
+
+    private void initAndAddWeaponToShip(Ship ship, WeaponSlot weaponSlot, int id) {
+        weaponSlot.init(id, ship);
+        ship.addWeaponToSlot(id, weaponSlot);
     }
 
     public static ShipOutfitter get() {

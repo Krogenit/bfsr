@@ -94,7 +94,7 @@ public class GuiObjectWithSubObjects extends TexturedGuiObject {
         }
     }
 
-    public void forEachSubObject(Consumer<AbstractGuiObject> consumer) {
+    protected void forEachSubObject(Consumer<AbstractGuiObject> consumer) {
         for (int i = 0; i < subObjects.size(); i++) {
             consumer.accept(subObjects.get(i));
         }

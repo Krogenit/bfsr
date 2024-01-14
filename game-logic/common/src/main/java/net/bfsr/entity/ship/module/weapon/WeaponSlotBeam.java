@@ -2,11 +2,15 @@ package net.bfsr.entity.ship.module.weapon;
 
 import lombok.Getter;
 import net.bfsr.config.component.weapon.beam.BeamData;
+import net.bfsr.config.component.weapon.beam.BeamRegistry;
+import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.util.SideUtils;
+import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.event.module.weapon.BeamShotEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageShipArmorEvent;
@@ -60,8 +64,6 @@ public class WeaponSlotBeam extends WeaponSlot {
 
     @Override
     public void update() {
-        updatePos();
-
         if (aliveTimerInTicks > 0) {
             aliveTimerInTicks--;
 
@@ -83,6 +85,11 @@ public class WeaponSlotBeam extends WeaponSlot {
                 if (reloadTimer > 0) reloadTimer--;
             }
         }
+    }
+
+    @Override
+    public void postPhysicsUpdate(RigidBody<?> rigidBody) {
+        updatePos(rigidBody);
 
         if (beamPower > 0) {
             rayCast();
@@ -90,10 +97,10 @@ public class WeaponSlotBeam extends WeaponSlot {
     }
 
     @Override
-    public void shoot(Consumer<WeaponSlot> onShotEvent) {
+    public void shoot(Consumer<WeaponSlot> onShotEvent, Reactor reactor) {
         reloadTimer = timeToReload;
         aliveTimerInTicks = maxAliveTimerInTicks;
-        ship.getModules().getReactor().consume(energyCost);
+        reactor.consume(energyCost);
         eventBus.publish(new BeamShotEvent(this));
     }
 
@@ -155,4 +162,14 @@ public class WeaponSlotBeam extends WeaponSlot {
 
     @Override
     public void createBullet(float fastForwardTime, Consumer<Bullet> syncLogic) {}
+
+    @Override
+    public int getRegistryId() {
+        return BeamRegistry.INSTANCE.getId();
+    }
+
+    @Override
+    public ConnectedObjectType getConnectedObjectType() {
+        return ConnectedObjectType.WEAPON_SLOT_BEAM;
+    }
 }

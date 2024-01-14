@@ -10,7 +10,7 @@ import java.nio.FloatBuffer;
 public class StringGeometryBuilder extends AbstractStringGeometryBuilder {
     private final String newLineString = "\n";
     private final char newLineChar = '\n';
-    private final IStringXOffsetSupplier[] offsetFunctions = new IStringXOffsetSupplier[3];
+    private final StringXOffsetSupplier[] offsetFunctions = new StringXOffsetSupplier[3];
     private final StringParams stringParams = new StringParams();
 
     private final int defaultIndent = 0;
@@ -29,17 +29,20 @@ public class StringGeometryBuilder extends AbstractStringGeometryBuilder {
         glString.flipBuffers();
     }
 
-    private void createString(AbstractGLString glString, StringCache stringCache, String text, int x, int y, int fontSize, float r, float g, float b, float a, int maxWidth,
+    private void createString(AbstractGLString glString, StringCache stringCache, String text, int x, int y, int fontSize,
+                              float r, float g, float b, float a, int maxWidth,
                               StringOffsetType offsetType) {
         createString(glString, stringCache, text, x, y, fontSize, r, g, b, a, maxWidth, offsetType, defaultIndent);
     }
 
     @Override
-    public void createString(AbstractGLString glString, StringCache stringCache, String text, int x, int y, int fontSize, float r, float g, float b, float a, int maxWidth, int indent) {
+    public void createString(AbstractGLString glString, StringCache stringCache, String text, int x, int y, int fontSize, float r,
+                             float g, float b, float a, int maxWidth, int indent) {
         createString(glString, stringCache, text, x, y, fontSize, r, g, b, a, maxWidth, StringOffsetType.DEFAULT, indent);
     }
 
-    private void createString(AbstractGLString glString, StringCache stringCache, String text, int x, int y, int fontSize, float r, float g, float b, float a, int maxWidth,
+    private void createString(AbstractGLString glString, StringCache stringCache, String text, int x, int y, int fontSize,
+                              float r, float g, float b, float a, int maxWidth,
                               StringOffsetType offsetType, int indent) {
         stringCache.setFontSize(fontSize);
         stringParams.getColor().set(r, g, b, a);
@@ -51,7 +54,8 @@ public class StringGeometryBuilder extends AbstractStringGeometryBuilder {
         glString.setHeight(stringParams.getHeight());
     }
 
-    private void trimAndCreateString(AbstractGLString glString, StringCache stringCache, String string, int startX, StringParams stringParams, int maxWidth,
+    private void trimAndCreateString(AbstractGLString glString, StringCache stringCache, String string, int startX,
+                                     StringParams stringParams, int maxWidth,
                                      StringOffsetType offsetType, int indent) {
         do {
             int trimSize = stringCache.sizeString(string, maxWidth, true);
@@ -63,11 +67,13 @@ public class StringGeometryBuilder extends AbstractStringGeometryBuilder {
     }
 
     @Override
-    public void createString(AbstractGLString glString, StringCache stringCache, String string, int x, int y, int fontSize, float r, float g, float b, float a, StringOffsetType offsetType) {
+    public void createString(AbstractGLString glString, StringCache stringCache, String string, int x, int y, int fontSize,
+                             float r, float g, float b, float a, StringOffsetType offsetType) {
         createString(glString, stringCache, string, x, y, fontSize, r, g, b, a, offsetType, defaultIndent);
     }
 
-    private void createString(AbstractGLString glString, StringCache stringCache, String string, int x, int y, int fontSize, float r, float g, float b, float a, StringOffsetType offsetType, int indent) {
+    private void createString(AbstractGLString glString, StringCache stringCache, String string, int x, int y, int fontSize,
+                              float r, float g, float b, float a, StringOffsetType offsetType, int indent) {
         stringCache.setFontSize(fontSize);
         stringParams.getColor().set(r, g, b, a);
         stringParams.setX(x + offsetFunctions[offsetType.ordinal()].get(string, stringCache));
@@ -87,7 +93,8 @@ public class StringGeometryBuilder extends AbstractStringGeometryBuilder {
         glString.setHeight(stringParams.getHeight());
     }
 
-    private void createString(AbstractGLString glString, StringCache stringCache, String string, StringParams stringParams, int indent) {
+    private void createString(AbstractGLString glString, StringCache stringCache, String string, StringParams stringParams,
+                              int indent) {
         Entry entry = stringCache.cacheString(string);
         int height = (int) stringCache.getHeight(newLineString) + indent;
 
@@ -101,7 +108,8 @@ public class StringGeometryBuilder extends AbstractStringGeometryBuilder {
                 stringParams.setColor(color.x, color.y, color.z);
             }
 
-            addGlyph(glyph, stringParams.getX(), stringParams.getY(), stringParams.getColor().x, stringParams.getColor().y, stringParams.getColor().z, stringParams.getColor().w, glString);
+            addGlyph(glyph, stringParams.getX(), stringParams.getY(), stringParams.getColor().x, stringParams.getColor().y,
+                    stringParams.getColor().z, stringParams.getColor().w, glString);
         }
 
         glString.setWidth(entry.advance / 2);

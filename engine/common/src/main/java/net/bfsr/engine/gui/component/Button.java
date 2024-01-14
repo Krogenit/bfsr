@@ -29,6 +29,7 @@ public class Button extends TexturedGuiObject {
                 .compile();
         this.onMouseClickRunnable = onMouseClickRunnable;
         this.stringYOffset = stringYOffset;
+        setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
     }
 
     public Button(TextureRegister texture, int x, int y, int width, int height, String string, FontType fontType, int fontSize,

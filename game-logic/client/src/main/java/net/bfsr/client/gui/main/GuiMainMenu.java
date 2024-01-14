@@ -24,8 +24,7 @@ public class GuiMainMenu extends Gui {
                 () -> Core.get().openGui(new GuiConnect(this))).atCenter(x, 0));
         registerGuiObject(new Button(buttonWidth, buttonHeight, Lang.getString("gui.mainmenu.options"),
                 () -> Core.get().openGui(new GuiSettings(this))).atCenter(x, 45));
-        registerGuiObject(
-                new Button(buttonWidth, buttonHeight, Lang.getString("gui.mainmenu.quit"), () -> Core.get().stop()).atCenter(x,
-                        90));
+        registerGuiObject(new Button(buttonWidth, buttonHeight, Lang.getString("gui.mainmenu.quit"), () -> Core.get().stop())
+                .atCenter(x, 90));
     }
 }

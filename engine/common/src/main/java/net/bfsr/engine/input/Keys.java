@@ -53,7 +53,6 @@ public final class Keys {
             KEY_WORLD_1 = 161,
             KEY_WORLD_2 = 162;
 
-    /** Function keys. */
     public static final int
             KEY_ESCAPE = 256,
             KEY_ENTER = 257,

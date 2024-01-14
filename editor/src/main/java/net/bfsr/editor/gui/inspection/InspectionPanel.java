@@ -62,7 +62,7 @@ public class InspectionPanel<T extends PropertiesHolder> {
     public InspectionPanel(Gui gui, String name, int width, FontType fontType, int fontSize, int stringYOffset) {
         this.gui = gui;
         this.name = name;
-        this.objectsContainer = new GuiObjectsContainer(gui, width, 16);
+        this.objectsContainer = setupObjectsContainerColors(new GuiObjectsContainer(width, 16));
         this.fontType = fontType;
         this.fontSize = fontSize;
         this.stringYOffset = stringYOffset;

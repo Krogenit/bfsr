@@ -15,7 +15,7 @@ public abstract class ModuleWithCells<T> extends Module {
 
     protected ModuleWithCells(Ship ship, Class<T> componentType, Supplier<T> supplier) {
         AABB aabb = new AABB(0);
-        MathUtils.computeAABB(ship.getBody(), aabb);
+        MathUtils.computeAABB(aabb, ship.getBody());
         this.width = (float) aabb.getWidth();
         this.height = (float) aabb.getHeight();
         int width = (int) Math.ceil(this.width / 2);

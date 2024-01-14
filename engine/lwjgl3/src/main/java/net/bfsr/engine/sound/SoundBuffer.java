@@ -3,7 +3,7 @@ package net.bfsr.engine.sound;
 import org.lwjgl.openal.AL10;
 
 public class SoundBuffer extends AbstractSoundBuffer {
-    public SoundBuffer(int buffer) {
+    SoundBuffer(int buffer) {
         super(buffer);
     }
 

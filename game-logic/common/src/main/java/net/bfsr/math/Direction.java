@@ -3,6 +3,8 @@ package net.bfsr.math;
 public enum Direction {
     FORWARD, LEFT, BACKWARD, RIGHT, STOP;
 
+    public static final Direction[] VALUES = values();
+
     private static final Direction[] inverseDirections = new Direction[4];
 
     static {
@@ -14,5 +16,9 @@ public enum Direction {
 
     public static Direction inverse(Direction direction) {
         return inverseDirections[direction.ordinal()];
+    }
+
+    public static Direction get(byte index) {
+        return VALUES[index];
     }
 }

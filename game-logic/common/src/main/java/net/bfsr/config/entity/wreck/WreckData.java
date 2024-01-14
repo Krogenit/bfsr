@@ -19,8 +19,8 @@ public class WreckData extends GameObjectConfigData {
         super(wreckConfig, wreckConfig.getName(), id);
         this.type = wreckConfig.getType();
         this.fireTexture = PathHelper.convertPath(wreckConfig.getFireTexture());
-        this.sparkleTexture =
-                wreckConfig.getSparkleTexture() != null ? PathHelper.convertPath(wreckConfig.getSparkleTexture()) : null;
+        this.sparkleTexture = wreckConfig.getSparkleTexture() != null ? PathHelper.convertPath(wreckConfig.getSparkleTexture())
+                : null;
         this.polygon = new Polygon(convert(wreckConfig.getVertices()));
     }
 }

@@ -3,14 +3,14 @@ package net.bfsr.entity;
 import java.util.LinkedList;
 
 public class ChronologicalEntityDataManager<T extends ChronologicalEntityData> {
-    protected final LinkedList<T> dataList = new LinkedList<>();
-    protected final double historyLengthMillis;
+    final LinkedList<T> dataList = new LinkedList<>();
+    final double historyLengthMillis;
 
-    public ChronologicalEntityDataManager(double historyLengthMillis) {
+    ChronologicalEntityDataManager(double historyLengthMillis) {
         this.historyLengthMillis = historyLengthMillis;
     }
 
-    public void addData(T data) {
+    void addData(T data) {
         boolean added = false;
         for (int i = 0; i < dataList.size(); i++) {
             T epd = dataList.get(i);

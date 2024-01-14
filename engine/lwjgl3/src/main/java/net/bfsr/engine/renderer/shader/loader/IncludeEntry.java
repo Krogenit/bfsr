@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class IncludeEntry {
+class IncludeEntry {
     private final String filename;
     private String content;
 }

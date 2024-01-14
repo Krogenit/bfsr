@@ -5,7 +5,7 @@ import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.Getter;
-import net.bfsr.engine.Engine;
+import net.bfsr.engine.GameLogic;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.util.Side;
@@ -48,13 +48,17 @@ public class World {
     @Getter
     private double timestamp;
     private final EntityIdManager entityIdManager;
+    @Getter
+    private final GameLogic gameLogic;
 
-    public World(Profiler profiler, Side side, long seed, EventBus eventBus, EntityIdManager entityIdManager) {
+    public World(Profiler profiler, Side side, long seed, EventBus eventBus, EntityIdManager entityIdManager,
+                 GameLogic gameLogic) {
         this.profiler = profiler;
         this.side = side;
         this.seed = seed;
         this.eventBus = eventBus;
         this.entityIdManager = entityIdManager;
+        this.gameLogic = gameLogic;
         this.entitiesByClass.put(RigidBody.class, new ArrayList<>());
         this.entitiesByClass.put(Ship.class, new ArrayList<>());
         this.entitiesByClass.put(Bullet.class, new ArrayList<>());
@@ -69,7 +73,7 @@ public class World {
         physicWorld.getSettings().setMaximumTranslation(30);
         physicWorld.getSettings().setPositionConstraintSolverIterations(1);
         physicWorld.getSettings().setVelocityConstraintSolverIterations(1);
-        physicWorld.getSettings().setStepFrequency(Engine.getUpdateDeltaTime());
+        physicWorld.getSettings().setStepFrequency(gameLogic.getUpdateDeltaTime());
         physicWorld.getSettings().setContinuousDetectionMode(ContinuousDetectionMode.BULLETS_ONLY);
         physicWorld.addContactListener(new ContactListener());
         physicWorld.addTimeOfImpactListener(ccdTransformHandler);
@@ -178,5 +182,17 @@ public class World {
 
     public boolean isClient() {
         return side.isClient();
+    }
+
+    public int convertToTicks(int value) {
+        return gameLogic.convertToTicks(value);
+    }
+
+    public int convertToTicks(float value) {
+        return gameLogic.convertToTicks(value);
+    }
+
+    public float convertToDeltaTime(float value) {
+        return gameLogic.convertToTicks(value);
     }
 }

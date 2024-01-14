@@ -4,13 +4,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.bfsr.engine.event.EventBus;
+import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.event.listener.EventListener;
 import net.bfsr.event.module.ModuleDestroyEvent;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @NoArgsConstructor
-public abstract class DamageableModule extends Module {
+public abstract class DamageableModule extends Module implements net.bfsr.event.EventBus {
     @Getter
     protected float maxHp;
     @Getter
@@ -20,7 +25,8 @@ public abstract class DamageableModule extends Module {
     protected BodyFixture fixture;
     private EventBus eventBus;
     @Getter
-    private Ship ship;
+    protected Ship ship;
+    private final List<EventListener> destroyListeners = new ArrayList<>();
 
     protected DamageableModule(float hp) {
         this.maxHp = this.hp = hp;
@@ -31,17 +37,13 @@ public abstract class DamageableModule extends Module {
         this.maxHp = this.hp = hp;
     }
 
-    protected DamageableModule(float x, float y, float sizeX, float sizeY) {
-        super(x, y, sizeX, sizeY);
-    }
-
     public void init(Ship ship) {
         this.ship = ship;
         this.eventBus = ship.getWorld().getEventBus();
-        createFixture();
+        createFixture(ship);
     }
 
-    protected void createFixture() {}
+    protected void createFixture(RigidBody<?> rigidBody) {}
 
     public void addFixtureToBody(Body body) {
         if (isDead) return;
@@ -67,5 +69,17 @@ public abstract class DamageableModule extends Module {
 
     protected void destroy() {
         eventBus.publish(new ModuleDestroyEvent(this));
+        for (int i = 0; i < destroyListeners.size(); i++) {
+            destroyListeners.get(i).event();
+        }
+    }
+
+    public void addDestroyListener(EventListener listener) {
+        destroyListeners.add(listener);
+    }
+
+    @Override
+    public void removeListener(EventListener listener) {
+        destroyListeners.remove(listener);
     }
 }

@@ -22,7 +22,7 @@ public class NetworkManagerTCP {
     private Channel channel;
     private EventLoopGroup workGroup;
 
-    public ChannelFuture connect(NetworkSystem networkSystem, InetAddress address, int port) {
+    public void connect(NetworkSystem networkSystem, InetAddress address, int port) {
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(workGroup = new NioEventLoopGroup());
         bootstrap.channel(NioSocketChannel.class);
@@ -42,14 +42,14 @@ public class NetworkManagerTCP {
         ChannelFuture channelFuture = bootstrap.connect(address, port).syncUninterruptibly();
         this.channel = channelFuture.channel();
         log.info("Connected to server {}:{} with protocol TCP", address, port);
-        return channelFuture;
     }
 
     public void sendPacket(Packet packet) {
         if (channel.eventLoop().inEventLoop()) {
             channel.writeAndFlush(packet).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         } else {
-            channel.eventLoop().execute(() -> channel.writeAndFlush(packet).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE));
+            channel.eventLoop().execute(() -> channel.writeAndFlush(packet)
+                    .addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE));
         }
     }
 

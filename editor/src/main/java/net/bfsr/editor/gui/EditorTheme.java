@@ -3,6 +3,7 @@ package net.bfsr.editor.gui;
 import net.bfsr.editor.gui.component.MinimizableGuiObject;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.InputBox;
+import net.bfsr.engine.gui.object.GuiObjectsContainer;
 import net.bfsr.engine.renderer.font.FontType;
 import org.joml.Vector4f;
 
@@ -36,6 +37,9 @@ public final class EditorTheme {
 
     public static final Vector4f SELECTION_BLUE_COLOR = new Vector4f(35 / 255.0f, 74 / 255.0f, 108 / 255.0f, 1.0f);
 
+    public static final Vector4f SCROLL_COLOR = new Vector4f(77 / 255.0f, 78 / 255.0f, 81 / 255.0f, 1.0f);
+    public static final Vector4f SCROLL_HOVER_COLOR = new Vector4f(92 / 255.0f, 93 / 255.0f, 94 / 255.0f, 1.0f);
+
     public static final FontType FONT_TYPE = FontType.Segoe_UI;
 
     public static MinimizableGuiObject setupColors(MinimizableGuiObject object) {
@@ -59,5 +63,11 @@ public final class EditorTheme {
         inputBox.setTextColor(TEXT_COLOR).setHoverColor(INPUT_BOX_COLOR).setColor(INPUT_BOX_COLOR)
                 .setOutlineColor(INPUT_BOX_OUTLINE_COLOR).setOutlineHoverColor(INPUT_BOX_OUTLINE_HOVER_COLOR);
         return inputBox;
+    }
+
+    public static GuiObjectsContainer setupObjectsContainerColors(GuiObjectsContainer container) {
+        container.setScrollColor(SCROLL_COLOR);
+        container.setScrollHoverColor(SCROLL_HOVER_COLOR);
+        return container;
     }
 }

@@ -6,6 +6,7 @@ import net.bfsr.config.component.shield.ShieldData;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.Event;
 import net.bfsr.engine.util.SideUtils;
+import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
@@ -33,13 +34,10 @@ public class Shield extends DamageableModule {
     private final int timeToRebuild;
     @Setter
     private int rebuildingTime;
-    private final Body body;
     private boolean alive;
     @Getter
-    private final Ship ship;
-    @Getter
     private final ShieldData shieldData;
-    private final MBassador<Event> eventBus;
+    private MBassador<Event> eventBus;
     private BodyFixture shieldFixture;
     @Getter
     @Setter
@@ -47,31 +45,37 @@ public class Shield extends DamageableModule {
     @Getter
     private float shieldMaxHp;
     private final float scaleAnimation = Engine.convertToDeltaTime(3.6f);
+    private final Convex shieldConvex;
 
-    public Shield(ShieldData shieldData, Ship ship) {
+    public Shield(ShieldData shieldData, Convex shieldConvex) {
         super(5.0f, 1.0f, 1.0f);
         this.shieldHp = shieldMaxHp = shieldData.getMaxShield();
         this.shieldRegen = shieldData.getRegenAmount();
         this.timeToRebuild = (int) shieldData.getRebuildTimeInTicks();
         this.rebuildingTime = timeToRebuild;
         this.shieldData = shieldData;
-        this.ship = ship;
-        this.body = ship.getBody();
-        this.eventBus = ship.getWorld().getEventBus();
+        this.shieldConvex = shieldConvex;
     }
 
     @Override
-    public void createFixture() {
-        fixture = new BodyFixture(ship.getConfigData().getShieldPolygon());
+    public void init(Ship ship) {
+        super.init(ship);
+        eventBus = ship.getWorld().getEventBus();
+    }
+
+    @Override
+    public void createFixture(RigidBody<?> rigidBody) {
+        fixture = new BodyFixture(shieldConvex);
         fixture.setUserData(this);
-        fixture.setFilter(new ShipFilter(ship));
+        fixture.setFilter(new ShipFilter(rigidBody));
         fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-        body.addFixture(fixture);
+        rigidBody.getBody().addFixture(fixture);
 
         createShieldFixture();
     }
 
     private void createShieldFixture() {
+        Body body = ship.getBody();
         List<BodyFixture> fixtures = body.getFixtures();
         if (shieldFixture != null) {
             body.removeFixture(shieldFixture);
@@ -210,7 +214,7 @@ public class Shield extends DamageableModule {
     }
 
     public void removeShield() {
-        body.removeFixture(shieldFixture);
+        ship.getBody().removeFixture(shieldFixture);
         shieldFixture = null;
         rebuildingTime = 0;
         size.set(0.0f);

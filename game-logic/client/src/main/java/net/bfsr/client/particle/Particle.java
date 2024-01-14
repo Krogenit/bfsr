@@ -14,8 +14,8 @@ import org.joml.Vector2f;
 
 public class Particle extends GameObject {
     private static final ObjectPool<ParticleRender> RENDER_POOL = new ObjectPool<>(ParticleRender::new);
-    protected static final ParticleManager PARTICLE_MANAGER = Core.get().getParticleManager();
-    protected static final ParticleRenderer PARTICLE_RENDERER = Core.get().getGlobalRenderer().getParticleRenderer();
+    static final ParticleManager PARTICLE_MANAGER = Core.get().getParticleManager();
+    static final ParticleRenderer PARTICLE_RENDERER = Core.get().getGlobalRenderer().getParticleRenderer();
 
     @Getter
     protected float sin, cos;
@@ -43,15 +43,16 @@ public class Particle extends GameObject {
                          boolean isAlphaFromZero,
                          RenderLayer renderLayer) {
         this.position.set(x, y);
-        this.velocity.set(Engine.convertToDeltaTime(velocityX), Engine.convertToDeltaTime(velocityY));
+        Core core = Core.get();
+        this.velocity.set(core.convertToDeltaTime(velocityX), core.convertToDeltaTime(velocityY));
         this.sin = sin;
         this.cos = cos;
-        float angularVelocityInTick = Engine.convertToDeltaTime(angularVelocity);
+        float angularVelocityInTick = core.convertToDeltaTime(angularVelocity);
         this.angularVelocitySin = LUT.sin(angularVelocityInTick);
         this.angularVelocityCos = LUT.cos(angularVelocityInTick);
         this.size.set(scaleX, scaleY);
-        this.sizeVelocity = Engine.convertToDeltaTime(sizeVelocity);
-        this.alphaVelocity = Engine.convertToDeltaTime(alphaVelocity);
+        this.sizeVelocity = core.convertToDeltaTime(sizeVelocity);
+        this.alphaVelocity = core.convertToDeltaTime(alphaVelocity);
         this.zeroVelocity = velocity.lengthSquared() <= 0.01f;
         this.isDead = false;
         addParticle(textureHandle, r, g, b, a, isAlphaFromZero, renderLayer);

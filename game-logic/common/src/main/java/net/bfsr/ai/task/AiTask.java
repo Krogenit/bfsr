@@ -5,7 +5,7 @@ import net.bfsr.entity.ship.Ship;
 public abstract class AiTask {
     protected final Ship ship;
 
-    protected AiTask(Ship ship) {
+    AiTask(Ship ship) {
         this.ship = ship;
     }
 

@@ -38,7 +38,7 @@ public class ShipSpawner {
         }
 
         if (botCount < 50 || sameFaction) {
-            timer = 30;
+            timer = 40;
             int maxCount = 1;
             int count = maxCount;
 

@@ -19,8 +19,8 @@ public class GuiInGameMenu extends Gui {
         registerGuiObject(new Button(Lang.getString("gui.ingamemenu.backtogame"), () -> Core.get().closeGui()).atCenter(x, -30));
         registerGuiObject(new Button(Lang.getString("gui.ingamemenu.settings"),
                 () -> Core.get().openGui(new GuiSettings(this))).atCenter(x, 30));
-        registerGuiObject(
-                new Button(Lang.getString("gui.ingamemenu.tomainmenu"), () -> Core.get().quitToMainMenu()).atCenter(x, 180));
+        registerGuiObject(new Button(Lang.getString("gui.ingamemenu.tomainmenu"), () -> Core.get().quitToMainMenu())
+                .atCenter(x, 180));
         registerGuiObject(new TexturedGuiObject(TextureRegister.guiLogoBFSR).atCenter(-128, -328).setSize(256, 256));
     }
 

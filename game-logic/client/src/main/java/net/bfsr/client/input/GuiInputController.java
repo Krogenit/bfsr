@@ -96,8 +96,7 @@ public class GuiInputController extends InputController {
     @Override
     public boolean onMouseRightRelease() {
         if (guiStack.size() > 0) {
-            guiStack.getLast().onMouseRightRelease();
-            return true;
+            return guiStack.getLast().onMouseRightRelease();
         }
 
         return false;

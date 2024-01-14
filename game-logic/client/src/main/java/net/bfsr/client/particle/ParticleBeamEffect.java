@@ -56,7 +56,7 @@ public class ParticleBeamEffect extends Particle {
         }
     }
 
-    public void calculateTransform() {
+    void calculateTransform() {
         float beamRange = slot.getCurrentBeamRange();
         Vector2f slotPos = slot.getPosition();
 

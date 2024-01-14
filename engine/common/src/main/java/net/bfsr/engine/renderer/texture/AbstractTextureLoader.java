@@ -5,7 +5,11 @@ import java.nio.file.Path;
 public abstract class AbstractTextureLoader {
     public static AbstractTexture dummyTexture;
 
-    public abstract void init();
+    public void init() {
+        dummyTexture = createDummyTexture();
+    }
+
+    protected abstract AbstractTexture createDummyTexture();
 
     public abstract AbstractTexture createTexture(int width, int height);
     public abstract AbstractTexture newTexture(int width, int height);

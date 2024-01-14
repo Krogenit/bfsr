@@ -33,13 +33,16 @@ public final class MathUtils {
         return y >= 0 ? r : -r;
     }
 
-    public static void computeAABB(Body body, AABB aabb) {
+    public static void computeAABB(AABB aabb, Body body, Transform transform) {
         List<BodyFixture> fixtures = body.getFixtures();
-        int size = fixtures.size();
-        fixtures.get(0).getShape().computeAABB(IDENTITY_TRANSFORM, aabb);
-        for (int i = 1; i < size; i++) {
-            fixtures.get(i).getShape().computeAABB(IDENTITY_TRANSFORM, CACHED_AABB_1);
+        fixtures.get(0).getShape().computeAABB(transform, aabb);
+        for (int i = 1, size = fixtures.size(); i < size; i++) {
+            fixtures.get(i).getShape().computeAABB(transform, CACHED_AABB_1);
             aabb.union(CACHED_AABB_1);
         }
+    }
+
+    public static void computeAABB(AABB aabb, Body body) {
+        computeAABB(aabb, body, IDENTITY_TRANSFORM);
     }
 }

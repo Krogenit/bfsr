@@ -35,7 +35,7 @@ public class ParticleManager {
         }
     }
 
-    public void addParticle(Particle particle) {
+    void addParticle(Particle particle) {
         particles.add(particle);
     }
 

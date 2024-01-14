@@ -14,7 +14,6 @@ import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.server.ServerGameLogic;
@@ -128,7 +127,6 @@ public class DebugInfoElement {
         if (playerShip != null) {
             Vector2f pos = playerShip.getPosition();
             Vector2f velocity = playerShip.getVelocity();
-            Hull hull = playerShip.getModules().getHull();
             Shield shield = playerShip.getModules().getShield();
             Reactor reactor = playerShip.getModules().getReactor();
             stringBuilder.append("\n\n---Player Ship--- ");

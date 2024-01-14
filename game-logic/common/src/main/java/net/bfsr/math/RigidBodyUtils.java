@@ -13,14 +13,14 @@ public final class RigidBodyUtils {
     public static final Vector2f ANGLE_TO_VELOCITY = new Vector2f();
     private static final List<Direction> DIRECTIONS = new ArrayList<>();
 
-    public static float getRotationDifference(RigidBody gameObject, Vector2f vector) {
+    public static float getRotationDifference(RigidBody<?> gameObject, Vector2f vector) {
         Vector2f position = gameObject.getPosition();
         ROTATE_TO_VECTOR.set(vector.x - position.x, vector.y - position.y);
         Vector2f angleToVelocity = RotationHelper.angleToVelocity(gameObject.getSin(), gameObject.getCos(), 1.0f);
         return angleToVelocity.angle(ROTATE_TO_VECTOR);
     }
 
-    public static void rotateToVector(RigidBody gameObject, Vector2f vector, float rotationSpeed) {
+    public static void rotateToVector(RigidBody<?> gameObject, Vector2f vector, float rotationSpeed) {
         Body body = gameObject.getBody();
 
         float diffRad = getRotationDifference(gameObject, vector);
@@ -40,10 +40,10 @@ public final class RigidBodyUtils {
             gameObject.setRotation(sin * cos1 + cos * sin1, cos * cos1 - sin * sin1);
         }
 
-        body.setAngularVelocity(body.getAngularVelocity() * 0.99f);
+        body.setAngularVelocity(body.getAngularVelocity() * 0.98f);
     }
 
-    public static List<Direction> calculateDirectionsToOtherObject(RigidBody gameObject, float x, float y) {
+    public static List<Direction> calculateDirectionsToOtherObject(RigidBody<?> gameObject, float x, float y) {
         Vector2f pos = gameObject.getPosition();
         ROTATE_TO_VECTOR.x = x - pos.x;
         ROTATE_TO_VECTOR.y = y - pos.y;
@@ -68,7 +68,7 @@ public final class RigidBodyUtils {
         return DIRECTIONS;
     }
 
-    public static Direction calculateDirectionToOtherObject(RigidBody gameObject, float x, float y) {
+    public static Direction calculateDirectionToOtherObject(RigidBody<?> gameObject, float x, float y) {
         Vector2f pos = gameObject.getPosition();
         ROTATE_TO_VECTOR.x = x - pos.x;
         ROTATE_TO_VECTOR.y = y - pos.y;

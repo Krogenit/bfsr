@@ -13,7 +13,7 @@ final class ScrollableGuiObject {
         this.y = guiObject.getYForScroll();
     }
 
-    public void updateY() {
+    void updateY() {
         this.y = guiObject.getYForScroll();
     }
 

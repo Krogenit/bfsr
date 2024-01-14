@@ -1,6 +1,6 @@
 package net.bfsr.server.event.listener.damage;
 
-import net.bfsr.damage.Damageable;
+import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.event.damage.DamageEvent;
 import net.bfsr.network.packet.server.entity.PacketSyncDamage;
 import net.bfsr.server.ServerGameLogic;
@@ -16,7 +16,7 @@ public class DamageEventListener {
 
     @Handler
     public void event(DamageEvent event) {
-        Damageable<?> damageable = event.getDamageable();
+        DamageableRigidBody<?> damageable = event.getDamageable();
         networkSystem.sendTCPPacketToAllNearby(new PacketSyncDamage(damageable), damageable.getX(), damageable.getY(),
                 TrackingUtils.TRACKING_DISTANCE);
     }

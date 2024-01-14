@@ -81,8 +81,7 @@ public class ComboBox<V> extends GuiObjectWithSubObjects {
     private void unregisterNotSelected() {
         for (int i = 0; i < subObjects.size(); i++) {
             if (i != selectedIndex) {
-                CompoBoxElement<V> element = (CompoBoxElement<V>) subObjects.get(i);
-                gui.unregisterGuiObject(element);
+                gui.unregisterGuiObject(subObjects.get(i));
             }
         }
     }

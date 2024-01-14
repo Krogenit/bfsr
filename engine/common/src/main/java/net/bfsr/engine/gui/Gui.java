@@ -7,7 +7,6 @@ import net.bfsr.engine.gui.object.GuiObject;
 import net.bfsr.engine.gui.object.GuiObjectsHandler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
-import org.joml.Vector2i;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +18,6 @@ public abstract class Gui implements GuiObjectsHandler {
     protected Gui parentGui;
     @Getter
     protected int width, height;
-    protected final Vector2i center = new Vector2i();
     @Getter
     protected final List<GuiObject> guiObjects = new ArrayList<>();
     private final List<GuiObject> contextMenu = new ArrayList<>();
@@ -33,13 +31,7 @@ public abstract class Gui implements GuiObjectsHandler {
     public void init() {
         width = renderer.getScreenWidth();
         height = renderer.getScreenHeight();
-        updateCenter();
         initElements();
-    }
-
-    private void updateCenter() {
-        center.x = width / 2;
-        center.y = height / 2;
     }
 
     protected abstract void initElements();
@@ -69,9 +61,9 @@ public abstract class Gui implements GuiObjectsHandler {
     public void update() {
         GuiObject hoveredObject;
         if (isContextMenuOpened()) {
-            hoveredObject = GuiUpdateUtils.updateGuiObjectsHover(hoveredGuiObject, contextMenu);
+            hoveredObject = updateGuiObjectsHover(hoveredGuiObject, contextMenu);
         } else {
-            hoveredObject = GuiUpdateUtils.updateGuiObjectsHover(hoveredGuiObject, guiObjects);
+            hoveredObject = updateGuiObjectsHover(hoveredGuiObject, guiObjects);
         }
 
         if (hoveredObject != hoveredGuiObject) {
@@ -87,6 +79,28 @@ public abstract class Gui implements GuiObjectsHandler {
         for (int i = 0; i < size; i++) {
             guiObjects.get(i).update();
         }
+    }
+
+    private GuiObject updateGuiObjectsHover(GuiObject hoveredObject, List<GuiObject> guiObjects) {
+        int size = guiObjects.size();
+
+        for (int i = 0; i < size; i++) {
+            GuiObject guiObject = guiObjects.get(i);
+
+            guiObject.updateMouseHover();
+            if (guiObject.isMouseHover()) {
+                if (hoveredObject != null && hoveredObject != guiObject) {
+                    hoveredObject.setMouseHover(false);
+                }
+                hoveredObject = guiObject;
+            }
+
+            if (guiObject instanceof GuiObjectsHandler guiObjectsHandler) {
+                hoveredObject = updateGuiObjectsHover(hoveredObject, guiObjectsHandler.getGuiObjects());
+            }
+        }
+
+        return hoveredObject;
     }
 
     @Override
@@ -227,7 +241,6 @@ public abstract class Gui implements GuiObjectsHandler {
     public void onScreenResize(int width, int height) {
         this.width = width;
         this.height = height;
-        updateCenter();
         int size = guiObjects.size();
         for (int i = 0; i < size; i++) {
             guiObjects.get(i).onScreenResize(width, height);

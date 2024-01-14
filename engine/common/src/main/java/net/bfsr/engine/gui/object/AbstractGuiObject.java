@@ -15,9 +15,9 @@ public abstract class AbstractGuiObject implements GuiObject {
     protected final AbstractRenderer renderer = Engine.renderer;
     protected final AbstractGUIRenderer guiRenderer = renderer.guiRenderer;
 
-    protected BiConsumer<Integer, Integer> repositionConsumer = (width, height) -> {};
-    protected BiFunction<Integer, Integer, Integer> widthResizeFunction = (width, height) -> getWidth();
-    protected BiFunction<Integer, Integer, Integer> heightResizeFunction = (width, height) -> getHeight();
+    private BiConsumer<Integer, Integer> repositionConsumer = (width, height) -> {};
+    private BiFunction<Integer, Integer, Integer> widthResizeFunction = (width, height) -> getWidth();
+    private BiFunction<Integer, Integer, Integer> heightResizeFunction = (width, height) -> getHeight();
     @Getter
     @Setter
     protected boolean mouseHover;

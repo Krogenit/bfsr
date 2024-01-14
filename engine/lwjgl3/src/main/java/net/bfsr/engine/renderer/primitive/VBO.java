@@ -1,14 +1,14 @@
 package net.bfsr.engine.renderer.primitive;
 
 import lombok.Getter;
-import org.lwjgl.opengl.GL15C;
-import org.lwjgl.opengl.GL45C;
-import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+
+import static org.lwjgl.opengl.GL45C.*;
+import static org.lwjgl.system.MemoryUtil.memAddress;
 
 public final class VBO {
     @Getter
@@ -20,67 +20,67 @@ public final class VBO {
     }
 
     public static VBO create() {
-        int id = GL45C.glCreateBuffers();
+        int id = glCreateBuffers();
         return new VBO(id);
     }
 
     void storeData(ByteBuffer data, int flags) {
-        storeData(Integer.toUnsignedLong(data.remaining()), flags, MemoryUtil.memAddress(data));
+        storeData(Integer.toUnsignedLong(data.remaining()), flags, memAddress(data));
     }
 
     void storeData(LongBuffer data, int flags) {
-        storeData(Integer.toUnsignedLong(data.remaining()) << 3, flags, MemoryUtil.memAddress(data));
+        storeData(Integer.toUnsignedLong(data.remaining()) << 3, flags, memAddress(data));
     }
 
     void storeData(FloatBuffer data, int flags) {
-        storeData(Integer.toUnsignedLong(data.remaining()) << 2, flags, MemoryUtil.memAddress(data));
+        storeData(Integer.toUnsignedLong(data.remaining()) << 2, flags, memAddress(data));
     }
 
     void storeData(FloatBuffer data, int flags, Runnable onResizeRunnable) {
-        storeData(Integer.toUnsignedLong(data.remaining()) << 2, flags, MemoryUtil.memAddress(data), onResizeRunnable);
+        storeData(Integer.toUnsignedLong(data.remaining()) << 2, flags, memAddress(data), onResizeRunnable);
     }
 
     void storeData(ByteBuffer data, int flags, Runnable onResizeRunnable) {
-        storeData(Integer.toUnsignedLong(data.remaining()), flags, MemoryUtil.memAddress(data), onResizeRunnable);
+        storeData(Integer.toUnsignedLong(data.remaining()), flags, memAddress(data), onResizeRunnable);
     }
 
     void storeData(IntBuffer data, int flags, Runnable onResizeRunnable) {
-        storeData(Integer.toUnsignedLong(data.remaining()) << 2, flags, MemoryUtil.memAddress(data), onResizeRunnable);
+        storeData(Integer.toUnsignedLong(data.remaining()) << 2, flags, memAddress(data), onResizeRunnable);
     }
 
     void storeData(IntBuffer data, int flags) {
-        storeData(Integer.toUnsignedLong(data.remaining()) << 2, flags, MemoryUtil.memAddress(data));
+        storeData(Integer.toUnsignedLong(data.remaining()) << 2, flags, memAddress(data));
     }
 
     private void storeData(long newDataSize, int flags, long dataAddress, Runnable onResizeRunnable) {
         if (newDataSize <= maxDataSize) {
-            GL45C.nglNamedBufferSubData(id, 0, newDataSize, dataAddress);
+            nglNamedBufferSubData(id, 0, newDataSize, dataAddress);
         } else {
             if (maxDataSize > 0) {
-                GL15C.glDeleteBuffers(id);
-                id = GL45C.glCreateBuffers();
+                glDeleteBuffers(id);
+                id = glCreateBuffers();
             }
             onResizeRunnable.run();
-            GL45C.nglNamedBufferStorage(id, newDataSize, dataAddress, flags);
+            nglNamedBufferStorage(id, newDataSize, dataAddress, flags);
             maxDataSize = newDataSize;
         }
     }
 
     private void storeData(long newDataSize, int flags, long dataAddress) {
         if (newDataSize <= maxDataSize) {
-            GL45C.nglNamedBufferSubData(id, 0, newDataSize, dataAddress);
+            nglNamedBufferSubData(id, 0, newDataSize, dataAddress);
         } else {
             if (maxDataSize > 0) {
-                GL15C.glDeleteBuffers(id);
-                id = GL45C.glCreateBuffers();
+                glDeleteBuffers(id);
+                id = glCreateBuffers();
             }
-            GL45C.nglNamedBufferStorage(id, newDataSize, dataAddress, flags);
+            nglNamedBufferStorage(id, newDataSize, dataAddress, flags);
             maxDataSize = newDataSize;
         }
     }
 
     public void clear() {
-        GL15C.glDeleteBuffers(id);
+        glDeleteBuffers(id);
         maxDataSize = 0;
         id = 0;
     }

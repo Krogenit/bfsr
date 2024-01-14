@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.entity.RigidBody;
+import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 
 import java.util.ArrayList;
@@ -14,14 +15,13 @@ import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
-public abstract class DamageableRigidBody<CONFIG_DATA extends GameObjectConfigData> extends RigidBody<CONFIG_DATA>
-        implements Damageable<CONFIG_DATA> {
+public class DamageableRigidBody<CONFIG_DATA extends GameObjectConfigData> extends RigidBody<CONFIG_DATA> {
     private final DamageMask mask;
     @Setter
     private PathsD contours;
     protected final List<BodyFixture> fixturesToAdd = new ArrayList<>();
     protected final List<BodyFixture> fixturesToRemove = new ArrayList<>();
-    private final List<ConnectedObject> connectedObjects = new ArrayList<>();
+    private final List<ConnectedObject<?>> connectedObjects = new ArrayList<>();
 
     protected DamageableRigidBody(float sizeX, float sizeY, CONFIG_DATA configData, int registryId, DamageMask mask,
                                   PathD contour) {
@@ -42,6 +42,7 @@ public abstract class DamageableRigidBody<CONFIG_DATA extends GameObjectConfigDa
     public void update() {
         super.update();
         updateFixtures();
+        updateConnectedObjects();
     }
 
     protected void updateFixtures() {
@@ -71,12 +72,33 @@ public abstract class DamageableRigidBody<CONFIG_DATA extends GameObjectConfigDa
         }
     }
 
-    @Override
-    public void onContourReconstructed(PathD contour) {}
+    protected void updateConnectedObjects() {
+        for (int i = 0; i < connectedObjects.size(); i++) {
+            connectedObjects.get(i).update();
+        }
+    }
 
     @Override
+    public void postPhysicsUpdate() {
+        super.postPhysicsUpdate();
+        for (int i = 0; i < connectedObjects.size(); i++) {
+            connectedObjects.get(i).postPhysicsUpdate(this);
+        }
+    }
+
+    public void onContourReconstructed(PathD contour) {}
+
     public void setFixtures(List<BodyFixture> fixtures) {
-        Damageable.super.setFixtures(fixtures);
+        Body body = getBody();
+        List<BodyFixture> bodyFixtures = body.getFixtures();
+        while (bodyFixtures.size() > 0) {
+            body.removeFixture(0);
+        }
+
+        for (int i = 0; i < fixtures.size(); i++) {
+            body.addFixture(setupFixture(fixtures.get(i)));
+        }
+
         addConnectedObjectFixturesToBody();
     }
 
@@ -86,13 +108,15 @@ public abstract class DamageableRigidBody<CONFIG_DATA extends GameObjectConfigDa
         }
     }
 
-    @Override
-    public void addConnectedObject(ConnectedObject connectedObject) {
+    public void addConnectedObject(ConnectedObject<?> connectedObject) {
         connectedObjects.add(connectedObject);
     }
 
-    @Override
-    public void removeConnectedObject(ConnectedObject connectedObject) {
+    public void removeConnectedObject(ConnectedObject<?> connectedObject) {
         connectedObjects.remove(connectedObject);
+    }
+
+    public void initConnectedObject(ConnectedObject<?> connectedObject) {
+        connectedObject.init(this);
     }
 }

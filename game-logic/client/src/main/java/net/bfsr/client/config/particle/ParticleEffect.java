@@ -138,7 +138,7 @@ public class ParticleEffect extends ConfigData {
             spawnRunnables.add((x, y, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a) -> {
                 for (int i = 0; i < soundEffects.length; i++) {
                     SoundEffect soundEffect = soundEffects[i];
-                    Engine.soundManager.play(soundEffect.getSoundBuffer(), soundEffect.getVolume(), x, y);
+                    Engine.soundManager.play(soundEffect.soundBuffer(), soundEffect.volume(), x, y);
                 }
             });
         }
@@ -184,10 +184,9 @@ public class ParticleEffect extends ConfigData {
                     float sin1 = sin * (float) rotation.getCost() + cos * (float) rotation.getSint();
                     PARTICLE_POOL.get().init(textureSupplier.get(), x + localXSupplier.get(), y + localYSupplier.get(),
                             velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), sin1, cos1,
-                            angularVelocitySupplier.get(),
-                            sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sizeVelocitySupplier.get(), r * color.x,
-                            g * color.y, b * color.z, a * color.w, alphaVellocitySupplier.get(),
-                            isAlphaFromZero, renderLayer);
+                            angularVelocitySupplier.get(), sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY),
+                            sizeVelocitySupplier.get(), r * color.x, g * color.y, b * color.z, a * color.w,
+                            alphaVellocitySupplier.get(), isAlphaFromZero, renderLayer);
                 }
             });
         } else {
@@ -199,10 +198,9 @@ public class ParticleEffect extends ConfigData {
                         float sin1 = sin * (float) rotation.getCost() + cos * (float) rotation.getSint();
                         PARTICLE_POOL.get().init(textureSupplier.get(), x + localXSupplier.get(), y + localYSupplier.get(),
                                 velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), sin1, cos1,
-                                angularVelocitySupplier.get(),
-                                sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sizeVelocitySupplier.get(), r * color.x,
-                                g * color.y, b * color.z, a * color.w, alphaVellocitySupplier.get(),
-                                isAlphaFromZero, renderLayer);
+                                angularVelocitySupplier.get(), sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY),
+                                sizeVelocitySupplier.get(), r * color.x, g * color.y, b * color.z, a * color.w,
+                                alphaVellocitySupplier.get(), isAlphaFromZero, renderLayer);
                     }
                 });
             } else if (minSpawnCount > 0) {
@@ -212,9 +210,8 @@ public class ParticleEffect extends ConfigData {
                     float sin1 = sin * (float) rotation.getCost() + cos * (float) rotation.getSint();
                     PARTICLE_POOL.get().init(textureSupplier.get(), x + localXSupplier.get(), y + localYSupplier.get(),
                             velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), sin1, cos1,
-                            angularVelocitySupplier.get(),
-                            sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sizeVelocitySupplier.get(), r * color.x,
-                            g * color.y, b * color.z, a * color.w,
+                            angularVelocitySupplier.get(), sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY),
+                            sizeVelocitySupplier.get(), r * color.x, g * color.y, b * color.z, a * color.w,
                             alphaVellocitySupplier.get(), isAlphaFromZero, renderLayer);
                 });
             }
@@ -223,11 +220,10 @@ public class ParticleEffect extends ConfigData {
         if (childEffectsInstances.size() > 0) {
             for (int i = 0; i < childEffectsInstances.size(); i++) {
                 ParticleEffect effect = childEffectsInstances.get(i);
-                spawnRunnables.add(
-                        (x, y, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a) -> effect.play(x + localXSupplier.get(),
-                                y + localYSupplier.get(),
-                                sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sin, cos, velocityXFunc.apply(velocityX),
-                                velocityYFunc.apply(velocityY), r, g, b, a));
+                spawnRunnables.add((x, y, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a) ->
+                        effect.play(x + localXSupplier.get(), y + localYSupplier.get(), sizeXFunc.apply(sizeX),
+                                sizeYFunc.apply(sizeY), sin, cos, velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY),
+                                r, g, b, a));
             }
         }
     }
@@ -281,11 +277,8 @@ public class ParticleEffect extends ConfigData {
         while (spawnAccumulator.getAccumulatedTime() >= spawnTime) {
             play(x, y, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a);
             spawnAccumulator.consume(spawnTime);
-
             count++;
-
             if (count == maxSpawnCount) {
-
                 if (spawnAccumulator.getAccumulatedTime() >= spawnTime) {
                     int v = (int) Math.floor(spawnAccumulator.getAccumulatedTime() / spawnTime);
                     spawnAccumulator.consume(v * spawnTime);
@@ -298,7 +291,7 @@ public class ParticleEffect extends ConfigData {
 
     public void debug(float x, float y, float sizeX, float sizeY, float sin, float cos, float velocityX, float velocityY,
                       SpawnAccumulator spawnAccumulator) {
-        checkParticles();
+        removeDeadParticles();
         ParticleManager particleManager = Core.get().getParticleManager();
         int particlesCount = particleManager.getParticlesCount();
 
@@ -346,7 +339,7 @@ public class ParticleEffect extends ConfigData {
         }
     }
 
-    private void checkParticles() {
+    private void removeDeadParticles() {
         for (int i = 0; i < aliveParticles.size(); i++) {
             if (aliveParticles.get(i).isDead()) {
                 aliveParticles.remove(i--);
@@ -358,10 +351,10 @@ public class ParticleEffect extends ConfigData {
         childEffectsInstances.add(particleEffect);
     }
 
-    public boolean isAlive() {
+    private boolean isAlive() {
         for (int i = 0; i < childEffectsInstances.size(); i++) {
             ParticleEffect effect = childEffectsInstances.get(i);
-            effect.checkParticles();
+            effect.removeDeadParticles();
             if (effect.isAlive()) {
                 return true;
             }
@@ -370,7 +363,7 @@ public class ParticleEffect extends ConfigData {
         return aliveParticles.size() > 0;
     }
 
-    public String getPath() {
+    String getPath() {
         return path.isEmpty() ? getFileName() : path + "/" + getFileName();
     }
 

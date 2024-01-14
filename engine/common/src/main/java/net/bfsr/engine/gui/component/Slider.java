@@ -33,6 +33,8 @@ public class Slider extends TexturedGuiObject {
 
         slider = new TexturedGuiObject(TextureRegister.guiSlider, x, y, 29, 50);
         slider.setX(calculateSliderXPos());
+        setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
+        slider.setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
     }
 
     @Override
@@ -58,6 +60,12 @@ public class Slider extends TexturedGuiObject {
         }
     }
 
+    @Override
+    public void updateMouseHover() {
+        super.updateMouseHover();
+        slider.updateMouseHover();
+    }
+
     protected void onValueChanged() {}
 
     @Override
@@ -72,9 +80,9 @@ public class Slider extends TexturedGuiObject {
         super.setPosition(x, y);
         slider.setPosition(calculateSliderXPos(), y);
         StringCache stringCache = stringObject.getStringCache();
-        stringObject.setPosition(x + width / 2,
-                (int) (y + (height - stringCache.getHeight(stringObject.getString(), stringObject.getFontSize())) / 2.0f +
-                        stringCache.getAscent(stringObject.getString(), stringObject.getFontSize())));
+        stringObject.setPosition(x + width / 2, (int) (y + (height - stringCache.getHeight(stringObject.getString(),
+                stringObject.getFontSize())) / 2.0f + stringCache.getAscent(stringObject.getString(),
+                stringObject.getFontSize())));
         return this;
     }
 
@@ -90,9 +98,8 @@ public class Slider extends TexturedGuiObject {
         super.setY(y);
         slider.setY(y);
         StringCache stringCache = stringObject.getStringCache();
-        stringObject.setY(
-                (int) (y + (height - stringCache.getHeight(stringObject.getString(), stringObject.getFontSize())) / 2.0f +
-                        stringCache.getAscent(stringObject.getString(), stringObject.getFontSize())));
+        stringObject.setY((int) (y + (height - stringCache.getHeight(stringObject.getString(), stringObject.getFontSize())) / 2.0f
+                + stringCache.getAscent(stringObject.getString(), stringObject.getFontSize())));
     }
 
     private int calculateSliderXPos() {

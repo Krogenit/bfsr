@@ -7,7 +7,6 @@ import net.bfsr.client.gui.input.ChatInput;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.object.TexturedGuiObject;
 import net.bfsr.engine.gui.scroll.Scroll;
-import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.font.string.AbstractStringRenderer;
@@ -18,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Chat {
-    private final AbstractRenderer renderer = Engine.renderer;
     private final AbstractStringRenderer stringRenderer = Engine.renderer.stringRenderer;
     private final GuiManager guiManager = Core.get().getGuiManager();
     private final TexturedGuiObject chat = new TexturedGuiObject(TextureRegister.guiChat, 320, 170) {
@@ -38,8 +36,8 @@ public class Chat {
 
             for (int i = 0; i < lines.size(); i++) {
                 String string = lines.get(i);
-                int stringHeight =
-                        FontType.DEFAULT.getStringCache().getStringHeight(string, chatInput.getFontSize(), width - 40, -1);
+                int stringHeight = FontType.DEFAULT.getStringCache().getStringHeight(string, chatInput.getFontSize(), width - 40,
+                        -1);
                 if (lineY >= chatTop && lineY < chatBottom ||
                         lineY + stringHeight >= chatTop && lineY + stringHeight < chatBottom) {
                     stringRenderer.render(string, FontType.DEFAULT.getStringCache(), chatInput.getFontSize(), lineX, y + lineY,
@@ -54,14 +52,7 @@ public class Chat {
             renderer.glDisable(GL.GL_SCISSOR_TEST);
         }
     };
-    private final ChatInput chatInput = new ChatInput() {
-        @Override
-        public void updateMouseHover() {
-            if (guiManager.noGui()) {
-                super.updateMouseHover();
-            }
-        }
-    };
+    private final ChatInput chatInput = new ChatInput();
     private final List<String> lines = new ArrayList<>();
     private final Scroll scroll = new Scroll() {
         @Override

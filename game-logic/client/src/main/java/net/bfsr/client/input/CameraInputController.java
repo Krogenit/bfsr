@@ -46,7 +46,7 @@ public class CameraInputController extends InputController {
                 if (ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS.getBoolean()) moveByScreenBorders();
 
                 boolean noShip = !playerInputController.isControllingShip();
-                float keyMoveSpeed = ClientSettings.CAMERA_MOVE_BY_KEY_SPEED.getFloat() * Engine.convertToDeltaTime(60.0f);
+                float keyMoveSpeed = ClientSettings.CAMERA_MOVE_BY_KEY_SPEED.getFloat() * core.convertToDeltaTime(60.0f);
                 if (keyboard.isKeyDown(KEY_LEFT) || (noShip && keyboard.isKeyDown(KEY_A))) {
                     camera.move(-keyMoveSpeed, 0);
                 } else if (keyboard.isKeyDown(KEY_RIGHT) || (noShip && keyboard.isKeyDown(KEY_D))) {
@@ -84,7 +84,7 @@ public class CameraInputController extends InputController {
             if (dis > minDistance) {
                 float mDx = shipPosition.x - position.x;
                 float mDy = shipPosition.y - position.y;
-                float animationSpeed = Engine.convertToDeltaTime(3.0f);
+                float animationSpeed = core.convertToDeltaTime(3.0f);
                 camera.move(mDx * animationSpeed, mDy * animationSpeed);
             }
         } else {
@@ -103,7 +103,7 @@ public class CameraInputController extends InputController {
                     if (mDy < -max) mDy = -max;
                     else if (mDy > max) mDy = max;
 
-                    float animationSpeed = Engine.convertToDeltaTime(3.0f);
+                    float animationSpeed = core.convertToDeltaTime(3.0f);
                     camera.move(mDx * animationSpeed, mDy * animationSpeed);
                 }
             }
@@ -129,7 +129,7 @@ public class CameraInputController extends InputController {
     }
 
     private void moveByScreenBorders() {
-        float moveSpeed = Engine.convertToDeltaTime(60.0f);
+        float moveSpeed = core.convertToDeltaTime(60.0f);
         float screenMoveSpeed = ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS_SPEED.getFloat() / camera.getZoom() * moveSpeed;
         float offset = ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS_OFFSET.getFloat();
         Vector2f cursorPosition = mouse.getPosition();

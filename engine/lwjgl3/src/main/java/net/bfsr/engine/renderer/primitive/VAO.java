@@ -1,12 +1,13 @@
 package net.bfsr.engine.renderer.primitive;
 
 import lombok.Getter;
-import org.lwjgl.opengl.*;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+
+import static org.lwjgl.opengl.GL45C.*;
 
 public final class VAO {
     @Getter
@@ -19,7 +20,7 @@ public final class VAO {
     }
 
     public static VAO create(int vboCount) {
-        int id = GL45.glCreateVertexArrays();
+        int id = glCreateVertexArrays();
         return new VAO(id, vboCount);
     }
 
@@ -30,20 +31,20 @@ public final class VAO {
     }
 
     public void vertexArrayVertexBuffer(int index, int stride) {
-        GL45C.glVertexArrayVertexBuffer(id, index, VBOs[index].getId(), 0, stride);
+        glVertexArrayVertexBuffer(id, index, VBOs[index].getId(), 0, stride);
     }
 
     public void vertexArrayElementBuffer(int index) {
-        GL45C.glVertexArrayElementBuffer(id, VBOs[index].getId());
+        glVertexArrayElementBuffer(id, VBOs[index].getId());
     }
 
     public void attributeBindingAndFormat(int attribute, int attributeSize, int bufferIndex, int relativeOffset) {
-        GL45C.glVertexArrayAttribBinding(id, attribute, bufferIndex);
-        GL45C.glVertexArrayAttribFormat(id, attribute, attributeSize, GL11.GL_FLOAT, false, relativeOffset);
+        glVertexArrayAttribBinding(id, attribute, bufferIndex);
+        glVertexArrayAttribFormat(id, attribute, attributeSize, GL_FLOAT, false, relativeOffset);
     }
 
     public void attributeDivisor(int attribute, int divisor) {
-        GL45C.glVertexArrayBindingDivisor(id, attribute, divisor);
+        glVertexArrayBindingDivisor(id, attribute, divisor);
     }
 
     public void updateVertexBuffer(int index, FloatBuffer data, int flags, int stride) {
@@ -71,25 +72,25 @@ public final class VAO {
     }
 
     public void bindBuffer(int target, int bufferIndex) {
-        GL15C.glBindBuffer(target, VBOs[bufferIndex].getId());
+        glBindBuffer(target, VBOs[bufferIndex].getId());
     }
 
     public void bindBufferBase(int target, int index, int bufferIndex) {
-        GL30.glBindBufferBase(target, index, VBOs[bufferIndex].getId());
+        glBindBufferBase(target, index, VBOs[bufferIndex].getId());
     }
 
     public void bind() {
-        GL30C.glBindVertexArray(id);
+        glBindVertexArray(id);
     }
 
     public void enableAttributes(int count) {
         for (int i = 0; i < count; i++) {
-            GL45C.glEnableVertexArrayAttrib(id, i);
+            glEnableVertexArrayAttrib(id, i);
         }
     }
 
     public void clear() {
-        GL30C.glDeleteVertexArrays(id);
+        glDeleteVertexArrays(id);
         for (int i = 0; i < VBOs.length; i++) {
             VBOs[i].clear();
         }

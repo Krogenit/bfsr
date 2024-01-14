@@ -26,8 +26,7 @@ public final class BeamEffects {
     }
 
     public static void beam(float x, float y, float size, float sin, float cos, float velocityX, float velocityY, float r,
-                            float g, float b, float a,
-                            SpawnAccumulator spawnAccumulator) {
+                            float g, float b, float a, SpawnAccumulator spawnAccumulator) {
         smallBeam.emit(x, y, size, size, sin, cos, velocityX, velocityY, r, g, b, a, spawnAccumulator);
     }
 

@@ -1,9 +1,9 @@
 package net.bfsr.engine.gui.object;
 
 import lombok.Getter;
-import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.scroll.Scroll;
 import net.bfsr.engine.renderer.opengl.GL;
+import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,14 +12,14 @@ public class GuiObjectsContainer extends GuiObjectWithSubObjects implements GuiO
     @Getter
     private final List<GuiObject> guiObjects = new ArrayList<>();
     private final Scroll scroll = new Scroll();
-    private final Gui currentGui;
 
-    public GuiObjectsContainer(Gui currentGui, int width, int scrollWidth) {
+    public GuiObjectsContainer(int scrollWidth) {
+        this(0, scrollWidth);
+    }
+
+    public GuiObjectsContainer(int width, int scrollWidth) {
         super(width, 0);
-        this.currentGui = currentGui;
         scroll.setWidth(scrollWidth);
-        scroll.setColor(77 / 255f, 78 / 255f, 81 / 255f, 1.0f);
-        scroll.setHoverColor(92 / 255f, 93 / 255f, 94 / 255f, 1.0f);
         scroll.setViewHeightResizeFunction((width1, height1) -> this.height);
         scroll.setHeightResizeFunction((width1, height1) -> this.height);
         scroll.updatePositionAndSize();
@@ -49,6 +49,8 @@ public class GuiObjectsContainer extends GuiObjectWithSubObjects implements GuiO
 
     @Override
     public boolean onMouseLeftClick() {
+        if (!isIntersectsWithMouse()) return false;
+
         if (scroll.isMouseHover()) {
             scroll.onMouseLeftClick();
             return true;
@@ -67,6 +69,8 @@ public class GuiObjectsContainer extends GuiObjectWithSubObjects implements GuiO
 
     @Override
     public boolean onMouseLeftRelease() {
+        if (!isIntersectsWithMouse()) return false;
+
         boolean leftRelease = false;
         for (int i = 0; i < guiObjects.size(); i++) {
             if (guiObjects.get(i).onMouseLeftRelease()) {
@@ -230,7 +234,6 @@ public class GuiObjectsContainer extends GuiObjectWithSubObjects implements GuiO
         guiObjects.remove(guiObject);
         guiObject.onUnregistered(this);
         scroll.unregisterGuiObject(guiObject);
-        scroll.updateScroll();
     }
 
     @Override
@@ -242,14 +245,10 @@ public class GuiObjectsContainer extends GuiObjectWithSubObjects implements GuiO
     }
 
     @Override
-    protected void registerSubElements(GuiObjectsHandler gui) {
-
-    }
+    protected void registerSubElements(GuiObjectsHandler gui) {}
 
     @Override
-    protected void unregisterSubElements(GuiObjectsHandler gui) {
-
-    }
+    protected void unregisterSubElements(GuiObjectsHandler gui) {}
 
     public void updateScrollObjectsY() {
         scroll.updateScrollableObjectsY();
@@ -271,12 +270,12 @@ public class GuiObjectsContainer extends GuiObjectWithSubObjects implements GuiO
 
     @Override
     public void openContextMenu(GuiObject... objects) {
-        currentGui.openContextMenu(objects);
+        gui.openContextMenu(objects);
     }
 
     @Override
     public boolean isContextMenuOpened() {
-        return currentGui.isContextMenuOpened();
+        return gui.isContextMenuOpened();
     }
 
     @Override
@@ -294,5 +293,21 @@ public class GuiObjectsContainer extends GuiObjectWithSubObjects implements GuiO
         setRepositionConsumerForSubObjects();
         scroll.updatePositionAndSize();
         return this;
+    }
+
+    public void setScrollColor(Vector4f color) {
+        setScrollColor(color.x, color.y, color.z, color.w);
+    }
+
+    public void setScrollColor(float r, float g, float b, float a) {
+        scroll.setColor(r, g, b, a);
+    }
+
+    public void setScrollHoverColor(Vector4f color) {
+        setScrollHoverColor(color.x, color.y, color.z, color.w);
+    }
+
+    public void setScrollHoverColor(float r, float g, float b, float a) {
+        scroll.setHoverColor(r, g, b, a);
     }
 }

@@ -5,7 +5,6 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.client.Core;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
-import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
@@ -13,7 +12,6 @@ import net.bfsr.entity.RigidBody;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +42,7 @@ public class RenderManager {
         }
     }
 
-    public void postUpdate() {
+    public void postWorldUpdate() {
         for (int i = 0; i < renderList.size(); i++) {
             Render<?> render = renderList.get(i);
             render.postWorldUpdate();
@@ -60,7 +58,7 @@ public class RenderManager {
         }
     }
 
-    public void renderAdditive() {
+    void renderAdditive() {
         for (int i = 0; i < renderList.size(); i++) {
             Render<?> render = renderList.get(i);
             if (render.getAabb().overlaps(camera.getBoundingBox())) {
@@ -69,9 +67,7 @@ public class RenderManager {
         }
     }
 
-    public void renderDebug() {
-        if (!ClientSettings.SHOW_DEBUG_BOXES.getBoolean()) return;
-
+    void renderDebug() {
         for (int i = 0; i < renderList.size(); i++) {
             Render<?> render = renderList.get(i);
             if (render.getAabb().overlaps(camera.getBoundingBox())) {
@@ -81,11 +77,7 @@ public class RenderManager {
     }
 
     public void createRender(RigidBody<? extends GameObjectConfigData> rigidBody) {
-        try {
-            addRender(renderRegistry.getRenderConstructor(rigidBody.getClass()).newInstance(rigidBody));
-        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+        addRender(renderRegistry.createRender(rigidBody));
     }
 
     public void addRender(Render<?> render) {

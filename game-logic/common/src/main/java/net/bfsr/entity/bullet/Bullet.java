@@ -27,15 +27,15 @@ import java.util.function.Consumer;
 
 public class Bullet extends RigidBody<GunData> {
     @Getter
-    protected final Ship ship;
+    protected final RigidBody<?> owner;
     private final float bulletSpeed;
     private final BulletDamage damage;
     private final Polygon polygon;
     private Object previousAObject;
 
-    public Bullet(float x, float y, float sin, float cos, GunData gunData, Ship ship, BulletDamage damage) {
+    public Bullet(float x, float y, float sin, float cos, GunData gunData, RigidBody<?> owner, BulletDamage damage) {
         super(x, y, sin, cos, gunData.getBulletSizeX(), gunData.getBulletSizeY(), gunData, GunRegistry.INSTANCE.getId());
-        this.ship = ship;
+        this.owner = owner;
         this.maxLifeTime = gunData.getBulletLifeTimeInTicks();
         this.bulletSpeed = gunData.getBulletSpeed();
         this.damage = damage;
@@ -164,11 +164,11 @@ public class Bullet extends RigidBody<GunData> {
     protected void onDataAdded() {}
 
     private boolean canDamageShip(Ship ship) {
-        return this.ship != ship && previousAObject != ship || previousAObject != null && previousAObject != ship;
+        return this.owner != ship && previousAObject != ship || previousAObject != null && previousAObject != ship;
     }
 
     @Override
     public boolean canCollideWith(GameObject gameObject) {
-        return ship != gameObject && previousAObject != gameObject;
+        return owner != gameObject && previousAObject != gameObject;
     }
 }

@@ -9,7 +9,7 @@ import org.joml.Vector2f;
 public class AiFlyingAround extends AiTask {
     private Vector2f point;
     private Vector2f currentPoint;
-    private RigidBody obj;
+    private RigidBody<?> obj;
     private final float size;
 
     private static final float UPDATE_LENGTH = 25;
@@ -20,7 +20,7 @@ public class AiFlyingAround extends AiTask {
         this.size = size;
     }
 
-    public AiFlyingAround(Ship ship, RigidBody obj, float size) {
+    public AiFlyingAround(Ship ship, RigidBody<?> obj, float size) {
         super(ship);
         this.obj = obj;
         this.size = size;

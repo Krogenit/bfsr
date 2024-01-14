@@ -22,11 +22,7 @@ public final class TextureLoader extends AbstractTextureLoader {
     private static final int DEFAULT_FILTER = GL11.GL_NEAREST;
 
     @Override
-    public void init() {
-        createDummyTexture();
-    }
-
-    private void createDummyTexture() {
+    protected AbstractTexture createDummyTexture() {
         int width = 4;
         int height = 4;
 
@@ -40,7 +36,7 @@ public final class TextureLoader extends AbstractTextureLoader {
                 }
             }
 
-            dummyTexture = createTexture(width, height, byteBuffer.flip(), 3, false);
+            return createTexture(width, height, byteBuffer.flip(), 3, false);
         }
     }
 
@@ -68,7 +64,7 @@ public final class TextureLoader extends AbstractTextureLoader {
         return getTexture(texture.getPath(), createMips, wrap, filter);
     }
 
-    public Texture getTexture(Path path, boolean createMips, int wrap, int filter) {
+    private Texture getTexture(Path path, boolean createMips, int wrap, int filter) {
         return LOADED_TEXTURES.computeIfAbsent(path.toString(), s -> loadPngTexture(path, createMips, wrap, filter));
     }
 

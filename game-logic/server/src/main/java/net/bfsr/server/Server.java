@@ -2,9 +2,7 @@ package net.bfsr.server;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.loop.AbstractGameLoop;
-import net.bfsr.engine.util.Side;
 
 @Log4j2
 @AllArgsConstructor
@@ -20,9 +18,7 @@ public abstract class Server extends AbstractGameLoop {
     }
 
     protected void init() {
-        Engine.instance = this;
         gameLogic.init();
-        Engine.setGameLogic(Side.SERVER, gameLogic);
     }
 
     @Override
@@ -50,5 +46,20 @@ public abstract class Server extends AbstractGameLoop {
 
     public void stop() {
         gameLogic.stop();
+    }
+
+    @Override
+    protected int getUpdatesPerSecond() {
+        return gameLogic.getUpdatesPerSecond();
+    }
+
+    @Override
+    protected float getUpdateDeltaTime() {
+        return gameLogic.getUpdateDeltaTime();
+    }
+
+    @Override
+    protected double getTimeBetweenUpdates() {
+        return gameLogic.getTimeBetweenUpdates();
     }
 }

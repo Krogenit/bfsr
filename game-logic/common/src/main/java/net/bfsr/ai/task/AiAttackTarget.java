@@ -4,6 +4,7 @@ import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.engine.Engine;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
@@ -25,6 +26,11 @@ public class AiAttackTarget extends AiTask {
     private int changeDirTimer;
     private final List<Direction> directionsToAdd = new ArrayList<>(5);
     private Direction sideDirection;
+    private final AABB targetAABB = new AABB(0, 0, 0, 0);
+    private final Vector2f targetPos = new Vector2f();
+    private final Vector2f targetFinalPos = new Vector2f();
+    private final Vector2f totalTargetVelocity = new Vector2f();
+    private final Vector2f bulletFinalPos = new Vector2f();
 
     public AiAttackTarget(Ship ship, float maxAttackRange) {
         super(ship);
@@ -34,10 +40,9 @@ public class AiAttackTarget extends AiTask {
     @Override
     public void execute() {
         RigidBody<?> target = ship.getTarget();
-        AABB aabb = new AABB(0, 0, 0, 0);
-        target.getBody().computeAABB(aabb);
-        Vector2f targetPos = new Vector2f((float) ((aabb.getMinX() + aabb.getMaxX()) / 2),
-                (float) ((aabb.getMinY() + aabb.getMaxY()) / 2));
+        target.getBody().computeAABB(targetAABB);
+        targetPos.set((float) ((targetAABB.getMinX() + targetAABB.getMaxX()) / 2),
+                (float) ((targetAABB.getMinY() + targetAABB.getMaxY()) / 2));
         Vector2f pos = ship.getPosition();
 
         float distanceToTarget = targetPos.distance(pos.x, pos.y);
@@ -60,14 +65,14 @@ public class AiAttackTarget extends AiTask {
 
         directionsToAdd.clear();
 
-        List<WeaponSlot> slots = ship.getModules().getWeaponSlots();
-        Engines engines = ship.getModules().getEngines();
+        Modules modules = ship.getModules();
+        List<WeaponSlot> slots = modules.getWeaponSlots();
+        Engines engines = modules.getEngines();
         if (slots.size() > 0) {
             float minReloadTimer = Float.MAX_VALUE;
             for (int i = 0, size = slots.size(); i < size; i++) {
                 WeaponSlot slot = slots.get(i);
                 float bulletToShip;
-                Vector2f targetFinalPos;
                 Vector2f slotPos = slot.getLocalPosition();
                 float cos = ship.getCos();
                 float sin = ship.getSin();
@@ -76,15 +81,15 @@ public class AiAttackTarget extends AiTask {
 
                 if (slot.getWeaponType() == WeaponType.BEAM) {
                     bulletToShip = ((WeaponSlotBeam) slot).getBeamMaxRange();
-                    targetFinalPos = new Vector2f(targetPos.x - xPos, targetPos.y - yPos);
+                    targetFinalPos.set(targetPos.x - xPos, targetPos.y - yPos);
                 } else {
                     GunData gunData = slot.getGunData();
                     float bulletSpeed = gunData.getBulletSpeed();
                     int totalIterations = gunData.getBulletLifeTimeInTicks();
 
-                    Vector2f totalVelocity = new Vector2f(-cos, -sin).mul(bulletSpeed * Engine.getUpdateDeltaTime())
-                            .mul(totalIterations);
-                    Vector2f bulletFinalPos = new Vector2f(pos.x - xPos + totalVelocity.x, pos.y - yPos + totalVelocity.y);
+                    float totalVelocityX = -cos * bulletSpeed * Engine.getUpdateDeltaTime() * totalIterations;
+                    float totalVelocityY = -sin * bulletSpeed * Engine.getUpdateDeltaTime() * totalIterations;
+                    bulletFinalPos.set(pos.x - xPos + totalVelocityX, pos.y - yPos + totalVelocityY);
 
                     bulletToShip = bulletFinalPos.distance(pos) - 2.0f;
 
@@ -92,9 +97,9 @@ public class AiAttackTarget extends AiTask {
                         totalIterations *= distanceToTarget / bulletToShip;
                     }
 
-                    Vector2f totalTargetVelocity = new Vector2f(targetVelocity.x * Engine.getUpdateDeltaTime(),
+                    totalTargetVelocity.set(targetVelocity.x * Engine.getUpdateDeltaTime(),
                             targetVelocity.y * Engine.getUpdateDeltaTime()).mul(totalIterations);
-                    targetFinalPos = new Vector2f(targetPos.x + totalTargetVelocity.x - xPos,
+                    targetFinalPos.set(targetPos.x + totalTargetVelocity.x - xPos,
                             targetPos.y + totalTargetVelocity.y - yPos);
                 }
 
@@ -102,7 +107,8 @@ public class AiAttackTarget extends AiTask {
 
                 if (targetToShip <= bulletToShip) {
                     if (Math.abs(RigidBodyUtils.getRotationDifference(ship, targetFinalPos)) <= 0.1f + shipSizeAverage / 25.0f) {
-                        slot.tryShoot(weaponSlot -> ship.getWorld().getEventBus().publish(new WeaponShotEvent(weaponSlot)));
+                        slot.tryShoot(weaponSlot -> ship.getWorld().getEventBus().publish(new WeaponShotEvent(weaponSlot)),
+                                modules.getReactor());
                     }
                 }
 

@@ -16,7 +16,6 @@ import net.bfsr.engine.sound.AbstractSoundManager;
 import net.bfsr.engine.sound.SoundLoader;
 import net.bfsr.engine.sound.SoundManager;
 import net.bfsr.engine.util.FPSSync;
-import net.bfsr.engine.util.Side;
 import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -51,7 +50,6 @@ public class LWJGL3Engine extends AbstractGameLoop implements EngineConfiguratio
         Vector2i windowSize = initGLFW();
 
         create();
-        Engine.instance = this;
         Engine.renderer.init(window, windowSize.x, windowSize.y);
         Engine.soundManager.init();
         Engine.assetsManager.init();
@@ -68,8 +66,6 @@ public class LWJGL3Engine extends AbstractGameLoop implements EngineConfiguratio
         }
 
         profiler = gameLogic.getProfiler();
-
-        Engine.setGameLogic(Side.CLIENT, gameLogic);
 
         glfwShowWindow(window);
     }
@@ -190,5 +186,20 @@ public class LWJGL3Engine extends AbstractGameLoop implements EngineConfiguratio
     @Override
     public AssetsManager createAssetManager() {
         return new AssetsManager(new TextureLoader(), new SoundLoader());
+    }
+
+    @Override
+    protected int getUpdatesPerSecond() {
+        return gameLogic.getUpdatesPerSecond();
+    }
+
+    @Override
+    protected float getUpdateDeltaTime() {
+        return gameLogic.getUpdateDeltaTime();
+    }
+
+    @Override
+    protected double getTimeBetweenUpdates() {
+        return gameLogic.getTimeBetweenUpdates();
     }
 }

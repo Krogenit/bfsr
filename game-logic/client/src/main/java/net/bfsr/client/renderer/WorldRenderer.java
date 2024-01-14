@@ -51,7 +51,7 @@ public class WorldRenderer {
         particleRenderer.update();
     }
 
-    public void prepareRender(int totalParticlesCount, float interpolation) {
+    void prepareRender(int totalParticlesCount, float interpolation) {
         particleRenderer.putBackgroundParticlesToBuffers(totalParticlesCount);
         prepareAmbient(interpolation);
         spriteRenderer.addTask(renderManager::renderAlpha, BufferType.ENTITIES_ALPHA);
@@ -83,7 +83,7 @@ public class WorldRenderer {
         renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    public void createBackgroundTexture(long seed) {
+    void createBackgroundTexture(long seed) {
         backgroundTexture = Engine.renderer.textureGenerator.generateNebulaTexture(2560 << 1, 2560 << 1, new Random(seed));
     }
 

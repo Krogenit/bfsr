@@ -52,21 +52,11 @@ public class Modules {
         }
 
         hull.repair(crew.getCrewRegen());
-
-        for (int size = weaponSlots.size(), i = 0; i < size; i++) {
-            weaponSlots.get(i).update();
-        }
-    }
-
-    public void updateWeaponSlotPositions() {
-        for (int i = 0, size = weaponSlots.size(); i < size; i++) {
-            weaponSlots.get(i).updatePos();
-        }
     }
 
     public void shoot(Consumer<WeaponSlot> onShotEvent) {
         for (int i = 0, size = weaponSlots.size(); i < size; i++) {
-            weaponSlots.get(i).tryShoot(onShotEvent);
+            weaponSlots.get(i).tryShoot(onShotEvent, reactor);
         }
     }
 
@@ -77,13 +67,11 @@ public class Modules {
                 weaponSlot.removeFixture();
                 ship.getConnectedObjects().remove(weaponSlot);
                 weaponSlots.set(i, slot);
-                slot.init(id, ship);
                 modulesByType.get(ModuleType.WEAPON_SLOT).set(i, slot);
                 return;
             }
         }
 
-        slot.init(id, ship);
         weaponSlots.add(slot);
         modulesByType.computeIfAbsent(ModuleType.WEAPON_SLOT, moduleType -> new ArrayList<>(2)).add(slot);
     }

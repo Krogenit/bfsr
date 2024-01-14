@@ -32,7 +32,7 @@ public enum ClientSettings {
     }),
     MAX_FPS(SettingsCategory.GRAPHICS, 10, 240, new IntegerOption(60), (option, value) -> {
         option.setInteger((float) value);
-        Core.get().updateTimeBetweenUpdate(option.getInteger());
+        Core.get().setMaxFPS(option.getInteger());
     }),
 
     IS_DEBUG(SettingsCategory.DEBUG, new BooleanOption(false), ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),

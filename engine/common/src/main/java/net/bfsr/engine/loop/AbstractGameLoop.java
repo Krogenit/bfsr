@@ -8,10 +8,6 @@ import lombok.extern.log4j.Log4j2;
 @Setter
 @Getter
 public abstract class AbstractGameLoop implements GameLoop {
-    private int updatesPerSecond = 60;
-    private float updateDeltaTime = 1.0f / updatesPerSecond;
-    private double timeBetweenUpdates = 1_000_000_000.0 / updatesPerSecond;
-
     @Override
     public void run() {
         final int maxUpdatesBeforeRender = 40;
@@ -25,6 +21,7 @@ public abstract class AbstractGameLoop implements GameLoop {
                 long now = System.nanoTime();
 
                 int updateCount = 0;
+                double timeBetweenUpdates = getTimeBetweenUpdates();
                 while (now - lastUpdateTime >= timeBetweenUpdates) {
                     lastUpdateTime += timeBetweenUpdates;
                     update(lastUpdateTime);
@@ -58,7 +55,7 @@ public abstract class AbstractGameLoop implements GameLoop {
     }
 
     protected void sync(long now, double lastUpdateTime) {
-        while (now - lastUpdateTime < timeBetweenUpdates) {
+        while (now - lastUpdateTime < getTimeBetweenUpdates()) {
             Thread.yield();
 
             try {
@@ -80,4 +77,8 @@ public abstract class AbstractGameLoop implements GameLoop {
 
     @Override
     public void clear() {}
+
+    protected abstract int getUpdatesPerSecond();
+    protected abstract float getUpdateDeltaTime();
+    protected abstract double getTimeBetweenUpdates();
 }

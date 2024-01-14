@@ -19,10 +19,10 @@ public class GuiFactionSelect extends Gui {
 
     @Override
     protected void initElements() {
-        registerGuiObject(
-                new TexturedGuiObject(TextureRegister.guiFactionSelect).atCenter(-1024 / 2, -600 / 2).setSize(1024, 600));
-        registerGuiObject(
-                new TexturedGuiObject(TextureRegister.guiLogoBFSR).atCenter(-216 / 2, -200 - 216 / 2).setSize(216, 216));
+        registerGuiObject(new TexturedGuiObject(TextureRegister.guiFactionSelect).atCenter(-1024 / 2, -600 / 2)
+                .setSize(1024, 600));
+        registerGuiObject(new TexturedGuiObject(TextureRegister.guiLogoBFSR).atCenter(-216 / 2, -200 - 216 / 2)
+                .setSize(216, 216));
         registerGuiObject(new TexturedGuiObject(TextureRegister.guiBfsrText2).atCenter(-860 / 2, -200 - 80 / 2).setSize(860, 80));
         registerGuiObject(new Button(Lang.getString("gui.selectFaction.human"), () -> {
             Core.get().sendTCPPacket(new PacketFactionSelect(Faction.HUMAN));
@@ -38,27 +38,24 @@ public class GuiFactionSelect extends Gui {
         }).atCenter(309 - 300 / 2, 230 - 50 / 2));
 
         shipsStartIndex = guiObjects.size();
-        registerGuiObject(
-                new TexturedGuiObject(TextureRegister.shipHumanSmall0).centered().atCenter(-309 - 60, 70 - 60).setSize(120, 120));
-        registerGuiObject(
-                new TexturedGuiObject(TextureRegister.shipSaimonSmall0).centered().atCenter(-85, 70 - 85).setSize(170, 170));
-        registerGuiObject(
-                new TexturedGuiObject(TextureRegister.shipEngiSmall0).centered().atCenter(309 - 90, 70 - 90).setSize(180, 180));
+        registerGuiObject(new TexturedGuiObject(TextureRegister.shipHumanSmall0).centered().atCenter(-309 - 60, 70 - 60)
+                .setSize(120, 120));
+        registerGuiObject(new TexturedGuiObject(TextureRegister.shipSaimonSmall0).centered().atCenter(-85, 70 - 85)
+                .setSize(170, 170));
+        registerGuiObject(new TexturedGuiObject(TextureRegister.shipEngiSmall0).centered().atCenter(309 - 90, 70 - 90)
+                .setSize(180, 180));
 
-        StringObject stringObject =
-                new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.maintext"), 24).compile();
+        StringObject stringObject = new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.maintext"), 24)
+                .compile();
         registerGuiObject(stringObject.atCenter(-stringObject.getWidth() / 2, -96));
 
         int discFontSize = 16;
-        registerGuiObject(
-                new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.humanDisc"), discFontSize).compile()
-                        .atCenter(-450, -64));
-        registerGuiObject(
-                new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.saimonDisc"), discFontSize).compile()
-                        .atCenter(-142, -64));
-        registerGuiObject(
-                new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.engiDisc"), discFontSize).compile()
-                        .atCenter(166, -64));
+        registerGuiObject(new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.humanDisc"), discFontSize)
+                .compile().atCenter(-450, -64));
+        registerGuiObject(new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.saimonDisc"), discFontSize)
+                .compile().atCenter(-142, -64));
+        registerGuiObject(new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.engiDisc"), discFontSize)
+                .compile().atCenter(166, -64));
     }
 
     private void updateRot(TexturedGuiObject guiObject, Vector2f mousePosition) {

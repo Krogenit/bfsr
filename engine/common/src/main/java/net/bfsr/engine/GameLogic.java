@@ -16,6 +16,15 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Log4j2
 public class GameLogic {
     @Getter
+    @Setter
+    private int updatesPerSecond = Engine.getUpdatesPerSecond();
+    @Getter
+    @Setter
+    private float updateDeltaTime = Engine.getUpdateDeltaTime();
+    @Getter
+    @Setter
+    private double timeBetweenUpdates = Engine.getTimeBetweenUpdates();
+    @Getter
     private boolean isRunning;
     @Setter
     @Getter
@@ -79,4 +88,16 @@ public class GameLogic {
     }
 
     public void clear() {}
+
+    public int convertToTicks(int value) {
+        return value * updatesPerSecond;
+    }
+
+    public int convertToTicks(float value) {
+        return (int) (value * updatesPerSecond);
+    }
+
+    public float convertToDeltaTime(float value) {
+        return value * updateDeltaTime;
+    }
 }

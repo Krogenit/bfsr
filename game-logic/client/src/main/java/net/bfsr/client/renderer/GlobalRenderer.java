@@ -68,7 +68,6 @@ public class GlobalRenderer {
     private void renderDebug() {
         debugRenderer.clear();
         debugRenderer.bind();
-        camera.bindWorldViewMatrix();
         renderManager.renderDebug();
         debugRenderer.render(GL.GL_LINE_LOOP);
         spriteRenderer.bind();

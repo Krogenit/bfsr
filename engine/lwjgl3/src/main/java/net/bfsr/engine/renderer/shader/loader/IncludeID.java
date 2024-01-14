@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class IncludeID {
+class IncludeID {
     private int value;
 
-    public boolean isValid() {
+    boolean isValid() {
         return value != 0;
     }
 }

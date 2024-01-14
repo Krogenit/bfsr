@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.bfsr.entity.GameObject;
+import net.bfsr.entity.RigidBody;
 
 import java.util.List;
 
@@ -25,5 +26,12 @@ public abstract class Module extends GameObject {
 
     public void addToList(List<Module> modules) {
         modules.add(this);
+    }
+
+    public void postPhysicsUpdate(RigidBody<?> rigidBody) {}
+
+    @Override
+    public void postPhysicsUpdate() {
+        throw new RuntimeException("Use postPhysicsUpdate with RigidBody param instead");
     }
 }

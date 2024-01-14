@@ -1,6 +1,7 @@
 package net.bfsr.server.dto.converter;
 
 import net.bfsr.config.entity.ship.ShipRegistry;
+import net.bfsr.damage.DamageMask;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.server.dto.ShipModel;
@@ -41,6 +42,6 @@ public abstract class ShipConverter {
 
     @ObjectFactory
     public <T extends Ship> T to(ShipModel shipModel, @TargetType Class<T> entityClass) {
-        return (T) new Ship(ShipRegistry.INSTANCE.get(shipModel.name()));
+        return (T) new Ship(ShipRegistry.INSTANCE.get(shipModel.name()), new DamageMask(32, 32));
     }
 }

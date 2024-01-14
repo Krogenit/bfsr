@@ -21,12 +21,12 @@ public class AiSearchTarget extends AiTask {
     public void execute() {
         AiAggressiveType type = ship.getAi().getAggressiveType();
         if (type == AiAggressiveType.ATTACK) {
-            RigidBody attacker = ship.getLastAttacker();
+            RigidBody<?> attacker = ship.getLastAttacker();
             if (attacker != null && !attacker.isDead() && attacker instanceof Ship && isEnemy((Ship) attacker)) {
                 ship.setTarget(attacker);
             } else findNewTarget();
         } else if (type == AiAggressiveType.DEFEND) {
-            RigidBody attacker;
+            RigidBody<?> attacker;
             attacker = ship.getLastAttacker();
             if (attacker != null && !attacker.isDead() && attacker instanceof Ship && isEnemy((Ship) attacker)) {
                 ship.setTarget(attacker);
@@ -69,7 +69,7 @@ public class AiSearchTarget extends AiTask {
 
     @Override
     public boolean shouldExecute() {
-        RigidBody obj = ship.getTarget();
+        RigidBody<?> obj = ship.getTarget();
         if (obj == null) return true;
         if (obj instanceof Ship) {
             return ((Ship) obj).isDestroying() || obj.isDead();

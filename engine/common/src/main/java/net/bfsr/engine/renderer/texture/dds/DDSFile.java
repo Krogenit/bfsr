@@ -19,9 +19,9 @@
 
 package net.bfsr.engine.renderer.texture.dds;
 
+import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.renderer.opengl.EXTTextureCompressionS3TC;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -42,36 +42,45 @@ import java.util.List;
  *
  * @author Magnus Bull
  */
+@Log4j2
 public class DDSFile {
-    private boolean printDebug;
-
-    /** A 32-bit representation of the character sequence "DDS " which is the magic word for DDS files. */
+    /**
+     * A 32-bit representation of the character sequence "DDS " which is the magic word for DDS files.
+     */
     private static final int DDS_MAGIC = 0x20534444;
 
-    /** Stores the magic word for the binary document read */
+    /**
+     * Stores the magic word for the binary document read
+     */
     private int dwMagic;
 
-    /** The header information for this DDS document */
+    /**
+     * The header information for this DDS document
+     */
     private DDSHeader header;
 
-    /** Arrays of bytes that contain the main surface image data */
+    /**
+     * Arrays of bytes that contain the main surface image data
+     */
     private List<ByteBuffer> bdata;
 
-    /** Arrays of bytes that contain the secondary surface data, like mipmap levels */
+    /**
+     * Arrays of bytes that contain the secondary surface data, like mipmap levels
+     */
     private List<ByteBuffer> bdata2;
 
-    /** The calculated size of the image */
+    /**
+     * The calculated size of the image
+     */
     private int imageSize;
 
-    /** The compression format for the current DDS document */
+    /**
+     * The compression format for the current DDS document
+     */
     private int dxtFormat;
 
     /**
      * Loads a DDS file from the given file.
-     *
-     * @param in
-     * @throws IOException
-     * @throws FileNotFoundException
      */
     public DDSFile(InputStream in) {
         this.loadFile(in);
@@ -103,31 +112,25 @@ public class DDSFile {
 
     /**
      * Loads a DDS file.
-     *
-     * @param fis
-     * @throws IOException
      */
     private void loadFile(InputStream fis) {
         bdata = new ArrayList<>();
         bdata2 = new ArrayList<>(); //TODO: Not properly implemented yet.
 
         try {
-            int totalByteCount = fis.available();
-            if (printDebug) System.out.println("Total bytes: " + totalByteCount);
-
             byte[] bMagic = new byte[4];
             fis.read(bMagic);
             dwMagic = newByteBuffer(bMagic).getInt();
 
             if (dwMagic != DDS_MAGIC) {
-                System.err.println("Wrong magic word! This is not a DDS file.");
+                log.error("Wrong magic word! This is not a DDS file.");
                 fis.close();
                 return;
             }
 
             byte[] bHeader = new byte[124];
             fis.read(bHeader);
-            header = new DDSHeader(newByteBuffer(bHeader), printDebug);
+            header = new DDSHeader(newByteBuffer(bHeader));
 
             int blockSize = 16;
             if ("DXT1".equalsIgnoreCase(header.ddspf.sFourCC)) {
@@ -138,15 +141,14 @@ public class DDSFile {
             } else if ("DXT5".equalsIgnoreCase(header.ddspf.sFourCC)) {
                 dxtFormat = EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
             } else if ("DX10".equalsIgnoreCase(header.ddspf.sFourCC)) {
-                System.err.println("Uses DX10 extended header, which is not supported!");
+                log.error("Uses DX10 extended header, which is not supported!");
                 fis.close();
                 return;
             } else {
-                System.err.println("Surface format unknown or not supported: " + header.ddspf.sFourCC);
+                log.error("Surface format unknown or not supported: {}", header.ddspf.sFourCC);
             }
 
             int surfaceCount;
-            totalByteCount -= 128;
 
             if (header.hasCaps2CubeMap) {
                 surfaceCount = 6;
@@ -158,17 +160,10 @@ public class DDSFile {
 
             int size = header.dwPitchOrLinearSize;
 
-            if (printDebug) System.out.println("Calculated pitch: " + imageSize);
-            if (printDebug) System.out.println("Included PitchOrLinearSize: " + header.dwPitchOrLinearSize);
-            if (printDebug) System.out.println("Mipmap count: " + header.dwMipMapCount);
-
             for (int i = 0; i < surfaceCount; i++) {
                 byte[] bytes = new byte[size];
 
-                if (printDebug) System.out.println("Getting main surface " + i + ". Bytes: " + bytes.length);
-
                 fis.read(bytes);
-                totalByteCount -= bytes.length;
                 bdata.add(newByteBuffer(bytes));
 
                 if (header.hasFlagMipMapCount) {
@@ -177,20 +172,16 @@ public class DDSFile {
                     for (int j = 0; j < maxMipMaps; j++) {
                         byte[] bytes2 = new byte[size2];
 
-                        if (printDebug) System.out.println("Getting secondary surface " + j + ". Bytes: " + bytes2.length);
-
                         fis.read(bytes2);
-                        totalByteCount -= bytes2.length;
                         bdata2.add(newByteBuffer(bytes2));
                         size2 = Math.max(size2 / 4, blockSize);
                     }
                 }
             }
 
-            if (printDebug) System.out.printf("Remaining bytes: %d (%d)%n", fis.available(), totalByteCount);
             fis.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Can't load dds file", e);
         }
     }
 
@@ -198,7 +189,9 @@ public class DDSFile {
         return Math.max(1, ((header.dwWidth + 3) / 4)) * blockSize;
     }
 
-    /** Creates a new ByteBuffer and stores the data within it before returning it. */
+    /**
+     * Creates a new ByteBuffer and stores the data within it before returning it.
+     */
     private static ByteBuffer newByteBuffer(byte[] data) {
         ByteBuffer buffer = ByteBuffer.allocateDirect(data.length).order(ByteOrder.nativeOrder());
         buffer.put(data);
@@ -236,8 +229,7 @@ public class DDSFile {
      * Gets a specific level from the amount of mipmaps. If specified outside the range of available mipmaps, the closest one is returned.
      */
     public ByteBuffer getMipMapLevel(int level) {
-        level = Math.min(Math.min(header.dwMipMapCount - 1, level), Math.max(level, 0));
-        return this.bdata2.get(level);
+        return this.bdata2.get(Math.min(Math.min(header.dwMipMapCount - 1, level), Math.max(level, 0)));
     }
 
     public int getDXTFormat() {

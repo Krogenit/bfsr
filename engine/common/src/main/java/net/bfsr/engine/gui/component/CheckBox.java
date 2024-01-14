@@ -5,8 +5,8 @@ import net.bfsr.engine.gui.object.TexturedGuiObject;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 
+@Setter
 public class CheckBox extends TexturedGuiObject {
-    @Setter
     private boolean value;
 
     public CheckBox(TextureRegister texture, int width, int height, boolean value) {

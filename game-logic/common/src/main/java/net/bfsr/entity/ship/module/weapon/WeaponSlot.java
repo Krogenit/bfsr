@@ -3,10 +3,10 @@ package net.bfsr.entity.ship.module.weapon;
 import clipper2.core.PathD;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
-import net.bfsr.config.component.weapon.beam.BeamRegistry;
 import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.config.component.weapon.gun.GunRegistry;
 import net.bfsr.damage.ConnectedObject;
+import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
@@ -15,6 +15,7 @@ import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
+import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.network.util.ByteBufUtils;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.physics.filter.ShipFilter;
@@ -29,11 +30,9 @@ import org.joml.Vector2f;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class WeaponSlot extends DamageableModule implements ConnectedObject {
+public class WeaponSlot extends DamageableModule implements ConnectedObject<GunData> {
     protected World world;
-    @Getter
-    protected Ship ship;
-    protected float energyCost;
+    float energyCost;
     @Getter
     protected int reloadTimer, timeToReload;
     @Getter
@@ -44,6 +43,8 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject {
     @Getter
     private final WeaponType weaponType;
     protected EventBus eventBus;
+    @Getter
+    private float sin, cos;
 
     public WeaponSlot(GunData gunData, WeaponType weaponType) {
         super(gunData.getHp(), gunData.getSizeX(), gunData.getSizeY());
@@ -60,22 +61,27 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject {
 
     public void init(int id, Ship ship) {
         this.id = id;
-        this.ship = ship;
         this.world = ship.getWorld();
         this.localPosition = ship.getWeaponSlotPosition(id);
         this.polygon.translate(localPosition.x, localPosition.y);
         this.eventBus = world.getEventBus();
         init(ship);
-        updatePos();
+        updatePos(ship);
+    }
+
+    @Override
+    public void init(RigidBody<?> rigidBody) {
+        polygon.translate(localPosition.x, localPosition.y);
+        createFixture(rigidBody);
+        updatePos(rigidBody);
     }
 
     @Override
     public void spawn() {
         if (world.isClient()) return;
 
-        RigidBody<GunData> rigidBody = new RigidBody<>(position.x, position.y, ship.getSin(), ship.getCos(),
-                gunData.getSizeX(), gunData.getSizeY(), gunData, weaponType == WeaponType.GUN ? GunRegistry.INSTANCE.getId()
-                : BeamRegistry.INSTANCE.getId());
+        RigidBody<GunData> rigidBody = new RigidBody<>(position.x, position.y, this.ship.getSin(), this.ship.getCos(),
+                gunData.getSizeX(), gunData.getSizeY(), gunData, getRegistryId());
         rigidBody.setHealth(5.0f);
 
         Polygon polygon = Geometry.createPolygon(this.polygon.getVertices());
@@ -90,19 +96,19 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject {
         body.setUserData(rigidBody);
         body.setLinearDamping(0.05f);
         body.setAngularDamping(0.005f);
-        body.setLinearVelocity(ship.getBody().getLinearVelocity());
-        body.setAngularVelocity(ship.getBody().getAngularVelocity());
+        body.setLinearVelocity(this.ship.getBody().getLinearVelocity());
+        body.setAngularVelocity(this.ship.getBody().getAngularVelocity());
 
         world.add(rigidBody);
     }
 
     @Override
-    protected void createFixture() {
+    protected void createFixture(RigidBody<?> rigidBody) {
         fixture = new BodyFixture(polygon);
         fixture.setUserData(this);
-        fixture.setFilter(new ShipFilter(ship));
+        fixture.setFilter(new ShipFilter(rigidBody));
         fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-        ship.getBody().addFixture(fixture);
+        rigidBody.getBody().addFixture(fixture);
     }
 
     @Override
@@ -110,16 +116,16 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject {
         body.addFixture(fixture);
     }
 
-    public void tryShoot(Consumer<WeaponSlot> onShotEvent) {
-        float energy = ship.getModules().getReactor().getEnergy();
+    public void tryShoot(Consumer<WeaponSlot> onShotEvent, Reactor reactor) {
+        float energy = reactor.getEnergy();
         if (reloadTimer <= 0 && energy >= energyCost) {
-            shoot(onShotEvent);
+            shoot(onShotEvent, reactor);
         }
     }
 
-    public void shoot(Consumer<WeaponSlot> onShotEvent) {
+    public void shoot(Consumer<WeaponSlot> onShotEvent, Reactor reactor) {
         reloadTimer = timeToReload;
-        ship.getModules().getReactor().consume(energyCost);
+        reactor.consume(energyCost);
         onShotEvent.accept(this);
     }
 
@@ -145,18 +151,22 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject {
 
     @Override
     public void update() {
-        updatePos();
         if (reloadTimer > 0) {
             reloadTimer -= 1;
         }
     }
 
-    public void updatePos() {
-        Vector2f shipPos = ship.getPosition();
+    @Override
+    public void postPhysicsUpdate(RigidBody<?> rigidBody) {
+        updatePos(rigidBody);
+    }
+
+    void updatePos(RigidBody<?> rigidBody) {
+        Vector2f shipPos = rigidBody.getPosition();
         float x = localPosition.x;
         float y = localPosition.y;
-        float cos = ship.getCos();
-        float sin = ship.getSin();
+        cos = rigidBody.getCos();
+        sin = rigidBody.getSin();
         float xPos = cos * x - sin * y;
         float yPos = sin * x + cos * y;
         position.set(xPos + shipPos.x, yPos + shipPos.y);
@@ -184,13 +194,15 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject {
 
     @Override
     public void writeData(ByteBuf data) {
-        data.writeInt(weaponType == WeaponType.GUN ? GunRegistry.INSTANCE.getId() : BeamRegistry.INSTANCE.getId());
-        data.writeInt(gunData.getId());
+        data.writeInt(id);
         ByteBufUtils.writeVector(data, localPosition);
     }
 
     @Override
-    public void readData(ByteBuf data) {}
+    public void readData(ByteBuf data) {
+        id = data.readInt();
+        ByteBufUtils.readVector(data, localPosition = new Vector2f());
+    }
 
     @Override
     public boolean isInside(PathD contour) {
@@ -210,5 +222,25 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject {
     @Override
     public float getConnectPointY() {
         return localPosition.y;
+    }
+
+    @Override
+    public ConnectedObjectType getConnectedObjectType() {
+        return ConnectedObjectType.WEAPON_SLOT;
+    }
+
+    @Override
+    public int getRegistryId() {
+        return GunRegistry.INSTANCE.getId();
+    }
+
+    @Override
+    public int getDataId() {
+        return gunData.getId();
+    }
+
+    @Override
+    public GunData getConfigData() {
+        return gunData;
     }
 }

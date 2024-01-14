@@ -78,7 +78,7 @@ public class Core extends ClientGameLogic {
         Lang.load();
         this.inputHandler.init();
         this.settings.load();
-        updateTimeBetweenUpdate(ClientSettings.MAX_FPS.getInteger());
+        setMaxFPS(ClientSettings.MAX_FPS.getInteger());
         this.networkSystem.init();
         this.globalRenderer.init();
         this.renderManager.init();
@@ -135,16 +135,16 @@ public class Core extends ClientGameLogic {
         profiler.endStartSection("guiManager");
         guiManager.update();
         profiler.endStartSection("renderManager.postUpdate");
-        renderManager.postUpdate();
+        renderManager.postWorldUpdate();
         profiler.endSection();
     }
 
-    public void updateTimeBetweenUpdate(int maxFps) {
-        int updatesPerSecond = Math.min(maxFps, 60);
-        Engine.setUpdatesPerSecond(updatesPerSecond);
+    public void setMaxFPS(int maxFPS) {
+        int updatesPerSecond = Math.min(maxFPS, 60);
+        setUpdatesPerSecond(updatesPerSecond);
         float updateDeltaTime = 1.0f / updatesPerSecond;
-        Engine.setUpdateDeltaTime(updateDeltaTime);
-        Engine.setTimeBetweenUpdates(1_000_000_000.0 / updatesPerSecond);
+        setUpdateDeltaTime(updateDeltaTime);
+        setTimeBetweenUpdates(1_000_000_000.0 / updatesPerSecond);
 
         org.dyn4j.world.World<Body> physicWorld = world.getPhysicWorld();
         if (physicWorld != null) {
@@ -224,7 +224,7 @@ public class Core extends ClientGameLogic {
     }
 
     public void createWorld(long seed) {
-        this.world = new World(profiler, Side.CLIENT, seed, eventBus, new ClientEntityIdManager());
+        this.world = new World(profiler, Side.CLIENT, seed, eventBus, new ClientEntityIdManager(), this);
         globalRenderer.createBackgroundTexture(seed);
     }
 
@@ -250,7 +250,7 @@ public class Core extends ClientGameLogic {
         stopLocalServer();
     }
 
-    public void setBlankWorld() {
+    private void setBlankWorld() {
         world.clear();
         world = BlankWorld.get();
     }

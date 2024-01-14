@@ -49,7 +49,7 @@ public class PropertiesPanel {
         this.width = width;
         this.fontType = fontType;
         this.fontSize = fontSize;
-        this.propertiesContainer = new GuiObjectsContainer(gui, width, 16);
+        this.propertiesContainer = setupObjectsContainerColors(new GuiObjectsContainer(width, 16));
         this.stringXOffset = stringXOffset;
         this.stringYOffset = stringYOffset;
         this.contextMenuStringXOffset = contextMenuStringXOffset;

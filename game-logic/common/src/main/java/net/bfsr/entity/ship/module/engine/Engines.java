@@ -40,7 +40,7 @@ public class Engines extends DamageableModule {
             List<Engine> engineList = new ArrayList<>(engines1.size());
             for (int i = 0; i < engines1.size(); i++) {
                 EngineData engineData = engines1.get(i);
-                Engine engine = new Engine(ship, engineData.polygons().get(0));
+                Engine engine = new Engine(engineData.polygons().get(0));
                 engineList.add(engine);
                 engines.add(engine);
             }

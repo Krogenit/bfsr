@@ -17,14 +17,9 @@ public interface EngineConfiguration {
     }
 
     AbstractSystemDialogs createSystemDialogs();
-
     AbstractKeyboard createKeyboard();
-
     AbstractMouse createMouse();
-
     AbstractSoundManager createSoundManager();
-
     AbstractRenderer createRenderer();
-
     AssetsManager createAssetManager();
 }

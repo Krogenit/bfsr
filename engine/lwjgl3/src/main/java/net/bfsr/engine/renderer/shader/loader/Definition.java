@@ -14,7 +14,7 @@ public class Definition {
     private FoundFile foundFile = new FoundFile();
     private int shader;
 
-    public Definition(int type, String prepend, String filename) {
+    private Definition(int type, String prepend, String filename) {
         this.type = type;
         this.filename = filename;
         this.prepend = prepend;
