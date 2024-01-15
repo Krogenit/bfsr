@@ -61,7 +61,6 @@ public class GlobalRenderer {
         camera.bindGUI();
         guiManager.render();
         spriteRenderer.render(BufferType.GUI);
-
         profiler.endSection();
     }
 

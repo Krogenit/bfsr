@@ -122,6 +122,7 @@ public class LWJGL3Engine extends AbstractGameLoop implements EngineConfiguratio
 
         renderer.setInterpolation(interpolation);
         gameLogic.render(interpolation);
+        profiler.endSection("render");
         GLFW.glfwSwapBuffers(window);
         profiler.endStartSection("pollEvents");
         GLFW.glfwPollEvents();
