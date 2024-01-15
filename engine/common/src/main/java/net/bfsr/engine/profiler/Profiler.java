@@ -40,9 +40,11 @@ public class Profiler {
     public void endSection(String name) {
         if (enable) {
             Long prevTime = prevResults.get(name);
-            long time = System.nanoTime();
-            long dif = time - prevTime;
-            results.put(name, dif / (float) 1000000);
+            if (prevTime != null) {
+                long time = System.nanoTime();
+                long dif = time - prevTime;
+                results.put(name, dif / (float) 1000000);
+            }
         }
     }
 
