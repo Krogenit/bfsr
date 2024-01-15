@@ -16,6 +16,8 @@ public final class MathUtils {
     public static final float HALF_PI = (float) (Math.PI / 2.0);
     private static final Transform IDENTITY_TRANSFORM = new Transform();
     private static final AABB CACHED_AABB_1 = new AABB(0, 0, 0, 0);
+    public static final float DEGREES_TO_RADIANS = 0.017453292519943295f;
+    public static final float RADIANS_TO_DEGREES = 57.29577951308232f;
 
     public static float lerpAngle(float start, float end) {
         return (((end - start) % TWO_PI) + THREE_PI) % TWO_PI - PI;

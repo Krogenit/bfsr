@@ -34,7 +34,6 @@ import net.bfsr.event.entity.ship.*;
 import net.bfsr.event.module.shield.ShieldDamageByCollision;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.Direction;
-import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.ShipSpawnData;
@@ -51,8 +50,6 @@ import org.joml.Vector2f;
 
 import java.util.List;
 import java.util.function.Consumer;
-
-import static net.bfsr.math.RigidBodyUtils.ANGLE_TO_VELOCITY;
 
 public class Ship extends DamageableRigidBody<ShipData> {
     @Getter
@@ -101,6 +98,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
     private Consumer<Double> positionCalculator = super::calcPosition;
     @Setter
     private Consumer<Double> chronologicalDataProcessor = super::processChronologicalData;
+    private final Vector2f rotationHelper = new Vector2f();
 
     public Ship(ShipData shipData, DamageMask damageMask) {
         super(shipData.getSizeX(), shipData.getSizeY(), shipData, ShipRegistry.INSTANCE.getId(), damageMask,
@@ -148,13 +146,13 @@ public class Ship extends DamageableRigidBody<ShipData> {
         double cos = body.getTransform().getCost();
 
         if (dir == Direction.FORWARD) {
-            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(cos, sin), modules.getEngines().getForwardAcceleration());
+            addForce(rotationHelper.set(cos, sin), modules.getEngines().getForwardAcceleration());
         } else if (dir == Direction.BACKWARD) {
-            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(-cos, -sin), modules.getEngines().getBackwardAcceleration());
+            addForce(rotationHelper.set(-cos, -sin), modules.getEngines().getBackwardAcceleration());
         } else if (dir == Direction.LEFT) {
-            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(sin, -cos), modules.getEngines().getSideAcceleration());
+            addForce(rotationHelper.set(sin, -cos), modules.getEngines().getSideAcceleration());
         } else if (dir == Direction.RIGHT) {
-            addForce(RigidBodyUtils.ROTATE_TO_VECTOR.set(-sin, cos), modules.getEngines().getSideAcceleration());
+            addForce(rotationHelper.set(-sin, cos), modules.getEngines().getSideAcceleration());
         }
     }
 
@@ -286,8 +284,8 @@ public class Ship extends DamageableRigidBody<ShipData> {
     private void updateJump() {
         if (jumpTimer-- == 0) {
             setSpawned();
-            RotationHelper.angleToVelocity(sin, cos, 15.0f, ANGLE_TO_VELOCITY);
-            setVelocity(ANGLE_TO_VELOCITY.x, ANGLE_TO_VELOCITY.y);
+            RotationHelper.angleToVelocity(sin, cos, 15.0f, rotationHelper);
+            setVelocity(rotationHelper.x, rotationHelper.y);
         }
     }
 

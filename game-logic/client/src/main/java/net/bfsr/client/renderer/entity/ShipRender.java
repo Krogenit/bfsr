@@ -35,8 +35,6 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 
-import static net.bfsr.math.RigidBodyUtils.ROTATE_TO_VECTOR;
-
 public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
     private static final AbstractTexture JUMP_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.particleJump);
     private static final AbstractTexture REACTOR_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.moduleReactor);
@@ -56,6 +54,8 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
     private final EnumMap<Direction, List<SpawnAccumulator>> engineAccumulators = new EnumMap<>(Direction.class);
     private final EnumMap<Direction, Runnable> engineEffectsRunnable = new EnumMap<>(Direction.class);
     private final List<ModuleRenderer> moduleRenders = new ArrayList<>();
+    private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
+    private final Vector2f rotateToVector = new Vector2f();
 
     public ShipRender(Ship ship) {
         super(Engine.assetsManager.getTexture(ship.getConfigData().getTexture()), ship);
@@ -102,13 +102,11 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
                     float y = -(float) body.getLinearVelocity().y;
 
                     if (Math.abs(x) > 0.5f) {
-                        engineEffectsRunnable.get(RigidBodyUtils.calculateDirectionToOtherObject(ship, x + shipPos.x, shipPos.y))
-                                .run();
+                        engineEffectsRunnable.get(rigidBodyUtils.calculateDirectionToPoint(ship, x + shipPos.x, shipPos.y)).run();
                     }
 
                     if (Math.abs(y) > 0.5f) {
-                        engineEffectsRunnable.get(RigidBodyUtils.calculateDirectionToOtherObject(ship, shipPos.x, y + shipPos.y))
-                                .run();
+                        engineEffectsRunnable.get(rigidBodyUtils.calculateDirectionToPoint(ship, shipPos.x, y + shipPos.y)).run();
                     }
                 };
             } else {
@@ -127,8 +125,8 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
                             for (int j = 0; j < engineDataList.size(); j++) {
                                 if (!engineModules.get(j).isDead()) {
                                     Vector2f effectPosition = engineDataList.get(j).effectPosition();
-                                    RotationHelper.rotate(sin, cos, effectPosition.x, effectPosition.y, ROTATE_TO_VECTOR);
-                                    EngineEffects.smallEngine(shipPos.x + ROTATE_TO_VECTOR.x, shipPos.y + ROTATE_TO_VECTOR.y, sin,
+                                    RotationHelper.rotate(sin, cos, effectPosition.x, effectPosition.y, rotateToVector);
+                                    EngineEffects.smallEngine(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, sin,
                                             cos, 10.0f, (float) shipVelocity.x / 50.0f, (float) shipVelocity.y / 50.0f,
                                             effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, accumulators.get(j));
                                 }
@@ -142,8 +140,8 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
                             for (int j = 0; j < engineDataList.size(); j++) {
                                 if (!engineModules.get(j).isDead()) {
                                     Vector2f effectPosition = engineDataList.get(j).effectPosition();
-                                    RotationHelper.rotate(sin, cos, effectPosition.x, effectPosition.y, ROTATE_TO_VECTOR);
-                                    EngineEffects.secondaryEngine(shipPos.x + ROTATE_TO_VECTOR.x, shipPos.y + ROTATE_TO_VECTOR.y,
+                                    RotationHelper.rotate(sin, cos, effectPosition.x, effectPosition.y, rotateToVector);
+                                    EngineEffects.secondaryEngine(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y,
                                             accumulators.get(j));
                                 }
                             }

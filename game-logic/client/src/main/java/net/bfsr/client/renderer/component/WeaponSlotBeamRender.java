@@ -22,6 +22,7 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
     private final Beam beam;
     @Getter
     private final Vector4f effectsColor = new Vector4f();
+    private final Vector2f angleToVelocity = new Vector2f();
 
     public WeaponSlotBeamRender(WeaponSlotBeam object) {
         super(object);
@@ -40,7 +41,7 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
         if (object.getBeamPower() > 0.0f) {
             float sin = object.getShip().getSin();
             float cos = object.getShip().getCos();
-            Vector2f angleToVelocity = RotationHelper.angleToVelocity(sin, cos, 10.0f);
+            RotationHelper.angleToVelocity(sin, cos, 10.0f, angleToVelocity);
             Vector2f position = object.getPosition();
             BeamEffects.beam(position.x, position.y, 2.0f, sin, cos, angleToVelocity.x, angleToVelocity.y, effectsColor.x,
                     effectsColor.y, effectsColor.z, lastColor.w + (effectsColor.w - lastColor.w)

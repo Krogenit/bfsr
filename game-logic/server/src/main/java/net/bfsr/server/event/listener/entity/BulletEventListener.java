@@ -16,14 +16,14 @@ import net.bfsr.world.World;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
+import org.joml.Vector2f;
 
 import java.util.Random;
-
-import static net.bfsr.math.RigidBodyUtils.ANGLE_TO_VELOCITY;
 
 @Listener(references = References.Strong)
 public class BulletEventListener {
     private final NetworkSystem network = ServerGameLogic.getNetwork();
+    private final Vector2f angleToVelocity = new Vector2f();
 
     @Handler
     public void event(BulletDamageShipShieldEvent event) {
@@ -43,11 +43,11 @@ public class BulletEventListener {
         World world = ship.getWorld();
         Random rand = world.getRand();
         if (rand.nextInt(2) == 0) {
-            RotationHelper.angleToVelocity(net.bfsr.engine.math.MathUtils.TWO_PI * rand.nextFloat(), 1.5f, ANGLE_TO_VELOCITY);
+            RotationHelper.angleToVelocity(net.bfsr.engine.math.MathUtils.TWO_PI * rand.nextFloat(), 1.5f, angleToVelocity);
             float velocityX = ship.getVelocity().x * 0.005f;
             float velocityY = ship.getVelocity().y * 0.005f;
             WreckSpawner.spawnDamageDebris(world, rand.nextInt(2), event.getContactX(), event.getContactY(),
-                    velocityX + ANGLE_TO_VELOCITY.x, velocityY + ANGLE_TO_VELOCITY.y, 0.75f);
+                    velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f);
         }
 
         sendHitPacket(event.getBullet(), event.getShip(), event.getContactX(), event.getContactY(), event.getNormalX(),

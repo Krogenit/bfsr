@@ -11,6 +11,7 @@ public class AiFlyingAround extends AiTask {
     private Vector2f currentPoint;
     private RigidBody<?> obj;
     private final float size;
+    private final Vector2f angleToVelocity = new Vector2f();
 
     private static final float UPDATE_LENGTH = 25;
 
@@ -40,8 +41,8 @@ public class AiFlyingAround extends AiTask {
     }
 
     private void calculateNewPoint(Vector2f pos) {
-        Vector2f addPos = RotationHelper.angleToVelocity(MathUtils.TWO_PI * obj.getWorld().getRand().nextFloat(), size);
-        currentPoint = new Vector2f(pos.x + addPos.x, pos.y + addPos.y);
+        RotationHelper.angleToVelocity(MathUtils.TWO_PI * obj.getWorld().getRand().nextFloat(), size, angleToVelocity);
+        currentPoint = new Vector2f(pos.x + angleToVelocity.x, pos.y + angleToVelocity.y);
     }
 
     @Override

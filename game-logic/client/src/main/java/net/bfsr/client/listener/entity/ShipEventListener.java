@@ -21,11 +21,10 @@ import org.joml.Vector4f;
 
 import java.util.Random;
 
-import static net.bfsr.math.RigidBodyUtils.ANGLE_TO_VELOCITY;
-
 @Listener(references = References.Strong)
 public class ShipEventListener {
     private final RenderManager renderManager = Core.get().getRenderManager();
+    private final Vector2f angleToVelocity = new Vector2f();
 
     @Handler
     public void event(ShipCollisionWithWreckEvent event) {
@@ -62,9 +61,9 @@ public class ShipEventListener {
         Vector2f velocity = ship.getVelocity();
         WeaponEffects.spawnDirectedSpark(event.contactX(), event.contactY(), event.normalX(), event.normalY(), 3.75f, 1.0f, 1.0f,
                 1.0f, 1.0f);
-        RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.15f, ANGLE_TO_VELOCITY);
+        RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.15f, angleToVelocity);
         GarbageSpawner.smallGarbage(rand.nextInt(4), event.contactX(), event.contactY(),
-                velocity.x * 0.25f + ANGLE_TO_VELOCITY.x, velocity.y * 0.25f + ANGLE_TO_VELOCITY.y, 2.0f * rand.nextFloat());
+                velocity.x * 0.25f + angleToVelocity.x, velocity.y * 0.25f + angleToVelocity.y, 2.0f * rand.nextFloat());
     }
 
     @Handler

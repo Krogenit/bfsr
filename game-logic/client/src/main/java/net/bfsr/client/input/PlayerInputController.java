@@ -36,6 +36,7 @@ public class PlayerInputController extends InputController {
     private final Vector2f lastMousePosition = new Vector2f();
     private boolean mouseLeftDown;
     private final PositionHistory positionHistory = new PositionHistory(RigidBody.HISTORY_DURATION_MILLIS);
+    private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
 
     @Override
     public void init() {
@@ -126,7 +127,7 @@ public class PlayerInputController extends InputController {
         if (body.isAtRest()) body.setAtRest(false);
 
         Vector2f mouseWorldPosition = Engine.mouse.getWorldPosition(camera);
-        RigidBodyUtils.rotateToVector(ship, mouseWorldPosition, ship.getModules().getEngines().getAngularVelocity());
+        rigidBodyUtils.rotateToVector(ship, mouseWorldPosition, ship.getModules().getEngines().getAngularVelocity());
         if (mouseWorldPosition.x != lastMousePosition.x || mouseWorldPosition.y != lastMousePosition.y) {
             core.sendUDPPacket(new PacketSyncPlayerMousePosition(mouseWorldPosition));
         }

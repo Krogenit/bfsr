@@ -26,6 +26,7 @@ import java.util.Random;
 public class WeaponEventListener {
     private final AbstractSoundManager soundManager = Engine.soundManager;
     private final RenderManager renderManager = Core.get().getRenderManager();
+    private final Vector2f rotationHelper = new Vector2f();
 
     @Handler
     public void event(WeaponShotEvent event) {
@@ -35,9 +36,10 @@ public class WeaponEventListener {
         Ship ship = weaponSlot.getShip();
         float sin = ship.getSin();
         float cos = ship.getCos();
-        Vector2f pos = RotationHelper.rotate(sin, cos, 1.0f, 0).add(position);
+        RotationHelper.rotate(sin, cos, 1.0f, 0, rotationHelper);
+        rotationHelper.add(position);
         Vector2f velocity = ship.getVelocity();
-        WeaponEffects.spawnWeaponShoot(pos, -sin, -cos, 8.0f, velocity, color.x, color.y, color.z, color.w);
+        WeaponEffects.spawnWeaponShoot(rotationHelper, -sin, -cos, 8.0f, velocity, color.x, color.y, color.z, color.w);
         playSounds(weaponSlot.getGunData(), ship.getWorld().getRand(), position.x, position.y);
     }
 

@@ -17,6 +17,7 @@ import java.util.Random;
 public class ShipSpawner {
     private final World world;
     private float timer;
+    private final Vector2f angleToVelocity = new Vector2f();
 
     private void spawnShips() {
         if (timer-- > 0) return;
@@ -37,40 +38,40 @@ public class ShipSpawner {
             lastFaction = s.getFaction();
         }
 
-        if (botCount < 50 || sameFaction) {
+        if (botCount < 400 || sameFaction) {
             timer = 40;
             int maxCount = 1;
             int count = maxCount;
 
             float rotation = MathUtils.TWO_PI / 3;
-            Vector2f pos = RotationHelper.angleToVelocity(0, 200);
+            RotationHelper.angleToVelocity(0, 200, angleToVelocity);
             float spawnRandomOffset = 75;
             if (sameFaction && lastFaction == Faction.HUMAN) count = count - botCount;
             for (int i = 0; i < count; i++) {
                 float addX = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 float addY = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
-                world.add(ShipFactory.get()
-                        .createBotHumanSmall(world, pos.x + addX, pos.y + addY, rand.nextFloat() * MathUtils.TWO_PI), false);
+                world.add(ShipFactory.get().createBotHumanSmall(world, angleToVelocity.x + addX, angleToVelocity.y + addY,
+                        rand.nextFloat() * MathUtils.TWO_PI), false);
             }
 
-            RotationHelper.rotate(rotation, pos.x, pos.y, pos);
+            RotationHelper.rotate(rotation, angleToVelocity.x, angleToVelocity.y, angleToVelocity);
             count = maxCount;
             if (sameFaction && lastFaction == Faction.SAIMON) count = count - botCount;
             for (int i = 0; i < count; i++) {
                 float addX = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 float addY = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
-                world.add(ShipFactory.get()
-                        .createBotSaimonSmall(world, pos.x + addX, pos.y + addY, rand.nextFloat() * MathUtils.TWO_PI), false);
+                world.add(ShipFactory.get().createBotSaimonSmall(world, angleToVelocity.x + addX, angleToVelocity.y + addY,
+                        rand.nextFloat() * MathUtils.TWO_PI), false);
             }
 
-            RotationHelper.rotate(rotation, pos.x, pos.y, pos);
+            RotationHelper.rotate(rotation, angleToVelocity.x, angleToVelocity.y, angleToVelocity);
             count = maxCount;
             if (sameFaction && lastFaction == Faction.ENGI) count = count - botCount;
             for (int i = 0; i < count; i++) {
                 float addX = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 float addY = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
-                world.add(ShipFactory.get()
-                        .createBotEngiSmall(world, pos.x + addX, pos.y + addY, rand.nextFloat() * MathUtils.TWO_PI), false);
+                world.add(ShipFactory.get().createBotEngiSmall(world, angleToVelocity.x + addX, angleToVelocity.y + addY,
+                        rand.nextFloat() * MathUtils.TWO_PI), false);
             }
         }
     }

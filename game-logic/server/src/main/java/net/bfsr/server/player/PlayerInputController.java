@@ -26,6 +26,7 @@ public class PlayerInputController {
     private final Player player;
     private final NetworkSystem network = ServerGameLogic.getNetwork();
     private final World world = ServerGameLogic.getInstance().getWorld();
+    private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
 
     public void move(Direction direction) {
         if (ship.getModules().getEngines().isEngineAlive(direction)) {
@@ -39,7 +40,7 @@ public class PlayerInputController {
 
     public void update() {
         if (ship != null) {
-            RigidBodyUtils.rotateToVector(ship, mousePosition, ship.getModules().getEngines().getAngularVelocity());
+            rigidBodyUtils.rotateToVector(ship, mousePosition, ship.getModules().getEngines().getAngularVelocity());
             ship.getMoveDirections().forEach(ship::move);
             if (mouseLeftDown) {
                 ship.shoot(weaponSlot -> {

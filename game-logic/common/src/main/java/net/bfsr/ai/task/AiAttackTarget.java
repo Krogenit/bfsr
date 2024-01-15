@@ -31,6 +31,7 @@ public class AiAttackTarget extends AiTask {
     private final Vector2f targetFinalPos = new Vector2f();
     private final Vector2f totalTargetVelocity = new Vector2f();
     private final Vector2f bulletFinalPos = new Vector2f();
+    private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
 
     public AiAttackTarget(Ship ship, float maxAttackRange) {
         super(ship);
@@ -106,7 +107,7 @@ public class AiAttackTarget extends AiTask {
                 float targetToShip = targetFinalPos.distance(pos);
 
                 if (targetToShip <= bulletToShip) {
-                    if (Math.abs(RigidBodyUtils.getRotationDifference(ship, targetFinalPos)) <= 0.1f + shipSizeAverage / 25.0f) {
+                    if (Math.abs(rigidBodyUtils.getRotationDifference(ship, targetFinalPos)) <= 0.1f + shipSizeAverage / 25.0f) {
                         slot.tryShoot(weaponSlot -> ship.getWorld().getEventBus().publish(new WeaponShotEvent(weaponSlot)),
                                 modules.getReactor());
                     }
@@ -125,27 +126,24 @@ public class AiAttackTarget extends AiTask {
             }
 
             Vector2f finalPointToRotate = Objects.requireNonNullElse(pointToRotate, targetPos);
-
-            if (!engines.isEngineAlive(Direction.FORWARD)) {
-                if (engines.isEngineAlive(Direction.RIGHT)) {
-                    finalPointToRotate = RotationHelper.rotate(-1, 0, finalPointToRotate.x - pos.x,
-                            finalPointToRotate.y - pos.y);
-                    finalPointToRotate.add(pos.x, pos.y);
-                } else if (engines.isEngineAlive(Direction.LEFT)) {
-                    finalPointToRotate = RotationHelper.rotate(1, 0, finalPointToRotate.x - pos.x,
-                            finalPointToRotate.y - pos.y);
-                    finalPointToRotate.add(pos.x, pos.y);
-                } else if (engines.isEngineAlive(Direction.BACKWARD)) {
-                    finalPointToRotate = RotationHelper.rotate(0, -1, finalPointToRotate.x - pos.x,
-                            finalPointToRotate.y - pos.y);
-                    finalPointToRotate.add(pos.x, pos.y);
-                }
-            }
-
-            RigidBodyUtils.rotateToVector(ship, finalPointToRotate, engines.getAngularVelocity());
-
             if (minTargetToShip >= maxDistance - targetSizeAverage - shipSizeAverage) {
-                List<Direction> dirs = RigidBodyUtils.calculateDirectionsToOtherObject(ship, targetPos.x, targetPos.y);
+                if (!engines.isEngineAlive(Direction.FORWARD)) {
+                    if (engines.isEngineAlive(Direction.RIGHT)) {
+                        RotationHelper.rotate(-1.0f, 0.0f, finalPointToRotate.x - pos.x,
+                                finalPointToRotate.y - pos.y, finalPointToRotate);
+                        finalPointToRotate.add(pos.x, pos.y);
+                    } else if (engines.isEngineAlive(Direction.LEFT)) {
+                        RotationHelper.rotate(1.0f, 0.0f, finalPointToRotate.x - pos.x, finalPointToRotate.y - pos.y,
+                                finalPointToRotate);
+                        finalPointToRotate.add(pos.x, pos.y);
+                    } else if (engines.isEngineAlive(Direction.BACKWARD)) {
+                        RotationHelper.rotate(0.0f, -1.0f, finalPointToRotate.x - pos.x, finalPointToRotate.y - pos.y,
+                                finalPointToRotate);
+                        finalPointToRotate.add(pos.x, pos.y);
+                    }
+                }
+
+                List<Direction> dirs = rigidBodyUtils.calculateDirectionsToPoint(ship, targetPos);
 
                 for (int i = 0; i < dirs.size(); i++) {
                     Direction direction = dirs.get(i);
@@ -156,8 +154,8 @@ public class AiAttackTarget extends AiTask {
                 }
 
                 sideDirection = null;
-            } else if (distanceToTarget < maxDistance - targetSizeAverage - shipSizeAverage - 100) {
-                Direction dir = Direction.inverse(RigidBodyUtils.calculateDirectionToOtherObject(ship, targetPos.x, targetPos.y));
+            } else if (distanceToTarget < maxDistance - targetSizeAverage - shipSizeAverage) {
+                Direction dir = Direction.inverse(rigidBodyUtils.calculateDirectionToPoint(ship, targetPos));
 
                 if (engines.isEngineAlive(dir)) {
                     directionsToAdd.add(dir);
@@ -211,6 +209,8 @@ public class AiAttackTarget extends AiTask {
                 }
             }
 
+            rigidBodyUtils.rotateToVector(ship, finalPointToRotate, engines.getAngularVelocity());
+
             if (sideDirection != null) {
                 directionsToAdd.add(sideDirection);
             }
@@ -219,23 +219,23 @@ public class AiAttackTarget extends AiTask {
 
             if (!engines.isEngineAlive(Direction.FORWARD)) {
                 if (engines.isEngineAlive(Direction.RIGHT)) {
-                    finalPointToRotate = RotationHelper.rotate(-1, 0, finalPointToRotate.x - pos.x,
-                            finalPointToRotate.y - pos.y);
+                    RotationHelper.rotate(-1.0f, 0.0f, finalPointToRotate.x - pos.x, finalPointToRotate.y - pos.y,
+                            finalPointToRotate);
                     finalPointToRotate.add(pos.x, pos.y);
                 } else if (engines.isEngineAlive(Direction.LEFT)) {
-                    finalPointToRotate = RotationHelper.rotate(1, 0, finalPointToRotate.x - pos.x,
-                            finalPointToRotate.y - pos.y);
+                    RotationHelper.rotate(1.0f, 0.0f, finalPointToRotate.x - pos.x, finalPointToRotate.y - pos.y,
+                            finalPointToRotate);
                     finalPointToRotate.add(pos.x, pos.y);
                 } else if (engines.isEngineAlive(Direction.BACKWARD)) {
-                    finalPointToRotate = RotationHelper.rotate(0, -1, finalPointToRotate.x - pos.x,
-                            finalPointToRotate.y - pos.y);
+                    RotationHelper.rotate(0.0f, -1.0f, finalPointToRotate.x - pos.x, finalPointToRotate.y - pos.y,
+                            finalPointToRotate);
                     finalPointToRotate.add(pos.x, pos.y);
                 }
             }
 
-            RigidBodyUtils.rotateToVector(ship, finalPointToRotate, engines.getAngularVelocity());
+            rigidBodyUtils.rotateToVector(ship, finalPointToRotate, engines.getAngularVelocity());
 
-            List<Direction> dirs = RigidBodyUtils.calculateDirectionsToOtherObject(ship, targetPos.x, targetPos.y);
+            List<Direction> dirs = rigidBodyUtils.calculateDirectionsToPoint(ship, targetPos);
             for (int i = 0; i < dirs.size(); i++) {
                 Direction direction = dirs.get(i);
 

@@ -1,6 +1,7 @@
 package net.bfsr.entity;
 
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
 
 public class ChronologicalEntityDataManager<T extends ChronologicalEntityData> {
     final LinkedList<T> dataList = new LinkedList<>();
@@ -65,6 +66,10 @@ public class ChronologicalEntityDataManager<T extends ChronologicalEntityData> {
     }
 
     public T getMostRecent() {
-        return dataList.getFirst();
+        try {
+            return dataList.getFirst();
+        } catch (NoSuchElementException e) {
+            return null;
+        }
     }
 }

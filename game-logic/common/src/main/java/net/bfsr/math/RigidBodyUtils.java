@@ -1,5 +1,6 @@
 package net.bfsr.math;
 
+import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.RigidBody;
 import org.dyn4j.dynamics.Body;
 import org.joml.Math;
@@ -9,18 +10,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class RigidBodyUtils {
-    public static final Vector2f ROTATE_TO_VECTOR = new Vector2f();
-    public static final Vector2f ANGLE_TO_VELOCITY = new Vector2f();
-    private static final List<Direction> DIRECTIONS = new ArrayList<>();
+    public final Vector2f rotateToVector = new Vector2f();
+    public final Vector2f angleToVelocity = new Vector2f();
+    private final List<Direction> directions = new ArrayList<>();
 
-    public static float getRotationDifference(RigidBody<?> gameObject, Vector2f vector) {
-        Vector2f position = gameObject.getPosition();
-        ROTATE_TO_VECTOR.set(vector.x - position.x, vector.y - position.y);
-        Vector2f angleToVelocity = RotationHelper.angleToVelocity(gameObject.getSin(), gameObject.getCos(), 1.0f);
-        return angleToVelocity.angle(ROTATE_TO_VECTOR);
+    public float getRotationDifference(RigidBody<?> gameObject, Vector2f vector) {
+        return getRotationDifference(gameObject, vector.x, vector.y);
     }
 
-    public static void rotateToVector(RigidBody<?> gameObject, Vector2f vector, float rotationSpeed) {
+    public float getRotationDifference(RigidBody<?> gameObject, float x, float y) {
+        Vector2f position = gameObject.getPosition();
+        rotateToVector.set(x - position.x, y - position.y);
+        RotationHelper.angleToVelocity(gameObject.getSin(), gameObject.getCos(), 1.0f, angleToVelocity);
+        return angleToVelocity.angle(rotateToVector);
+    }
+
+    public void rotateToVector(RigidBody<?> gameObject, Vector2f vector, float rotationSpeed) {
         Body body = gameObject.getBody();
 
         float diffRad = getRotationDifference(gameObject, vector);
@@ -43,48 +48,42 @@ public final class RigidBodyUtils {
         body.setAngularVelocity(body.getAngularVelocity() * 0.98f);
     }
 
-    public static List<Direction> calculateDirectionsToOtherObject(RigidBody<?> gameObject, float x, float y) {
-        Vector2f pos = gameObject.getPosition();
-        ROTATE_TO_VECTOR.x = x - pos.x;
-        ROTATE_TO_VECTOR.y = y - pos.y;
-        Vector2f angleToVelocity = RotationHelper.angleToVelocity(gameObject.getSin(), gameObject.getCos(), 1.0f);
-        double diff = Math.toDegrees(angleToVelocity.angle(ROTATE_TO_VECTOR));
-        double diffAbs = Math.abs(diff);
+    public List<Direction> calculateDirectionsToPoint(RigidBody<?> gameObject, Vector2f point) {
+        float diff = getRotationDifference(gameObject, point);
+        float diffAbs = Math.abs(diff);
+        directions.clear();
 
-        DIRECTIONS.clear();
-
-        if (diffAbs > 112.5f) {
-            DIRECTIONS.add(Direction.BACKWARD);
-        } else if (diffAbs <= 67.5f) {
-            DIRECTIONS.add(Direction.FORWARD);
+        if (diffAbs > 112.5f * MathUtils.DEGREES_TO_RADIANS) {
+            directions.add(Direction.BACKWARD);
+        } else if (diffAbs <= 67.5f * MathUtils.DEGREES_TO_RADIANS) {
+            directions.add(Direction.FORWARD);
         }
 
-        if (diff < -22.5f && diff >= -157.5f) {
-            DIRECTIONS.add(Direction.LEFT);
-        } else if (diff > 22.5f && diff <= 157.5f) {
-            DIRECTIONS.add(Direction.RIGHT);
+        if (diff < -22.5f * MathUtils.DEGREES_TO_RADIANS && diff >= -157.5f * MathUtils.DEGREES_TO_RADIANS) {
+            directions.add(Direction.LEFT);
+        } else if (diff > 22.5f * MathUtils.DEGREES_TO_RADIANS && diff <= 157.5f * MathUtils.DEGREES_TO_RADIANS) {
+            directions.add(Direction.RIGHT);
         }
 
-        return DIRECTIONS;
+        return directions;
     }
 
-    public static Direction calculateDirectionToOtherObject(RigidBody<?> gameObject, float x, float y) {
-        Vector2f pos = gameObject.getPosition();
-        ROTATE_TO_VECTOR.x = x - pos.x;
-        ROTATE_TO_VECTOR.y = y - pos.y;
-        RotationHelper.angleToVelocity(gameObject.getSin(), gameObject.getCos(), 1.0f, ANGLE_TO_VELOCITY);
-        double diff = Math.toDegrees(ANGLE_TO_VELOCITY.angle(ROTATE_TO_VECTOR));
-        double diffAbs = Math.abs(diff);
-        if (diffAbs > 135) {
+    public Direction calculateDirectionToPoint(RigidBody<?> gameObject, Vector2f point) {
+        return calculateDirectionToPoint(gameObject, point.x, point.y);
+    }
+
+    public Direction calculateDirectionToPoint(RigidBody<?> gameObject, float x, float y) {
+        float diff = getRotationDifference(gameObject, x, y);
+        float diffAbs = Math.abs(diff);
+
+        if (diffAbs > 135 * MathUtils.DEGREES_TO_RADIANS) {
             return Direction.BACKWARD;
-        } else if (diff < -45 && diff >= -135) {
+        } else if (diff < -45 * MathUtils.DEGREES_TO_RADIANS && diff >= -135 * MathUtils.DEGREES_TO_RADIANS) {
             return Direction.LEFT;
-        } else if (diffAbs <= 45) {
+        } else if (diffAbs <= 45 * MathUtils.DEGREES_TO_RADIANS) {
             return Direction.FORWARD;
-        } else if (diff > 45 && diff <= 135) {
+        } else {
             return Direction.RIGHT;
         }
-
-        return null;
     }
 }

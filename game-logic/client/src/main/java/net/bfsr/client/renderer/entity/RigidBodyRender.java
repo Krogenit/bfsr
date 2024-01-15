@@ -27,6 +27,7 @@ public class RigidBodyRender<T extends RigidBody<? extends GameObjectConfigData>
     private static final Vector4f RENDER_AABB_COLOR = new Vector4f(0.5f, 1.0f, 0.5f, 0.1f);
 
     private final AABB geometryAABB = new AABB(0, 0, 0, 0);
+    private final Vector2f angleToVelocity = new Vector2f();
 
     RigidBodyRender(AbstractTexture texture, T object, float r, float g, float b, float a) {
         super(texture, object, r, g, b, a);
@@ -119,9 +120,9 @@ public class RigidBodyRender<T extends RigidBody<? extends GameObjectConfigData>
                 float startAngle = 0.0f;
                 debugRenderer.addCommand(count);
                 for (int i = 0; i < count; i++) {
-                    Vector2f pos = RotationHelper.angleToVelocity(startAngle, (float) circle.getRadius());
-                    debugRenderer.addVertex(x + RotationHelper.rotateX(sin, cos, pos.x, pos.y),
-                            y + RotationHelper.rotateY(sin, cos, pos.x, pos.y), CONVEX_COLOR);
+                    RotationHelper.angleToVelocity(startAngle, (float) circle.getRadius(), angleToVelocity);
+                    debugRenderer.addVertex(x + RotationHelper.rotateX(sin, cos, angleToVelocity.x, angleToVelocity.y),
+                            y + RotationHelper.rotateY(sin, cos, angleToVelocity.x, angleToVelocity.y), CONVEX_COLOR);
                     startAngle += angleAdd;
                 }
             }
