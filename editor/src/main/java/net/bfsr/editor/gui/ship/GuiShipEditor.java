@@ -34,7 +34,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
 
     private boolean polygonCreationMode;
     private final StringObject polygonCreationModeString = new StringObject(fontType, "Polygon creation mode",
-            fontSize).compile();
+            fontSize).compileAtOrigin();
     private PolygonProperty polygonProperty;
     private final GameObject polygonObject = new GameObject();
     private final Render<GameObject> polygonRender = new Render<>(polygonObject) {

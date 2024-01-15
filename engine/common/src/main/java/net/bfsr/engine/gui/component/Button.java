@@ -24,9 +24,9 @@ public class Button extends TexturedGuiObject {
         super(texture, x, y, width, height);
         StringCache stringCache = fontType.getStringCache();
         this.stringXOffset = stringXOffset;
-        this.stringObject = new StringObject(fontType, string, x + stringXOffset,
-                y + stringCache.getCenteredYOffset(string, height, fontSize) + stringYOffset, fontSize, stringOffsetType)
-                .compile();
+        this.stringObject = new StringObject(fontType, string, x + stringXOffset, y +
+                stringCache.getCenteredYOffset(string, height, fontSize) + stringYOffset, fontSize,
+                stringOffsetType).compileAtOrigin();
         this.onMouseClickRunnable = onMouseClickRunnable;
         this.stringYOffset = stringYOffset;
         setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
@@ -135,8 +135,8 @@ public class Button extends TexturedGuiObject {
     public Button setPosition(int x, int y) {
         super.setPosition(x, y);
         StringCache stringCache = stringObject.getStringCache();
-        stringObject.setPosition(x + stringXOffset,
-                y + stringCache.getCenteredYOffset(stringObject.getString(), height, stringObject.getFontSize()) + stringYOffset);
+        stringObject.setPosition(x + stringXOffset, y + stringCache.getCenteredYOffset(stringObject.getString(), height,
+                stringObject.getFontSize()) + stringYOffset);
         stringObject.update();
         return this;
     }
@@ -151,8 +151,8 @@ public class Button extends TexturedGuiObject {
     public void setY(int y) {
         super.setY(y);
         StringCache stringCache = stringObject.getStringCache();
-        stringObject.setY(
-                y + stringCache.getCenteredYOffset(stringObject.getString(), height, stringObject.getFontSize()) + stringYOffset);
+        stringObject.setY(y + stringCache.getCenteredYOffset(stringObject.getString(), height,
+                stringObject.getFontSize()) + stringYOffset);
     }
 
     public void setStringXOffset(int stringXOffset) {
@@ -162,7 +162,7 @@ public class Button extends TexturedGuiObject {
 
     @Override
     public Button setTextColor(float r, float g, float b, float a) {
-        stringObject.setColor(r, g, b, a).compile();
+        stringObject.setColor(r, g, b, a).compileAtOrigin();
         return this;
     }
 
@@ -171,7 +171,7 @@ public class Button extends TexturedGuiObject {
     }
 
     public void setString(String string) {
-        stringObject.setString(string);
+        stringObject.setStringAndCompileAtOrigin(string);
     }
 
     public String getString() {

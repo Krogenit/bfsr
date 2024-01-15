@@ -10,7 +10,7 @@ import static net.bfsr.engine.input.Keys.KEY_ENTER;
 
 public class ChatInput extends InputBox {
     private final GuiManager guiManager = Core.get().getGuiManager();
-    
+
     public ChatInput() {
         super(298, 25, Lang.getString("gui.chat.typeSomething"), 16, 4, 0);
         setCursorHeight(16);
@@ -28,7 +28,7 @@ public class ChatInput extends InputBox {
             if (input.length() > 0) {
                 Core.get().sendTCPPacket(new PacketChatMessage(Core.get().getPlayerName() + ": " + input));
             }
-            stringObject.setString("");
+            stringObject.setStringAndCompile("");
             resetCursorPosition();
         }
 

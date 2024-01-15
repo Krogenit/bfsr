@@ -111,13 +111,13 @@ public class GuiConnect extends Gui {
         if (connectingText.getColor().w > 0.0f) {
             connectingText.getColor().w -= 0.0025f;
             if (connectingText.getColor().w < 0.0f) connectingText.getColor().w = 0.0f;
-            connectingText.compile();
+            connectingText.compileAtOrigin();
         }
     }
 
     private void setErrorMessage(String text) {
         connectingText.getColor().w = 1.0f;
-        connectingText.setString(text);
+        connectingText.setStringAndCompileAtOrigin(text);
     }
 
     @Override

@@ -61,7 +61,7 @@ public class PropertiesPanel {
 
         String string = "Properties";
         rightHeader = new StringObject(fontType, string, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w)
-                .compile();
+                .compileAtOrigin();
         rightHeader.atTopRightCorner(-width,
                 fontType.getStringCache().getCenteredYOffset(string, elementHeight, fontSize) + stringYOffset);
         propertiesContainer.atTopRightCorner(-width, elementHeight).setHeightResizeFunction(

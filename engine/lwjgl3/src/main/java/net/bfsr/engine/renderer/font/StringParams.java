@@ -8,7 +8,7 @@ import org.joml.Vector4f;
 @Setter
 class StringParams {
     private Vector4f color = new Vector4f();
-    private int x, y;
+    private float x, y;
     private int height;
 
     void addHeight(int height) {

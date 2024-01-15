@@ -24,7 +24,7 @@ public class CompoBoxElement<V> extends TexturedGuiObject {
     public CompoBoxElement(TextureRegister texture, int width, int height, V value, String name, FontType fontType, int fontSize,
                            int stringYOffset, ComboBox<V> comboBox) {
         super(texture, width, height);
-        this.stringObject = new StringObject(fontType, name, fontSize, StringOffsetType.CENTERED).compile();
+        this.stringObject = new StringObject(fontType, name, fontSize, StringOffsetType.CENTERED).compileAtOrigin();
         this.value = value;
         this.stringYOffset = stringYOffset;
         this.comboBox = comboBox;
@@ -124,7 +124,7 @@ public class CompoBoxElement<V> extends TexturedGuiObject {
 
     @Override
     public CompoBoxElement<V> setTextColor(float r, float g, float b, float a) {
-        stringObject.setColor(r, g, b, a).compile();
+        stringObject.setColor(r, g, b, a).compileAtOrigin();
         return this;
     }
 }

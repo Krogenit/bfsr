@@ -149,7 +149,7 @@ public class DebugInfoElement {
             stringBuilder.append("\nId: ").append(ship.getId());
         }
 
-        stringObject.setString(stringBuilder.toString());
+        stringObject.setStringAndCompile(stringBuilder.toString());
     }
 
     public void render() {

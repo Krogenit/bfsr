@@ -73,7 +73,7 @@ public class InputBox extends TexturedGuiObject {
                         stringY);
         this.emptyStringObject =
                 new StringObject(stringCache, string, fontSize, textColor.x, textColor.y, textColor.z, textColor.w).setPosition(
-                        stringX, stringY).compile();
+                        stringX, stringY).compileAtOrigin();
 
         this.maxLineSize = maxLineSize;
         this.cursorHeight = (int) (height / 1.7f);
@@ -248,7 +248,7 @@ public class InputBox extends TexturedGuiObject {
                         cursorPositionEnd--;
                     } else newString = prevString;
                 }
-                stringObject.setString(newString);
+                stringObject.setStringAndCompileAtOrigin(newString);
                 checkCursorOutOfBoundsPosition(cursorPosition);
             }
         } else if (key == KEY_DELETE) {
@@ -270,7 +270,7 @@ public class InputBox extends TexturedGuiObject {
                         newString = prevString.substring(0, cursorPosition) + prevString.substring(cursorPosition + 1);
                     else newString = prevString;// Else save string
                 }
-                stringObject.setString(newString);
+                stringObject.setStringAndCompileAtOrigin(newString);
             }
         } else if (key == KEY_ENTER) {
             disableTyping();
@@ -353,14 +353,14 @@ public class InputBox extends TexturedGuiObject {
                 cursorPosition = cursorPositionEnd;
             }
             if (stringObject.getStringCache().getStringWidth(newString, stringObject.getFontSize()) < maxLineSize) {
-                stringObject.setString(newString);
+                stringObject.setStringAndCompileAtOrigin(newString);
                 cursorPosition = cursorPositionEnd += string.length();
                 checkCursorOutOfBoundsPosition(cursorPosition);
             }
         } else {
             String newString = prevString.substring(0, cursorPosition) + string + prevString.substring(cursorPosition);
             if (stringObject.getStringCache().getStringWidth(newString, stringObject.getFontSize()) < maxLineSize) {
-                stringObject.setString(newString);
+                stringObject.setStringAndCompileAtOrigin(newString);
 
                 cursorPosition = cursorPositionEnd += string.length();
                 checkCursorOutOfBoundsPosition(cursorPosition);
@@ -489,7 +489,7 @@ public class InputBox extends TexturedGuiObject {
     }
 
     public InputBox setString(String string) {
-        this.stringObject.setString(string);
+        this.stringObject.setStringAndCompileAtOrigin(string);
         return this;
     }
 

@@ -43,7 +43,7 @@ public abstract class PropertyComponent extends GuiObjectWithSubObjects {
         this.fontSize = fontSize;
         this.stringOffsetY = stringOffsetY;
         this.stringObject = new StringObject(fontType, name, fontSize).setColor(EditorTheme.TEXT_COLOR_GRAY,
-                EditorTheme.TEXT_COLOR_GRAY, EditorTheme.TEXT_COLOR_GRAY, 1.0f).compile();
+                EditorTheme.TEXT_COLOR_GRAY, EditorTheme.TEXT_COLOR_GRAY, 1.0f).compileAtOrigin();
         this.propertyOffsetX = propertyOffsetX;
         this.propertyYOffset = propertyOffsetY;
         this.valueConsumer = valueConsumer;

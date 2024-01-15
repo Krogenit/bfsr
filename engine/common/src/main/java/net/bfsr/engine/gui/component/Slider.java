@@ -29,7 +29,7 @@ public class Slider extends TexturedGuiObject {
         stringObject = new StringObject(font, string, 0, 0, fontSize, StringOffsetType.CENTERED);
         stringObject.setPosition(x + width / 2,
                 (int) (y + (height - stringCache.getHeight(string, fontSize)) / 2.0f + stringCache.getAscent(string, fontSize)));
-        stringObject.compile();
+        stringObject.compileAtOrigin();
 
         slider = new TexturedGuiObject(TextureRegister.guiSlider, x, y, 29, 50);
         slider.setX(calculateSliderXPos());

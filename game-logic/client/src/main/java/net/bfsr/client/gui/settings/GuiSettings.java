@@ -48,7 +48,7 @@ public class GuiSettings extends Gui {
         registerGuiObject(new TexturedGuiObject(null, 0, 0, width, backgroundHeight).setAllColors(0.1f, 0.2f, 0.4f, 1.0f));
         registerGuiObject(new TexturedGuiObject(null, 0, height - backgroundHeight, width, backgroundHeight)
                 .setAllColors(0.1f, 0.2f, 0.4f, 1.0f));
-        registerGuiObject(mainText.setFontSize(24).compile().atTop(0, 40));
+        registerGuiObject(mainText.setFontSize(24).compileAtOrigin().atTop(0, 40));
 
         int buttonXOffset = 250;
         int baseYOffset = 60;
@@ -79,7 +79,7 @@ public class GuiSettings extends Gui {
 
             StringObject sectionText = new StringObject(FontType.XOLONIUM, Lang.getString("settings.section." +
                     entry.getKey().getCategoryName()), fontSectionSize, StringOffsetType.CENTERED);
-            container.registerGuiObject(sectionText.compile().atTop(0, y));
+            container.registerGuiObject(sectionText.compileAtOrigin().atTop(0, y));
 
             for (int i = 0; i < options.size(); i++) {
                 ClientSettings option = options.get(i);

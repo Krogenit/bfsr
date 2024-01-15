@@ -37,7 +37,7 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
         super(width, height);
         this.fontSize = fontSize;
         this.stringCache = fontType.getStringCache();
-        this.stringObject = new StringObject(fontType, name, fontSize).compile();
+        this.stringObject = new StringObject(fontType, name, fontSize).compileAtOrigin();
         this.stringYOffset = stringYOffset;
         setHeightResizeFunction((integer, integer2) -> this.height);
     }
@@ -78,7 +78,7 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
     }
 
     protected void onNameChanged(String name) {
-        stringObject.setString(name);
+        stringObject.setStringAndCompile(name);
     }
 
     protected void onStartMoving() {}
@@ -206,7 +206,7 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
 
     @Override
     public MinimizableGuiObject setTextColor(float r, float g, float b, float a) {
-        stringObject.setColor(r, g, b, a).compile();
+        stringObject.setColor(r, g, b, a).compileAtOrigin();
         return this;
     }
 
@@ -216,7 +216,7 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
     }
 
     public MinimizableGuiObject setName(String string) {
-        stringObject.setString(string);
+        stringObject.setStringAndCompile(string);
         return this;
     }
 

@@ -180,12 +180,12 @@ public class MinimizablePropertyComponent extends PropertyComponent {
 
     @Override
     public MinimizablePropertyComponent setTextColor(float r, float g, float b, float a) {
-        stringObject.setColor(r, g, b, a).compile();
+        stringObject.setColor(r, g, b, a).compileAtOrigin();
         return this;
     }
 
     public MinimizablePropertyComponent setName(String string) {
-        stringObject.setString(string);
+        stringObject.setStringAndCompile(string);
         return this;
     }
 

@@ -46,16 +46,16 @@ public class GuiFactionSelect extends Gui {
                 .setSize(180, 180));
 
         StringObject stringObject = new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.maintext"), 24)
-                .compile();
+                .compileAtOrigin();
         registerGuiObject(stringObject.atCenter(-stringObject.getWidth() / 2, -96));
 
         int discFontSize = 16;
         registerGuiObject(new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.humanDisc"), discFontSize)
-                .compile().atCenter(-450, -64));
+                .compileAtOrigin().atCenter(-450, -64));
         registerGuiObject(new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.saimonDisc"), discFontSize)
-                .compile().atCenter(-142, -64));
+                .compileAtOrigin().atCenter(-142, -64));
         registerGuiObject(new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.engiDisc"), discFontSize)
-                .compile().atCenter(166, -64));
+                .compileAtOrigin().atCenter(166, -64));
     }
 
     private void updateRot(TexturedGuiObject guiObject, Vector2f mousePosition) {

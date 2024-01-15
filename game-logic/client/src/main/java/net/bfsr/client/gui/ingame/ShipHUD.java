@@ -60,22 +60,25 @@ public class ShipHUD {
     private final RenderManager renderManager = core.getRenderManager();
     private final GuiManager guiManager = core.getGuiManager();
 
-    public void init(HUD gui) {
+    private HUD hud;
+
+    public void init(HUD hud) {
+        this.hud = hud;
         int scaleX = 280;
         int scaleY = 220;
         hudShip.setSize(scaleX, scaleY);
         hudShip.atBottomRightCorner(-scaleX, -scaleY);
-        gui.registerGuiObject(hudShip);
+        hud.registerGuiObject(hudShip);
 
         hudShipSecondary.setSize(scaleX, scaleY);
         hudShipSecondary.atTopRightCorner(-scaleX, 0);
-        gui.registerGuiObject(hudShipSecondary);
+        hud.registerGuiObject(hudShipSecondary);
 
         scaleX = 140;
         scaleY = 72;
         hudShipAdd0.setSize(scaleX, scaleY);
         hudShipAdd0.atBottomRightCorner(-hudShip.getWidth() - scaleX + 20, -scaleY);
-        gui.registerGuiObject(hudShipAdd0);
+        hud.registerGuiObject(hudShipAdd0);
 
         Button buttonControl = new Button(TextureRegister.guiButtonControl, () -> {
             Ship playerControlledShip = playerInputController.getShip();
@@ -100,26 +103,41 @@ public class ShipHUD {
         buttonControl.atBottomRightCorner(-128 - hudShip.getWidth() / 2, -hudShip.getHeight() - 26);
 
         if (playerInputController.isControllingShip()) {
-            controlText.setString(Lang.getString("gui.cancelControl"));
+            controlText.setStringAndCompileAtOrigin(Lang.getString("gui.cancelControl"));
         } else {
-            controlText.setString(Lang.getString("gui.control"));
+            controlText.setStringAndCompileAtOrigin(Lang.getString("gui.control"));
         }
-        gui.registerGuiObject(
+        hud.registerGuiObject(
                 controlText.atBottomRightCorner(-hudShip.getWidth() / 2 - controlText.getWidth() / 2, -hudShip.getHeight() - 1));
-        gui.registerGuiObject(buttonControl);
-
-        shipCargo.setPosition(hudShipAdd0.getX() + 16, hudShipAdd0.getY() + 26);
-        shipCrew.setPosition(hudShipAdd0.getX() + 16, hudShipAdd0.getY() + 40);
+        hud.registerGuiObject(buttonControl);
     }
 
     public void update() {
         if (currentShip != null && currentShip.isDead()) {
             currentShip = null;
+            onCurrentShipDeselected();
         }
 
         if (otherShip != null && otherShip.isDead()) {
             otherShip = null;
         }
+    }
+
+    private void onCurrentShipDeselected() {
+        hud.unregisterGuiObject(shipCargo);
+        hud.unregisterGuiObject(shipCrew);
+    }
+
+    private void onCurrentShipSelected() {
+        Cargo cargo = currentShip.getModules().getCargo();
+        shipCargo.setStringAndCompileAtOrigin(Lang.getString(Lang.getString("gui.shipCargo") + ": " + cargo.getCapacity() + "/" +
+                cargo.getMaxCapacity()));
+        hud.registerGuiObject(shipCargo.atBottomRightCorner(-384, -46));
+
+        Crew crew = currentShip.getModules().getCrew();
+        shipCrew.setStringAndCompileAtOrigin(Lang.getString(Lang.getString("gui.shipCrew") + ": " + crew.getCrewSize() + "/" +
+                crew.getMaxCrewSize()));
+        hud.registerGuiObject(shipCrew.atBottomRightCorner(-384, -32));
     }
 
     private void renderShield(Shield shield, int x, int y) {
@@ -155,8 +173,8 @@ public class ShipHUD {
     }
 
     private void renderShieldValue(Shield shield, int x, int y) {
-        textShield.setString(String.valueOf(Math.round(shield.getShieldHp())));
         textShield.setPosition(x - textShield.getWidth() / 2, y + 74);
+        textShield.setStringAndCompile(String.valueOf(Math.round(shield.getShieldHp())));
         guiRenderer.addCentered(x, y + 70, textShield.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture);
         textShield.renderNoInterpolation();
     }
@@ -240,16 +258,6 @@ public class ShipHUD {
             }
         }
 
-        Cargo cargo = currentShip.getModules().getCargo();
-        shipCargo.setString(Lang.getString(Lang.getString("gui.shipCargo") + ": " + cargo.getCapacity() + "/" +
-                cargo.getMaxCapacity()));
-        shipCargo.renderNoInterpolation();
-
-        Crew crew = currentShip.getModules().getCrew();
-        shipCrew.setString(Lang.getString(Lang.getString("gui.shipCrew") + ": " + crew.getCrewSize() + "/" +
-                crew.getMaxCrewSize()));
-        shipCrew.renderNoInterpolation();
-
         renderWeaponSlots(currentShip, x, y, shipSize);
     }
 
@@ -269,7 +277,15 @@ public class ShipHUD {
     }
 
     public void selectShip(Ship ship) {
+        if (currentShip != null) {
+            onCurrentShipDeselected();
+        }
+
         currentShip = ship;
+
+        if (currentShip != null) {
+            onCurrentShipSelected();
+        }
     }
 
     public void selectShipSecondary(Ship ship) {
@@ -287,11 +303,11 @@ public class ShipHUD {
     }
 
     public void onShipControlStarted() {
-        controlText.setString(Lang.getString("gui.cancelControl"));
+        controlText.setStringAndCompileAtOrigin(Lang.getString("gui.cancelControl"));
     }
 
     private void onShipControlCanceled() {
-        controlText.setString(Lang.getString("gui.control"));
+        controlText.setStringAndCompileAtOrigin(Lang.getString("gui.control"));
     }
 
     public void render() {

@@ -41,7 +41,8 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
     private static final AbstractTexture ENGINE_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.moduleEngine);
     private static final AbstractTexture SHIELD_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.moduleShield);
 
-    private final StringObject stringObject = new StringObject(FontType.XOLONIUM, 14, StringOffsetType.CENTERED);
+    private final StringObject stringObject = new StringObject(FontType.XOLONIUM, 14, StringOffsetType.CENTERED).setShadow(true)
+            .setShadowOffsetX(2).setShadowOffsetY(2);
 
     private final List<WeaponSlotRender<? extends WeaponSlot>> weaponRenders = new ArrayList<>();
     private final AbstractTexture shieldTexture;
@@ -258,8 +259,8 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
         Vector2f position = object.getPosition();
         Vector2f size = object.getSize();
         float yOffset = 3.2f + size.y / 4.0f;
-        stringObject.renderWithShadow(BufferType.ENTITIES_ALPHA, lastPosition.x, lastPosition.y + yOffset, position.x,
-                position.y + yOffset, 0.1f, 0.1f, 0.1f, 0.1f);
+        stringObject.render(BufferType.ENTITIES_ALPHA, lastPosition.x, lastPosition.y + yOffset, position.x,
+                position.y + yOffset);
     }
 
     @Override
@@ -309,7 +310,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
     }
 
     public void createName() {
-        stringObject.setString(object.getName());
+        stringObject.setStringAndCompile(object.getName()).scale(0.1f, 0.1f);
     }
 
     public void onWeaponShot(WeaponSlot weaponSlot) {

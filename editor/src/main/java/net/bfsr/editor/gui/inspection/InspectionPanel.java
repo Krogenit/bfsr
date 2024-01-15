@@ -74,7 +74,8 @@ public class InspectionPanel<T extends PropertiesHolder> {
                         .setWidthResizeFunction((integer, integer2) -> getWidth())
                         .setHeightResizeFunction((integer, integer2) -> Engine.renderer.getScreenHeight()));
         gui.registerGuiObject(
-                new StringObject(fontType, name, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w).compile()
+                new StringObject(fontType, name, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z,
+                        TEXT_COLOR.w).compileAtOrigin()
                         .atTopLeftCorner(x,
                                 y + fontType.getStringCache().getCenteredYOffset(name, elementHeight, fontSize) + stringYOffset));
         gui.registerGuiObject(objectsContainer.atTopLeftCorner(x, elementHeight).setHeightResizeFunction(

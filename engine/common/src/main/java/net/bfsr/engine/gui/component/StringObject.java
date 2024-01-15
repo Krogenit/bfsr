@@ -11,6 +11,8 @@ import net.bfsr.engine.renderer.font.string.AbstractGLString;
 import net.bfsr.engine.renderer.font.string.AbstractStringGeometryBuilder;
 import net.bfsr.engine.renderer.font.string.AbstractStringRenderer;
 
+import java.nio.FloatBuffer;
+
 public class StringObject extends SimpleGuiObject {
     private final AbstractStringRenderer stringRenderer = renderer.stringRenderer;
     private final AbstractStringGeometryBuilder stringGeometryBuilder = renderer.stringGeometryBuilder;
@@ -22,7 +24,9 @@ public class StringObject extends SimpleGuiObject {
     private final StringCache stringCache;
     @Setter
     private StringOffsetType stringOffsetType;
-    protected final AbstractGLString glString = stringRenderer.createGLString();
+    private final AbstractGLString glString = stringRenderer.createGLString();
+    private boolean shadow;
+    private int shadowOffsetX, shadowOffsetY;
 
     public StringObject(FontType font) {
         this(font, 14);
@@ -87,10 +91,24 @@ public class StringObject extends SimpleGuiObject {
         this.glString.init(Math.max(string.length(), 8));
     }
 
-    public StringObject compile() {
+    public StringObject compileAtOrigin() {
         stringGeometryBuilder.createString(glString, stringCache, string, 0, 0, fontSize, color.x, color.y, color.z, color.w,
-                stringOffsetType);
+                stringOffsetType, shadow, shadowOffsetX, shadowOffsetY);
         return this;
+    }
+
+    public StringObject compile() {
+        stringGeometryBuilder.createString(glString, stringCache, string, x, y, fontSize, color.x, color.y, color.z, color.w,
+                stringOffsetType, shadow, shadowOffsetX, shadowOffsetY);
+        return this;
+    }
+
+    public void scale(float x, float y) {
+        FloatBuffer stringVertexBuffer = glString.getVertexBuffer();
+        for (int i = 0, vertexDataSize = stringVertexBuffer.remaining(); i < vertexDataSize; i += 4) {
+            stringVertexBuffer.put(i, stringVertexBuffer.get(i) * x);
+            stringVertexBuffer.put(i + 1, stringVertexBuffer.get(i + 1) * y);
+        }
     }
 
     @Override
@@ -98,34 +116,16 @@ public class StringObject extends SimpleGuiObject {
 
     @Override
     public void render() {
-        stringRenderer.addStringInterpolated(glString, lastX, lastY, x, y, BufferType.GUI);
+        stringRenderer.addString(glString, lastX, lastY, x, y, BufferType.GUI);
     }
 
     @Override
     public void renderNoInterpolation() {
-        stringRenderer.addString(glString, x, y, BufferType.GUI);
+        stringRenderer.addString(glString, BufferType.GUI);
     }
 
-    public void render(BufferType bufferType) {
-        stringRenderer.addString(glString, bufferType);
-    }
-
-    public void render(BufferType bufferType, float x, float y) {
-        stringRenderer.addString(glString, x, y, bufferType);
-    }
-
-    public void render(BufferType bufferType, float x, float y, float scaleX, float scaleY) {
-        stringRenderer.addString(glString, x, y, scaleX, scaleY, bufferType);
-    }
-
-    public void render(BufferType bufferType, float lastX, float lastY, float x, float y, float scaleX, float scaleY) {
-        stringRenderer.addString(glString, lastX, lastY, x, y, scaleX, scaleY, bufferType);
-    }
-
-    public void renderWithShadow(BufferType bufferType, float lastX, float lastY, float x, float y, float scaleX, float scaleY,
-                                 float shadowOffsetX, float shadowOffsetY) {
-        stringRenderer.addStringWithShadow(glString, lastX, lastY, x, y, scaleX, scaleY, shadowOffsetX,
-                shadowOffsetY, bufferType);
+    public void render(BufferType bufferType, float lastX, float lastY, float x, float y) {
+        stringRenderer.addString(glString, lastX, lastY, x, y, bufferType);
     }
 
     @Override
@@ -138,9 +138,19 @@ public class StringObject extends SimpleGuiObject {
         return stringCache.getCursorPositionInLine(string, mouseX, fontSize);
     }
 
-    public void setString(String string) {
+    public StringObject setString(String string) {
         this.string = string;
-        compile();
+        return this;
+    }
+
+    public StringObject setStringAndCompile(String string) {
+        this.string = string;
+        return compile();
+    }
+
+    public StringObject setStringAndCompileAtOrigin(String string) {
+        this.string = string;
+        return compileAtOrigin();
     }
 
     public StringObject setFontSize(int fontSize) {
@@ -158,6 +168,21 @@ public class StringObject extends SimpleGuiObject {
     @Override
     public StringObject setColor(float r, float g, float b, float a) {
         color.set(r, g, b, a);
+        return this;
+    }
+
+    public StringObject setShadow(boolean shadow) {
+        this.shadow = shadow;
+        return this;
+    }
+
+    public StringObject setShadowOffsetX(int shadowOffsetX) {
+        this.shadowOffsetX = shadowOffsetX;
+        return this;
+    }
+
+    public StringObject setShadowOffsetY(int shadowOffsetY) {
+        this.shadowOffsetY = shadowOffsetY;
         return this;
     }
 
