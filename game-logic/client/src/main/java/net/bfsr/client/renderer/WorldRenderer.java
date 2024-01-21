@@ -6,6 +6,8 @@ import net.bfsr.client.Core;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.event.EventHandler;
+import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
@@ -15,13 +17,10 @@ import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.AbstractTextureLoader;
 import net.bfsr.engine.renderer.texture.TextureRegister;
-import net.engio.mbassy.listener.Handler;
-import net.engio.mbassy.listener.Listener;
 
 import java.util.Random;
 
 @RequiredArgsConstructor
-@Listener
 public class WorldRenderer {
     private final AbstractRenderer renderer = Engine.renderer;
     private final AbstractCamera camera = renderer.camera;
@@ -44,7 +43,7 @@ public class WorldRenderer {
 
         particleRenderer.init();
 
-        Core.get().subscribe(this);
+        Core.get().getEventBus().register(this);
     }
 
     public void update() {
@@ -87,10 +86,12 @@ public class WorldRenderer {
         backgroundTexture = Engine.renderer.textureGenerator.generateNebulaTexture(2560 << 1, 2560 << 1, new Random(seed));
     }
 
-    @Handler
-    public void event(ExitToMainMenuEvent event) {
-        particleRenderer.clear();
-        backgroundTexture.delete();
-        backgroundTexture = AbstractTextureLoader.dummyTexture;
+    @EventHandler
+    public EventListener<ExitToMainMenuEvent> exitToMainMenuEvent() {
+        return event -> {
+            particleRenderer.clear();
+            backgroundTexture.delete();
+            backgroundTexture = AbstractTextureLoader.dummyTexture;
+        };
     }
 }

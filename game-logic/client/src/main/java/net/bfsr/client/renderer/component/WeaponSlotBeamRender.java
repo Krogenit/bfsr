@@ -4,11 +4,20 @@ import lombok.Getter;
 import net.bfsr.client.particle.Beam;
 import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.particle.effect.BeamEffects;
+import net.bfsr.client.particle.effect.GarbageSpawner;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.event.EventHandler;
+import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
+import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
+import net.bfsr.entity.wreck.Wreck;
+import net.bfsr.event.module.weapon.beam.BeamDamageShipArmorEvent;
+import net.bfsr.event.module.weapon.beam.BeamDamageShipHullEvent;
+import net.bfsr.event.module.weapon.beam.BeamDamageShipShieldEvent;
+import net.bfsr.event.module.weapon.beam.BeamDamageWreckEvent;
 import net.bfsr.math.RotationHelper;
 import org.dyn4j.collision.narrowphase.Raycast;
 import org.joml.Vector2f;
@@ -24,11 +33,12 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
     private final Vector4f effectsColor = new Vector4f();
     private final Vector2f angleToVelocity = new Vector2f();
 
-    public WeaponSlotBeamRender(WeaponSlotBeam object) {
+    WeaponSlotBeamRender(WeaponSlotBeam object) {
         super(object);
         this.effectsColor.set(object.getGunData().getColor());
         this.effectsColor.w = 0.0f;
         this.beam = new Beam(object, effectsColor);
+        object.getWeaponSlotEventBus().register(this);
     }
 
     @Override
@@ -118,9 +128,53 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
         beam.init();
         weaponSpawnAccumulator.resetTime();
         damageSpawnAccumulator.resetTime();
+        Vector2f position = object.getPosition();
+        playSounds(object.getGunData(), object.getShip().getWorld().getRand(), position.x, position.y);
     }
 
-    public void onDamage(Raycast raycast, float hitX, float hitY) {
+    private void onDamage(Raycast raycast, float hitX, float hitY) {
         BeamEffects.beamDamage(raycast, hitX, hitY, object.getSize().x, effectsColor, damageSpawnAccumulator);
+    }
+
+    @EventHandler
+    public EventListener<BeamDamageShipShieldEvent> beamDamageShipShieldEvent() {
+        return event -> onDamage(event.getRaycast(), event.getHitX(), event.getHitY());
+    }
+
+    @EventHandler
+    public EventListener<BeamDamageShipArmorEvent> beamDamageShipArmorEvent() {
+        return event -> {
+            Ship ship = event.getShip();
+            onDamage(event.getRaycast(), event.getHitX(), event.getHitY());
+
+            GarbageSpawner.beamArmorDamage(event.getHitX(), event.getHitY(), ship.getVelocity().x * 0.005f,
+                    ship.getVelocity().y * 0.005f);
+        };
+    }
+
+    @EventHandler
+    public EventListener<BeamDamageShipHullEvent> beamDamageShipHullEvent() {
+        return event -> {
+            Ship ship = event.getShip();
+            onDamage(event.getRaycast(), event.getHitX(), event.getHitY());
+
+            GarbageSpawner.beamHullDamage(event.getHitX(), event.getHitY(), ship.getVelocity().x * 0.005f,
+                    ship.getVelocity().y * 0.005f);
+        };
+    }
+
+    @EventHandler
+    public EventListener<BeamDamageWreckEvent> beamDamageWreckEvent() {
+        return event -> {
+            Wreck wreck = event.wreck();
+            onDamage(event.raycast(), event.hitX(), event.hitY());
+            GarbageSpawner.beamHullDamage(event.hitX(), event.hitY(), wreck.getVelocity().x * 0.005f,
+                    wreck.getVelocity().y * 0.005f);
+        };
+    }
+
+    @Override
+    public void clear() {
+        object.getWeaponSlotEventBus().unregister(this);
     }
 }

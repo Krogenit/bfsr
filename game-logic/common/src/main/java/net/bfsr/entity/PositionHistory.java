@@ -3,7 +3,7 @@ package net.bfsr.entity;
 import net.bfsr.engine.util.ObjectPool;
 import org.joml.Vector2f;
 
-public final class PositionHistory extends ChronologicalEntityDataManager<TransformData> {
+public final class PositionHistory extends EntityDataHistory<TransformData> {
     private final ObjectPool<TransformData> cache = new ObjectPool<>(TransformData::new);
     private final TransformData cachedTransformData = new TransformData();
 

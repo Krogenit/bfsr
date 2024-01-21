@@ -2,31 +2,34 @@ package net.bfsr.client.renderer;
 
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.client.Core;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
+import net.bfsr.client.renderer.component.WeaponRenderRegistry;
 import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.event.EventHandler;
+import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.entity.RigidBody;
-import net.engio.mbassy.listener.Handler;
-import net.engio.mbassy.listener.Listener;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
-@Listener
 public class RenderManager {
     private final AbstractCamera camera = Engine.renderer.camera;
 
     private final RenderRegistry renderRegistry = new RenderRegistry();
+    @Getter
+    private final WeaponRenderRegistry weaponRenderRegistry = new WeaponRenderRegistry();
 
     private final List<Render<?>> renderList = new ArrayList<>();
     private final TIntObjectMap<Render<?>> renders = new TIntObjectHashMap<>();
 
     public void init() {
-        Core.get().subscribe(this);
+        Core.get().getEventBus().register(this);
     }
 
     public void update() {
@@ -93,9 +96,9 @@ public class RenderManager {
         renderList.remove(renders.remove(id));
     }
 
-    @Handler
-    public void event(ExitToMainMenuEvent event) {
-        clear();
+    @EventHandler
+    public EventListener<ExitToMainMenuEvent> exitToMainMenuEvent() {
+        return event -> clear();
     }
 
     public void clear() {

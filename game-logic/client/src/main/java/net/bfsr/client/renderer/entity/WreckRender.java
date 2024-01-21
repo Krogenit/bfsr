@@ -3,12 +3,16 @@ package net.bfsr.client.renderer.entity;
 import lombok.Getter;
 import net.bfsr.client.Core;
 import net.bfsr.client.particle.SpawnAccumulator;
+import net.bfsr.client.particle.effect.ExplosionEffects;
 import net.bfsr.client.particle.effect.FireEffects;
 import net.bfsr.config.entity.wreck.WreckData;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.event.EventHandler;
+import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.entity.wreck.Wreck;
+import net.bfsr.event.entity.wreck.WreckDeathEvent;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -52,6 +56,8 @@ public class WreckRender extends RigidBodyRender<Wreck> {
         this.lifeTimeVelocity = object.getLifeTimeVelocity();
         this.fire = object.isFire();
         this.light = object.isLight();
+
+        object.getWreckEventBus().register(this);
     }
 
     @Override
@@ -68,7 +74,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
         updateSparkle();
     }
 
-    protected void updateLifeTime() {
+    private void updateLifeTime() {
         if (color.w < 0.2f) {
             color.w -= lifeTimeVelocity * 2.0f;
             if (color.w <= 0.0f) {
@@ -80,14 +86,14 @@ public class WreckRender extends RigidBodyRender<Wreck> {
         }
     }
 
-    protected void emitFire() {
+    private void emitFire() {
         if (color.w > 0.6f) {
             Vector2f position = object.getPosition();
             FireEffects.emitFire(position.x, position.y, spawnAccumulator);
         }
     }
 
-    protected void updateFireAndExplosion() {
+    private void updateFireAndExplosion() {
         if (object.isEmitFire()) {
             emitFire();
         }
@@ -95,7 +101,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
         updateFire();
     }
 
-    protected void updateFire() {
+    private void updateFire() {
         if (fire) {
             if (fireFadingOut) {
                 if (colorFire.w > 0.4f) {
@@ -128,7 +134,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
         }
     }
 
-    protected void updateSparkle() {
+    private void updateSparkle() {
         if (light) {
             sparkleActivationTimerInTicks -= 1;
             if (sparkleActivationTimerInTicks <= 0.0f) {
@@ -161,7 +167,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
         updateSparkleFading();
     }
 
-    protected void updateSparkleFading() {
+    private void updateSparkleFading() {
         if (color.w < 0.3f) {
             if (colorLight.w > 0.0f) {
                 light = false;
@@ -199,5 +205,21 @@ public class WreckRender extends RigidBodyRender<Wreck> {
                     object.getSin(), object.getCos(), size.x, size.y, lastColorLight, colorLight, textureLight,
                     BufferType.ENTITIES_ADDITIVE);
         }
+    }
+
+    @EventHandler
+    public EventListener<WreckDeathEvent> wreckDeathEventEvent() {
+        return event -> {
+            Wreck wreck = event.wreck();
+            if (color.w > 0.01f) {
+                Vector2f pos = wreck.getPosition();
+                ExplosionEffects.spawnSmallExplosion(pos.x, pos.y, wreck.getSize().x);
+            }
+        };
+    }
+
+    @Override
+    public void clear() {
+        object.getWreckEventBus().unregister(this);
     }
 }

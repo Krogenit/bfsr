@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.shield.ShieldData;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.event.Event;
+import net.bfsr.engine.event.EventBusManager;
 import net.bfsr.engine.util.SideUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
@@ -15,7 +15,6 @@ import net.bfsr.event.module.shield.ShieldRemoveEvent;
 import net.bfsr.event.module.shield.ShieldResetRebuildingTimeEvent;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.physics.filter.ShipFilter;
-import net.engio.mbassy.bus.MBassador;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Convex;
@@ -37,7 +36,7 @@ public class Shield extends DamageableModule {
     private boolean alive;
     @Getter
     private final ShieldData shieldData;
-    private MBassador<Event> eventBus;
+    private EventBusManager eventBus;
     private BodyFixture shieldFixture;
     @Getter
     @Setter

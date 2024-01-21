@@ -1,5 +1,7 @@
 package net.bfsr.server.event.listener.module.shield;
 
+import net.bfsr.engine.event.EventHandler;
+import net.bfsr.engine.event.EventListener;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.module.shield.ShieldRebuildEvent;
 import net.bfsr.event.module.shield.ShieldRemoveEvent;
@@ -10,32 +12,35 @@ import net.bfsr.network.packet.server.component.PacketShieldRemove;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.util.TrackingUtils;
-import net.engio.mbassy.listener.Handler;
-import net.engio.mbassy.listener.Listener;
-import net.engio.mbassy.listener.References;
 
-@Listener(references = References.Strong)
 public class ShieldEventListener {
     private final NetworkSystem networkSystem = ServerGameLogic.getNetwork();
 
-    @Handler
-    public void event(ShieldRebuildEvent event) {
-        Ship ship = event.shield().getShip();
-        networkSystem.sendUDPPacketToAllNearby(new PacketShieldRebuild(ship.getId(), ship.getWorld().getTimestamp()),
-                ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
+    @EventHandler
+    public EventListener<ShieldRebuildEvent> shieldRebuildEvent() {
+        return event -> {
+            Ship ship = event.shield().getShip();
+            networkSystem.sendUDPPacketToAllNearby(new PacketShieldRebuild(ship.getId(), ship.getWorld().getTimestamp()),
+                    ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
+        };
     }
 
-    @Handler
-    public void event(ShieldResetRebuildingTimeEvent event) {
-        Ship ship = event.shield().getShip();
-        networkSystem.sendUDPPacketToAllNearby(new PacketShieldRebuildingTime(ship.getId(), 0, ship.getWorld().getTimestamp()),
-                ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
+    @EventHandler
+    public EventListener<ShieldResetRebuildingTimeEvent> shieldResetRebuildingTimeEvent() {
+        return event -> {
+            Ship ship = event.shield().getShip();
+            networkSystem.sendUDPPacketToAllNearby(
+                    new PacketShieldRebuildingTime(ship.getId(), 0, ship.getWorld().getTimestamp()),
+                    ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
+        };
     }
 
-    @Handler
-    public void event(ShieldRemoveEvent event) {
-        Ship ship = event.shield().getShip();
-        networkSystem.sendUDPPacketToAllNearby(new PacketShieldRemove(ship.getId(), ship.getWorld().getTimestamp()),
-                ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
+    @EventHandler
+    public EventListener<ShieldRemoveEvent> shieldRemoveEvent() {
+        return event -> {
+            Ship ship = event.shield().getShip();
+            networkSystem.sendUDPPacketToAllNearby(new PacketShieldRemove(ship.getId(), ship.getWorld().getTimestamp()),
+                    ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
+        };
     }
 }

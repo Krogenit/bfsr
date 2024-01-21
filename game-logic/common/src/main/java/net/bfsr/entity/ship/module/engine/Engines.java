@@ -3,6 +3,7 @@ package net.bfsr.entity.ship.module.engine;
 import lombok.Getter;
 import net.bfsr.config.component.engine.EnginesData;
 import net.bfsr.config.entity.ship.EngineData;
+import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.Module;
@@ -58,6 +59,9 @@ public class Engines extends DamageableModule {
             engines.get(i).init(ship, i);
         }
     }
+
+    @Override
+    protected void createFixture(RigidBody<?> rigidBody) {}
 
     @Override
     public void addToList(List<Module> modules) {

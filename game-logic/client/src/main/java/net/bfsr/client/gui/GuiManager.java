@@ -7,15 +7,14 @@ import net.bfsr.client.event.gui.*;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.gui.hud.HUDAdapter;
 import net.bfsr.client.gui.hud.NoHUD;
-import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.event.EventBusManager;
+import net.bfsr.engine.event.EventHandler;
+import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.gui.Gui;
-import net.engio.mbassy.listener.Handler;
-import net.engio.mbassy.listener.Listener;
 import org.jetbrains.annotations.NotNull;
 
-@Listener
 public class GuiManager {
-    private EventBus eventBus;
+    private EventBusManager eventBus;
     @Getter
     private Gui gui;
     @Getter
@@ -23,18 +22,17 @@ public class GuiManager {
 
     public void init() {
         eventBus = Core.get().getEventBus();
-        eventBus.subscribe(this);
+        eventBus.register(this);
     }
 
-    @Handler
-    public void event(PlayerJoinGameEvent event) {
-        showHUD(new HUD());
+    @EventHandler
+    public EventListener<PlayerJoinGameEvent> playerJoinGameEvent() {
+        return event -> showHUD(new HUD());
     }
 
-    @Handler
-    public void event(ExitToMainMenuEvent event) {
-        eventBus.publish(new CloseHUDEvent(hud));
-        hud = NoHUD.get();
+    @EventHandler
+    public EventListener<ExitToMainMenuEvent> exitToMainMenuEvent() {
+        return event -> showHUD(NoHUD.get());
     }
 
     public void update() {
@@ -56,14 +54,14 @@ public class GuiManager {
     }
 
     public void showHUD(HUDAdapter hud) {
-        if (this.hud != null) {
+        if (this.hud != NoHUD.get()) {
             eventBus.publish(new CloseHUDEvent(this.hud));
             this.hud.clear();
         }
 
         this.hud = hud;
 
-        if (hud != null) {
+        if (hud != NoHUD.get()) {
             hud.init();
             eventBus.publish(new ShowHUDEvent(hud));
         }

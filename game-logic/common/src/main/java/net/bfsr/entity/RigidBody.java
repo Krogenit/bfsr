@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.bfsr.config.GameObjectConfigData;
-import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.event.EventBusManager;
 import net.bfsr.engine.util.SideUtils;
 import net.bfsr.event.entity.RigidBodyAddToWorldEvent;
 import net.bfsr.event.entity.RigidBodyDeathEvent;
@@ -40,7 +40,7 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
     @Getter
     protected float sin, cos;
     private final Transform savedTransform = new Transform();
-    protected EventBus eventBus;
+    protected EventBusManager eventBus;
     @Setter
     @Getter
     protected CONFIG_DATA configData;
@@ -52,8 +52,10 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
 
     @Getter
     protected final PositionHistory positionHistory = new PositionHistory(HISTORY_DURATION_MILLIS);
-    private final ChronologicalEntityDataManager<PacketWorldSnapshot.EntityData> chronologicalEntityDataManager = new ChronologicalEntityDataManager<>(
+    private final EntityDataHistory<PacketWorldSnapshot.EntityData> entityDataHistory = new EntityDataHistory<>(
             HISTORY_DURATION_MILLIS);
+
+    protected final RigidBodyPostPhysicsUpdateEvent postPhysicsUpdateEvent = new RigidBodyPostPhysicsUpdateEvent(this);
 
     public RigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, CONFIG_DATA configData, int registryId) {
         super(x, y, sizeX, sizeY);
@@ -81,6 +83,7 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
         this.world = world;
         this.id = id;
         this.eventBus = world.getEventBus();
+        this.eventBus.optimizeEvent(postPhysicsUpdateEvent);
         initBody();
     }
 
@@ -122,7 +125,7 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
         velocity.x = (float) vel.x;
         velocity.y = (float) vel.y;
 
-        eventBus.publish(new RigidBodyPostPhysicsUpdateEvent(this));
+        eventBus.publishOptimized(postPhysicsUpdateEvent);
     }
 
     public void onAddedToWorld() {
@@ -202,7 +205,7 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
 
     public void addData(PacketWorldSnapshot.EntityData entityData, double timestamp) {
         positionHistory.addPositionData(entityData.getPosition(), entityData.getSin(), entityData.getCos(), timestamp);
-        chronologicalEntityDataManager.addData(entityData);
+        entityDataHistory.addData(entityData);
         onDataAdded();
     }
 
@@ -211,20 +214,20 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
     }
 
     public void calcPosition(double timestamp) {
-        TransformData epd = positionHistory.get(timestamp);
-        if (epd != null) {
-            Vector2f epdPosition = epd.getPosition();
+        TransformData transformData = positionHistory.get(timestamp);
+        if (transformData != null) {
+            Vector2f epdPosition = transformData.getPosition();
             setPosition(epdPosition.x, epdPosition.y);
-            setRotation(epd.getSin(), epd.getCos());
+            setRotation(transformData.getSin(), transformData.getCos());
         }
     }
 
     public void processChronologicalData(double timestamp) {
-        PacketWorldSnapshot.EntityData epd = chronologicalEntityDataManager.get(timestamp);
-        if (epd != null) {
-            Vector2f velocity = epd.getVelocity();
+        PacketWorldSnapshot.EntityData entityData = entityDataHistory.get(timestamp);
+        if (entityData != null) {
+            Vector2f velocity = entityData.getVelocity();
             setVelocity(velocity.x, velocity.y);
-            setAngularVelocity(epd.getAngularVelocity());
+            setAngularVelocity(entityData.getAngularVelocity());
         }
     }
 }

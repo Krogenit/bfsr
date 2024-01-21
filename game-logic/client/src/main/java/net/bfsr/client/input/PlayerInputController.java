@@ -6,6 +6,9 @@ import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.gui.hud.HUDAdapter;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.event.EventBusManager;
+import net.bfsr.engine.event.EventHandler;
+import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.PositionHistory;
@@ -17,8 +20,6 @@ import net.bfsr.event.module.weapon.WeaponShotEvent;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.network.packet.input.*;
-import net.engio.mbassy.listener.Handler;
-import net.engio.mbassy.listener.Listener;
 import org.dyn4j.dynamics.Body;
 import org.joml.Vector2f;
 
@@ -26,7 +27,6 @@ import java.util.List;
 
 import static net.bfsr.engine.input.Keys.*;
 
-@Listener
 public class PlayerInputController extends InputController {
     @Getter
     private Ship ship;
@@ -37,12 +37,14 @@ public class PlayerInputController extends InputController {
     private boolean mouseLeftDown;
     private final PositionHistory positionHistory = new PositionHistory(RigidBody.HISTORY_DURATION_MILLIS);
     private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
+    private EventBusManager eventBus;
 
     @Override
     public void init() {
         core = Core.get();
         guiManager = core.getGuiManager();
-        core.subscribe(this);
+        eventBus = core.getEventBus();
+        eventBus.register(this);
     }
 
     @Override
@@ -136,8 +138,9 @@ public class PlayerInputController extends InputController {
 
         if (mouseLeftDown) {
             ship.shoot(weaponSlot -> {
-                weaponSlot.createBullet(0, (bullet) -> core.getRenderManager().createRender(bullet));
-                core.getWorld().getEventBus().publish(new WeaponShotEvent(weaponSlot));
+                WeaponShotEvent event = new WeaponShotEvent(weaponSlot);
+                eventBus.publish(event);
+                weaponSlot.getWeaponSlotEventBus().publish(event);
             });
         }
     }
@@ -216,11 +219,11 @@ public class PlayerInputController extends InputController {
 
         if (ship != null) {
             ship.setPositionCalculator(timestamp -> {
-                PositionHistory historicalPositionData = ship.getPositionHistory();
-                TransformData serverTransformData = historicalPositionData.get(timestamp);
+                PositionHistory historicalPositionHistoryData = ship.getPositionHistory();
+                TransformData serverTransformData = historicalPositionHistoryData.get(timestamp);
 
                 if (serverTransformData == null) {
-                    serverTransformData = historicalPositionData.getMostRecent();
+                    serverTransformData = historicalPositionHistoryData.getMostRecent();
                     if (serverTransformData == null) return;
                 }
 
@@ -245,8 +248,8 @@ public class PlayerInputController extends InputController {
         return ship != null;
     }
 
-    @Handler
-    public void event(ExitToMainMenuEvent event) {
-        ship = null;
+    @EventHandler
+    public EventListener<ExitToMainMenuEvent> exitToMainMenuEvent() {
+        return event -> ship = null;
     }
 }

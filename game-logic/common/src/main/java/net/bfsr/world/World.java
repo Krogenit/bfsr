@@ -6,7 +6,7 @@ import gnu.trove.map.hash.THashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.Getter;
 import net.bfsr.engine.GameLogic;
-import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.event.EventBusManager;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.util.Side;
 import net.bfsr.entity.EntityIdManager;
@@ -44,14 +44,14 @@ public class World {
     @Getter
     private final List<RigidBody<?>> entities = new ArrayList<>();
     @Getter
-    private final EventBus eventBus;
+    private final EventBusManager eventBus;
     @Getter
     private double timestamp;
     private final EntityIdManager entityIdManager;
     @Getter
     private final GameLogic gameLogic;
 
-    public World(Profiler profiler, Side side, long seed, EventBus eventBus, EntityIdManager entityIdManager,
+    public World(Profiler profiler, Side side, long seed, EventBusManager eventBus, EntityIdManager entityIdManager,
                  GameLogic gameLogic) {
         this.profiler = profiler;
         this.side = side;

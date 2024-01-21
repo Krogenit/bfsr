@@ -12,9 +12,7 @@ import net.bfsr.client.input.InputHandler;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.listener.entity.BulletEventListener;
 import net.bfsr.client.listener.entity.ShipEventListener;
-import net.bfsr.client.listener.entity.WreckEventListener;
 import net.bfsr.client.listener.module.shield.ShieldEventListener;
-import net.bfsr.client.listener.module.weapon.BeamEventListener;
 import net.bfsr.client.listener.module.weapon.WeaponEventListener;
 import net.bfsr.client.listener.world.WorldEventListener;
 import net.bfsr.client.network.NetworkSystem;
@@ -67,7 +65,7 @@ public class Core extends ClientGameLogic {
     private double clientToServerDiffTime;
     @Getter
     private double renderTime, serverTime;
-    private final double clientRenderDelayMillis = 100.0 * 1_000_000;
+    private final double clientRenderDelayMillis = Engine.getClientRenderDelayInMills() * 1_000_000;
 
     public Core() {
         instance = this;
@@ -94,13 +92,11 @@ public class Core extends ClientGameLogic {
     }
 
     private void registerListeners() {
-        eventBus.subscribe(new ShipEventListener());
-        eventBus.subscribe(new ShieldEventListener());
-        eventBus.subscribe(new WeaponEventListener());
-        eventBus.subscribe(new WreckEventListener());
-        eventBus.subscribe(new BeamEventListener());
-        eventBus.subscribe(new WorldEventListener());
-        eventBus.subscribe(new BulletEventListener());
+        eventBus.register(new ShipEventListener());
+        eventBus.register(new ShieldEventListener());
+        eventBus.register(new WeaponEventListener());
+        eventBus.register(new WorldEventListener());
+        eventBus.register(new BulletEventListener());
     }
 
     @Override
@@ -224,7 +220,7 @@ public class Core extends ClientGameLogic {
     }
 
     public void createWorld(long seed) {
-        this.world = new World(profiler, Side.CLIENT, seed, eventBus, new ClientEntityIdManager(), this);
+        world = new World(profiler, Side.CLIENT, seed, eventBus, new ClientEntityIdManager(), this);
         globalRenderer.createBackgroundTexture(seed);
     }
 
@@ -261,8 +257,8 @@ public class Core extends ClientGameLogic {
 
     @Override
     public boolean isVSync() {
-        return ClientSettings.V_SYNC.getBoolean() &&
-                ClientSettings.MAX_FPS.getMaxValue() - ClientSettings.MAX_FPS.getInteger() <= 0;
+        return ClientSettings.V_SYNC.getBoolean() && ClientSettings.MAX_FPS.getMaxValue() - ClientSettings.MAX_FPS.getInteger()
+                <= 0;
     }
 
     @Override

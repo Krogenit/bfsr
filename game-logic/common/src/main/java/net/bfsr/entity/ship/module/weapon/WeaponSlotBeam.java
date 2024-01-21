@@ -12,7 +12,6 @@ import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.wreck.Wreck;
-import net.bfsr.event.module.weapon.BeamShotEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageShipArmorEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageShipHullEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageShipShieldEvent;
@@ -98,10 +97,8 @@ public class WeaponSlotBeam extends WeaponSlot {
 
     @Override
     public void shoot(Consumer<WeaponSlot> onShotEvent, Reactor reactor) {
-        reloadTimer = timeToReload;
+        super.shoot(onShotEvent, reactor);
         aliveTimerInTicks = maxAliveTimerInTicks;
-        reactor.consume(energyCost);
-        eventBus.publish(new BeamShotEvent(this));
     }
 
     private void rayCast() {
@@ -148,15 +145,15 @@ public class WeaponSlotBeam extends WeaponSlot {
             ship.damage(damage, this.ship, collisionPoint.x, collisionPoint.y,
                     ship.getFaction() == this.ship.getFaction() ? beamPower / 2.0f * Engine.getUpdateDeltaTime() :
                             beamPower * Engine.getUpdateDeltaTime(), result.getFixture(),
-                    () -> eventBus.publish(new BeamDamageShipShieldEvent(this, ship, raycast, hitX, hitY)),
-                    () -> eventBus.publish(new BeamDamageShipArmorEvent(this, ship, raycast, hitX, hitY)),
-                    () -> eventBus.publish(new BeamDamageShipHullEvent(this, ship, raycast, hitX, hitY)));
+                    () -> weaponSlotEventBus.publish(new BeamDamageShipShieldEvent(this, ship, raycast, hitX, hitY)),
+                    () -> weaponSlotEventBus.publish(new BeamDamageShipArmorEvent(this, ship, raycast, hitX, hitY)),
+                    () -> weaponSlotEventBus.publish(new BeamDamageShipHullEvent(this, ship, raycast, hitX, hitY)));
         } else if (userData instanceof Wreck wreck) {
             if (SideUtils.IS_SERVER && world.isServer()) {
                 wreck.damage(damage.getHull() * beamPower * Engine.getUpdateDeltaTime(), collisionPoint.x, collisionPoint.y,
                         (float) normal.x, (float) normal.y);
             }
-            eventBus.publish(new BeamDamageWreckEvent(this, wreck, raycast, hitX, hitY));
+            weaponSlotEventBus.publish(new BeamDamageWreckEvent(this, wreck, raycast, hitX, hitY));
         }
     }
 

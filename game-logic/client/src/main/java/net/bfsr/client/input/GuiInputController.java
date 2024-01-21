@@ -5,40 +5,39 @@ import net.bfsr.client.event.gui.CloseGuiEvent;
 import net.bfsr.client.event.gui.CloseHUDEvent;
 import net.bfsr.client.event.gui.OpenGuiEvent;
 import net.bfsr.client.event.gui.ShowHUDEvent;
+import net.bfsr.engine.event.EventHandler;
+import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.gui.Gui;
-import net.engio.mbassy.listener.Handler;
-import net.engio.mbassy.listener.Listener;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-@Listener
 public class GuiInputController extends InputController {
     private final Deque<Gui> guiStack = new ArrayDeque<>();
 
     @Override
     public void init() {
-        Core.get().subscribe(this);
+        Core.get().getEventBus().register(this);
     }
 
-    @Handler
-    public void event(OpenGuiEvent event) {
-        guiStack.add(event.gui());
+    @EventHandler
+    public EventListener<OpenGuiEvent> openGuiEvent() {
+        return event -> guiStack.add(event.gui());
     }
 
-    @Handler
-    public void event(CloseGuiEvent event) {
-        guiStack.remove(event.gui());
+    @EventHandler
+    public EventListener<CloseGuiEvent> closeGuiEvent() {
+        return event -> guiStack.remove(event.gui());
     }
 
-    @Handler
-    public void event(ShowHUDEvent event) {
-        guiStack.add(event.hud());
+    @EventHandler
+    public EventListener<ShowHUDEvent> showHUDEvent() {
+        return event -> guiStack.add(event.hud());
     }
 
-    @Handler
-    public void event(CloseHUDEvent event) {
-        guiStack.remove(event.hud());
+    @EventHandler
+    public EventListener<CloseHUDEvent> closeHUDEvent() {
+        return event -> guiStack.remove(event.hud());
     }
 
     @Override

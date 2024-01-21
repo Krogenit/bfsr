@@ -3,6 +3,7 @@ package net.bfsr.entity.wreck;
 import lombok.Getter;
 import net.bfsr.config.entity.wreck.WreckData;
 import net.bfsr.config.entity.wreck.WreckRegistry;
+import net.bfsr.engine.event.EventBusManager;
 import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.event.entity.wreck.WreckDeathEvent;
@@ -43,14 +44,14 @@ public class Wreck extends RigidBody<WreckData> {
 
     @Getter
     private WreckType wreckType;
+    private float angularVelocity;
+    @Getter
+    private final EventBusManager wreckEventBus = new EventBusManager();
 
     public Wreck init(World world, int id, float x, float y, float velocityX, float velocityY, float sin, float cos,
-                      float angularVelocity, float scaleX, float scaleY,
-                      float lifeTimeVelocity, int wreckIndex, boolean fire, boolean light, boolean emitFire, float hull,
-                      int destroyedShipId, WreckType wreckType,
+                      float angularVelocity, float scaleX, float scaleY, float lifeTimeVelocity, int wreckIndex, boolean fire,
+                      boolean light, boolean emitFire, float hull, int destroyedShipId, WreckType wreckType,
                       WreckData wreckData) {
-        this.world = world;
-        this.id = id;
         this.position.set(x, y);
         this.velocity.set(velocityX, velocityY);
         this.sin = sin;
@@ -68,27 +69,21 @@ public class Wreck extends RigidBody<WreckData> {
         this.wreckType = wreckType;
         this.configData = wreckData;
         this.isDead = false;
-        this.eventBus = world.getEventBus();
-        createFixtures(angularVelocity);
+        this.angularVelocity = angularVelocity;
+        init(world, id);
         return this;
     }
 
     public Wreck init(World world, int id, int wreckIndex, boolean light, boolean fire, boolean emitFire, float x, float y,
-                      float velocityX, float velocityY,
-                      float sin, float cos, float angularVelocity, float scaleX, float scaleY, float lifeTimeVelocity,
-                      WreckType wreckType) {
+                      float velocityX, float velocityY, float sin, float cos, float angularVelocity, float scaleX, float scaleY,
+                      float lifeTimeVelocity, WreckType wreckType) {
         WreckData wreck = WreckRegistry.INSTANCE.getWreck(wreckType, wreckIndex);
         return init(world, id, x, y, velocityX, velocityY, sin, cos, angularVelocity, scaleX, scaleY, lifeTimeVelocity,
-                wreckIndex, fire, light, emitFire, 10,
-                0, wreckType, wreck);
+                wreckIndex, fire, light, emitFire, 10, 0, wreckType, wreck);
     }
 
     @Override
     protected void initBody() {
-        createFixtures(0.0f);
-    }
-
-    private void createFixtures(float angularVelocity) {
         while (body.getFixtures().size() > 0) body.removeFixture(0);
         createFixture();
         body.setOwner(null);

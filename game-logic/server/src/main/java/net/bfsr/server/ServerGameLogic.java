@@ -70,14 +70,14 @@ public class ServerGameLogic extends GameLogic {
     }
 
     private void initListeners() {
-        eventBus.subscribe(new ShieldEventListener());
-        eventBus.subscribe(new ShipEventListener());
-        eventBus.subscribe(new WeaponEventListener());
-        eventBus.subscribe(new BulletEventListener());
-        eventBus.subscribe(new WreckEventListener());
-        eventBus.subscribe(new DamageEventListener());
-        eventBus.subscribe(new WorldEventListener());
-        eventBus.subscribe(new ModuleEventListener());
+        eventBus.register(new ShieldEventListener());
+        eventBus.register(new ShipEventListener());
+        eventBus.register(new WeaponEventListener());
+        eventBus.register(new BulletEventListener());
+        eventBus.register(new WreckEventListener());
+        eventBus.register(new DamageEventListener());
+        eventBus.register(new WorldEventListener());
+        eventBus.register(new ModuleEventListener());
     }
 
     protected void loadConfigs() {

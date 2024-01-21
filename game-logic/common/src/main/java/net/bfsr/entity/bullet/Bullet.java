@@ -11,7 +11,6 @@ import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
-import net.bfsr.event.entity.RigidBodyPostPhysicsUpdateEvent;
 import net.bfsr.event.entity.bullet.BulletDamageShipArmorEvent;
 import net.bfsr.event.entity.bullet.BulletDamageShipHullEvent;
 import net.bfsr.event.entity.bullet.BulletDamageShipShieldEvent;
@@ -70,7 +69,7 @@ public class Bullet extends RigidBody<GunData> {
         position.x = (float) body.getTransform().getTranslationX();
         position.y = (float) body.getTransform().getTranslationY();
 
-        eventBus.publish(new RigidBodyPostPhysicsUpdateEvent(this));
+        eventBus.publish(postPhysicsUpdateEvent);
     }
 
     @Setter
@@ -96,18 +95,19 @@ public class Bullet extends RigidBody<GunData> {
                                 //Shield
                                 damage(this);
                                 reflect(normalX, normalY);
-                                eventBus.publish(
-                                        new BulletDamageShipShieldEvent(this, ship, contactX, contactY, normalX, normalY));
+                                eventBus.publish(new BulletDamageShipShieldEvent(this, ship, contactX, contactY, normalX,
+                                        normalY));
                             }, () -> {
                                 //Armor
                                 setDead();
-                                eventBus.publish(
-                                        new BulletDamageShipArmorEvent(this, ship, contactX, contactY, normalX, normalY));
+                                eventBus.publish(new BulletDamageShipArmorEvent(this, ship, contactX, contactY, normalX,
+                                        normalY));
                             },
                             () -> {
                                 //Hull
                                 setDead();
-                                eventBus.publish(new BulletDamageShipHullEvent(this, ship, contactX, contactY, normalX, normalY));
+                                eventBus.publish(new BulletDamageShipHullEvent(this, ship, contactX, contactY, normalX,
+                                        normalY));
                             });
                 }
             } else if (userData instanceof Bullet bullet) {

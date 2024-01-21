@@ -3,11 +3,11 @@ package net.bfsr.entity;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
-public class ChronologicalEntityDataManager<T extends ChronologicalEntityData> {
+public class EntityDataHistory<T extends ChronologicalEntityData> {
     final LinkedList<T> dataList = new LinkedList<>();
     final double historyLengthMillis;
 
-    ChronologicalEntityDataManager(double historyLengthMillis) {
+    EntityDataHistory(double historyLengthMillis) {
         this.historyLengthMillis = historyLengthMillis;
     }
 

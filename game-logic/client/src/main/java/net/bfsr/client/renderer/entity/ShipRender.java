@@ -1,14 +1,18 @@
 package net.bfsr.client.renderer.entity;
 
 import gnu.trove.map.TMap;
+import net.bfsr.client.Core;
 import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.particle.effect.EngineEffects;
+import net.bfsr.client.particle.effect.JumpEffects;
 import net.bfsr.client.renderer.component.ModuleRenderer;
 import net.bfsr.client.renderer.component.WeaponRenderRegistry;
 import net.bfsr.client.renderer.component.WeaponSlotRender;
 import net.bfsr.config.entity.ship.EngineData;
 import net.bfsr.config.entity.ship.EnginesData;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.event.EventHandler;
+import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.gui.component.StringObject;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.font.FontType;
@@ -17,17 +21,20 @@ import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
-import net.bfsr.event.listener.OneTimeEventListener;
+import net.bfsr.event.entity.ship.ShipJumpInEvent;
+import net.bfsr.event.module.ModuleDestroyEvent;
+import net.bfsr.event.module.weapon.WeaponShotEvent;
+import net.bfsr.event.module.weapon.WeaponSlotRemovedEvent;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.math.RotationHelper;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.geometry.Vector2;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -65,14 +72,21 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
         createWeaponSlotsRenders(ship);
         initEngineEffectsRunnable(ship);
         createModuleRenders(ship);
+
+        ship.getShipEventBus().register(this);
     }
 
     private void createWeaponSlotsRenders(Ship ship) {
         Modules modules = ship.getModules();
         List<WeaponSlot> weaponSlots = modules.getWeaponSlots();
+        WeaponRenderRegistry weaponRenderRegistry = Core.get().getRenderManager().getWeaponRenderRegistry();
         for (int i = 0; i < weaponSlots.size(); i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
-            weaponRenders.add(WeaponRenderRegistry.createRender(weaponSlot));
+            WeaponSlotRender<?> render = weaponRenderRegistry.createRender(weaponSlot);
+            weaponRenders.add(render);
+            weaponSlot.getWeaponSlotEventBus().addOneTimeListener(WeaponSlotRemovedEvent.class,
+                    event -> weaponRenders.remove(render));
+            weaponSlot.getWeaponSlotEventBus().addListener(WeaponShotEvent.class, event -> render.onShot());
         }
     }
 
@@ -164,9 +178,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
 
         Shield shield = modules.getShield();
         if (!shield.isDead()) {
-            ModuleRenderer moduleRenderer = new ModuleRenderer(ship, shield, SHIELD_TEXTURE);
-            moduleRenders.add(moduleRenderer);
-            shield.addDestroyListener(new OneTimeEventListener(shield, () -> moduleRenders.remove(moduleRenderer)));
+            addModuleRenderer(shield, new ModuleRenderer(ship, shield, SHIELD_TEXTURE));
         }
 
         Engines enginesModule = modules.getEngines();
@@ -176,14 +188,17 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
             for (int i = 0; i < engineDataList.size(); i++) {
                 net.bfsr.entity.ship.module.engine.Engine engine = enginesModule.getEngines(direction).get(i);
                 if (!engine.isDead()) {
-                    ModuleRenderer moduleRenderer = new ModuleRenderer(ship, engine, ENGINE_TEXTURE, direction);
-                    moduleRenders.add(moduleRenderer);
-                    engine.addDestroyListener(new OneTimeEventListener(shield, () -> moduleRenders.remove(moduleRenderer)));
+                    addModuleRenderer(engine, new ModuleRenderer(ship, engine, ENGINE_TEXTURE, direction));
                 }
             }
 
             return true;
         });
+    }
+
+    private void addModuleRenderer(DamageableModule module, ModuleRenderer moduleRenderer) {
+        moduleRenders.add(moduleRenderer);
+        module.getModuleEventBus().addOneTimeListener(ModuleDestroyEvent.class, event -> moduleRenders.remove(moduleRenderer));
     }
 
     @Override
@@ -309,37 +324,35 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
         }
     }
 
-    public void createName() {
+    private void createName() {
         stringObject.setStringAndCompile(object.getName()).scale(0.1f, 0.1f);
     }
 
-    public void onWeaponShot(WeaponSlot weaponSlot) {
-        for (int i = 0; i < weaponRenders.size(); i++) {
-            WeaponSlotRender<? extends WeaponSlot> render = weaponRenders.get(i);
-            if (render.getObject().getId() == weaponSlot.getId()) {
-                render.onShot();
-                break;
-            }
-        }
-    }
-
-    public void removeWeaponRender(int id) {
-        weaponRenders.removeIf(weaponSlotRender -> weaponSlotRender.getObject().getId() == id);
-    }
-
-    @Nullable
-    public WeaponSlotRender<? extends WeaponSlot> getWeaponRender(int id) {
-        for (int i = 0; i < weaponRenders.size(); i++) {
-            WeaponSlotRender<? extends WeaponSlot> render = weaponRenders.get(i);
-            if (render.getObject().getId() == id) {
-                return render;
-            }
-        }
-
-        return null;
+    @EventHandler
+    public EventListener<ShipJumpInEvent> shipJumpInEvent() {
+        return event -> {
+            Ship ship = event.ship();
+            Vector2f velocity = ship.getVelocity();
+            Vector2f position = ship.getPosition();
+            Vector2f size = ship.getSize();
+            Vector4f effectsColor = ship.getConfigData().getEffectsColor();
+            JumpEffects.jump(position.x, position.y, 32.0f + size.x * 0.25f, velocity.x * 0.5f, velocity.y * 0.5f,
+                    effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
+            createName();
+        };
     }
 
     public AbstractTexture getWeaponSlotTexture(int id) {
         return weaponRenders.get(id).getTexture();
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        object.getShipEventBus().unregister(this);
+
+        for (int i = 0; i < weaponRenders.size(); i++) {
+            weaponRenders.get(i).clear();
+        }
     }
 }

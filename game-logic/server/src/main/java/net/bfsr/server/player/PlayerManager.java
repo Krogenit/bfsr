@@ -29,6 +29,7 @@ public class PlayerManager {
     private final RSocketClient databaseRSocketClient = new RSocketClient();
     @Getter
     private final PlayerService playerService = new PlayerService(databaseRSocketClient);
+    private final TMap<Ship, Player> playerByShipMap = new THashMap<>();
 
     public PlayerManager(World world) {
         this.world = world;
@@ -138,5 +139,17 @@ public class PlayerManager {
 
     public static PlayerManager get() {
         return ServerGameLogic.getInstance().getPlayerManager();
+    }
+
+    public void setPlayerControlledShip(Player player, Ship ship) {
+        playerByShipMap.put(ship, player);
+    }
+
+    public void removePlayerControlledShip(Ship ship) {
+        playerByShipMap.remove(ship);
+    }
+
+    public Player getPlayerControllingShip(Ship ship) {
+        return playerByShipMap.get(ship);
     }
 }

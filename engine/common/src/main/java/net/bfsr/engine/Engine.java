@@ -17,6 +17,7 @@ public final class Engine {
     private static final int updatesPerSecond = 60;
     private static final float updateDeltaTime = 1.0f / 60.0f;
     private static final double timeBetweenUpdates = 1_000_000_000.0 / updatesPerSecond;
+    private static final int clientRenderDelayInMills = 100;
 
     public static void clear() {
         renderer.clear();
@@ -45,5 +46,9 @@ public final class Engine {
 
     public static double getTimeBetweenUpdates() {
         return timeBetweenUpdates;
+    }
+
+    public static int getClientRenderDelayInMills() {
+        return clientRenderDelayInMills;
     }
 }

@@ -1,6 +1,8 @@
 package net.bfsr.server.event.listener.entity;
 
 import net.bfsr.damage.DamageType;
+import net.bfsr.engine.event.EventHandler;
+import net.bfsr.engine.event.EventListener;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.entity.bullet.BulletDamageShipArmorEvent;
@@ -13,45 +15,43 @@ import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.util.TrackingUtils;
 import net.bfsr.world.World;
-import net.engio.mbassy.listener.Handler;
-import net.engio.mbassy.listener.Listener;
-import net.engio.mbassy.listener.References;
 import org.joml.Vector2f;
 
 import java.util.Random;
 
-@Listener(references = References.Strong)
 public class BulletEventListener {
     private final NetworkSystem network = ServerGameLogic.getNetwork();
     private final Vector2f angleToVelocity = new Vector2f();
 
-    @Handler
-    public void event(BulletDamageShipShieldEvent event) {
-        sendHitPacket(event.getBullet(), event.getShip(), event.getContactX(), event.getContactY(), event.getNormalX(),
-                event.getNormalY(), DamageType.SHIELD);
+    @EventHandler
+    public EventListener<BulletDamageShipShieldEvent> bulletDamageShipShieldEvent() {
+        return event -> sendHitPacket(event.getBullet(), event.getShip(), event.getContactX(), event.getContactY(),
+                event.getNormalX(), event.getNormalY(), DamageType.SHIELD);
     }
 
-    @Handler
-    public void event(BulletDamageShipArmorEvent event) {
-        sendHitPacket(event.getBullet(), event.getShip(), event.getContactX(), event.getContactY(), event.getNormalX(),
-                event.getNormalY(), DamageType.ARMOR);
+    @EventHandler
+    public EventListener<BulletDamageShipArmorEvent> bulletDamageShipArmorEvent() {
+        return event -> sendHitPacket(event.getBullet(), event.getShip(), event.getContactX(), event.getContactY(),
+                event.getNormalX(), event.getNormalY(), DamageType.ARMOR);
     }
 
-    @Handler
-    public void event(BulletDamageShipHullEvent event) {
-        Ship ship = event.getShip();
-        World world = ship.getWorld();
-        Random rand = world.getRand();
-        if (rand.nextInt(2) == 0) {
-            RotationHelper.angleToVelocity(net.bfsr.engine.math.MathUtils.TWO_PI * rand.nextFloat(), 1.5f, angleToVelocity);
-            float velocityX = ship.getVelocity().x * 0.005f;
-            float velocityY = ship.getVelocity().y * 0.005f;
-            WreckSpawner.spawnDamageDebris(world, rand.nextInt(2), event.getContactX(), event.getContactY(),
-                    velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f);
-        }
+    @EventHandler
+    public EventListener<BulletDamageShipHullEvent> event() {
+        return event -> {
+            Ship ship = event.getShip();
+            World world = ship.getWorld();
+            Random rand = world.getRand();
+            if (rand.nextInt(2) == 0) {
+                RotationHelper.angleToVelocity(net.bfsr.engine.math.MathUtils.TWO_PI * rand.nextFloat(), 1.5f, angleToVelocity);
+                float velocityX = ship.getVelocity().x * 0.005f;
+                float velocityY = ship.getVelocity().y * 0.005f;
+                WreckSpawner.spawnDamageDebris(world, rand.nextInt(2), event.getContactX(), event.getContactY(),
+                        velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f);
+            }
 
-        sendHitPacket(event.getBullet(), event.getShip(), event.getContactX(), event.getContactY(), event.getNormalX(),
-                event.getNormalY(), DamageType.HULL);
+            sendHitPacket(event.getBullet(), event.getShip(), event.getContactX(), event.getContactY(), event.getNormalX(),
+                    event.getNormalY(), DamageType.HULL);
+        };
     }
 
     private void sendHitPacket(Bullet bullet, Ship ship, float contactX, float contactY, float normalX, float normalY,

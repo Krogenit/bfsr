@@ -9,13 +9,14 @@ import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.event.EventBusManager;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.entity.ship.module.reactor.Reactor;
+import net.bfsr.event.module.weapon.WeaponSlotRemovedEvent;
 import net.bfsr.network.util.ByteBufUtils;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.physics.filter.ShipFilter;
@@ -42,9 +43,11 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
     private final GunData gunData;
     @Getter
     private final WeaponType weaponType;
-    protected EventBus eventBus;
+    protected EventBusManager eventBus;
     @Getter
     private float sin, cos;
+    @Getter
+    protected final EventBusManager weaponSlotEventBus = new EventBusManager();
 
     public WeaponSlot(GunData gunData, WeaponType weaponType) {
         super(gunData.getHp(), gunData.getSizeX(), gunData.getSizeY());
@@ -190,6 +193,12 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
                 break;
             }
         }
+    }
+
+    public void onRemoved() {
+        WeaponSlotRemovedEvent event = new WeaponSlotRemovedEvent(this);
+        eventBus.publish(event);
+        weaponSlotEventBus.publish(event);
     }
 
     @Override

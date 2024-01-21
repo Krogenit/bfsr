@@ -1,3 +1,10 @@
 package net.bfsr.engine.event;
 
-public class Event {}
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class Event {
+    private int registryIndex;
+}

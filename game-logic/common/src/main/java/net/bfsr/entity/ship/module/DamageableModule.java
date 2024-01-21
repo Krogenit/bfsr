@@ -3,19 +3,15 @@ package net.bfsr.entity.ship.module;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.event.EventBusManager;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.event.listener.EventListener;
 import net.bfsr.event.module.ModuleDestroyEvent;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @NoArgsConstructor
-public abstract class DamageableModule extends Module implements net.bfsr.event.EventBus {
+public abstract class DamageableModule extends Module {
     @Getter
     protected float maxHp;
     @Getter
@@ -23,10 +19,11 @@ public abstract class DamageableModule extends Module implements net.bfsr.event.
     protected float hp;
     @Getter
     protected BodyFixture fixture;
-    private EventBus eventBus;
+    private EventBusManager eventBus;
     @Getter
     protected Ship ship;
-    private final List<EventListener> destroyListeners = new ArrayList<>();
+    @Getter
+    private final EventBusManager moduleEventBus = new EventBusManager();
 
     protected DamageableModule(float hp) {
         this.maxHp = this.hp = hp;
@@ -43,7 +40,7 @@ public abstract class DamageableModule extends Module implements net.bfsr.event.
         createFixture(ship);
     }
 
-    protected void createFixture(RigidBody<?> rigidBody) {}
+    protected abstract void createFixture(RigidBody<?> rigidBody);
 
     public void addFixtureToBody(Body body) {
         if (isDead) return;
@@ -68,18 +65,8 @@ public abstract class DamageableModule extends Module implements net.bfsr.event.
     }
 
     protected void destroy() {
-        eventBus.publish(new ModuleDestroyEvent(this));
-        for (int i = 0; i < destroyListeners.size(); i++) {
-            destroyListeners.get(i).event();
-        }
-    }
-
-    public void addDestroyListener(EventListener listener) {
-        destroyListeners.add(listener);
-    }
-
-    @Override
-    public void removeListener(EventListener listener) {
-        destroyListeners.remove(listener);
+        ModuleDestroyEvent event = new ModuleDestroyEvent(this);
+        eventBus.publish(event);
+        moduleEventBus.publish(event);
     }
 }

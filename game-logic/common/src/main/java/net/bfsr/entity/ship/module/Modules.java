@@ -1,7 +1,7 @@
 package net.bfsr.entity.ship.module;
 
 import lombok.Getter;
-import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.event.EventBusManager;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.cargo.Cargo;
@@ -11,7 +11,6 @@ import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
-import net.bfsr.event.module.weapon.WeaponSlotRemovedEvent;
 import org.dyn4j.dynamics.Body;
 
 import java.util.ArrayList;
@@ -38,7 +37,7 @@ public class Modules {
     private Cargo cargo;
     @Getter
     private final List<WeaponSlot> weaponSlots = new ArrayList<>();
-    private EventBus eventBus;
+    private EventBusManager eventBus;
     private Ship ship;
 
     public void init(Ship ship) {
@@ -126,7 +125,7 @@ public class Modules {
             if (weaponSlot.getId() == id) {
                 ship.getFixturesToRemove().add(weaponSlot.getFixture());
                 weaponSlots.remove(i);
-                eventBus.publish(new WeaponSlotRemovedEvent(weaponSlot));
+                weaponSlot.onRemoved();
                 return;
             }
         }

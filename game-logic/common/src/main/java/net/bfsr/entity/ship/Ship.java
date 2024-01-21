@@ -14,6 +14,7 @@ import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
+import net.bfsr.engine.event.EventBusManager;
 import net.bfsr.engine.util.SideUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.BulletDamage;
@@ -99,10 +100,11 @@ public class Ship extends DamageableRigidBody<ShipData> {
     @Setter
     private Consumer<Double> chronologicalDataProcessor = super::processChronologicalData;
     private final Vector2f rotationHelper = new Vector2f();
+    @Getter
+    private final EventBusManager shipEventBus = new EventBusManager();
 
-    public Ship(ShipData shipData, DamageMask damageMask) {
-        super(shipData.getSizeX(), shipData.getSizeY(), shipData, ShipRegistry.INSTANCE.getId(), damageMask,
-                shipData.getContour());
+    public Ship(ShipData shipData, DamageMask mask) {
+        super(shipData.getSizeX(), shipData.getSizeY(), shipData, ShipRegistry.INSTANCE.getId(), mask, shipData.getContour());
         this.timeToDestroy = shipData.getDestroyTimeInTicks();
         this.maxSparksTimer = timeToDestroy / 3;
         this.jumpTimer = jumpTimeInTicks;
@@ -502,7 +504,9 @@ public class Ship extends DamageableRigidBody<ShipData> {
     public void setSpawned() {
         spawned = true;
         world.getPhysicWorld().addBody(body);
-        eventBus.publish(new ShipSpawnEvent(this));
+        ShipJumpInEvent event = new ShipJumpInEvent(this);
+        eventBus.publish(event);
+        shipEventBus.publish(event);
     }
 
     @Override
@@ -527,7 +531,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
     }
 
     public boolean isDestroying() {
-        return destroyingTimer != 0;
+        return destroyingTimer > 0;
     }
 
     @Override

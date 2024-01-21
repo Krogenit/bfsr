@@ -19,6 +19,6 @@ public class PacketJoinGameHandler extends PacketHandler<PacketJoinGame, Network
         core.createWorld(packet.getSeed());
         core.closeGui();
         core.getNetworkSystem().setConnectionState(ConnectionState.CONNECTED);
-        core.publish(new PlayerJoinGameEvent());
+        core.getEventBus().publish(new PlayerJoinGameEvent());
     }
 }

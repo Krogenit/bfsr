@@ -5,21 +5,20 @@ import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.event.EventHandler;
+import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.network.packet.client.PacketCameraPosition;
-import net.engio.mbassy.listener.Handler;
-import net.engio.mbassy.listener.Listener;
 import org.joml.Vector2f;
 
 import java.util.List;
 
 import static net.bfsr.engine.input.Keys.*;
 
-@Listener
 public class CameraInputController extends InputController {
     private final AbstractRenderer renderer = Engine.renderer;
     private final AbstractCamera camera = renderer.camera;
@@ -36,7 +35,7 @@ public class CameraInputController extends InputController {
         core = Core.get();
         guiManager = core.getGuiManager();
         playerInputController = core.getInputHandler().getPlayerInputController();
-        core.subscribe(this);
+        core.getEventBus().register(this);
     }
 
     @Override
@@ -163,8 +162,8 @@ public class CameraInputController extends InputController {
         }
     }
 
-    @Handler
-    public void event(ExitToMainMenuEvent event) {
-        followShip = null;
+    @EventHandler
+    public EventListener<ExitToMainMenuEvent> exitToMainMenuEvent() {
+        return event -> followShip = null;
     }
 }

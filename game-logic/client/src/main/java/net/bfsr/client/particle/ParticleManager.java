@@ -2,16 +2,15 @@ package net.bfsr.client.particle;
 
 import net.bfsr.client.Core;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
+import net.bfsr.engine.event.EventHandler;
+import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.util.ObjectPool;
-import net.engio.mbassy.listener.Handler;
-import net.engio.mbassy.listener.Listener;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-@Listener
 public class ParticleManager {
     public static final Random RAND = new Random();
     public static final ObjectPool<Particle> PARTICLE_POOL = new ObjectPool<>(Particle::new);
@@ -20,7 +19,7 @@ public class ParticleManager {
     private final List<Particle> particles = new ArrayList<>();
 
     public void init() {
-        Core.get().subscribe(this);
+        Core.get().getEventBus().register(this);
     }
 
     public void update() {
@@ -47,9 +46,9 @@ public class ParticleManager {
         return particles.get(index);
     }
 
-    @Handler
-    public void event(ExitToMainMenuEvent event) {
-        clear();
+    @EventHandler
+    public EventListener<ExitToMainMenuEvent> exitToMainMenuEvent() {
+        return event -> clear();
     }
 
     public void clear() {
