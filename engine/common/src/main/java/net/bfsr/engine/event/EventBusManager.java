@@ -1,9 +1,9 @@
 package net.bfsr.engine.event;
 
 import gnu.trove.map.TMap;
-import gnu.trove.map.TObjectShortMap;
 import gnu.trove.map.hash.THashMap;
-import gnu.trove.map.hash.TObjectShortHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Set;
 
 public class EventBusManager {
-    private static final TObjectShortMap<Class<? extends Event>> EVENT_CLASS_TO_INDEX_MAP = new TObjectShortHashMap<>();
-    private static final TMap<Class<?>, List<EventHandlerData>> HANDLER_METHODS_BY_CLASS_MAP = new THashMap<>();
+    private static final Object2ShortOpenHashMap<Class<? extends Event>> EVENT_CLASS_TO_INDEX_MAP = new Object2ShortOpenHashMap<>();
+    private static final Object2ObjectOpenHashMap<Class<?>, List<EventHandlerData>> HANDLER_METHODS_BY_CLASS_MAP = new Object2ObjectOpenHashMap<>();
 
     static {
         Reflections reflections = new Reflections(new ConfigurationBuilder().forPackage("")
@@ -48,19 +48,19 @@ public class EventBusManager {
     }
 
     @SuppressWarnings("rawtypes")
-    private final TMap<Class<?>, EventBus> eventBusMap = new THashMap<>();
+    private final Object2ObjectOpenHashMap<Class<?>, EventBus> eventBusMap = new Object2ObjectOpenHashMap<>();
     private final EventBus<Event>[] eventBuses = new EventBus[EVENT_CLASS_TO_INDEX_MAP.size()];
-
 
     private final TMap<Class<?>, List<EventListenerData>> eventListenersByClassMap = new THashMap<>();
 
     public EventBusManager() {
-        EVENT_CLASS_TO_INDEX_MAP.forEachEntry((aClass, i) -> {
+        EVENT_CLASS_TO_INDEX_MAP.object2ShortEntrySet().fastForEach(classEntry -> {
             EventBus<Event> eventBus = new EventBus<>();
+            Class<? extends Event> key = classEntry.getKey();
+            short i = classEntry.getShortValue();
             eventBuses[i] = eventBus;
-            eventBusMap.put(aClass, eventBus);
-            EVENT_CLASS_TO_INDEX_MAP.put(aClass, i);
-            return true;
+            eventBusMap.put(key, eventBus);
+            EVENT_CLASS_TO_INDEX_MAP.put(key, i);
         });
     }
 
@@ -104,7 +104,7 @@ public class EventBusManager {
     }
 
     public void optimizeEvent(Event event) {
-        event.setRegistryIndex(EVENT_CLASS_TO_INDEX_MAP.get(event.getClass()));
+        event.setRegistryIndex(EVENT_CLASS_TO_INDEX_MAP.getShort(event.getClass()));
     }
 
     public void publish(Event event) {

@@ -1,3 +1,6 @@
+package net.bfsr.event;
+
+import net.bfsr.PerformanceTest;
 import net.bfsr.engine.event.Event;
 import net.bfsr.engine.event.EventBusManager;
 import net.bfsr.engine.event.EventHandler;

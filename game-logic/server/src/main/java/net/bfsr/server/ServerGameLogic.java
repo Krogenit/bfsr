@@ -56,6 +56,7 @@ public class ServerGameLogic extends GameLogic {
     @Override
     public void init() {
         world = new World(profiler, Side.SERVER, new Random().nextLong(), eventBus, new EntityIdManager(), this);
+        world.init();
         playerManager = new PlayerManager(world);
         networkSystem = new NetworkSystem(playerManager);
         shipSpawner = new ShipSpawner(world);

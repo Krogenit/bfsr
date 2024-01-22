@@ -1,18 +1,14 @@
 package net.bfsr.world;
 
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.TMap;
-import gnu.trove.map.hash.THashMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.Getter;
 import net.bfsr.engine.GameLogic;
 import net.bfsr.engine.event.EventBusManager;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.util.Side;
 import net.bfsr.entity.EntityIdManager;
+import net.bfsr.entity.EntityManager;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
-import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.physics.CCDTransformHandler;
@@ -22,7 +18,6 @@ import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.ContinuousDetectionMode;
 import org.dyn4j.world.PhysicsWorld;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -34,15 +29,11 @@ public class World {
     protected final Side side;
     @Getter
     private final long seed;
-
     private final Profiler profiler;
     @Getter
     protected final Random rand = new Random();
-
-    private final TIntObjectMap<RigidBody<?>> entitiesById = new TIntObjectHashMap<>();
-    private final TMap<Class<? extends RigidBody>, List<RigidBody<?>>> entitiesByClass = new THashMap<>();
     @Getter
-    private final List<RigidBody<?>> entities = new ArrayList<>();
+    private final EntityManager entityManager = new EntityManager();
     @Getter
     private final EventBusManager eventBus;
     @Getter
@@ -59,12 +50,6 @@ public class World {
         this.eventBus = eventBus;
         this.entityIdManager = entityIdManager;
         this.gameLogic = gameLogic;
-        this.entitiesByClass.put(RigidBody.class, new ArrayList<>());
-        this.entitiesByClass.put(Ship.class, new ArrayList<>());
-        this.entitiesByClass.put(Bullet.class, new ArrayList<>());
-        this.entitiesByClass.put(ShipWreck.class, new ArrayList<>());
-        this.entitiesByClass.put(Wreck.class, new ArrayList<>());
-        initPhysicWorld();
     }
 
     private void initPhysicWorld() {
@@ -80,33 +65,21 @@ public class World {
         physicWorld.setValueMixer(new CustomValueMixer());
     }
 
+    public void init() {
+        initPhysicWorld();
+        this.eventBus.register(entityManager.getDataHistoryManager());
+    }
+
     public void update(double timestamp) {
         this.timestamp = timestamp;
 
-        updateEntities();
+        entityManager.update();
         profiler.endStartSection("physics");
         ccdTransformHandler.clear();
         physicWorld.step(1);
         ccdTransformHandler.restoreTransforms();
         profiler.endStartSection("postPhysicsUpdate");
-        postPhysicsUpdate();
-    }
-
-    private void updateEntities() {
-        for (int i = 0; i < entities.size(); i++) {
-            RigidBody<?> rigidBody = entities.get(i);
-            if (rigidBody.isDead()) {
-                remove(i--, rigidBody);
-            } else {
-                rigidBody.update();
-            }
-        }
-    }
-
-    private void postPhysicsUpdate() {
-        for (int i = 0; i < entities.size(); i++) {
-            entities.get(i).postPhysicsUpdate();
-        }
+        entityManager.postPhysicsUpdate();
     }
 
     public void add(RigidBody<?> entity) {
@@ -114,13 +87,7 @@ public class World {
     }
 
     public void add(RigidBody<?> entity, boolean addToPhysicWorld) {
-        if (entitiesById.containsKey(entity.getId())) {
-            throw new RuntimeException("Entity with id " + entity.getId() + " already registered!");
-        }
-
-        entitiesById.put(entity.getId(), entity);
-        entities.add(entity);
-        entitiesByClass.get(entity.getClass()).add(entity);
+        entityManager.add(entity);
 
         if (addToPhysicWorld) {
             physicWorld.addBody(entity.getBody());
@@ -130,58 +97,9 @@ public class World {
     }
 
     public void remove(int index, RigidBody<?> entity) {
-        entities.remove(index);
-        entitiesById.remove(entity.getId());
+        entityManager.remove(index, entity);
         physicWorld.removeBody(entity.getBody());
         entity.onRemovedFromWorld();
-        entitiesByClass.get(entity.getClass()).remove(entity);
-    }
-
-    public void clear() {
-        for (int i = 0; i < entities.size(); i++) {
-            entities.get(i).onRemovedFromWorld();
-        }
-
-        entities.clear();
-        entitiesById.clear();
-        physicWorld.removeAllBodies();
-
-        entitiesByClass.forEachValue(rigidBodies -> {
-            rigidBodies.clear();
-            return true;
-        });
-    }
-
-    public int getBulletsCount() {
-        return entitiesByClass.get(Bullet.class).size();
-    }
-
-    public int getWreckCount() {
-        return entitiesByClass.get(Wreck.class).size();
-    }
-
-    public int getShipWreckCount() {
-        return entitiesByClass.get(ShipWreck.class).size();
-    }
-
-    public RigidBody<?> getEntityById(int id) {
-        return entitiesById.get(id);
-    }
-
-    public <T extends RigidBody<?>> List<T> getEntitiesByType(Class<T> classType) {
-        return (List<T>) entitiesByClass.get(classType);
-    }
-
-    public int getNextId() {
-        return entityIdManager.getNextId();
-    }
-
-    public boolean isServer() {
-        return side.isServer();
-    }
-
-    public boolean isClient() {
-        return side.isClient();
     }
 
     public int convertToTicks(int value) {
@@ -194,5 +112,47 @@ public class World {
 
     public float convertToDeltaTime(float value) {
         return gameLogic.convertToTicks(value);
+    }
+
+    public void clear() {
+        eventBus.unregister(entityManager.getDataHistoryManager());
+        entityManager.clear();
+        physicWorld.removeAllBodies();
+    }
+
+    public int getBulletsCount() {
+        return entityManager.get(Bullet.class).size();
+    }
+
+    public int getWreckCount() {
+        return entityManager.get(Wreck.class).size();
+    }
+
+    public int getShipWreckCount() {
+        return entityManager.get(ShipWreck.class).size();
+    }
+
+    public List<? extends RigidBody<?>> getEntities() {
+        return entityManager.getEntities();
+    }
+
+    public RigidBody<?> getEntityById(int id) {
+        return entityManager.get(id);
+    }
+
+    public <T extends RigidBody<?>> List<T> getEntitiesByType(Class<T> classType) {
+        return (List<T>) entityManager.get(classType);
+    }
+
+    public int getNextId() {
+        return entityIdManager.getNextId();
+    }
+
+    public boolean isServer() {
+        return side.isServer();
+    }
+
+    public boolean isClient() {
+        return side.isClient();
     }
 }

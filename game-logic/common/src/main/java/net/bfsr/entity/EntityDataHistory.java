@@ -1,7 +1,6 @@
 package net.bfsr.entity;
 
 import java.util.LinkedList;
-import java.util.NoSuchElementException;
 
 public class EntityDataHistory<T extends ChronologicalEntityData> {
     final LinkedList<T> dataList = new LinkedList<>();
@@ -45,7 +44,7 @@ public class EntityDataHistory<T extends ChronologicalEntityData> {
         if (dataList.size() == 0) return null;
 
         if (dataList.getFirst().getTime() < time) {
-            return null;
+            return dataList.getFirst();
         } else if (dataList.getLast().getTime() > time) {
             return dataList.getLast();
         }
@@ -63,13 +62,5 @@ public class EntityDataHistory<T extends ChronologicalEntityData> {
         }
 
         return null;
-    }
-
-    public T getMostRecent() {
-        try {
-            return dataList.getFirst();
-        } catch (NoSuchElementException e) {
-            return null;
-        }
     }
 }

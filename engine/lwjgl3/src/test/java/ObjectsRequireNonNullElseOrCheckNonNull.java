@@ -1,3 +1,5 @@
+import net.bfsr.PerformanceTest;
+
 import java.util.Objects;
 import java.util.Random;
 

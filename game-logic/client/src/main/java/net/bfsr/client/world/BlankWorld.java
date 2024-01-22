@@ -1,14 +1,16 @@
 package net.bfsr.client.world;
 
-import net.bfsr.engine.GameLogic;
 import net.bfsr.world.World;
 
 public final class BlankWorld extends World {
     private static final BlankWorld BLANK_WORLD = new BlankWorld();
 
     private BlankWorld() {
-        super(null, null, 0, null, null, new GameLogic());
+        super(null, null, 0, null, null, null);
     }
+
+    @Override
+    public void init() {}
 
     @Override
     public void update(double timestamp) {}

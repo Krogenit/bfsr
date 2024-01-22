@@ -24,8 +24,6 @@ import org.joml.Vector2f;
 
 @NoArgsConstructor
 public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObject {
-    public static final long HISTORY_DURATION_MILLIS = 5000;
-
     @Getter
     protected World world;
     @Getter
@@ -49,11 +47,6 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
     protected int registryId;
     @Setter
     protected float health;
-
-    @Getter
-    protected final PositionHistory positionHistory = new PositionHistory(HISTORY_DURATION_MILLIS);
-    private final EntityDataHistory<PacketWorldSnapshot.EntityData> entityDataHistory = new EntityDataHistory<>(
-            HISTORY_DURATION_MILLIS);
 
     protected final RigidBodyPostPhysicsUpdateEvent postPhysicsUpdateEvent = new RigidBodyPostPhysicsUpdateEvent(this);
 
@@ -203,18 +196,8 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
         return configData.getId();
     }
 
-    public void addData(PacketWorldSnapshot.EntityData entityData, double timestamp) {
-        positionHistory.addPositionData(entityData.getPosition(), entityData.getSin(), entityData.getCos(), timestamp);
-        entityDataHistory.addData(entityData);
-        onDataAdded();
-    }
-
-    protected void onDataAdded() {
-        lifeTime = 0;
-    }
-
     public void calcPosition(double timestamp) {
-        TransformData transformData = positionHistory.get(timestamp);
+        TransformData transformData = world.getEntityManager().getDataHistoryManager().getTransformData(id, timestamp);
         if (transformData != null) {
             Vector2f epdPosition = transformData.getPosition();
             setPosition(epdPosition.x, epdPosition.y);
@@ -223,7 +206,7 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
     }
 
     public void processChronologicalData(double timestamp) {
-        PacketWorldSnapshot.EntityData entityData = entityDataHistory.get(timestamp);
+        PacketWorldSnapshot.EntityData entityData = world.getEntityManager().getDataHistoryManager().getData(id, timestamp);
         if (entityData != null) {
             Vector2f velocity = entityData.getVelocity();
             setVelocity(velocity.x, velocity.y);

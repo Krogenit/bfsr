@@ -10,9 +10,8 @@ import net.bfsr.engine.event.EventBusManager;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
+import net.bfsr.entity.EntityDataHistoryManager;
 import net.bfsr.entity.GameObject;
-import net.bfsr.entity.PositionHistory;
-import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.TransformData;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.engine.Engines;
@@ -35,7 +34,6 @@ public class PlayerInputController extends InputController {
     private final AbstractCamera camera = Engine.renderer.camera;
     private final Vector2f lastMousePosition = new Vector2f();
     private boolean mouseLeftDown;
-    private final PositionHistory positionHistory = new PositionHistory(RigidBody.HISTORY_DURATION_MILLIS);
     private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
     private EventBusManager eventBus;
 
@@ -210,7 +208,6 @@ public class PlayerInputController extends InputController {
         if (this.ship != null) {
             this.ship.resetPositionCalculatorAndChronologicalProcessor();
             this.ship.setControlledByPlayer(false);
-            positionHistory.clear();
         }
 
         this.ship = ship;
@@ -218,13 +215,13 @@ public class PlayerInputController extends InputController {
         guiManager.getHud().onShipControlStarted();
 
         if (ship != null) {
+            EntityDataHistoryManager historyManager = ship.getWorld().getEntityManager().getDataHistoryManager();
             ship.setPositionCalculator(timestamp -> {
-                PositionHistory historicalPositionHistoryData = ship.getPositionHistory();
-                TransformData serverTransformData = historicalPositionHistoryData.get(timestamp);
+                TransformData serverTransformData = historyManager.getTransformData(ship.getId(),
+                        timestamp + Core.get().getClientRenderDelayInNanos());
 
                 if (serverTransformData == null) {
-                    serverTransformData = historicalPositionHistoryData.getMostRecent();
-                    if (serverTransformData == null) return;
+                    return;
                 }
 
                 Vector2f position = ship.getPosition();

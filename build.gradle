@@ -3,6 +3,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'org.springframework.boot' version '3.0.5'
     id 'io.spring.dependency-management' version '1.1.0'
+    id 'me.champeau.jmh' version '0.6.8'
 }
 
 dependencies {
@@ -20,6 +21,7 @@ subprojects {
     apply plugin: 'java-library'
     apply plugin: 'org.springframework.boot'
     apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'me.champeau.jmh'
 
     compileJava.options.encoding = compileTestJava.options.encoding = "UTF-8"
     sourceCompatibility = targetCompatibility = JavaVersion.VERSION_18
@@ -38,6 +40,10 @@ subprojects {
         testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.8.2'
         testImplementation 'org.assertj:assertj-core:3.24.2'
+
+        testImplementation 'org.openjdk.jmh:jmh-core:1.36'
+        testImplementation 'org.openjdk.jmh:jmh-generator-annprocess:1.36'
+        jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.36'
     }
 
     configurations.configureEach {

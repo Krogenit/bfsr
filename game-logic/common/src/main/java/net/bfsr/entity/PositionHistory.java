@@ -3,11 +3,11 @@ package net.bfsr.entity;
 import net.bfsr.engine.util.ObjectPool;
 import org.joml.Vector2f;
 
-public final class PositionHistory extends EntityDataHistory<TransformData> {
+public class PositionHistory extends EntityDataHistory<TransformData> {
     private final ObjectPool<TransformData> cache = new ObjectPool<>(TransformData::new);
     private final TransformData cachedTransformData = new TransformData();
 
-    public PositionHistory(double historyLengthMillis) {
+    PositionHistory(double historyLengthMillis) {
         super(historyLengthMillis);
     }
 
@@ -25,9 +25,9 @@ public final class PositionHistory extends EntityDataHistory<TransformData> {
         if (dataList.size() == 0) return null;
 
         if (dataList.getFirst().getTime() < time) {
-            return null;
+            return dataList.getFirst();
         } else if (dataList.getLast().getTime() > time) {
-            return null;
+            return dataList.getLast();
         }
 
         TransformData firstEPD = null;

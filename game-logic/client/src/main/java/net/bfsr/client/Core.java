@@ -65,7 +65,8 @@ public class Core extends ClientGameLogic {
     private double clientToServerDiffTime;
     @Getter
     private double renderTime, serverTime;
-    private final double clientRenderDelayMillis = Engine.getClientRenderDelayInMills() * 1_000_000;
+    @Getter
+    private final double clientRenderDelayInNanos = Engine.getClientRenderDelayInMills() * 1_000_000;
 
     public Core() {
         instance = this;
@@ -116,7 +117,7 @@ public class Core extends ClientGameLogic {
         soundManager.updateGain(ClientSettings.SOUND_VOLUME.getFloat());
 
         serverTime = time + clientToServerDiffTime;
-        renderTime = time - clientRenderDelayMillis;
+        renderTime = time - clientRenderDelayInNanos;
 
         profiler.endStartSection("network");
         networkSystem.update(renderTime);
@@ -221,6 +222,7 @@ public class Core extends ClientGameLogic {
 
     public void createWorld(long seed) {
         world = new World(profiler, Side.CLIENT, seed, eventBus, new ClientEntityIdManager(), this);
+        world.init();
         globalRenderer.createBackgroundTexture(seed);
     }
 
