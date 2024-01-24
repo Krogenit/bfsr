@@ -10,9 +10,9 @@ import net.bfsr.network.packet.server.entity.ship.PacketDestroyingShip;
 import net.bfsr.network.packet.server.entity.ship.PacketShipInfo;
 import net.bfsr.network.packet.server.entity.ship.PacketSyncMoveDirection;
 import net.bfsr.server.ServerGameLogic;
+import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.wreck.WreckSpawner;
-import net.bfsr.server.network.NetworkSystem;
-import net.bfsr.server.util.TrackingUtils;
+import net.bfsr.server.player.Player;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;
 import org.joml.Vector2f;
@@ -20,15 +20,21 @@ import org.joml.Vector2f;
 import java.util.Random;
 
 public class ShipEventListener {
-    private final NetworkSystem network = ServerGameLogic.getNetwork();
+    private final EntityTrackingManager trackingManager = ServerGameLogic.getInstance().getEntityTrackingManager();
     private final DamageSystem damageSystem = ServerGameLogic.getInstance().getDamageSystem();
 
     @EventHandler
     public EventListener<ShipNewMoveDirectionEvent> shipNewMoveDirectionEvent() {
         return event -> {
             Ship ship = event.ship();
-            network.sendUDPPacketToAllNearby(new PacketSyncMoveDirection(ship.getId(), event.direction().ordinal(), false,
-                    ship.getWorld().getTimestamp()), ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
+            if (ship.isControlledByPlayer()) {
+                Player player = ServerGameLogic.getInstance().getPlayerManager().getPlayerControllingShip(ship);
+                trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketSyncMoveDirection(ship.getId(),
+                        event.direction().ordinal(), false, ship.getWorld().getTimestamp()), player);
+            } else {
+                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketSyncMoveDirection(ship.getId(),
+                        event.direction().ordinal(), false, ship.getWorld().getTimestamp()));
+            }
         };
     }
 
@@ -36,8 +42,14 @@ public class ShipEventListener {
     public EventListener<ShipRemoveMoveDirectionEvent> shipRemoveMoveDirectionEvent() {
         return event -> {
             Ship ship = event.ship();
-            network.sendUDPPacketToAllNearby(new PacketSyncMoveDirection(ship.getId(), event.direction().ordinal(), true,
-                    ship.getWorld().getTimestamp()), ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
+            if (ship.isControlledByPlayer()) {
+                Player player = ServerGameLogic.getInstance().getPlayerManager().getPlayerControllingShip(ship);
+                trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketSyncMoveDirection(ship.getId(),
+                        event.direction().ordinal(), true, ship.getWorld().getTimestamp()), player);
+            } else {
+                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketSyncMoveDirection(ship.getId(),
+                        event.direction().ordinal(), true, ship.getWorld().getTimestamp()));
+            }
         };
     }
 
@@ -45,9 +57,8 @@ public class ShipEventListener {
     public EventListener<ShipPostPhysicsUpdate> shipPostPhysicsUpdateEvent() {
         return event -> {
             Ship ship = event.ship();
-            Vector2f position = ship.getPosition();
-            network.sendUDPPacketToAllNearby(new PacketShipInfo(ship, ship.getWorld().getTimestamp()), position,
-                    TrackingUtils.TRACKING_DISTANCE);
+            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(),
+                    new PacketShipInfo(ship, ship.getWorld().getTimestamp()));
         };
     }
 
@@ -55,8 +66,8 @@ public class ShipEventListener {
     public EventListener<ShipDestroyingEvent> shipDestroyingEvent() {
         return event -> {
             Ship ship = event.ship();
-            network.sendTCPPacketToAllNearby(new PacketDestroyingShip(ship, ship.getWorld().getTimestamp()), ship.getPosition(),
-                    TrackingUtils.TRACKING_DISTANCE);
+            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketDestroyingShip(ship,
+                    ship.getWorld().getTimestamp()));
         };
     }
 
@@ -76,7 +87,6 @@ public class ShipEventListener {
             double cos = body.getTransform().getCost();
 
             Path64 clip = damageSystem.createCirclePath(event.contactX() - x, event.contactY() - y, -sin, cos, 12, polygonRadius);
-
             damageSystem.damage(ship, event.contactX(), event.contactY(), clip, radius);
         };
     }

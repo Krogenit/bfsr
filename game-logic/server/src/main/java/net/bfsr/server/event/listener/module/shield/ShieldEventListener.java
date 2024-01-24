@@ -10,18 +10,17 @@ import net.bfsr.network.packet.server.component.PacketShieldRebuild;
 import net.bfsr.network.packet.server.component.PacketShieldRebuildingTime;
 import net.bfsr.network.packet.server.component.PacketShieldRemove;
 import net.bfsr.server.ServerGameLogic;
-import net.bfsr.server.network.NetworkSystem;
-import net.bfsr.server.util.TrackingUtils;
+import net.bfsr.server.entity.EntityTrackingManager;
 
 public class ShieldEventListener {
-    private final NetworkSystem networkSystem = ServerGameLogic.getNetwork();
+    private final EntityTrackingManager trackingManager = ServerGameLogic.getInstance().getEntityTrackingManager();
 
     @EventHandler
     public EventListener<ShieldRebuildEvent> shieldRebuildEvent() {
         return event -> {
             Ship ship = event.shield().getShip();
-            networkSystem.sendUDPPacketToAllNearby(new PacketShieldRebuild(ship.getId(), ship.getWorld().getTimestamp()),
-                    ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
+            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRebuild(ship.getId(),
+                    ship.getWorld().getTimestamp()));
         };
     }
 
@@ -29,9 +28,8 @@ public class ShieldEventListener {
     public EventListener<ShieldResetRebuildingTimeEvent> shieldResetRebuildingTimeEvent() {
         return event -> {
             Ship ship = event.shield().getShip();
-            networkSystem.sendUDPPacketToAllNearby(
-                    new PacketShieldRebuildingTime(ship.getId(), 0, ship.getWorld().getTimestamp()),
-                    ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
+            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRebuildingTime(ship.getId(), 0,
+                    ship.getWorld().getTimestamp()));
         };
     }
 
@@ -39,8 +37,8 @@ public class ShieldEventListener {
     public EventListener<ShieldRemoveEvent> shieldRemoveEvent() {
         return event -> {
             Ship ship = event.shield().getShip();
-            networkSystem.sendUDPPacketToAllNearby(new PacketShieldRemove(ship.getId(), ship.getWorld().getTimestamp()),
-                    ship.getPosition(), TrackingUtils.TRACKING_DISTANCE);
+            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(),
+                    new PacketShieldRemove(ship.getId(), ship.getWorld().getTimestamp()));
         };
     }
 }

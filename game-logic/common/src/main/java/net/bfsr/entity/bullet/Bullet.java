@@ -1,7 +1,6 @@
 package net.bfsr.entity.bullet;
 
 import lombok.Getter;
-import lombok.Setter;
 import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.config.component.weapon.gun.GunRegistry;
 import net.bfsr.engine.math.LUT;
@@ -21,8 +20,6 @@ import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Polygon;
 import org.dyn4j.world.ContactCollisionData;
-
-import java.util.function.Consumer;
 
 public class Bullet extends RigidBody<GunData> {
     @Getter
@@ -72,14 +69,6 @@ public class Bullet extends RigidBody<GunData> {
         eventBus.publish(postPhysicsUpdateEvent);
     }
 
-    @Setter
-    private Consumer<Bullet> onAddedToWorldConsumer = bullet -> {};
-
-    @Override
-    public void onAddedToWorld() {
-        onAddedToWorldConsumer.accept(this);
-    }
-
     @Override
     public void collision(Body body, BodyFixture fixture, float contactX, float contactY, float normalX, float normalY,
                           ContactCollisionData<Body> collision) {
@@ -110,8 +99,6 @@ public class Bullet extends RigidBody<GunData> {
                                         normalY));
                             });
                 }
-            } else if (userData instanceof Bullet bullet) {
-                bullet.setDead();
             } else if (userData instanceof Wreck wreck) {
                 wreck.damage(damage.getHull(), contactX, contactY, normalX, normalY);
                 setDead();
@@ -159,9 +146,6 @@ public class Bullet extends RigidBody<GunData> {
     public EntityPacketSpawnData createSpawnData() {
         return new BulletSpawnData(this);
     }
-
-    @Override
-    protected void onDataAdded() {}
 
     private boolean canDamageShip(Ship ship) {
         return this.owner != ship && previousAObject != ship || previousAObject != null && previousAObject != ship;

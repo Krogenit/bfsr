@@ -3,9 +3,9 @@ package net.bfsr.ai.task;
 import net.bfsr.entity.ship.Ship;
 
 public abstract class AiTask {
-    protected final Ship ship;
+    protected Ship ship;
 
-    AiTask(Ship ship) {
+    public void init(Ship ship) {
         this.ship = ship;
     }
 

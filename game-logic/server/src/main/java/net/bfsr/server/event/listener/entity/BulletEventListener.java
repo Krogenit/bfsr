@@ -11,16 +11,15 @@ import net.bfsr.event.entity.bullet.BulletDamageShipShieldEvent;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.server.effect.PacketBulletHitShip;
 import net.bfsr.server.ServerGameLogic;
+import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.wreck.WreckSpawner;
-import net.bfsr.server.network.NetworkSystem;
-import net.bfsr.server.util.TrackingUtils;
 import net.bfsr.world.World;
 import org.joml.Vector2f;
 
 import java.util.Random;
 
 public class BulletEventListener {
-    private final NetworkSystem network = ServerGameLogic.getNetwork();
+    private final EntityTrackingManager trackingManager = ServerGameLogic.getInstance().getEntityTrackingManager();
     private final Vector2f angleToVelocity = new Vector2f();
 
     @EventHandler
@@ -56,7 +55,8 @@ public class BulletEventListener {
 
     private void sendHitPacket(Bullet bullet, Ship ship, float contactX, float contactY, float normalX, float normalY,
                                DamageType damageType) {
-        network.sendUDPPacketToAllNearby(new PacketBulletHitShip(bullet, ship, contactX, contactY, normalX, normalY, damageType),
-                bullet.getPosition(), TrackingUtils.TRACKING_DISTANCE);
+        trackingManager.sendPacketToPlayersTrackingEntity(bullet.getId(),
+                new PacketBulletHitShip(bullet, ship, contactX, contactY,
+                        normalX, normalY, damageType));
     }
 }

@@ -1,5 +1,6 @@
 package net.bfsr.entity.ship;
 
+import net.bfsr.ai.Ai;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.damage.DamageMask;
@@ -22,16 +23,16 @@ public class ShipFactory {
         return create(world, world.getNextId(), x, y, angle, Faction.ENGI, ShipRegistry.INSTANCE.get("engi_small"));
     }
 
-    public Ship createBotHumanSmall(World world, float x, float y, float angle) {
-        return createBot(world, x, y, angle, Faction.HUMAN, ShipRegistry.INSTANCE.get("human_small"));
+    public Ship createBotHumanSmall(World world, float x, float y, float angle, Ai ai) {
+        return createBot(world, x, y, angle, Faction.HUMAN, ShipRegistry.INSTANCE.get("human_small"), ai);
     }
 
-    public Ship createBotSaimonSmall(World world, float x, float y, float angle) {
-        return createBot(world, x, y, angle, Faction.SAIMON, ShipRegistry.INSTANCE.get("saimon_small"));
+    public Ship createBotSaimonSmall(World world, float x, float y, float angle, Ai ai) {
+        return createBot(world, x, y, angle, Faction.SAIMON, ShipRegistry.INSTANCE.get("saimon_small"), ai);
     }
 
-    public Ship createBotEngiSmall(World world, float x, float y, float angle) {
-        return createBot(world, x, y, angle, Faction.ENGI, ShipRegistry.INSTANCE.get("engi_small"));
+    public Ship createBotEngiSmall(World world, float x, float y, float angle, Ai ai) {
+        return createBot(world, x, y, angle, Faction.ENGI, ShipRegistry.INSTANCE.get("engi_small"), ai);
     }
 
     private Ship create(World world, int id, float x, float y, float angle, Faction faction, ShipData shipData) {
@@ -47,11 +48,13 @@ public class ShipFactory {
         return ship;
     }
 
-    private Ship createBot(World world, float x, float y, float angle, Faction faction, ShipData shipData) {
+    private Ship createBot(World world, float x, float y, float angle, Faction faction, ShipData shipData, Ai ai) {
         Ship ship = create(world, world.getNextId(), x, y, angle, faction, shipData);
         ship.init(world, world.getNextId());
         ship.setName("[BOT] " + ship.getFaction().toString());
         ShipOutfitter.get().outfit(ship);
+        ai.init(ship);
+        ship.setAi(ai);
         return ship;
     }
 

@@ -2,6 +2,9 @@ package net.bfsr.server.player;
 
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import lombok.Getter;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.RigidBody;
@@ -29,7 +32,7 @@ public class PlayerManager {
     private final RSocketClient databaseRSocketClient = new RSocketClient();
     @Getter
     private final PlayerService playerService = new PlayerService(databaseRSocketClient);
-    private final TMap<Ship, Player> playerByShipMap = new THashMap<>();
+    private final Object2ObjectMap<Ship, Player> playerByShipMap = new Object2ObjectOpenHashMap<>();
 
     public PlayerManager(World world) {
         this.world = world;
@@ -44,7 +47,7 @@ public class PlayerManager {
             Player player = players.get(i);
 
             List<Ship> ships = player.getShips();
-            RigidBody lastAttacker = null;
+            RigidBody<?> lastAttacker = null;
             for (int i1 = 0; i1 < ships.size(); i1++) {
                 Ship ship = ships.get(i1);
                 if (ship.isDead()) {
@@ -104,6 +107,14 @@ public class PlayerManager {
     public void removePlayer(Player player) {
         this.players.remove(player);
         this.playerMap.remove(player.getUsername());
+        ObjectIterator<Player> iterator = playerByShipMap.values().iterator();
+        while (iterator.hasNext()) {
+            Player player1 = iterator.next();
+            if (player1 == player) {
+                iterator.remove();
+                break;
+            }
+        }
     }
 
     private List<Mono<PlayerModel>> saveUsers() {

@@ -5,9 +5,6 @@ import gnu.trove.set.hash.THashSet;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.ai.Ai;
-import net.bfsr.ai.AiAggressiveType;
-import net.bfsr.ai.task.AiAttackTarget;
-import net.bfsr.ai.task.AiSearchTarget;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.damage.ConnectedObject;
@@ -91,7 +88,8 @@ public class Ship extends DamageableRigidBody<ShipData> {
     @Getter
     private final THashSet<Direction> moveDirections = new THashSet<>();
     @Getter
-    private Ai ai;
+    @Setter
+    private Ai ai = Ai.NO_AI;
     @Getter
     @Setter
     private RigidBody<?> target;
@@ -115,10 +113,6 @@ public class Ship extends DamageableRigidBody<ShipData> {
     public void init(World world, int id) {
         super.init(world, id);
         modules.init(this);
-
-        if (SideUtils.IS_SERVER && world.isServer()) {
-            addAI();
-        }
     }
 
     @Override
@@ -257,9 +251,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
                 }
             }
         } else {
-            if (ai != null) {
-                ai.update();
-            }
+            ai.update();
         }
     }
 
@@ -292,11 +284,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
     }
 
     @Override
-    protected void updateLifeTime() {
-        if (world.isClient() && lifeTime++ >= 60) {
-            setDead();
-        }
-    }
+    protected void updateLifeTime() {}
 
     @Override
     public void postPhysicsUpdate() {
@@ -434,17 +422,6 @@ public class Ship extends DamageableRigidBody<ShipData> {
     public void resetPositionCalculatorAndChronologicalProcessor() {
         positionCalculator = super::calcPosition;
         chronologicalDataProcessor = super::processChronologicalData;
-    }
-
-    public void addAI() {
-        this.ai = new Ai();
-        this.ai.setAggressiveType(AiAggressiveType.ATTACK);
-        this.ai.addTask(new AiSearchTarget(this, 4000.0f));
-        this.ai.addTask(new AiAttackTarget(this, 4000.0f));
-    }
-
-    public void removeAI() {
-        this.ai = null;
     }
 
     @Override

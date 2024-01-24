@@ -1,6 +1,7 @@
 package net.bfsr.client.input;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.bfsr.client.Core;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.gui.GuiManager;
@@ -10,12 +11,9 @@ import net.bfsr.engine.event.EventBusManager;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
-import net.bfsr.entity.EntityDataHistoryManager;
-import net.bfsr.entity.GameObject;
-import net.bfsr.entity.TransformData;
+import net.bfsr.entity.*;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.engine.Engines;
-import net.bfsr.event.module.weapon.WeaponShotEvent;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.network.packet.input.*;
@@ -27,6 +25,10 @@ import java.util.List;
 import static net.bfsr.engine.input.Keys.*;
 
 public class PlayerInputController extends InputController {
+    private static final int NOT_CONTROLLED_SHIP_ID = -1;
+
+    @Setter
+    private int controlledShipId = NOT_CONTROLLED_SHIP_ID;
     @Getter
     private Ship ship;
     private Core core;
@@ -36,6 +38,7 @@ public class PlayerInputController extends InputController {
     private boolean mouseLeftDown;
     private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
     private EventBusManager eventBus;
+    private final PositionHistory positionHistory = new PositionHistory(500);
 
     @Override
     public void init() {
@@ -47,10 +50,23 @@ public class PlayerInputController extends InputController {
 
     @Override
     public void update() {
-        if (ship == null || guiManager.isActive()) return;
+        if (guiManager.isActive()) return;
+
+        if (ship == null) {
+            if (controlledShipId == NOT_CONTROLLED_SHIP_ID) {
+                return;
+            }
+
+            RigidBody<?> entity = core.getWorld().getEntityById(controlledShipId);
+            if (!(entity instanceof Ship ship)) {
+                return;
+            }
+
+            setShip(ship);
+        }
 
         if (ship.isDead()) {
-            ship = null;
+            resetControlledShip();
             return;
         }
 
@@ -135,11 +151,7 @@ public class PlayerInputController extends InputController {
         ship.getMoveDirections().forEach(ship::move);
 
         if (mouseLeftDown) {
-            ship.shoot(weaponSlot -> {
-                WeaponShotEvent event = new WeaponShotEvent(weaponSlot);
-                eventBus.publish(event);
-                weaponSlot.getWeaponSlotEventBus().publish(event);
-            });
+            ship.shoot(weaponSlot -> weaponSlot.createBullet(0));
         }
     }
 
@@ -217,24 +229,25 @@ public class PlayerInputController extends InputController {
         if (ship != null) {
             EntityDataHistoryManager historyManager = ship.getWorld().getEntityManager().getDataHistoryManager();
             ship.setPositionCalculator(timestamp -> {
-                TransformData serverTransformData = historyManager.getTransformData(ship.getId(),
-                        timestamp + Core.get().getClientRenderDelayInNanos());
+                Vector2f position = ship.getPosition();
+                double time = timestamp + Core.get().getClientRenderDelayInNanos();
+                positionHistory.addPositionData(position, ship.getSin(), ship.getCos(), time);
+
+                TransformData serverTransformData = historyManager.getTransformData(ship.getId(), timestamp);
 
                 if (serverTransformData == null) {
                     return;
                 }
 
-                Vector2f position = ship.getPosition();
-                Vector2f serverPosition = serverTransformData.getPosition();
-                float dx = serverPosition.x - position.x;
-                float dy = serverPosition.y - position.y;
-                ship.setPosition(position.x + dx, position.y + dy);
-
-                float currSin = ship.getSin();
-                float currCos = ship.getCos();
-                float sinDiff = serverTransformData.getSin() - currSin;
-                float cosDiff = serverTransformData.getCos() - currCos;
-                ship.setRotation(currSin + sinDiff, currCos + cosDiff);
+                TransformData localTransformData = positionHistory.get(timestamp);
+                if (localTransformData != null) {
+                    Vector2f serverPosition = serverTransformData.getPosition();
+                    Vector2f localPosition = localTransformData.getPosition();
+                    float dx = serverPosition.x - localPosition.x;
+                    float dy = serverPosition.y - localPosition.y;
+                    ship.setPosition(position.x + dx, position.y + dy);
+                    positionHistory.correction(dx, dy);
+                }
             });
             ship.setChronologicalDataProcessor(timestamp -> {});
             ship.setControlledByPlayer(true);
@@ -245,8 +258,14 @@ public class PlayerInputController extends InputController {
         return ship != null;
     }
 
+    public void resetControlledShip() {
+        setShip(null);
+        controlledShipId = NOT_CONTROLLED_SHIP_ID;
+        positionHistory.clear();
+    }
+
     @EventHandler
     public EventListener<ExitToMainMenuEvent> exitToMainMenuEvent() {
-        return event -> ship = null;
+        return event -> resetControlledShip();
     }
 }

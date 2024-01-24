@@ -22,6 +22,7 @@ import net.bfsr.network.packet.server.login.PacketDisconnectLogin;
 import net.bfsr.network.packet.server.login.PacketJoinGame;
 import net.bfsr.network.packet.server.login.PacketLoginSuccess;
 import net.bfsr.server.ServerGameLogic;
+import net.bfsr.server.event.PlayerJoinGameEvent;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
 import net.bfsr.world.World;
@@ -163,6 +164,8 @@ public class PlayerNetworkHandler extends NetworkHandler {
         } else {
             sendTCPPacket(new PacketOpenGui(GuiType.SELECT_FACTION));
         }
+
+        world.getEventBus().publish(new PlayerJoinGameEvent(player));
     }
 
     private void initShips(Player player) {

@@ -7,6 +7,7 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.RotationHelper;
+import net.bfsr.server.ai.AiFactory;
 import net.bfsr.world.World;
 import org.joml.Vector2f;
 
@@ -38,7 +39,7 @@ public class ShipSpawner {
             lastFaction = s.getFaction();
         }
 
-        if (botCount < 400 || sameFaction) {
+        if (botCount < 50 || sameFaction) {
             timer = 40;
             int maxCount = 1;
             int count = maxCount;
@@ -51,7 +52,7 @@ public class ShipSpawner {
                 float addX = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 float addY = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 world.add(ShipFactory.get().createBotHumanSmall(world, angleToVelocity.x + addX, angleToVelocity.y + addY,
-                        rand.nextFloat() * MathUtils.TWO_PI), false);
+                        rand.nextFloat() * MathUtils.TWO_PI, AiFactory.createAi()), false);
             }
 
             RotationHelper.rotate(rotation, angleToVelocity.x, angleToVelocity.y, angleToVelocity);
@@ -61,7 +62,7 @@ public class ShipSpawner {
                 float addX = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 float addY = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 world.add(ShipFactory.get().createBotSaimonSmall(world, angleToVelocity.x + addX, angleToVelocity.y + addY,
-                        rand.nextFloat() * MathUtils.TWO_PI), false);
+                        rand.nextFloat() * MathUtils.TWO_PI, AiFactory.createAi()), false);
             }
 
             RotationHelper.rotate(rotation, angleToVelocity.x, angleToVelocity.y, angleToVelocity);
@@ -71,7 +72,7 @@ public class ShipSpawner {
                 float addX = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 float addY = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 world.add(ShipFactory.get().createBotEngiSmall(world, angleToVelocity.x + addX, angleToVelocity.y + addY,
-                        rand.nextFloat() * MathUtils.TWO_PI), false);
+                        rand.nextFloat() * MathUtils.TWO_PI, AiFactory.createAi()), false);
             }
         }
     }

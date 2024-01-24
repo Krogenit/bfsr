@@ -1,6 +1,8 @@
-package net.bfsr.ai.task;
+package net.bfsr.server.ai.task;
 
+import lombok.RequiredArgsConstructor;
 import net.bfsr.ai.AiAggressiveType;
+import net.bfsr.ai.task.AiTask;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.Direction;
@@ -9,13 +11,9 @@ import org.joml.Vector2f;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 public class AiSearchTarget extends AiTask {
     private final float maxSearchRange;
-
-    public AiSearchTarget(Ship ship, float searchRange) {
-        super(ship);
-        this.maxSearchRange = searchRange;
-    }
 
     @Override
     public void execute() {

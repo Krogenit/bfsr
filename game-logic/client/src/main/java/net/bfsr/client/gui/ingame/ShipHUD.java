@@ -84,7 +84,7 @@ public class ShipHUD {
             Ship playerControlledShip = playerInputController.getShip();
             if (playerControlledShip != null) {
                 core.sendTCPPacket(new PacketShipControl(playerControlledShip.getId(), false));
-                playerInputController.setShip(null);
+                playerInputController.resetControlledShip();
                 selectShip(playerControlledShip);
                 onShipControlCanceled();
             } else if (currentShip != null) {

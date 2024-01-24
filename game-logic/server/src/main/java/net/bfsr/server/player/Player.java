@@ -2,10 +2,11 @@ package net.bfsr.server.player;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.bfsr.entity.RigidBody;
+import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.packet.server.player.PacketSetPlayerShip;
-import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.dto.Default;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import org.joml.Vector2f;
@@ -29,7 +30,7 @@ public class Player {
     public Player(String id, String username) {
         this.id = id;
         this.username = username;
-        this.playerInputController = new PlayerInputController();
+        this.playerInputController = new PlayerInputController(this);
     }
 
     public Player(String username) {
@@ -38,7 +39,6 @@ public class Player {
 
     public void setShip(Ship ship) {
         playerInputController.setShip(ship);
-        ServerGameLogic.getInstance().getPlayerManager().setPlayerControlledShip(this, ship);
         networkHandler.sendTCPPacket(new PacketSetPlayerShip(ship.getId(), ship.getWorld().getTimestamp()));
     }
 
@@ -57,5 +57,18 @@ public class Player {
 
     public void removeShip(Ship ship) {
         ships.remove(ship);
+    }
+
+    public float getX() {
+        return position.x;
+    }
+
+    public float getY() {
+        return position.y;
+    }
+
+    public boolean canTrackEntity(RigidBody<?> rigidBody) {
+        Ship ship = playerInputController.getShip();
+        return ship == null || !(rigidBody instanceof Bullet bullet) || bullet.getOwner() != ship;
     }
 }

@@ -18,11 +18,10 @@ public final class RigidBodyUtils {
         return getRotationDifference(gameObject, vector.x, vector.y);
     }
 
-    public float getRotationDifference(RigidBody<?> gameObject, float x, float y) {
+    private float getRotationDifference(RigidBody<?> gameObject, float x, float y) {
         Vector2f position = gameObject.getPosition();
-        rotateToVector.set(x - position.x, y - position.y);
-        RotationHelper.angleToVelocity(gameObject.getSin(), gameObject.getCos(), 1.0f, angleToVelocity);
-        return angleToVelocity.angle(rotateToVector);
+        return angleToVelocity.set(gameObject.getCos(), gameObject.getSin()).angle(rotateToVector.set(x - position.x,
+                y - position.y));
     }
 
     public void rotateToVector(RigidBody<?> gameObject, Vector2f vector, float rotationSpeed) {
@@ -35,9 +34,11 @@ public final class RigidBodyUtils {
         float sin = gameObject.getSin();
         float cos = gameObject.getCos();
         if (addRot >= diffAbs) {
-            float sin1 = Math.sin(diffRad);
-            float cos1 = Math.cos(diffRad);
-            gameObject.setRotation(sin * cos1 + cos * sin1, cos * cos1 - sin * sin1);
+            if (diffAbs > 0.001f) {
+                float sin1 = Math.sin(diffRad);
+                float cos1 = Math.cos(diffRad);
+                gameObject.setRotation(sin * cos1 + cos * sin1, cos * cos1 - sin * sin1);
+            }
         } else {
             addRot = diffRad > 0 ? addRot : -addRot;
             float sin1 = Math.sin(addRot);

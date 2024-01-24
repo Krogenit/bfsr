@@ -7,11 +7,11 @@ public class PositionHistory extends EntityDataHistory<TransformData> {
     private final ObjectPool<TransformData> cache = new ObjectPool<>(TransformData::new);
     private final TransformData cachedTransformData = new TransformData();
 
-    PositionHistory(double historyLengthMillis) {
+    public PositionHistory(double historyLengthMillis) {
         super(historyLengthMillis);
     }
 
-    void addPositionData(Vector2f pos, float sin, float cos, double time) {
+    public void addPositionData(Vector2f pos, float sin, float cos, double time) {
         TransformData positionData = cache.get();
         positionData.setPosition(pos);
         positionData.setSin(sin);
@@ -62,5 +62,12 @@ public class PositionHistory extends EntityDataHistory<TransformData> {
     public void clear() {
         dataList.clear();
         cache.clear();
+    }
+
+    public void correction(float dx, float dy) {
+        for (int i = 0; i < dataList.size(); i++) {
+            TransformData transformData = dataList.get(i);
+            transformData.getPosition().add(dx, dy);
+        }
     }
 }

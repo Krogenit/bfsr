@@ -1,18 +1,21 @@
-package net.bfsr.ai.task;
+package net.bfsr.server.ai.task;
 
+import lombok.RequiredArgsConstructor;
+import net.bfsr.ai.task.AiTask;
 import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.engine.Engine;
 import net.bfsr.entity.RigidBody;
-import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.entity.ship.module.weapon.WeaponType;
-import net.bfsr.event.module.weapon.WeaponShotEvent;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.math.RotationHelper;
+import net.bfsr.network.packet.server.component.PacketWeaponShoot;
+import net.bfsr.server.ServerGameLogic;
+import net.bfsr.server.entity.EntityTrackingManager;
 import org.dyn4j.geometry.AABB;
 import org.joml.Vector2f;
 
@@ -21,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
+@RequiredArgsConstructor
 public class AiAttackTarget extends AiTask {
     private final float maxAttackRange;
     private int changeDirTimer;
@@ -32,11 +36,7 @@ public class AiAttackTarget extends AiTask {
     private final Vector2f totalTargetVelocity = new Vector2f();
     private final Vector2f bulletFinalPos = new Vector2f();
     private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
-
-    public AiAttackTarget(Ship ship, float maxAttackRange) {
-        super(ship);
-        this.maxAttackRange = maxAttackRange;
-    }
+    private final EntityTrackingManager trackingManager = ServerGameLogic.getInstance().getEntityTrackingManager();
 
     @Override
     public void execute() {
@@ -108,8 +108,11 @@ public class AiAttackTarget extends AiTask {
 
                 if (targetToShip <= bulletToShip) {
                     if (Math.abs(rigidBodyUtils.getRotationDifference(ship, targetFinalPos)) <= 0.1f + shipSizeAverage / 25.0f) {
-                        slot.tryShoot(weaponSlot -> ship.getWorld().getEventBus().publish(new WeaponShotEvent(weaponSlot)),
-                                modules.getReactor());
+                        slot.tryShoot(weaponSlot -> {
+                            weaponSlot.createBullet(0);
+                            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketWeaponShoot(ship.getId(),
+                                    weaponSlot.getId(), ship.getWorld().getTimestamp()));
+                        }, modules.getReactor());
                     }
                 }
 

@@ -9,7 +9,9 @@ import net.bfsr.engine.util.Side;
 import net.bfsr.entity.EntityIdManager;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.server.config.ServerSettings;
+import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.ship.ShipSpawner;
+import net.bfsr.server.event.PlayerDisconnectEvent;
 import net.bfsr.server.event.listener.damage.DamageEventListener;
 import net.bfsr.server.event.listener.entity.BulletEventListener;
 import net.bfsr.server.event.listener.entity.ShipEventListener;
@@ -17,8 +19,6 @@ import net.bfsr.server.event.listener.entity.WreckEventListener;
 import net.bfsr.server.event.listener.module.ModuleEventListener;
 import net.bfsr.server.event.listener.module.shield.ShieldEventListener;
 import net.bfsr.server.event.listener.module.weapon.WeaponEventListener;
-import net.bfsr.server.event.listener.world.WorldEventListener;
-import net.bfsr.server.network.EntitySyncManager;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
@@ -47,7 +47,8 @@ public class ServerGameLogic extends GameLogic {
     private ShipSpawner shipSpawner;
     @Getter
     private final DamageSystem damageSystem = new DamageSystem();
-    private final EntitySyncManager entitySyncManager = new EntitySyncManager();
+    @Getter
+    private EntityTrackingManager entityTrackingManager;
 
     protected ServerGameLogic() {
         instance = this;
@@ -60,6 +61,7 @@ public class ServerGameLogic extends GameLogic {
         playerManager = new PlayerManager(world);
         networkSystem = new NetworkSystem(playerManager);
         shipSpawner = new ShipSpawner(world);
+        entityTrackingManager = new EntityTrackingManager();
 
         profiler.setEnable(true);
         networkSystem.init();
@@ -77,7 +79,6 @@ public class ServerGameLogic extends GameLogic {
         eventBus.register(new BulletEventListener());
         eventBus.register(new WreckEventListener());
         eventBus.register(new DamageEventListener());
-        eventBus.register(new WorldEventListener());
         eventBus.register(new ModuleEventListener());
     }
 
@@ -118,7 +119,7 @@ public class ServerGameLogic extends GameLogic {
     protected void updateWorld(double time) {
         world.update(time);
         shipSpawner.update();
-        entitySyncManager.sendEntitiesToClients(world.getEntities(), time);
+        entityTrackingManager.update(time);
     }
 
     public void onPlayerDisconnected(Player player) {
@@ -128,6 +129,8 @@ public class ServerGameLogic extends GameLogic {
         for (int i = 0, shipsSize = ships.size(); i < shipsSize; i++) {
             ships.get(i).setDead();
         }
+
+        eventBus.publish(new PlayerDisconnectEvent(player));
     }
 
     void setFps(int fps) {

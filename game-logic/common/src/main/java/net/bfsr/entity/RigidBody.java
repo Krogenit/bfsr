@@ -101,10 +101,6 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
             if (lifeTime >= maxLifeTime) {
                 setDead();
             }
-        } else {
-            if (lifeTime >= 60) {
-                setDead();
-            }
         }
     }
 

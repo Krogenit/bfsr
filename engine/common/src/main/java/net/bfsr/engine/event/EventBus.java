@@ -4,7 +4,7 @@ package net.bfsr.engine.event;
 import net.bfsr.engine.collection.UnorderedArrayList;
 
 public class EventBus<T extends Event> {
-    private final UnorderedArrayList<EventListener<T>> listeners = new UnorderedArrayList<>(EventListener.class);
+    private final UnorderedArrayList<EventListener<T>> listeners = new UnorderedArrayList<>();
 
     void addListener(EventListener<T> listener) {
         listeners.add(listener);

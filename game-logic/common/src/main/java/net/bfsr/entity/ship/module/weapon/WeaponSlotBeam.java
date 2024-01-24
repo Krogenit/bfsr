@@ -7,7 +7,6 @@ import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.util.SideUtils;
 import net.bfsr.entity.RigidBody;
-import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.reactor.Reactor;
@@ -96,8 +95,8 @@ public class WeaponSlotBeam extends WeaponSlot {
     }
 
     @Override
-    public void shoot(Consumer<WeaponSlot> onShotEvent, Reactor reactor) {
-        super.shoot(onShotEvent, reactor);
+    public void shoot(Consumer<WeaponSlot> onShotConsumer, Reactor reactor) {
+        super.shoot(onShotConsumer, reactor);
         aliveTimerInTicks = maxAliveTimerInTicks;
     }
 
@@ -158,7 +157,7 @@ public class WeaponSlotBeam extends WeaponSlot {
     }
 
     @Override
-    public void createBullet(float fastForwardTime, Consumer<Bullet> syncLogic) {}
+    public void createBullet(float fastForwardTime) {}
 
     @Override
     public int getRegistryId() {

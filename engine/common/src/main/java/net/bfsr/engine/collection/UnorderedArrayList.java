@@ -12,12 +12,19 @@ public class UnorderedArrayList<T> {
     private T[] items;
     private int size;
 
-    public UnorderedArrayList(int capacity, Class<?> arrayType) {
-        this.items = (T[]) Array.newInstance(arrayType, capacity);
+    @SuppressWarnings({"unchecked", "SuspiciousArrayCast"})
+    public UnorderedArrayList(int capacity) {
+        this.items = (T[]) new Object[capacity];
     }
 
-    public UnorderedArrayList(Class<?> arrayType) {
-        this(16, arrayType);
+    public UnorderedArrayList() {
+        this(16);
+    }
+
+    public UnorderedArrayList(UnorderedArrayList<T> unorderedArrayList) {
+        this(unorderedArrayList.size);
+        this.size = unorderedArrayList.size;
+        System.arraycopy(unorderedArrayList.items, 0, this.items, 0, this.size);
     }
 
     public void add(T value) {

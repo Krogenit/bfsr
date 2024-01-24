@@ -1,34 +1,34 @@
 package net.bfsr.server.network;
 
+import net.bfsr.engine.collection.UnorderedArrayList;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.network.packet.common.entity.PacketWorldSnapshot;
 import net.bfsr.server.ServerGameLogic;
-
-import java.util.ArrayList;
-import java.util.List;
+import net.bfsr.server.player.Player;
 
 public class EntitySyncManager {
     private static final int MAX_ENTITY_DATA_IN_PACKET = 32;
 
-    public void sendEntitiesToClients(List<? extends RigidBody<?>> entities, double time) {
-        List<PacketWorldSnapshot.EntityData> entityDataList = new ArrayList<>(
-                Math.min(MAX_ENTITY_DATA_IN_PACKET, entities.size()));
+    private final NetworkSystem network = ServerGameLogic.getNetwork();
+    private final UnorderedArrayList<PacketWorldSnapshot.EntityData> entityDataList = new UnorderedArrayList<>(128);
 
-        for (int i = 0; i < entities.size(); i++) {
-            RigidBody<?> rigidBody = entities.get(i);
-            entityDataList.add(new PacketWorldSnapshot.EntityData(rigidBody, time));
+    public void addToSyncQueue(RigidBody<?> entity, double time, Player player) {
+        entityDataList.add(new PacketWorldSnapshot.EntityData(entity, time));
 
-            if (entityDataList.size() == MAX_ENTITY_DATA_IN_PACKET) {
-                ServerGameLogic.getNetwork().sendUDPPacketToAll(new PacketWorldSnapshot(entityDataList, time));
-                int newCount = entities.size() - (i + 1);
-                if (newCount > 0) {
-                    entityDataList = new ArrayList<>(Math.min(MAX_ENTITY_DATA_IN_PACKET, newCount));
-                }
-            }
+        if (entityDataList.size() == MAX_ENTITY_DATA_IN_PACKET) {
+            network.sendUDPPacketTo(new PacketWorldSnapshot(entityDataList, time), player);
+            entityDataList.clear();
         }
+    }
 
+    public void flush(Player player, double time) {
         if (entityDataList.size() > 0) {
-            ServerGameLogic.getNetwork().sendUDPPacketToAll(new PacketWorldSnapshot(entityDataList, time));
+            network.sendUDPPacketTo(new PacketWorldSnapshot(entityDataList, time), player);
+            entityDataList.clear();
         }
+    }
+
+    public void clear() {
+        entityDataList.clear();
     }
 }

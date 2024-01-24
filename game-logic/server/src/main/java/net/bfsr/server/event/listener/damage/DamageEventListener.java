@@ -6,18 +6,16 @@ import net.bfsr.engine.event.EventListener;
 import net.bfsr.event.damage.DamageEvent;
 import net.bfsr.network.packet.server.entity.PacketSyncDamage;
 import net.bfsr.server.ServerGameLogic;
-import net.bfsr.server.network.NetworkSystem;
-import net.bfsr.server.util.TrackingUtils;
+import net.bfsr.server.entity.EntityTrackingManager;
 
 public class DamageEventListener {
-    private final NetworkSystem networkSystem = ServerGameLogic.getNetwork();
+    private final EntityTrackingManager entityTrackingManager = ServerGameLogic.getInstance().getEntityTrackingManager();
 
     @EventHandler
     public EventListener<DamageEvent> damageEvent() {
         return event -> {
             DamageableRigidBody<?> damageable = event.getDamageable();
-            networkSystem.sendTCPPacketToAllNearby(new PacketSyncDamage(damageable), damageable.getX(), damageable.getY(),
-                    TrackingUtils.TRACKING_DISTANCE);
+            entityTrackingManager.sendPacketToPlayersTrackingEntity(damageable.getId(), new PacketSyncDamage(damageable));
         };
     }
 }

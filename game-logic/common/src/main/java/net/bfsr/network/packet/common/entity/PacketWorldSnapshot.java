@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import net.bfsr.engine.collection.UnorderedArrayList;
 import net.bfsr.entity.ChronologicalEntityData;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.network.packet.common.PacketScheduled;
@@ -11,17 +12,15 @@ import net.bfsr.network.util.ByteBufUtils;
 import org.joml.Vector2f;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @NoArgsConstructor
 public class PacketWorldSnapshot extends PacketScheduled {
-    private List<EntityData> entityDataList;
+    private UnorderedArrayList<EntityData> entityDataList;
 
-    public PacketWorldSnapshot(List<EntityData> entityDataList, double timestamp) {
+    public PacketWorldSnapshot(UnorderedArrayList<EntityData> entityDataList, double timestamp) {
         super(timestamp);
-        this.entityDataList = entityDataList;
+        this.entityDataList = new UnorderedArrayList<>(entityDataList);
     }
 
     @Override
@@ -39,7 +38,7 @@ public class PacketWorldSnapshot extends PacketScheduled {
     public void read(ByteBuf data) throws IOException {
         super.read(data);
         int size = data.readShort();
-        entityDataList = new ArrayList<>(size);
+        entityDataList = new UnorderedArrayList<>(size);
         for (int i = 0; i < size; i++) {
             entityDataList.add(new EntityData(data));
         }

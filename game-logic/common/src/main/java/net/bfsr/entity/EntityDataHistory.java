@@ -7,7 +7,7 @@ public class EntityDataHistory<T extends ChronologicalEntityData> {
     final double historyLengthMillis;
 
     EntityDataHistory(double historyLengthMillis) {
-        this.historyLengthMillis = historyLengthMillis;
+        this.historyLengthMillis = historyLengthMillis * 1_000_000;
     }
 
     void addData(T data) {

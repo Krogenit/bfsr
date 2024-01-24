@@ -1,8 +1,8 @@
-package net.bfsr.ai.task;
+package net.bfsr.server.ai.task;
 
+import net.bfsr.ai.task.AiTask;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.RigidBody;
-import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.RotationHelper;
 import org.joml.Vector2f;
 
@@ -15,14 +15,12 @@ public class AiFlyingAround extends AiTask {
 
     private static final float UPDATE_LENGTH = 25;
 
-    public AiFlyingAround(Ship ship, Vector2f point, float size) {
-        super(ship);
+    public AiFlyingAround(Vector2f point, float size) {
         this.point = point;
         this.size = size;
     }
 
-    public AiFlyingAround(Ship ship, RigidBody<?> obj, float size) {
-        super(ship);
+    public AiFlyingAround(RigidBody<?> obj, float size) {
         this.obj = obj;
         this.size = size;
     }

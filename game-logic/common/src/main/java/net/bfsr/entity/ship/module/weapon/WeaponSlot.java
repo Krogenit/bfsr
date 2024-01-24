@@ -16,6 +16,7 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.entity.ship.module.reactor.Reactor;
+import net.bfsr.event.module.weapon.WeaponShotEvent;
 import net.bfsr.event.module.weapon.WeaponSlotRemovedEvent;
 import net.bfsr.network.util.ByteBufUtils;
 import net.bfsr.physics.PhysicsUtils;
@@ -119,20 +120,21 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
         body.addFixture(fixture);
     }
 
-    public void tryShoot(Consumer<WeaponSlot> onShotEvent, Reactor reactor) {
+    public void tryShoot(Consumer<WeaponSlot> onShotConsumer, Reactor reactor) {
         float energy = reactor.getEnergy();
         if (reloadTimer <= 0 && energy >= energyCost) {
-            shoot(onShotEvent, reactor);
+            shoot(onShotConsumer, reactor);
         }
     }
 
-    public void shoot(Consumer<WeaponSlot> onShotEvent, Reactor reactor) {
+    public void shoot(Consumer<WeaponSlot> onShotConsumer, Reactor reactor) {
         reloadTimer = timeToReload;
         reactor.consume(energyCost);
-        onShotEvent.accept(this);
+        onShotConsumer.accept(this);
+        weaponSlotEventBus.publish(new WeaponShotEvent(this));
     }
 
-    public void createBullet(float fastForwardTime, Consumer<Bullet> syncLogic) {
+    public void createBullet(float fastForwardTime) {
         float cos = ship.getCos();
         float sin = ship.getSin();
         float x = position.x + size.x * cos;
@@ -148,7 +150,6 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
 
         Bullet bullet = new Bullet(x, y, sin, cos, gunData, ship, gunData.getDamage().copy());
         bullet.init(world, world.getNextId());
-        bullet.setOnAddedToWorldConsumer(syncLogic);
         world.add(bullet);
     }
 
