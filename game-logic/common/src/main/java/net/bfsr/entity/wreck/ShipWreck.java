@@ -9,6 +9,7 @@ import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.event.entity.wreck.BulletDamageShipWreckEvent;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.ShipWreckSpawnData;
+import net.bfsr.physics.CollisionMatrixType;
 import org.dyn4j.geometry.MassType;
 
 public class ShipWreck extends DamageableRigidBody<ShipData> {
@@ -32,5 +33,10 @@ public class ShipWreck extends DamageableRigidBody<ShipData> {
     @Override
     public EntityPacketSpawnData createSpawnData() {
         return new ShipWreckSpawnData(this);
+    }
+
+    @Override
+    public int getCollisionMatrixType() {
+        return CollisionMatrixType.SHIP_WRECK.ordinal();
     }
 }

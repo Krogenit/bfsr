@@ -9,7 +9,7 @@ import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.event.EventBusManager;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
@@ -44,11 +44,11 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
     private final GunData gunData;
     @Getter
     private final WeaponType weaponType;
-    protected EventBusManager eventBus;
+    protected EventBus eventBus;
     @Getter
     private float sin, cos;
     @Getter
-    protected final EventBusManager weaponSlotEventBus = new EventBusManager();
+    protected final EventBus weaponSlotEventBus = new EventBus();
 
     public WeaponSlot(GunData gunData, WeaponType weaponType) {
         super(gunData.getHp(), gunData.getSizeX(), gunData.getSizeY());

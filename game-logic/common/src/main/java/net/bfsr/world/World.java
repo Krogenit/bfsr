@@ -2,7 +2,7 @@ package net.bfsr.world;
 
 import lombok.Getter;
 import net.bfsr.engine.GameLogic;
-import net.bfsr.engine.event.EventBusManager;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.util.Side;
 import net.bfsr.entity.EntityIdManager;
@@ -12,6 +12,7 @@ import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.physics.CCDTransformHandler;
+import net.bfsr.physics.CollisionMatrix;
 import net.bfsr.physics.ContactListener;
 import net.bfsr.physics.CustomValueMixer;
 import org.dyn4j.dynamics.Body;
@@ -35,14 +36,16 @@ public class World {
     @Getter
     private final EntityManager entityManager = new EntityManager();
     @Getter
-    private final EventBusManager eventBus;
+    private final EventBus eventBus;
     @Getter
     private double timestamp;
     private final EntityIdManager entityIdManager;
     @Getter
     private final GameLogic gameLogic;
+    @Getter
+    private final CollisionMatrix collisionMatrix;
 
-    public World(Profiler profiler, Side side, long seed, EventBusManager eventBus, EntityIdManager entityIdManager,
+    public World(Profiler profiler, Side side, long seed, EventBus eventBus, EntityIdManager entityIdManager,
                  GameLogic gameLogic) {
         this.profiler = profiler;
         this.side = side;
@@ -50,6 +53,7 @@ public class World {
         this.eventBus = eventBus;
         this.entityIdManager = entityIdManager;
         this.gameLogic = gameLogic;
+        this.collisionMatrix = new CollisionMatrix(eventBus);
     }
 
     private void initPhysicWorld() {
@@ -60,7 +64,7 @@ public class World {
         physicWorld.getSettings().setVelocityConstraintSolverIterations(1);
         physicWorld.getSettings().setStepFrequency(gameLogic.getUpdateDeltaTime());
         physicWorld.getSettings().setContinuousDetectionMode(ContinuousDetectionMode.BULLETS_ONLY);
-        physicWorld.addContactListener(new ContactListener());
+        physicWorld.addContactListener(new ContactListener(collisionMatrix));
         physicWorld.addTimeOfImpactListener(ccdTransformHandler);
         physicWorld.setValueMixer(new CustomValueMixer());
     }

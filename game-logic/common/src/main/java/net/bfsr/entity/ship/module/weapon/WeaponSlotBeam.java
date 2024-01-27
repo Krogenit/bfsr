@@ -5,16 +5,12 @@ import net.bfsr.config.component.weapon.beam.BeamData;
 import net.bfsr.config.component.weapon.beam.BeamRegistry;
 import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.util.SideUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.reactor.Reactor;
-import net.bfsr.entity.wreck.Wreck;
-import net.bfsr.event.module.weapon.beam.BeamDamageShipArmorEvent;
-import net.bfsr.event.module.weapon.beam.BeamDamageShipHullEvent;
-import net.bfsr.event.module.weapon.beam.BeamDamageShipShieldEvent;
-import net.bfsr.event.module.weapon.beam.BeamDamageWreckEvent;
+import net.bfsr.physics.RayCastSource;
+import net.bfsr.physics.RayCastType;
 import net.bfsr.physics.filter.BeamFilter;
 import org.dyn4j.collision.narrowphase.Raycast;
 import org.dyn4j.dynamics.Body;
@@ -22,13 +18,12 @@ import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Ray;
 import org.dyn4j.geometry.Vector2;
 import org.dyn4j.world.DetectFilter;
-import org.dyn4j.world.World;
 import org.dyn4j.world.result.RaycastResult;
 import org.joml.Vector2f;
 
 import java.util.function.Consumer;
 
-public class WeaponSlotBeam extends WeaponSlot {
+public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     @Getter
     private final float beamMaxRange;
     @Getter
@@ -37,6 +32,7 @@ public class WeaponSlotBeam extends WeaponSlot {
     private float beamPower;
     @Getter
     private final Vector2f collisionPoint = new Vector2f();
+    @Getter
     private final BulletDamage damage;
     private final Vector2 rayStart = new Vector2();
     private final Ray ray = new Ray(0);
@@ -101,8 +97,6 @@ public class WeaponSlotBeam extends WeaponSlot {
     }
 
     private void rayCast() {
-        World<Body> physicWorld = world.getPhysicWorld();
-
         float cos = ship.getCos();
         float sin = ship.getSin();
         float startRange = -size.x;
@@ -116,7 +110,7 @@ public class WeaponSlotBeam extends WeaponSlot {
         ray.setStart(rayStart);
         rayDirection.set(cos, sin);
         ray.setDirection(rayDirection);
-        RaycastResult<Body, BodyFixture> result = physicWorld.raycastClosest(ray, beamMaxRange, detectFilter);
+        RaycastResult<Body, BodyFixture> result = world.getPhysicWorld().raycastClosest(ray, beamMaxRange, detectFilter);
         if (result == null) {
             currentBeamRange = beamMaxRange;
             return;
@@ -130,30 +124,11 @@ public class WeaponSlotBeam extends WeaponSlot {
         collisionPoint.y = (float) point.y;
         currentBeamRange = (float) raycast.getDistance();
 
-        Object userData = body.getUserData();
+        RigidBody<?> rigidBody = (RigidBody<?>) body.getUserData();
 
-        if (userData == null) {
-            return;
-        }
-
-        float posX = startX + cos * currentBeamRange;
-        float posY = startY + sin * currentBeamRange;
-        float hitX = position.x + posX;
-        float hitY = position.y + posY;
-        if (userData instanceof Ship ship) {
-            ship.damage(damage, this.ship, collisionPoint.x, collisionPoint.y,
-                    ship.getFaction() == this.ship.getFaction() ? beamPower / 2.0f * Engine.getUpdateDeltaTime() :
-                            beamPower * Engine.getUpdateDeltaTime(), result.getFixture(),
-                    () -> weaponSlotEventBus.publish(new BeamDamageShipShieldEvent(this, ship, raycast, hitX, hitY)),
-                    () -> weaponSlotEventBus.publish(new BeamDamageShipArmorEvent(this, ship, raycast, hitX, hitY)),
-                    () -> weaponSlotEventBus.publish(new BeamDamageShipHullEvent(this, ship, raycast, hitX, hitY)));
-        } else if (userData instanceof Wreck wreck) {
-            if (SideUtils.IS_SERVER && world.isServer()) {
-                wreck.damage(damage.getHull() * beamPower * Engine.getUpdateDeltaTime(), collisionPoint.x, collisionPoint.y,
-                        (float) normal.x, (float) normal.y);
-            }
-            weaponSlotEventBus.publish(new BeamDamageWreckEvent(this, wreck, raycast, hitX, hitY));
-        }
+        world.getCollisionMatrix().rayCast(this, rigidBody, result.getFixture(), collisionPoint.x, collisionPoint.y,
+                (float) normal.x, (float) normal.y, position.x + startX + cos * currentBeamRange,
+                position.y + startY + sin * currentBeamRange);
     }
 
     @Override
@@ -167,5 +142,10 @@ public class WeaponSlotBeam extends WeaponSlot {
     @Override
     public ConnectedObjectType getConnectedObjectType() {
         return ConnectedObjectType.WEAPON_SLOT_BEAM;
+    }
+
+    @Override
+    public int getRayCastType() {
+        return RayCastType.WEAPON_SLOT_BEAM.ordinal();
     }
 }

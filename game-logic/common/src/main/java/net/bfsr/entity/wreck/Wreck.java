@@ -3,12 +3,13 @@ package net.bfsr.entity.wreck;
 import lombok.Getter;
 import net.bfsr.config.entity.wreck.WreckData;
 import net.bfsr.config.entity.wreck.WreckRegistry;
-import net.bfsr.engine.event.EventBusManager;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.event.entity.wreck.WreckDeathEvent;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.WreckSpawnData;
+import net.bfsr.physics.CollisionMatrixType;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.physics.filter.ShipFilter;
 import net.bfsr.world.World;
@@ -46,7 +47,7 @@ public class Wreck extends RigidBody<WreckData> {
     private WreckType wreckType;
     private float angularVelocity;
     @Getter
-    private final EventBusManager wreckEventBus = new EventBusManager();
+    private final EventBus wreckEventBus = new EventBus();
 
     public Wreck init(World world, int id, float x, float y, float velocityX, float velocityY, float sin, float cos,
                       float angularVelocity, float scaleX, float scaleY, float lifeTimeVelocity, int wreckIndex, boolean fire,
@@ -135,5 +136,10 @@ public class Wreck extends RigidBody<WreckData> {
     @Override
     public void onRemovedFromWorld() {
         WREAK_POOL.returnBack(this);
+    }
+
+    @Override
+    public int getCollisionMatrixType() {
+        return CollisionMatrixType.WRECK.ordinal();
     }
 }

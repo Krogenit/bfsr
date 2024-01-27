@@ -7,6 +7,12 @@ import org.dyn4j.world.ContactCollisionData;
 import org.dyn4j.world.listener.ContactListenerAdapter;
 
 public class ContactListener extends ContactListenerAdapter<Body> {
+    private final CollisionMatrix collisionMatrix;
+
+    public ContactListener(CollisionMatrix collisionMatrix) {
+        this.collisionMatrix = collisionMatrix;
+    }
+
     @Override
     public void collision(ContactCollisionData<Body> collision) {
         Body body1 = collision.getBody1();
@@ -18,14 +24,9 @@ public class ContactListener extends ContactListenerAdapter<Body> {
         float normalX = (float) normal.x;
         float normalY = (float) normal.y;
 
-        Object userData = body1.getUserData();
-        if (userData instanceof RigidBody<?> rigidBody) {
-            rigidBody.collision(body2, collision.getFixture2(), pointX, pointY, -normalX, -normalY, collision);
-        }
-
-        userData = body2.getUserData();
-        if (userData instanceof RigidBody<?> rigidBody) {
-            rigidBody.collision(body1, collision.getFixture1(), pointX, pointY, normalX, normalY, collision);
-        }
+        RigidBody<?> rigidBody1 = (RigidBody<?>) body1.getUserData();
+        RigidBody<?> rigidBody2 = (RigidBody<?>) body2.getUserData();
+        collisionMatrix.collision(rigidBody1, rigidBody2, collision.getFixture1(), collision.getFixture2(), pointX, pointY,
+                normalX, normalY, collision);
     }
 }

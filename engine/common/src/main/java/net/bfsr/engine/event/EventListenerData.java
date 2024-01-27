@@ -1,12 +1,12 @@
 package net.bfsr.engine.event;
 
 @SuppressWarnings("rawtypes")
-record EventListenerData(EventBus<? extends Event> eventBus, EventListener eventListener) {
+record EventListenerData(Listeners<? extends Event> listeners, EventListener eventListener) {
     void addListener() {
-        eventBus.addListener(eventListener);
+        listeners.addListener(eventListener);
     }
 
     void removeEventListener() {
-        eventBus.removeListener(eventListener);
+        listeners.removeListener(eventListener);
     }
 }

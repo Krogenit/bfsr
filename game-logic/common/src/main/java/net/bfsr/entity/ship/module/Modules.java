@@ -1,7 +1,6 @@
 package net.bfsr.entity.ship.module;
 
 import lombok.Getter;
-import net.bfsr.engine.event.EventBusManager;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.cargo.Cargo;
@@ -37,12 +36,10 @@ public class Modules {
     private Cargo cargo;
     @Getter
     private final List<WeaponSlot> weaponSlots = new ArrayList<>();
-    private EventBusManager eventBus;
     private Ship ship;
 
     public void init(Ship ship) {
         this.ship = ship;
-        this.eventBus = ship.getWorld().getEventBus();
     }
 
     public void update() {

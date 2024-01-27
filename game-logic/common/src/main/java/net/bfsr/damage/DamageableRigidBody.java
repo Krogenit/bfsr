@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.entity.RigidBody;
+import net.bfsr.physics.CollisionMatrixType;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 
@@ -118,5 +119,10 @@ public class DamageableRigidBody<CONFIG_DATA extends GameObjectConfigData> exten
 
     public void initConnectedObject(ConnectedObject<?> connectedObject) {
         connectedObject.init(this);
+    }
+
+    @Override
+    public int getCollisionMatrixType() {
+        return CollisionMatrixType.DAMAGEABLE_RIGID_BODY.ordinal();
     }
 }

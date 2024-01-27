@@ -2,7 +2,7 @@ package net.bfsr.event;
 
 import net.bfsr.PerformanceTest;
 import net.bfsr.engine.event.Event;
-import net.bfsr.engine.event.EventBusManager;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.EventHandler;
 import net.engio.mbassy.bus.MBassador;
 import net.engio.mbassy.bus.config.BusConfiguration;
@@ -17,13 +17,13 @@ import java.util.List;
 
 public final class EventBusPerformanceTest {
     /**
-     * 8x times faster event publishing, 1.5x times faster listeners register and unregister with {@link EventBusManager}
+     * 8x times faster event publishing, 1.5x times faster listeners register and unregister with {@link EventBus}
      *
      * @param args
      */
     public static void main(String[] args) {
         MBassador<Event> mBassador = createEventBus();
-        EventBusManager eventBusManager = new EventBusManager();
+        EventBus eventBus = new EventBus();
 
         int testsCount = 10;
         int countRegisters = 1000;
@@ -42,7 +42,7 @@ public final class EventBusPerformanceTest {
             PerformanceTest.beginTest();
             for (int j = 0; j < countRegisters; j++) {
                 EventListener eventListener = new EventListener();
-                eventBusManager.register(eventListener);
+                eventBus.register(eventListener);
                 eventBusEventListeners.add(eventListener);
             }
             PerformanceTest.finishTest("eventbusmanager register");
@@ -52,7 +52,7 @@ public final class EventBusPerformanceTest {
             PerformanceTest.finishTest("mbassador event publish");
 
             PerformanceTest.beginTest();
-            eventBusManager.publish(new TestEvent());
+            eventBus.publish(new TestEvent());
             PerformanceTest.finishTest("eventbusmanager event publish");
 
             PerformanceTest.beginTest();
@@ -63,7 +63,7 @@ public final class EventBusPerformanceTest {
 
             PerformanceTest.beginTest();
             for (int j = 0; j < countRegisters; j++) {
-                eventBusManager.unregister(eventBusEventListeners.get(countRegisters * i + j));
+                eventBus.unregister(eventBusEventListeners.get(countRegisters * i + j));
             }
             PerformanceTest.finishTest("eventbusmanager unregister");
         }

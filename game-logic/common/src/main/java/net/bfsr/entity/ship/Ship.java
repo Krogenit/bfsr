@@ -11,7 +11,7 @@ import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
-import net.bfsr.engine.event.EventBusManager;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.util.SideUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.BulletDamage;
@@ -35,6 +35,7 @@ import net.bfsr.math.Direction;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.ShipSpawnData;
+import net.bfsr.physics.CollisionMatrixType;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
@@ -99,7 +100,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
     private Consumer<Double> chronologicalDataProcessor = super::processChronologicalData;
     private final Vector2f rotationHelper = new Vector2f();
     @Getter
-    private final EventBusManager shipEventBus = new EventBusManager();
+    private final EventBus shipEventBus = new EventBus();
 
     public Ship(ShipData shipData, DamageMask mask) {
         super(shipData.getSizeX(), shipData.getSizeY(), shipData, ShipRegistry.INSTANCE.getId(), mask, shipData.getContour());
@@ -312,38 +313,24 @@ public class Ship extends DamageableRigidBody<ShipData> {
         modules.shoot(onShotEvent);
     }
 
-    private void damageByCollision(Ship otherShip, float impactPower, float contactX, float contactY, float normalX,
-                                   float normalY) {
+    public void damageByCollision(Ship otherShip, float impactPower, float contactX, float contactY, float normalX,
+                                  float normalY) {
         if (collisionTimer > 0) {
             return;
         }
 
         lastAttacker = otherShip;
-        if (otherShip.faction == faction) {
-            impactPower /= 2.0f;
-        }
 
         collisionTimer = world.convertToTicks(2);
 
         Shield shield = modules.getShield();
         if (shield != null && shield.damageToShield(impactPower)) {
-            onShieldDamageByCollision(contactX, contactY, normalX, normalY);
+            eventBus.publish(new ShieldDamageByCollision(this, contactX, contactY, normalX, normalY));
             return;
         }
 
-        float hullDamage = impactPower;
-        float armorDamage = impactPower;
-
-        float reducedHullDamage = modules.getArmor().reduceDamageByArmor(armorDamage, hullDamage, contactX, contactY, this);
+        float reducedHullDamage = modules.getArmor().reduceDamageByArmor(impactPower, impactPower, contactX, contactY, this);
         modules.getHull().damage(reducedHullDamage, contactX, contactY, this);
-        onHullDamageByCollision(contactX, contactY, normalX, normalY);
-    }
-
-    private void onShieldDamageByCollision(float contactX, float contactY, float normalX, float normalY) {
-        eventBus.publish(new ShieldDamageByCollision(this, contactX, contactY, normalX, normalY));
-    }
-
-    private void onHullDamageByCollision(float contactX, float contactY, float normalX, float normalY) {
         eventBus.publish(new ShipHullDamageByCollisionEvent(this, contactX, contactY, normalX, normalY));
     }
 
@@ -519,5 +506,10 @@ public class Ship extends DamageableRigidBody<ShipData> {
 
     public boolean isBot() {
         return owner == null;
+    }
+
+    @Override
+    public int getCollisionMatrixType() {
+        return CollisionMatrixType.SHIP.ordinal();
     }
 }

@@ -19,7 +19,6 @@ import net.bfsr.event.module.weapon.beam.BeamDamageShipHullEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageShipShieldEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageWreckEvent;
 import net.bfsr.math.RotationHelper;
-import org.dyn4j.collision.narrowphase.Raycast;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -132,22 +131,22 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
         playSounds(object.getGunData(), object.getShip().getWorld().getRand(), position.x, position.y);
     }
 
-    private void onDamage(Raycast raycast, float hitX, float hitY) {
-        BeamEffects.beamDamage(raycast, hitX, hitY, object.getSize().x, effectsColor, damageSpawnAccumulator);
+    private void onDamage(float normalX, float normalY, float hitX, float hitY) {
+        BeamEffects.beamDamage(hitX, hitY, normalX, normalY, object.getSize().x, effectsColor, damageSpawnAccumulator);
     }
 
     @EventHandler
     public EventListener<BeamDamageShipShieldEvent> beamDamageShipShieldEvent() {
-        return event -> onDamage(event.getRaycast(), event.getHitX(), event.getHitY());
+        return event -> onDamage(event.getNormalX(), event.getNormalY(), event.getHitX(), event.getHitY());
     }
 
     @EventHandler
     public EventListener<BeamDamageShipArmorEvent> beamDamageShipArmorEvent() {
         return event -> {
-            Ship ship = event.getShip();
-            onDamage(event.getRaycast(), event.getHitX(), event.getHitY());
+            Ship ship = event.ship();
+            onDamage(event.normalX(), event.normalY(), event.hitX(), event.hitY());
 
-            GarbageSpawner.beamArmorDamage(event.getHitX(), event.getHitY(), ship.getVelocity().x * 0.005f,
+            GarbageSpawner.beamArmorDamage(event.hitX(), event.hitY(), ship.getVelocity().x * 0.005f,
                     ship.getVelocity().y * 0.005f);
         };
     }
@@ -155,10 +154,10 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
     @EventHandler
     public EventListener<BeamDamageShipHullEvent> beamDamageShipHullEvent() {
         return event -> {
-            Ship ship = event.getShip();
-            onDamage(event.getRaycast(), event.getHitX(), event.getHitY());
+            Ship ship = event.ship();
+            onDamage(event.normalX(), event.normalY(), event.hitX(), event.hitY());
 
-            GarbageSpawner.beamHullDamage(event.getHitX(), event.getHitY(), ship.getVelocity().x * 0.005f,
+            GarbageSpawner.beamHullDamage(event.hitX(), event.hitY(), ship.getVelocity().x * 0.005f,
                     ship.getVelocity().y * 0.005f);
         };
     }
@@ -167,7 +166,7 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
     public EventListener<BeamDamageWreckEvent> beamDamageWreckEvent() {
         return event -> {
             Wreck wreck = event.wreck();
-            onDamage(event.raycast(), event.hitX(), event.hitY());
+            onDamage(event.normalX(), event.normalY(), event.hitX(), event.hitY());
             GarbageSpawner.beamHullDamage(event.hitX(), event.hitY(), wreck.getVelocity().x * 0.005f,
                     wreck.getVelocity().y * 0.005f);
         };

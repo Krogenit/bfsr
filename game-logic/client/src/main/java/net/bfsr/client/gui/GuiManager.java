@@ -7,14 +7,14 @@ import net.bfsr.client.event.gui.*;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.gui.hud.HUDAdapter;
 import net.bfsr.client.gui.hud.NoHUD;
-import net.bfsr.engine.event.EventBusManager;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.gui.Gui;
 import org.jetbrains.annotations.NotNull;
 
 public class GuiManager {
-    private EventBusManager eventBus;
+    private EventBus eventBus;
     @Getter
     private Gui gui;
     @Getter

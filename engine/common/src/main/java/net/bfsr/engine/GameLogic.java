@@ -3,7 +3,7 @@ package net.bfsr.engine;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.engine.event.EventBusManager;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.profiler.Profiler;
 
 import java.util.Queue;
@@ -36,7 +36,7 @@ public class GameLogic {
     private final Queue<Runnable> futureTasks = new ConcurrentLinkedQueue<>();
 
     @Getter
-    protected final EventBusManager eventBus = new EventBusManager();
+    protected final EventBus eventBus = new EventBus();
 
     public void init() {
         isRunning = true;

@@ -7,7 +7,7 @@ import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.gui.hud.HUDAdapter;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.event.EventBusManager;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
@@ -37,7 +37,7 @@ public class PlayerInputController extends InputController {
     private final Vector2f lastMousePosition = new Vector2f();
     private boolean mouseLeftDown;
     private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
-    private EventBusManager eventBus;
+    private EventBus eventBus;
     private final PositionHistory positionHistory = new PositionHistory(500);
 
     @Override

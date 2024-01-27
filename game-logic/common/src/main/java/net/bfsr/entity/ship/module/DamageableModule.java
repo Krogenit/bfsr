@@ -3,7 +3,7 @@ package net.bfsr.entity.ship.module;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.bfsr.engine.event.EventBusManager;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.module.ModuleDestroyEvent;
@@ -19,11 +19,11 @@ public abstract class DamageableModule extends Module {
     protected float hp;
     @Getter
     protected BodyFixture fixture;
-    private EventBusManager eventBus;
+    private EventBus eventBus;
     @Getter
     protected Ship ship;
     @Getter
-    private final EventBusManager moduleEventBus = new EventBusManager();
+    private final EventBus moduleEventBus = new EventBus();
 
     protected DamageableModule(float hp) {
         this.maxHp = this.hp = hp;

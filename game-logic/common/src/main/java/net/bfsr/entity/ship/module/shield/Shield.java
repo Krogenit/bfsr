@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.shield.ShieldData;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.event.EventBusManager;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.util.SideUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
@@ -36,7 +36,7 @@ public class Shield extends DamageableModule {
     private boolean alive;
     @Getter
     private final ShieldData shieldData;
-    private EventBusManager eventBus;
+    private EventBus eventBus;
     private BodyFixture shieldFixture;
     @Getter
     @Setter

@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.bfsr.config.GameObjectConfigData;
-import net.bfsr.engine.event.EventBusManager;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.util.SideUtils;
 import net.bfsr.event.entity.RigidBodyAddToWorldEvent;
 import net.bfsr.event.entity.RigidBodyDeathEvent;
@@ -12,6 +12,7 @@ import net.bfsr.event.entity.RigidBodyPostPhysicsUpdateEvent;
 import net.bfsr.network.packet.common.entity.PacketWorldSnapshot;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.RigidBodySpawnData;
+import net.bfsr.physics.CollisionMatrixType;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.physics.filter.ShipFilter;
 import net.bfsr.world.World;
@@ -38,7 +39,7 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
     @Getter
     protected float sin, cos;
     private final Transform savedTransform = new Transform();
-    protected EventBusManager eventBus;
+    protected EventBus eventBus;
     @Setter
     @Getter
     protected CONFIG_DATA configData;
@@ -208,5 +209,9 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
             setVelocity(velocity.x, velocity.y);
             setAngularVelocity(entityData.getAngularVelocity());
         }
+    }
+
+    public int getCollisionMatrixType() {
+        return CollisionMatrixType.RIGID_BODY.ordinal();
     }
 }

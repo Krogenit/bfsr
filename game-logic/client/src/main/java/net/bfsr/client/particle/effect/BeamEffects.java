@@ -9,8 +9,6 @@ import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
-import org.dyn4j.collision.narrowphase.Raycast;
-import org.dyn4j.geometry.Vector2;
 import org.joml.Vector4f;
 
 public final class BeamEffects {
@@ -18,10 +16,9 @@ public final class BeamEffects {
 
     private static final ParticleEffect smallBeam = ParticleEffectsRegistry.INSTANCE.get("weapon/beam/small");
 
-    public static void beamDamage(Raycast raycast, float x, float y, float size, Vector4f color,
+    public static void beamDamage(float x, float y, float normalX, float normalY, float size, Vector4f color,
                                   SpawnAccumulator spawnAccumulator) {
-        Vector2 normal = raycast.getNormal();
-        float angle = (float) Math.atan2(normal.x, -normal.y) - MathUtils.HALF_PI;
+        float angle = (float) Math.atan2(normalX, -normalY) - MathUtils.HALF_PI;
         beam(x, y, size, LUT.sin(angle), LUT.cos(angle), 0, 0, color.x, color.y, color.z, color.w, spawnAccumulator);
     }
 
