@@ -3,9 +3,7 @@ package net.bfsr.entity.ship.module.shield;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.shield.ShieldData;
-import net.bfsr.engine.event.EventBus;
 import net.bfsr.entity.RigidBody;
-import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.module.CommonShieldLogic;
@@ -35,7 +33,6 @@ public class Shield extends DamageableModule {
     private boolean alive;
     @Getter
     private final ShieldData shieldData;
-    private EventBus eventBus;
     private BodyFixture shieldFixture;
     @Getter
     @Setter
@@ -54,14 +51,6 @@ public class Shield extends DamageableModule {
         this.shieldData = shieldData;
         this.shieldConvex = shieldConvex;
         this.logic = logic;
-    }
-
-    @Override
-    public void init(Ship ship) {
-        super.init(ship);
-        eventBus = ship.getWorld().getEventBus();
-        alive = true;
-
     }
 
     @Override
