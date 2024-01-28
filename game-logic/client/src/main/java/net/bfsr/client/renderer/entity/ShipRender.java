@@ -314,7 +314,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
     }
 
     private void renderShield(Ship ship, Shield shield) {
-        if (shield != null && shield.isShieldAlive()) {
+        if (shield != null && shield.isAlive()) {
             Vector2f diameter = shield.getDiameter();
             float size = shield.getSize().x;
             Vector4f color = ship.getConfigData().getEffectsColor();

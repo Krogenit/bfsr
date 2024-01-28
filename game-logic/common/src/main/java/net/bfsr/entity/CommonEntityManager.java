@@ -13,16 +13,16 @@ import net.bfsr.entity.wreck.Wreck;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EntityManager {
+public class CommonEntityManager {
     private final TIntObjectMap<RigidBody<?>> entitiesById = new TIntObjectHashMap<>();
     @SuppressWarnings("rawtypes")
     private final TMap<Class<? extends RigidBody>, List<RigidBody<?>>> entitiesByClass = new THashMap<>();
     @Getter
-    private final List<RigidBody<?>> entities = new ArrayList<>();
+    protected final List<RigidBody<?>> entities = new ArrayList<>();
     @Getter
     private final EntityDataHistoryManager dataHistoryManager = new EntityDataHistoryManager();
 
-    public EntityManager() {
+    public CommonEntityManager() {
         this.entitiesByClass.put(RigidBody.class, new ArrayList<>());
         this.entitiesByClass.put(Ship.class, new ArrayList<>());
         this.entitiesByClass.put(Bullet.class, new ArrayList<>());

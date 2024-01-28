@@ -14,6 +14,7 @@ import net.bfsr.client.listener.entity.BulletEventListener;
 import net.bfsr.client.listener.entity.ShipEventListener;
 import net.bfsr.client.listener.module.shield.ShieldEventListener;
 import net.bfsr.client.listener.world.WorldEventListener;
+import net.bfsr.client.module.ShieldLogic;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.particle.ParticleManager;
 import net.bfsr.client.physics.CollisionHandler;
@@ -28,11 +29,13 @@ import net.bfsr.client.settings.ConfigSettings;
 import net.bfsr.client.world.BlankWorld;
 import net.bfsr.client.world.entity.ClientEntityIdManager;
 import net.bfsr.config.ConfigConverterManager;
-import net.bfsr.engine.ClientGameLogic;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
+import net.bfsr.engine.logic.ClientGameLogic;
 import net.bfsr.engine.sound.AbstractSoundManager;
 import net.bfsr.engine.util.Side;
+import net.bfsr.entity.CommonEntityManager;
+import net.bfsr.logic.LogicType;
 import net.bfsr.network.packet.Packet;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;
@@ -90,6 +93,7 @@ public class Core extends ClientGameLogic {
         registerListeners();
         super.init();
         this.guiManager.openGui(new GuiMainMenu());
+        registerLogic(LogicType.SHIELD_UPDATE.ordinal(), new ShieldLogic());
     }
 
     private void registerListeners() {
@@ -220,7 +224,7 @@ public class Core extends ClientGameLogic {
     }
 
     public void createWorld(long seed) {
-        world = new World(profiler, Side.CLIENT, seed, eventBus, new ClientEntityIdManager(), this,
+        world = new World(profiler, Side.CLIENT, seed, eventBus, new CommonEntityManager(), new ClientEntityIdManager(), this,
                 new CollisionHandler(eventBus));
         world.init();
         globalRenderer.createBackgroundTexture(seed);

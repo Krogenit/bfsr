@@ -233,7 +233,7 @@ public class ShipHUD {
         renderHullValue(currentShip, x, y);
 
         Shield shield = currentShip.getModules().getShield();
-        if (shield != null && shield.isShieldAlive()) {
+        if (shield != null && shield.isAlive()) {
             renderShield(shield, x, y);
             renderShieldValue(shield, x, y);
         }
@@ -268,7 +268,7 @@ public class ShipHUD {
         float shipSize = 10.0f;
 
         Shield shield = otherShip.getModules().getShield();
-        if (shield != null && shield.isShieldAlive()) {
+        if (shield != null && shield.isAlive()) {
             renderShield(shield, x, y);
         }
 

@@ -1,4 +1,4 @@
-package net.bfsr.engine;
+package net.bfsr.engine.logic;
 
 public abstract class ClientGameLogic extends GameLogic {
     public abstract void resize(int width, int height);

@@ -70,7 +70,7 @@ public class PlayerInputController extends InputController {
             return;
         }
 
-        if (!core.isPaused() && ship.isSpawned() && ship.getDestroyingTimer() == 0) {
+        if (!core.isPaused() && ship.isSpawned() && ship.getLifeTime() == 0) {
             controlShip();
         }
     }

@@ -7,6 +7,7 @@ import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.input.Keyboard;
 import net.bfsr.engine.input.Mouse;
+import net.bfsr.engine.logic.ClientGameLogic;
 import net.bfsr.engine.loop.AbstractGameLoop;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;

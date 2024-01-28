@@ -3,16 +3,12 @@ package net.bfsr.entity.ship.module.shield;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.shield.ShieldData;
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
-import net.bfsr.engine.util.SideUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
-import net.bfsr.event.module.shield.ShieldRebuildEvent;
-import net.bfsr.event.module.shield.ShieldRemoveEvent;
-import net.bfsr.event.module.shield.ShieldResetRebuildingTimeEvent;
+import net.bfsr.module.CommonShieldLogic;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.physics.filter.ShipFilter;
 import org.dyn4j.dynamics.Body;
@@ -30,9 +26,12 @@ public class Shield extends DamageableModule {
     private final Vector2f radius = new Vector2f();
     @Getter
     private final Vector2f diameter = new Vector2f();
+    @Getter
     private final int timeToRebuild;
     @Setter
+    @Getter
     private int rebuildingTime;
+    @Getter
     private boolean alive;
     @Getter
     private final ShieldData shieldData;
@@ -42,11 +41,11 @@ public class Shield extends DamageableModule {
     @Setter
     private float shieldHp;
     @Getter
-    private float shieldMaxHp;
-    private final float scaleAnimation = Engine.convertToDeltaTime(3.6f);
+    private final float shieldMaxHp;
     private final Convex shieldConvex;
+    private final CommonShieldLogic logic;
 
-    public Shield(ShieldData shieldData, Convex shieldConvex) {
+    public Shield(ShieldData shieldData, Convex shieldConvex, CommonShieldLogic logic) {
         super(5.0f, 1.0f, 1.0f);
         this.shieldHp = shieldMaxHp = shieldData.getMaxShield();
         this.shieldRegen = shieldData.getRegenAmount();
@@ -54,12 +53,15 @@ public class Shield extends DamageableModule {
         this.rebuildingTime = timeToRebuild;
         this.shieldData = shieldData;
         this.shieldConvex = shieldConvex;
+        this.logic = logic;
     }
 
     @Override
     public void init(Ship ship) {
         super.init(ship);
         eventBus = ship.getWorld().getEventBus();
+        alive = true;
+
     }
 
     @Override
@@ -120,24 +122,17 @@ public class Shield extends DamageableModule {
     public void update() {
         if (isDead) return;
 
-        if (SideUtils.IS_SERVER && ship.getWorld().isServer()) {
-            if (alive && shieldHp <= 0) {
-                removeShield();
-            }
-        }
+        logic.update(this);
+    }
 
-        if (shieldHp < shieldMaxHp && isShieldAlive()) {
-            onShieldAlive();
-        }
+    public void rebuilding() {
+        rebuildingTime += 1;
+    }
 
-        if (SideUtils.IS_SERVER && ship.getWorld().getSide().isServer()) {
-            if (rebuildingTime < timeToRebuild) {
-                rebuildingTime += 1;
-
-                if (rebuildingTime >= timeToRebuild) {
-                    rebuildShield();
-                }
-            }
+    public void regenHp() {
+        if (shieldHp < shieldMaxHp) {
+            shieldHp += shieldRegen;
+            if (shieldHp > shieldMaxHp) shieldHp = shieldMaxHp;
         }
     }
 
@@ -149,52 +144,16 @@ public class Shield extends DamageableModule {
         }
     }
 
-    private void onShieldAlive() {
-        regenHp();
-
-        if (size.x < 1.0f) {
-            size.x += scaleAnimation;
-            if (size.x > 1.0f) size.x = 1.0f;
-        }
-    }
-
-    private void regenHp() {
-        if (shieldHp < shieldMaxHp) {
-            shieldHp += shieldRegen;
-            if (shieldHp > shieldMaxHp) shieldHp = shieldMaxHp;
-        }
-    }
-
-    public boolean isShieldAlive() {
-        return rebuildingTime >= timeToRebuild;
-    }
-
     public void rebuildShield() {
         shieldHp = shieldMaxHp / 5.0f;
         rebuildingTime = timeToRebuild;
         createShieldFixture();
-        eventBus.publish(new ShieldRebuildEvent(this));
     }
 
     public boolean damageToShield(float amount) {
         if (isDead) return false;
 
-        if (SideUtils.IS_SERVER && ship.getWorld().isServer()) {
-            if (shieldHp > 0) {
-                shieldHp -= amount;
-
-                if (shieldHp < 0) {
-                    shieldHp = 0;
-                }
-
-                return true;
-            }
-
-            onNoShieldDamage();
-            return false;
-        } else {
-            return shieldHp > 0;
-        }
+        return logic.damageToShield(this, amount);
     }
 
     @Override
@@ -203,13 +162,8 @@ public class Shield extends DamageableModule {
         ship.getFixturesToRemove().add(fixture);
     }
 
-    private void onNoShieldDamage() {
-        resetRebuildingTime();
-    }
-
-    private void resetRebuildingTime() {
+    public void resetRebuildingTime() {
         rebuildingTime = 0;
-        eventBus.publish(new ShieldResetRebuildingTimeEvent(this));
     }
 
     public void removeShield() {
@@ -219,7 +173,6 @@ public class Shield extends DamageableModule {
         size.set(0.0f);
         shieldHp = 0;
         alive = false;
-        eventBus.publish(new ShieldRemoveEvent(this));
     }
 
     @Override

@@ -1,12 +1,12 @@
 package net.bfsr.world;
 
 import lombok.Getter;
-import net.bfsr.engine.GameLogic;
 import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.logic.GameLogic;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.util.Side;
+import net.bfsr.entity.CommonEntityManager;
 import net.bfsr.entity.EntityIdManager;
-import net.bfsr.entity.EntityManager;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.wreck.ShipWreck;
@@ -31,7 +31,7 @@ public class World {
     @Getter
     protected final Random rand = new Random();
     @Getter
-    private final EntityManager entityManager = new EntityManager();
+    private final CommonEntityManager entityManager;
     @Getter
     private final EventBus eventBus;
     @Getter
@@ -42,12 +42,13 @@ public class World {
     @Getter
     private final CollisionMatrix collisionMatrix;
 
-    public World(Profiler profiler, Side side, long seed, EventBus eventBus, EntityIdManager entityIdManager,
-                 GameLogic gameLogic, CommonCollisionHandler collisionHandler) {
+    public World(Profiler profiler, Side side, long seed, EventBus eventBus, CommonEntityManager entityManager,
+                 EntityIdManager entityIdManager, GameLogic gameLogic, CommonCollisionHandler collisionHandler) {
         this.profiler = profiler;
         this.side = side;
         this.seed = seed;
         this.eventBus = eventBus;
+        this.entityManager = entityManager;
         this.entityIdManager = entityIdManager;
         this.gameLogic = gameLogic;
         this.collisionMatrix = new CollisionMatrix(collisionHandler);

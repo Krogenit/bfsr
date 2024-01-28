@@ -27,7 +27,6 @@ import net.bfsr.entity.ship.module.hull.HullCell;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
-import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.event.entity.ship.*;
 import net.bfsr.event.module.shield.ShieldDamageByCollision;
 import net.bfsr.faction.Faction;
@@ -37,14 +36,12 @@ import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.ShipSpawnData;
 import net.bfsr.physics.CollisionMatrixType;
 import net.bfsr.world.World;
-import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.Force;
 import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
 import org.dyn4j.geometry.Wound;
-import org.dyn4j.world.ContactCollisionData;
 import org.joml.Vector2f;
 
 import java.util.List;
@@ -101,6 +98,8 @@ public class Ship extends DamageableRigidBody<ShipData> {
     private final Vector2f rotationHelper = new Vector2f();
     @Getter
     private final EventBus shipEventBus = new EventBus();
+    @Setter
+    private Runnable updateRunnable = this::updateAlive;
 
     public Ship(ShipData shipData, DamageMask mask) {
         super(shipData.getSizeX(), shipData.getSizeY(), shipData, ShipRegistry.INSTANCE.getId(), mask, shipData.getContour());
@@ -200,60 +199,31 @@ public class Ship extends DamageableRigidBody<ShipData> {
     }
 
     @Override
-    public void collision(Body body, BodyFixture fixture, float contactX, float contactY, float normalX, float normalY,
-                          ContactCollisionData<Body> collision) {
-        Object userData = body.getUserData();
-        if (userData != null) {
-            if (userData instanceof Ship otherShip) {
-                Vector2f velocityDif = new Vector2f((float) (body.getLinearVelocity().x - this.body.getLinearVelocity().x),
-                        (float) (body.getLinearVelocity().y - this.body.getLinearVelocity().y));
-                float impactPowerForOther = (float) ((velocityDif.length()) *
-                        (this.body.getMass().getMass() / body.getMass().getMass()));
-
-                impactPowerForOther /= 400.0f;
-
-                if (impactPowerForOther > 0.25f)
-                    otherShip.damageByCollision(this, impactPowerForOther, contactX, contactY, normalX, normalY);
-            } else if (userData instanceof Wreck) {
-                if (collisionTimer <= 0) {
-                    collisionTimer = world.convertToTicks(2);
-                    eventBus.publish(new ShipCollisionWithWreckEvent(this, contactX, contactY, normalX, normalY));
-                }
-            }
-        }
-    }
-
-    @Override
     public void update() {
         if (spawned) {
             updateFixtures();
             updateConnectedObjects();
-            updateShip();
+            updateRunnable.run();
             updateLifeTime();
         } else {
             updateJump();
         }
     }
 
-    private void updateShip() {
+    private void updateAlive() {
         if (collisionTimer > 0) collisionTimer -= 1;
 
-        if (destroyingTimer > 0) {
-            sparksTimer -= 1;
-            if (sparksTimer <= 0) {
-                eventBus.publish(new ShipDestroyingExplosionEvent(this));
-                sparksTimer = maxSparksTimer;
-            }
+        ai.update();
+    }
 
-            if (SideUtils.IS_SERVER && world.isServer()) {
-                destroyingTimer -= 1;
-                if (destroyingTimer <= 0) {
-                    setDead();
-                }
-            }
-        } else {
-            ai.update();
+    private void updateDestroying() {
+        sparksTimer -= 1;
+        if (sparksTimer <= 0) {
+            eventBus.publish(new ShipDestroyingExplosionEvent(this));
+            sparksTimer = maxSparksTimer;
         }
+
+        lifeTime++;
     }
 
     @Override
@@ -488,14 +458,15 @@ public class Ship extends DamageableRigidBody<ShipData> {
     }
 
     public void setDestroying() {
-        if (destroyingTimer == 0) {
-            destroyingTimer = timeToDestroy;
+        if (maxLifeTime == DEFAULT_MAX_LIFE_TIME_IN_TICKS) {
+            maxLifeTime = timeToDestroy;
             eventBus.publish(new ShipDestroyingEvent(this));
+            updateRunnable = this::updateDestroying;
         }
     }
 
     public boolean isDestroying() {
-        return destroyingTimer > 0;
+        return maxLifeTime != DEFAULT_MAX_LIFE_TIME_IN_TICKS;
     }
 
     @Override

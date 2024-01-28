@@ -17,6 +17,7 @@ import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponFactory;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.faction.Faction;
+import net.bfsr.logic.LogicType;
 
 public class ShipOutfitter {
     private static final ShipOutfitter INSTANCE = new ShipOutfitter();
@@ -49,7 +50,8 @@ public class ShipOutfitter {
                 ship::setDestroying));
         ship.setHull(new Hull(HullRegistry.INSTANCE.get(factionName), ship));
         ship.setArmor(new Armor(ArmorPlateRegistry.INSTANCE.get(factionName), ship));
-        ship.setShield(new Shield(ShieldRegistry.INSTANCE.get(factionName), ship.getConfigData().getShieldPolygon()));
+        ship.setShield(new Shield(ShieldRegistry.INSTANCE.get(factionName), ship.getConfigData().getShieldPolygon(),
+                ship.getWorld().getGameLogic().getLogic(LogicType.SHIELD_UPDATE.ordinal())));
         ship.setCrew(new Crew(CrewRegistry.INSTANCE.get(factionName)));
         ship.setCargo(new Cargo(CargoRegistry.INSTANCE.get(factionName)));
         addWeapons(ship);

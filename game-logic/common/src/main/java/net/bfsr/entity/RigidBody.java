@@ -5,7 +5,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.engine.event.EventBus;
-import net.bfsr.engine.util.SideUtils;
 import net.bfsr.event.entity.RigidBodyAddToWorldEvent;
 import net.bfsr.event.entity.RigidBodyDeathEvent;
 import net.bfsr.event.entity.RigidBodyPostPhysicsUpdateEvent;
@@ -20,11 +19,12 @@ import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
-import org.dyn4j.world.ContactCollisionData;
 import org.joml.Vector2f;
 
 @NoArgsConstructor
 public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObject {
+    public static final int DEFAULT_MAX_LIFE_TIME_IN_TICKS = 1200;
+
     @Getter
     protected World world;
     @Getter
@@ -35,7 +35,7 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
     @Getter
     protected Vector2f velocity = new Vector2f();
     @Getter
-    protected float lifeTime, maxLifeTime = 1200;
+    protected int lifeTime, maxLifeTime = DEFAULT_MAX_LIFE_TIME_IN_TICKS;
     @Getter
     protected float sin, cos;
     private final Transform savedTransform = new Transform();
@@ -97,12 +97,6 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
 
     protected void updateLifeTime() {
         lifeTime++;
-
-        if (SideUtils.IS_SERVER && world.isServer()) {
-            if (lifeTime >= maxLifeTime) {
-                setDead();
-            }
-        }
     }
 
     @Override
@@ -123,9 +117,6 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
     }
 
     public void onRemovedFromWorld() {}
-
-    public void collision(Body body, BodyFixture fixture, float contactX, float contactY, float normalX, float normalY,
-                          ContactCollisionData<Body> collision) {}
 
     public boolean canCollideWith(GameObject gameObject) {
         return this != gameObject;

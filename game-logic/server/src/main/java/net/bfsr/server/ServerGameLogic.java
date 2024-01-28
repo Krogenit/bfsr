@@ -4,11 +4,13 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.damage.DamageSystem;
-import net.bfsr.engine.GameLogic;
+import net.bfsr.engine.logic.GameLogic;
 import net.bfsr.engine.util.Side;
 import net.bfsr.entity.EntityIdManager;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.logic.LogicType;
 import net.bfsr.server.config.ServerSettings;
+import net.bfsr.server.entity.EntityManager;
 import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.ship.ShipSpawner;
 import net.bfsr.server.event.PlayerDisconnectEvent;
@@ -17,8 +19,8 @@ import net.bfsr.server.event.listener.entity.BulletEventListener;
 import net.bfsr.server.event.listener.entity.ShipEventListener;
 import net.bfsr.server.event.listener.entity.WreckEventListener;
 import net.bfsr.server.event.listener.module.ModuleEventListener;
-import net.bfsr.server.event.listener.module.shield.ShieldEventListener;
 import net.bfsr.server.event.listener.module.weapon.WeaponEventListener;
+import net.bfsr.server.module.ShieldLogic;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.physics.CollisionHandler;
 import net.bfsr.server.player.Player;
@@ -57,8 +59,8 @@ public class ServerGameLogic extends GameLogic {
 
     @Override
     public void init() {
-        world = new World(profiler, Side.SERVER, new Random().nextLong(), eventBus, new EntityIdManager(), this,
-                new CollisionHandler(eventBus));
+        world = new World(profiler, Side.SERVER, new Random().nextLong(), eventBus, new EntityManager(), new EntityIdManager(),
+                this, new CollisionHandler(eventBus));
         world.init();
         playerManager = new PlayerManager(world);
         networkSystem = new NetworkSystem(playerManager);
@@ -72,10 +74,10 @@ public class ServerGameLogic extends GameLogic {
         startupNetworkSystem(settings);
         initListeners();
         super.init();
+        registerLogic(LogicType.SHIELD_UPDATE.ordinal(), new ShieldLogic());
     }
 
     private void initListeners() {
-        eventBus.register(new ShieldEventListener());
         eventBus.register(new ShipEventListener());
         eventBus.register(new WeaponEventListener());
         eventBus.register(new BulletEventListener());
