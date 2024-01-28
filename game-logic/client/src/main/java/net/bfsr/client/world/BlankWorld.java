@@ -1,12 +1,13 @@
 package net.bfsr.client.world;
 
+import net.bfsr.physics.CommonCollisionHandler;
 import net.bfsr.world.World;
 
 public final class BlankWorld extends World {
     private static final BlankWorld BLANK_WORLD = new BlankWorld();
 
     private BlankWorld() {
-        super(null, null, 0, null, null, null);
+        super(null, null, 0, null, null, null, new CommonCollisionHandler(null));
     }
 
     @Override

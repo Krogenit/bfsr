@@ -11,10 +11,7 @@ import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
-import net.bfsr.physics.CCDTransformHandler;
-import net.bfsr.physics.CollisionMatrix;
-import net.bfsr.physics.ContactListener;
-import net.bfsr.physics.CustomValueMixer;
+import net.bfsr.physics.*;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.ContinuousDetectionMode;
 import org.dyn4j.world.PhysicsWorld;
@@ -46,14 +43,14 @@ public class World {
     private final CollisionMatrix collisionMatrix;
 
     public World(Profiler profiler, Side side, long seed, EventBus eventBus, EntityIdManager entityIdManager,
-                 GameLogic gameLogic) {
+                 GameLogic gameLogic, CommonCollisionHandler collisionHandler) {
         this.profiler = profiler;
         this.side = side;
         this.seed = seed;
         this.eventBus = eventBus;
         this.entityIdManager = entityIdManager;
         this.gameLogic = gameLogic;
-        this.collisionMatrix = new CollisionMatrix(eventBus);
+        this.collisionMatrix = new CollisionMatrix(collisionHandler);
     }
 
     private void initPhysicWorld() {

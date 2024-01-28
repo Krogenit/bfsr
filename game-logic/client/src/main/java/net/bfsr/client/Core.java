@@ -16,6 +16,7 @@ import net.bfsr.client.listener.module.shield.ShieldEventListener;
 import net.bfsr.client.listener.world.WorldEventListener;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.particle.ParticleManager;
+import net.bfsr.client.physics.CollisionHandler;
 import net.bfsr.client.renderer.GlobalRenderer;
 import net.bfsr.client.renderer.RenderManager;
 import net.bfsr.client.renderer.WorldRenderer;
@@ -219,7 +220,8 @@ public class Core extends ClientGameLogic {
     }
 
     public void createWorld(long seed) {
-        world = new World(profiler, Side.CLIENT, seed, eventBus, new ClientEntityIdManager(), this);
+        world = new World(profiler, Side.CLIENT, seed, eventBus, new ClientEntityIdManager(), this,
+                new CollisionHandler(eventBus));
         world.init();
         globalRenderer.createBackgroundTexture(seed);
     }

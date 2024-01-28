@@ -116,19 +116,14 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
             return;
         }
 
-        Body body = result.getBody();
         Raycast raycast = result.getRaycast();
         Vector2 point = raycast.getPoint();
         Vector2 normal = raycast.getNormal();
         collisionPoint.x = (float) point.x;
         collisionPoint.y = (float) point.y;
         currentBeamRange = (float) raycast.getDistance();
-
-        RigidBody<?> rigidBody = (RigidBody<?>) body.getUserData();
-
-        world.getCollisionMatrix().rayCast(this, rigidBody, result.getFixture(), collisionPoint.x, collisionPoint.y,
-                (float) normal.x, (float) normal.y, position.x + startX + cos * currentBeamRange,
-                position.y + startY + sin * currentBeamRange);
+        world.getCollisionMatrix().rayCast(this, (RigidBody<?>) result.getBody().getUserData(), result.getFixture(),
+                collisionPoint.x, collisionPoint.y, (float) normal.x, (float) normal.y);
     }
 
     @Override

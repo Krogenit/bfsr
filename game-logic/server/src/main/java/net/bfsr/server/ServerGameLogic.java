@@ -20,6 +20,7 @@ import net.bfsr.server.event.listener.module.ModuleEventListener;
 import net.bfsr.server.event.listener.module.shield.ShieldEventListener;
 import net.bfsr.server.event.listener.module.weapon.WeaponEventListener;
 import net.bfsr.server.network.NetworkSystem;
+import net.bfsr.server.physics.CollisionHandler;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
 import net.bfsr.world.World;
@@ -56,7 +57,8 @@ public class ServerGameLogic extends GameLogic {
 
     @Override
     public void init() {
-        world = new World(profiler, Side.SERVER, new Random().nextLong(), eventBus, new EntityIdManager(), this);
+        world = new World(profiler, Side.SERVER, new Random().nextLong(), eventBus, new EntityIdManager(), this,
+                new CollisionHandler(eventBus));
         world.init();
         playerManager = new PlayerManager(world);
         networkSystem = new NetworkSystem(playerManager);
