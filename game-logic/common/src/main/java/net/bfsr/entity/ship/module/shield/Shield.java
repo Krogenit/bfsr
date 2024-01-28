@@ -1,5 +1,7 @@
 package net.bfsr.entity.ship.module.shield;
 
+import clipper2.core.PathD;
+import clipper2.core.PointD;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.shield.ShieldData;
@@ -14,14 +16,10 @@ import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Polygon;
-import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
-
-import java.util.List;
 
 public class Shield extends DamageableModule {
     private final float shieldRegen;
-    private final Vector2f radius = new Vector2f();
     @Getter
     private final Vector2f diameter = new Vector2f();
     @Getter
@@ -66,33 +64,35 @@ public class Shield extends DamageableModule {
 
     private void createShieldFixture() {
         Body body = ship.getBody();
-        List<BodyFixture> fixtures = body.getFixtures();
         if (shieldFixture != null) {
             body.removeFixture(shieldFixture);
-            shieldFixture = null;
         }
 
-        for (int i = 0; i < fixtures.size(); i++) {
-            BodyFixture bodyFixture = fixtures.get(i);
-            Convex convex = bodyFixture.getShape();
-            if (convex instanceof Polygon polygon) {
-                Vector2[] vertices = polygon.getVertices();
-                for (int j = 0, verticesLength = vertices.length; j < verticesLength; j++) {
-                    Vector2 vertex = vertices[j];
-                    float x1 = (float) Math.abs(vertex.x);
-                    if (x1 > radius.x) {
-                        radius.x = x1;
-                    }
-                    float y1 = (float) Math.abs(vertex.y);
-                    if (y1 > radius.y) {
-                        radius.y = y1;
-                    }
-                }
+        PathD pointDS = ship.getContours().get(0);
+        PointD point = pointDS.get(0);
+        float minX = (float) point.x;
+        float maxX = (float) point.x;
+        float minY = (float) point.y;
+        float maxY = (float) point.y;
+        for (int i = 1; i < pointDS.size(); i++) {
+            point = pointDS.get(i);
+            float value = (float) point.x;
+            if (value > maxX) {
+                maxX = value;
+            } else if (value < minX) {
+                minX = value;
+            }
+
+            value = (float) point.y;
+            if (value > maxY) {
+                maxY = value;
+            } else if (value < minY) {
+                minY = value;
             }
         }
 
         float offset = 1.4f;
-        diameter.set(radius.x * 2.0f + offset, radius.y * 2.0f + offset);
+        diameter.set(maxX - minX + offset, maxY - minY + offset);
 
         Polygon ellipse = Geometry.createPolygonalEllipse(12, diameter.x, diameter.y);
         shieldFixture = new BodyFixture(ellipse);
