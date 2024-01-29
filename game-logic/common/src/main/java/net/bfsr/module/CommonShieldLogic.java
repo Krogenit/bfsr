@@ -12,8 +12,4 @@ public class CommonShieldLogic implements Logic {
     }
 
     protected void onShieldAlive(Shield shield) {}
-
-    public boolean damageToShield(Shield shield, float amount) {
-        return shield.getShieldHp() > 0;
-    }
 }

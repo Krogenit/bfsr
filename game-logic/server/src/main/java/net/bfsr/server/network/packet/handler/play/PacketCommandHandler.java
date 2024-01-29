@@ -10,7 +10,6 @@ import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.client.PacketCommand;
-import net.bfsr.server.ai.AiFactory;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.world.World;
 import org.joml.Vector2f;
@@ -31,7 +30,7 @@ public class PacketCommandHandler extends PacketHandler<PacketCommand, PlayerNet
             String[] args = packet.getArgs();
             Vector2f pos = new Vector2f(Float.parseFloat(args[0]), Float.parseFloat(args[1]));
             Faction fact = Faction.values()[rand.nextInt(Faction.values().length)];
-            Ai ai = AiFactory.createAi();
+            Ai ai = Ai.NO_AI;
             Ship ship = switch (fact) {
                 case HUMAN -> ShipFactory.get().createBotHumanSmall(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, ai);
                 case SAIMON ->

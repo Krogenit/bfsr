@@ -22,8 +22,8 @@ public class WorldEventListener {
         return event -> {
             RigidBody<?> rigidBody = event.getRigidBody();
             double renderTime = core.getRenderTime();
-            rigidBody.calcPosition(renderTime);
-            rigidBody.processChronologicalData(renderTime);
+            rigidBody.updatePosition(renderTime);
+            rigidBody.updateData(renderTime);
         };
     }
 }

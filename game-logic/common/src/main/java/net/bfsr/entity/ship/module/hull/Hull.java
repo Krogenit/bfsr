@@ -2,7 +2,6 @@ package net.bfsr.entity.ship.module.hull;
 
 import lombok.Getter;
 import net.bfsr.config.component.hull.HullData;
-import net.bfsr.engine.util.SideUtils;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.entity.ship.module.ModuleWithCells;
@@ -50,9 +49,7 @@ public class Hull extends ModuleWithCells<HullCell> {
 
     public HullCell damage(float amount, float contactX, float contactY, Ship ship) {
         HullCell cell = getCell(contactX, contactY, ship);
-
-        if (SideUtils.IS_SERVER && ship.getWorld().isServer()) cell.damage(amount);
-
+        cell.damage(amount);
         return cell;
     }
 

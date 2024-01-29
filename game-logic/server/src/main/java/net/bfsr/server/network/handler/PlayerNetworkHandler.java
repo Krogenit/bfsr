@@ -155,7 +155,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
         if (player.getFaction() != null) {
             List<Ship> ships = player.getShips();
             if (ships.isEmpty()) {
-                server.getPlayerManager().respawnPlayer(player, 0, 0);
+                server.getPlayerManager().respawnPlayer(world, player, 0, 0);
             } else {
                 initShips(player);
                 spawnShips(player);

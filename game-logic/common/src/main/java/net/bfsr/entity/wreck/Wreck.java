@@ -24,8 +24,6 @@ public class Wreck extends RigidBody<WreckData> {
     public static final ObjectPool<Wreck> WREAK_POOL = new ObjectPool<>(Wreck::new);
 
     @Getter
-    protected float lifeTimeVelocity;
-    @Getter
     private int wreckIndex;
 
     @Getter
@@ -50,7 +48,7 @@ public class Wreck extends RigidBody<WreckData> {
     private final EventBus wreckEventBus = new EventBus();
 
     public Wreck init(World world, int id, float x, float y, float velocityX, float velocityY, float sin, float cos,
-                      float angularVelocity, float scaleX, float scaleY, float lifeTimeVelocity, int wreckIndex, boolean fire,
+                      float angularVelocity, float scaleX, float scaleY, int maxLifeTime, int wreckIndex, boolean fire,
                       boolean light, boolean emitFire, float hull, int destroyedShipId, WreckType wreckType,
                       WreckData wreckData) {
         this.position.set(x, y);
@@ -58,7 +56,7 @@ public class Wreck extends RigidBody<WreckData> {
         this.sin = sin;
         this.cos = cos;
         this.size.set(scaleX, scaleY);
-        this.lifeTimeVelocity = lifeTimeVelocity;
+        this.maxLifeTime = maxLifeTime;
         this.wreckIndex = wreckIndex;
         this.emitFire = emitFire;
         this.fire = fire;
@@ -77,9 +75,9 @@ public class Wreck extends RigidBody<WreckData> {
 
     public Wreck init(World world, int id, int wreckIndex, boolean light, boolean fire, boolean emitFire, float x, float y,
                       float velocityX, float velocityY, float sin, float cos, float angularVelocity, float scaleX, float scaleY,
-                      float lifeTimeVelocity, WreckType wreckType) {
+                      int maxLifeTime, WreckType wreckType) {
         WreckData wreck = WreckRegistry.INSTANCE.getWreck(wreckType, wreckIndex);
-        return init(world, id, x, y, velocityX, velocityY, sin, cos, angularVelocity, scaleX, scaleY, lifeTimeVelocity,
+        return init(world, id, x, y, velocityX, velocityY, sin, cos, angularVelocity, scaleX, scaleY, maxLifeTime,
                 wreckIndex, fire, light, emitFire, 10, 0, wreckType, wreck);
     }
 
@@ -112,13 +110,10 @@ public class Wreck extends RigidBody<WreckData> {
 
     @Override
     protected void updateLifeTime() {
-        if (lifeTime > 0.8f) {
-            lifeTime += lifeTimeVelocity * 2.0f;
-            if (lifeTime >= 1.0f) {
-                setDead();
-            }
+        if (lifeTime / (float) maxLifeTime > 0.8f) {
+            lifeTime += 2;
         } else {
-            lifeTime += lifeTimeVelocity;
+            lifeTime++;
         }
     }
 
@@ -135,6 +130,7 @@ public class Wreck extends RigidBody<WreckData> {
 
     @Override
     public void onRemovedFromWorld() {
+        super.onRemovedFromWorld();
         WREAK_POOL.returnBack(this);
     }
 

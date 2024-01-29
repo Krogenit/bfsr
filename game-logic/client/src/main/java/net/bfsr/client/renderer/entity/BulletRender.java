@@ -20,7 +20,7 @@ public class BulletRender extends RigidBodyRender<Bullet> {
     public void update() {
         lastPosition.set(object.getPosition());
         lastColor.w = color.w;
-        color.w = 1.0f - object.getLifeTime() / object.getMaxLifeTime();
+        color.w = 1.0f - object.getLifeTime() / (float) object.getMaxLifeTime();
     }
 
     @Override

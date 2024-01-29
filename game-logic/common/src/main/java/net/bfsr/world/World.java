@@ -157,4 +157,8 @@ public class World {
     public boolean isClient() {
         return side.isClient();
     }
+
+    public float getUpdateDeltaTime() {
+        return gameLogic.getUpdateDeltaTime();
+    }
 }

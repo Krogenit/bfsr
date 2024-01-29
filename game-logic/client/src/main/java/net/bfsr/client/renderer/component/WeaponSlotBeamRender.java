@@ -137,7 +137,7 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
 
     @EventHandler
     public EventListener<BeamDamageShipShieldEvent> beamDamageShipShieldEvent() {
-        return event -> onDamage(event.getNormalX(), event.getNormalY(), event.getHitX(), event.getHitY());
+        return event -> onDamage(event.normalX(), event.normalY(), event.hitX(), event.hitY());
     }
 
     @EventHandler

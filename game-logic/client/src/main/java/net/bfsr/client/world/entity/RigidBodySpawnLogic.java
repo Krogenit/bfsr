@@ -22,6 +22,8 @@ public class RigidBodySpawnLogic implements EntitySpawnLogic<RigidBodySpawnData>
         GameObjectConfigData configData = (GameObjectConfigData) converter.get(spawnData.getDataId());
         RigidBody<GameObjectConfigData> rigidBody = new RigidBody<>(spawnData.getPosX(), spawnData.getPosY(), spawnData.getSin(),
                 spawnData.getCos(), configData.getSizeX(), configData.getSizeY(), configData, spawnData.getRegistryId());
+        rigidBody.init(world, spawnData.getEntityId());
+        
         List<Convex> convexList = configData.getConvexList();
         Body body = rigidBody.getBody();
         for (int i = 0; i < convexList.size(); i++) {
@@ -29,7 +31,6 @@ public class RigidBodySpawnLogic implements EntitySpawnLogic<RigidBodySpawnData>
             body.addFixture(rigidBody.setupFixture(new BodyFixture(convex)));
         }
 
-        rigidBody.init(world, spawnData.getEntityId());
         body.setMass(MassType.NORMAL);
         body.setUserData(rigidBody);
         body.setLinearDamping(0.05f);

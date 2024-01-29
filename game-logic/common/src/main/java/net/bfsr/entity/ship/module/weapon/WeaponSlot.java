@@ -8,7 +8,6 @@ import net.bfsr.config.component.weapon.gun.GunRegistry;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.damage.DamageSystem;
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
@@ -87,6 +86,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
         RigidBody<GunData> rigidBody = new RigidBody<>(position.x, position.y, this.ship.getSin(), this.ship.getCos(),
                 gunData.getSizeX(), gunData.getSizeY(), gunData, getRegistryId());
         rigidBody.setHealth(5.0f);
+        rigidBody.init(world, world.getNextId());
 
         Polygon polygon = Geometry.createPolygon(this.polygon.getVertices());
         BodyFixture fixture = new BodyFixture(polygon);
@@ -95,7 +95,6 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
         fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         Body body = rigidBody.getBody();
         body.addFixture(fixture);
-        rigidBody.init(world, world.getNextId());
         body.setMass(MassType.NORMAL);
         body.setUserData(rigidBody);
         body.setLinearDamping(0.05f);
@@ -140,7 +139,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
         float x = position.x + size.x * cos;
         float y = position.y + size.x * sin;
 
-        float updateDeltaTime = Engine.getUpdateDeltaTime();
+        float updateDeltaTime = ship.getWorld().getUpdateDeltaTime();
         float updateDeltaTimeInMills = updateDeltaTime * 1000;
         while (fastForwardTime > 0) {
             x += cos * gunData.getBulletSpeed() * updateDeltaTime;

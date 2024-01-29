@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
-import net.bfsr.event.entity.RigidBodyDeathEvent;
+import net.bfsr.event.entity.RigidBodyRemovedFromWorldEvent;
 import net.bfsr.network.packet.common.entity.PacketWorldSnapshot;
 
 public class EntityDataHistoryManager {
@@ -41,7 +41,7 @@ public class EntityDataHistoryManager {
     }
 
     @EventHandler
-    public EventListener<RigidBodyDeathEvent> rigidBodyDeathEvent() {
+    public EventListener<RigidBodyRemovedFromWorldEvent> rigidBodyDeathEvent() {
         return event -> {
             int id = event.rigidBody().getId();
             positionHistoryMap.remove(id);

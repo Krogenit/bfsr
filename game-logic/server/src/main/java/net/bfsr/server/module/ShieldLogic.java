@@ -4,7 +4,6 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.module.CommonShieldLogic;
 import net.bfsr.network.packet.server.component.PacketShieldRebuild;
-import net.bfsr.network.packet.server.component.PacketShieldRebuildingTime;
 import net.bfsr.network.packet.server.component.PacketShieldRemove;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.EntityTrackingManager;
@@ -34,24 +33,5 @@ public class ShieldLogic extends CommonShieldLogic {
                         ship.getWorld().getTimestamp()));
             }
         }
-    }
-
-    @Override
-    public boolean damageToShield(Shield shield, float amount) {
-        if (shield.getShieldHp() > 0) {
-            shield.setShieldHp(shield.getShieldHp() - amount);
-
-            if (shield.getShieldHp() < 0) {
-                shield.setShieldHp(0);
-            }
-
-            return true;
-        }
-
-        shield.resetRebuildingTime();
-        Ship ship = shield.getShip();
-        trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRebuildingTime(ship.getId(), 0,
-                ship.getWorld().getTimestamp()));
-        return false;
     }
 }

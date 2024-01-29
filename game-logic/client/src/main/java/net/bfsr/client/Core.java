@@ -10,9 +10,7 @@ import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.gui.main.GuiMainMenu;
 import net.bfsr.client.input.InputHandler;
 import net.bfsr.client.language.Lang;
-import net.bfsr.client.listener.entity.BulletEventListener;
 import net.bfsr.client.listener.entity.ShipEventListener;
-import net.bfsr.client.listener.module.shield.ShieldEventListener;
 import net.bfsr.client.listener.world.WorldEventListener;
 import net.bfsr.client.module.ShieldLogic;
 import net.bfsr.client.network.NetworkSystem;
@@ -98,9 +96,7 @@ public class Core extends ClientGameLogic {
 
     private void registerListeners() {
         eventBus.register(new ShipEventListener());
-        eventBus.register(new ShieldEventListener());
         eventBus.register(new WorldEventListener());
-        eventBus.register(new BulletEventListener());
     }
 
     @Override

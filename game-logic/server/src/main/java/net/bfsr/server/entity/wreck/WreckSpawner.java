@@ -1,6 +1,5 @@
 package net.bfsr.server.entity.wreck;
 
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.ship.Ship;
@@ -34,12 +33,12 @@ public final class WreckSpawner {
             float angle = RAND.nextFloat() * MathUtils.TWO_PI;
             float angleVel = (-0.005f + RAND.nextFloat() / 200.0f) * 60.0f;
             float size2 = (1.0F - RAND.nextFloat() / 3.0F) * 2.0f * size;
-            float lifeTimeVelocity = Engine.convertToDeltaTime(0.1f);
+            int maxLifeTime = world.convertToTicks(30);
             boolean isFire = RAND.nextInt(3) == 0;
             boolean isFireExplosion = isFire && RAND.nextInt(5) == 0;
             world.add(Wreck.WREAK_POOL.get().init(world, world.getNextId(), RAND.nextInt(6), false, isFire, isFireExplosion, x, y,
                     ANGLE_TO_VELOCITY.x, ANGLE_TO_VELOCITY.y, LUT.sin(angle), LUT.cos(angle), angleVel, size2, size2,
-                    lifeTimeVelocity, WreckType.SMALL));
+                    maxLifeTime, WreckType.SMALL));
         }
     }
 
@@ -50,11 +49,11 @@ public final class WreckSpawner {
             float angle = RAND.nextFloat() * MathUtils.TWO_PI;
             float angleVel = (-0.005f + RAND.nextFloat() / 200.0f) * 60.0f;
             float size = (1.0F - RAND.nextFloat() / 3.0F) * 4.0f;
-            float lifeTimeVelocity = Engine.convertToDeltaTime(0.04f);
+            int maxLifeTime = world.convertToTicks(60);
             boolean isFireExplosion = RAND.nextInt(4) == 0;
             world.add(Wreck.WREAK_POOL.get().init(world, world.getNextId(), RAND.nextInt(3), true, true, isFireExplosion, x, y,
                     ANGLE_TO_VELOCITY.x + velocityX * 0.7f, ANGLE_TO_VELOCITY.y + velocityY * 0.7f, LUT.sin(angle),
-                    LUT.cos(angle), angleVel, size, size, lifeTimeVelocity, WreckType.DEFAULT));
+                    LUT.cos(angle), angleVel, size, size, maxLifeTime, WreckType.DEFAULT));
         }
     }
 }

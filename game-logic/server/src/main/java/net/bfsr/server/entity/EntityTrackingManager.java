@@ -5,20 +5,19 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.bfsr.engine.collection.UnorderedArrayList;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.entity.RigidBody;
-import net.bfsr.event.entity.RigidBodyDeathEvent;
+import net.bfsr.event.entity.RigidBodyRemovedFromWorldEvent;
 import net.bfsr.network.packet.Packet;
 import net.bfsr.network.packet.server.entity.PacketRemoveObject;
 import net.bfsr.network.packet.server.entity.PacketSpawnEntity;
-import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.event.PlayerDisconnectEvent;
 import net.bfsr.server.event.PlayerJoinGameEvent;
 import net.bfsr.server.network.EntitySyncManager;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.player.Player;
-import net.bfsr.world.World;
 import org.joml.Vector2f;
 
 import java.util.List;
@@ -31,12 +30,15 @@ public class EntityTrackingManager {
     private final Object2ObjectOpenHashMap<Player, IntOpenHashSet> playerEntitiesInRangeMap = new Object2ObjectOpenHashMap<>();
     private final Int2ObjectOpenHashMap<ObjectOpenHashSet<Player>> entityTrackingByPlayersMap = new Int2ObjectOpenHashMap<>();
 
-    private final NetworkSystem network = ServerGameLogic.getNetwork();
-    private final World world = ServerGameLogic.getInstance().getWorld();
-    private final EntitySyncManager entitySyncManager = new EntitySyncManager();
+    private final NetworkSystem network;
+    private final EntitySyncManager entitySyncManager;
+    private final EventBus eventBus;
 
-    public EntityTrackingManager() {
-        world.getEventBus().register(this);
+    public EntityTrackingManager(EventBus eventBus, NetworkSystem network) {
+        this.eventBus = eventBus;
+        this.eventBus.register(this);
+        this.network = network;
+        this.entitySyncManager = new EntitySyncManager(network);
     }
 
     private void addPlayer(Player player) {
@@ -50,9 +52,7 @@ public class EntityTrackingManager {
         entityTrackingByPlayersMap.values().forEach(players1 -> players1.remove(player));
     }
 
-    public void update(double time) {
-        List<? extends RigidBody<?>> entities = world.getEntities();
-
+    public void update(double time, List<? extends RigidBody<?>> entities) {
         playerEntitiesInRangeMap.object2ObjectEntrySet().fastForEach(entry -> {
             Player player = entry.getKey();
             Vector2f position = player.getPosition();
@@ -89,7 +89,7 @@ public class EntityTrackingManager {
     }
 
     @EventHandler
-    public EventListener<RigidBodyDeathEvent> rigidBodyDeathEvent() {
+    public EventListener<RigidBodyRemovedFromWorldEvent> rigidBodyDeathEvent() {
         return event -> {
             RigidBody<?> rigidBody = event.rigidBody();
             sendPacketToPlayersTrackingEntity(rigidBody.getId(), new PacketRemoveObject(rigidBody.getId(),
@@ -126,7 +126,7 @@ public class EntityTrackingManager {
     }
 
     public void clear() {
-        world.getEventBus().unregister(this);
+        eventBus.unregister(this);
         players.clear();
         playerEntitiesInRangeMap.clear();
         entityTrackingByPlayersMap.clear();

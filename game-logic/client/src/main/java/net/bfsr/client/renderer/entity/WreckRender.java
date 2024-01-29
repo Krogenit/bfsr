@@ -27,7 +27,6 @@ public class WreckRender extends RigidBodyRender<Wreck> {
     private final Vector4f lastColorFire = new Vector4f(), lastColorLight = new Vector4f();
     private boolean fireFadingOut;
     private int sparkleActivationTimerInTicks;
-    private final float lifeTimeVelocity;
     private boolean fire;
     private boolean light;
     private float sparkleBlinkTimer;
@@ -53,7 +52,6 @@ public class WreckRender extends RigidBodyRender<Wreck> {
         this.lastColorLight.set(colorLight);
         this.sparkleActivationTimerInTicks = object.isLight() ?
                 Core.get().convertToTicks(200.0f + object.getWorld().getRand().nextInt(200)) : 0;
-        this.lifeTimeVelocity = object.getLifeTimeVelocity();
         this.fire = object.isFire();
         this.light = object.isLight();
 
@@ -75,15 +73,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
     }
 
     private void updateLifeTime() {
-        if (color.w < 0.2f) {
-            color.w -= lifeTimeVelocity * 2.0f;
-            if (color.w <= 0.0f) {
-                color.w = 0.0f;
-            }
-        } else {
-            color.w -= lifeTimeVelocity;
-            if (color.w < 0.0f) color.w = 0.0f;
-        }
+        color.w = 1.0f - object.getLifeTime() / (float) object.getMaxLifeTime();
     }
 
     private void emitFire() {
@@ -123,7 +113,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
 
         if (color.w <= 0.5f) {
             if (colorFire.w > 0.0f) {
-                float fireSpeed = lifeTimeVelocity * 4.0f;
+                float fireSpeed = fireAnimationSpeed * 4.0f;
 
                 fire = false;
                 colorFire.w -= fireSpeed;
@@ -216,10 +206,5 @@ public class WreckRender extends RigidBodyRender<Wreck> {
                 ExplosionEffects.spawnSmallExplosion(pos.x, pos.y, wreck.getSize().x);
             }
         };
-    }
-
-    @Override
-    public void clear() {
-        object.getWreckEventBus().unregister(this);
     }
 }

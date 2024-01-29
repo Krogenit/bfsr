@@ -19,15 +19,15 @@ public class BulletDamage {
         this(bulletDamage.armor(), bulletDamage.hull(), bulletDamage.shield());
     }
 
-    void reduceBulletDamageArmor(float amount) {
+    void reduceArmor(float amount) {
         this.armor -= amount;
     }
 
-    void reduceBulletDamageHull(float amount) {
+    void reduceHull(float amount) {
         this.hull -= amount;
     }
 
-    void reduceBulletDamageShield(float amount) {
+    void reduceShield(float amount) {
         this.shield -= amount;
     }
 

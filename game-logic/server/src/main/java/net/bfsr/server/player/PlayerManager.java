@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerManager {
-    private final World world;
     @Getter
     private final List<Player> players = new ArrayList<>();
     private final TMap<String, Player> playerMap = new THashMap<>();
@@ -33,10 +32,6 @@ public class PlayerManager {
     @Getter
     private final PlayerService playerService = new PlayerService(databaseRSocketClient);
     private final Object2ObjectMap<Ship, Player> playerByShipMap = new Object2ObjectOpenHashMap<>();
-
-    public PlayerManager(World world) {
-        this.world = world;
-    }
 
     public void connect(String host, int port) {
         databaseRSocketClient.connect(host, port);
@@ -68,7 +63,7 @@ public class PlayerManager {
         }
     }
 
-    public void respawnPlayer(Player player, float x, float y) {
+    public void respawnPlayer(World world, Player player, float x, float y) {
         Faction faction = player.getFaction();
 
         Ship playerShip;

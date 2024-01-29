@@ -1,7 +1,6 @@
 package net.bfsr.entity.ship.module.armor;
 
 import net.bfsr.config.component.armor.ArmorPlateData;
-import net.bfsr.engine.util.SideUtils;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.entity.ship.module.ModuleWithCells;
@@ -41,13 +40,6 @@ public class Armor extends ModuleWithCells<ArmorPlate> {
                 cells[i][i1].update();
             }
         }
-    }
-
-    public float reduceDamageByArmor(float damageToArmor, float damageToHull, float contactX, float contactY, Ship ship) {
-        ArmorPlate plate = getCell(contactX, contactY, ship);
-        if (plate != null) {
-            return plate.reduceDamage(damageToArmor, damageToHull, SideUtils.IS_SERVER && ship.getWorld().isServer());
-        } else return damageToHull;
     }
 
     private ArmorPlate getMostDamagedCell() {

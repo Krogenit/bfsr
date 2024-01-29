@@ -6,8 +6,8 @@ import lombok.Setter;
 import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.event.entity.RigidBodyAddToWorldEvent;
-import net.bfsr.event.entity.RigidBodyDeathEvent;
 import net.bfsr.event.entity.RigidBodyPostPhysicsUpdateEvent;
+import net.bfsr.event.entity.RigidBodyRemovedFromWorldEvent;
 import net.bfsr.network.packet.common.entity.PacketWorldSnapshot;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.RigidBodySpawnData;
@@ -23,7 +23,7 @@ import org.joml.Vector2f;
 
 @NoArgsConstructor
 public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObject {
-    public static final int DEFAULT_MAX_LIFE_TIME_IN_TICKS = 1200;
+    protected static final int DEFAULT_MAX_LIFE_TIME_IN_TICKS = 1200;
 
     @Getter
     protected World world;
@@ -47,9 +47,11 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
     @Getter
     protected int registryId;
     @Setter
+    @Getter
     protected float health;
 
     protected final RigidBodyPostPhysicsUpdateEvent postPhysicsUpdateEvent = new RigidBodyPostPhysicsUpdateEvent(this);
+    private EntityDataHistoryManager dataHistoryManager;
 
     public RigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, CONFIG_DATA configData, int registryId) {
         super(x, y, sizeX, sizeY);
@@ -78,6 +80,7 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
         this.id = id;
         this.eventBus = world.getEventBus();
         this.eventBus.optimizeEvent(postPhysicsUpdateEvent);
+        this.dataHistoryManager = world.getEntityManager().getDataHistoryManager();
         initBody();
     }
 
@@ -116,21 +119,12 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
         eventBus.publish(new RigidBodyAddToWorldEvent(this));
     }
 
-    public void onRemovedFromWorld() {}
-
-    public boolean canCollideWith(GameObject gameObject) {
-        return this != gameObject;
+    public void onRemovedFromWorld() {
+        eventBus.publish(new RigidBodyRemovedFromWorldEvent(this));
     }
 
     public EntityPacketSpawnData createSpawnData() {
         return new RigidBodySpawnData(this);
-    }
-
-    public void damage(float amount, float contactX, float contactY, float normalX, float normalY) {
-        health -= amount;
-        if (health <= 0) {
-            setDead();
-        }
     }
 
     public void saveTransform(Transform transform) {
@@ -162,12 +156,6 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
         body.setAngularVelocity(angularVelocity);
     }
 
-    @Override
-    public void setDead() {
-        super.setDead();
-        eventBus.publish(new RigidBodyDeathEvent(this));
-    }
-
     public float getX() {
         return position.x;
     }
@@ -184,8 +172,8 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
         return configData.getId();
     }
 
-    public void calcPosition(double timestamp) {
-        TransformData transformData = world.getEntityManager().getDataHistoryManager().getTransformData(id, timestamp);
+    public void updatePosition(double timestamp) {
+        TransformData transformData = dataHistoryManager.getTransformData(id, timestamp);
         if (transformData != null) {
             Vector2f epdPosition = transformData.getPosition();
             setPosition(epdPosition.x, epdPosition.y);
@@ -193,8 +181,8 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
         }
     }
 
-    public void processChronologicalData(double timestamp) {
-        PacketWorldSnapshot.EntityData entityData = world.getEntityManager().getDataHistoryManager().getData(id, timestamp);
+    public void updateData(double timestamp) {
+        PacketWorldSnapshot.EntityData entityData = dataHistoryManager.getData(id, timestamp);
         if (entityData != null) {
             Vector2f velocity = entityData.getVelocity();
             setVelocity(velocity.x, velocity.y);

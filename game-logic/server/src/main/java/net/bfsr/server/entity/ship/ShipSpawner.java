@@ -1,6 +1,5 @@
 package net.bfsr.server.entity.ship;
 
-import lombok.RequiredArgsConstructor;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.util.RandomHelper;
 import net.bfsr.entity.ship.Ship;
@@ -14,13 +13,11 @@ import org.joml.Vector2f;
 import java.util.List;
 import java.util.Random;
 
-@RequiredArgsConstructor
 public class ShipSpawner {
-    private final World world;
     private float timer;
     private final Vector2f angleToVelocity = new Vector2f();
 
-    private void spawnShips() {
+    private void spawnShips(World world) {
         if (timer-- > 0) return;
 
         boolean sameFaction = true;
@@ -77,7 +74,7 @@ public class ShipSpawner {
         }
     }
 
-    public void update() {
-        spawnShips();
+    public void update(World world) {
+        spawnShips(world);
     }
 }

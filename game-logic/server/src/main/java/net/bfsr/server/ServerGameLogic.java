@@ -15,9 +15,7 @@ import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.ship.ShipSpawner;
 import net.bfsr.server.event.PlayerDisconnectEvent;
 import net.bfsr.server.event.listener.damage.DamageEventListener;
-import net.bfsr.server.event.listener.entity.BulletEventListener;
 import net.bfsr.server.event.listener.entity.ShipEventListener;
-import net.bfsr.server.event.listener.entity.WreckEventListener;
 import net.bfsr.server.event.listener.module.ModuleEventListener;
 import net.bfsr.server.event.listener.module.weapon.WeaponEventListener;
 import net.bfsr.server.module.ShieldLogic;
@@ -42,16 +40,17 @@ public class ServerGameLogic extends GameLogic {
 
     @Getter
     private net.bfsr.world.World world;
+
     @Getter
-    private NetworkSystem networkSystem;
+    private final PlayerManager playerManager = new PlayerManager();
+    @Getter
+    private final NetworkSystem networkSystem = new NetworkSystem(playerManager);
     private ServerSettings settings;
-    @Getter
-    private PlayerManager playerManager;
-    private ShipSpawner shipSpawner;
+    private final ShipSpawner shipSpawner = new ShipSpawner();
     @Getter
     private final DamageSystem damageSystem = new DamageSystem();
     @Getter
-    private EntityTrackingManager entityTrackingManager;
+    private final EntityTrackingManager entityTrackingManager = new EntityTrackingManager(eventBus, networkSystem);
 
     protected ServerGameLogic() {
         instance = this;
@@ -62,11 +61,6 @@ public class ServerGameLogic extends GameLogic {
         world = new World(profiler, Side.SERVER, new Random().nextLong(), eventBus, new EntityManager(), new EntityIdManager(),
                 this, new CollisionHandler(eventBus));
         world.init();
-        playerManager = new PlayerManager(world);
-        networkSystem = new NetworkSystem(playerManager);
-        shipSpawner = new ShipSpawner(world);
-        entityTrackingManager = new EntityTrackingManager();
-
         profiler.setEnable(true);
         networkSystem.init();
         loadConfigs();
@@ -80,8 +74,6 @@ public class ServerGameLogic extends GameLogic {
     private void initListeners() {
         eventBus.register(new ShipEventListener());
         eventBus.register(new WeaponEventListener());
-        eventBus.register(new BulletEventListener());
-        eventBus.register(new WreckEventListener());
         eventBus.register(new DamageEventListener());
         eventBus.register(new ModuleEventListener());
     }
@@ -122,8 +114,8 @@ public class ServerGameLogic extends GameLogic {
 
     protected void updateWorld(double time) {
         world.update(time);
-        shipSpawner.update();
-        entityTrackingManager.update(time);
+        shipSpawner.update(world);
+        entityTrackingManager.update(time, world.getEntities());
     }
 
     public void onPlayerDisconnected(Player player) {

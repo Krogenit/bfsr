@@ -29,7 +29,7 @@ public abstract class ModuleWithCells<T> extends Module {
         }
     }
 
-    protected T getCell(float contactX, float contactY, Ship ship) {
+    public T getCell(float contactX, float contactY, Ship ship) {
         float sin = (float) -ship.getBody().getTransform().getSint();
         float cos = (float) ship.getBody().getTransform().getCost();
 

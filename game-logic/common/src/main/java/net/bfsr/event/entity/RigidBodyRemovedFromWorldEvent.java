@@ -9,6 +9,6 @@ import net.bfsr.entity.RigidBody;
 @Getter
 @Accessors(fluent = true)
 @AllArgsConstructor
-public class RigidBodyDeathEvent extends Event {
+public class RigidBodyRemovedFromWorldEvent extends Event {
     private final RigidBody<?> rigidBody;
 }

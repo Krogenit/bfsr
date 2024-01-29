@@ -1,7 +1,5 @@
 package net.bfsr.server.event.listener.entity;
 
-import clipper2.core.Path64;
-import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.entity.ship.Ship;
@@ -14,14 +12,12 @@ import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.player.Player;
 import net.bfsr.world.World;
-import org.dyn4j.dynamics.Body;
 import org.joml.Vector2f;
 
 import java.util.Random;
 
 public class ShipEventListener {
     private final EntityTrackingManager trackingManager = ServerGameLogic.getInstance().getEntityTrackingManager();
-    private final DamageSystem damageSystem = ServerGameLogic.getInstance().getDamageSystem();
 
     @EventHandler
     public EventListener<ShipNewMoveDirectionEvent> shipNewMoveDirectionEvent() {
@@ -68,26 +64,6 @@ public class ShipEventListener {
             Ship ship = event.ship();
             trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketDestroyingShip(ship,
                     ship.getWorld().getTimestamp()));
-        };
-    }
-
-    @EventHandler
-    public EventListener<ShipHullDamageEvent> shipHullDamageEvent() {
-        return event -> {
-            if (event.cell().getValue() > 0) return;
-
-            Ship ship = event.ship();
-            Body body = ship.getBody();
-            float polygonRadius = 0.5f;
-            float radius = 1.00f;
-
-            double x = body.getTransform().getTranslationX();
-            double y = body.getTransform().getTranslationY();
-            double sin = body.getTransform().getSint();
-            double cos = body.getTransform().getCost();
-
-            Path64 clip = damageSystem.createCirclePath(event.contactX() - x, event.contactY() - y, -sin, cos, 12, polygonRadius);
-            damageSystem.damage(ship, event.contactX(), event.contactY(), clip, radius);
         };
     }
 

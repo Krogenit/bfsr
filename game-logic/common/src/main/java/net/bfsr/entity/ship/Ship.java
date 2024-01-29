@@ -12,10 +12,7 @@ import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.event.EventBus;
-import net.bfsr.engine.util.SideUtils;
 import net.bfsr.entity.RigidBody;
-import net.bfsr.entity.bullet.BulletDamage;
-import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.cargo.Cargo;
@@ -23,12 +20,10 @@ import net.bfsr.entity.ship.module.crew.Crew;
 import net.bfsr.entity.ship.module.engine.Engine;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.hull.Hull;
-import net.bfsr.entity.ship.module.hull.HullCell;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.event.entity.ship.*;
-import net.bfsr.event.module.shield.ShieldDamageByCollision;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RotationHelper;
@@ -71,8 +66,6 @@ public class Ship extends DamageableRigidBody<ShipData> {
     @Getter
     private final Vector2f jumpPosition = new Vector2f();
     private int collisionTimer;
-    @Getter
-    private int destroyingTimer;
     private int sparksTimer;
     private final int timeToDestroy, maxSparksTimer;
 
@@ -81,6 +74,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
     private boolean controlledByPlayer;
 
     @Getter
+    @Setter
     private RigidBody<?> lastAttacker;
 
     @Getter
@@ -92,9 +86,9 @@ public class Ship extends DamageableRigidBody<ShipData> {
     @Setter
     private RigidBody<?> target;
     @Setter
-    private Consumer<Double> positionCalculator = super::calcPosition;
+    private Consumer<Double> positionCalculator = super::updatePosition;
     @Setter
-    private Consumer<Double> chronologicalDataProcessor = super::processChronologicalData;
+    private Consumer<Double> chronologicalDataProcessor = super::updateData;
     private final Vector2f rotationHelper = new Vector2f();
     @Getter
     private final EventBus shipEventBus = new EventBus();
@@ -283,61 +277,6 @@ public class Ship extends DamageableRigidBody<ShipData> {
         modules.shoot(onShotEvent);
     }
 
-    public void damageByCollision(Ship otherShip, float impactPower, float contactX, float contactY, float normalX,
-                                  float normalY) {
-        if (collisionTimer > 0) {
-            return;
-        }
-
-        lastAttacker = otherShip;
-
-        collisionTimer = world.convertToTicks(2);
-
-        Shield shield = modules.getShield();
-        if (shield != null && shield.damageToShield(impactPower)) {
-            eventBus.publish(new ShieldDamageByCollision(this, contactX, contactY, normalX, normalY));
-            return;
-        }
-
-        float reducedHullDamage = modules.getArmor().reduceDamageByArmor(impactPower, impactPower, contactX, contactY, this);
-        modules.getHull().damage(reducedHullDamage, contactX, contactY, this);
-        eventBus.publish(new ShipHullDamageByCollisionEvent(this, contactX, contactY, normalX, normalY));
-    }
-
-    public void damage(BulletDamage damage, Ship attacker, float contactX, float contactY, float multiplayer,
-                       BodyFixture fixture, Runnable onShieldDamageRunnable, Runnable onArmorDamageRunnable,
-                       Runnable onHullDamageRunnable) {
-        lastAttacker = attacker;
-        float shieldDamage = damage.getShield() * multiplayer;
-
-        Shield shield = modules.getShield();
-        if (shield != null && shield.damageToShield(shieldDamage)) {
-            onShieldDamageRunnable.run();
-            return;
-        }
-
-        float hullDamage = damage.getHull() * multiplayer;
-        float armorDamage = damage.getArmor() * multiplayer;
-
-        float reducedHullDamage = modules.getArmor().reduceDamageByArmor(armorDamage, hullDamage, contactX, contactY, this);
-
-        if (reducedHullDamage == hullDamage) {
-            HullCell cell = modules.getHull().damage(reducedHullDamage, contactX, contactY, this);
-
-            if (SideUtils.IS_SERVER && world.isServer()) {
-                Object userData = fixture.getUserData();
-                if (userData instanceof DamageableModule) {
-                    ((DamageableModule) userData).damage(reducedHullDamage);
-                }
-            }
-
-            onHullDamageRunnable.run();
-            eventBus.publish(new ShipHullDamageEvent(this, contactX, contactY, cell));
-        } else {
-            onArmorDamageRunnable.run();
-        }
-    }
-
     @Override
     public void addConnectedObjectFixturesToBody() {
         super.addConnectedObjectFixturesToBody();
@@ -367,18 +306,18 @@ public class Ship extends DamageableRigidBody<ShipData> {
     }
 
     @Override
-    public void calcPosition(double timestamp) {
+    public void updatePosition(double timestamp) {
         positionCalculator.accept(timestamp);
     }
 
     @Override
-    public void processChronologicalData(double timestamp) {
+    public void updateData(double timestamp) {
         chronologicalDataProcessor.accept(timestamp);
     }
 
     public void resetPositionCalculatorAndChronologicalProcessor() {
-        positionCalculator = super::calcPosition;
-        chronologicalDataProcessor = super::processChronologicalData;
+        positionCalculator = super::updatePosition;
+        chronologicalDataProcessor = super::updateData;
     }
 
     @Override

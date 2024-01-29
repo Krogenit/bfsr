@@ -139,12 +139,6 @@ public class Shield extends DamageableModule {
         createShieldFixture();
     }
 
-    public boolean damageToShield(float amount) {
-        if (isDead) return false;
-
-        return logic.damageToShield(this, amount);
-    }
-
     @Override
     protected void destroy() {
         super.destroy();

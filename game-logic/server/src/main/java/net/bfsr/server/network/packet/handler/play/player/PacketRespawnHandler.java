@@ -10,7 +10,9 @@ import java.net.InetSocketAddress;
 
 public class PacketRespawnHandler extends PacketHandler<PacketRespawn, PlayerNetworkHandler> {
     @Override
-    public void handle(PacketRespawn packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
-        PlayerManager.get().respawnPlayer(playerNetworkHandler.getPlayer(), packet.getCamPosX(), packet.getCamPosY());
+    public void handle(PacketRespawn packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
+        PlayerManager.get().respawnPlayer(playerNetworkHandler.getWorld(), playerNetworkHandler.getPlayer(), packet.getCamPosX(),
+                packet.getCamPosY());
     }
 }

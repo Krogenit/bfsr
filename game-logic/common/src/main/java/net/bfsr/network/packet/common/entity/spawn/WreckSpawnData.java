@@ -14,8 +14,9 @@ public class WreckSpawnData extends RigidBodySpawnData {
     private static final WreckType[] WRECK_TYPES = WreckType.values();
 
     private int wreckIndex;
+    private int maxLifeTime;
     private boolean isFire, isLight, isFireExplosion;
-    private float alphaVelocity, rotationSpeed;
+    private float rotationSpeed;
     private Vector2f velocity, size;
     private WreckType wreckType;
 
@@ -25,7 +26,7 @@ public class WreckSpawnData extends RigidBodySpawnData {
         this.isFire = wreck.isFire();
         this.isLight = wreck.isLight();
         this.isFireExplosion = wreck.isEmitFire();
-        this.alphaVelocity = wreck.getLifeTimeVelocity();
+        this.maxLifeTime = wreck.getMaxLifeTime();
         this.rotationSpeed = wreck.getAngularVelocity();
         this.velocity = wreck.getVelocity();
         this.size = wreck.getSize();
@@ -41,7 +42,7 @@ public class WreckSpawnData extends RigidBodySpawnData {
         data.writeBoolean(isFire);
         data.writeBoolean(isLight);
         data.writeBoolean(isFireExplosion);
-        data.writeFloat(alphaVelocity);
+        data.writeInt(maxLifeTime);
 
         ByteBufUtils.writeVector(data, velocity);
         data.writeFloat(rotationSpeed);
@@ -57,7 +58,7 @@ public class WreckSpawnData extends RigidBodySpawnData {
         isFire = data.readBoolean();
         isLight = data.readBoolean();
         isFireExplosion = data.readBoolean();
-        alphaVelocity = data.readFloat();
+        maxLifeTime = data.readInt();
 
         ByteBufUtils.readVector(data, velocity = new Vector2f());
         rotationSpeed = data.readFloat();

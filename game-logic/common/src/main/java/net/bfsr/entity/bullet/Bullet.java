@@ -6,9 +6,7 @@ import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.config.component.weapon.gun.GunRegistry;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
-import net.bfsr.entity.GameObject;
 import net.bfsr.entity.RigidBody;
-import net.bfsr.entity.ship.Ship;
 import net.bfsr.network.packet.common.entity.spawn.BulletSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.physics.CollisionMatrixType;
@@ -24,7 +22,8 @@ public class Bullet extends RigidBody<GunData> {
     private final BulletDamage damage;
     private final Polygon polygon;
     @Setter
-    private Object previousAObject;
+    @Getter
+    private RigidBody<?> lastCollidedRigidBody;
 
     public Bullet(float x, float y, float sin, float cos, GunData gunData, RigidBody<?> owner, BulletDamage damage) {
         super(x, y, sin, cos, gunData.getBulletSizeX(), gunData.getBulletSizeY(), gunData, GunRegistry.INSTANCE.getId());
@@ -35,6 +34,7 @@ public class Bullet extends RigidBody<GunData> {
         this.health = damage.getAverage();
         this.polygon = gunData.getBulletPolygon();
         this.velocity.set(cos * bulletSpeed, sin * bulletSpeed);
+        this.lastCollidedRigidBody = owner;
     }
 
     @Override
@@ -74,14 +74,12 @@ public class Bullet extends RigidBody<GunData> {
     }
 
     public void damage() {
-        if (!world.isServer()) return;
-
         float damage = this.damage.getAverage();
         damage /= 3.0f;
 
-        this.damage.reduceBulletDamageArmor(damage);
-        this.damage.reduceBulletDamageHull(damage);
-        this.damage.reduceBulletDamageShield(damage);
+        this.damage.reduceArmor(damage);
+        this.damage.reduceHull(damage);
+        this.damage.reduceShield(damage);
 
         if (this.damage.getArmor() < 0) setDead();
         else if (this.damage.getHull() < 0) setDead();
@@ -91,15 +89,6 @@ public class Bullet extends RigidBody<GunData> {
     @Override
     public EntityPacketSpawnData createSpawnData() {
         return new BulletSpawnData(this);
-    }
-
-    public boolean canDamageShip(Ship ship) {
-        return this.owner != ship && previousAObject != ship || previousAObject != null && previousAObject != ship;
-    }
-
-    @Override
-    public boolean canCollideWith(GameObject gameObject) {
-        return owner != gameObject && previousAObject != gameObject;
     }
 
     @Override
