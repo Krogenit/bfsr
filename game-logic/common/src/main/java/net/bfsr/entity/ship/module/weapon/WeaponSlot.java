@@ -89,6 +89,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
         rigidBody.init(world, world.getNextId());
 
         Polygon polygon = Geometry.createPolygon(this.polygon.getVertices());
+        polygon.translate(-localPosition.x, -localPosition.y);
         BodyFixture fixture = new BodyFixture(polygon);
         fixture.setUserData(this);
         fixture.setFilter(new ShipFilter(rigidBody));
