@@ -65,6 +65,8 @@ public class Ship extends DamageableRigidBody<ShipData> {
     private int jumpTimer;
     @Getter
     private final Vector2f jumpPosition = new Vector2f();
+    @Getter
+    @Setter
     private int collisionTimer;
     private int sparksTimer;
     private final int timeToDestroy, maxSparksTimer;

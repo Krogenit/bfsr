@@ -70,16 +70,23 @@ public class CollisionHandler extends CommonCollisionHandler {
                          float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
         float dx = ship2.getVelocity().x - ship1.getVelocity().x;
         float dy = ship2.getVelocity().y - ship1.getVelocity().y;
-        float impactPowerForOther = (float) ((Math.sqrt(dx * dx + dy * dy)) *
+        float impactPower = (float) ((Math.sqrt(dx * dx + dy * dy)) *
                 (ship1.getBody().getMass().getMass() / ship2.getBody().getMass().getMass()));
 
-        impactPowerForOther /= 400.0f;
+        impactPower /= 10.0f;
 
-        if (impactPowerForOther > 0.25f) {
-            ship1.setLastAttacker(ship2);
-            ship2.setLastAttacker(ship1);
-            damageShipByCollision(ship1, contactX, contactY, normalX, normalY);
-            damageShipByCollision(ship2, contactX, contactY, normalX, normalY);
+        if (impactPower > 0.25f) {
+            if (ship1.getCollisionTimer() <= 0) {
+                ship1.setCollisionTimer(ship1.getWorld().convertToTicks(0.5f));
+                ship1.setLastAttacker(ship2);
+                damageShipByCollision(ship1, contactX, contactY, -normalX, -normalY);
+            }
+
+            if (ship2.getCollisionTimer() <= 0) {
+                ship2.setCollisionTimer(ship2.getWorld().convertToTicks(0.5f));
+                ship2.setLastAttacker(ship1);
+                damageShipByCollision(ship2, contactX, contactY, normalX, normalY);
+            }
         }
     }
 

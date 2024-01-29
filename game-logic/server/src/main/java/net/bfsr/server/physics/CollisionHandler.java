@@ -95,16 +95,23 @@ public class CollisionHandler extends CommonCollisionHandler {
                          float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
         float dx = ship2.getVelocity().x - ship1.getVelocity().x;
         float dy = ship2.getVelocity().y - ship1.getVelocity().y;
-        float impactPowerForOther = (float) ((Math.sqrt(dx * dx + dy * dy)) *
+        float impactPower = (float) ((Math.sqrt(dx * dx + dy * dy)) *
                 (ship1.getBody().getMass().getMass() / ship2.getBody().getMass().getMass()));
 
-        impactPowerForOther /= 400.0f;
+        impactPower /= 10.0f;
 
-        if (impactPowerForOther > 0.25f) {
-            ship1.setLastAttacker(ship2);
-            ship2.setLastAttacker(ship1);
-            damageShipByCollision(ship1, ship1Fixture, impactPowerForOther, contactX, contactY);
-            damageShipByCollision(ship2, ship2Fixture, impactPowerForOther, contactX, contactY);
+        if (impactPower > 0.25f) {
+            if (ship1.getCollisionTimer() <= 0) {
+                ship1.setCollisionTimer(ship1.getWorld().convertToTicks(0.5f));
+                ship1.setLastAttacker(ship2);
+                damageShipByCollision(ship1, ship1Fixture, impactPower, contactX, contactY);
+            }
+
+            if (ship2.getCollisionTimer() <= 0) {
+                ship2.setCollisionTimer(ship2.getWorld().convertToTicks(0.5f));
+                ship2.setLastAttacker(ship1);
+                damageShipByCollision(ship2, ship2Fixture, impactPower, contactX, contactY);
+            }
         }
     }
 
@@ -170,11 +177,15 @@ public class CollisionHandler extends CommonCollisionHandler {
             impactPower /= armorPlate.getHullProtection();
         }
 
-        modules.getHull().damage(impactPower, contactX, contactY, ship);
+        HullCell cell = modules.getHull().damage(impactPower, contactX, contactY, ship);
 
         Object userData = fixture.getUserData();
         if (userData instanceof DamageableModule) {
             ((DamageableModule) userData).damage(impactPower);
+        }
+
+        if (cell.getValue() <= 0 && impactPower > 0.4f) {
+            createDamage(ship, contactX, contactY);
         }
     }
 
@@ -198,7 +209,7 @@ public class CollisionHandler extends CommonCollisionHandler {
         return false;
     }
 
-    public void damageWreck(Wreck wreck, float amount) {
+    private void damageWreck(Wreck wreck, float amount) {
         damageRigidBody(wreck, amount);
     }
 
