@@ -42,8 +42,8 @@ subprojects {
         testImplementation 'org.assertj:assertj-core:3.24.2'
 
         testImplementation 'org.openjdk.jmh:jmh-core:1.36'
-        testImplementation 'org.openjdk.jmh:jmh-generator-annprocess:1.36'
-        jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.36'
+        testImplementation 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+        jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
     }
 
     configurations.configureEach {
