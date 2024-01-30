@@ -26,9 +26,10 @@ public abstract class ShipConverter {
             @Mapping(target = "engine", ignore = true), @Mapping(target = "health", ignore = true),
             @Mapping(target = "hull", ignore = true), @Mapping(target = "reactor", ignore = true),
             @Mapping(target = "registryId", ignore = true), @Mapping(target = "fixturesToRemove", ignore = true),
-            @Mapping(target = "connectedObjects", ignore = true),
-            @Mapping(target = "chronologicalDataProcessor", ignore = true),
-            @Mapping(target = "positionCalculator", ignore = true)
+            @Mapping(target = "connectedObjects", ignore = true), @Mapping(target = "collisionTimer", ignore = true),
+            @Mapping(target = "chronologicalDataProcessor", ignore = true), @Mapping(target = "lastAttacker", ignore = true),
+            @Mapping(target = "positionCalculator", ignore = true), @Mapping(target = "ai", ignore = true),
+            @Mapping(target = "updateRunnable", ignore = true), @Mapping(target = "mask", ignore = true)
     })
     public abstract Ship from(ShipModel shipModel);
 

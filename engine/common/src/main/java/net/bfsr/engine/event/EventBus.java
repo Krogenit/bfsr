@@ -4,6 +4,7 @@ import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap;
+import lombok.extern.log4j.Log4j2;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+@Log4j2
 public class EventBus {
     private static final Object2ShortOpenHashMap<Class<? extends Event>> EVENT_CLASS_TO_INDEX_MAP = new Object2ShortOpenHashMap<>();
     private static final Object2ObjectOpenHashMap<Class<?>, List<EventHandlerData>> HANDLER_METHODS_BY_CLASS_MAP = new Object2ObjectOpenHashMap<>();
@@ -73,6 +75,11 @@ public class EventBus {
             for (int i = 0; i < handlers.size(); i++) {
                 EventHandlerData handlerData = handlers.get(i);
                 Listeners<? extends Event> eventBus = eventBusMap.get(handlerData.eventClass());
+
+                if (eventBus == null) {
+                    continue;
+                }
+
                 try {
                     listeners.add(new EventListenerData(eventBus, (EventListener<?>) handlerData.method().invoke(eventHandler)));
                 } catch (IllegalAccessException | InvocationTargetException e) {
