@@ -1,4 +1,4 @@
-package collection;
+package net.bfsr.collection;
 
 import com.carrotsearch.hppc.IntObjectHashMap;
 import com.carrotsearch.hppc.IntObjectMap;
@@ -10,22 +10,22 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.agrona.collections.Int2ObjectHashMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+@State(Scope.Thread)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@State(Scope.Thread)
-public class GetMapBenchmarks {
+public class RemoveMapBenchmarks {
     @Param({"100000"})
     int setSize;
 
     int[] addedKeys;
     Entity[] addedValues;
+    int[] removeKeys;
 
     Map<Integer, Entity> map;
     TIntObjectMap<Entity> troveMap;
@@ -65,61 +65,64 @@ public class GetMapBenchmarks {
             eclipseMap.put(addedKeys[i], addedValues[i]);
             agronaMap.put(addedKeys[i], addedValues[i]);
         }
+
+        removeKeys = new int[setSize];
+        System.arraycopy(addedKeys, 0, removeKeys, 0, setSize);
     }
 
     @Benchmark
-    public void getJavaMap(Blackhole blackhole) {
-        for (int i = 0; i < setSize; i++) {
-            blackhole.consume(map.get(addedKeys[i]));
+    public void removeJavaMap() {
+        for (int i = 0; i < removeKeys.length; i++) {
+            map.remove(removeKeys[i]);
         }
     }
 
     @Benchmark
-    public void getTroveMap(Blackhole blackhole) {
-        for (int i = 0; i < setSize; i++) {
-            blackhole.consume(troveMap.get(addedKeys[i]));
+    public void removeTroveMap() {
+        for (int i = 0; i < removeKeys.length; i++) {
+            troveMap.remove(removeKeys[i]);
         }
     }
 
     @Benchmark
-    public void getFastUtilMap(Blackhole blackhole) {
-        for (int i = 0; i < setSize; i++) {
-            blackhole.consume(fastUtilMap.get(addedKeys[i]));
+    public void removeFastUtilMap() {
+        for (int i = 0; i < removeKeys.length; i++) {
+            fastUtilMap.remove(removeKeys[i]);
         }
     }
 
     @Benchmark
-    public void getNettyMap(Blackhole blackhole) {
-        for (int i = 0; i < setSize; i++) {
-            blackhole.consume(nettyMap.get(addedKeys[i]));
+    public void removeNettyMap() {
+        for (int i = 0; i < removeKeys.length; i++) {
+            nettyMap.remove(removeKeys[i]);
         }
     }
 
     @Benchmark
-    public void getHPPCMap(Blackhole blackhole) {
-        for (int i = 0; i < setSize; i++) {
-            blackhole.consume(hppcMap.get(addedKeys[i]));
+    public void removeHPPCMap() {
+        for (int i = 0; i < removeKeys.length; i++) {
+            hppcMap.remove(removeKeys[i]);
         }
     }
 
     @Benchmark
-    public void getHPPCWormMap(Blackhole blackhole) {
-        for (int i = 0; i < setSize; i++) {
-            blackhole.consume(hppcWormMap.get(addedKeys[i]));
+    public void removeHPPCWormMap() {
+        for (int i = 0; i < removeKeys.length; i++) {
+            hppcWormMap.remove(removeKeys[i]);
         }
     }
 
     @Benchmark
-    public void getEclipseMap(Blackhole blackhole) {
-        for (int i = 0; i < setSize; i++) {
-            blackhole.consume(eclipseMap.get(addedKeys[i]));
+    public void removeEclipseMap() {
+        for (int i = 0; i < removeKeys.length; i++) {
+            eclipseMap.remove(removeKeys[i]);
         }
     }
 
     @Benchmark
-    public void getAgronaMap(Blackhole blackhole) {
-        for (int i = 0; i < setSize; i++) {
-            blackhole.consume(agronaMap.get(addedKeys[i]));
+    public void removeAgronaMap() {
+        for (int i = 0; i < removeKeys.length; i++) {
+            agronaMap.remove(removeKeys[i]);
         }
     }
 }

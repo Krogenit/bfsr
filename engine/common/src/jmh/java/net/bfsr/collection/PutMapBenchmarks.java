@@ -1,4 +1,4 @@
-package collection;
+package net.bfsr.collection;
 
 import com.carrotsearch.hppc.IntObjectHashMap;
 import com.carrotsearch.hppc.IntObjectMap;
