@@ -85,7 +85,10 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
             WeaponSlotRender<?> render = weaponRenderRegistry.createRender(weaponSlot);
             weaponRenders.add(render);
             weaponSlot.getWeaponSlotEventBus().addOneTimeListener(WeaponSlotRemovedEvent.class,
-                    event -> weaponRenders.remove(render));
+                    event -> {
+                        render.clear();
+                        weaponRenders.remove(render);
+                    });
             weaponSlot.getWeaponSlotEventBus().addListener(WeaponShotEvent.class, event -> render.onShot());
         }
     }
