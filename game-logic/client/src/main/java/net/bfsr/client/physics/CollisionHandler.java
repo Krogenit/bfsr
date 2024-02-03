@@ -93,12 +93,15 @@ public class CollisionHandler extends CommonCollisionHandler {
     @Override
     public void shipWreck(Ship ship, Wreck wreck, BodyFixture shipFixture, BodyFixture wreckFixture, float contactX,
                           float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
-        Shield shield = ship.getModules().getShield();
-        if (shield != null && isShieldAlive(shield)) {
-            Vector4f color = ship.getConfigData().getEffectsColor();
-            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
-        } else {
-            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
+        if (ship.getCollisionTimer() <= 0) {
+            ship.setCollisionTimer(ship.getWorld().convertToTicks(0.5f));
+            Shield shield = ship.getModules().getShield();
+            if (shield != null && isShieldAlive(shield)) {
+                Vector4f color = ship.getConfigData().getEffectsColor();
+                WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
+            } else {
+                WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
+            }
         }
     }
 
