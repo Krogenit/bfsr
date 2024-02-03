@@ -52,9 +52,12 @@ public class WeaponSlotRender<T extends WeaponSlot> extends Render<T> {
         float sin = ship.getSin();
         float cos = ship.getCos();
         RotationHelper.rotate(sin, cos, 1.0f, 0, rotationHelper);
-        rotationHelper.add(position);
-        Vector2f velocity = ship.getVelocity();
-        WeaponEffects.spawnWeaponShoot(rotationHelper, -sin, -cos, 8.0f, velocity, color.x, color.y, color.z, color.w);
+        WeaponEffects.spawnWeaponShoot(position.x, position.y, rotationHelper.x, rotationHelper.y, sin, cos, 8.0f, color.x,
+                color.y, color.z, color.w, particle -> {
+                    particle.setSin(ship.getSin());
+                    particle.setCos(ship.getCos());
+                    particle.setPosition(position.x + rotationHelper.x, position.y + rotationHelper.y);
+                });
         playSounds(object.getGunData(), ship.getWorld().getRand(), position.x, position.y);
     }
 

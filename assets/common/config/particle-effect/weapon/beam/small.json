@@ -1,7 +1,6 @@
 {
   "a": 1.0,
   "b": 1.0,
-  "editorPath": "weapon/beam",
   "g": 1.0,
   "isAlphaFromZero": false,
   "maxAlphaVelocity": 6.0,
@@ -26,13 +25,15 @@
   "minSpawnCount": 1,
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
+  "name": "small",
+  "path": "weapon/beam",
   "r": 1.0,
   "renderLayer": "DEFAULT_ADDITIVE",
   "soundEffects": [],
   "sourceSizeXMultiplier": 0.0,
   "sourceSizeYMultiplier": 0.0,
-  "sourceVelocityXMultiplier": 0.0,
-  "sourceVelocityYMultiplier": 0.0,
+  "sourceVelocityXMultiplier": 1.0,
+  "sourceVelocityYMultiplier": 1.0,
   "spawnOverTime": 40.0,
   "texturePaths": [
     "texture/particle/beamdamage.png"

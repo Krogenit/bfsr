@@ -253,11 +253,6 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
         float halfStringWidth = stringObject.getWidth() / (stringObject.getFontSize() * 1.4f);
         aabb.union(position.x - halfStringWidth, aabb.getMinY(), position.x + halfStringWidth,
                 position.y + 3.2f + object.getSize().y / 4.0f);
-
-        for (int i = 0; i < weaponRenders.size(); i++) {
-            WeaponSlotRender<? extends WeaponSlot> render = weaponRenders.get(i);
-            aabb.union(render.getAabb());
-        }
     }
 
     @Override
