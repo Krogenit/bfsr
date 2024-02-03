@@ -17,6 +17,7 @@ import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Polygon;
+import org.dyn4j.geometry.Transform;
 
 import java.util.Random;
 
@@ -86,11 +87,12 @@ public class Wreck extends RigidBody<WreckData> {
         while (body.getFixtures().size() > 0) body.removeFixture(0);
         createFixture();
         body.setOwner(null);
-        body.translate(position.x, position.y);
+        Transform transform = body.getTransform();
+        transform.setTranslation(position.x, position.y);
+        transform.setRotation(sin, cos);
         body.setMass(MassType.NORMAL);
         body.setUserData(this);
         body.setLinearVelocity(velocity.x, velocity.y);
-        body.getTransform().setRotation(sin, cos);
         body.setAngularVelocity(angularVelocity);
         setLinearAndAngularDamping();
     }
