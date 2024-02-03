@@ -27,14 +27,13 @@ public final class PropertiesBuilder {
     }
 
     public static void createGuiProperties(Object object, int width, int height, FontType fontType, int fontSize,
-                                           int propertyOffsetX, int stringYOffset,
-                                           Consumer<PropertyComponent> consumer) {
+                                           int propertyOffsetX, int stringYOffset, Consumer<PropertyComponent> consumer) {
         createGuiProperties(object, width, height, fontType, fontSize, propertyOffsetX, stringYOffset, consumer, "");
     }
 
     public static void createGuiProperties(Object object, int width, int height, FontType fontType, int fontSize,
-                                           int propertyOffsetX, int stringYOffset,
-                                           Consumer<PropertyComponent> consumer, String propertyName) {
+                                           int propertyOffsetX, int stringYOffset, Consumer<PropertyComponent> consumer,
+                                           String propertyName) {
         List<Field> fields = getAllFields(new LinkedList<>(), object.getClass());
         int fieldsAmount = 0;
         List<Field> fieldsBulk = new ArrayList<>(4);
@@ -72,8 +71,7 @@ public final class PropertiesBuilder {
                 if (fieldsBulk.size() == fieldsAmount) {
                     try {
                         consumer.accept(createProperty(object, width, height, propertyOffsetX, fontType, fontSize, stringYOffset,
-                                propertyName,
-                                elementType, new ArrayList<>(fieldsBulk)));
+                                propertyName, elementType, new ArrayList<>(fieldsBulk)));
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     }
@@ -103,8 +101,7 @@ public final class PropertiesBuilder {
         }
 
         return ComponentBuilder.build(elementType, width, height, propertyName, propertyOffsetX, fontType, fontSize,
-                stringYOffset,
-                fields, values, object, (o, integer) -> {
+                stringYOffset, fields, values, object, (o, integer) -> {
                     try {
                         fields.get(integer).set(object, o);
                     } catch (IllegalAccessException e) {

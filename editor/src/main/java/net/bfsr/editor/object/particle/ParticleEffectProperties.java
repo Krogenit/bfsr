@@ -46,7 +46,7 @@ public class ParticleEffectProperties extends ObjectProperties {
     private boolean isAlphaFromZero;
     @Property(elementType = PropertyGuiElementType.COMBO_BOX)
     private RenderLayer renderLayer;
-    @Property(elementType = PropertyGuiElementType.MINIMIZABLE_LIST)
+    @Property(elementType = PropertyGuiElementType.MINIMIZABLE_LIST, arrayElementName = "sound")
     private List<SoundProperties> soundEffects;
     @Property(name = "srcSizeMultiplayer", fieldsAmount = 2)
     private float sourceSizeXMultiplier, sourceSizeYMultiplier;

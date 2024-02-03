@@ -93,5 +93,5 @@ public abstract class AbstractRenderer {
                                        ByteBuffer byteBuffer);
     public abstract void uploadTexture(AbstractTexture texture, int internalFormat, int format, int wrap, int filter,
                                        IntBuffer buffer);
-    public abstract void uploadEmpty(AbstractTexture texture, int internalFormat, int format);
+    public abstract void fillTexture(AbstractTexture texture, int internalFormat, int format, ByteBuffer value);
 }

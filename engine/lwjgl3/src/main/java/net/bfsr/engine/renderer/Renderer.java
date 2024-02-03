@@ -159,7 +159,7 @@ public class Renderer extends AbstractRenderer {
     }
 
     @Override
-    public void uploadEmpty(AbstractTexture texture, int internalFormat, int format) {
+    public void fillTexture(AbstractTexture texture, int internalFormat, int format, ByteBuffer value) {
         int id = texture.getId();
         int width = texture.getWidth();
         int height = texture.getHeight();
@@ -168,7 +168,7 @@ public class Renderer extends AbstractRenderer {
         glTextureParameteri(id, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
         glTextureParameteri(id, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         glTextureParameteri(id, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-        glClearTexImage(id, 0, format, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) null);
+        glClearTexImage(id, 0, format, GL11.GL_UNSIGNED_BYTE, value);
         long textureHandle = ARBBindlessTexture.glGetTextureHandleARB(id);
         texture.setTextureHandle(textureHandle);
         ARBBindlessTexture.glMakeTextureHandleResidentARB(textureHandle);

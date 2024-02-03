@@ -47,9 +47,11 @@ public class SimplePropertyList<PRIMITIVE_TYPE> extends PropertyList<PropertyCom
                         fontSize, MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, this::addProperty, propertyName);
             } else {
                 addProperty(ComponentBuilder.build(propertyGuiElementType, baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight,
-                        propertyName, MINIMIZABLE_STRING_X_OFFSET, fontType, fontSize, stringOffsetY, fields,
-                        new Object[]{arrayElement}, arrayElement, (o, integer) -> ((List) values[0]).set(integer, o)));
+                        propertyName, fontType.getStringCache().getStringWidth(propertyName, fontSize), fontType, fontSize,
+                        stringOffsetY, fields, new Object[]{arrayElement}, arrayElement,
+                        (o, integer) -> ((List) values[0]).set(integer, o)));
             }
+            updatePropertiesOffset();
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }

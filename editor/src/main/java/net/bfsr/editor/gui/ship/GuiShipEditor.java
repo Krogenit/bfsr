@@ -85,13 +85,15 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
                     log.error("Can't outfit ship", e);
                 }
 
-                Core.get().getRenderManager().addRender(new ShipRender(testShip) {
+                ShipRender render = new ShipRender(testShip) {
                     @Override
                     public void renderDebug() {
                         if (polygonCreationMode) return;
                         super.renderDebug();
                     }
-                });
+                };
+                Core.get().getRenderManager().addRender(render);
+                render.getMaskTexture().createEmpty();
             } catch (Exception e) {
                 log.error("Can't create ship for selected entry", e);
                 propertiesPanel.close();

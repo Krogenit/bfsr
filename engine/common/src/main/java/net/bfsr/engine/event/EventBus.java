@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -69,7 +70,10 @@ public class EventBus {
     public void register(Object eventHandler) {
         List<EventListenerData> eventListeners = eventListenersByClassMap.computeIfAbsent(eventHandler.getClass(), aClass -> {
             List<EventHandlerData> handlers = HANDLER_METHODS_BY_CLASS_MAP.get(eventHandler.getClass());
-            if (handlers == null) throw new RuntimeException("Can't find handlers for event handler " + eventHandler.getClass());
+            if (handlers == null) {
+                log.warn("Can't find handlers for event handler {}", eventHandler.getClass());
+                return Collections.emptyList();
+            }
 
             List<EventListenerData> listeners = new ArrayList<>(handlers.size());
             for (int i = 0; i < handlers.size(); i++) {

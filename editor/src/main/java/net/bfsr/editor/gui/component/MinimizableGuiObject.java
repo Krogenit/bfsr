@@ -78,7 +78,7 @@ public class MinimizableGuiObject extends GuiObjectWithSubObjects {
     }
 
     protected void onNameChanged(String name) {
-        stringObject.setStringAndCompile(name);
+        stringObject.setStringAndCompileAtOrigin(name);
     }
 
     protected void onStartMoving() {}

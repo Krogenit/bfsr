@@ -28,6 +28,7 @@ public class PropertyObject<T extends PropertyComponent> extends MinimizableProp
     protected void add(T propertyComponent) {
         addConcealableObject(propertyComponent);
         properties.add(propertyComponent);
+        updatePropertiesOffset();
     }
 
     @Override
@@ -51,6 +52,30 @@ public class PropertyObject<T extends PropertyComponent> extends MinimizableProp
             this.height = baseHeight + height;
         } else {
             this.height = baseHeight;
+        }
+    }
+
+    @Override
+    public void updatePositionAndSize() {
+        super.updatePositionAndSize();
+        updatePropertiesOffset();
+    }
+
+    void updatePropertiesOffset() {
+        if (properties.size() == 0) return;
+
+        int maxStringWidth = properties.get(0).getStringObject().getWidth();
+        for (int i = 1; i < properties.size(); i++) {
+            PropertyComponent propertyComponent = properties.get(i);
+            maxStringWidth = Math.max(maxStringWidth, propertyComponent.getStringObject().getWidth());
+        }
+
+        int propertyOffsetX = maxStringWidth;
+
+        for (int i = 0; i < properties.size(); i++) {
+            PropertyComponent propertyComponent = properties.get(i);
+            propertyComponent.setPropertyOffsetX(propertyOffsetX);
+            propertyComponent.updatePositionAndSize();
         }
     }
 }

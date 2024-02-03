@@ -42,8 +42,7 @@ public class MinimizablePropertyList extends PropertyList<PropertyObject<Propert
         PropertyObject<PropertyComponent> propertyObject = new PropertyObject<>(
                 baseWidth - MinimizableGuiObject.MINIMIZABLE_STRING_X_OFFSET, baseHeight,
                 elementPropertyName, fontType, fontSize, MinimizableGuiObject.MINIMIZABLE_STRING_X_OFFSET,
-                stringOffsetY,
-                propertiesHolder, fields, new Object[]{propertiesHolder}, valueConsumer);
+                stringOffsetY, propertiesHolder, fields, new Object[]{propertiesHolder}, valueConsumer);
         propertyObject.setOnRightClickSupplier(() -> {
             if (!propertyObject.isMouseHover()) return false;
             String addString = "Remove";
