@@ -142,6 +142,7 @@ public class Shield extends DamageableModule {
     @Override
     protected void destroy() {
         super.destroy();
+        removeShield();
         ship.getFixturesToRemove().add(fixture);
     }
 
@@ -150,7 +151,7 @@ public class Shield extends DamageableModule {
     }
 
     public void removeShield() {
-        ship.getBody().removeFixture(shieldFixture);
+        ship.getFixturesToRemove().add(shieldFixture);
         shieldFixture = null;
         rebuildingTime = 0;
         size.set(0.0f);

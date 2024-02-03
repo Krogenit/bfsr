@@ -49,10 +49,12 @@ public abstract class DamageableModule extends Module {
     }
 
     public boolean damage(float amount) {
-        hp -= amount;
+        if (hp > 0) {
+            hp -= amount;
 
-        if (hp <= 0 && !isDead) {
-            setDead();
+            if (hp <= 0) {
+                setDead();
+            }
         }
 
         return true;

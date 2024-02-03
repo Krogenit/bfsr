@@ -19,6 +19,7 @@ import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.server.component.PacketShieldRebuildingTime;
+import net.bfsr.network.packet.server.component.PacketShieldRemove;
 import net.bfsr.physics.CommonCollisionHandler;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.EntityTrackingManager;
@@ -195,7 +196,12 @@ public class CollisionHandler extends CommonCollisionHandler {
         if (shield.getShieldHp() > 0) {
             shield.setShieldHp(shield.getShieldHp() - amount);
 
-            if (shield.getShieldHp() < 0) {
+            if (shield.getShieldHp() <= 0) {
+                shield.removeShield();
+                Ship ship = shield.getShip();
+                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRemove(ship.getId(),
+                        ship.getWorld().getTimestamp()));
+
                 shield.setShieldHp(0);
             }
 
