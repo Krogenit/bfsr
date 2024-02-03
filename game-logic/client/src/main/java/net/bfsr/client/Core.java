@@ -129,7 +129,11 @@ public class Core extends ClientGameLogic {
         profiler.endStartSection("guiManager");
         guiManager.update();
         profiler.endStartSection("renderManager.postUpdate");
-        renderManager.postWorldUpdate();
+
+        if (!isPaused()) {
+            renderManager.postWorldUpdate();
+        }
+
         profiler.endSection();
     }
 
