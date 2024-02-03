@@ -30,10 +30,7 @@ public enum ClientSettings {
         option.option.setValue(!((Boolean) option.option.getValue()).booleanValue());
         Engine.renderer.setVSync(option.getBoolean());
     }),
-    MAX_FPS(SettingsCategory.GRAPHICS, 10, 240, new IntegerOption(60), (option, value) -> {
-        option.setInteger((float) value);
-        Core.get().setMaxFPS(option.getInteger());
-    }),
+    MAX_FPS(SettingsCategory.GRAPHICS, 10, 240, new IntegerOption(60), ConsumerUtils.INTEGER_DEFAULT_CONSUMER),
 
     IS_DEBUG(SettingsCategory.DEBUG, new BooleanOption(false), ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
     IS_PROFILING(SettingsCategory.DEBUG, new BooleanOption(false), (option, value) -> {

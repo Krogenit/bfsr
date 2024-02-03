@@ -36,7 +36,6 @@ import net.bfsr.entity.CommonEntityManager;
 import net.bfsr.logic.LogicType;
 import net.bfsr.network.packet.Packet;
 import net.bfsr.world.World;
-import org.dyn4j.dynamics.Body;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;
@@ -78,7 +77,6 @@ public class Core extends ClientGameLogic {
         Lang.load();
         this.inputHandler.init();
         this.settings.load();
-        setMaxFPS(ClientSettings.MAX_FPS.getInteger());
         this.networkSystem.init();
         this.globalRenderer.init();
         this.renderManager.init();
@@ -133,19 +131,6 @@ public class Core extends ClientGameLogic {
         profiler.endStartSection("renderManager.postUpdate");
         renderManager.postWorldUpdate();
         profiler.endSection();
-    }
-
-    public void setMaxFPS(int maxFPS) {
-        int updatesPerSecond = Math.min(maxFPS, 60);
-        setUpdatesPerSecond(updatesPerSecond);
-        float updateDeltaTime = 1.0f / updatesPerSecond;
-        setUpdateDeltaTime(updateDeltaTime);
-        setTimeBetweenUpdates(1_000_000_000.0 / updatesPerSecond);
-
-        org.dyn4j.world.World<Body> physicWorld = world.getPhysicWorld();
-        if (physicWorld != null) {
-            physicWorld.getSettings().setStepFrequency(updateDeltaTime);
-        }
     }
 
     @Override
