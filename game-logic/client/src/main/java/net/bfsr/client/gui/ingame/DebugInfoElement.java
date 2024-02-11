@@ -54,7 +54,7 @@ public class DebugInfoElement {
         int ups = server != null ? server.getUps() : 0;
 
         stringBuilder.setLength(0);
-        stringBuilder.append("BFSR Client Dev 0.0.4 \n");
+        stringBuilder.append("BFSR Client " + Core.GAME_VERSION + "\n");
         stringBuilder.append("FPS ").append(renderer.getFps()).append(", Local Server UPS ").append(ups);
         stringBuilder.append("\nMemory: ").append(totalMemoryMB - freeMemoryMB).append("MB / ").append(totalMemoryMB)
                 .append("MB up to ").append(maxMemoryMB).append("MB");

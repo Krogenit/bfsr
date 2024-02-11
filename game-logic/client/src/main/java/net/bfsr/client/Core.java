@@ -43,6 +43,7 @@ import java.net.InetAddress;
 @Log4j2
 @Getter
 public class Core extends ClientGameLogic {
+    public static final String GAME_VERSION = "Dev 0.1.0";
     private static Core instance;
 
     private final AbstractSoundManager soundManager = Engine.soundManager;
