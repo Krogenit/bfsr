@@ -21,7 +21,7 @@ public abstract class ShipConverter {
             @Mapping(target = "name", ignore = true), @Mapping(target = "controlledByPlayer", ignore = true),
             @Mapping(target = "target", ignore = true), @Mapping(target = "owner", ignore = true),
             @Mapping(target = "fixtures", ignore = true), @Mapping(target = "moveDirections", ignore = true),
-            @Mapping(target = "contours", ignore = true), @Mapping(target = "fixturesToAdd", ignore = true),
+            @Mapping(target = "polygon", ignore = true), @Mapping(target = "fixturesToAdd", ignore = true),
             @Mapping(target = "armor", ignore = true), @Mapping(target = "configData", ignore = true),
             @Mapping(target = "engine", ignore = true), @Mapping(target = "health", ignore = true),
             @Mapping(target = "hull", ignore = true), @Mapping(target = "reactor", ignore = true),

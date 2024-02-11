@@ -50,7 +50,7 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
         Ship ship = ShipFactory.get().create(posX, posY, sin, cos, Faction.get(faction), ShipRegistry.INSTANCE.get(dataId),
                 new DamageMask(32, 32, null));
         ship.setName(name);
-        ship.setContours(contours);
+        ship.setPolygon(polygon);
         return ship;
     }
 

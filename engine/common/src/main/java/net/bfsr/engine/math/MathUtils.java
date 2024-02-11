@@ -15,7 +15,6 @@ public final class MathUtils {
     public static final float THREE_PI = (float) (Math.PI * 3.0);
     public static final float HALF_PI = (float) (Math.PI / 2.0);
     private static final Transform IDENTITY_TRANSFORM = new Transform();
-    private static final AABB CACHED_AABB_1 = new AABB(0, 0, 0, 0);
     public static final float DEGREES_TO_RADIANS = 0.017453292519943295f;
     public static final float RADIANS_TO_DEGREES = 57.29577951308232f;
 
@@ -35,16 +34,16 @@ public final class MathUtils {
         return y >= 0 ? r : -r;
     }
 
-    public static void computeAABB(AABB aabb, Body body, Transform transform) {
+    public static void computeAABB(AABB aabb, Body body, Transform transform, AABB cache) {
         List<BodyFixture> fixtures = body.getFixtures();
         fixtures.get(0).getShape().computeAABB(transform, aabb);
         for (int i = 1, size = fixtures.size(); i < size; i++) {
-            fixtures.get(i).getShape().computeAABB(transform, CACHED_AABB_1);
-            aabb.union(CACHED_AABB_1);
+            fixtures.get(i).getShape().computeAABB(transform, cache);
+            aabb.union(cache);
         }
     }
 
-    public static void computeAABB(AABB aabb, Body body) {
-        computeAABB(aabb, body, IDENTITY_TRANSFORM);
+    public static void computeAABB(AABB aabb, Body body, AABB cache) {
+        computeAABB(aabb, body, IDENTITY_TRANSFORM, cache);
     }
 }

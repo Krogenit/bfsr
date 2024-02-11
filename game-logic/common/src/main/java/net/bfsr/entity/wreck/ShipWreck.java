@@ -1,6 +1,6 @@
 package net.bfsr.entity.wreck;
 
-import clipper2.core.PathsD;
+import lombok.Getter;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.damage.DamageMask;
@@ -9,11 +9,17 @@ import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.ShipWreckSpawnData;
 import net.bfsr.physics.CollisionMatrixType;
 import org.dyn4j.geometry.MassType;
+import org.locationtech.jts.geom.Polygon;
 
+@Getter
 public class ShipWreck extends DamageableRigidBody<ShipData> {
+    private final float localOffsetX, localOffsetY;
+
     public ShipWreck(float x, float y, float sin, float cos, float sizeX, float sizeY, ShipData shipData,
-                     DamageMask mask, PathsD contours) {
-        super(x, y, sin, cos, sizeX, sizeY, shipData, ShipRegistry.INSTANCE.getId(), mask, contours);
+                     DamageMask mask, Polygon polygon, float localOffsetX, float localOffsetY) {
+        super(x, y, sin, cos, sizeX, sizeY, shipData, ShipRegistry.INSTANCE.getId(), mask, polygon);
+        this.localOffsetX = localOffsetX;
+        this.localOffsetY = localOffsetY;
     }
 
     @Override

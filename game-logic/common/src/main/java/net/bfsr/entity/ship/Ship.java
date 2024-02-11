@@ -1,6 +1,5 @@
 package net.bfsr.entity.ship;
 
-import clipper2.core.PathD;
 import gnu.trove.set.hash.THashSet;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,6 +37,7 @@ import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
 import org.dyn4j.geometry.Wound;
 import org.joml.Vector2f;
+import org.locationtech.jts.geom.Polygon;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -98,7 +98,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
     private Runnable updateRunnable = this::updateAlive;
 
     public Ship(ShipData shipData, DamageMask mask) {
-        super(shipData.getSizeX(), shipData.getSizeY(), shipData, ShipRegistry.INSTANCE.getId(), mask, shipData.getContour());
+        super(shipData.getSizeX(), shipData.getSizeY(), shipData, ShipRegistry.INSTANCE.getId(), mask, shipData.getPolygonJTS());
         this.timeToDestroy = shipData.getDestroyTimeInTicks();
         this.maxSparksTimer = timeToDestroy / 3;
         this.jumpTimer = jumpTimeInTicks;
@@ -286,8 +286,8 @@ public class Ship extends DamageableRigidBody<ShipData> {
     }
 
     @Override
-    public void onContourReconstructed(PathD contour) {
-        if (!DamageSystem.isPolygonConnectedToContour(configData.getReactorPolygon().getVertices(), contour)) {
+    public void onContourReconstructed(Polygon polygon) {
+        if (!DamageSystem.isPolygonConnectedToContour(configData.getReactorPolygon().getVertices(), polygon)) {
             modules.getReactor().setDead();
             return;
         }
@@ -296,13 +296,13 @@ public class Ship extends DamageableRigidBody<ShipData> {
         for (int i = 0; i < engines.size(); i++) {
             Engine engine = engines.get(i);
             Vector2[] vertices = ((Wound) engine.getFixture().getShape()).getVertices();
-            if (!DamageSystem.isPolygonConnectedToContour(vertices, contour)) {
+            if (!DamageSystem.isPolygonConnectedToContour(vertices, polygon)) {
                 engine.setDead();
             }
         }
 
         Shield shield = modules.getShield();
-        if (!DamageSystem.isPolygonConnectedToContour(configData.getShieldPolygon().getVertices(), contour)) {
+        if (!DamageSystem.isPolygonConnectedToContour(configData.getShieldPolygon().getVertices(), polygon)) {
             shield.setDead();
         }
     }

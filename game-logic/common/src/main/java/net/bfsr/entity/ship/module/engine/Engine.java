@@ -35,6 +35,9 @@ public class Engine extends DamageableModule {
     protected void destroy() {
         super.destroy();
         ship.getFixturesToRemove().add(fixture);
+        if (!ship.getModules().getEngines().isSomeEngineAlive()) {
+            ship.setDead();
+        }
     }
 
     @Override

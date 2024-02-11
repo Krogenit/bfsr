@@ -20,10 +20,12 @@ public class PacketSyncDamageHandler extends PacketHandler<PacketSyncDamage, Net
                        InetSocketAddress remoteAddress) {
         RigidBody<?> rigidBody = core.getWorld().getEntityById(packet.getId());
         if (rigidBody instanceof DamageableRigidBody<?> damageableRigidBody) {
-            damageableRigidBody.setContours(packet.getContours());
+            damageableRigidBody.setPolygon(packet.getPolygon());
             damageableRigidBody.setFixtures(packet.getFixtures());
             damageHandler.updateDamage(damageableRigidBody, packet.getX(), packet.getY(), packet.getWidth(), packet.getHeight(),
                     packet.getByteBuffer());
+        } else {
+            System.out.println("SYNC DAMAGE FAILED ENTITY NOT FOUND");
         }
     }
 }

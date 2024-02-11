@@ -1,6 +1,5 @@
 package net.bfsr.server.physics;
 
-import clipper2.core.Path64;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.event.EventBus;
@@ -31,6 +30,7 @@ import org.dyn4j.geometry.Transform;
 import org.dyn4j.world.ContactCollisionData;
 import org.joml.Math;
 import org.joml.Vector2f;
+import org.locationtech.jts.geom.Polygon;
 
 import java.util.Random;
 
@@ -229,14 +229,14 @@ public class CollisionHandler extends CommonCollisionHandler {
 
     private void createDamage(DamageableRigidBody<?> rigidBody, float contactX, float contactY) {
         Transform transform = rigidBody.getBody().getTransform();
-        double x = transform.getTranslationX();
-        double y = transform.getTranslationY();
-        double sin = transform.getSint();
-        double cos = transform.getCost();
+        float x = (float) transform.getTranslationX();
+        float y = (float) transform.getTranslationY();
+        float sin = (float) transform.getSint();
+        float cos = (float) transform.getCost();
         float polygonRadius = 0.5f;
         float radius = 1.0f;
 
-        Path64 clip = damageSystem.createCirclePath(contactX - x, contactY - y, -sin, cos, 12, polygonRadius);
-        damageSystem.damage(rigidBody, contactX, contactY, clip, radius);
+        Polygon clip = damageSystem.createCirclePath(contactX - x, contactY - y, -sin, cos, 12, polygonRadius);
+        damageSystem.damage(rigidBody, contactX, contactY, clip, radius, x, y, sin, cos);
     }
 }

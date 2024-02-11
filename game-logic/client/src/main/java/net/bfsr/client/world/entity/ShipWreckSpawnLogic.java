@@ -10,18 +10,16 @@ public class ShipWreckSpawnLogic extends DamageableRigidBodySpawnLogic<ShipWreck
     @Override
     public void spawn(ShipWreckSpawnData spawnData) {
         ShipWreck wreck = spawnData.getRigidBody();
-        if (wreck != null) {
-            World world = Core.get().getWorld();
-            wreck.init(world, spawnData.getEntityId());
-            Body body = wreck.getBody();
-            body.setLinearVelocity(spawnData.getVelocityX(), spawnData.getVelocityY());
-            body.setAngularVelocity(spawnData.getAngularVelocity());
+        World world = Core.get().getWorld();
+        wreck.init(world, spawnData.getEntityId());
+        Body body = wreck.getBody();
+        body.setLinearVelocity(spawnData.getVelocityX(), spawnData.getVelocityY());
+        body.setAngularVelocity(spawnData.getAngularVelocity());
 
-            addFixturesAndConnectedObjects(wreck, spawnData);
+        addFixturesAndConnectedObjects(wreck, spawnData);
 
-            world.add(wreck);
+        world.add(wreck);
 
-            updateDamage(wreck, spawnData);
-        }
+        updateDamage(wreck, spawnData);
     }
 }

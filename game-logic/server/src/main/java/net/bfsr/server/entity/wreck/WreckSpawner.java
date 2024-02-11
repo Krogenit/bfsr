@@ -3,7 +3,6 @@ package net.bfsr.server.entity.wreck;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.entity.wreck.WreckType;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.server.ServerGameLogic;
@@ -36,9 +35,9 @@ public final class WreckSpawner {
             int maxLifeTime = world.convertToTicks(30);
             boolean isFire = RAND.nextInt(3) == 0;
             boolean isFireExplosion = isFire && RAND.nextInt(5) == 0;
-            world.add(Wreck.WREAK_POOL.get().init(world, world.getNextId(), RAND.nextInt(6), false, isFire, isFireExplosion, x, y,
-                    ANGLE_TO_VELOCITY.x, ANGLE_TO_VELOCITY.y, LUT.sin(angle), LUT.cos(angle), angleVel, size2, size2,
-                    maxLifeTime, WreckType.SMALL));
+            world.add(world.getObjectPools().getWrecksPool().get().init(world, world.getNextId(), RAND.nextInt(6), false, isFire,
+                    isFireExplosion, x, y, ANGLE_TO_VELOCITY.x, ANGLE_TO_VELOCITY.y, LUT.sin(angle), LUT.cos(angle), angleVel,
+                    size2, size2, maxLifeTime, WreckType.SMALL));
         }
     }
 
@@ -51,9 +50,9 @@ public final class WreckSpawner {
             float size = (1.0F - RAND.nextFloat() / 3.0F) * 4.0f;
             int maxLifeTime = world.convertToTicks(60);
             boolean isFireExplosion = RAND.nextInt(4) == 0;
-            world.add(Wreck.WREAK_POOL.get().init(world, world.getNextId(), RAND.nextInt(3), true, true, isFireExplosion, x, y,
-                    ANGLE_TO_VELOCITY.x + velocityX * 0.7f, ANGLE_TO_VELOCITY.y + velocityY * 0.7f, LUT.sin(angle),
-                    LUT.cos(angle), angleVel, size, size, maxLifeTime, WreckType.DEFAULT));
+            world.add(world.getObjectPools().getWrecksPool().get().init(world, world.getNextId(), RAND.nextInt(3), true, true,
+                    isFireExplosion, x, y, ANGLE_TO_VELOCITY.x + velocityX * 0.7f, ANGLE_TO_VELOCITY.y + velocityY * 0.7f,
+                    LUT.sin(angle), LUT.cos(angle), angleVel, size, size, maxLifeTime, WreckType.DEFAULT));
         }
     }
 }

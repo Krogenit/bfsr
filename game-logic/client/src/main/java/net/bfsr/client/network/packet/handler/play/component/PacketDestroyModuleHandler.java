@@ -18,6 +18,8 @@ public class PacketDestroyModuleHandler extends PacketHandler<PacketDestroyModul
         RigidBody<?> entity = Core.get().getWorld().getEntityById(entityId);
         if (entity instanceof Ship ship) {
             ship.getModules().destroyModule(packet.getId(), packet.getType());
+        } else {
+            System.out.println("CAN'T DESTROY MODULE ENTITY NOT FOUND");
         }
     }
 }

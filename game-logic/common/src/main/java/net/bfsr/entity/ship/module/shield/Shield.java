@@ -1,7 +1,5 @@
 package net.bfsr.entity.ship.module.shield;
 
-import clipper2.core.PathD;
-import clipper2.core.PointD;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.shield.ShieldData;
@@ -17,6 +15,8 @@ import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Polygon;
 import org.joml.Vector2f;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
 
 public class Shield extends DamageableModule {
     private final float shieldRegen;
@@ -68,14 +68,16 @@ public class Shield extends DamageableModule {
             body.removeFixture(shieldFixture);
         }
 
-        PathD pointDS = ship.getContours().get(0);
-        PointD point = pointDS.get(0);
+        org.locationtech.jts.geom.Polygon polygon = ship.getPolygon();
+        CoordinateSequence coordinateSequence = polygon.getExteriorRing().getCoordinateSequence();
+        int pointCount = coordinateSequence.size() - 1;
+        Coordinate point = coordinateSequence.getCoordinate(0);
         float minX = (float) point.x;
         float maxX = (float) point.x;
         float minY = (float) point.y;
         float maxY = (float) point.y;
-        for (int i = 1; i < pointDS.size(); i++) {
-            point = pointDS.get(i);
+        for (int i = 1; i < pointCount; i++) {
+            point = coordinateSequence.getCoordinate(i);
             float value = (float) point.x;
             if (value > maxX) {
                 maxX = value;

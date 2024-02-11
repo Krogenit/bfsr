@@ -1,7 +1,5 @@
 package net.bfsr.damage;
 
-import clipper2.core.PathD;
-import clipper2.core.PathsD;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -10,6 +8,7 @@ import net.bfsr.entity.RigidBody;
 import net.bfsr.physics.CollisionMatrixType;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
+import org.locationtech.jts.geom.Polygon;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,24 +18,23 @@ import java.util.List;
 public class DamageableRigidBody<CONFIG_DATA extends GameObjectConfigData> extends RigidBody<CONFIG_DATA> {
     private final DamageMask mask;
     @Setter
-    private PathsD contours;
+    private Polygon polygon;
     protected final List<BodyFixture> fixturesToAdd = new ArrayList<>();
     protected final List<BodyFixture> fixturesToRemove = new ArrayList<>();
     private final List<ConnectedObject<?>> connectedObjects = new ArrayList<>();
 
     protected DamageableRigidBody(float sizeX, float sizeY, CONFIG_DATA configData, int registryId, DamageMask mask,
-                                  PathD contour) {
+                                  Polygon polygon) {
         super(0, 0, 0, 1, sizeX, sizeY, configData, registryId);
         this.mask = mask;
-        this.contours = new PathsD();
-        this.contours.add(contour);
+        this.polygon = polygon;
     }
 
     protected DamageableRigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, CONFIG_DATA configData,
-                                  int registryId, DamageMask mask, PathsD contours) {
+                                  int registryId, DamageMask mask, Polygon polygon) {
         super(x, y, sin, cos, sizeX, sizeY, configData, registryId);
         this.mask = mask;
-        this.contours = contours;
+        this.polygon = polygon;
     }
 
     @Override
@@ -87,7 +85,7 @@ public class DamageableRigidBody<CONFIG_DATA extends GameObjectConfigData> exten
         }
     }
 
-    public void onContourReconstructed(PathD contour) {}
+    public void onContourReconstructed(Polygon polygon) {}
 
     public void setFixtures(List<BodyFixture> fixtures) {
         Body body = getBody();

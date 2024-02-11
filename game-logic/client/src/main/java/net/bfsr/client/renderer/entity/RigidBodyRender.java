@@ -27,6 +27,7 @@ public class RigidBodyRender<T extends RigidBody<? extends GameObjectConfigData>
     private static final Vector4f RENDER_AABB_COLOR = new Vector4f(0.5f, 1.0f, 0.5f, 0.1f);
 
     private final AABB geometryAABB = new AABB(0, 0, 0, 0);
+    private final AABB cache = new AABB(0);
     private final Vector2f angleToVelocity = new Vector2f();
 
     RigidBodyRender(AbstractTexture texture, T object, float r, float g, float b, float a) {
@@ -52,7 +53,7 @@ public class RigidBodyRender<T extends RigidBody<? extends GameObjectConfigData>
 
     @Override
     protected void updateAABB() {
-        MathUtils.computeAABB(geometryAABB, object.getBody(), object.getBody().getTransform());
+        MathUtils.computeAABB(geometryAABB, object.getBody(), object.getBody().getTransform(), cache);
         aabb.set(geometryAABB.getMinX(), geometryAABB.getMinY(), geometryAABB.getMaxX(), geometryAABB.getMaxY());
     }
 

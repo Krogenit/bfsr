@@ -24,7 +24,7 @@ public class EventBus {
     private static final Object2ObjectOpenHashMap<Class<?>, List<EventHandlerData>> HANDLER_METHODS_BY_CLASS_MAP = new Object2ObjectOpenHashMap<>();
 
     static {
-        Reflections reflections = new Reflections(new ConfigurationBuilder().forPackage("")
+        Reflections reflections = new Reflections(new ConfigurationBuilder().forPackage("net.bfsr")
                 .addScanners(Scanners.MethodsAnnotated, Scanners.SubTypes));
         Set<Class<?>> classes = reflections.get(Scanners.SubTypes.of(Event.class).asClass());
         short registryIndex = 0;

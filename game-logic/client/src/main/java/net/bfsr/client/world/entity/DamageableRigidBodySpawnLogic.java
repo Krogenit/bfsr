@@ -5,6 +5,7 @@ import net.bfsr.client.damage.DamageHandler;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.network.packet.common.entity.spawn.DamageableRigidBodySpawnData;
+import org.dyn4j.geometry.MassType;
 
 import java.util.List;
 
@@ -24,7 +25,7 @@ abstract class DamageableRigidBodySpawnLogic<T extends DamageableRigidBodySpawnD
             rigidBody.addConnectedObject(connectedObject);
         }
 
-        rigidBody.getBody().updateMass();
         rigidBody.setFixtures(spawnData.getFixtures());
+        rigidBody.getBody().setMass(MassType.NORMAL);
     }
 }

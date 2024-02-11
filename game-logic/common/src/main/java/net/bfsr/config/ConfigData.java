@@ -4,11 +4,13 @@ import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.util.PathHelper;
 import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,5 +78,15 @@ public class ConfigData {
         TMap<DEST_KEY, DEST_VALUE> tMap = new THashMap<>();
         map.forEach((srcKey, srcValue) -> tMap.put(keyFunction.apply(srcKey), valueFunction.apply(srcValue)));
         return tMap;
+    }
+
+    protected org.locationtech.jts.geom.Polygon convertToJTSPolygon(Vector2fConfigurable[] vertices) {
+        Coordinate[] coordinates = new Coordinate[vertices.length + 1];
+        for (int i = 0; i < vertices.length; i++) {
+            Vector2fConfigurable vertex = vertices[i];
+            coordinates[i] = new Coordinate(vertex.x(), vertex.y());
+        }
+        coordinates[vertices.length] = coordinates[0];
+        return DamageSystem.GEOMETRY_FACTORY.createPolygon(DamageSystem.GEOMETRY_FACTORY.createLinearRing(coordinates));
     }
 }

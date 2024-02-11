@@ -1,292 +1,229 @@
 package net.bfsr.damage;
 
-import clipper2.Clipper;
-import clipper2.core.*;
-import clipper2.engine.ClipperBase;
-import clipper2.engine.ClipperD;
-import clipper2.offset.ClipperOffset;
-import clipper2.offset.EndType;
-import clipper2.offset.JoinType;
-import earcut4j.Earcut;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.config.entity.ship.ShipData;
+import net.bfsr.engine.math.LUT;
+import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.event.damage.DamageEvent;
+import net.bfsr.math.RotationHelper;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
+import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
 import org.dyn4j.geometry.decompose.SweepLine;
 import org.joml.Vector2f;
+import org.locationtech.jts.algorithm.Area;
+import org.locationtech.jts.geom.*;
+import org.locationtech.jts.operation.buffer.BufferOp;
+import org.locationtech.jts.operation.buffer.BufferParameters;
+import org.locationtech.jts.simplify.VWSimplifier;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
 
 @Log4j2
 public final class DamageSystem {
-    public static final double SCALE = 10000.0;
-    public static final double INV_SCALE = 1 / SCALE;
-    private static final float MIN_DISTANCE_BETWEEN_VERTICES_SQ = 0.15f;
-
+    public static final float CLIPPING_Y_OFFSET = -0.16f;
+    public static final double CLIPPING_DELTA = 0.3f;
+    private static final double MIN_AREA = 0.3;
+    private static final float MIN_DISTANCE_BETWEEN_VERTICES_SQ = 0.3f;
+    public static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
     private static final SweepLine SWEEP_LINE = new SweepLine();
 
-    private final Earcut earcut = new Earcut();
-    private final double minWreckArea = 0.15;
-    private final double minShipArea = 0.75;
-    private final ClipperOffset clipperOffset = new ClipperOffset(2.0);
-    private final Path64 path = new Path64();
-    private final Vector2 cachedVector = new Vector2();
-    private final List<PathD> holes = new ArrayList<>(8);
-    private final Paths64 difference64 = new Paths64();
-    private final ClipperD clipper = new ClipperD();
+    private final Vector2f rotatedLocalCenter = new Vector2f();
 
-    public void damage(DamageableRigidBody<?> damageable, float contactX, float contactY, Path64 clip, float radius) {
-        if (damageable.isDead() || damageable.getContours().size() == 0) return;
+    public void damage(DamageableRigidBody<?> damageable, float contactX, float contactY, Polygon clip, float radius, double x,
+                       double y, double sin, double cos) {
+        if (damageable.isDead()) {
+            return;
+        }
 
-        DamageMask mask = damageable.getMask();
-        Body body = damageable.getBody();
-        double x = (float) body.getTransform().getTranslationX();
-        double y = (float) body.getTransform().getTranslationY();
-        double sin = body.getTransform().getSint();
-        double cos = body.getTransform().getCost();
-        Vector2f scale = damageable.getSize();
-        mask.reset();
         World world = damageable.getWorld();
+        DamageMask mask = damageable.getMask();
+        mask.reset();
+        damageable.getFixturesToAdd().clear();
+
         clipTexture(contactX, contactY, damageable, radius, mask, world.getRand());
 
-        try {
-            PathsD contours = damageable.getContours();
+        Polygon polygon = damageable.getPolygon();
 
-            clipper.Clear();
-            for (int i = 0; i < contours.size(); i++) {
-                PathD pathD = contours.get(i);
-                Path64 scaledPath = new Path64(pathD.size());
-                for (int i1 = 0; i1 < pathD.size(); i1++) {
-                    PointD point = pathD.get(i1);
-                    scaledPath.add(new Point64(point, SCALE));
-                }
-                clipper.AddPath(scaledPath, PathType.SUBJECT);
-            }
-            clipper.AddPath(clip, PathType.CLIP);
-            clipper.executeDifference(FillRule.EvenOdd, difference64);
+        org.locationtech.jts.geom.Geometry difference = polygon.difference(clip);
 
-            damageable.getFixturesToAdd().clear();
-            contours.clear();
-            if (difference64.size() > 1) {
-                double minDistance = Double.MAX_VALUE;
-                holes.clear();
-                PathD newHull = null;
-                Path64 newHull64 = null;
-                List<PathD> removedPaths = new ArrayList<>(difference64.size() - 1);
-                List<Path64> removedPaths64 = new ArrayList<>(difference64.size() - 1);
-                for (int i = 0; i < difference64.size(); i++) {
-                    Path64 path64 = difference64.get(i);
-                    PathD pathD = new PathD(path64.size());
-                    for (int i1 = 0; i1 < path64.size(); i1++) {
-                        Point64 point64 = path64.get(i1);
-                        pathD.add(new PointD(point64, INV_SCALE));
-                    }
+        if (difference instanceof MultiPolygon multiPolygon) {
+            processMultiPolygon(damageable, multiPolygon, x, y, sin, cos, true);
+        } else if (difference instanceof Polygon polygon1) {
+            double area = Area.ofRing(polygon1.getExteriorRing().getCoordinateSequence());
+            if (area > MIN_AREA) {
+                org.locationtech.jts.geom.Geometry geometry = optimizeAndReverse(polygon1);
+                if (geometry instanceof Polygon polygon2) {
+                    clipTextureOutside(polygon2, mask, damageable.getSize());
+                    damageable.setPolygon(polygon2);
 
-                    optimizeContour(pathD);
 
-                    double area = Clipper.Area(pathD);
-                    if (area > minShipArea) {
-                        Vector2 pathCenter = getPathCenter(pathD);
-                        double distance = pathCenter.distanceSquared(0, 0);
-                        if (distance < minDistance) {
-                            if (newHull != null) {
-                                removedPaths.add(newHull);
-                                removedPaths64.add(newHull64);
-                            }
-                            newHull = pathD;
-                            newHull64 = path64;
-                            minDistance = distance;
-                        } else {
-                            removedPaths.add(pathD);
-                            removedPaths64.add(path64);
-                        }
-                    } else if (area < -minShipArea) {
-                        holes.add(pathD);
-                    }
-                }
-
-                List<ConnectedObject<?>> removedConnectedObjects = new ArrayList<>();
-                double area = newHull64 != null ? Clipper.Area(newHull) : 0;
-                if (area > minShipArea) {
-                    contours.add(newHull);
-
-                    for (int i = 0; i < holes.size(); i++) {
-                        PathD pathD = holes.get(i);
-                        if (InternalClipper.PolygonInPolygon(pathD, newHull)) {
-                            contours.add(pathD);
-                            if (removedPaths.size() > 0) {
-                                holes.remove(i--);
-                            }
-                        }
-                    }
-
-                    if (contours.size() > 1) {
-                        earCut(damageable, contours);
-                    } else {
-                        Vector2[] vector2List = new Vector2[newHull.size()];
-                        for (int i1 = 0; i1 < newHull.size(); i1++) {
-                            PointD pointD = newHull.get(i1);
-                            vector2List[i1] = new Vector2(pointD.x, pointD.y);
-                        }
-
-                        try {
-                            if (vector2List.length > 3) {
-                                addFixtures(damageable, SWEEP_LINE.decompose(vector2List));
-                            } else {
-                                addFixture(damageable, Geometry.createPolygon(vector2List));
-                            }
-                        } catch (Exception e) {
-                            log.error("Error during decompose {} Area: {}", e.getMessage(), area);
-                            for (int i = 0; i < vector2List.length; i++) {
-                                log.error("{} {}", vector2List[i].x, vector2List[i].y);
-                            }
-                            damageable.setDead();
-                        }
-                    }
+                    decompose(polygon2, polygon3 -> damageable.getFixturesToAdd().add(damageable
+                            .setupFixture(new BodyFixture(polygon3))));
 
                     List<ConnectedObject<?>> connectedObjects = damageable.getConnectedObjects();
                     for (int i = 0; i < connectedObjects.size(); i++) {
                         ConnectedObject<?> connectedObject = connectedObjects.get(i);
-                        if (!connectedObject.isInside(newHull)) {
-                            damageable.removeConnectedObject(connectedObject);
-                            removedConnectedObjects.add(connectedObject);
-                        }
-                    }
-
-                    damageable.onContourReconstructed(newHull);
-                } else {
-                    damageable.setDead();
-                }
-
-                for (int i = 0; i < removedPaths.size(); i++) {
-                    PathD removedPath = removedPaths.get(i);
-                    area = Clipper.Area(removedPath);
-                    if (area > minWreckArea) {
-                        DamageMask damageMask = createInvertedDamageMask(removedPaths64.get(i), mask, scale);
-                        ShipWreck wreck = createWreck(x, y, sin, cos, scale.x, scale.y, removedPath,
-                                damageMask, (ShipData) damageable.getConfigData());
-                        if (wreck != null) {
-                            wreck.init(world, world.getNextId());
-                            wreck.getBody().setLinearVelocity(damageable.getBody().getLinearVelocity());
-                            wreck.getBody().setAngularVelocity(damageable.getBody().getAngularVelocity());
-                            world.getGameLogic().addFutureTask(() -> world.add(wreck));
-
-                            for (int j = 0; j < removedConnectedObjects.size(); j++) {
-                                ConnectedObject<?> connectedObject = removedConnectedObjects.get(j);
-                                if (connectedObject.isInside(removedPath)) {
-                                    wreck.addConnectedObject(connectedObject);
-                                } else {
-                                    connectedObject.spawn();
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (!damageable.isDead()) {
-                    clipTextureOutside(newHull64, mask, scale);
-                }
-            } else if (difference64.size() > 0) {
-                Path64 path64 = difference64.get(0);
-                PathD path = new PathD(path64.size());
-                for (int i1 = 0; i1 < path64.size(); i1++) {
-                    Point64 point64 = path64.get(i1);
-                    path.add(new PointD(point64, INV_SCALE));
-                }
-
-                optimizeContour(path);
-                double area = Clipper.Area(path);
-                if (area > minShipArea) {
-                    contours.add(path);
-                    clipTextureOutside(path64, mask, scale);
-                    Vector2[] vector2List = new Vector2[path.size()];
-                    for (int i1 = 0; i1 < path.size(); i1++) {
-                        PointD pointD = path.get(i1);
-                        vector2List[i1] = new Vector2(pointD.x, pointD.y);
-                    }
-
-                    try {
-                        if (vector2List.length > 3) {
-                            try {
-                                addFixtures(damageable, SWEEP_LINE.decompose(vector2List));
-                            } catch (Exception e) {
-                                log.error("Error during decompose {} Area: {}", e.getMessage(), area);
-                                for (int i = 0; i < vector2List.length; i++) {
-                                    log.error("{} {}", vector2List[i].x, vector2List[i].y);
-                                }
-                                damageable.setDead();
-                            }
-                        } else {
-                            addFixture(damageable, Geometry.createPolygon(vector2List));
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                    List<ConnectedObject<?>> connectedObjects = damageable.getConnectedObjects();
-                    for (int i = 0; i < connectedObjects.size(); i++) {
-                        ConnectedObject<?> connectedObject = connectedObjects.get(i);
-                        if (!connectedObject.isInside(path)) {
+                        if (!connectedObject.isInside(polygon2)) {
                             damageable.removeConnectedObject(connectedObject);
                             connectedObject.spawn();
                         }
                     }
 
-                    damageable.onContourReconstructed(path);
-                } else {
-                    damageable.setDead();
+                    damageable.onContourReconstructed(polygon2);
+                } else if (geometry instanceof MultiPolygon multiPolygon) {
+                    processMultiPolygon(damageable, multiPolygon, x, y, sin, cos, false);
                 }
             } else {
                 damageable.setDead();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            damageable.setDead();
         }
 
-        if (!damageable.isDead() && damageable.getContours().size() > 0 && mask.dirty()) {
+        if (!damageable.isDead() && mask.dirty()) {
             world.getEventBus().publish(new DamageEvent(damageable));
         }
     }
 
-    private void earCut(DamageableRigidBody<?> damageable, PathsD contours) {
-        earcut.execute(contours, polygon -> addFixture(damageable, polygon));
-    }
+    private void processMultiPolygon(DamageableRigidBody<?> damageable, MultiPolygon multiPolygon, double x,
+                                     double y, double sin, double cos, boolean optimize) {
+        int polygonsCount = multiPolygon.getNumGeometries();
+        double minDistance = Double.MAX_VALUE;
+        Polygon newHull = null;
+        List<Polygon> removedPaths = new ArrayList<>(polygonsCount - 1);
+        for (int i = 0; i < polygonsCount; i++) {
+            Polygon polygon1 = (Polygon) multiPolygon.getGeometryN(i);
+            double area = Area.ofRing(polygon1.getExteriorRing().getCoordinateSequence());
+            if (area > MIN_AREA) {
+                if (optimize) {
+                    org.locationtech.jts.geom.Geometry geometry = optimizeAndReverse(polygon1);
 
-    private void addFixtures(DamageableRigidBody<?> damageable, List<Convex> convexes) {
-        for (int i = 0; i < convexes.size(); i++) {
-            addFixture(damageable, convexes.get(i));
+                    if (geometry instanceof Polygon polygon2) {
+                        Coordinate center = polygon2.getCentroid().getCoordinate();
+                        double distance = center.x * center.x + center.y * center.y;
+                        if (distance < minDistance) {
+                            if (newHull != null) {
+                                removedPaths.add(newHull);
+                            }
+                            newHull = polygon2;
+                            minDistance = distance;
+                        } else {
+                            removedPaths.add(polygon2);
+                        }
+                    } else if (geometry instanceof MultiPolygon multiPolygon1) {
+                        int polygonsCount1 = multiPolygon1.getNumGeometries();
+                        for (int j = 0; j < polygonsCount1; j++) {
+                            Polygon polygon2 = (Polygon) multiPolygon1.getGeometryN(j);
+                            area = Area.ofRing(polygon2.getExteriorRing().getCoordinateSequence());
+                            if (area > MIN_AREA) {
+                                Coordinate center = polygon2.getCentroid().getCoordinate();
+                                double distance = center.x * center.x + center.y * center.y;
+                                if (distance < minDistance) {
+                                    if (newHull != null) {
+                                        removedPaths.add(newHull);
+                                    }
+                                    newHull = polygon2;
+                                    minDistance = distance;
+                                } else {
+                                    removedPaths.add(polygon2);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Coordinate center = polygon1.getCentroid().getCoordinate();
+                    double distance = center.x * center.x + center.y * center.y;
+                    if (distance < minDistance) {
+                        if (newHull != null) {
+                            removedPaths.add(newHull);
+                        }
+                        newHull = polygon1;
+                        minDistance = distance;
+                    } else {
+                        removedPaths.add(polygon1);
+                    }
+                }
+            }
+        }
+
+        List<ConnectedObject<?>> removedConnectedObjects = new ArrayList<>();
+        if (newHull != null) {
+            damageable.setPolygon(newHull);
+            decompose(newHull, polygon1 -> damageable.getFixturesToAdd().add(damageable
+                    .setupFixture(new BodyFixture(polygon1))));
+
+            List<ConnectedObject<?>> connectedObjects = damageable.getConnectedObjects();
+            for (int i = 0; i < connectedObjects.size(); i++) {
+                ConnectedObject<?> connectedObject = connectedObjects.get(i);
+                if (!connectedObject.isInside(newHull)) {
+                    damageable.removeConnectedObject(connectedObject);
+                    removedConnectedObjects.add(connectedObject);
+                }
+            }
+
+            damageable.onContourReconstructed(newHull);
+        } else {
+            damageable.setDead();
+        }
+
+        Vector2f size = damageable.getSize();
+        World world = damageable.getWorld();
+        DamageMask mask = damageable.getMask();
+
+        for (int i = 0; i < removedPaths.size(); i++) {
+            Polygon removedPath = removedPaths.get(i);
+            DamageMask damageMask = createInvertedDamageMask(removedPath, mask, size);
+            ShipWreck wreck = createWreck(world, x, y, sin, cos, size.x, size.y, removedPath,
+                    damageMask, (ShipData) damageable.getConfigData());
+            wreck.getBody().setLinearVelocity(damageable.getBody().getLinearVelocity());
+            wreck.getBody().setAngularVelocity(damageable.getBody().getAngularVelocity());
+            world.getGameLogic().addFutureTask(() -> world.add(wreck));
+
+            for (int j = 0; j < removedConnectedObjects.size(); j++) {
+                ConnectedObject<?> connectedObject = removedConnectedObjects.get(j);
+                if (connectedObject.isInside(removedPath)) {
+                    wreck.addConnectedObject(connectedObject);
+                } else {
+                    connectedObject.spawn();
+                }
+            }
+        }
+
+        if (!damageable.isDead()) {
+            clipTextureOutside(newHull, mask, size);
         }
     }
 
-    private void addFixture(DamageableRigidBody<?> damageable, Convex convex) {
-        BodyFixture bodyFixture = new BodyFixture(convex);
-        damageable.setupFixture(bodyFixture);
-        damageable.getFixturesToAdd().add(bodyFixture);
+    private static org.locationtech.jts.geom.Geometry optimizeAndReverse(Polygon polygon) {
+        int numInteriorRing = polygon.getNumInteriorRing();
+        if (numInteriorRing > 0) {
+            polygon = GEOMETRY_FACTORY.createPolygon(polygon.getExteriorRing());
+        }
+
+        return VWSimplifier.simplify(polygon, MIN_DISTANCE_BETWEEN_VERTICES_SQ).reverse();
     }
 
-    private void fillTextureOutsidePolygon(PathD pathD, DamageMask damageMask, byte value) {
-        int size = pathD.size();
-        int[] nodeX = new int[size];
+    private void fillTextureOutsidePolygon(List<Coordinate> coordinates, int count, DamageMask damageMask, byte value) {
+        int[] nodeX = new int[count];
         int nodes, i, j, swap, pixelX;
         int x = Integer.MAX_VALUE, y = Integer.MAX_VALUE, maxX = 0, maxY = 0;
         byte[] data = damageMask.getData();
 
         for (int pixelY = 0; pixelY < damageMask.getHeight(); pixelY++) {
             nodes = 0;
-            j = size - 1;
-            for (i = 0; i < size; i++) {
-                PointD pointD = pathD.get(i);
-                PointD pointD1 = pathD.get(j);
+            j = count - 1;
+            for (i = 0; i < count; i++) {
+                Coordinate pointD = coordinates.get(i);
+                Coordinate pointD1 = coordinates.get(j);
                 if (pointD.y < pixelY && pointD1.y >= pixelY || pointD1.y < pixelY && pointD.y >= pixelY) {
                     nodeX[nodes++] = (int) (pointD.x + (pixelY - pointD.y) / (pointD1.y - pointD.y) * (pointD1.x - pointD.x));
                 }
@@ -362,93 +299,36 @@ public final class DamageSystem {
         damageMask.setMaxY(Math.max(damageMask.getMaxY(), maxY));
     }
 
-    private static void fillTextureByPolygon(PathD pathD, DamageMask mask, byte value) {
-        int size = pathD.size();
-        int[] nodeX = new int[size];
-        int nodes, swap, i, j, pixelX;
-        byte[] data = mask.getData();
-
-        for (int pixelY = 0; pixelY < mask.getHeight(); pixelY++) {
-            nodes = 0;
-            j = size - 1;
-            for (i = 0; i < size; i++) {
-                PointD pointD = pathD.get(i);
-                PointD pointD1 = pathD.get(j);
-                if (pointD.y < pixelY && pointD1.y >= pixelY || pointD1.y < pixelY && pointD.y >= pixelY) {
-                    nodeX[nodes++] = (int) (pointD.x + (pixelY - pointD.y) / (pointD1.y - pointD.y) * (pointD1.x - pointD.x));
-                }
-                j = i;
-            }
-
-            if (nodes > 0) {
-                i = 0;
-                while (i < nodes - 1) {
-                    if (nodeX[i] > nodeX[i + 1]) {
-                        swap = nodeX[i];
-                        nodeX[i] = nodeX[i + 1];
-                        nodeX[i + 1] = swap;
-                        if (i > 0) i--;
-                    } else {
-                        i++;
-                    }
-                }
-
-                for (i = 0; i < nodes; i += 2) {
-                    for (pixelX = nodeX[i]; pixelX < nodeX[i + 1]; pixelX++) {
-                        data[pixelY * mask.getHeight() + pixelX] = value;
-                    }
-                }
-            }
-        }
-    }
-
-    private PathD clipTextureOutside(Path64 path, DamageMask mask, Vector2f scale) {
+    private List<Coordinate> clipTextureOutside(Polygon polygon, DamageMask mask, Vector2f scale) {
         float sizeX = scale.x / 2.0f;
         float sizeY = scale.y / 2.0f;
         float localScaleX = mask.getWidth() / scale.x;
         float localScaleY = mask.getHeight() / scale.y;
 
-        clipperOffset.Clear();
-        clipperOffset.AddPath(path, JoinType.Miter, EndType.Polygon);
-        Paths64 paths = clipperOffset.Execute(0.25f * SCALE / (localScaleX * 0.25f));
-        try {
-            Path64 path64 = paths.get(0);
-            PathD res = new PathD(path.size());
-            for (int i = 0, path64Size = path64.size(); i < path64Size; i++) {
-                Point64 pt = path64.get(i);
-                res.add(new PointD((pt.x * INV_SCALE + sizeX) * localScaleX, (pt.y * INV_SCALE + sizeY) * localScaleY));
-            }
-            fillTextureOutsidePolygon(res, mask, (byte) 0);
-            return res;
-        } catch (Exception e) {
-            log.error("Erorr during clip texture outside {}", e.getMessage());
-            for (int i = 0; i < path.size(); i++) {
-                Point64 pointD = path.get(i);
-                log.error("x: {}, y: {}", pointD.x * INV_SCALE, pointD.y * INV_SCALE);
-            }
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public void clipTexture(Path64 path, DamageMask mask, Vector2f scale) {
-        float sizeX = scale.x / 2.0f;
-        float sizeY = scale.y / 2.0f;
-        float localScaleX = mask.getWidth() / scale.x;
-        float localScaleY = mask.getHeight() / scale.y;
-
-        clipperOffset.Clear();
-        clipperOffset.AddPath(path, JoinType.Miter, EndType.Polygon);
-        Path64 result = clipperOffset.Execute(22.0 / localScaleX).get(0);
-
-        int cnt = path.size();
-        PathD res = new PathD(cnt);
-        for (int i = 0, path64Size = result.size(); i < path64Size; i++) {
-            Point64 pt = result.get(i);
-            res.add(new PointD((pt.x * INV_SCALE + sizeX) * localScaleX, (pt.y * INV_SCALE + sizeY) * localScaleY));
+        CoordinateSequence coordinateSequence = polygon.getExteriorRing().getCoordinateSequence();
+        int size = coordinateSequence.size();
+        for (int i = 0; i < size; i++) {
+            Coordinate point64 = coordinateSequence.getCoordinate(i);
+            point64.y += CLIPPING_Y_OFFSET;
         }
 
-        fillTextureByPolygon(res, mask, (byte) 0);
+        org.locationtech.jts.geom.Geometry geometry = BufferOp.bufferOp(polygon, CLIPPING_DELTA,
+                new BufferParameters(1, BufferParameters.CAP_SQUARE, BufferParameters.JOIN_MITRE, 1.0));
+        Coordinate[] coordinates = geometry.getCoordinates();
+
+        List<Coordinate> res = new ArrayList<>(coordinates.length - 1);
+        for (int i = 0, length = coordinates.length - 1; i < length; i++) {
+            Coordinate coordinate = coordinates[i];
+            res.add(new Coordinate((coordinate.x + sizeX) * localScaleX, (coordinate.y + sizeY) * localScaleY));
+        }
+        fillTextureOutsidePolygon(res, res.size(), mask, (byte) 0);
+
+        for (int i = 0; i < size; i++) {
+            Coordinate point64 = coordinateSequence.getCoordinate(i);
+            point64.y -= CLIPPING_Y_OFFSET;
+        }
+
+        return res;
     }
 
     private void clipTexture(float x, float y, DamageableRigidBody<?> damageable, float clipRadius, DamageMask mask,
@@ -504,37 +384,35 @@ public final class DamageSystem {
         }
     }
 
-    public static void decompose(PathsD contours, Consumer<Convex> consumer, Earcut earcut) {
-        if (contours.size() > 1) {
-            earcut.execute(contours, consumer::accept);
-        } else {
-            PathD pathD = contours.get(0);
-            Vector2[] vectors = new Vector2[pathD.size()];
-            for (int i = 0; i < vectors.length; i++) {
-                PointD pointD = pathD.get(i);
-                vectors[i] = new Vector2(pointD.x, pointD.y);
+    public static void decompose(Polygon polygon, Consumer<org.dyn4j.geometry.Polygon> polygonConsumer) {
+        if (polygon.getExteriorRing().getNumPoints() > 4) {
+            CoordinateSequence coordinateSequence = polygon.getExteriorRing().getCoordinateSequence();
+            int count = coordinateSequence.size() - 1;
+            Vector2[] vectors = new Vector2[count];
+            for (int i = 0; i < count; i++) {
+                Coordinate coordinate = coordinateSequence.getCoordinate(i);
+                vectors[i] = new Vector2(coordinate.x, coordinate.y);
             }
 
-            if (vectors.length > 3) {
-                try {
-                    List<Convex> convexes = SWEEP_LINE.decompose(vectors);
-                    for (int i = 0; i < convexes.size(); i++) {
-                        consumer.accept(convexes.get(i));
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else {
-                consumer.accept(Geometry.createPolygon(vectors));
+            List<Convex> convexes = SWEEP_LINE.decompose(vectors);
+            for (int i = 0; i < convexes.size(); i++) {
+                polygonConsumer.accept((org.dyn4j.geometry.Polygon) convexes.get(i));
             }
+        } else {
+            CoordinateSequence coordinateSequence = polygon.getExteriorRing().getCoordinateSequence();
+            Coordinate p0 = coordinateSequence.getCoordinate(0);
+            Coordinate p1 = coordinateSequence.getCoordinate(1);
+            Coordinate p2 = coordinateSequence.getCoordinate(2);
+            polygonConsumer.accept(Geometry.createPolygon(new Vector2(p0.x, p0.y), new Vector2(p1.x, p1.y),
+                    new Vector2(p2.x, p2.y)));
         }
     }
 
-    private DamageMask createInvertedDamageMask(Path64 hull, DamageMask damageMask, Vector2f scale) {
+    private DamageMask createInvertedDamageMask(Polygon polygon, DamageMask damageMask, Vector2f scale) {
         DamageMask damagedTexture = new DamageMask(damageMask.getWidth(), damageMask.getHeight(), damageMask.copy());
-        PathD path = clipTextureOutside(hull, damagedTexture, scale);
+        List<Coordinate> path = clipTextureOutside(polygon, damagedTexture, scale);
         for (int i = 0; i < path.size(); i++) {
-            PointD point = path.get(i);
+            Coordinate point = path.get(i);
             if (point.x < damagedTexture.getX()) damagedTexture.setX((int) point.x);
             else if (point.x > damagedTexture.getMaxX()) damagedTexture.setMaxX((int) point.x);
             if (point.y < damagedTexture.getY()) damagedTexture.setY((int) point.y);
@@ -547,122 +425,73 @@ public final class DamageSystem {
         return damagedTexture;
     }
 
-    public ShipWreck createWreck(double x, double y, double sin, double cos, float scaleX, float scaleY, PathD contour,
-                                 DamageMask damageMask, ShipData shipData) {
-        Vector2[] vectors = new Vector2[contour.size()];
-        for (int i = 0; i < vectors.length; i++) {
-            PointD pointD = contour.get(i);
-            vectors[i] = new Vector2(pointD.x, pointD.y);
-        }
-
-        PathsD contours = new PathsD();
-        contours.add(contour);
-
-        if (vectors.length > 3) {
-            try {
-                return createWreck(x, y, sin, cos, scaleX, scaleY, SWEEP_LINE.decompose(vectors), contours, damageMask,
-                        shipData);
-            } catch (Exception e) {
-                log.error("Error during decompose {}", e.getMessage());
-                for (int i = 0; i < vectors.length; i++) {
-                    log.error("{} {}", vectors[i].x, vectors[i].y);
-                }
-                return null;
-            }
-        } else {
-            return createWreck(x, y, sin, cos, scaleX, scaleY, Collections.singletonList(Geometry.createPolygon(vectors)),
-                    contours, damageMask, shipData);
-        }
+    private ShipWreck createWreck(World world, double x, double y, double sin, double cos, float scaleX, float scaleY,
+                                  Polygon polygon, DamageMask damageMask, ShipData shipData) {
+        Coordinate localCenter = polygon.getCentroid().getCoordinate();
+        RotationHelper.rotate((float) sin, (float) cos, (float) localCenter.x, (float) localCenter.y, rotatedLocalCenter);
+        x += rotatedLocalCenter.x;
+        y += rotatedLocalCenter.y;
+        polygon.apply((CoordinateFilter) coordinate -> {
+            coordinate.x -= localCenter.x;
+            coordinate.y -= localCenter.y;
+        });
+        List<Convex> convexes = new ArrayList<>(32);
+        decompose(polygon, convexes::add);
+        return createWreck(world, x, y, sin, cos, scaleX, scaleY, convexes, polygon, damageMask, shipData, (float) localCenter.x,
+                (float) localCenter.y);
     }
 
-    private ShipWreck createWreck(double x, double y, double sin, double cos, float scaleX, float scaleY,
-                                  List<Convex> convexes, PathsD contours, DamageMask damageMask, ShipData shipData) {
+    private ShipWreck createWreck(World world, double x, double y, double sin, double cos, float scaleX, float scaleY,
+                                  List<Convex> convexes, Polygon polygon, DamageMask damageMask, ShipData shipData,
+                                  float localOffsetX, float localOffsetY) {
         ShipWreck wreck = new ShipWreck((float) x, (float) y, (float) sin, (float) cos, scaleX, scaleY, shipData, damageMask,
-                contours);
+                polygon, localOffsetX, localOffsetY);
+        wreck.init(world, world.getNextId());
         Body body = wreck.getBody();
 
         for (int i = 0; i < convexes.size(); i++) {
             body.addFixture(wreck.setupFixture(new BodyFixture(convexes.get(i))));
         }
 
+        body.setMass(MassType.NORMAL);
+
         return wreck;
     }
 
-    private Vector2 getPathCenter(PathD pathD) {
-        double x = 0;
-        double y = 0;
-        for (int i = 0, size = pathD.size(); i < size; i++) {
-            PointD pointD = pathD.get(i);
-            x += pointD.x;
-            y += pointD.y;
-        }
+    public Polygon createCirclePath(float x, float y, float sin, float cos, int count, float radius) {
+        final float pin = MathUtils.TWO_PI / count;
 
-        cachedVector.set(x / pathD.size(), y / pathD.size());
-        return cachedVector;
-    }
+        final float c = LUT.cos(pin);
+        final float s = LUT.sin(pin);
+        float t;
 
-    public Path64 createCirclePath(double dx, double dy, double sin, double cos, int count, float radius) {
-        final double pin = Geometry.TWO_PI / count;
+        float vertexX = radius;
+        float vertexY = 0;
 
-        final double c = Math.cos(pin);
-        final double s = Math.sin(pin);
-        double t;
-
-        double vertexX = radius;
-        double vertexY = 0;
-
-        if (path.size() < count) {
-            int countToAdd = count - path.size();
-            for (int i = 0; i < countToAdd; i++) {
-                path.add(new Point64());
-            }
-        } else if (path.size() > count) {
-            while (path.size() > count) {
-                path.remove(0);
-            }
-        }
-
+        Coordinate[] coordinates = new Coordinate[count + 1];
         for (int i = 0; i < count; i++) {
-            double localPosX = vertexX + dx;
-            double localPosY = vertexY + dy;
-            double newX = cos * localPosX - sin * localPosY;
-            double newY = sin * localPosX + cos * localPosY;
-            Point64 pointD = path.get(i);
-            pointD.x = (long) Math.rint(newX * SCALE);
-            pointD.y = (long) Math.rint(newY * SCALE);
+            float localPosX = vertexX + x;
+            float localPosY = vertexY + y;
+            coordinates[i] = new Coordinate(cos * localPosX - sin * localPosY, sin * localPosX + cos * localPosY);
 
             t = vertexX;
             vertexX = c * vertexX - s * vertexY;
             vertexY = s * t + c * vertexY;
         }
 
-        return path;
+        coordinates[count] = coordinates[0];
+
+        return GEOMETRY_FACTORY.createPolygon(coordinates);
     }
 
-    public static boolean isPolygonConnectedToContour(Vector2[] vertices, PathD contour) {
+    public static boolean isPolygonConnectedToContour(Vector2[] vertices, Polygon polygon) {
         for (int i = 0; i < vertices.length; i++) {
             Vector2 vertex = vertices[i];
-            if (InternalClipper.PointInPolygonOptimized(vertex.x, vertex.y, contour)) {
+            if (polygon.contains(GEOMETRY_FACTORY.createPoint(new Coordinate(vertex.x, vertex.y)))) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    private void optimizeContour(PathD contour) {
-        if (contour.size() > 3) {
-            for (int i = 0; i < contour.size() - 1; i++) {
-                PointD point1 = contour.get(i);
-                PointD point2 = contour.get(i + 1);
-
-                if (ClipperBase.DistanceSqr(point1, point2) < MIN_DISTANCE_BETWEEN_VERTICES_SQ) {
-                    point1.x = (point1.x + point2.x) / 2;
-                    point1.y = (point1.y + point2.y) / 2;
-                    contour.remove(i + 1);
-                    i -= 1;
-                }
-            }
-        }
     }
 }

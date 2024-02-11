@@ -41,6 +41,8 @@ public class World {
     private final GameLogic gameLogic;
     @Getter
     private final CollisionMatrix collisionMatrix;
+    @Getter
+    private final ObjectPools objectPools = new ObjectPools();
 
     public World(Profiler profiler, Side side, long seed, EventBus eventBus, CommonEntityManager entityManager,
                  EntityIdManager entityIdManager, GameLogic gameLogic, CommonCollisionHandler collisionHandler) {

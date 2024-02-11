@@ -1,6 +1,5 @@
 package net.bfsr.entity.ship.module.weapon;
 
-import clipper2.core.PathD;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import net.bfsr.config.component.weapon.gun.GunData;
@@ -215,8 +214,8 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
     }
 
     @Override
-    public boolean isInside(PathD contour) {
-        return DamageSystem.isPolygonConnectedToContour(this.polygon.getVertices(), contour);
+    public boolean isInside(org.locationtech.jts.geom.Polygon polygon) {
+        return DamageSystem.isPolygonConnectedToContour(this.polygon.getVertices(), polygon);
     }
 
     @Override

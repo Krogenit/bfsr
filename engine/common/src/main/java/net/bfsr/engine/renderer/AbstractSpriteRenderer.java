@@ -26,7 +26,6 @@ public abstract class AbstractSpriteRenderer {
     public abstract void addTask(Runnable runnable, BufferType bufferType);
     public abstract Future<?> addTask(Runnable runnable);
 
-
     public abstract void syncAndRender(BufferType bufferType);
     public abstract void render(BufferType bufferType);
     public abstract void render(int mode, int objectCount, FloatBuffer vertexBuffer, ByteBuffer materialBuffer);
@@ -35,46 +34,35 @@ public abstract class AbstractSpriteRenderer {
     public abstract AbstractBuffersHolder getBuffersHolder(BufferType bufferType);
 
     public abstract void add(float lastX, float lastY, float x, float y, float scaleX, float scaleY, float r, float g, float b,
-                             float a,
-                             AbstractTexture texture, BufferType bufferType);
+                             float a, AbstractTexture texture, BufferType bufferType);
     public abstract void add(float x, float y, float scaleX, float scaleY, float r, float g, float b, float a,
                              AbstractTexture texture, BufferType bufferType);
 
     public abstract void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos,
-                                                   float sin, float cos,
-                                                   float lastScaleX, float lastScaleY, float scaleX, float scaleY, float r,
-                                                   float g, float b, float a,
-                                                   AbstractTexture texture, BufferType bufferType);
-    public abstract void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos,
-                                                   float sin, float cos, float scaleX,
+                                                   float sin, float cos, float lastScaleX, float lastScaleY, float scaleX,
                                                    float scaleY, float r, float g, float b, float a, AbstractTexture texture,
                                                    BufferType bufferType);
+    public abstract void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos,
+                                                   float sin, float cos, float scaleX, float scaleY, float r, float g, float b,
+                                                   float a, AbstractTexture texture, BufferType bufferType);
     public abstract void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float sin, float cos, float scaleX,
-                                                   float scaleY,
-                                                   float r, float g, float b, float a, AbstractTexture texture,
-                                                   BufferType bufferType);
-    public abstract void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos,
-                                                   float sin, float cos, float scaleX,
                                                    float scaleY, float r, float g, float b, float a, AbstractTexture texture,
-                                                   AbstractDamageMaskTexture maskTexture,
                                                    BufferType bufferType);
     public abstract void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos,
-                                                   float sin, float cos,
-                                                   float scaleX, float scaleY, Vector4f lastColor, Vector4f color,
-                                                   AbstractTexture texture,
+                                                   float sin, float cos, float scaleX, float scaleY, float r, float g, float b,
+                                                   float a, AbstractTexture texture, AbstractDamageMaskTexture maskTexture,
                                                    BufferType bufferType);
+    public abstract void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos,
+                                                   float sin, float cos, float scaleX, float scaleY, Vector4f lastColor,
+                                                   Vector4f color, AbstractTexture texture, BufferType bufferType);
 
     public abstract void putVertices(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4,
-                                     FloatBuffer floatBuffer,
-                                     MutableInt bufferIndex);
+                                     FloatBuffer floatBuffer, MutableInt bufferIndex);
     public abstract void putVertices(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin,
-                                     float cos,
-                                     float lastScaleX, float lastScaleY, float scaleX, float scaleY, float interpolation,
-                                     FloatBuffer floatBuffer,
-                                     MutableInt bufferIndex);
+                                     float cos, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
+                                     float interpolation, FloatBuffer floatBuffer, MutableInt bufferIndex);
     public abstract void putVerticesCentered(float x, float y, float sin, float cos, float halfSizeX, float halfSizeY,
-                                             FloatBuffer floatBuffer,
-                                             MutableInt bufferIndex);
+                                             FloatBuffer floatBuffer, MutableInt bufferIndex);
     public abstract void putVerticesCentered(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer,
                                              MutableInt bufferIndex);
 

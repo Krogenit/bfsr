@@ -1,9 +1,5 @@
 package net.bfsr.network.packet.common.entity.spawn;
 
-import clipper2.core.PathD;
-import clipper2.core.PathsD;
-import clipper2.core.PointD;
-import earcut4j.Earcut;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +7,9 @@ import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.damage.*;
 import net.bfsr.engine.Engine;
+import net.bfsr.network.util.ByteBufUtils;
 import org.dyn4j.dynamics.BodyFixture;
+import org.locationtech.jts.geom.Polygon;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -20,7 +18,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public abstract class DamageableRigidBodySpawnData<T extends DamageableRigidBody<?>> extends RigidBodySpawnData {
-    protected PathsD contours;
+    protected Polygon polygon;
     protected List<BodyFixture> fixtures;
 
     protected int maskWidth, maskHeight;
@@ -33,13 +31,7 @@ public abstract class DamageableRigidBodySpawnData<T extends DamageableRigidBody
 
     DamageableRigidBodySpawnData(DamageableRigidBody<?> damageableRigidBody) {
         super(damageableRigidBody);
-
-        PathsD contours = damageableRigidBody.getContours();
-        this.contours = new PathsD(contours.size());
-        for (int i = 0; i < contours.size(); i++) {
-            this.contours.add(contours.get(i));
-        }
-
+        this.polygon = (Polygon) damageableRigidBody.getPolygon().copy();
         DamageMask damageMask = damageableRigidBody.getMask();
         this.maskWidth = damageMask.getWidth();
         this.maskHeight = damageMask.getHeight();
@@ -55,23 +47,10 @@ public abstract class DamageableRigidBodySpawnData<T extends DamageableRigidBody
     @Override
     public void writeData(ByteBuf data) {
         super.writeData(data);
-
-        data.writeShort(contours.size());
-        for (int i = 0; i < contours.size(); i++) {
-            PathD contour = contours.get(i);
-            data.writeShort(contour.size());
-            for (int j = 0; j < contour.size(); j++) {
-                PointD pointD = contour.get(j);
-                data.writeFloat((float) pointD.x);
-                data.writeFloat((float) pointD.y);
-            }
-        }
-
+        ByteBufUtils.writePolygon(data, polygon);
         data.writeShort(maskWidth);
         data.writeShort(maskHeight);
-        for (int i = 0; i < maskHeight; i++) {
-            data.writeBytes(damageMaskBytes, i * maskHeight, maskWidth);
-        }
+        data.writeBytes(damageMaskBytes);
 
         data.writeShort(connectedObjects.size());
         for (int i = 0; i < connectedObjects.size(); i++) {
@@ -87,18 +66,7 @@ public abstract class DamageableRigidBodySpawnData<T extends DamageableRigidBody
     public void readData(ByteBuf data) {
         super.readData(data);
 
-        short contoursSize = data.readShort();
-        contours = new PathsD(contoursSize);
-        for (int i = 0; i < contoursSize; i++) {
-            short contourSize = data.readShort();
-            PathD contour = new PathD(contourSize);
-            contours.add(contour);
-
-            for (int j = 0; j < contourSize; j++) {
-                contour.add(new PointD(data.readFloat(), data.readFloat()));
-            }
-        }
-
+        polygon = ByteBufUtils.readPolygon(data);
         maskWidth = data.readShort();
         maskHeight = data.readShort();
         damageMaskByteBuffer = Engine.renderer.createByteBuffer(maskWidth * maskHeight);
@@ -106,7 +74,7 @@ public abstract class DamageableRigidBodySpawnData<T extends DamageableRigidBody
         damageMaskByteBuffer.position(0);
 
         fixtures = new ArrayList<>(32);
-        DamageSystem.decompose(contours, convex -> fixtures.add(new BodyFixture(convex)), new Earcut());
+        DamageSystem.decompose(polygon, convex -> fixtures.add(new BodyFixture(convex)));
 
         rigidBody = createRigidBody();
 

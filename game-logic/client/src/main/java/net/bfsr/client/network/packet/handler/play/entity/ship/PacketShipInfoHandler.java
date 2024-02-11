@@ -12,7 +12,6 @@ import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.entity.ship.module.hull.HullCell;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.network.packet.PacketHandler;
-import net.bfsr.network.packet.client.PacketNeedObjectInfo;
 import net.bfsr.network.packet.server.entity.ship.PacketShipInfo;
 
 import java.net.InetSocketAddress;
@@ -53,8 +52,6 @@ public class PacketShipInfoHandler extends PacketHandler<PacketShipInfo, Network
 
             Shield shipShield = modules.getShield();
             if (shipShield != null) shipShield.setShieldHp(packet.getShield());
-        } else {
-            Core.get().sendUDPPacket(new PacketNeedObjectInfo(packet.getId()));
         }
     }
 }

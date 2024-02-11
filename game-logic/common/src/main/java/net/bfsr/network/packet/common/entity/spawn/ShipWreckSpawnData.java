@@ -14,6 +14,7 @@ import org.joml.Vector2f;
 public class ShipWreckSpawnData extends DamageableRigidBodySpawnData<ShipWreck> {
     private float velocityX, velocityY;
     private float angularVelocity;
+    private float localOffsetX, localOffsetY;
 
     public ShipWreckSpawnData(ShipWreck wreck) {
         super(wreck);
@@ -21,10 +22,15 @@ public class ShipWreckSpawnData extends DamageableRigidBodySpawnData<ShipWreck> 
         this.velocityX = velocity.x;
         this.velocityY = velocity.y;
         this.angularVelocity = wreck.getAngularVelocity();
+        this.localOffsetX = wreck.getLocalOffsetX();
+        this.localOffsetY = wreck.getLocalOffsetY();
     }
 
     @Override
     public void writeData(ByteBuf data) {
+        data.writeFloat(localOffsetX);
+        data.writeFloat(localOffsetY);
+
         super.writeData(data);
 
         data.writeFloat(velocityX);
@@ -34,6 +40,9 @@ public class ShipWreckSpawnData extends DamageableRigidBodySpawnData<ShipWreck> 
 
     @Override
     public void readData(ByteBuf data) {
+        localOffsetX = data.readFloat();
+        localOffsetY = data.readFloat();
+
         super.readData(data);
 
         velocityX = data.readFloat();
@@ -45,7 +54,7 @@ public class ShipWreckSpawnData extends DamageableRigidBodySpawnData<ShipWreck> 
     protected ShipWreck createRigidBody() {
         ShipData shipData = ShipRegistry.INSTANCE.get(dataId);
         return new ShipWreck(posX, posY, sin, cos, shipData.getSizeX(), shipData.getSizeY(), shipData,
-                new DamageMask(maskWidth, maskHeight, null), contours);
+                new DamageMask(maskWidth, maskHeight, null), polygon, localOffsetX, localOffsetY);
     }
 
     @Override

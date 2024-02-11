@@ -10,7 +10,7 @@ import net.bfsr.engine.renderer.texture.AbstractTexture;
 import java.nio.ByteBuffer;
 
 public class DamageMaskTexture extends AbstractDamageMaskTexture {
-    private static final ByteBuffer WHITE_BUFFER = ByteBuffer.allocateDirect(4).put((byte) 255).flip();
+    public static final ByteBuffer WHITE_BUFFER = ByteBuffer.allocateDirect(4).put((byte) 255).flip();
 
     private final AbstractTexture texture;
     private float lastFireAmount, lastFireUVAnimation;
@@ -27,7 +27,11 @@ public class DamageMaskTexture extends AbstractDamageMaskTexture {
 
     public void createEmpty() {
         texture.create();
-        Engine.renderer.fillTexture(texture, GL.GL_R8, GL.GL_RED, WHITE_BUFFER);
+        Engine.renderer.uploadFilledTexture(texture, GL.GL_R8, GL.GL_RED, WHITE_BUFFER);
+    }
+
+    public void fillEmpty() {
+        Engine.renderer.fullTexture(texture, GL.GL_R8, GL.GL_RED, WHITE_BUFFER);
     }
 
     public void upload(int x, int y, int width, int height, ByteBuffer byteBuffer) {

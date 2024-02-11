@@ -1,9 +1,5 @@
 package net.bfsr.network.packet.server.entity;
 
-import clipper2.core.PathD;
-import clipper2.core.PathsD;
-import clipper2.core.PointD;
-import earcut4j.Earcut;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +8,9 @@ import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
 import net.bfsr.network.packet.common.PacketScheduled;
+import net.bfsr.network.util.ByteBufUtils;
 import org.dyn4j.dynamics.BodyFixture;
+import org.locationtech.jts.geom.Polygon;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -24,7 +22,7 @@ import java.util.List;
 public class PacketSyncDamage extends PacketScheduled {
     private DamageableRigidBody<?> damageable;
     private int x, y, maxX, maxY;
-    private PathsD contours;
+    private Polygon polygon;
     private byte[] bytes;
 
     private int id;
@@ -40,13 +38,7 @@ public class PacketSyncDamage extends PacketScheduled {
         y = damageMask.getY();
         maxX = damageMask.getMaxX();
         maxY = damageMask.getMaxY();
-        contours = new PathsD();
-
-        PathsD contours = damageable.getContours();
-        for (int i = 0; i < contours.size(); i++) {
-            this.contours.add(contours.get(i));
-        }
-
+        polygon = (Polygon) damageable.getPolygon().copy();
         bytes = damageMask.copy();
     }
 
@@ -54,26 +46,16 @@ public class PacketSyncDamage extends PacketScheduled {
     public void write(ByteBuf data) throws IOException {
         super.write(data);
         data.writeInt(damageable.getId());
-
-        data.writeByte(contours.size());
-        for (int i = 0; i < contours.size(); i++) {
-            PathD pathD = contours.get(i);
-            data.writeShort(pathD.size());
-            for (int i1 = 0; i1 < pathD.size(); i1++) {
-                PointD point = pathD.get(i1);
-                data.writeFloat((float) point.x);
-                data.writeFloat((float) point.y);
-            }
-        }
-
+        ByteBufUtils.writePolygon(data, polygon);
         data.writeShort(x);
         data.writeShort(y);
         data.writeShort(maxX);
         data.writeShort(maxY);
 
+        int maskHeight = damageable.getMask().getHeight();
         int width = maxX - x + 1;
         for (int i = y; i <= maxY; i++) {
-            data.writeBytes(bytes, i * damageable.getMask().getHeight() + x, width);
+            data.writeBytes(bytes, i * maskHeight + x, width);
         }
     }
 
@@ -81,17 +63,7 @@ public class PacketSyncDamage extends PacketScheduled {
     public void read(ByteBuf data) throws IOException {
         super.read(data);
         id = data.readInt();
-        byte contoursCount = data.readByte();
-        contours = new PathsD(contoursCount);
-        for (int i = 0; i < contoursCount; i++) {
-            short pathSize = data.readShort();
-            PathD pathD = new PathD(pathSize);
-            for (int j = 0; j < pathSize; j++) {
-                pathD.add(new PointD(data.readFloat(), data.readFloat()));
-            }
-            contours.add(pathD);
-        }
-
+        polygon = ByteBufUtils.readPolygon(data);
         x = data.readShort();
         y = data.readShort();
         short maxX = data.readShort();
@@ -101,12 +73,10 @@ public class PacketSyncDamage extends PacketScheduled {
 
         int size = width * height;
         byteBuffer = Engine.renderer.createByteBuffer(size);
-        byte[] bytes = new byte[size];
-        data.readBytes(bytes, 0, size);
-        byteBuffer.put(bytes, 0, size);
-        byteBuffer.flip();
+        data.readBytes(byteBuffer);
+        byteBuffer.position(0);
         fixtures = new ArrayList<>(32);
 
-        DamageSystem.decompose(contours, convex -> fixtures.add(new BodyFixture(convex)), new Earcut());
+        DamageSystem.decompose(polygon, polygon -> fixtures.add(new BodyFixture(polygon)));
     }
 }

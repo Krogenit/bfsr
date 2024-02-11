@@ -74,6 +74,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
                 beamPower -= powerAnimationSpeed;
                 if (beamPower <= 0) {
                     beamPower = 0;
+                    currentBeamRange = 0;
                 }
             } else {
                 if (reloadTimer > 0) reloadTimer--;
@@ -97,6 +98,10 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     }
 
     private void rayCast() {
+        if (currentBeamRange < beamMaxRange) {
+            currentBeamRange += 1.0f;
+        }
+
         float cos = ship.getCos();
         float sin = ship.getSin();
         float startRange = -size.x;
@@ -110,9 +115,8 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
         ray.setStart(rayStart);
         rayDirection.set(cos, sin);
         ray.setDirection(rayDirection);
-        RaycastResult<Body, BodyFixture> result = world.getPhysicWorld().raycastClosest(ray, beamMaxRange, detectFilter);
+        RaycastResult<Body, BodyFixture> result = world.getPhysicWorld().raycastClosest(ray, currentBeamRange, detectFilter);
         if (result == null) {
-            currentBeamRange = beamMaxRange;
             return;
         }
 

@@ -1,9 +1,5 @@
 package net.bfsr.client.renderer.entity;
 
-import clipper2.core.*;
-import clipper2.offset.ClipperOffset;
-import clipper2.offset.EndType;
-import clipper2.offset.JoinType;
 import lombok.Getter;
 import net.bfsr.client.renderer.texture.DamageMaskTexture;
 import net.bfsr.damage.DamageMask;
@@ -14,6 +10,11 @@ import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.math.RotationHelper;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.operation.buffer.BufferOp;
+import org.locationtech.jts.operation.buffer.BufferParameters;
 
 import java.nio.ByteBuffer;
 
@@ -22,7 +23,7 @@ public class DamageableRigidBodyRenderer<T extends DamageableRigidBody<?>> exten
     private static final Vector4f CONTOUR_OFFSET_COLOR = new Vector4f(1.0f, 0.6f, 0.4f, 0.6f);
 
     @Getter
-    private final DamageMaskTexture maskTexture;
+    protected final DamageMaskTexture maskTexture;
 
     DamageableRigidBodyRenderer(AbstractTexture texture, T object) {
         this(texture, object, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -59,46 +60,47 @@ public class DamageableRigidBodyRenderer<T extends DamageableRigidBody<?>> exten
     @Override
     public void renderDebug() {
         super.renderDebug();
-        PathsD contours = object.getContours();
-        if (contours != null) {
-            Vector2f position = object.getPosition();
-            Vector2f interpolatedPosition = new Vector2f(
-                    lastPosition.x + (position.x - lastPosition.x) * renderer.getInterpolation(),
-                    lastPosition.y + (position.y - lastPosition.y) * renderer.getInterpolation());
-            float sin = lastSin + (object.getSin() - lastSin) * renderer.getInterpolation();
-            float cos = lastCos + (object.getCos() - lastCos) * renderer.getInterpolation();
+        Polygon polygon = object.getPolygon();
+        Vector2f position = object.getPosition();
+        Vector2f interpolatedPosition = new Vector2f(
+                lastPosition.x + (position.x - lastPosition.x) * renderer.getInterpolation(),
+                lastPosition.y + (position.y - lastPosition.y) * renderer.getInterpolation());
+        float sin = lastSin + (object.getSin() - lastSin) * renderer.getInterpolation();
+        float cos = lastCos + (object.getCos() - lastCos) * renderer.getInterpolation();
 
-            for (int i = 0; i < contours.size(); i++) {
-                PathD pathD = contours.get(i);
-                debugRenderer.addCommand(pathD.size());
-                for (int i1 = 0; i1 < pathD.size(); i1++) {
-                    PointD pointD = pathD.get(i1);
-                    debugRenderer.addVertex(
-                            interpolatedPosition.x + RotationHelper.rotateX(sin, cos, (float) pointD.x, (float) pointD.y),
-                            interpolatedPosition.y + RotationHelper.rotateY(sin, cos, (float) pointD.x, (float) pointD.y),
-                            CONTOUR_COLOR
-                    );
-                }
+        CoordinateSequence coordinateSequence = polygon.getExteriorRing().getCoordinateSequence();
+        renderRing(interpolatedPosition.x, interpolatedPosition.y, sin, cos, coordinateSequence);
 
-                if (i == 0) {
-                    ClipperOffset clipperOffset = new ClipperOffset();
-                    Path64 path64 = new Path64(pathD.size());
-                    for (int i1 = 0; i1 < pathD.size(); i1++) {
-                        path64.add(new Point64(pathD.get(i1), DamageSystem.SCALE));
-                    }
+        int numInteriorRing = polygon.getNumInteriorRing();
+        for (int i = 0; i < numInteriorRing; i++) {
+            renderRing(interpolatedPosition.x, interpolatedPosition.y, sin, cos,
+                    polygon.getInteriorRingN(i).getCoordinateSequence());
+        }
 
-                    clipperOffset.AddPath(path64, JoinType.Miter, EndType.Polygon);
-                    Path64 solution = clipperOffset.Execute(0.25f * DamageSystem.SCALE).get(0);
-                    debugRenderer.addCommand(solution.size());
-                    for (int i2 = 0, path64Size = solution.size(); i2 < path64Size; i2++) {
-                        Point64 pointD = solution.get(i2);
-                        float x = (float) (pointD.x * DamageSystem.INV_SCALE);
-                        float y = (float) (pointD.y * DamageSystem.INV_SCALE);
-                        debugRenderer.addVertex(interpolatedPosition.x + RotationHelper.rotateX(sin, cos, x, y),
-                                interpolatedPosition.y + RotationHelper.rotateY(sin, cos, x, y), CONTOUR_OFFSET_COLOR);
-                    }
-                }
-            }
+        renderRingOffset(interpolatedPosition.x, interpolatedPosition.y, sin, cos, polygon);
+    }
+
+    private void renderRing(float x, float y, float sin, float cos, CoordinateSequence coordinateSequence) {
+        int size = coordinateSequence.size() - 1;
+        debugRenderer.addCommand(size);
+        for (int i1 = 0; i1 < size; i1++) {
+            Coordinate pointD = coordinateSequence.getCoordinate(i1);
+            debugRenderer.addVertex(x + RotationHelper.rotateX(sin, cos, (float) pointD.x, (float) pointD.y),
+                    y + RotationHelper.rotateY(sin, cos, (float) pointD.x, (float) pointD.y), CONTOUR_COLOR);
+        }
+    }
+
+    private void renderRingOffset(float x, float y, float sin, float cos, Polygon polygon) {
+        Polygon polygon1 = (Polygon) BufferOp.bufferOp(polygon, DamageSystem.CLIPPING_DELTA,
+                new BufferParameters(1, BufferParameters.CAP_SQUARE, BufferParameters.JOIN_MITRE, 1.0));
+        CoordinateSequence coordinates = polygon1.getExteriorRing().getCoordinateSequence();
+        int size = coordinates.size() - 1;
+
+        debugRenderer.addCommand(size);
+        for (int i1 = 0; i1 < size; i1++) {
+            Coordinate pointD = coordinates.getCoordinate(i1);
+            debugRenderer.addVertex(x + RotationHelper.rotateX(sin, cos, (float) pointD.x, (float) pointD.y),
+                    y + RotationHelper.rotateY(sin, cos, (float) pointD.x, (float) pointD.y), CONTOUR_OFFSET_COLOR);
         }
     }
 

@@ -4,7 +4,6 @@ import lombok.Getter;
 import net.bfsr.config.entity.wreck.WreckData;
 import net.bfsr.config.entity.wreck.WreckRegistry;
 import net.bfsr.engine.event.EventBus;
-import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.event.entity.wreck.WreckDeathEvent;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
@@ -22,8 +21,6 @@ import org.dyn4j.geometry.Transform;
 import java.util.Random;
 
 public class Wreck extends RigidBody<WreckData> {
-    public static final ObjectPool<Wreck> WREAK_POOL = new ObjectPool<>(Wreck::new);
-
     @Getter
     private int wreckIndex;
 
@@ -133,7 +130,7 @@ public class Wreck extends RigidBody<WreckData> {
     @Override
     public void onRemovedFromWorld() {
         super.onRemovedFromWorld();
-        WREAK_POOL.returnBack(this);
+        world.getObjectPools().getWrecksPool().returnBack(this);
     }
 
     @Override
