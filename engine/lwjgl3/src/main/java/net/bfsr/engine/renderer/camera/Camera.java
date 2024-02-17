@@ -62,7 +62,8 @@ public class Camera extends AbstractCamera {
 
         GL45.glNamedBufferStorage(GUIProjectionMatrixUBO, orthographicMatrix.setOrtho(0.0f, width, height, 0.0f, Z_NEAR, Z_FAR)
                 .get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
-        GL45.glNamedBufferStorage(worldProjectionMatrixUBO, orthographicMatrix.setOrtho(-width / 2.0f, width / 2.0f, height / 2.0f, -height / 2.0f, Z_NEAR, Z_FAR)
+        GL45.glNamedBufferStorage(worldProjectionMatrixUBO, orthographicMatrix.setOrtho(-width / 2.0f, width / 2.0f,
+                        -height / 2.0f, height / 2.0f, Z_NEAR, Z_FAR)
                 .get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
 
         MatrixUtils.scale(viewMatrix, zoom, zoom);
@@ -144,9 +145,10 @@ public class Camera extends AbstractCamera {
         origin.x = -width / 2.0f;
         origin.y = -height / 2.0f;
 
-        GL45.glNamedBufferSubData(GUIProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(0.0f, width, height, 0.0f, Z_NEAR, Z_FAR).get(MatrixBufferUtils.MATRIX_BUFFER));
-        GL45.glNamedBufferSubData(worldProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(-width / 2.0f, width / 2.0f, height / 2.0f, -height / 2.0f, Z_NEAR, Z_FAR)
+        GL45.glNamedBufferSubData(GUIProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(0.0f, width, height, 0.0f, Z_NEAR, Z_FAR)
                 .get(MatrixBufferUtils.MATRIX_BUFFER));
+        GL45.glNamedBufferSubData(worldProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(-width / 2.0f, width / 2.0f,
+                -height / 2.0f, height / 2.0f, Z_NEAR, Z_FAR).get(MatrixBufferUtils.MATRIX_BUFFER));
     }
 
     @Override
@@ -156,7 +158,7 @@ public class Camera extends AbstractCamera {
 
     public Vector2f getWorldVector(float x, float y) {
         vectorInCamSpace.x = (x + origin.x) / zoom + position.x;
-        vectorInCamSpace.y = (y + origin.y) / zoom + position.y;
+        vectorInCamSpace.y = (-y - origin.y) / zoom + position.y;
         return vectorInCamSpace;
     }
 
@@ -168,11 +170,13 @@ public class Camera extends AbstractCamera {
 
         MatrixUtils.scale(viewMatrix.identity(), interpolatedZoom, interpolatedZoom);
         MatrixUtils.translate(viewMatrix, -cameraX, -cameraY);
-        GL45.glNamedBufferSubData(interpolatedProjectionViewMatrixUBO, 0, orthographicMatrix.mul(viewMatrix, projectionViewMatrix).get(MatrixBufferUtils.MATRIX_BUFFER));
+        GL45.glNamedBufferSubData(interpolatedProjectionViewMatrixUBO, 0,
+                orthographicMatrix.mul(viewMatrix, projectionViewMatrix).get(MatrixBufferUtils.MATRIX_BUFFER));
 
         MatrixUtils.scale(viewMatrix.identity(), zoom, zoom);
         MatrixUtils.translate(viewMatrix, -position.x, -position.y);
-        GL45.glNamedBufferSubData(projectionViewMatrixUBO, 0, orthographicMatrix.mul(viewMatrix, projectionViewMatrix).get(MatrixBufferUtils.MATRIX_BUFFER));
+        GL45.glNamedBufferSubData(projectionViewMatrixUBO, 0,
+                orthographicMatrix.mul(viewMatrix, projectionViewMatrix).get(MatrixBufferUtils.MATRIX_BUFFER));
     }
 
     @Override

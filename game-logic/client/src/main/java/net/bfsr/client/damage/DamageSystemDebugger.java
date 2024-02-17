@@ -16,9 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DamageSystemDebugger {
-    private final DamageMaskTexture texture = new DamageMaskTexture(32, 32);
+    private final DamageSystem damageSystem = new DamageSystem();
+    private DamageMaskTexture texture;
 
-    public DamageSystemDebugger() {
+    public void init() {
+        texture = new DamageMaskTexture(32, 32);
         texture.createEmpty();
     }
 
