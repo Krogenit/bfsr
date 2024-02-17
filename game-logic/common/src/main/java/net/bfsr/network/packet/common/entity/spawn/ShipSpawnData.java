@@ -48,6 +48,7 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
     private int shieldDataId;
     private int shieldRebuildingTime;
     private float shieldHp;
+    private boolean shieldDead;
     private int hullDataId;
     private int armorDataId;
     private int cargoDataId;
@@ -78,9 +79,12 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
         Shield shield = modules.getShield();
         this.hasShield = shield != null;
         if (hasShield) {
-            this.shieldDataId = shield.getShieldData().getId();
-            this.shieldRebuildingTime = shield.getRebuildingTime();
-            this.shieldHp = shield.getShieldHp();
+            this.shieldDead = shield.isDead();
+            if (!shieldDead) {
+                this.shieldDataId = shield.getShieldData().getId();
+                this.shieldRebuildingTime = shield.getRebuildingTime();
+                this.shieldHp = shield.getShieldHp();
+            }
         }
 
         this.hullDataId = modules.getHull().getData().getId();
@@ -107,9 +111,14 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
         });
 
         data.writeBoolean(hasShield);
-        data.writeInt(shieldDataId);
-        data.writeInt(shieldRebuildingTime);
-        data.writeFloat(shieldHp);
+        if (hasShield) {
+            data.writeBoolean(shieldDead);
+            if (!shieldDead) {
+                data.writeInt(shieldDataId);
+                data.writeInt(shieldRebuildingTime);
+                data.writeFloat(shieldHp);
+            }
+        }
 
         data.writeInt(hullDataId);
         data.writeInt(armorDataId);
@@ -139,9 +148,14 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
         }
 
         hasShield = data.readBoolean();
-        shieldDataId = data.readInt();
-        shieldRebuildingTime = data.readInt();
-        shieldHp = data.readFloat();
+        if (hasShield) {
+            shieldDead = data.readBoolean();
+            if (!shieldDead) {
+                shieldDataId = data.readInt();
+                shieldRebuildingTime = data.readInt();
+                shieldHp = data.readFloat();
+            }
+        }
 
         hullDataId = data.readInt();
         armorDataId = data.readInt();
@@ -183,10 +197,16 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
         ship.setArmor(new Armor(ArmorPlateRegistry.INSTANCE.get(armorDataId), ship));
         ship.setCrew(new Crew(CrewRegistry.INSTANCE.get(crewDataId)));
         ship.setCargo(new Cargo(CargoRegistry.INSTANCE.get(cargoDataId)));
-        Shield shield = new Shield(ShieldRegistry.INSTANCE.get(shieldDataId), ship.getConfigData().getShieldPolygon(),
-                ship.getWorld().getGameLogic().getLogic(LogicType.SHIELD_UPDATE.ordinal()));
-        ship.setShield(shield);
-        shield.setShieldHp(shieldHp);
-        shield.setRebuildingTime(shieldRebuildingTime);
+        if (hasShield) {
+            Shield shield = new Shield(ShieldRegistry.INSTANCE.get(shieldDataId), ship.getConfigData().getShieldPolygon(),
+                    ship.getWorld().getGameLogic().getLogic(LogicType.SHIELD_UPDATE.ordinal()));
+            ship.setShield(shield);
+            if (shieldDead) {
+                shield.setDead();
+            } else {
+                shield.setShieldHp(shieldHp);
+                shield.setRebuildingTime(shieldRebuildingTime);
+            }
+        }
     }
 }
