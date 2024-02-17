@@ -53,9 +53,9 @@ public class CameraInputController extends InputController {
                 }
 
                 if (keyboard.isKeyDown(KEY_UP) || (noShip && keyboard.isKeyDown(KEY_W))) {
-                    camera.move(0, -keyMoveSpeed);
-                } else if (keyboard.isKeyDown(KEY_DOWN) || (noShip && keyboard.isKeyDown(KEY_S))) {
                     camera.move(0, keyMoveSpeed);
+                } else if (keyboard.isKeyDown(KEY_DOWN) || (noShip && keyboard.isKeyDown(KEY_S))) {
+                    camera.move(0, -keyMoveSpeed);
                 }
             }
 
@@ -139,9 +139,9 @@ public class CameraInputController extends InputController {
         }
 
         if (cursorPosition.y <= offset) {
-            camera.move(0, -screenMoveSpeed);
-        } else if (cursorPosition.y >= renderer.getScreenHeight() - offset) {
             camera.move(0, screenMoveSpeed);
+        } else if (cursorPosition.y >= renderer.getScreenHeight() - offset) {
+            camera.move(0, -screenMoveSpeed);
         }
     }
 
@@ -158,7 +158,7 @@ public class CameraInputController extends InputController {
     @Override
     public void mouseMove(float x, float y) {
         if (mouse.isRightDown()) {
-            camera.moveByMouse(x, y);
+            camera.moveByMouse(x, -y);
         }
     }
 

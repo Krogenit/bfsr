@@ -271,7 +271,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
 
         Vector2f position = object.getPosition();
         Vector2f size = object.getSize();
-        float yOffset = 3.2f + size.y / 4.0f;
+        float yOffset = -3.2f - size.y / 4.0f;
         stringObject.render(BufferType.ENTITIES_ALPHA, lastPosition.x, lastPosition.y + yOffset, position.x,
                 position.y + yOffset);
     }
@@ -323,7 +323,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
     }
 
     private void createName() {
-        stringObject.setStringAndCompile(object.getName()).scale(0.1f, 0.1f);
+        stringObject.setStringAndCompile(object.getName()).scale(0.1f, -0.1f);
     }
 
     @EventHandler

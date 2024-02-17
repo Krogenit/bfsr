@@ -96,13 +96,13 @@ public class PlayerInputController extends InputController {
         }
 
         if (key == KEY_A && engines.isEngineAlive(Direction.LEFT)) {
-            core.sendUDPPacket(new PacketShipMove(Direction.LEFT));
-            ship.addMoveDirection(Direction.LEFT);
+            core.sendUDPPacket(new PacketShipMove(Direction.RIGHT));
+            ship.addMoveDirection(Direction.RIGHT);
         }
 
         if (key == KEY_D && engines.isEngineAlive(Direction.RIGHT)) {
-            core.sendUDPPacket(new PacketShipMove(Direction.RIGHT));
-            ship.addMoveDirection(Direction.RIGHT);
+            core.sendUDPPacket(new PacketShipMove(Direction.LEFT));
+            ship.addMoveDirection(Direction.LEFT);
         }
 
         if (key == KEY_X && engines.isSomeEngineAlive()) {
@@ -128,13 +128,13 @@ public class PlayerInputController extends InputController {
         }
 
         if (key == KEY_A) {
-            core.sendUDPPacket(new PacketShipStopMove(Direction.LEFT));
-            ship.removeMoveDirection(Direction.LEFT);
+            core.sendUDPPacket(new PacketShipStopMove(Direction.RIGHT));
+            ship.removeMoveDirection(Direction.RIGHT);
         }
 
         if (key == KEY_D) {
-            core.sendUDPPacket(new PacketShipStopMove(Direction.RIGHT));
-            ship.removeMoveDirection(Direction.RIGHT);
+            core.sendUDPPacket(new PacketShipStopMove(Direction.LEFT));
+            ship.removeMoveDirection(Direction.LEFT);
         }
 
         if (key == KEY_X) {
