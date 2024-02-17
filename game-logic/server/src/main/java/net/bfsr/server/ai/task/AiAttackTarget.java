@@ -21,7 +21,6 @@ import org.joml.Vector2f;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 
 @RequiredArgsConstructor
@@ -38,6 +37,7 @@ public class AiAttackTarget extends AiTask {
     private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
     private final EntityTrackingManager trackingManager = ServerGameLogic.getInstance().getEntityTrackingManager();
     private final Vector2f rotatedVector = new Vector2f();
+    private final Vector2f pointToRotate = new Vector2f();
 
     @Override
     public void execute() {
@@ -59,7 +59,6 @@ public class AiAttackTarget extends AiTask {
         float minTargetToShip = Float.MAX_VALUE;
 
         float maxDistance = 0;
-        Vector2f pointToRotate = null;
         Vector2f targetSize = target.getSize();
         float targetSizeAverage = (targetSize.x + targetSize.y) / 2.0f;
 
@@ -74,7 +73,7 @@ public class AiAttackTarget extends AiTask {
             float minReloadTimer = Float.MAX_VALUE;
             for (int i = 0, size = slots.size(); i < size; i++) {
                 WeaponSlot slot = slots.get(i);
-                float bulletToShip;
+                float gunEffectiveDistance;
                 Vector2f slotPos = slot.getLocalPosition();
                 float cos = ship.getCos();
                 float sin = ship.getSin();
@@ -82,7 +81,7 @@ public class AiAttackTarget extends AiTask {
                 float yPos = sin * slotPos.x + cos * slotPos.y;
 
                 if (slot.getWeaponType() == WeaponType.BEAM) {
-                    bulletToShip = ((WeaponSlotBeam) slot).getBeamMaxRange();
+                    gunEffectiveDistance = ((WeaponSlotBeam) slot).getBeamMaxRange();
                     targetFinalPos.set(targetPos.x - xPos, targetPos.y - yPos);
                 } else {
                     GunData gunData = slot.getGunData();
@@ -91,12 +90,12 @@ public class AiAttackTarget extends AiTask {
 
                     float totalVelocityX = -cos * bulletSpeed * Engine.getUpdateDeltaTime() * totalIterations;
                     float totalVelocityY = -sin * bulletSpeed * Engine.getUpdateDeltaTime() * totalIterations;
-                    bulletFinalPos.set(pos.x - xPos + totalVelocityX, pos.y - yPos + totalVelocityY);
+                    bulletFinalPos.set(pos.x + xPos + totalVelocityX, pos.y + yPos + totalVelocityY);
 
-                    bulletToShip = bulletFinalPos.distance(pos) - 2.0f;
+                    gunEffectiveDistance = bulletFinalPos.distance(pos) - 2.0f;
 
-                    if (distanceToTarget < bulletToShip) {
-                        totalIterations *= distanceToTarget / bulletToShip;
+                    if (distanceToTarget < gunEffectiveDistance) {
+                        totalIterations *= distanceToTarget / gunEffectiveDistance;
                     }
 
                     totalTargetVelocity.set(targetVelocity.x * Engine.getUpdateDeltaTime(),
@@ -105,10 +104,10 @@ public class AiAttackTarget extends AiTask {
                             targetPos.y + totalTargetVelocity.y - yPos);
                 }
 
-                float targetToShip = targetFinalPos.distance(pos);
+                float finalDistanceToTarget = targetFinalPos.distance(pos);
 
-                if (targetToShip <= bulletToShip) {
-                    if (Math.abs(rigidBodyUtils.getRotationDifference(ship, targetFinalPos)) <= 0.1f + shipSizeAverage / 25.0f) {
+                if (finalDistanceToTarget <= gunEffectiveDistance) {
+                    if (Math.abs(rigidBodyUtils.getRotationDifference(ship, targetFinalPos)) <= 0.05f) {
                         slot.tryShoot(weaponSlot -> {
                             weaponSlot.createBullet(0);
                             trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketWeaponShoot(ship.getId(),
@@ -118,36 +117,37 @@ public class AiAttackTarget extends AiTask {
                 }
 
                 if (slot.getReloadTimer() < minReloadTimer) {
-                    pointToRotate = targetFinalPos;
+                    pointToRotate.set(targetFinalPos);
                     minReloadTimer = slot.getReloadTimer();
                 }
 
-                if (bulletToShip > maxDistance)
-                    maxDistance = bulletToShip;
+                if (gunEffectiveDistance > maxDistance)
+                    maxDistance = gunEffectiveDistance;
 
-                if (targetToShip < minTargetToShip)
-                    minTargetToShip = targetToShip;
+                if (finalDistanceToTarget < minTargetToShip)
+                    minTargetToShip = finalDistanceToTarget;
             }
 
-            Vector2f finalPointToRotate = Objects.requireNonNullElse(pointToRotate, targetPos);
+            rotatedVector.set(pointToRotate);
             if (minTargetToShip >= maxDistance - targetSizeAverage - shipSizeAverage) {
                 if (!engines.isEngineAlive(Direction.FORWARD)) {
                     if (engines.isEngineAlive(Direction.RIGHT)) {
-                        RotationHelper.rotate(-1.0f, 0.0f, finalPointToRotate.x - pos.x,
-                                finalPointToRotate.y - pos.y, finalPointToRotate);
-                        finalPointToRotate.add(pos.x, pos.y);
+                        RotationHelper.rotate(-1.0f, 0.0f, rotatedVector.x - pos.x,
+                                rotatedVector.y - pos.y, rotatedVector);
+                        rotatedVector.add(pos.x, pos.y);
                     } else if (engines.isEngineAlive(Direction.LEFT)) {
-                        RotationHelper.rotate(1.0f, 0.0f, finalPointToRotate.x - pos.x, finalPointToRotate.y - pos.y,
-                                finalPointToRotate);
-                        finalPointToRotate.add(pos.x, pos.y);
+                        RotationHelper.rotate(1.0f, 0.0f, rotatedVector.x - pos.x, rotatedVector.y - pos.y,
+                                rotatedVector);
+                        rotatedVector.add(pos.x, pos.y);
                     } else if (engines.isEngineAlive(Direction.BACKWARD)) {
-                        RotationHelper.rotate(0.0f, -1.0f, finalPointToRotate.x - pos.x, finalPointToRotate.y - pos.y,
-                                finalPointToRotate);
-                        finalPointToRotate.add(pos.x, pos.y);
+                        RotationHelper.rotate(0.0f, -1.0f, rotatedVector.x - pos.x, rotatedVector.y - pos.y,
+                                rotatedVector);
+                        rotatedVector.add(pos.x, pos.y);
                     }
                 }
 
-                List<Direction> dirs = rigidBodyUtils.calculateDirectionsToPoint(ship, targetPos);
+                rigidBodyUtils.rotateToVector(ship, rotatedVector, engines.getAngularVelocity());
+                List<Direction> dirs = rigidBodyUtils.calculateDirectionsToPoint(ship, pointToRotate);
 
                 for (int i = 0; i < dirs.size(); i++) {
                     Direction direction = dirs.get(i);
@@ -159,7 +159,8 @@ public class AiAttackTarget extends AiTask {
 
                 sideDirection = null;
             } else if (distanceToTarget < maxDistance - targetSizeAverage - shipSizeAverage) {
-                Direction dir = Direction.inverse(rigidBodyUtils.calculateDirectionToPoint(ship, targetPos));
+                rigidBodyUtils.rotateToVector(ship, pointToRotate, engines.getAngularVelocity());
+                Direction dir = Direction.inverse(rigidBodyUtils.calculateDirectionToPoint(ship, pointToRotate));
 
                 if (engines.isEngineAlive(dir)) {
                     directionsToAdd.add(dir);
@@ -211,15 +212,15 @@ public class AiAttackTarget extends AiTask {
                         sideDirection = Direction.LEFT;
                     }
                 }
-            }
 
-            rigidBodyUtils.rotateToVector(ship, finalPointToRotate, engines.getAngularVelocity());
+                rigidBodyUtils.rotateToVector(ship, pointToRotate, engines.getAngularVelocity());
+            }
 
             if (sideDirection != null) {
                 directionsToAdd.add(sideDirection);
             }
         } else {
-            rotatedVector.set(Objects.requireNonNullElse(pointToRotate, targetPos));
+            rotatedVector.set(targetPos);
 
             if (!engines.isEngineAlive(Direction.FORWARD)) {
                 if (engines.isEngineAlive(Direction.RIGHT)) {
@@ -227,7 +228,7 @@ public class AiAttackTarget extends AiTask {
                             rotatedVector);
                     rotatedVector.add(pos.x, pos.y);
                 } else if (engines.isEngineAlive(Direction.LEFT)) {
-                    RotationHelper.rotate(0.0f, -1.0f, rotatedVector.x - pos.x, rotatedVector.y - pos.y,
+                    RotationHelper.rotate(1.0f, 0.0f, rotatedVector.x - pos.x, rotatedVector.y - pos.y,
                             rotatedVector);
                     rotatedVector.add(pos.x, pos.y);
                 } else if (engines.isEngineAlive(Direction.BACKWARD)) {
@@ -251,9 +252,8 @@ public class AiAttackTarget extends AiTask {
             sideDirection = null;
         }
 
-        Direction[] directions = Direction.values();
-        for (int i = 0; i < directions.length; i++) {
-            Direction direction = directions[i];
+        for (int i = 0; i < Direction.VALUES.length; i++) {
+            Direction direction = Direction.VALUES[i];
             if (!directionsToAdd.contains(direction)) {
                 ship.removeMoveDirection(direction);
             } else {

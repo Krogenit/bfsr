@@ -46,8 +46,7 @@ public class ShipOutfitter {
 
     private void outfit(Ship ship, String factionName) {
         ship.setEngine(new Engines(EngineRegistry.INSTANCE.get(factionName), ship));
-        ship.setReactor(new Reactor(ReactorRegistry.INSTANCE.get(factionName), ship.getConfigData().getReactorPolygon(),
-                ship::setDestroying));
+        ship.setReactor(new Reactor(ReactorRegistry.INSTANCE.get(factionName), ship.getConfigData().getReactorPolygon()));
         ship.setHull(new Hull(HullRegistry.INSTANCE.get(factionName), ship));
         ship.setArmor(new Armor(ArmorPlateRegistry.INSTANCE.get(factionName), ship));
         ship.setShield(new Shield(ShieldRegistry.INSTANCE.get(factionName), ship.getConfigData().getShieldPolygon(),

@@ -14,7 +14,6 @@ import net.bfsr.server.entity.EntityManager;
 import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.ship.ShipSpawner;
 import net.bfsr.server.event.PlayerDisconnectEvent;
-import net.bfsr.server.event.listener.damage.DamageEventListener;
 import net.bfsr.server.event.listener.entity.ShipEventListener;
 import net.bfsr.server.event.listener.module.ModuleEventListener;
 import net.bfsr.server.event.listener.module.weapon.WeaponEventListener;
@@ -74,7 +73,6 @@ public class ServerGameLogic extends GameLogic {
     private void initListeners() {
         eventBus.register(new ShipEventListener());
         eventBus.register(new WeaponEventListener());
-        eventBus.register(new DamageEventListener());
         eventBus.register(new ModuleEventListener());
     }
 

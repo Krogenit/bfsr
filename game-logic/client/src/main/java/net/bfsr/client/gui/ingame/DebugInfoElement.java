@@ -91,7 +91,7 @@ public class DebugInfoElement {
 
         stringBuilder.append("\n\n---Render---");
         stringBuilder.append("\nGPU: ").append(openGlRenderer);
-        stringBuilder.append(" \nDrivers version ").append(openGlVersion);
+        stringBuilder.append(" \nDriver version ").append(openGlVersion);
         Vector2f camPos = camera.getPosition();
         stringBuilder.append("\nCamera pos: ");
         stringBuilder.append(DecimalUtils.strictFormatWithToDigits(camPos.x)).append(", ")

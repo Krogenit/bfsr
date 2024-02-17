@@ -11,7 +11,8 @@ import java.net.InetSocketAddress;
 
 public class PacketRemoveObjectHandler extends PacketHandler<PacketRemoveObject, NetworkSystem> {
     @Override
-    public void handle(PacketRemoveObject packet, NetworkSystem networkSystem, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketRemoveObject packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         GameObject obj = Core.get().getWorld().getEntityById(packet.getId());
         if (obj != null) obj.setDead();
     }

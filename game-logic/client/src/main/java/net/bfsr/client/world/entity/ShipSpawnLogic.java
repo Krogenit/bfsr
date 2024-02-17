@@ -2,7 +2,6 @@ package net.bfsr.client.world.entity;
 
 import net.bfsr.client.Core;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.network.packet.common.entity.spawn.ShipSpawnData;
 import net.bfsr.world.World;
 
@@ -12,7 +11,7 @@ public class ShipSpawnLogic extends DamageableRigidBodySpawnLogic<ShipSpawnData>
         World world = Core.get().getWorld();
         Ship ship = spawnData.getRigidBody();
         ship.init(world, spawnData.getEntityId());
-        ShipOutfitter.get().outfit(ship);
+        spawnData.outfit(ship);
 
         //Should be called before adding to world for proper ShipRender with connected objects initialization
         addFixturesAndConnectedObjects(ship, spawnData);

@@ -1,5 +1,7 @@
 package net.bfsr.entity.ship.module.engine;
 
+import lombok.Getter;
+import net.bfsr.config.entity.ship.EngineData;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
@@ -10,11 +12,14 @@ import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Polygon;
 
 public class Engine extends DamageableModule {
+    @Getter
+    private final EngineData engineData;
     private final Polygon polygon;
 
-    public Engine(Polygon polygon) {
+    public Engine(EngineData engineData) {
         super(5.0f);
-        this.polygon = polygon;
+        this.engineData = engineData;
+        this.polygon = engineData.polygons().get(0);
     }
 
     public void init(Ship ship, int id) {

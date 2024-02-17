@@ -19,6 +19,7 @@ import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.server.component.PacketShieldRebuildingTime;
 import net.bfsr.network.packet.server.component.PacketShieldRemove;
+import net.bfsr.network.packet.server.entity.PacketSyncDamage;
 import net.bfsr.physics.CommonCollisionHandler;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.EntityTrackingManager;
@@ -237,6 +238,7 @@ public class CollisionHandler extends CommonCollisionHandler {
         float radius = 1.0f;
 
         Polygon clip = damageSystem.createCirclePath(contactX - x, contactY - y, -sin, cos, 12, polygonRadius);
-        damageSystem.damage(rigidBody, contactX, contactY, clip, radius, x, y, sin, cos);
+        damageSystem.damage(rigidBody, contactX, contactY, clip, radius, x, y, sin, cos,
+                () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(), new PacketSyncDamage(rigidBody)));
     }
 }

@@ -10,14 +10,19 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
+import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
-import net.bfsr.entity.*;
+import net.bfsr.entity.EntityDataHistoryManager;
+import net.bfsr.entity.PositionHistory;
+import net.bfsr.entity.RigidBody;
+import net.bfsr.entity.TransformData;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.network.packet.input.*;
 import org.dyn4j.dynamics.Body;
+import org.dyn4j.geometry.AABB;
 import org.joml.Vector2f;
 
 import java.util.List;
@@ -207,13 +212,10 @@ public class PlayerInputController extends InputController {
         return false;
     }
 
-    private boolean isMouseIntersectsWith(GameObject gameObject, float mouseX, float mouseY) {
-        Vector2f position = gameObject.getPosition();
-        Vector2f size = gameObject.getSize();
-        float halfWidth = size.x / 2;
-        float halfHeight = size.y / 2;
-        return mouseX >= position.x - halfWidth && mouseY >= position.y - halfHeight && mouseX < position.x + halfWidth &&
-                mouseY < position.y + halfHeight;
+    private boolean isMouseIntersectsWith(RigidBody<?> rigidBody, float mouseX, float mouseY) {
+        AABB aabb = new AABB(0);
+        MathUtils.computeAABB(aabb, rigidBody.getBody(), rigidBody.getBody().getTransform(), new AABB(0));
+        return aabb.contains(mouseX, mouseY);
     }
 
     public void setShip(Ship ship) {

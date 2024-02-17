@@ -331,7 +331,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
         modules.setHull(hull);
     }
 
-    protected void setCrew(Crew crew) {
+    public void setCrew(Crew crew) {
         modules.setCrew(crew);
     }
 

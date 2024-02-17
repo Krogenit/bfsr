@@ -14,15 +14,14 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.operation.buffer.BufferOp;
-import org.locationtech.jts.operation.buffer.BufferParameters;
 
 import java.nio.ByteBuffer;
 
+@Getter
 public class DamageableRigidBodyRenderer<T extends DamageableRigidBody<?>> extends RigidBodyRender<T> {
     private static final Vector4f CONTOUR_COLOR = new Vector4f(1.0f, 0.6f, 0.4f, 1.0f);
     private static final Vector4f CONTOUR_OFFSET_COLOR = new Vector4f(1.0f, 0.6f, 0.4f, 0.6f);
 
-    @Getter
     protected final DamageMaskTexture maskTexture;
 
     DamageableRigidBodyRenderer(AbstractTexture texture, T object) {
@@ -91,8 +90,7 @@ public class DamageableRigidBodyRenderer<T extends DamageableRigidBody<?>> exten
     }
 
     private void renderRingOffset(float x, float y, float sin, float cos, Polygon polygon) {
-        Polygon polygon1 = (Polygon) BufferOp.bufferOp(polygon, DamageSystem.CLIPPING_DELTA,
-                new BufferParameters(1, BufferParameters.CAP_SQUARE, BufferParameters.JOIN_MITRE, 1.0));
+        Polygon polygon1 = (Polygon) BufferOp.bufferOp(polygon, DamageSystem.BUFFER_DISTANCE, DamageSystem.BUFFER_PARAMETERS);
         CoordinateSequence coordinates = polygon1.getExteriorRing().getCoordinateSequence();
         int size = coordinates.size() - 1;
 

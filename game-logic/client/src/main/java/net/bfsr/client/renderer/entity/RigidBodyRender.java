@@ -11,7 +11,9 @@ import net.bfsr.entity.RigidBody;
 import net.bfsr.math.RotationHelper;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.*;
+import org.dyn4j.geometry.AABB;
+import org.dyn4j.geometry.Polygon;
+import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -98,34 +100,13 @@ public class RigidBodyRender<T extends RigidBody<? extends GameObjectConfigData>
         List<BodyFixture> fixtures = body.getFixtures();
         for (int j = 0, fixturesSize = fixtures.size(); j < fixturesSize; j++) {
             BodyFixture bodyFixture = fixtures.get(j);
-            Convex convex = bodyFixture.getShape();
-            if (convex instanceof Rectangle rect) {
-                Vector2[] vertices = rect.getVertices();
-                debugRenderer.addCommand(vertices.length);
-                for (int i = 0; i < vertices.length; i++) {
-                    Vector2 vertex = vertices[i];
-                    debugRenderer.addVertex(x + RotationHelper.rotateX(sin, cos, (float) vertex.x, (float) vertex.y),
-                            y + RotationHelper.rotateY(sin, cos, (float) vertex.x, (float) vertex.y), CONVEX_COLOR);
-                }
-            } else if (convex instanceof Polygon polygon) {
-                Vector2[] vertices = polygon.getVertices();
-                debugRenderer.addCommand(vertices.length);
-                for (int i = 0; i < vertices.length; i++) {
-                    Vector2 vertex = vertices[i];
-                    debugRenderer.addVertex(x + RotationHelper.rotateX(sin, cos, (float) vertex.x, (float) vertex.y),
-                            y + RotationHelper.rotateY(sin, cos, (float) vertex.x, (float) vertex.y), CONVEX_COLOR);
-                }
-            } else if (convex instanceof Circle circle) {
-                int count = 10;
-                float angleAdd = MathUtils.TWO_PI / count;
-                float startAngle = 0.0f;
-                debugRenderer.addCommand(count);
-                for (int i = 0; i < count; i++) {
-                    RotationHelper.angleToVelocity(startAngle, (float) circle.getRadius(), angleToVelocity);
-                    debugRenderer.addVertex(x + RotationHelper.rotateX(sin, cos, angleToVelocity.x, angleToVelocity.y),
-                            y + RotationHelper.rotateY(sin, cos, angleToVelocity.x, angleToVelocity.y), CONVEX_COLOR);
-                    startAngle += angleAdd;
-                }
+            Polygon polygon = ((Polygon) bodyFixture.getShape());
+            Vector2[] vertices = polygon.getVertices();
+            debugRenderer.addCommand(vertices.length);
+            for (int i = 0; i < vertices.length; i++) {
+                Vector2 vertex = vertices[i];
+                debugRenderer.addVertex(x + RotationHelper.rotateX(sin, cos, (float) vertex.x, (float) vertex.y),
+                        y + RotationHelper.rotateY(sin, cos, (float) vertex.x, (float) vertex.y), CONVEX_COLOR);
             }
         }
     }

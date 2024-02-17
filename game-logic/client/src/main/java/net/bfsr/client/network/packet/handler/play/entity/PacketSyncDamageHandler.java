@@ -24,8 +24,6 @@ public class PacketSyncDamageHandler extends PacketHandler<PacketSyncDamage, Net
             damageableRigidBody.setFixtures(packet.getFixtures());
             damageHandler.updateDamage(damageableRigidBody, packet.getX(), packet.getY(), packet.getWidth(), packet.getHeight(),
                     packet.getByteBuffer());
-        } else {
-            System.out.println("SYNC DAMAGE FAILED ENTITY NOT FOUND");
         }
     }
 }

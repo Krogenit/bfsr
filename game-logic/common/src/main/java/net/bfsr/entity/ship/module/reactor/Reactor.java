@@ -19,15 +19,16 @@ public class Reactor extends DamageableModule {
     private final float maxEnergy;
     private final float regenEnergy;
     private final Convex reactorConvex;
-    private final Runnable onDestroyRunnable;
+    @Getter
+    private final ReactorData reactorData;
 
-    public Reactor(ReactorData reactorData, Convex reactorConvex, Runnable onDestroyRunnable) {
+    public Reactor(ReactorData reactorData, Convex reactorConvex) {
         super(reactorData.getHp());
+        this.reactorData = reactorData;
         this.energy = reactorData.getMaxEnergyCapacity();
         this.maxEnergy = reactorData.getMaxEnergyCapacity();
         this.regenEnergy = reactorData.getRegenAmount();
         this.reactorConvex = reactorConvex;
-        this.onDestroyRunnable = onDestroyRunnable;
     }
 
     @Override
@@ -66,7 +67,7 @@ public class Reactor extends DamageableModule {
     protected void destroy() {
         super.destroy();
         ship.getFixturesToRemove().add(fixture);
-        onDestroyRunnable.run();
+        ship.setDestroying();
     }
 
     @Override
