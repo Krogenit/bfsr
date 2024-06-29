@@ -28,15 +28,14 @@ public class ListBuilder extends ComponentBuilder {
                 fields, values, object, valueSetterConsumer, annotation, () -> {
                     try {
                         return listElementClass.getConstructor().newInstance();
-                    } catch (InstantiationException | InvocationTargetException | IllegalAccessException |
-                             NoSuchMethodException e) {
+                    } catch (InstantiationException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
                         throw new RuntimeException(e);
                     }
                 });
 
         if (objects != null) {
             for (int i = 0; i < objects.size(); i++) {
-                property.add(objects.get(i));
+                property.addProperty(objects.get(i));
             }
         }
 

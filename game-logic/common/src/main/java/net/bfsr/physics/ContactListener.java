@@ -24,8 +24,8 @@ public class ContactListener extends ContactListenerAdapter<Body> {
         float normalX = (float) normal.x;
         float normalY = (float) normal.y;
 
-        RigidBody<?> rigidBody1 = (RigidBody<?>) body1.getUserData();
-        RigidBody<?> rigidBody2 = (RigidBody<?>) body2.getUserData();
+        RigidBody rigidBody1 = (RigidBody) body1.getUserData();
+        RigidBody rigidBody2 = (RigidBody) body2.getUserData();
         collisionMatrix.collision(rigidBody1, rigidBody2, collision.getFixture1(), collision.getFixture2(), pointX, pointY,
                 normalX, normalY, collision);
     }

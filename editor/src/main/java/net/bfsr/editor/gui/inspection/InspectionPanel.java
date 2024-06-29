@@ -2,196 +2,187 @@ package net.bfsr.editor.gui.inspection;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.bfsr.client.Core;
 import net.bfsr.editor.gui.component.MinimizableGuiObject;
 import net.bfsr.editor.gui.component.receive.DragTarget;
 import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
+import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.gui.component.Button;
-import net.bfsr.engine.gui.component.StringObject;
-import net.bfsr.engine.gui.object.*;
+import net.bfsr.engine.gui.component.GuiObject;
+import net.bfsr.engine.gui.component.Label;
+import net.bfsr.engine.gui.component.Rectangle;
+import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.util.MutableInt;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
-import static net.bfsr.editor.gui.EditorTheme.*;
+import static net.bfsr.editor.gui.EditorTheme.SELECTION_BLUE_COLOR;
+import static net.bfsr.editor.gui.EditorTheme.TEXT_COLOR;
+import static net.bfsr.editor.gui.EditorTheme.setupButton;
+import static net.bfsr.editor.gui.EditorTheme.setupScrollPane;
 
-public class InspectionPanel<T extends PropertiesHolder> {
+public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends Rectangle {
     private static final long HOVER_TIME_FOR_MAXIMIZE = 500L;
 
     private final AbstractRenderer renderer = Engine.renderer;
     private final AbstractGUIRenderer guiRenderer = renderer.guiRenderer;
+    private final GuiManager guiManager = Core.get().getGuiManager();
     private final Gui gui;
     private final String name;
-    private final GuiObjectsContainer objectsContainer;
+    @Getter
+    private final ScrollPane scrollPane;
     private final FontType fontType;
     private final int fontSize;
-    private final int stringYOffset;
-    private final int minWidth = 100;
+    private final int stringOffsetY;
     private final int elementHeight = 20;
-    private final int betweenObjectsLineHeight = 4;
     private final int exactObjectSelectionOffsetY = 6;
-
     @Setter
-    private InspectionEntry<T> wantSelectObject;
+    private @Nullable InspectionEntry<PROPERTIES_TYPE> wantSelectObject;
     @Setter
     private boolean wantUnselect;
     @Setter
     @Getter
-    private InspectionEntry<T> movableObject;
-
-    @Setter
-    private Function<InspectionEntry<T>, Boolean> entryRightClickSupplier = (minimizableGuiObject) -> false;
-    @Setter
-    private Consumer<InspectionEntry<T>> onSelectConsumer = t -> {};
-
-    private MinimizableGuiObject lastHoverObject, hoverObject;
+    private @Nullable InspectionEntry<PROPERTIES_TYPE> movableObject;
+    private Consumer<InspectionEntry<PROPERTIES_TYPE>> onSelectConsumer = t -> {};
+    private @Nullable MinimizableGuiObject lastHoverObject, hoverObject;
     private long hoverTime;
     private final List<Button> bottomButtons = new ArrayList<>();
-    private final SimpleGuiObject background = new SimpleGuiObject();
 
-    public InspectionPanel(Gui gui, String name, int width, FontType fontType, int fontSize, int stringYOffset) {
+    public InspectionPanel(Gui gui, String name, int width, int height, FontType fontType, int fontSize, int stringOffsetY) {
+        super(width, height);
         this.gui = gui;
         this.name = name;
-        this.objectsContainer = setupObjectsContainerColors(new GuiObjectsContainer(width, 16));
+        this.scrollPane = setupScrollPane(new ScrollPane(width, height - elementHeight, 16));
         this.fontType = fontType;
         this.fontSize = fontSize;
-        this.stringYOffset = stringYOffset;
-    }
-
-    public void initElements(int x, int y) {
-        gui.registerGuiObject(
-                background.setAllColors(BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w)
-                        .setWidthResizeFunction((integer, integer2) -> getWidth())
-                        .setHeightResizeFunction((integer, integer2) -> Engine.renderer.getScreenHeight()));
-        gui.registerGuiObject(
-                new StringObject(fontType, name, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z,
-                        TEXT_COLOR.w).compileAtOrigin()
-                        .atTopLeftCorner(x,
-                                y + fontType.getStringCache().getCenteredYOffset(name, elementHeight, fontSize) + stringYOffset));
-        gui.registerGuiObject(objectsContainer.atTopLeftCorner(x, elementHeight).setHeightResizeFunction(
-                (width, height) -> renderer.getScreenHeight() - elementHeight)
-        );
+        this.stringOffsetY = stringOffsetY;
+        setWidthFunction((width1, height1) -> getPanelWidth()).updatePositionAndSize();
+        add(new Label(fontType, name, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w).compileAtOrigin()
+                .atTopLeft(0, fontType.getStringCache().getCenteredYOffset(name, elementHeight, fontSize) + stringOffsetY));
+        add(scrollPane.atTopLeft(0, elementHeight).setWidthFunction((width1, height1) -> getPanelWidth())
+                .setHeightFunction((width1, height1) -> this.height - elementHeight));
     }
 
     public void addBottomButton(int x, int y, String name, Runnable runnable) {
-        Button button = new Button(objectsContainer.getWidth(), elementHeight, name, fontType, fontSize, stringYOffset, runnable);
-        gui.registerGuiObject(setupButtonColors(button).atBottomLeftCorner(x, y));
+        Button button = new Button(scrollPane.getWidth(), elementHeight, name, fontType, fontSize, stringOffsetY, runnable);
+        add(setupButton(button).atBottomLeft(x, y).setWidthFunction((width1, height1) -> getPanelWidth()));
         bottomButtons.add(button);
-        objectsContainer.setHeight(renderer.getScreenHeight() - elementHeight - bottomButtons.size() * elementHeight);
-        objectsContainer.setHeightResizeFunction((width, height) -> renderer.getScreenHeight() - elementHeight -
-                bottomButtons.size() * elementHeight);
+        scrollPane.setHeight(renderer.getScreenHeight() - elementHeight - bottomButtons.size() * elementHeight);
+        scrollPane.setHeightFunction(
+                (width1, height1) -> renderer.getScreenHeight() - elementHeight - bottomButtons.size() * elementHeight);
     }
 
-    public InspectionEntry<T> createEntry(String name) {
-        InspectionEntry<T> entry = new InspectionEntry<>(this, objectsContainer.getWidth() - objectsContainer.getScrollWidth(),
-                elementHeight, name, fontType, fontSize, stringYOffset);
-        entry.setOnRightClickSupplier(() -> entryRightClickSupplier.apply(entry));
-        return entry;
+    public void add(InspectionEntry<PROPERTIES_TYPE> entry) {
+        scrollPane.add(entry);
+        updatePositionAndSize();
     }
 
-    public InspectionEntry<T> createEntry() {
-        return createEntry("Entry");
+    public void removeEntry(InspectionEntry<PROPERTIES_TYPE> entry) {
+        entry.getParent().remove(entry);
+        updatePositionAndSize();
     }
 
-    public InspectionEntry<T> createEntry(String name, T component) {
-        InspectionEntry<T> entry = createEntry(name);
-        entry.addComponent(component);
-        return entry;
-    }
-
-    public void onMouseLeftClick() {
-        List<GuiObject> guiObjects = objectsContainer.getGuiObjects();
-        for (int i = 0; i < guiObjects.size(); i++) {
-            if (guiObjects.get(i).isMouseHover()) {
-                return;
-            }
-        }
-
-        if (isMouseHover()) {
+    @Override
+    public GuiObject mouseLeftClick() {
+        GuiObject guiObject = super.mouseLeftClick();
+        if (guiObject == scrollPane) {
             wantUnselect = true;
         }
+
+        return guiObject;
     }
 
-    public boolean onMouseLeftRelease() {
-        boolean leftRelease = false;
+    @Override
+    public GuiObject mouseLeftRelease() {
+        GuiObject child = super.mouseLeftRelease();
 
         if (movableObject != null) {
             if (isIntersectsWithMouse()) {
                 onEntryMoved(movableObject);
-                leftRelease = true;
+                child = this;
             } else {
-                GuiObject hoveredGuiObject = gui.getHoveredGuiObject();
+                GuiObject hoveredGuiObject = guiManager.getHoveredGuiObject();
                 if (hoveredGuiObject instanceof DragTarget dragTarget) {
                     if (dragTarget.canAcceptDraggable(movableObject)) {
                         dragTarget.acceptDraggable(movableObject);
-                        leftRelease = true;
+                        child = this;
                     }
                 }
             }
 
-            setMovableObject(null);
+            movableObject = null;
         }
 
-        return leftRelease;
+        return child;
     }
 
-    public void onEntryMoved(InspectionEntry<T> entry) {
-        InspectionEntry<T> inspectionGuiObject = getMouseHoverObject();
-        if (inspectionGuiObject != null) {
+    private void onEntryMoved(InspectionEntry<PROPERTIES_TYPE> entry) {
+        GuiObject guiObject = guiManager.getHoveredGuiObject();
+        if (guiObject instanceof InspectionEntry<?> inspectionEntry) {
             int mouseY = (int) Engine.mouse.getPosition().y;
-            if (mouseY < inspectionGuiObject.getY() + exactObjectSelectionOffsetY) {
-                GuiObjectWithSubObjects parent = inspectionGuiObject.getParent();
-                List<AbstractGuiObject> subObjects = parent.getSubObjects();
-                int index = subObjects.indexOf(inspectionGuiObject);
-                entry.getParent().removeSubObject(entry);
-                parent.addSubObject(index, entry);
-                if (parent == objectsContainer) {
-                    entry.setParent(objectsContainer);
+            if (mouseY < inspectionEntry.getSceneY() + exactObjectSelectionOffsetY) {
+                GuiObject parent = inspectionEntry.getParent();
+                List<GuiObject> guiObjects = parent.getGuiObjects();
+                int index = guiObjects.indexOf(inspectionEntry);
+                entry.getParent().remove(entry);
+                parent.addAt(index, entry);
+
+                if (parent == scrollPane) {
+                    entry.setParent(scrollPane);
                 }
-                updatePositions();
-            } else if (mouseY >= inspectionGuiObject.getY() + elementHeight - exactObjectSelectionOffsetY) {
-                GuiObjectWithSubObjects parent;
-                if (inspectionGuiObject.isMaximized()) {
-                    parent = inspectionGuiObject;
+
+                updatePositionAndSize();
+            } else if (mouseY >= inspectionEntry.getSceneY() + elementHeight - exactObjectSelectionOffsetY) {
+                GuiObject parent;
+                if (inspectionEntry.isMaximized()) {
+                    parent = inspectionEntry;
                 } else {
-                    parent = inspectionGuiObject.getParent();
+                    parent = inspectionEntry.getParent();
                 }
-                List<AbstractGuiObject> subObjects = parent.getSubObjects();
-                int index = subObjects.indexOf(inspectionGuiObject) + 1;
-                entry.getParent().removeSubObject(entry);
-                if (index >= subObjects.size()) {
-                    parent.addSubObject(entry);
+
+                List<GuiObject> guiObjects = parent.getGuiObjects();
+                int index = guiObjects.indexOf(inspectionEntry) + 1;
+                entry.getParent().remove(entry);
+
+                if (index >= guiObjects.size()) {
+                    parent.add(entry);
                 } else {
-                    parent.addSubObject(index, entry);
+                    parent.addAt(index, entry);
                 }
-                if (parent == objectsContainer) {
-                    entry.setParent(objectsContainer);
+
+                if (parent == scrollPane) {
+                    entry.setParent(scrollPane);
                 }
-                updatePositions();
-            } else if (inspectionGuiObject != movableObject && !isInHierarchy(movableObject, inspectionGuiObject)) {
-                entry.getParent().removeSubObject(entry);
-                inspectionGuiObject.addSubObject(entry);
-                inspectionGuiObject.maximize();
-                updatePositions();
+
+                updatePositionAndSize();
+            } else if (inspectionEntry != movableObject &&
+                    !isInHierarchy(movableObject, (InspectionEntry<PROPERTIES_TYPE>) inspectionEntry)) {
+                entry.getParent().remove(entry);
+                inspectionEntry.add(entry);
+                inspectionEntry.tryMaximize();
+                updatePositionAndSize();
             }
         } else {
-            entry.getParent().removeSubObject(entry);
-            addSubObject(entry);
-            updatePositions();
+            entry.getParent().remove(entry);
+            add(entry);
+            updatePositionAndSize();
         }
     }
 
+    @Override
     public void update() {
+        super.update();
+
         if (wantUnselect) {
             wantUnselect = false;
             if (wantSelectObject == null) {
@@ -211,22 +202,25 @@ public class InspectionPanel<T extends PropertiesHolder> {
         }
     }
 
+    /**
+     * This if for correct rendering of target entry for movable object
+     */
     private void disableCurrentGuiObjectHover() {
         if (isIntersectsWithMouse()) {
-            GuiObject hoveredGuiObject = gui.getHoveredGuiObject();
+            GuiObject hoveredGuiObject = guiManager.getHoveredGuiObject();
             if (hoveredGuiObject != null) {
                 hoveredGuiObject.setMouseHover(false);
             }
         }
     }
 
-    private <T extends GuiObject> void findHoverObjectToMaximize(List<T> guiObjects, int mouseY) {
+    private <GUI_OBJECT_TYPE extends GuiObject> void findHoverObjectToMaximize(List<GUI_OBJECT_TYPE> guiObjects, int mouseY) {
         for (int i = 0; i < guiObjects.size(); i++) {
-            T guiObject = guiObjects.get(i);
-            if (guiObject.isMouseHover() && guiObject instanceof MinimizableGuiObject minimizableGuiObject &&
-                    !minimizableGuiObject.isMaximized() && minimizableGuiObject.isCanMaximize()
-                    && mouseY >= guiObject.getY() + exactObjectSelectionOffsetY &&
-                    mouseY < guiObject.getY() + elementHeight - exactObjectSelectionOffsetY) {
+            GUI_OBJECT_TYPE guiObject = guiObjects.get(i);
+            if (guiObject.isIntersectsWithMouse() && guiObject instanceof MinimizableGuiObject minimizableGuiObject &&
+                    !minimizableGuiObject.isMaximized() && minimizableGuiObject.isCanMaximize() &&
+                    mouseY >= guiObject.getSceneY() + exactObjectSelectionOffsetY &&
+                    mouseY < guiObject.getSceneY() + elementHeight - exactObjectSelectionOffsetY) {
                 hoverObject = minimizableGuiObject;
 
                 if (lastHoverObject != hoverObject) {
@@ -234,96 +228,81 @@ public class InspectionPanel<T extends PropertiesHolder> {
                 }
 
                 if (System.currentTimeMillis() - hoverTime > HOVER_TIME_FOR_MAXIMIZE) {
-                    hoverObject.maximize();
+                    hoverObject.tryMaximize();
                 }
 
                 return;
             }
 
-            if (guiObject instanceof GuiObjectWithSubObjects guiObjectWithSubObjects1) {
-                findHoverObjectToMaximize(guiObjectWithSubObjects1.getSubObjects(), mouseY);
+            findHoverObjectToMaximize(guiObject.getGuiObjects(), mouseY);
+        }
+    }
+
+    private void calculateMinWidth(MutableInt width, GuiObject guiObject) {
+        List<GuiObject> guiObjects = guiObject.getGuiObjects();
+        for (int i = 0; i < guiObjects.size(); i++) {
+            GuiObject guiObject1 = guiObjects.get(i);
+
+            if (guiObject1 instanceof InspectionEntry<?> inspectionEntry) {
+                width.set(Math.max(width.get(), inspectionEntry.getLabel().getSceneX() +
+                        inspectionEntry.getLabel().getWidth() - scrollPane.getSceneX()));
+                if (inspectionEntry.isMaximized()) {
+                    calculateMinWidth(width, inspectionEntry);
+                }
             }
         }
     }
 
-    private void calculateMinWidth(MutableInt width, GuiObjectWithSubObjects guiObjectWithSubObjects) {
-        List<AbstractGuiObject> guiObjects = guiObjectWithSubObjects.getSubObjects();
-        for (int i = 0; i < guiObjects.size(); i++) {
-            AbstractGuiObject guiObject = guiObjects.get(i);
-
-            if (guiObject instanceof InspectionEntry<?> inspectionGuiObject) {
-                width.set(Math.max(width.get(),
-                        inspectionGuiObject.getStringObject().getX() + inspectionGuiObject.getStringObject().getWidth() -
-                                objectsContainer.getX()));
-            }
-
-            if (guiObject instanceof InspectionEntry<?> inspectionEntry && inspectionEntry.isMaximized()) {
-                calculateMinWidth(width, inspectionEntry);
-            }
-        }
+    @Override
+    protected void onChildSizeChanged(GuiObject guiObject, int width, int height) {
+        super.onChildSizeChanged(guiObject, width, height);
+        updatePositionAndSize();
     }
 
-    public void updatePositions() {
-        int x = 0;
-        int y = elementHeight;
+    @Override
+    public void updatePositionAndSize() {
+        updatePositions();
+        super.updatePositionAndSize();
+    }
 
-        List<AbstractGuiObject> guiObjects = objectsContainer.getSubObjects();
-        for (int i = 0; i < guiObjects.size(); i++) {
-            AbstractGuiObject guiObject = guiObjects.get(i);
-            guiObject.atTopLeftCorner(x, y);
-            guiObject.updatePositionAndSize();
+    private void updatePositions() {
+        List<GuiObject> guiObjects = scrollPane.getGuiObjects();
+        for (int i = 0, y = 0; i < guiObjects.size(); i++) {
+            GuiObject guiObject = guiObjects.get(i);
+            guiObject.atTopLeft(0, y);
             y += guiObject.getHeight();
         }
 
-        objectsContainer.updateScrollObjectsY();
-
-        MutableInt width = new MutableInt(minWidth);
-        calculateMinWidth(width, objectsContainer);
-        int smallOffsetX = 10;
-        int panelWidth = width.get() + objectsContainer.getScrollWidth() + smallOffsetX;
-        objectsContainer.setWidth(panelWidth);
-        background.setWidth(panelWidth);
-
+        int panelWidth = getPanelWidth();
         int stringXOffset = panelWidth / 2;
         for (int i = 0; i < bottomButtons.size(); i++) {
             Button button = bottomButtons.get(i);
             button.setStringXOffset(stringXOffset);
-            button.setWidth(panelWidth);
         }
 
-        int maxContainerX = objectsContainer.getX() + objectsContainer.getWidth() - objectsContainer.getScrollWidth();
-
+        int maxWidth = scrollPane.getWidth() - scrollPane.getScrollWidth();
         for (int i = 0; i < guiObjects.size(); i++) {
-            AbstractGuiObject guiObject = guiObjects.get(i);
-            updateWidth(guiObject, maxContainerX);
+            updateWidth(guiObjects.get(i), maxWidth);
         }
     }
 
-    private void updateWidth(AbstractGuiObject guiObject, int maxContainerX) {
-        int objectRightPosX = guiObject.getX() + guiObject.getWidth();
-        if (objectRightPosX > maxContainerX) {
-            guiObject.setWidth(guiObject.getWidth() - (objectRightPosX - maxContainerX));
-        } else if (objectRightPosX < maxContainerX) {
-            guiObject.setWidth(guiObject.getWidth() + (maxContainerX - objectRightPosX));
-        }
+    private void updateWidth(GuiObject guiObject, int width) {
+        guiObject.setWidthFunction((width1, height1) -> width);
 
-        if (guiObject instanceof GuiObjectWithSubObjects guiObjectWithSubObjects) {
-            List<AbstractGuiObject> subObjects = guiObjectWithSubObjects.getSubObjects();
-            for (int i = 0; i < subObjects.size(); i++) {
-                updateWidth(subObjects.get(i), maxContainerX);
-            }
+        List<GuiObject> guiObjects = guiObject.getGuiObjects();
+        for (int i = 0; i < guiObjects.size(); i++) {
+            updateWidth(guiObjects.get(i), width - MinimizableGuiObject.MINIMIZABLE_STRING_X_OFFSET);
         }
     }
 
-    public void render() {
-        if (movableObject != null) {
-            renderMovableObject();
-        }
+    @Override
+    public void render(AbstractGUIRenderer guiRenderer, int lastX, int lastY, int x, int y) {
+        super.render(guiRenderer, lastX, lastY, x, y);
+        renderMovableObject();
     }
 
     private void renderMovableObject() {
-        int x = movableObject.getX();
-        int y = movableObject.getY();
+        if (movableObject == null) return;
 
         Vector2f position = Engine.mouse.getPosition();
         int mouseX = (int) position.x;
@@ -333,49 +312,42 @@ public class InspectionPanel<T extends PropertiesHolder> {
             renderInsertingPreview(mouseY);
         }
 
-        movableObject.setPosition(mouseX, mouseY);
-        movableObject.update();
-        movableObject.render();
-        movableObject.setPosition(x, y);
-        movableObject.update();
+        movableObject.getRenderer().render(mouseX, mouseY, mouseX, mouseY, movableObject.getWidth(), movableObject.getHeight());
     }
 
     private void renderInsertingPreview(int mouseY) {
-        InspectionEntry<T> inspectionGuiObject = getMouseHoverObject();
-        if (inspectionGuiObject != null) {
-            if (mouseY < inspectionGuiObject.getY() + exactObjectSelectionOffsetY) {
-                renderSelection(inspectionGuiObject.getX(), inspectionGuiObject.getY() - betweenObjectsLineHeight / 2,
-                        inspectionGuiObject.getWidth(), betweenObjectsLineHeight);
-            } else if (mouseY >= inspectionGuiObject.getY() + elementHeight - exactObjectSelectionOffsetY) {
-                if (inspectionGuiObject.isMaximized() && inspectionGuiObject.getSubObjects().size() > 0) {
-                    AbstractGuiObject guiObject = inspectionGuiObject.getSubObjects().get(0);
-                    renderSelection(guiObject.getX(), inspectionGuiObject.getY() + elementHeight - betweenObjectsLineHeight / 2,
-                            guiObject.getWidth(), betweenObjectsLineHeight);
+        GuiObject guiObject = guiManager.getHoveredGuiObject();
+        if (guiObject instanceof InspectionEntry<?> inspectionEntry) {
+            int sceneX = inspectionEntry.getSceneX();
+            int sceneY = inspectionEntry.getSceneY();
+            int betweenObjectsLineHeight = 4;
+            if (mouseY < sceneY + exactObjectSelectionOffsetY) {
+                renderSelection(sceneX, sceneY - betweenObjectsLineHeight / 2, inspectionEntry.getWidth(), betweenObjectsLineHeight);
+            } else if (mouseY >= sceneY + elementHeight - exactObjectSelectionOffsetY) {
+                if (inspectionEntry.isMaximized() && inspectionEntry.getGuiObjects().size() > 0) {
+                    GuiObject guiObject1 = inspectionEntry.getGuiObjects().get(0);
+                    renderSelection(guiObject1.getSceneX(), sceneY + elementHeight - betweenObjectsLineHeight / 2, guiObject1.getWidth(),
+                            betweenObjectsLineHeight);
                 } else {
-                    renderSelection(inspectionGuiObject.getX(),
-                            inspectionGuiObject.getY() + elementHeight - betweenObjectsLineHeight / 2,
-                            inspectionGuiObject.getWidth(), betweenObjectsLineHeight);
+                    renderSelection(sceneX, sceneY + elementHeight - betweenObjectsLineHeight / 2, inspectionEntry.getWidth(),
+                            betweenObjectsLineHeight);
                 }
-            } else if (inspectionGuiObject != movableObject && !isInHierarchy(movableObject, inspectionGuiObject)) {
-                renderSelection(inspectionGuiObject.getX(), inspectionGuiObject.getY(), inspectionGuiObject.getWidth());
-                inspectionGuiObject.setMouseHover(false);
-                inspectionGuiObject.render();
+            } else if (inspectionEntry != movableObject &&
+                    !isInHierarchy(movableObject, (InspectionEntry<PROPERTIES_TYPE>) inspectionEntry)) {
+                renderSelection(sceneX, sceneY, inspectionEntry.getWidth());
+                inspectionEntry.getRenderer()
+                        .render(sceneX, sceneY, sceneX, sceneY, inspectionEntry.getWidth(), inspectionEntry.getHeight());
             }
         } else {
             int height = 0;
-            List<AbstractGuiObject> subObjects = objectsContainer.getSubObjects();
+            List<GuiObject> subObjects = scrollPane.getGuiObjects();
             for (int i = 0; i < subObjects.size(); i++) {
                 height += subObjects.get(i).getHeight();
             }
-            int x1 = objectsContainer.getX();
-            int y1 = objectsContainer.getY() + height;
-            int x = movableObject.getX();
-            int y = movableObject.getY();
-            movableObject.setPosition(x1, y1);
-            movableObject.update();
-            movableObject.render();
-            movableObject.setPosition(x, y);
-            movableObject.update();
+
+            int x1 = scrollPane.getSceneX();
+            int y1 = scrollPane.getSceneY() + height;
+            movableObject.getRenderer().render(x1, y1, x1, y1, movableObject.getWidth(), movableObject.getHeight());
         }
     }
 
@@ -388,17 +360,17 @@ public class InspectionPanel<T extends PropertiesHolder> {
                 SELECTION_BLUE_COLOR.z, SELECTION_BLUE_COLOR.w);
     }
 
-    public InspectionEntry<T> findEntry(String path) {
-        return findEntry(objectsContainer, path);
+    public InspectionEntry<PROPERTIES_TYPE> findEntry(String path) {
+        return findEntry(scrollPane, path);
     }
 
-    public InspectionEntry<T> findEntry(GuiObjectWithSubObjects guiObjectWithSubObjects, String path) {
-        List<AbstractGuiObject> subObjects = guiObjectWithSubObjects.getSubObjects();
+    public @Nullable InspectionEntry<PROPERTIES_TYPE> findEntry(GuiObject guiObject, String path) {
+        List<GuiObject> subObjects = guiObject.getGuiObjects();
         for (int i = 0; i < subObjects.size(); i++) {
-            AbstractGuiObject abstractGuiObject = subObjects.get(i);
-            if (abstractGuiObject instanceof InspectionEntry<?> inspectionEntry) {
+            GuiObject simpleGuiObject = subObjects.get(i);
+            if (simpleGuiObject instanceof InspectionEntry<?> inspectionEntry) {
                 if (inspectionEntry.getName().equals(path)) {
-                    return (InspectionEntry<T>) inspectionEntry;
+                    return (InspectionEntry<PROPERTIES_TYPE>) inspectionEntry;
                 }
             }
         }
@@ -406,69 +378,39 @@ public class InspectionPanel<T extends PropertiesHolder> {
         return null;
     }
 
-    public boolean isInHierarchy(GuiObjectWithSubObjects hierarchy, InspectionEntry<T> guiObject) {
-        GuiObjectWithSubObjects parent = guiObject.getParent();
+    private boolean isInHierarchy(GuiObject hierarchy, InspectionEntry<PROPERTIES_TYPE> guiObject) {
+        GuiObject parent = guiObject.getParent();
         while (parent != null) {
             if (parent == hierarchy) return true;
 
-            if (parent instanceof InspectionEntry<?> inspectionMinimizableGuiObject) {
-                parent = inspectionMinimizableGuiObject.getParent();
-            } else {
-                return false;
-            }
+            parent = parent.getParent();
         }
 
         return false;
     }
 
-    public InspectionEntry<T> getMouseHoverObject() {
-        return getMouseHoverObject(objectsContainer);
-    }
-
-    private InspectionEntry<T> getMouseHoverObject(GuiObjectWithSubObjects guiObjectWithSubObjects) {
-        List<AbstractGuiObject> subObjects = guiObjectWithSubObjects.getSubObjects();
-        for (int i = 0; i < subObjects.size(); i++) {
-            AbstractGuiObject guiObject = subObjects.get(i);
-
-            if (guiObject instanceof InspectionEntry<?> inspectionEntry) {
-                if (inspectionEntry.isIntersectsWithMouse()) {
-                    return (InspectionEntry<T>) inspectionEntry;
-                }
-
-                if (inspectionEntry.isMaximized()) {
-                    InspectionEntry<T> objectWithSubObjects = getMouseHoverObject(inspectionEntry);
-                    if (objectWithSubObjects != null) {
-                        return objectWithSubObjects;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public void addSubObject(InspectionEntry<T> object) {
-        object.setParent(objectsContainer);
-        objectsContainer.addSubObject(object);
-    }
-
     public void sortFolders() {
-        objectsContainer.getSubObjects().sort(Comparator.comparing(o -> ((MinimizableGuiObject) o).getName()));
+        scrollPane.getGuiObjects().sort(Comparator.comparing(o -> ((MinimizableGuiObject) o).getName()));
+        updatePositionAndSize();
     }
 
-    public void setRightClickSupplier(Supplier<Boolean> supplier) {
-        objectsContainer.setOnRightClickSupplier(supplier);
+    @Override
+    public InspectionPanel<PROPERTIES_TYPE> setRightClickRunnable(Runnable runnable) {
+        scrollPane.setRightClickRunnable(runnable);
+        return this;
     }
 
-    public boolean isMouseHover() {
-        return objectsContainer.isMouseHover();
+    public InspectionPanel<PROPERTIES_TYPE> setOnSelectConsumer(Consumer<InspectionEntry<PROPERTIES_TYPE>> onSelectConsumer) {
+        this.onSelectConsumer = onSelectConsumer;
+        return this;
     }
 
-    public boolean isIntersectsWithMouse() {
-        return objectsContainer.isIntersectsWithMouse();
-    }
+    private int getPanelWidth() {
+        int minWidth = 100;
+        MutableInt width = new MutableInt(minWidth);
+        calculateMinWidth(width, scrollPane);
 
-    public int getWidth() {
-        return objectsContainer.getWidth();
+        int smallOffsetX = 10;
+        return width.get() + scrollPane.getScrollWidth() + smallOffsetX;
     }
 }

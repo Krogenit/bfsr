@@ -36,9 +36,7 @@ public class ConfigurableGameObject implements PropertiesHolder {
     }
 
     @Override
-    public void setName(String name) {
-
-    }
+    public void setName(String name) {}
 
     @Override
     public String getName() {
@@ -46,12 +44,8 @@ public class ConfigurableGameObject implements PropertiesHolder {
     }
 
     @Override
-    public void registerChangeNameEventListener(ChangeNameEventListener listener) {
-
-    }
+    public void addChangeNameEventListener(ChangeNameEventListener listener) {}
 
     @Override
-    public void clearListeners() {
-
-    }
+    public void clearListeners() {}
 }

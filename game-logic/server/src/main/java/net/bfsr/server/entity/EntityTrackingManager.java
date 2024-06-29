@@ -52,14 +52,14 @@ public class EntityTrackingManager {
         entityTrackingByPlayersMap.values().forEach(players1 -> players1.remove(player));
     }
 
-    public void update(double time, List<? extends RigidBody<?>> entities) {
+    public void update(double time, List<? extends RigidBody> entities) {
         playerEntitiesInRangeMap.object2ObjectEntrySet().fastForEach(entry -> {
             Player player = entry.getKey();
             Vector2f position = player.getPosition();
             IntOpenHashSet entitiesInRange = entry.getValue();
 
             for (int i = 0, size = entities.size(); i < size; i++) {
-                RigidBody<?> rigidBody = entities.get(i);
+                RigidBody rigidBody = entities.get(i);
                 int id = rigidBody.getId();
                 float dx = rigidBody.getX() - position.x;
                 float dy = rigidBody.getY() - position.y;
@@ -85,13 +85,12 @@ public class EntityTrackingManager {
 
             entitySyncManager.flush(player, time);
         });
-
     }
 
     @EventHandler
     public EventListener<RigidBodyRemovedFromWorldEvent> rigidBodyDeathEvent() {
         return event -> {
-            RigidBody<?> rigidBody = event.rigidBody();
+            RigidBody rigidBody = event.rigidBody();
             sendPacketToPlayersTrackingEntity(rigidBody.getId(), new PacketRemoveObject(rigidBody.getId(),
                     rigidBody.getWorld().getTimestamp()));
             entityTrackingByPlayersMap.remove(rigidBody.getId());

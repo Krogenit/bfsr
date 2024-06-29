@@ -12,9 +12,9 @@ import java.nio.ByteBuffer;
 public final class DamageHandler {
     private final RenderManager renderManager;
 
-    public void updateDamage(DamageableRigidBody<?> rigidBody, int x, int y, int width, int height, ByteBuffer byteBuffer) {
-        Render<?> render = renderManager.getRender(rigidBody.getId());
-        if (render instanceof DamageableRigidBodyRenderer<?> damageableRigidBodyRenderer) {
+    public void updateDamage(DamageableRigidBody rigidBody, int x, int y, int width, int height, ByteBuffer byteBuffer) {
+        Render render = renderManager.getRender(rigidBody.getId());
+        if (render instanceof DamageableRigidBodyRenderer damageableRigidBodyRenderer) {
             damageableRigidBodyRenderer.updateDamageMask(x, y, width, height, byteBuffer);
         }
     }

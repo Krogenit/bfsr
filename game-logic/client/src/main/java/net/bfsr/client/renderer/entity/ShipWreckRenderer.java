@@ -12,13 +12,14 @@ import org.joml.Vector2f;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShipWreckRenderer extends DamageableRigidBodyRenderer<ShipWreck> {
-    private final List<Render<?>> connectedObjectRenders = new ArrayList<>();
+public class ShipWreckRenderer extends DamageableRigidBodyRenderer {
+    private final ShipWreck wreck;
+    private final List<Render> connectedObjectRenders = new ArrayList<>();
     private final Vector2f localOffsetRotated = new Vector2f();
 
     public ShipWreckRenderer(ShipWreck wreck) {
-        super(Engine.assetsManager.getTexture(ShipRegistry.INSTANCE.get(wreck.getDataId()).getTexture()), wreck, 0.25f,
-                0.25f, 0.25f, 1.0f);
+        super(Engine.assetsManager.getTexture(ShipRegistry.INSTANCE.get(wreck.getDataId()).getTexture()), wreck, 0.25f, 0.25f, 0.25f, 1.0f);
+        this.wreck = wreck;
 
         List<ConnectedObject<?>> connectedObjects = wreck.getConnectedObjects();
         for (int i = 0; i < connectedObjects.size(); i++) {
@@ -47,11 +48,11 @@ public class ShipWreckRenderer extends DamageableRigidBodyRenderer<ShipWreck> {
     @Override
     public void renderAlpha() {
         Vector2f position = object.getPosition();
-        float sin = object.getSin();
-        float cos = object.getCos();
+        float sin = rigidBody.getSin();
+        float cos = rigidBody.getCos();
         Vector2f scale = object.getSize();
-        float localOffsetX = object.getLocalOffsetX();
-        float localOffsetY = object.getLocalOffsetY();
+        float localOffsetX = wreck.getLocalOffsetX();
+        float localOffsetY = wreck.getLocalOffsetY();
         RotationHelper.rotate(sin, cos, localOffsetX, localOffsetY, localOffsetRotated);
         spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x - localOffsetRotated.x, lastPosition.y - localOffsetRotated.y,
                 position.x - localOffsetRotated.x, position.y - localOffsetRotated.y, lastSin, lastCos, sin, cos, scale.x,

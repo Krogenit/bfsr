@@ -46,7 +46,7 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         super.bulletShip(bullet, ship, bulletFixture, shipFixture, contactX, contactY, normalX, normalY, collision);
 
-        Vector4f color = bullet.getConfigData().getColor();
+        Vector4f color = bullet.getGunData().getColor();
         float colorAlpha = (1.0f - bullet.getLifeTime() / (float) bullet.getMaxLifeTime()) * 1.5f;
         damageShip(ship, contactX, contactY, () -> {
             bullet.reflect(normalX, normalY);
@@ -97,7 +97,7 @@ public class CollisionHandler extends CommonCollisionHandler {
             ship.setCollisionTimer(ship.getWorld().convertToTicks(0.5f));
             Shield shield = ship.getModules().getShield();
             if (shield != null && isShieldAlive(shield)) {
-                Vector4f color = ship.getConfigData().getEffectsColor();
+                Vector4f color = ship.getShipData().getEffectsColor();
                 WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
             } else {
                 WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -138,7 +138,7 @@ public class CollisionHandler extends CommonCollisionHandler {
         Modules modules = ship.getModules();
         Shield shield = modules.getShield();
         if (shield != null && isShieldAlive(shield)) {
-            Vector4f color = ship.getConfigData().getEffectsColor();
+            Vector4f color = ship.getShipData().getEffectsColor();
             WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
             return;
         }

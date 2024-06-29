@@ -1,5 +1,6 @@
 package net.bfsr.editor.gui.property;
 
+import net.bfsr.client.Core;
 import net.bfsr.editor.property.converter.ConverterUtils;
 import net.bfsr.editor.property.converter.PropertyConverter;
 import net.bfsr.editor.property.holder.PropertiesHolder;
@@ -17,18 +18,15 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-import static net.bfsr.editor.gui.EditorTheme.setupContextMenuButtonColors;
-import static net.bfsr.editor.gui.component.MinimizableGuiObject.MINIMIZABLE_STRING_X_OFFSET;
+import static net.bfsr.editor.gui.EditorTheme.setupContextMenuButton;
 
 public class PropertyMap<KEY> extends PropertyList<PropertyObject<PropertyComponent>, PropertiesHolder> {
     private final Supplier<KEY> keySupplier;
 
-    public PropertyMap(int width, int height, String name, FontType fontType, int fontSize, int propertyOffsetX,
-                       int stringOffsetY, Object object, List<Field> fields, Object[] values,
-                       BiConsumer<Object, Integer> valueConsumer, Supplier<KEY> keySupplier,
-                       Supplier<PropertiesHolder> supplier) {
-        super(width, height, name, fontType, fontSize, propertyOffsetX, stringOffsetY, supplier, object, fields, values,
-                valueConsumer);
+    public PropertyMap(int width, int height, String name, FontType fontType, int fontSize, int propertyOffsetX, int stringOffsetY,
+                       Object object, List<Field> fields, Object[] values, BiConsumer<Object, Integer> valueConsumer,
+                       Supplier<KEY> keySupplier, Supplier<PropertiesHolder> supplier) {
+        super(width, height, name, fontType, fontSize, propertyOffsetX, stringOffsetY, supplier, object, fields, values, valueConsumer);
         this.keySupplier = keySupplier;
     }
 
@@ -40,42 +38,37 @@ public class PropertyMap<KEY> extends PropertyList<PropertyObject<PropertyCompon
     }
 
     @Override
-    public void add(PropertiesHolder propertiesHolder) {
+    public void addProperty(PropertiesHolder propertiesHolder) {
         add(keySupplier.get(), propertiesHolder);
     }
 
     public void add(KEY key, PropertiesHolder propertiesHolder) {
         PropertyObject<PropertyComponent> component = new PropertyObject<>(baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight,
-                key.toString(), fontType, fontSize, MINIMIZABLE_STRING_X_OFFSET,
-                stringOffsetY, propertiesHolder, null, new Object[]{propertiesHolder}, (o, integer) -> {
+                key.toString(), fontType, fontSize, MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, propertiesHolder, null,
+                new Object[]{propertiesHolder}, (o, integer) -> {});
+
+        component.addProperty(new PropertyInputBox(width - MINIMIZABLE_STRING_X_OFFSET, baseHeight, "keyName",
+                MINIMIZABLE_STRING_X_OFFSET, fontSize, stringOffsetY, key, fields, new Object[]{key}, List.of(key.getClass()),
+                (o, integer) -> {}) {
+            @Override
+            public void setSetting() {
+                component.setName(inputBoxes.get(0).getString());
+            }
         });
 
-        component.add(
-                new PropertyInputBox(width - MINIMIZABLE_STRING_X_OFFSET, baseHeight, "keyName", MINIMIZABLE_STRING_X_OFFSET,
-                        fontSize, stringOffsetY, key, fields, new Object[]{key}, List.of(key.getClass()), (o, integer) -> {
-
-                }) {
-                    @Override
-                    public void setSetting() {
-                        component.setName(inputBoxes.get(0).getString());
-                    }
-                });
-
-        component.setOnRightClickSupplier(() -> {
-            if (!component.isMouseHover()) return false;
+        component.setRightClickRunnable(() -> {
             String addString = "Remove";
             Vector2f mousePos = Engine.mouse.getPosition();
-            Button button = new Button(null, (int) mousePos.x, (int) mousePos.y,
+            Button button = new Button((int) mousePos.x, (int) mousePos.y,
                     fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight,
                     addString, fontType, fontSize, 4, stringOffsetY, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
-            setupContextMenuButtonColors(button);
-            button.setOnMouseClickRunnable(() -> remove(component));
-            gui.openContextMenu(button);
-            return true;
+            setupContextMenuButton(button);
+            button.setLeftReleaseRunnable(() -> remove(component));
+            Core.get().getGuiManager().openContextMenu(button);
         });
 
         properties.add(component);
-        addConcealableObject(component);
+        add(component);
     }
 
     @Override
@@ -89,9 +82,9 @@ public class PropertyMap<KEY> extends PropertyList<PropertyObject<PropertyCompon
                 throw new RuntimeException(e);
             }
 
-            Class<?> keyClass = keySupplier.get().getClass();
-            PropertyConverter converter = ConverterUtils.getConverter(keyClass);
-            KEY key = (KEY) converter.fromString(keyClass, propertyObject.getName());
+            Class<KEY> keyClass = (Class<KEY>) keySupplier.get().getClass();
+            PropertyConverter<KEY> converter = (PropertyConverter<KEY>) ConverterUtils.getConverter(keyClass);
+            KEY key = converter.fromString(keyClass, propertyObject.getName());
             propertiesHolderMap.put(key, propertyObject.getObject());
         }
 

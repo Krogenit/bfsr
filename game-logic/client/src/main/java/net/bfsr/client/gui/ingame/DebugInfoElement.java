@@ -2,13 +2,14 @@ package net.bfsr.client.gui.ingame;
 
 import lombok.Setter;
 import net.bfsr.client.Core;
-import net.bfsr.client.gui.GuiManager;
+import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.input.PlayerInputController;
+import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.gui.component.StringObject;
+import net.bfsr.engine.gui.component.Label;
+import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.profiler.Profiler;
-import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.opengl.GL;
@@ -21,26 +22,35 @@ import net.bfsr.util.DecimalUtils;
 import net.bfsr.world.World;
 import org.joml.Vector2f;
 
-public class DebugInfoElement {
+public class DebugInfoElement extends ScrollPane {
     private final StringBuilder stringBuilder = new StringBuilder(64);
     private final String openGlVersion = Engine.renderer.glGetString(GL.GL_VERSION);
     private final String openGlRenderer = Engine.renderer.glGetString(GL.GL_RENDERER);
     @Setter
     private float ping;
-    private final StringObject stringObject = new StringObject(FontType.CONSOLA);
+    private final Label label = new Label(FontType.CONSOLA);
     private final Core core = Core.get();
-    private final AbstractRenderer renderer = Engine.renderer;
     private final ParticleRenderer particleRenderer = core.getGlobalRenderer().getParticleRenderer();
-    private final GuiManager guiManager = core.getGuiManager();
     private final PlayerInputController playerInputController = core.getInputHandler().getPlayerInputController();
     private final AbstractMouse mouse = Engine.mouse;
+    private int sortTimer;
+    private final StringBuilder offset = new StringBuilder(32);
+    private final StringBuilder fullCategoryName = new StringBuilder(32);
+    private final HUD hud;
 
-    public void init(int x, int y) {
-        stringObject.setPosition(x, y);
+    public DebugInfoElement(HUD hud) {
+        super(300, 350, 10);
+        this.hud = hud;
+        add(label);
     }
 
+    @Override
     public void update() {
-        int drawCalls = renderer.getLastFrameDrawCalls();
+        if (!ClientSettings.IS_DEBUG.getBoolean()) return;
+
+        super.update();
+
+        int drawCalls = Engine.renderer.getLastFrameDrawCalls();
 
         Runtime runtime = Runtime.getRuntime();
         long maxMemory = runtime.maxMemory();
@@ -55,38 +65,58 @@ public class DebugInfoElement {
 
         stringBuilder.setLength(0);
         stringBuilder.append("BFSR Client " + Core.GAME_VERSION + "\n");
-        stringBuilder.append("FPS ").append(renderer.getFps()).append(", Local Server UPS ").append(ups);
+        stringBuilder.append("FPS ").append(Engine.renderer.getFps()).append(", Local Server UPS ").append(ups);
         stringBuilder.append("\nMemory: ").append(totalMemoryMB - freeMemoryMB).append("MB / ").append(totalMemoryMB)
                 .append("MB up to ").append(maxMemoryMB).append("MB");
         stringBuilder.append("\nMouse screen pos: ");
         Vector2f mousePosition = mouse.getPosition();
         stringBuilder.append((int) mousePosition.x).append(", ").append((int) mousePosition.y);
-        AbstractCamera camera = renderer.camera;
+        AbstractCamera camera = Engine.renderer.camera;
         Vector2f mouseWorldPosition = mouse.getWorldPosition(camera);
         stringBuilder.append("\nMouse world pos: ").append(DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.x))
                 .append(", ").append(DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.y));
         stringBuilder.append("\n\n---Profiler---");
         Profiler profiler = core.getProfiler();
-        float updateTime = profiler.getResult("update");
-        float renderTime = profiler.getResult("render");
-        float physicsTime = profiler.getResult("physics");
-        float netTime = profiler.getResult("network");
-        float sUpdateTime = 0.0f;
-        float sPhysicsTime = 0.0f;
-        float sNetworkTime = 0.0f;
+
+        offset.setLength(0);
+        fullCategoryName.setLength(0);
+        fullCategoryName.append("root");
+        boolean needSort = sortTimer-- == 0;
+        Profiler serverProfiler;
 
         if (server != null) {
-            sUpdateTime = server.getProfiler().getResult("update");
-            sPhysicsTime = server.getProfiler().getResult("physics");
-            sNetworkTime = server.getProfiler().getResult("network");
+            serverProfiler = server.getProfiler();
+        } else {
+            serverProfiler = null;
         }
-        stringBuilder.append("\nUpdate: ").append(DecimalUtils.strictFormatWithToDigits(updateTime)).append("ms / ")
-                .append(DecimalUtils.strictFormatWithToDigits(sUpdateTime)).append("ms ");
-        stringBuilder.append("\nPhysics: ").append(DecimalUtils.strictFormatWithToDigits(physicsTime)).append("ms / ")
-                .append(DecimalUtils.strictFormatWithToDigits(sPhysicsTime)).append("ms ");
-        stringBuilder.append("\nRender: ").append(DecimalUtils.strictFormatWithToDigits(renderTime)).append("ms ");
-        stringBuilder.append("\nNetwork: ").append(DecimalUtils.strictFormatWithToDigits(netTime)).append("ms / ")
-                .append(DecimalUtils.strictFormatWithToDigits(sNetworkTime)).append("ms ");
+
+        profiler.getResults(needSort).compute(node -> {
+            float serverResult = 0.0f;
+
+            if (serverProfiler != null) {
+                serverResult = serverProfiler.getResult(fullCategoryName + "." + node.getName());
+            }
+
+            stringBuilder.append("\n").append(offset).append(node.getName()).append(": ")
+                    .append(DecimalUtils.strictFormatWithToDigits(node.getAverageTime()))
+                    .append("ms");
+
+            if (serverResult > 0.0f) {
+                stringBuilder.append(" / ").append(DecimalUtils.strictFormatWithToDigits(serverResult)).append("ms");
+            }
+        }, (node) -> {
+            offset.append(" ");
+            fullCategoryName.append(".").append(node.getName());
+        }, (node) -> {
+            offset.deleteCharAt(offset.length() - 1);
+            fullCategoryName.delete(fullCategoryName.lastIndexOf("."), fullCategoryName.length());
+        });
+
+        if (needSort) {
+            sortTimer = 60;
+        }
+
+        stringBuilder.append("\n\n---Network---");
         stringBuilder.append("\nPing: ").append(DecimalUtils.strictFormatWithToDigits(ping)).append("ms");
 
         stringBuilder.append("\n\n---Render---");
@@ -143,16 +173,12 @@ public class DebugInfoElement {
                     .append(DecimalUtils.strictFormatWithToDigits(reactor.getMaxEnergy()));
         }
 
-        Ship ship = guiManager.getHud().getSelectedShip();
+        Ship ship = hud.getSelectedShip();
         if (ship != null) {
             stringBuilder.append("\n\n---Selected Ship--- ");
             stringBuilder.append("\nId: ").append(ship.getId());
         }
 
-        stringObject.setStringAndCompile(stringBuilder.toString());
-    }
-
-    public void render() {
-        stringObject.renderNoInterpolation();
+        label.setStringAndCompileAtOrigin(stringBuilder.toString());
     }
 }

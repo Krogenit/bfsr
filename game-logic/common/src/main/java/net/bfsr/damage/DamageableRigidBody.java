@@ -15,7 +15,7 @@ import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
-public class DamageableRigidBody<CONFIG_DATA extends GameObjectConfigData> extends RigidBody<CONFIG_DATA> {
+public class DamageableRigidBody extends RigidBody {
     private final DamageMask mask;
     @Setter
     private Polygon polygon;
@@ -23,14 +23,14 @@ public class DamageableRigidBody<CONFIG_DATA extends GameObjectConfigData> exten
     protected final List<BodyFixture> fixturesToRemove = new ArrayList<>();
     private final List<ConnectedObject<?>> connectedObjects = new ArrayList<>();
 
-    protected DamageableRigidBody(float sizeX, float sizeY, CONFIG_DATA configData, int registryId, DamageMask mask,
+    protected DamageableRigidBody(float sizeX, float sizeY, GameObjectConfigData configData, int registryId, DamageMask mask,
                                   Polygon polygon) {
         super(0, 0, 0, 1, sizeX, sizeY, configData, registryId);
         this.mask = mask;
         this.polygon = polygon;
     }
 
-    protected DamageableRigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, CONFIG_DATA configData,
+    protected DamageableRigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, GameObjectConfigData configData,
                                   int registryId, DamageMask mask, Polygon polygon) {
         super(x, y, sin, cos, sizeX, sizeY, configData, registryId);
         this.mask = mask;

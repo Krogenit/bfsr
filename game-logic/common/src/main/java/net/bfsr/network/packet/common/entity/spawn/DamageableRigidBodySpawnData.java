@@ -5,7 +5,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.GameObjectConfigData;
-import net.bfsr.damage.*;
+import net.bfsr.damage.ConnectedObject;
+import net.bfsr.damage.ConnectedObjectType;
+import net.bfsr.damage.DamageMask;
+import net.bfsr.damage.DamageSystem;
+import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
 import net.bfsr.network.util.ByteBufUtils;
 import org.dyn4j.dynamics.BodyFixture;
@@ -17,7 +21,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public abstract class DamageableRigidBodySpawnData<T extends DamageableRigidBody<?>> extends RigidBodySpawnData {
+public abstract class DamageableRigidBodySpawnData<T extends DamageableRigidBody> extends RigidBodySpawnData {
     protected Polygon polygon;
     protected List<BodyFixture> fixtures;
 
@@ -29,7 +33,7 @@ public abstract class DamageableRigidBodySpawnData<T extends DamageableRigidBody
 
     private T rigidBody;
 
-    DamageableRigidBodySpawnData(DamageableRigidBody<?> damageableRigidBody) {
+    DamageableRigidBodySpawnData(DamageableRigidBody damageableRigidBody) {
         super(damageableRigidBody);
         this.polygon = (Polygon) damageableRigidBody.getPolygon().copy();
         DamageMask damageMask = damageableRigidBody.getMask();

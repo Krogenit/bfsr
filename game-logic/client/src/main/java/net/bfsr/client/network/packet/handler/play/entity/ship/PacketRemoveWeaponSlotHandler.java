@@ -15,7 +15,7 @@ public class PacketRemoveWeaponSlotHandler extends PacketHandler<PacketRemoveWea
     @Override
     public void handle(PacketRemoveWeaponSlot packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
-        RigidBody<?> obj = Core.get().getWorld().getEntityById(packet.getShipId());
+        RigidBody obj = Core.get().getWorld().getEntityById(packet.getShipId());
         if (obj instanceof Ship ship) {
             WeaponSlot weaponSlot = ship.getWeaponSlot(packet.getSlotId());
             ship.removeConnectedObject(weaponSlot);

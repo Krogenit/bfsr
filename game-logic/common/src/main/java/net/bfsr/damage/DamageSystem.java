@@ -16,7 +16,12 @@ import org.dyn4j.geometry.Vector2;
 import org.dyn4j.geometry.decompose.SweepLine;
 import org.joml.Vector2f;
 import org.locationtech.jts.algorithm.Area;
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateFilter;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.operation.buffer.BufferOp;
 import org.locationtech.jts.operation.buffer.BufferParameters;
 import org.locationtech.jts.simplify.VWSimplifier;
@@ -39,7 +44,7 @@ public final class DamageSystem {
 
     private final Vector2f rotatedLocalCenter = new Vector2f();
 
-    public void damage(DamageableRigidBody<?> damageable, float contactX, float contactY, Polygon clip, float radius, float x,
+    public void damage(DamageableRigidBody damageable, float contactX, float contactY, Polygon clip, float radius, float x,
                        float y, float sin, float cos, Runnable onDamageSuccessRunnable) {
         if (damageable.isDead()) {
             return;
@@ -93,7 +98,7 @@ public final class DamageSystem {
         }
     }
 
-    private void processMultiPolygon(DamageableRigidBody<?> damageable, MultiPolygon multiPolygon, double x,
+    private void processMultiPolygon(DamageableRigidBody damageable, MultiPolygon multiPolygon, double x,
                                      double y, double sin, double cos, boolean optimize) {
         int polygonsCount = multiPolygon.getNumGeometries();
         double minDistance = Double.MAX_VALUE;
@@ -329,7 +334,7 @@ public final class DamageSystem {
         return res;
     }
 
-    private void clipTexture(float x, float y, float sin, float cos, DamageableRigidBody<?> damageable, float clipRadius,
+    private void clipTexture(float x, float y, float sin, float cos, DamageableRigidBody damageable, float clipRadius,
                              DamageMask mask, Random random) {
         Vector2f scale = damageable.getSize();
         float sizeX = scale.x / 2.0f;

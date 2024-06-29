@@ -67,7 +67,7 @@ public class Player {
         return position.y;
     }
 
-    public boolean canTrackEntity(RigidBody<?> rigidBody) {
+    public boolean canTrackEntity(RigidBody rigidBody) {
         Ship ship = playerInputController.getShip();
         return ship == null || !(rigidBody instanceof Bullet bullet) || bullet.getOwner() != ship;
     }

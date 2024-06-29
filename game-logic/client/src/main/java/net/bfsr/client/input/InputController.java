@@ -5,19 +5,19 @@ public class InputController {
 
     public void update() {}
 
-    public boolean onMouseLeftClick() {
+    public boolean mouseLeftClick() {
         return false;
     }
 
-    public boolean onMouseLeftRelease() {
+    public boolean mouseLeftRelease() {
         return false;
     }
 
-    public boolean onMouseRightClick() {
+    public boolean mouseRightClick() {
         return false;
     }
 
-    public boolean onMouseRightRelease() {
+    public boolean mouseRightRelease() {
         return false;
     }
 
@@ -25,13 +25,17 @@ public class InputController {
         return false;
     }
 
-    public void mouseMove(float x, float y) {}
+    public boolean mouseMove(float x, float y) {
+        return false;
+    }
 
     public boolean input(int key) {
         return false;
     }
 
-    public void textInput(int key) {}
+    public boolean textInput(int key) {
+        return false;
+    }
 
     public void release(int key) {}
 }

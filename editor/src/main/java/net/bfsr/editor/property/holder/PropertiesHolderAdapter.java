@@ -15,7 +15,7 @@ public class PropertiesHolderAdapter implements PropertiesHolder {
     }
 
     @Override
-    public void registerChangeNameEventListener(ChangeNameEventListener listener) {}
+    public void addChangeNameEventListener(ChangeNameEventListener listener) {}
 
     @Override
     public void clearListeners() {}

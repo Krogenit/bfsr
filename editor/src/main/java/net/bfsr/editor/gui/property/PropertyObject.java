@@ -9,73 +9,70 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-import static net.bfsr.editor.gui.component.MinimizableGuiObject.MINIMIZABLE_STRING_X_OFFSET;
-
 @Getter
-public class PropertyObject<T extends PropertyComponent> extends MinimizablePropertyComponent {
-    final List<T> properties = new ArrayList<>();
+public class PropertyObject<PROPERTY_TYPE extends PropertyComponent> extends PropertyComponent {
+    final List<PROPERTY_TYPE> properties = new ArrayList<>();
 
-    public PropertyObject(int width, int height, String name, FontType fontType, int fontSize, int propertyOffsetX,
-                          int stringOffsetY, Object object, List<Field> fields, Object[] values,
-                          BiConsumer<Object, Integer> valueConsumer) {
-        super(width, height, name, fontType, fontSize, propertyOffsetX, 1, stringOffsetY, object, fields, values,
-                valueConsumer);
+    public PropertyObject(int width, int height, String name, FontType fontType, int fontSize, int propertyOffsetX, int stringOffsetY,
+                          Object object, List<Field> fields, Object[] values, BiConsumer<Object, Integer> valueConsumer) {
+        super(width, height, name, fontType, fontSize, propertyOffsetX + MINIMIZABLE_STRING_X_OFFSET, 1, MINIMIZABLE_STRING_X_OFFSET,
+                stringOffsetY, object, fields, values, valueConsumer);
+        setCanMaximize(true);
 
         PropertiesBuilder.createGuiProperties(values[0], width - MINIMIZABLE_STRING_X_OFFSET, height, fontType, fontSize,
-                MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, propertyComponent -> add((T) propertyComponent));
+                MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, propertyComponent -> addProperty((PROPERTY_TYPE) propertyComponent));
     }
 
-    protected void add(T propertyComponent) {
-        addConcealableObject(propertyComponent);
+    void addProperty(PROPERTY_TYPE propertyComponent) {
         properties.add(propertyComponent);
-        updatePropertiesOffset();
+        add(propertyComponent);
     }
 
     @Override
     public void setSetting() throws IllegalAccessException {
         for (int i = 0; i < properties.size(); i++) {
-            T propertyComponent = properties.get(i);
+            PROPERTY_TYPE propertyComponent = properties.get(i);
             propertyComponent.setSetting();
         }
     }
 
     @Override
-    protected void setRepositionConsumerForSubObjects() {
-        int height = 0;
+    protected void updateHeight() {
+        if (maximized) {
+            setHeight(getMaximizedHeight());
+        } else {
+            setHeight(baseHeight);
+        }
+    }
+
+    protected int getMaximizedHeight() {
+        int height = baseHeight;
         for (int i = 0; i < properties.size(); i++) {
-            T guiObject = properties.get(i);
-            subObjectsRepositionConsumer.setup(guiObject, MINIMIZABLE_STRING_X_OFFSET, height + propertyYOffset);
-            height += guiObject.getHeight();
+            height += properties.get(i).getHeight();
         }
 
-        if (maximized) {
-            this.height = baseHeight + height;
-        } else {
-            this.height = baseHeight;
-        }
+        return height;
     }
 
     @Override
-    public void updatePositionAndSize() {
-        super.updatePositionAndSize();
-        updatePropertiesOffset();
-    }
+    public void updateConcealableObjectsPositions() {
+        if (properties.isEmpty()) return;
 
-    void updatePropertiesOffset() {
-        if (properties.size() == 0) return;
-
-        int maxStringWidth = properties.get(0).getStringObject().getWidth();
+        int maxStringWidth = properties.get(0).getLabel().getWidth();
         for (int i = 1; i < properties.size(); i++) {
             PropertyComponent propertyComponent = properties.get(i);
-            maxStringWidth = Math.max(maxStringWidth, propertyComponent.getStringObject().getWidth());
+            maxStringWidth = Math.max(maxStringWidth, propertyComponent.getLabel().getWidth());
         }
 
         int propertyOffsetX = maxStringWidth;
-
+        int height = baseHeight;
         for (int i = 0; i < properties.size(); i++) {
             PropertyComponent propertyComponent = properties.get(i);
+            propertyComponent.atTopLeft(MINIMIZABLE_STRING_X_OFFSET, height + propertyOffsetY);
             propertyComponent.setPropertyOffsetX(propertyOffsetX);
-            propertyComponent.updatePositionAndSize();
+            height += propertyComponent.getHeight();
         }
+
+        updateHeight();
     }
 }

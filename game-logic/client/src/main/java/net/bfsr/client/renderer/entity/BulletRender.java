@@ -7,20 +7,22 @@ import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.bullet.Bullet;
 import org.joml.Vector2f;
 
-public class BulletRender extends RigidBodyRender<Bullet> {
+public class BulletRender extends RigidBodyRender {
     private static final AbstractTexture LIGHT_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.particleLight);
 
+    private final Bullet bullet;
+
     public BulletRender(Bullet bullet) {
-        super(Engine.assetsManager.getTexture(bullet.getConfigData().getBulletTexture()), bullet,
-                bullet.getConfigData().getColor().x,
-                bullet.getConfigData().getColor().y, bullet.getConfigData().getColor().z, bullet.getConfigData().getColor().w);
+        super(Engine.assetsManager.getTexture(bullet.getGunData().getBulletTexture()), bullet, bullet.getGunData().getColor().x,
+                bullet.getGunData().getColor().y, bullet.getGunData().getColor().z, bullet.getGunData().getColor().w);
+        this.bullet = bullet;
     }
 
     @Override
     public void update() {
         lastPosition.set(object.getPosition());
         lastColor.w = color.w;
-        color.w = 1.0f - object.getLifeTime() / (float) object.getMaxLifeTime();
+        color.w = 1.0f - bullet.getLifeTime() / (float) bullet.getMaxLifeTime();
     }
 
     @Override
@@ -29,8 +31,8 @@ public class BulletRender extends RigidBodyRender<Bullet> {
     @Override
     public void renderAdditive() {
         Vector2f position = object.getPosition();
-        float sin = object.getSin();
-        float cos = object.getCos();
+        float sin = bullet.getSin();
+        float cos = bullet.getCos();
         Vector2f scale = object.getSize();
         float lightSize = 6.0f;
         float colorAlpha = lastColor.w + (color.w - lastColor.w) * Engine.renderer.getInterpolation();

@@ -6,6 +6,7 @@ import net.bfsr.editor.gui.property.PropertyComponent;
 import net.bfsr.editor.gui.property.PropertyGuiElementType;
 import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.engine.renderer.font.FontType;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -26,18 +27,17 @@ public final class PropertiesBuilder {
         return fields;
     }
 
-    public static void createGuiProperties(Object object, int width, int height, FontType fontType, int fontSize,
-                                           int propertyOffsetX, int stringYOffset, Consumer<PropertyComponent> consumer) {
+    public static void createGuiProperties(Object object, int width, int height, FontType fontType, int fontSize, int propertyOffsetX,
+                                           int stringYOffset, Consumer<PropertyComponent> consumer) {
         createGuiProperties(object, width, height, fontType, fontSize, propertyOffsetX, stringYOffset, consumer, "");
     }
 
-    public static void createGuiProperties(Object object, int width, int height, FontType fontType, int fontSize,
-                                           int propertyOffsetX, int stringYOffset, Consumer<PropertyComponent> consumer,
-                                           String propertyName) {
+    public static void createGuiProperties(Object object, int width, int height, FontType fontType, int fontSize, int propertyOffsetX,
+                                           int stringYOffset, Consumer<PropertyComponent> consumer, String propertyName) {
         List<Field> fields = getAllFields(new LinkedList<>(), object.getClass());
         int fieldsAmount = 0;
         List<Field> fieldsBulk = new ArrayList<>(4);
-        PropertyGuiElementType elementType = null;
+        @Nullable PropertyGuiElementType elementType = null;
         boolean customPropertyName = !propertyName.isEmpty();
 
         for (int i = 0; i < fields.size(); i++) {
@@ -83,10 +83,9 @@ public final class PropertiesBuilder {
         }
     }
 
-    private static PropertyComponent createProperty(Object object, int width, int height, int propertyOffsetX,
-                                                    FontType fontType, int fontSize, int stringYOffset,
-                                                    String propertyName, PropertyGuiElementType elementType,
-                                                    List<Field> fields) throws IllegalAccessException {
+    private static PropertyComponent createProperty(Object object, int width, int height, int propertyOffsetX, FontType fontType,
+                                                    int fontSize, int stringYOffset, String propertyName,
+                                                    PropertyGuiElementType elementType, List<Field> fields) throws IllegalAccessException {
         Object[] values = new Object[fields.size()];
 
         for (int i = 0; i < fields.size(); i++) {
@@ -100,8 +99,8 @@ public final class PropertiesBuilder {
             }
         }
 
-        return ComponentBuilder.build(elementType, width, height, propertyName, propertyOffsetX, fontType, fontSize,
-                stringYOffset, fields, values, object, (o, integer) -> {
+        return ComponentBuilder.build(elementType, width, height, propertyName, propertyOffsetX, fontType, fontSize, stringYOffset, fields,
+                values, object, (o, integer) -> {
                     try {
                         fields.get(integer).set(object, o);
                     } catch (IllegalAccessException e) {

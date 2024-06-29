@@ -18,7 +18,8 @@ import net.bfsr.event.module.weapon.beam.BeamDamageWreckEvent;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
+public class WeaponSlotBeamRender extends WeaponSlotRender {
+    private final WeaponSlotBeam weaponSlotBeam;
     private final SpawnAccumulator damageSpawnAccumulator = new SpawnAccumulator();
     private final BeamParticles beamParticles;
     @Getter
@@ -27,6 +28,7 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
 
     WeaponSlotBeamRender(WeaponSlotBeam object) {
         super(object);
+        this.weaponSlotBeam = object;
         this.effectsColor.set(object.getGunData().getColor());
         this.effectsColor.w = 0.0f;
         this.beamParticles = new BeamParticles(object, effectsColor);
@@ -36,7 +38,7 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
     @Override
     public void postWorldUpdate() {
         super.postWorldUpdate();
-        effectsColor.w = object.getBeamPower();
+        effectsColor.w = weaponSlotBeam.getBeamPower();
         particlesUpdateRunnable.run();
     }
 
@@ -44,12 +46,12 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
     public void onShot() {
         damageSpawnAccumulator.resetTime();
         Vector2f position = object.getPosition();
-        playSounds(object.getGunData(), object.getShip().getWorld().getRand(), position.x, position.y);
+        playSounds(weaponSlotBeam.getGunData(), weaponSlotBeam.getShip().getWorld().getRand(), position.x, position.y);
         beamParticles.onShot();
         particlesUpdateRunnable = () -> {
             beamParticles.update();
 
-            if (object.getBeamPower() <= 0.0f) {
+            if (weaponSlotBeam.getBeamPower() <= 0.0f) {
                 particlesUpdateRunnable = RunnableUtils.EMPTY_RUNNABLE;
                 beamParticles.clear();
             }
@@ -99,7 +101,7 @@ public class WeaponSlotBeamRender extends WeaponSlotRender<WeaponSlotBeam> {
 
     @Override
     public void clear() {
-        object.getWeaponSlotEventBus().unregister(this);
+        weaponSlotBeam.getWeaponSlotEventBus().unregister(this);
         beamParticles.clear();
     }
 }

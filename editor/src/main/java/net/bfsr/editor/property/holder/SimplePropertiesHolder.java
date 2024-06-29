@@ -8,7 +8,7 @@ import net.bfsr.editor.property.event.ChangeNameEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class SimplePropertiesHolder extends PropertiesHolderAdapter {
+public class SimplePropertiesHolder extends PropertiesHolderAdapter {
     @Property(elementType = PropertyGuiElementType.INPUT_BOX)
     @Getter
     private String name;
@@ -16,7 +16,7 @@ public abstract class SimplePropertiesHolder extends PropertiesHolderAdapter {
     private final List<ChangeNameEventListener> listeners = new ArrayList<>();
 
     @Override
-    public void registerChangeNameEventListener(ChangeNameEventListener listener) {
+    public void addChangeNameEventListener(ChangeNameEventListener listener) {
         listeners.add(listener);
     }
 

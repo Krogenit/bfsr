@@ -8,5 +8,5 @@ import net.bfsr.entity.RigidBody;
 @Getter
 @RequiredArgsConstructor
 public class RigidBodyPostPhysicsUpdateEvent extends Event {
-    private final RigidBody<?> rigidBody;
+    private final RigidBody rigidBody;
 }

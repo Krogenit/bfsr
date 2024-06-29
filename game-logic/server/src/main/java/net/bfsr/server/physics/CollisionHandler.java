@@ -45,7 +45,7 @@ public class CollisionHandler extends CommonCollisionHandler {
     }
 
     @Override
-    public void bulletRigidBody(Bullet bullet, RigidBody<?> rigidBody, BodyFixture bulletFixture, BodyFixture rigidBodyFixture,
+    public void bulletRigidBody(Bullet bullet, RigidBody rigidBody, BodyFixture bulletFixture, BodyFixture rigidBodyFixture,
                                 float contactX, float contactY, float normalX, float normalY,
                                 ContactCollisionData<Body> collision) {
         super.bulletRigidBody(bullet, rigidBody, bulletFixture, rigidBodyFixture, contactX, contactY, normalX, normalY,
@@ -220,7 +220,7 @@ public class CollisionHandler extends CommonCollisionHandler {
         damageRigidBody(wreck, amount);
     }
 
-    private void damageRigidBody(RigidBody<?> rigidBody, float amount) {
+    private void damageRigidBody(RigidBody rigidBody, float amount) {
         float health = rigidBody.getHealth();
         rigidBody.setHealth(health - amount);
         if (health <= 0) {
@@ -228,7 +228,7 @@ public class CollisionHandler extends CommonCollisionHandler {
         }
     }
 
-    private void createDamage(DamageableRigidBody<?> rigidBody, float contactX, float contactY) {
+    private void createDamage(DamageableRigidBody rigidBody, float contactX, float contactY) {
         Transform transform = rigidBody.getBody().getTransform();
         float x = (float) transform.getTranslationX();
         float y = (float) transform.getTranslationY();

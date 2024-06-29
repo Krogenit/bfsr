@@ -83,7 +83,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     }
 
     @Override
-    public void postPhysicsUpdate(RigidBody<?> rigidBody) {
+    public void postPhysicsUpdate(RigidBody rigidBody) {
         updatePos(rigidBody);
 
         if (beamPower > 0) {
@@ -126,7 +126,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
         collisionPoint.x = (float) point.x;
         collisionPoint.y = (float) point.y;
         currentBeamRange = (float) raycast.getDistance();
-        world.getCollisionMatrix().rayCast(this, (RigidBody<?>) result.getBody().getUserData(), result.getFixture(),
+        world.getCollisionMatrix().rayCast(this, (RigidBody) result.getBody().getUserData(), result.getFixture(),
                 collisionPoint.x, collisionPoint.y, (float) normal.x, (float) normal.y);
     }
 

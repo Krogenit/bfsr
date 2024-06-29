@@ -14,7 +14,7 @@ import java.util.List;
 @Setter
 @Getter
 public class EngineProperties extends PropertiesHolderAdapter {
-    @Property(elementType = PropertyGuiElementType.MINIMIZABLE_LIST, arrayElementName = "polygon")
+    @Property(elementType = PropertyGuiElementType.SIMPLE_LIST, arrayElementName = "polygon")
     private List<PolygonPropertiesHolder> polygons;
     @Property(elementType = PropertyGuiElementType.INPUT_BOX)
     private Vector2fPropertiesHolder effectPosition;

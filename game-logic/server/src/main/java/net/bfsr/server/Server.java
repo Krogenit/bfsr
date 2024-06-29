@@ -3,11 +3,13 @@ package net.bfsr.server;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.loop.AbstractGameLoop;
+import net.bfsr.engine.profiler.Profiler;
 
 @Log4j2
 @AllArgsConstructor
 public abstract class Server extends AbstractGameLoop {
     protected final ServerGameLogic gameLogic;
+    private final Profiler profiler = new Profiler();
 
     @Override
     public void run() {
@@ -23,9 +25,9 @@ public abstract class Server extends AbstractGameLoop {
 
     @Override
     public void update(double time) {
-        gameLogic.getProfiler().startSection("update");
+        profiler.start("update");
         gameLogic.update(time);
-        gameLogic.getProfiler().endSection("update");
+        profiler.end();
     }
 
     @Override

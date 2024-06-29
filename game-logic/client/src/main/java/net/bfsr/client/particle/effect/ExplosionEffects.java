@@ -9,7 +9,7 @@ public final class ExplosionEffects {
     private static final ParticleEffect shipDestroySmall = ParticleEffectsRegistry.INSTANCE.get("explosion/ship_small");
     private static final ParticleEffect smallExplosion = ParticleEffectsRegistry.INSTANCE.get("explosion/small");
 
-    public static void spawnDestroyShipSmall(RigidBody<?> ship) {
+    public static void spawnDestroyShipSmall(RigidBody ship) {
         Vector2f scale = ship.getSize();
         Vector2f pos = ship.getPosition();
         Vector2f velocity = ship.getVelocity();

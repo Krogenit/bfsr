@@ -20,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 public class PacketSyncDamage extends PacketScheduled {
-    private DamageableRigidBody<?> damageable;
+    private DamageableRigidBody damageable;
     private int x, y, maxX, maxY;
     private Polygon polygon;
     private byte[] bytes;
@@ -30,7 +30,7 @@ public class PacketSyncDamage extends PacketScheduled {
     private int width, height;
     private List<BodyFixture> fixtures;
 
-    public PacketSyncDamage(DamageableRigidBody<?> damageable) {
+    public PacketSyncDamage(DamageableRigidBody damageable) {
         super(damageable.getWorld().getTimestamp());
         this.damageable = damageable;
         DamageMask damageMask = damageable.getMask();

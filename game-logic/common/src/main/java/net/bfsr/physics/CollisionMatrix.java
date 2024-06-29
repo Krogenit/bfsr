@@ -45,7 +45,7 @@ public class CollisionMatrix {
                 (CanCollideFunction<Bullet, Ship>) (bullet, ship) -> bullet.getLastCollidedRigidBody() != ship);
 
         register(CollisionMatrixType.BULLET, CollisionMatrixType.RIGID_BODY,
-                (CollisionListener<Bullet, RigidBody<?>>) collisionHandler::bulletRigidBody);
+                (CollisionListener<Bullet, RigidBody>) collisionHandler::bulletRigidBody);
         register(CollisionMatrixType.BULLET, CollisionMatrixType.SHIP,
                 (CollisionListener<Bullet, Ship>) collisionHandler::bulletShip);
         register(CollisionMatrixType.BULLET, CollisionMatrixType.WRECK,
@@ -85,37 +85,37 @@ public class CollisionMatrix {
         rayCastMatrix[rayCastType.ordinal()][collisionMatrixType.ordinal()] = rayCastListener;
     }
 
-    void collision(RigidBody<?> rigidBody1, RigidBody<?> rigidBody2, BodyFixture fixture1, BodyFixture fixture2,
+    void collision(RigidBody rigidBody1, RigidBody rigidBody2, BodyFixture fixture1, BodyFixture fixture2,
                    float contactX, float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
         matrix[rigidBody1.getCollisionMatrixType()][rigidBody2.getCollisionMatrixType()].handle(rigidBody1, rigidBody2,
                 fixture1, fixture2, contactX, contactY, normalX, normalY, collision);
     }
 
-    public void rayCast(RayCastSource rayCastSource, RigidBody<?> rigidBody, BodyFixture fixture, float contactX, float contactY,
+    public void rayCast(RayCastSource rayCastSource, RigidBody rigidBody, BodyFixture fixture, float contactX, float contactY,
                         float normalX, float normalY) {
         rayCastMatrix[rayCastSource.getRayCastType()][rigidBody.getCollisionMatrixType()].handle(rayCastSource, rigidBody,
                 fixture, contactX, contactY, normalX, normalY);
     }
 
-    public boolean canCollideWith(RigidBody<?> rigidBody1, RigidBody<?> rigidBody2) {
+    public boolean canCollideWith(RigidBody rigidBody1, RigidBody rigidBody2) {
         return canCollideFunctions[rigidBody1.getCollisionMatrixType()][rigidBody2.getCollisionMatrixType()].apply(rigidBody1,
                 rigidBody2);
     }
 
     @FunctionalInterface
-    private interface CollisionListener<BODY_1 extends RigidBody<?>, BODY_2 extends RigidBody<?>> {
+    private interface CollisionListener<BODY_1 extends RigidBody, BODY_2 extends RigidBody> {
         void handle(BODY_1 rigidBody1, BODY_2 rigidBody2, BodyFixture fixture1, BodyFixture fixture2,
                     float contactX, float contactY, float normalX, float normalY, ContactCollisionData<Body> collision);
     }
 
     @FunctionalInterface
-    private interface RayCastListener<RAY_CAST_SOURCE extends RayCastSource, RIGID_BODY extends RigidBody<?>> {
+    private interface RayCastListener<RAY_CAST_SOURCE extends RayCastSource, RIGID_BODY extends RigidBody> {
         void handle(RAY_CAST_SOURCE rayCastSource, RIGID_BODY rigidBody, BodyFixture fixture, float contactX, float contactY,
                     float normalX, float normalY);
     }
 
     @FunctionalInterface
-    private interface CanCollideFunction<BODY_1 extends RigidBody<?>, BODY_2 extends RigidBody<?>> {
+    private interface CanCollideFunction<BODY_1 extends RigidBody, BODY_2 extends RigidBody> {
         boolean apply(BODY_1 rigidBody1, BODY_2 rigidBody2);
     }
 }

@@ -14,11 +14,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CommonEntityManager {
-    private final TIntObjectMap<RigidBody<?>> entitiesById = new TIntObjectHashMap<>();
+    private final TIntObjectMap<RigidBody> entitiesById = new TIntObjectHashMap<>();
     @SuppressWarnings("rawtypes")
-    private final TMap<Class<? extends RigidBody>, List<RigidBody<?>>> entitiesByClass = new THashMap<>();
+    private final TMap<Class<? extends RigidBody>, List<RigidBody>> entitiesByClass = new THashMap<>();
     @Getter
-    protected final List<RigidBody<?>> entities = new ArrayList<>();
+    protected final List<RigidBody> entities = new ArrayList<>();
     @Getter
     private final EntityDataHistoryManager dataHistoryManager = new EntityDataHistoryManager();
 
@@ -32,7 +32,7 @@ public class CommonEntityManager {
 
     public void update() {
         for (int i = 0; i < entities.size(); i++) {
-            RigidBody<?> rigidBody = entities.get(i);
+            RigidBody rigidBody = entities.get(i);
             if (rigidBody.isDead()) {
                 rigidBody.world.remove(i--, rigidBody);
             } else {
@@ -47,7 +47,7 @@ public class CommonEntityManager {
         }
     }
 
-    public void add(RigidBody<?> entity) {
+    public void add(RigidBody entity) {
         if (entitiesById.containsKey(entity.getId())) {
             throw new RuntimeException("Entity with id " + entity.getId() + " already registered!");
         }
@@ -57,7 +57,7 @@ public class CommonEntityManager {
         entitiesByClass.get(entity.getClass()).add(entity);
     }
 
-    public void remove(int index, RigidBody<?> entity) {
+    public void remove(int index, RigidBody entity) {
         entities.remove(index);
         entitiesById.remove(entity.getId());
         entitiesByClass.get(entity.getClass()).remove(entity);
@@ -78,11 +78,11 @@ public class CommonEntityManager {
         dataHistoryManager.clear();
     }
 
-    public List<? extends RigidBody<?>> get(Class<?> entityClass) {
+    public List<? extends RigidBody> get(Class<?> entityClass) {
         return entitiesByClass.get(entityClass);
     }
 
-    public RigidBody<?> get(int id) {
+    public RigidBody get(int id) {
         return entitiesById.get(id);
     }
 }

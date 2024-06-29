@@ -1,5 +1,6 @@
 package net.bfsr.editor.gui.property;
 
+import net.bfsr.client.Core;
 import net.bfsr.editor.gui.builder.ComponentBuilder;
 import net.bfsr.editor.property.PropertiesBuilder;
 import net.bfsr.editor.property.holder.PropertiesHolder;
@@ -16,8 +17,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-import static net.bfsr.editor.gui.EditorTheme.setupContextMenuButtonColors;
-import static net.bfsr.editor.gui.component.MinimizableGuiObject.MINIMIZABLE_STRING_X_OFFSET;
+import static net.bfsr.editor.gui.EditorTheme.setupContextMenuButton;
 
 public class SimplePropertyList<PRIMITIVE_TYPE> extends PropertyList<PropertyComponent, PRIMITIVE_TYPE> {
     private final PropertyGuiElementType propertyGuiElementType;
@@ -27,59 +27,60 @@ public class SimplePropertyList<PRIMITIVE_TYPE> extends PropertyList<PropertyCom
     public SimplePropertyList(int width, int height, String name, FontType fontType, int fontSize, int propertyOffsetX,
                               int stringOffsetY, Supplier<PRIMITIVE_TYPE> supplier, Object object, List<Field> fields,
                               Object[] values, PropertyGuiElementType propertyGuiElementType, String propertyName,
-                              BiConsumer<Object, Integer> valueSetterConsumer) {
+                              BiConsumer<Object, Integer> valueConsumer) {
         super(width, height, name, fontType, fontSize, propertyOffsetX, stringOffsetY, supplier, object, fields, values,
-                valueSetterConsumer);
+                valueConsumer);
         this.propertyGuiElementType = propertyGuiElementType;
         this.propertyName = propertyName;
     }
 
     @Override
     protected PRIMITIVE_TYPE createObject() {
-        return supplier.get();
+        PRIMITIVE_TYPE primitiveType = supplier.get();
+        if (primitiveType instanceof PropertiesHolder propertiesHolder) {
+            propertiesHolder.setDefaultValues();
+        }
+
+        return primitiveType;
     }
 
     @Override
-    public void add(PRIMITIVE_TYPE arrayElement) {
+    public void addProperty(PRIMITIVE_TYPE arrayElement) {
         try {
             if (arrayElement instanceof PropertiesHolder) {
                 PropertiesBuilder.createGuiProperties(arrayElement, baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight, fontType,
-                        fontSize, MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, this::addProperty, propertyName);
+                        fontSize, MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, this::addPropertyComponent, propertyName);
             } else {
-                addProperty(ComponentBuilder.build(propertyGuiElementType, baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight,
-                        propertyName, fontType.getStringCache().getStringWidth(propertyName, fontSize), fontType, fontSize,
-                        stringOffsetY, fields, new Object[]{arrayElement}, arrayElement,
-                        (o, integer) -> ((List) values[0]).set(integer, o)));
+                addPropertyComponent(ComponentBuilder.build(propertyGuiElementType, baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight,
+                        propertyName, fontType.getStringCache().getStringWidth(propertyName, fontSize), fontType, fontSize, stringOffsetY,
+                        fields, new Object[]{arrayElement}, arrayElement, (o, integer) -> ((List) values[0]).set(integer, o)));
             }
-            updatePropertiesOffset();
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    protected void remove(PropertyComponent propertyComponent) {
-        super.remove(propertyComponent);
+    protected void removeProperty(PropertyComponent propertyComponent) {
+        super.removeProperty(propertyComponent);
         objects.remove((PRIMITIVE_TYPE) propertyComponent.object);
     }
 
-    private void addProperty(PropertyComponent propertyComponent) {
-        propertyComponent.setOnRightClickSupplier(() -> {
-            if (!propertyComponent.isMouseHover()) return false;
+    private void addPropertyComponent(PropertyComponent propertyComponent) {
+        propertyComponent.setRightClickRunnable(() -> {
             String addString = "Remove";
             Vector2f mousePos = Engine.mouse.getPosition();
-            Button button = new Button(null, (int) mousePos.x, (int) mousePos.y,
+            Button button = new Button((int) mousePos.x, (int) mousePos.y,
                     fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight,
                     addString, fontType, fontSize, 4, stringOffsetY, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
-            setupContextMenuButtonColors(button);
-            button.setOnMouseClickRunnable(() -> remove(propertyComponent));
-            gui.openContextMenu(button);
-            return true;
+            setupContextMenuButton(button);
+            button.setLeftReleaseRunnable(() -> removeProperty(propertyComponent));
+            Core.get().getGuiManager().openContextMenu(button);
         });
 
-        addConcealableObject(propertyComponent);
         properties.add(propertyComponent);
         objects.add((PRIMITIVE_TYPE) propertyComponent.object);
+        add(propertyComponent);
     }
 
     @Override

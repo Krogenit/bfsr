@@ -1,39 +1,32 @@
 package net.bfsr.client.gui.hud;
 
 import net.bfsr.client.Core;
-import net.bfsr.client.gui.GuiManager;
-import net.bfsr.client.gui.ingame.*;
-import net.bfsr.client.settings.ClientSettings;
+import net.bfsr.client.gui.ingame.Chat;
+import net.bfsr.client.gui.ingame.DebugInfoElement;
+import net.bfsr.client.gui.ingame.GuiInGameMenu;
+import net.bfsr.client.gui.ingame.MiniMap;
+import net.bfsr.client.gui.ingame.OtherShipOverlay;
+import net.bfsr.client.gui.ingame.ShipOverlay;
+import net.bfsr.engine.gui.GuiManager;
+import net.bfsr.engine.gui.hud.HUDAdapter;
 import net.bfsr.entity.ship.Ship;
 
 import static net.bfsr.engine.input.Keys.KEY_ESCAPE;
 
 public class HUD extends HUDAdapter {
-    private final DebugInfoElement debugInfoElement = new DebugInfoElement();
+    private final DebugInfoElement debugInfoElement = new DebugInfoElement(this);
     private final MiniMap miniMap = new MiniMap();
     private final Chat chat = new Chat();
-    private final ShipHUD shipHUD = new ShipHUD();
+    private final ShipOverlay shipOverlay = new ShipOverlay(this);
+    private final OtherShipOverlay otherShipOverlay = new OtherShipOverlay();
     private final GuiManager guiManager = Core.get().getGuiManager();
 
-    @Override
-    protected void initElements() {
-        shipHUD.init(this);
-        miniMap.init(this);
-        chat.init(this);
-        debugInfoElement.init(6, miniMap.getHeight() + 6);
-    }
-
-    @Override
-    public void addChatMessage(String message) {
-        chat.addChatMessage(message);
-    }
-
-    @Override
-    public boolean onMouseLeftClick() {
-        if (super.onMouseLeftClick()) {
-            return true;
-        }
-        return chat.onMouseLeftClick();
+    public HUD() {
+        shipOverlay.atBottomRight(-shipOverlay.getWidth(), -shipOverlay.getHeight());
+        otherShipOverlay.atTopRight(-otherShipOverlay.getWidth(), 0);
+        add(miniMap.atTopLeft(0, 0));
+        add(chat.atBottomLeft(0, -chat.getHeight()));
+        add(debugInfoElement.atTopLeft(6, miniMap.getHeight() + 6));
     }
 
     @Override
@@ -43,71 +36,51 @@ public class HUD extends HUDAdapter {
 
     @Override
     public boolean input(int key) {
-        boolean input = super.input(key);
+        if (super.input(key)) {
+            return true;
+        }
 
-        if (key == KEY_ESCAPE && !isActive() && guiManager.noGui()) {
+        if (key == KEY_ESCAPE) {
             guiManager.openGui(new GuiInGameMenu());
+            return true;
         }
 
-        return input;
+        return false;
     }
 
-    @Override
-    public boolean onMouseLeftRelease() {
-        boolean leftRelease = super.onMouseLeftRelease();
-
-        if (chat.onMouseLeftRelease()) {
-            leftRelease = true;
-        }
-
-        return leftRelease;
+    public void addChatMessage(String message) {
+        chat.addChatMessage(message);
     }
 
-    @Override
-    public void update() {
-        super.update();
-        shipHUD.update();
-        if (ClientSettings.IS_DEBUG.getBoolean()) debugInfoElement.update();
-    }
-
-    @Override
-    public void render() {
-        super.render();
-        guiRenderer.render();
-        miniMap.render(Core.get().getWorld());
-        shipHUD.render();
-
-        if (ClientSettings.IS_DEBUG.getBoolean()) debugInfoElement.render();
-    }
-
-    @Override
-    public void onScreenResize(int width, int height) {
-        super.onScreenResize(width, height);
-        shipHUD.resize();
-    }
-
-    @Override
     public void setPing(float ping) {
         debugInfoElement.setPing(ping);
     }
 
-    @Override
     public void selectShip(Ship ship) {
-        shipHUD.selectShip(ship);
+        shipOverlay.selectShip(ship);
+
+        if (ship != null) {
+            addIfAbsent(shipOverlay);
+        } else {
+            remove(shipOverlay);
+        }
     }
 
-    @Override
     public void selectShipSecondary(Ship ship) {
-        shipHUD.selectShipSecondary(ship);
+        otherShipOverlay.setShip(ship);
+
+        if (ship != null) {
+            addIfAbsent(otherShipOverlay);
+        } else {
+            remove(otherShipOverlay);
+        }
     }
 
-    @Override
     public Ship getSelectedShip() {
-        return shipHUD.getOtherShip();
+        return otherShipOverlay.getShip();
     }
 
-    @Override
     public void onShipControlStarted() {
-        shipHUD.onShipControlStarted();
+        shipOverlay.onShipControlStarted();
     }
 }

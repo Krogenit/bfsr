@@ -1,23 +1,25 @@
 package net.bfsr.editor;
 
 import net.bfsr.client.Core;
-import net.bfsr.client.event.PlayerJoinGameEvent;
-import net.bfsr.editor.hud.GuiInGameEditor;
-import net.bfsr.engine.event.EventHandler;
-import net.bfsr.engine.event.EventListener;
+import net.bfsr.client.gui.hud.HUD;
+import net.bfsr.editor.hud.EditorHUD;
+import net.bfsr.engine.profiler.Profiler;
 import net.engio.mbassy.listener.Listener;
 
 @Listener
 public class EditorGameLogic extends Core {
+    public EditorGameLogic(Profiler profiler) {
+        super(profiler);
+    }
+
     @Override
     public void init() {
         super.init();
-        eventBus.register(this);
         startSinglePlayer();
     }
 
-    @EventHandler
-    public EventListener<PlayerJoinGameEvent> playerJoinGameEvent() {
-        return event -> getGuiManager().showHUD(new GuiInGameEditor());
+    @Override
+    public HUD createHUD() {
+        return new EditorHUD();
     }
 }

@@ -1,11 +1,13 @@
 package net.bfsr.editor.gui.property;
 
+import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.Core;
 import net.bfsr.editor.gui.GuiEditor;
 import net.bfsr.editor.property.holder.Vector2fPropertiesHolder;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.InputBox;
+import net.bfsr.engine.gui.renderer.RectangleOutlinedRenderer;
 import net.bfsr.engine.renderer.font.FontType;
 
 import java.lang.reflect.Field;
@@ -13,27 +15,30 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-import static net.bfsr.editor.gui.EditorTheme.*;
+import static net.bfsr.editor.gui.EditorTheme.TEXT_COLOR_GRAY;
+import static net.bfsr.editor.gui.EditorTheme.setupButton;
+import static net.bfsr.editor.gui.EditorTheme.setupInputBox;
 
+@Log4j2
 public class PolygonProperty extends SimplePropertyList<Vector2fPropertiesHolder> {
-    private final InputBox scaleInputBox;
-    private final Button removeButton, polygonCreationModeButton, scaleButton;
-
-    public PolygonProperty(int width, int height, String name, FontType fontType, int fontSize,
-                           int propertyOffsetX, int stringOffsetY, Supplier<Vector2fPropertiesHolder> supplier, Object object,
-                           List<Field> fields, Object[] values, PropertyGuiElementType propertyGuiElementType,
-                           String propertyName, BiConsumer<Object, Integer> valueSetterConsumer) {
+    public PolygonProperty(int width, int height, String name, FontType fontType, int fontSize, int propertyOffsetX, int stringOffsetY,
+                           Supplier<Vector2fPropertiesHolder> supplier, Object object, List<Field> fields, Object[] values,
+                           PropertyGuiElementType propertyGuiElementType, String propertyName, BiConsumer<Object, Integer> valueConsumer) {
         super(width, height, name, fontType, fontSize, propertyOffsetX, stringOffsetY, supplier, object, fields, values,
-                propertyGuiElementType, propertyName, valueSetterConsumer);
-        removeButton = new Button(null, 0, 0, 20, 20, "", fontType, fontSize, stringOffsetY, () -> {
+                propertyGuiElementType, propertyName, valueConsumer);
+
+        int x1 = -addButton.getWidth() - 20;
+        Button removeButton = new Button(0, 0, 20, 20, "", fontType, fontSize, stringOffsetY, () -> {
             if (properties.size() > 0) {
-                remove(properties.get(properties.size() - 1));
-                updatePositions();
+                removeProperty(properties.get(properties.size() - 1));
             }
-        }) {
+        });
+        add(setupButton(removeButton).atBottomRight(x1, -baseHeight));
+        removeButton.setRenderer(new RectangleOutlinedRenderer(removeButton) {
             @Override
-            public void render() {
-                super.render();
+            public void render(int lastX, int lastY, int x, int y, int width, int height) {
+                super.render(lastX, lastY, x, y, width, height);
+
                 int centerX = x + width / 2;
                 int centerY = y + height / 2;
                 int offsetX = 1;
@@ -42,18 +47,26 @@ public class PolygonProperty extends SimplePropertyList<Vector2fPropertiesHolder
                         centerX + offsetY, centerY + offsetX, centerX + offsetY, centerY - offsetX,
                         TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, 1.0f, 0);
             }
-        };
-        setupButtonColors(removeButton);
-        polygonCreationModeButton = new Button(null, 0, 0, 100, 20, "Edit polygon", fontType, fontSize, stringOffsetY, () -> {
+        });
+
+        Button polygonCreationModeButton = new Button(0, 0, 100, 20, "Edit polygon", fontType, fontSize, stringOffsetY, () -> {
             Gui gui = Core.get().getGuiManager().getGui();
             if (gui instanceof GuiEditor) {
                 ((GuiEditor<?, ?>) gui).switchPolygonEditMode(this);
             }
         });
-        setupButtonColors(polygonCreationModeButton);
-        scaleInputBox = new InputBox(50, height, "", fontType, fontSize, 3, stringOffsetY);
-        setupInputBoxColors(scaleInputBox);
-        scaleButton = new Button(null, 0, 0, 60, 20, "Scale", fontType, fontSize, stringOffsetY, () -> {
+        x1 -= polygonCreationModeButton.getWidth();
+        add(setupButton(polygonCreationModeButton).atBottomRight(x1, -baseHeight));
+
+        Button scaleButton = new Button(60, 20, "Scale", fontType, fontSize, stringOffsetY);
+        x1 -= scaleButton.getWidth();
+        add(setupButton(scaleButton).atBottomRight(x1, -baseHeight));
+
+        InputBox scaleInputBox = new InputBox(50, height, "", fontType, fontSize, 3, stringOffsetY);
+        x1 -= scaleInputBox.getWidth();
+        add(setupInputBox(scaleInputBox).atBottomRight(x1, -baseHeight));
+
+        scaleButton.setLeftReleaseRunnable(() -> {
             String string = scaleInputBox.getString();
 
             try {
@@ -68,39 +81,10 @@ public class PolygonProperty extends SimplePropertyList<Vector2fPropertiesHolder
                     propertyComponent.inputBoxes.get(0).setString(holder.getX() + "");
                     propertyComponent.inputBoxes.get(1).setString(holder.getY() + "");
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (NumberFormatException e) {
+                log.error("Failed to parse float for input string {}", string);
             }
         });
-        setupButtonColors(scaleButton);
-        addConcealableObject(removeButton);
-        addConcealableObject(polygonCreationModeButton);
-        addConcealableObject(scaleInputBox);
-        addConcealableObject(scaleButton);
-    }
-
-    @Override
-    public PropertyComponent atTopRightCorner(int x, int y) {
-        super.atTopRightCorner(x, y);
-
-        int x1 = x + width - addButton.getWidth() - removeButton.getWidth();
-        removeButton.atTopRightCorner(x1, y + height - baseHeight);
-        x1 -= polygonCreationModeButton.getWidth();
-        polygonCreationModeButton.atTopRightCorner(x1, y + height - baseHeight);
-        x1 -= scaleButton.getWidth();
-        scaleButton.atTopRightCorner(x1, y + height - baseHeight);
-        x1 -= scaleInputBox.getWidth();
-        scaleInputBox.atTopRightCorner(x1, y + height - baseHeight);
-        return this;
-    }
-
-    @Override
-    public void updatePositionAndSize(int width, int height) {
-        super.updatePositionAndSize(width, height);
-        removeButton.updatePositionAndSize(width, height);
-        polygonCreationModeButton.updatePositionAndSize(width, height);
-        scaleButton.updatePositionAndSize(width, height);
-        scaleInputBox.updatePositionAndSize(width, height);
     }
 
     public List<Vector2fPropertiesHolder> getVertices() {

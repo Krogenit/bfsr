@@ -18,8 +18,8 @@ public class PacketSyncDamageHandler extends PacketHandler<PacketSyncDamage, Net
     @Override
     public void handle(PacketSyncDamage packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
-        RigidBody<?> rigidBody = core.getWorld().getEntityById(packet.getId());
-        if (rigidBody instanceof DamageableRigidBody<?> damageableRigidBody) {
+        RigidBody rigidBody = core.getWorld().getEntityById(packet.getId());
+        if (rigidBody instanceof DamageableRigidBody damageableRigidBody) {
             damageableRigidBody.setPolygon(packet.getPolygon());
             damageableRigidBody.setFixtures(packet.getFixtures());
             damageHandler.updateDamage(damageableRigidBody, packet.getX(), packet.getY(), packet.getWidth(), packet.getHeight(),

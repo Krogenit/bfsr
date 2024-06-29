@@ -15,12 +15,13 @@ import net.bfsr.editor.object.ObjectProperties;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
-import net.bfsr.engine.gui.object.AbstractGuiObject;
-import net.bfsr.engine.gui.object.GuiObjectWithSubObjects;
+import net.bfsr.engine.gui.component.GuiObject;
+import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.util.PathHelper;
 import net.bfsr.engine.util.RunnableUtils;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 
 import java.io.File;
@@ -35,13 +36,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import static net.bfsr.editor.gui.EditorTheme.setupContextMenuButtonColors;
+import static net.bfsr.editor.gui.EditorTheme.BACKGROUND_COLOR;
+import static net.bfsr.editor.gui.EditorTheme.setupContextMenuButton;
 import static net.bfsr.engine.input.Keys.KEY_ESCAPE;
 
 @Log4j2
 public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE extends ObjectProperties> extends Gui {
-    protected final Core core = Core.get();
-
     private final int propertiesContainerWidth = 450;
     protected final int elementHeight = 20;
 
@@ -49,17 +49,18 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
 
     protected final FontType fontType = EditorTheme.FONT_TYPE;
     protected final int fontSize = 13;
-    private final int stringXOffset = 4;
-    private final int stringYOffset = 0;
-    private final int contextMenuStringXOffset = 8;
+    private final int stringOffsetX = 4;
+    private final int stringOffsetY = 0;
+    private final int contextMenuStringOffsetX = 8;
 
     private final boolean prevFollowCameraOptionValue;
 
-    protected InspectionEntry<PROPERTIES_TYPE> selectedEntry;
+    protected @Nullable InspectionEntry<PROPERTIES_TYPE> selectedEntry;
     private final List<InspectionEntry<PROPERTIES_TYPE>> entries = new ArrayList<>();
     protected final InspectionPanel<PROPERTIES_TYPE> inspectionPanel;
     protected final PropertiesPanel propertiesPanel = new PropertiesPanel(
-            this, propertiesContainerWidth, fontType, fontSize, stringXOffset, stringYOffset, contextMenuStringXOffset
+            propertiesContainerWidth, Engine.renderer.getScreenHeight() - elementHeight, fontType, fontSize, stringOffsetX,
+            stringOffsetY, contextMenuStringOffsetX
     );
 
     private final ConfigToDataConverter<CONFIG_TYPE, ?> configRegistry;
@@ -70,8 +71,8 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
     protected GuiEditor(String inspectionPanelName, ConfigToDataConverter<CONFIG_TYPE, ?> configRegistry,
                         EditorObjectConverter<CONFIG_TYPE, PROPERTIES_TYPE> converter, Class<CONFIG_TYPE> configClass,
                         Class<PROPERTIES_TYPE> propertiesClass) {
-        this.inspectionPanel = new InspectionPanel<>(this, inspectionPanelName, leftPanelWidth, fontType, fontSize,
-                stringYOffset);
+        this.inspectionPanel = new InspectionPanel<>(this, inspectionPanelName, leftPanelWidth, Engine.renderer.getScreenHeight(), fontType,
+                fontSize, stringOffsetY);
         this.configRegistry = configRegistry;
         this.converter = converter;
         this.configClass = configClass;
@@ -80,106 +81,50 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
         ClientSettings.CAMERA_FOLLOW_PLAYER.setValue(false);
         Vector2f position = renderer.camera.getPosition();
         renderer.camera.move(-position.x, -position.y);
-    }
 
-    @Override
-    protected void initElements() {
-        initInspectionPanel(0, 0);
-        propertiesPanel.initElements();
+        addInspectionPanel();
+
+        propertiesPanel.setAllColors(BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w)
+                .setHeightFunction((width, height) -> height)
+                .atTopRight(-propertiesPanel.getWidth(), 0);
+
         load();
     }
 
-    private void initInspectionPanel(int x, int y) {
-        inspectionPanel.setRightClickSupplier(() -> {
-            if (!inspectionPanel.isMouseHover()) return false;
-            Vector2f mousePos = Engine.mouse.getPosition();
-            int x1 = (int) mousePos.x;
-            int y1 = (int) mousePos.y;
+    private void addInspectionPanel() {
+        add(inspectionPanel.setOnSelectConsumer(this::selectEntry)
+                .setAllColors(BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w)
+                .setHeightFunction((integer, integer2) -> Engine.renderer.getScreenHeight())
+                .setRightClickRunnable(() -> {
+                    Vector2f mousePos = Engine.mouse.getPosition();
+                    int x1 = (int) mousePos.x;
+                    int y1 = (int) mousePos.y;
 
-            String name = "Create Folder";
-            Button createEntryButton =
-                    new Button(null, x1, y1, fontType.getStringCache().getStringWidth(name, fontSize) + contextMenuStringXOffset,
-                            elementHeight, name, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
-                            RunnableUtils.EMPTY_RUNNABLE);
-            createEntryButton.setOnMouseClickRunnable(() -> {
-                InspectionEntry<PROPERTIES_TYPE> entry = inspectionPanel.createEntry();
-                inspectionPanel.addSubObject(entry);
-                inspectionPanel.updatePositions();
-            });
+                    String name = "Create Folder";
+                    Button createEntryButton =
+                            new Button(x1, y1, fontType.getStringCache().getStringWidth(name, fontSize) + contextMenuStringOffsetX,
+                                    elementHeight, name, fontType, fontSize, stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT,
+                                    RunnableUtils.EMPTY_RUNNABLE);
+                    createEntryButton.setLeftReleaseRunnable(() -> inspectionPanel.add(createEntry()));
 
-            y1 += elementHeight;
+                    y1 += elementHeight;
 
-            name = "Create Object";
-            Button createEffectButton =
-                    new Button(null, x1, y1, fontType.getStringCache().getStringWidth(name, fontSize) + contextMenuStringXOffset,
-                            elementHeight, name, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
-                            RunnableUtils.EMPTY_RUNNABLE);
-            createEffectButton.setOnMouseClickRunnable(() -> {
-                InspectionEntry<PROPERTIES_TYPE> entry = createEntry();
-                inspectionPanel.addSubObject(entry);
-                inspectionPanel.updatePositions();
-            });
+                    name = "Create Object";
+                    Button createEffectButton =
+                            new Button(x1, y1, fontType.getStringCache().getStringWidth(name, fontSize) + contextMenuStringOffsetX,
+                                    elementHeight, name, fontType, fontSize, stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT,
+                                    RunnableUtils.EMPTY_RUNNABLE);
+                    createEffectButton.setLeftReleaseRunnable(() -> inspectionPanel.add(createObject()));
 
-            openContextMenu(setupContextMenuButtonColors(createEntryButton), setupContextMenuButtonColors(createEffectButton));
-            return true;
-        });
-        inspectionPanel.setEntryRightClickSupplier((inspectionEntry) -> {
-            if (!inspectionEntry.isIntersectsWithMouse()) return false;
-            Vector2f mousePos = Engine.mouse.getPosition();
-            int x1 = (int) mousePos.x;
-            int y1 = (int) mousePos.y;
-            String addString = "Create Entry";
-            Button createEntryButton = new Button(
-                    null, x1, y1, fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringXOffset,
-                    elementHeight, addString, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
-                    () -> {
-                        InspectionEntry<PROPERTIES_TYPE> childEntry = inspectionPanel.createEntry();
-                        inspectionEntry.addSubObject(childEntry);
-                        inspectionEntry.maximize();
-                        inspectionPanel.updatePositions();
-                    }
-            );
+                    Core.get().getGuiManager().openContextMenu(
+                            setupContextMenuButton(createEntryButton), setupContextMenuButton(createEffectButton));
+                }));
 
-            y1 += elementHeight;
-
-            addString = "Create Effect";
-            Button createEffectButton = new Button(
-                    null, x1, y1, fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringXOffset,
-                    elementHeight, addString, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
-                    () -> {
-                        InspectionEntry<PROPERTIES_TYPE> inspectionHolder = createEntry();
-                        inspectionEntry.addSubObject(inspectionHolder);
-                        inspectionEntry.maximize();
-                        inspectionPanel.updatePositions();
-                    }
-            );
-            y1 += elementHeight;
-
-            addString = "Remove";
-            Button removeButton = new Button(
-                    null, x1, y1, fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringXOffset,
-                    elementHeight, addString, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
-                    () -> {
-                        GuiObjectWithSubObjects parent = inspectionEntry.getParent();
-                        parent.removeSubObject(inspectionEntry);
-                        remove(inspectionEntry);
-                        inspectionPanel.updatePositions();
-                    }
-            );
-
-            openContextMenu(setupContextMenuButtonColors(createEntryButton), setupContextMenuButtonColors(createEffectButton),
-                    setupContextMenuButtonColors(removeButton));
-            return true;
-        });
-        inspectionPanel.setOnSelectConsumer(this::selectEntry);
-        inspectionPanel.initElements(x, y);
-        y -= elementHeight;
+        int x = 0;
+        int y = -elementHeight;
         inspectionPanel.addBottomButton(x, y, "Save All", this::saveAll);
         y -= elementHeight;
-        inspectionPanel.addBottomButton(x, y, "Add", () -> {
-            inspectionPanel.addSubObject(createEntry());
-            inspectionPanel.updatePositions();
-        });
+        inspectionPanel.addBottomButton(x, y, "Add", () -> inspectionPanel.add(createObject()));
     }
 
     private void load() {
@@ -200,13 +145,12 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
                     entry.addComponent(properties);
                     entries.add(entry);
                 } else {
-                    inspectionPanel.addSubObject(createEntry(fileName, properties));
+                    inspectionPanel.add(createEntry(fileName, properties));
                 }
             }
         });
 
         inspectionPanel.sortFolders();
-        inspectionPanel.updatePositions();
     }
 
     @Override
@@ -221,38 +165,15 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
     }
 
     @Override
-    public boolean onMouseLeftClick() {
-        boolean result = super.onMouseLeftClick();
-        inspectionPanel.onMouseLeftClick();
-        return result;
-    }
-
-    @Override
-    public boolean onMouseLeftRelease() {
-        boolean leftRelease = inspectionPanel.onMouseLeftRelease();
-
-        if (super.onMouseLeftRelease()) {
-            leftRelease = true;
+    public boolean mouseMove(float x, float y) {
+        boolean mouseMove = false;
+        for (int i = 0; i < guiObjects.size(); i++) {
+            if (guiObjects.get(i).mouseMove(x, y)) {
+                mouseMove = true;
+            }
         }
 
-        return leftRelease;
-    }
-
-    @Override
-    public void update() {
-        super.update();
-        inspectionPanel.update();
-    }
-
-    public void updatePositions() {
-        inspectionPanel.updatePositions();
-        propertiesPanel.updatePropertiesPositions();
-    }
-
-    @Override
-    public void render() {
-        super.render();
-        inspectionPanel.render();
+        return mouseMove;
     }
 
     private InspectionEntry<PROPERTIES_TYPE> buildEntryPath(String editorPath) {
@@ -269,12 +190,12 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
             }
 
             if (inspectionEntry == null) {
-                inspectionEntry = inspectionPanel.createEntry();
+                inspectionEntry = createEntry();
                 inspectionEntry.setName(path);
                 if (parent == null) {
-                    inspectionPanel.addSubObject(inspectionEntry);
+                    inspectionPanel.add(inspectionEntry);
                 } else {
-                    parent.addSubObject(inspectionEntry);
+                    parent.add(inspectionEntry);
                 }
             }
 
@@ -284,27 +205,21 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
         return parent;
     }
 
-    private void addToEntry(InspectionEntry<PROPERTIES_TYPE> parent,
-                            PROPERTIES_TYPE properties, String name) {
-        boolean entryNotFound = true;
-        List<AbstractGuiObject> subObjects = parent.getSubObjects();
-        for (int i = 0; i < subObjects.size(); i++) {
-            InspectionEntry<PROPERTIES_TYPE> inspectionEntry =
-                    (InspectionEntry<PROPERTIES_TYPE>) subObjects.get(i);
+    private void addToEntry(InspectionEntry<PROPERTIES_TYPE> parent, PROPERTIES_TYPE properties, String name) {
+        List<GuiObject> guiObjects = parent.getGuiObjects();
+        for (int i = 0; i < guiObjects.size(); i++) {
+            InspectionEntry<PROPERTIES_TYPE> inspectionEntry = (InspectionEntry<PROPERTIES_TYPE>) guiObjects.get(i);
             if (inspectionEntry.getName().equals(name)) {
-                entryNotFound = false;
                 inspectionEntry.addComponent(properties);
                 entries.add(inspectionEntry);
-                break;
+                return;
             }
         }
 
-        if (entryNotFound) {
-            parent.addSubObject(createEntry(name, properties));
-        }
+        parent.add(createEntry(name, properties));
     }
 
-    private InspectionEntry<PROPERTIES_TYPE> createEntry() {
+    private InspectionEntry<PROPERTIES_TYPE> createObject() {
         PROPERTIES_TYPE properties;
 
         try {
@@ -318,9 +233,61 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
     }
 
     private InspectionEntry<PROPERTIES_TYPE> createEntry(String name, PROPERTIES_TYPE properties) {
-        InspectionEntry<PROPERTIES_TYPE> entry = inspectionPanel.createEntry(name, properties);
+        InspectionEntry<PROPERTIES_TYPE> entry = createEntry(name);
+        entry.addComponent(properties);
         entries.add(entry);
         return entry;
+    }
+
+    private InspectionEntry<PROPERTIES_TYPE> createEntry(String name) {
+        ScrollPane scrollPane = inspectionPanel.getScrollPane();
+        InspectionEntry<PROPERTIES_TYPE> entry = new InspectionEntry<>(inspectionPanel, scrollPane.getWidth() - scrollPane.getScrollWidth(),
+                elementHeight, name, fontType, fontSize, stringOffsetY);
+        entry.setRightClickRunnable(() -> {
+            Vector2f mousePos = Engine.mouse.getPosition();
+            int x1 = (int) mousePos.x;
+            int y1 = (int) mousePos.y;
+            String addString = "Create Entry";
+            Button createEntryButton = new Button(x1, y1,
+                    fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringOffsetX,
+                    elementHeight, addString, fontType, fontSize, stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT,
+                    () -> {
+                        InspectionEntry<PROPERTIES_TYPE> childEntry = createEntry();
+                        entry.add(childEntry);
+                        entry.tryMaximize();
+                    }
+            );
+
+            y1 += elementHeight;
+
+            addString = "Create Object";
+            Button createEffectButton = new Button(x1, y1,
+                    fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringOffsetX,
+                    elementHeight, addString, fontType, fontSize, stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT,
+                    () -> {
+                        InspectionEntry<PROPERTIES_TYPE> inspectionHolder = createEntry();
+                        entry.add(inspectionHolder);
+                        entry.tryMaximize();
+                    }
+            );
+            y1 += elementHeight;
+
+            addString = "Remove";
+            Button removeButton = new Button(x1, y1,
+                    fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringOffsetX,
+                    elementHeight, addString, fontType, fontSize, stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT,
+                    () -> remove(entry)
+            );
+
+            Core.get().getGuiManager().openContextMenu(setupContextMenuButton(createEntryButton),
+                    setupContextMenuButton(createEffectButton),
+                    setupContextMenuButton(removeButton));
+        });
+        return entry;
+    }
+
+    private InspectionEntry<PROPERTIES_TYPE> createEntry() {
+        return createEntry("Entry");
     }
 
     private void saveAll() {
@@ -363,7 +330,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
     }
 
     private void save(InspectionEntry<PROPERTIES_TYPE> entry) {
-        GuiObjectWithSubObjects parent = entry.getParent();
+        GuiObject parent = entry.getParent();
         String editorPath = "";
         while (parent instanceof InspectionEntry<?> inspectionEntry) {
             editorPath = inspectionEntry.getName() + (editorPath.isEmpty() ? editorPath : "/" + editorPath);
@@ -375,24 +342,26 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
         if (properties != null) {
             properties.setName(entry.getName());
             properties.setPath(editorPath);
-            properties.setTreeIndex(entry.getParent().getSubObjects().indexOf(entry));
+            properties.setTreeIndex(entry.getParent().getGuiObjects().indexOf(entry));
             String fileName = editorPath.isEmpty() ? entry.getName() : editorPath + "/" + entry.getName();
 
             CONFIG_TYPE config = converter.from(properties);
             if (configRegistry.get(fileName) == null) {
                 configRegistry.add(editorPath, fileName, config);
             }
-            Path file = configRegistry.getFolder().resolve(fileName + ".json");
-            file.toFile().mkdirs();
-            ConfigLoader.save(file, config, configClass);
+            Path folder = configRegistry.getFolder();
+            Path path = folder.resolve(fileName + ".json");
+            folder.toFile().mkdirs();
+            ConfigLoader.save(path, config, configClass);
+            log.info("Config {} successfully saved", fileName);
         }
     }
 
     private void remove(InspectionEntry<PROPERTIES_TYPE> entry) {
-        propertiesPanel.close();
+        inspectionPanel.removeEntry(entry);
+        remove(propertiesPanel);
         selectedEntry = null;
         entries.remove(entry);
-        entry.getParent().removeSubObject(entry);
         PROPERTIES_TYPE properties = entry.getComponentByType(propertiesClass);
         if (properties != null) {
             configRegistry.remove(properties.getFullPath());
@@ -404,12 +373,15 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
             propertiesPanel.applyProperties();
         }
 
-        propertiesPanel.close();
         selectedEntry = entry;
 
         if (entry == null) {
+            remove(propertiesPanel);
+            onEntryDeselected();
             return;
         }
+
+        addIfAbsent(propertiesPanel);
 
         propertiesPanel.open(() -> save(entry), () -> remove(entry));
         onEntrySelected(entry);
@@ -417,12 +389,9 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
 
     protected abstract void onEntrySelected(InspectionEntry<PROPERTIES_TYPE> entry);
 
-    public void switchPolygonEditMode(PolygonProperty polygonProperty) {}
+    protected void onEntryDeselected() {}
 
-    @Override
-    public boolean isAllowCameraZoom() {
-        return !propertiesPanel.isIntersectsWithMouse() && !inspectionPanel.isIntersectsWithMouse();
-    }
+    public void switchPolygonEditMode(PolygonProperty polygonProperty) {}
 
     @Override
     public void clear() {

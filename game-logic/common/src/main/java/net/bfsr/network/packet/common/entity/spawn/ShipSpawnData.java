@@ -181,7 +181,7 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
 
     public void outfit(Ship ship) {
         ship.setReactor(new Reactor(ReactorRegistry.INSTANCE.get(reactorDataId),
-                ship.getConfigData().getReactorPolygon()));
+                ship.getShipData().getReactorPolygon()));
         Engines engines = new Engines(EngineRegistry.INSTANCE.get(enginesDataId), ship);
         ship.setEngine(engines);
 
@@ -198,7 +198,7 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
         ship.setCrew(new Crew(CrewRegistry.INSTANCE.get(crewDataId)));
         ship.setCargo(new Cargo(CargoRegistry.INSTANCE.get(cargoDataId)));
         if (hasShield) {
-            Shield shield = new Shield(ShieldRegistry.INSTANCE.get(shieldDataId), ship.getConfigData().getShieldPolygon(),
+            Shield shield = new Shield(ShieldRegistry.INSTANCE.get(shieldDataId), ship.getShipData().getShieldPolygon(),
                     ship.getWorld().getGameLogic().getLogic(LogicType.SHIELD_UPDATE.ordinal()));
             ship.setShield(shield);
             if (shieldDead) {

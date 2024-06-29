@@ -4,12 +4,14 @@ import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.Core;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
-import net.bfsr.client.gui.GuiManager;
-import net.bfsr.client.gui.hud.HUDAdapter;
+import net.bfsr.client.event.gui.SelectSecondaryShipEvent;
+import net.bfsr.client.event.gui.SelectShipEvent;
+import net.bfsr.client.event.player.ShipControlStartedEvent;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
+import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.entity.EntityDataHistoryManager;
@@ -20,14 +22,22 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RigidBodyUtils;
-import net.bfsr.network.packet.input.*;
+import net.bfsr.network.packet.input.PacketMouseLeftClick;
+import net.bfsr.network.packet.input.PacketMouseLeftRelease;
+import net.bfsr.network.packet.input.PacketShipMove;
+import net.bfsr.network.packet.input.PacketShipStopMove;
+import net.bfsr.network.packet.input.PacketSyncPlayerMousePosition;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.geometry.AABB;
 import org.joml.Vector2f;
 
 import java.util.List;
 
-import static net.bfsr.engine.input.Keys.*;
+import static net.bfsr.engine.input.Keys.KEY_A;
+import static net.bfsr.engine.input.Keys.KEY_D;
+import static net.bfsr.engine.input.Keys.KEY_S;
+import static net.bfsr.engine.input.Keys.KEY_W;
+import static net.bfsr.engine.input.Keys.KEY_X;
 
 public class PlayerInputController extends InputController {
     private static final int NOT_CONTROLLED_SHIP_ID = -1;
@@ -42,8 +52,8 @@ public class PlayerInputController extends InputController {
     private final Vector2f lastMousePosition = new Vector2f();
     private boolean mouseLeftDown;
     private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
-    private EventBus eventBus;
     private final PositionHistory positionHistory = new PositionHistory(500);
+    private EventBus eventBus;
 
     @Override
     public void init() {
@@ -62,12 +72,14 @@ public class PlayerInputController extends InputController {
                 return;
             }
 
-            RigidBody<?> entity = core.getWorld().getEntityById(controlledShipId);
+            RigidBody entity = core.getWorld().getEntityById(controlledShipId);
             if (!(entity instanceof Ship ship)) {
                 return;
             }
 
             setShip(ship);
+            eventBus.publish(new SelectShipEvent(ship));
+            eventBus.publish(new ShipControlStartedEvent());
         }
 
         if (ship.isDead()) {
@@ -82,7 +94,7 @@ public class PlayerInputController extends InputController {
 
     @Override
     public boolean input(int key) {
-        if (ship == null || guiManager.isActive()) return false;
+        if (ship == null) return false;
 
         Engines engines = ship.getModules().getEngines();
         if (key == KEY_W && engines.isEngineAlive(Direction.FORWARD)) {
@@ -115,7 +127,7 @@ public class PlayerInputController extends InputController {
 
     @Override
     public void release(int key) {
-        if (ship == null || guiManager.isActive()) return;
+        if (ship == null) return;
 
         if (key == KEY_W) {
             core.sendUDPPacket(new PacketShipStopMove(Direction.FORWARD));
@@ -161,21 +173,21 @@ public class PlayerInputController extends InputController {
     }
 
     @Override
-    public boolean onMouseLeftClick() {
+    public boolean mouseLeftClick() {
         if (guiManager.isActive()) return false;
 
         if (ship == null) {
-            HUDAdapter guiInGame = guiManager.getHud();
-            guiInGame.selectShip(null);
             Vector2f mousePosition = Engine.mouse.getWorldPosition(camera);
             List<Ship> ships = core.getWorld().getEntitiesByType(Ship.class);
             for (int i = 0, size = ships.size(); i < size; i++) {
                 Ship ship = ships.get(i);
                 if (isMouseIntersectsWith(ship, mousePosition.x, mousePosition.y)) {
-                    guiInGame.selectShip(ship);
+                    eventBus.publish(new SelectShipEvent(ship));
                     return true;
                 }
             }
+
+            eventBus.publish(new SelectShipEvent(null));
         } else {
             core.sendUDPPacket(new PacketMouseLeftClick());
             mouseLeftDown = true;
@@ -185,8 +197,8 @@ public class PlayerInputController extends InputController {
     }
 
     @Override
-    public boolean onMouseLeftRelease() {
-        if (guiManager.isActive() || ship == null) return false;
+    public boolean mouseLeftRelease() {
+        if (ship == null) return false;
 
         core.sendUDPPacket(new PacketMouseLeftRelease());
         mouseLeftDown = false;
@@ -194,25 +206,22 @@ public class PlayerInputController extends InputController {
     }
 
     @Override
-    public boolean onMouseRightClick() {
-        if (guiManager.isActive()) return false;
-
-        HUDAdapter guiInGame = guiManager.getHud();
-        guiInGame.selectShipSecondary(null);
+    public boolean mouseRightClick() {
         Vector2f mousePosition = Engine.mouse.getWorldPosition(camera);
         List<Ship> ships = core.getWorld().getEntitiesByType(Ship.class);
         for (int i = 0, size = ships.size(); i < size; i++) {
             Ship ship = ships.get(i);
             if (isMouseIntersectsWith(ship, mousePosition.x, mousePosition.y)) {
-                guiInGame.selectShipSecondary(ship);
+                eventBus.publish(new SelectSecondaryShipEvent(ship));
                 return true;
             }
         }
 
+        eventBus.publish(new SelectSecondaryShipEvent(null));
         return false;
     }
 
-    private boolean isMouseIntersectsWith(RigidBody<?> rigidBody, float mouseX, float mouseY) {
+    private boolean isMouseIntersectsWith(RigidBody rigidBody, float mouseX, float mouseY) {
         AABB aabb = new AABB(0);
         MathUtils.computeAABB(aabb, rigidBody.getBody(), rigidBody.getBody().getTransform(), new AABB(0));
         return aabb.contains(mouseX, mouseY);
@@ -225,8 +234,6 @@ public class PlayerInputController extends InputController {
         }
 
         this.ship = ship;
-        guiManager.getHud().selectShip(ship);
-        guiManager.getHud().onShipControlStarted();
 
         if (ship != null) {
             EntityDataHistoryManager historyManager = ship.getWorld().getEntityManager().getDataHistoryManager();

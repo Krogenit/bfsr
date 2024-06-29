@@ -16,22 +16,24 @@ import net.bfsr.editor.gui.control.Playble;
 import net.bfsr.editor.gui.inspection.InspectionEntry;
 import net.bfsr.editor.object.particle.ParticleEffectConverter;
 import net.bfsr.editor.object.particle.ParticleEffectProperties;
-import net.bfsr.engine.gui.object.AbstractGuiObject;
+import net.bfsr.engine.gui.component.GuiObject;
+import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.entity.GameObject;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
 import static net.bfsr.editor.gui.EditorTheme.BACKGROUND_COLOR;
-import static net.bfsr.editor.gui.EditorTheme.setupButtonColors;
 
 @Log4j2
 public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleEffectProperties> implements Playble, Pausable {
+    private final Core core = Core.get();
     private final ConfigurableGameObject gameObject = new ConfigurableGameObject();
     private final GameObject textureObject = new GameObject();
-    private final Render<GameObject> testRender = new Render<>(textureObject) {
+    private final Render testRender = new Render(textureObject) {
         @Override
         public void renderAlpha() {
             if (particleEffect != null && playing && texture != null) {
@@ -42,38 +44,32 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
             }
         }
     };
-
     private final int topPanelHeight = 28;
     private boolean playing;
-
     private final SpawnAccumulator spawnAccumulator = new SpawnAccumulator();
-    private ParticleEffect particleEffect;
+    private @Nullable ParticleEffect particleEffect;
     private final ParticleEffectConverter converter = Mappers.getMapper(ParticleEffectConverter.class);
 
     public GuiParticleEditor() {
         super("Particle Effects", ParticleEffectsRegistry.INSTANCE, Mappers.getMapper(ParticleEffectConverter.class),
                 ParticleEffectConfig.class, ParticleEffectProperties.class);
-    }
 
-    @Override
-    protected void initElements() {
-        super.initElements();
         int x = 0;
         int y = 0;
-
         int controlButtonsSize = 28;
 
-        registerGuiObject(setupButtonColors(new PlayButton(this, controlButtonsSize, controlButtonsSize)).atTop(x, y));
+        add(new Rectangle(inspectionPanel.getWidth(), 0, width, topPanelHeight).atTopRight(0, 0).setAllColors(BACKGROUND_COLOR.x,
+                        BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w).setWidthFunction((integer, integer2) -> this.width)
+                .setHeightFunction((integer, integer2) -> topPanelHeight));
+
+        add(new PlayButton(this, controlButtonsSize, controlButtonsSize).atTop(x, y));
         x += controlButtonsSize;
-        registerGuiObject(setupButtonColors(new PauseButton(this, controlButtonsSize, controlButtonsSize)).atTop(x, y));
+        add(new PauseButton(this, controlButtonsSize, controlButtonsSize).atTop(x, y));
 
-        initGameObject();
-        Core.get().getRenderManager().addRender(testRender);
-    }
-
-    private void initGameObject() {
         gameObject.setDefaultValues();
         gameObject.init();
+
+        Core.get().getRenderManager().addRender(testRender);
     }
 
     @Override
@@ -93,9 +89,9 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
 
     private void findChild(ParticleEffect particleEffect, InspectionEntry<ParticleEffectProperties> entry) {
         particleEffect.clearChildEffects();
-        List<AbstractGuiObject> subObjects = entry.getSubObjects();
-        for (int i = 0; i < subObjects.size(); i++) {
-            InspectionEntry<ParticleEffectProperties> childEntry = (InspectionEntry<ParticleEffectProperties>) subObjects.get(i);
+        List<GuiObject> guiObjects = entry.getGuiObjects();
+        for (int i = 0; i < guiObjects.size(); i++) {
+            InspectionEntry<ParticleEffectProperties> childEntry = (InspectionEntry<ParticleEffectProperties>) guiObjects.get(i);
             ParticleEffectProperties componentByType = childEntry.getComponentByType(ParticleEffectProperties.class);
             if (componentByType != null) {
                 ParticleEffect childParticleEffect = new ParticleEffect(converter.from(componentByType), "particle_effect", 0);
@@ -128,14 +124,6 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
                         gameObject.getVelocityX(), gameObject.getVelocityY(), spawnAccumulator);
             }
         }
-    }
-
-    @Override
-    public void render() {
-        guiRenderer.add(inspectionPanel.getWidth(), 0, width, topPanelHeight, BACKGROUND_COLOR.x,
-                BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w);
-
-        super.render();
     }
 
     @Override

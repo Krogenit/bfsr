@@ -13,7 +13,7 @@ import java.io.IOException;
 public class PacketDestroyingShip extends PacketScheduled {
     private int id;
 
-    public PacketDestroyingShip(RigidBody<?> obj, double timestamp) {
+    public PacketDestroyingShip(RigidBody obj, double timestamp) {
         super(timestamp);
         this.id = obj.getId();
     }

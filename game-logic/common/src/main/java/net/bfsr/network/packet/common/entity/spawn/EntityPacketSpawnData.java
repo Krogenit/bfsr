@@ -12,7 +12,7 @@ public abstract class EntityPacketSpawnData {
     protected float posX, posY;
     protected float sin, cos;
 
-    protected EntityPacketSpawnData(RigidBody<?> rigidBody) {
+    protected EntityPacketSpawnData(RigidBody rigidBody) {
         this.entityId = rigidBody.getId();
         this.posX = rigidBody.getX();
         this.posY = rigidBody.getY();

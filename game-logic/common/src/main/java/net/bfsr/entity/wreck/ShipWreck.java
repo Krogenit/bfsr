@@ -12,7 +12,7 @@ import org.dyn4j.geometry.MassType;
 import org.locationtech.jts.geom.Polygon;
 
 @Getter
-public class ShipWreck extends DamageableRigidBody<ShipData> {
+public class ShipWreck extends DamageableRigidBody {
     private final float localOffsetX, localOffsetY;
 
     public ShipWreck(float x, float y, float sin, float cos, float sizeX, float sizeY, ShipData shipData,

@@ -20,7 +20,7 @@ import org.dyn4j.geometry.Transform;
 
 import java.util.Random;
 
-public class Wreck extends RigidBody<WreckData> {
+public class Wreck extends RigidBody {
     @Getter
     private int wreckIndex;
 
@@ -44,11 +44,14 @@ public class Wreck extends RigidBody<WreckData> {
     private float angularVelocity;
     @Getter
     private final EventBus wreckEventBus = new EventBus();
+    @Getter
+    private WreckData wreckData;
 
     public Wreck init(World world, int id, float x, float y, float velocityX, float velocityY, float sin, float cos,
                       float angularVelocity, float scaleX, float scaleY, int maxLifeTime, int wreckIndex, boolean fire,
                       boolean light, boolean emitFire, float hull, int destroyedShipId, WreckType wreckType,
                       WreckData wreckData) {
+        this.wreckData = wreckData;
         this.position.set(x, y);
         this.velocity.set(velocityX, velocityY);
         this.sin = sin;
@@ -100,7 +103,7 @@ public class Wreck extends RigidBody<WreckData> {
     }
 
     private void createFixture() {
-        Polygon p = Geometry.scale(configData.getPolygon(), size.x);
+        Polygon p = Geometry.scale(wreckData.getPolygon(), size.x);
         BodyFixture bodyFixture = new BodyFixture(p);
         bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         bodyFixture.setFilter(new ShipFilter(this));

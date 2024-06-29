@@ -42,7 +42,7 @@ public class PlayerManager {
             Player player = players.get(i);
 
             List<Ship> ships = player.getShips();
-            RigidBody<?> lastAttacker = null;
+            RigidBody lastAttacker = null;
             for (int i1 = 0; i1 < ships.size(); i1++) {
                 Ship ship = ships.get(i1);
                 if (ship.isDead()) {
@@ -51,7 +51,7 @@ public class PlayerManager {
                 }
             }
 
-            if (ships.size() == 0 && lastAttacker != null) {
+            if (ships.isEmpty() && lastAttacker != null) {
                 String attacker = "";
                 if (lastAttacker instanceof Ship attackerShip) {
                     attacker = attackerShip.getName();

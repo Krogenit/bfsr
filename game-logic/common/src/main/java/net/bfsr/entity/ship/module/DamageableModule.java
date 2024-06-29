@@ -40,7 +40,7 @@ public abstract class DamageableModule extends Module {
         createFixture(ship);
     }
 
-    protected abstract void createFixture(RigidBody<?> rigidBody);
+    protected abstract void createFixture(RigidBody rigidBody);
 
     public void addFixtureToBody(Body body) {
         if (isDead) return;

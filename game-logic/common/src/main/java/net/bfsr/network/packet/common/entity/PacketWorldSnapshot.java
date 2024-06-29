@@ -59,7 +59,7 @@ public class PacketWorldSnapshot extends PacketScheduled {
         private final Vector2f velocity;
         private final float angularVelocity;
 
-        public EntityData(RigidBody<?> rigidBody, double time) {
+        public EntityData(RigidBody rigidBody, double time) {
             super(time);
             entityId = rigidBody.getId();
             position = new Vector2f(rigidBody.getPosition());

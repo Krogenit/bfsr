@@ -41,7 +41,7 @@ public class AiAttackTarget extends AiTask {
 
     @Override
     public void execute() {
-        RigidBody<?> target = ship.getTarget();
+        RigidBody target = ship.getTarget();
         target.getBody().computeAABB(targetAABB);
         targetPos.set((float) ((targetAABB.getMinX() + targetAABB.getMaxX()) / 2),
                 (float) ((targetAABB.getMinY() + targetAABB.getMaxY()) / 2));

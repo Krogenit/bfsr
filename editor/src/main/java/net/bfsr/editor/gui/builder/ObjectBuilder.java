@@ -13,8 +13,7 @@ public class ObjectBuilder extends ComponentBuilder {
     public PropertyComponent build(int width, int height, String propertyName, int offsetX, FontType fontType, int fontSize,
                                    int stringOffsetY, List<Field> fields, Object[] values, Object object,
                                    BiConsumer<Object, Integer> valueSetterConsumer) throws IllegalAccessException {
-        return new PropertyObject<>(width, height, propertyName, fontType, fontSize, offsetX,
-                stringOffsetY, object, fields, values,
+        return new PropertyObject<>(width, height, propertyName, fontType, fontSize, offsetX, stringOffsetY, object, fields, values,
                 valueSetterConsumer);
     }
 }

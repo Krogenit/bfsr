@@ -7,7 +7,6 @@ import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
-import net.bfsr.entity.ship.module.Module;
 import net.bfsr.entity.ship.module.engine.Engine;
 import net.bfsr.math.Direction;
 import org.dyn4j.geometry.AABB;
@@ -15,7 +14,7 @@ import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
-public class ModuleRenderer extends Render<Module> {
+public class ModuleRenderer extends Render {
     private float x, y;
     private float sin, cos;
     private final Vector2f shipPosition;

@@ -13,7 +13,7 @@ public class EntitySyncManager {
     private final NetworkSystem network;
     private final UnorderedArrayList<PacketWorldSnapshot.EntityData> entityDataList = new UnorderedArrayList<>(128);
 
-    public void addToSyncQueue(RigidBody<?> entity, double time, Player player) {
+    public void addToSyncQueue(RigidBody entity, double time, Player player) {
         entityDataList.add(new PacketWorldSnapshot.EntityData(entity, time));
 
         if (entityDataList.size() == MAX_ENTITY_DATA_IN_PACKET) {

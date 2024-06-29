@@ -32,7 +32,7 @@ public class Reactor extends DamageableModule {
     }
 
     @Override
-    protected void createFixture(RigidBody<?> rigidBody) {
+    protected void createFixture(RigidBody rigidBody) {
         fixture = new BodyFixture(reactorConvex);
         fixture.setUserData(this);
         fixture.setFilter(new ShipFilter(rigidBody));

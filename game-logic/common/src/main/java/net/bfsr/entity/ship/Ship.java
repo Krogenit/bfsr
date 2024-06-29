@@ -22,7 +22,13 @@ import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
-import net.bfsr.event.entity.ship.*;
+import net.bfsr.event.entity.ship.ShipDestroyEvent;
+import net.bfsr.event.entity.ship.ShipDestroyingEvent;
+import net.bfsr.event.entity.ship.ShipDestroyingExplosionEvent;
+import net.bfsr.event.entity.ship.ShipJumpInEvent;
+import net.bfsr.event.entity.ship.ShipNewMoveDirectionEvent;
+import net.bfsr.event.entity.ship.ShipPostPhysicsUpdate;
+import net.bfsr.event.entity.ship.ShipRemoveMoveDirectionEvent;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RotationHelper;
@@ -42,7 +48,7 @@ import org.locationtech.jts.geom.Polygon;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class Ship extends DamageableRigidBody<ShipData> {
+public class Ship extends DamageableRigidBody {
     @Getter
     @Setter
     private String name;
@@ -77,7 +83,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
 
     @Getter
     @Setter
-    private RigidBody<?> lastAttacker;
+    private RigidBody lastAttacker;
 
     @Getter
     private final THashSet<Direction> moveDirections = new THashSet<>();
@@ -86,7 +92,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
     private Ai ai = Ai.NO_AI;
     @Getter
     @Setter
-    private RigidBody<?> target;
+    private RigidBody target;
     @Setter
     private Consumer<Double> positionCalculator = super::updatePosition;
     @Setter
@@ -96,9 +102,12 @@ public class Ship extends DamageableRigidBody<ShipData> {
     private final EventBus shipEventBus = new EventBus();
     @Setter
     private Runnable updateRunnable = this::updateAlive;
+    @Getter
+    private final ShipData shipData;
 
     public Ship(ShipData shipData, DamageMask mask) {
         super(shipData.getSizeX(), shipData.getSizeY(), shipData, ShipRegistry.INSTANCE.getId(), mask, shipData.getPolygonJTS());
+        this.shipData = shipData;
         this.timeToDestroy = shipData.getDestroyTimeInTicks();
         this.maxSparksTimer = timeToDestroy / 3;
         this.jumpTimer = jumpTimeInTicks;
@@ -287,7 +296,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
 
     @Override
     public void onContourReconstructed(Polygon polygon) {
-        if (!DamageSystem.isPolygonConnectedToContour(configData.getReactorPolygon().getVertices(), polygon)) {
+        if (!DamageSystem.isPolygonConnectedToContour(shipData.getReactorPolygon().getVertices(), polygon)) {
             modules.getReactor().setDead();
             return;
         }
@@ -302,7 +311,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
         }
 
         Shield shield = modules.getShield();
-        if (!DamageSystem.isPolygonConnectedToContour(configData.getShieldPolygon().getVertices(), polygon)) {
+        if (!DamageSystem.isPolygonConnectedToContour(shipData.getShieldPolygon().getVertices(), polygon)) {
             shield.setDead();
         }
     }
@@ -356,7 +365,7 @@ public class Ship extends DamageableRigidBody<ShipData> {
     }
 
     public Vector2f getWeaponSlotPosition(int id) {
-        return configData.getWeaponSlotPositions()[id];
+        return shipData.getWeaponSlotPositions()[id];
     }
 
     public void addWeaponToSlot(int id, WeaponSlot slot) {

@@ -20,7 +20,7 @@ public class WorldEventListener {
     @EventHandler
     public EventListener<RigidBodyPostPhysicsUpdateEvent> postPhysicsUpdateEvent() {
         return event -> {
-            RigidBody<?> rigidBody = event.getRigidBody();
+            RigidBody rigidBody = event.getRigidBody();
             double renderTime = core.getRenderTime();
             rigidBody.updatePosition(renderTime);
             rigidBody.updateData(renderTime);

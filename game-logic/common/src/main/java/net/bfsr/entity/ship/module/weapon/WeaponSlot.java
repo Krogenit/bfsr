@@ -72,7 +72,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
     }
 
     @Override
-    public void init(RigidBody<?> rigidBody) {
+    public void init(RigidBody rigidBody) {
         polygon.translate(localPosition.x, localPosition.y);
         createFixture(rigidBody);
         updatePos(rigidBody);
@@ -82,7 +82,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
     public void spawn() {
         if (world.isClient()) return;
 
-        RigidBody<GunData> rigidBody = new RigidBody<>(position.x, position.y, this.ship.getSin(), this.ship.getCos(),
+        RigidBody rigidBody = new RigidBody(position.x, position.y, this.ship.getSin(), this.ship.getCos(),
                 gunData.getSizeX(), gunData.getSizeY(), gunData, getRegistryId());
         rigidBody.setHealth(5.0f);
         rigidBody.init(world, world.getNextId());
@@ -106,7 +106,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
     }
 
     @Override
-    protected void createFixture(RigidBody<?> rigidBody) {
+    protected void createFixture(RigidBody rigidBody) {
         fixture = new BodyFixture(polygon);
         fixture.setUserData(this);
         fixture.setFilter(new ShipFilter(rigidBody));
@@ -160,11 +160,11 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
     }
 
     @Override
-    public void postPhysicsUpdate(RigidBody<?> rigidBody) {
+    public void postPhysicsUpdate(RigidBody rigidBody) {
         updatePos(rigidBody);
     }
 
-    void updatePos(RigidBody<?> rigidBody) {
+    void updatePos(RigidBody rigidBody) {
         Vector2f shipPos = rigidBody.getPosition();
         float x = localPosition.x;
         float y = localPosition.y;
