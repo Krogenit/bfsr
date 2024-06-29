@@ -113,7 +113,7 @@ public class Particle extends GameObject {
         }
     }
 
-    public void connectedToObjectUpdateLogic(RigidBody<?> object) {
+    public void connectedToObjectUpdateLogic(RigidBody object) {
         float cos = this.localCos * angularVelocityCos - this.localSin * angularVelocitySin;
         float sin = this.localCos * angularVelocitySin + this.localSin * angularVelocityCos;
         this.cos = cos * object.getCos() - sin * object.getSin();

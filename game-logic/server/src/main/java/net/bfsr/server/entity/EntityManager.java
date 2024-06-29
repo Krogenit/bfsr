@@ -7,7 +7,7 @@ public class EntityManager extends CommonEntityManager {
     @Override
     public void update() {
         for (int i = 0; i < entities.size(); i++) {
-            RigidBody<?> rigidBody = entities.get(i);
+            RigidBody rigidBody = entities.get(i);
 
             if (rigidBody.isDead()) {
                 rigidBody.getWorld().remove(i--, rigidBody);

@@ -10,10 +10,10 @@ import org.dyn4j.collision.Filter;
 @Getter
 @Setter
 public class CollisionFilter extends CategoryFilter {
-    protected RigidBody<?> userData;
+    protected RigidBody userData;
     private final CollisionMatrix collisionMatrix;
 
-    CollisionFilter(RigidBody<?> userData, long category, long mask) {
+    CollisionFilter(RigidBody userData, long category, long mask) {
         super(category, mask);
         this.userData = userData;
         this.collisionMatrix = userData.getWorld().getCollisionMatrix();

@@ -5,7 +5,6 @@ import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.wreck.ShipWreck;
-import net.bfsr.event.damage.DamageEvent;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;
@@ -17,7 +16,12 @@ import org.dyn4j.geometry.Vector2;
 import org.dyn4j.geometry.decompose.SweepLine;
 import org.joml.Vector2f;
 import org.locationtech.jts.algorithm.Area;
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateFilter;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.operation.buffer.BufferOp;
 import org.locationtech.jts.operation.buffer.BufferParameters;
 import org.locationtech.jts.simplify.VWSimplifier;
@@ -29,17 +33,19 @@ import java.util.function.Consumer;
 
 @Log4j2
 public final class DamageSystem {
-    public static final float CLIPPING_Y_OFFSET = -0.16f;
-    public static final double CLIPPING_DELTA = 0.3f;
-    private static final double MIN_AREA = 0.3;
+    private static final float BUFFER_Y_OFFSET = -0.16f;
+    public static final double BUFFER_DISTANCE = 0.3f;
+    private static final double MIN_POLYGON_AREA = 0.3;
     private static final float MIN_DISTANCE_BETWEEN_VERTICES_SQ = 0.3f;
     public static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
     private static final SweepLine SWEEP_LINE = new SweepLine();
+    public static final BufferParameters BUFFER_PARAMETERS = new BufferParameters(1, BufferParameters.CAP_SQUARE,
+            BufferParameters.JOIN_MITRE, 0.1);
 
     private final Vector2f rotatedLocalCenter = new Vector2f();
 
-    public void damage(DamageableRigidBody<?> damageable, float contactX, float contactY, Polygon clip, float radius, double x,
-                       double y, double sin, double cos) {
+    public void damage(DamageableRigidBody damageable, float contactX, float contactY, Polygon clip, float radius, float x,
+                       float y, float sin, float cos, Runnable onDamageSuccessRunnable) {
         if (damageable.isDead()) {
             return;
         }
@@ -49,7 +55,7 @@ public final class DamageSystem {
         mask.reset();
         damageable.getFixturesToAdd().clear();
 
-        clipTexture(contactX, contactY, damageable, radius, mask, world.getRand());
+        clipTexture(contactX, contactY, -sin, cos, damageable, radius, mask, world.getRand());
 
         Polygon polygon = damageable.getPolygon();
 
@@ -59,13 +65,11 @@ public final class DamageSystem {
             processMultiPolygon(damageable, multiPolygon, x, y, sin, cos, true);
         } else if (difference instanceof Polygon polygon1) {
             double area = Area.ofRing(polygon1.getExteriorRing().getCoordinateSequence());
-            if (area > MIN_AREA) {
+            if (area > MIN_POLYGON_AREA) {
                 org.locationtech.jts.geom.Geometry geometry = optimizeAndReverse(polygon1);
                 if (geometry instanceof Polygon polygon2) {
                     clipTextureOutside(polygon2, mask, damageable.getSize());
                     damageable.setPolygon(polygon2);
-
-
                     decompose(polygon2, polygon3 -> damageable.getFixturesToAdd().add(damageable
                             .setupFixture(new BodyFixture(polygon3))));
 
@@ -90,11 +94,11 @@ public final class DamageSystem {
         }
 
         if (!damageable.isDead() && mask.dirty()) {
-            world.getEventBus().publish(new DamageEvent(damageable));
+            onDamageSuccessRunnable.run();
         }
     }
 
-    private void processMultiPolygon(DamageableRigidBody<?> damageable, MultiPolygon multiPolygon, double x,
+    private void processMultiPolygon(DamageableRigidBody damageable, MultiPolygon multiPolygon, double x,
                                      double y, double sin, double cos, boolean optimize) {
         int polygonsCount = multiPolygon.getNumGeometries();
         double minDistance = Double.MAX_VALUE;
@@ -103,7 +107,7 @@ public final class DamageSystem {
         for (int i = 0; i < polygonsCount; i++) {
             Polygon polygon1 = (Polygon) multiPolygon.getGeometryN(i);
             double area = Area.ofRing(polygon1.getExteriorRing().getCoordinateSequence());
-            if (area > MIN_AREA) {
+            if (area > MIN_POLYGON_AREA) {
                 if (optimize) {
                     org.locationtech.jts.geom.Geometry geometry = optimizeAndReverse(polygon1);
 
@@ -124,7 +128,7 @@ public final class DamageSystem {
                         for (int j = 0; j < polygonsCount1; j++) {
                             Polygon polygon2 = (Polygon) multiPolygon1.getGeometryN(j);
                             area = Area.ofRing(polygon2.getExteriorRing().getCoordinateSequence());
-                            if (area > MIN_AREA) {
+                            if (area > MIN_POLYGON_AREA) {
                                 Coordinate center = polygon2.getCentroid().getCoordinate();
                                 double distance = center.x * center.x + center.y * center.y;
                                 if (distance < minDistance) {
@@ -203,7 +207,7 @@ public final class DamageSystem {
         }
     }
 
-    private static org.locationtech.jts.geom.Geometry optimizeAndReverse(Polygon polygon) {
+    public static org.locationtech.jts.geom.Geometry optimizeAndReverse(Polygon polygon) {
         int numInteriorRing = polygon.getNumInteriorRing();
         if (numInteriorRing > 0) {
             polygon = GEOMETRY_FACTORY.createPolygon(polygon.getExteriorRing());
@@ -212,7 +216,7 @@ public final class DamageSystem {
         return VWSimplifier.simplify(polygon, MIN_DISTANCE_BETWEEN_VERTICES_SQ).reverse();
     }
 
-    private void fillTextureOutsidePolygon(List<Coordinate> coordinates, int count, DamageMask damageMask, byte value) {
+    public static void fillTextureOutsidePolygon(List<Coordinate> coordinates, int count, DamageMask damageMask, byte value) {
         int[] nodeX = new int[count];
         int nodes, i, j, swap, pixelX;
         int x = Integer.MAX_VALUE, y = Integer.MAX_VALUE, maxX = 0, maxY = 0;
@@ -299,7 +303,7 @@ public final class DamageSystem {
         damageMask.setMaxY(Math.max(damageMask.getMaxY(), maxY));
     }
 
-    private List<Coordinate> clipTextureOutside(Polygon polygon, DamageMask mask, Vector2f scale) {
+    private static List<Coordinate> clipTextureOutside(Polygon polygon, DamageMask mask, Vector2f scale) {
         float sizeX = scale.x / 2.0f;
         float sizeY = scale.y / 2.0f;
         float localScaleX = mask.getWidth() / scale.x;
@@ -309,34 +313,30 @@ public final class DamageSystem {
         int size = coordinateSequence.size();
         for (int i = 0; i < size; i++) {
             Coordinate point64 = coordinateSequence.getCoordinate(i);
-            point64.y += CLIPPING_Y_OFFSET;
+            point64.y += BUFFER_Y_OFFSET;
         }
 
-        org.locationtech.jts.geom.Geometry geometry = BufferOp.bufferOp(polygon, CLIPPING_DELTA,
-                new BufferParameters(1, BufferParameters.CAP_SQUARE, BufferParameters.JOIN_MITRE, 1.0));
-        Coordinate[] coordinates = geometry.getCoordinates();
+        Polygon polygon1 = (Polygon) BufferOp.bufferOp(polygon, BUFFER_DISTANCE, BUFFER_PARAMETERS);
 
-        List<Coordinate> res = new ArrayList<>(coordinates.length - 1);
-        for (int i = 0, length = coordinates.length - 1; i < length; i++) {
-            Coordinate coordinate = coordinates[i];
+        CoordinateSequence coordinateSequence1 = polygon1.getExteriorRing().getCoordinateSequence();
+        List<Coordinate> res = new ArrayList<>(coordinateSequence1.size() - 1);
+        for (int i = 0, length = coordinateSequence1.size() - 1; i < length; i++) {
+            Coordinate coordinate = coordinateSequence1.getCoordinate(i);
             res.add(new Coordinate((coordinate.x + sizeX) * localScaleX, (coordinate.y + sizeY) * localScaleY));
         }
         fillTextureOutsidePolygon(res, res.size(), mask, (byte) 0);
 
         for (int i = 0; i < size; i++) {
             Coordinate point64 = coordinateSequence.getCoordinate(i);
-            point64.y -= CLIPPING_Y_OFFSET;
+            point64.y -= BUFFER_Y_OFFSET;
         }
 
         return res;
     }
 
-    private void clipTexture(float x, float y, DamageableRigidBody<?> damageable, float clipRadius, DamageMask mask,
-                             Random random) {
+    private void clipTexture(float x, float y, float sin, float cos, DamageableRigidBody damageable, float clipRadius,
+                             DamageMask mask, Random random) {
         Vector2f scale = damageable.getSize();
-        float sin = (float) -damageable.getBody().getTransform().getSint();
-        float cos = (float) damageable.getBody().getTransform().getCost();
-
         float sizeX = scale.x / 2.0f;
         float sizeY = scale.y / 2.0f;
         int width = mask.getWidth();

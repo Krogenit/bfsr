@@ -36,14 +36,13 @@ public class StringGeometryBuilder extends AbstractStringGeometryBuilder {
     }
 
     private void createString(AbstractGLString glString, StringCache stringCache, String text, int x, int y, int fontSize,
-                              float r, float g, float b, float a, int maxWidth,
-                              StringOffsetType offsetType, int indent) {
+                              float r, float g, float b, float a, int maxWidth, StringOffsetType stringOffsetType, int indent) {
         stringCache.setFontSize(fontSize);
         stringParams.getColor().set(r, g, b, a);
         stringParams.setY(y);
         stringParams.setHeight(0);
         begin(glString);
-        trimAndCreateString(glString, stringCache, text, x, stringParams, maxWidth, offsetType, indent);
+        trimAndCreateString(glString, stringCache, text, x, stringParams, maxWidth, stringOffsetType, indent);
         end(glString);
         glString.setHeight(stringParams.getHeight());
     }
@@ -68,17 +67,17 @@ public class StringGeometryBuilder extends AbstractStringGeometryBuilder {
     }
 
     private void createString(AbstractGLString glString, StringCache stringCache, String string, int x, int y, int fontSize,
-                              float r, float g, float b, float a, StringOffsetType offsetType, int indent, boolean shadow,
+                              float r, float g, float b, float a, StringOffsetType stringOffsetType, int indent, boolean shadow,
                               int shadowOffsetX, int shadowOffsetY) {
         stringCache.setFontSize(fontSize);
         begin(glString);
 
         if (shadow) {
             createString(glString, stringCache, string, x + shadowOffsetX / 2.0f, y + shadowOffsetY / 2.0f, 0.0f, 0.0f, 0.0f, a,
-                    offsetType, indent);
+                    stringOffsetType, indent);
         }
 
-        createString(glString, stringCache, string, x, y, r, g, b, a, offsetType, indent);
+        createString(glString, stringCache, string, x, y, r, g, b, a, stringOffsetType, indent);
         end(glString);
         glString.setHeight(stringParams.getHeight());
     }

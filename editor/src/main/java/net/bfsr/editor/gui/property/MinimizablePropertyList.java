@@ -1,6 +1,6 @@
 package net.bfsr.editor.gui.property;
 
-import net.bfsr.editor.gui.component.MinimizableGuiObject;
+import net.bfsr.client.Core;
 import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.Button;
@@ -15,17 +15,16 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-import static net.bfsr.editor.gui.EditorTheme.setupContextMenuButtonColors;
+import static net.bfsr.editor.gui.EditorTheme.setupContextMenuButton;
 
 public class MinimizablePropertyList extends PropertyList<PropertyObject<PropertyComponent>, PropertiesHolder> {
     private final String elementPropertyName;
 
     public MinimizablePropertyList(int width, int height, String name, FontType fontType, int fontSize, int propertyOffsetX,
-                                   int stringOffsetY, Supplier<PropertiesHolder> supplier, Object object,
-                                   List<Field> fields, Object[] values, BiConsumer<Object, Integer> valueSetterConsumer,
-                                   String elementPropertyName) {
+                                   int stringOffsetY, Supplier<PropertiesHolder> supplier, Object object, List<Field> fields,
+                                   Object[] values, BiConsumer<Object, Integer> valueConsumer, String elementPropertyName) {
         super(width, height, name, fontType, fontSize, propertyOffsetX, stringOffsetY, supplier, object, fields, values,
-                valueSetterConsumer);
+                valueConsumer);
         this.elementPropertyName = elementPropertyName;
     }
 
@@ -37,28 +36,26 @@ public class MinimizablePropertyList extends PropertyList<PropertyObject<Propert
     }
 
     @Override
-    public void add(PropertiesHolder propertiesHolder) {
+    public void addProperty(PropertiesHolder propertiesHolder) {
         propertiesHolder.clearListeners();
         PropertyObject<PropertyComponent> propertyObject = new PropertyObject<>(
-                baseWidth - MinimizableGuiObject.MINIMIZABLE_STRING_X_OFFSET, baseHeight,
-                elementPropertyName, fontType, fontSize, MinimizableGuiObject.MINIMIZABLE_STRING_X_OFFSET,
+                baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight,
+                elementPropertyName, fontType, fontSize, MINIMIZABLE_STRING_X_OFFSET,
                 stringOffsetY, propertiesHolder, fields, new Object[]{propertiesHolder}, valueConsumer);
-        propertyObject.setOnRightClickSupplier(() -> {
-            if (!propertyObject.isMouseHover()) return false;
+        propertyObject.setRightClickRunnable(() -> {
             String addString = "Remove";
             Vector2f mousePos = Engine.mouse.getPosition();
-            Button button = new Button(null, (int) mousePos.x, (int) mousePos.y,
+            Button button = new Button((int) mousePos.x, (int) mousePos.y,
                     fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight,
                     addString, fontType, fontSize, 4, stringOffsetY, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
-            setupContextMenuButtonColors(button);
-            button.setOnMouseClickRunnable(() -> remove(propertyObject));
-            gui.openContextMenu(button);
-            return true;
+            setupContextMenuButton(button);
+            button.setLeftReleaseRunnable(() -> removeProperty(propertyObject));
+            Core.get().getGuiManager().openContextMenu(button);
         });
-        propertiesHolder.registerChangeNameEventListener(propertyObject::setName);
+        propertiesHolder.addChangeNameEventListener(propertyObject::setName);
 
-        addConcealableObject(propertyObject);
         properties.add(propertyObject);
+        add(propertyObject);
     }
 
     @Override

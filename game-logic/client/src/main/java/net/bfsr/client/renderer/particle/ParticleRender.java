@@ -8,15 +8,16 @@ import org.joml.Vector2f;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
-public class ParticleRender extends Render<Particle> implements net.bfsr.engine.renderer.particle.ParticleRender {
-    long textureHandle;
+public class ParticleRender extends Render implements net.bfsr.engine.renderer.particle.ParticleRender {
+    private Particle particle;
+    private long textureHandle;
     protected Vector2f position;
     protected Vector2f size;
     private boolean isAlphaFromZero;
     private float maxAlpha;
 
     public ParticleRender init(Particle object, long textureHandle, float r, float g, float b, float a, boolean isAlphaFromZero) {
-        this.object = object;
+        this.object = this.particle = object;
         this.position = object.getPosition();
         this.size = object.getSize();
         this.lastPosition.set(position);
@@ -39,23 +40,23 @@ public class ParticleRender extends Render<Particle> implements net.bfsr.engine.
     @Override
     public void update() {
         lastPosition.set(object.getPosition());
-        lastSin = object.getSin();
-        lastCos = object.getCos();
+        lastSin = particle.getSin();
+        lastCos = particle.getCos();
 
-        if (object.getSizeVelocity() != 0) {
+        if (particle.getSizeVelocity() != 0) {
             lastSize.set(object.getSize());
         }
 
-        float alphaVelocity = object.getAlphaVelocity();
+        float alphaVelocity = particle.getAlphaVelocity();
         if (alphaVelocity != 0) {
             lastColor.w = color.w;
             if (isAlphaFromZero) {
-                if (maxAlpha != 0) {
-                    color.w += alphaVelocity;
-                    if (color.w >= maxAlpha) maxAlpha = 0.0f;
-                } else {
+                if (maxAlpha == 0) {
                     color.w -= alphaVelocity;
                     if (color.w <= 0) object.setDead();
+                } else {
+                    color.w += alphaVelocity;
+                    if (color.w >= maxAlpha) maxAlpha = 0.0f;
                 }
             } else {
                 color.w -= alphaVelocity;
@@ -67,8 +68,8 @@ public class ParticleRender extends Render<Particle> implements net.bfsr.engine.
     @Override
     public void putToBuffer(FloatBuffer vertexBuffer, ByteBuffer materialBuffer, float interpolation,
                             MutableInt vertexBufferIndex, MutableInt materialBufferIndex) {
-        spriteRenderer.putVertices(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, object.getSin(),
-                object.getCos(), lastSize.x, lastSize.y, size.x, size.y, interpolation, vertexBuffer, vertexBufferIndex);
+        spriteRenderer.putVertices(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, particle.getSin(),
+                particle.getCos(), lastSize.x, lastSize.y, size.x, size.y, interpolation, vertexBuffer, vertexBufferIndex);
         spriteRenderer.putColor(lastColor, color, materialBuffer, materialBufferIndex, interpolation);
         spriteRenderer.putTextureHandle(textureHandle, materialBuffer, materialBufferIndex);
         spriteRenderer.putMaterialData(0, 0.0f, 0.0f, materialBuffer, materialBufferIndex);

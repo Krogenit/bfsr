@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.logic.GameLogic;
+import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.util.Side;
 import net.bfsr.entity.EntityIdManager;
 import net.bfsr.entity.ship.Ship;
@@ -14,7 +15,6 @@ import net.bfsr.server.entity.EntityManager;
 import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.ship.ShipSpawner;
 import net.bfsr.server.event.PlayerDisconnectEvent;
-import net.bfsr.server.event.listener.damage.DamageEventListener;
 import net.bfsr.server.event.listener.entity.ShipEventListener;
 import net.bfsr.server.event.listener.module.ModuleEventListener;
 import net.bfsr.server.event.listener.module.weapon.WeaponEventListener;
@@ -52,7 +52,8 @@ public class ServerGameLogic extends GameLogic {
     @Getter
     private final EntityTrackingManager entityTrackingManager = new EntityTrackingManager(eventBus, networkSystem);
 
-    protected ServerGameLogic() {
+    protected ServerGameLogic(Profiler profiler) {
+        super(profiler);
         instance = this;
     }
 
@@ -74,7 +75,6 @@ public class ServerGameLogic extends GameLogic {
     private void initListeners() {
         eventBus.register(new ShipEventListener());
         eventBus.register(new WeaponEventListener());
-        eventBus.register(new DamageEventListener());
         eventBus.register(new ModuleEventListener());
     }
 
@@ -103,13 +103,13 @@ public class ServerGameLogic extends GameLogic {
     @Override
     public void update(double time) {
         super.update(time);
-        profiler.startSection("playerManager");
+        profiler.start("playerManager");
         playerManager.update();
-        profiler.endStartSection("updateWorld");
+        profiler.endStart("world");
         updateWorld(time);
-        profiler.endStartSection("network");
+        profiler.endStart("network");
         networkSystem.update();
-        profiler.endSection();
+        profiler.end();
     }
 
     protected void updateWorld(double time) {

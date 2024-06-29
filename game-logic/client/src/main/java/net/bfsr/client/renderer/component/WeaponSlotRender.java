@@ -14,11 +14,13 @@ import org.joml.Vector4f;
 
 import java.util.Random;
 
-public class WeaponSlotRender<T extends WeaponSlot> extends Render<T> {
+public class WeaponSlotRender extends Render {
     private final Vector2f rotationHelper = new Vector2f();
+    private final WeaponSlot weaponSlot;
 
-    WeaponSlotRender(T object) {
+    WeaponSlotRender(WeaponSlot object) {
         super(Engine.assetsManager.getTexture(object.getGunData().getTexture()), object);
+        this.weaponSlot = object;
     }
 
     @Override
@@ -47,8 +49,8 @@ public class WeaponSlotRender<T extends WeaponSlot> extends Render<T> {
 
     public void onShot() {
         Vector2f position = object.getPosition();
-        Vector4f color = object.getGunData().getColor();
-        Ship ship = object.getShip();
+        Vector4f color = weaponSlot.getGunData().getColor();
+        Ship ship = weaponSlot.getShip();
         float sin = ship.getSin();
         float cos = ship.getCos();
         RotationHelper.rotate(sin, cos, 1.0f, 0, rotationHelper);
@@ -58,7 +60,7 @@ public class WeaponSlotRender<T extends WeaponSlot> extends Render<T> {
                     particle.setCos(ship.getCos());
                     particle.setPosition(position.x + rotationHelper.x, position.y + rotationHelper.y);
                 });
-        playSounds(object.getGunData(), ship.getWorld().getRand(), position.x, position.y);
+        playSounds(weaponSlot.getGunData(), ship.getWorld().getRand(), position.x, position.y);
     }
 
     void playSounds(GunData gunData, Random random, float x, float y) {

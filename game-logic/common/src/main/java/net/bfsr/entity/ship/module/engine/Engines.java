@@ -15,20 +15,18 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 
+@Getter
 public class Engines extends DamageableModule {
-    @Getter
+    private final EnginesData enginesData;
     private final float forwardAcceleration, backwardAcceleration, sideAcceleration;
-    @Getter
     private final float maxForwardVelocity;
-    @Getter
     private final float maneuverability;
-    @Getter
     private final float angularVelocity;
-    @Getter
     private final List<Engine> engines = new ArrayList<>();
     private final EnumMap<Direction, List<Engine>> enginesByDirection = new EnumMap<>(Direction.class);
 
     public Engines(EnginesData enginesData, Ship ship) {
+        this.enginesData = enginesData;
         this.forwardAcceleration = enginesData.getForwardAcceleration();
         this.backwardAcceleration = enginesData.getBackwardAcceleration();
         this.sideAcceleration = enginesData.getSideAcceleration();
@@ -36,12 +34,12 @@ public class Engines extends DamageableModule {
         this.maneuverability = enginesData.getManeuverability();
         this.angularVelocity = enginesData.getAngularVelocity();
 
-        ship.getConfigData().getEngines().forEachEntry((direction, enginesData1) -> {
+        ship.getShipData().getEngines().forEachEntry((direction, enginesData1) -> {
             List<EngineData> engines1 = enginesData1.engines();
             List<Engine> engineList = new ArrayList<>(engines1.size());
             for (int i = 0; i < engines1.size(); i++) {
                 EngineData engineData = engines1.get(i);
-                Engine engine = new Engine(engineData.polygons().get(0));
+                Engine engine = new Engine(engineData);
                 engineList.add(engine);
                 engines.add(engine);
             }
@@ -61,7 +59,7 @@ public class Engines extends DamageableModule {
     }
 
     @Override
-    protected void createFixture(RigidBody<?> rigidBody) {}
+    protected void createFixture(RigidBody rigidBody) {}
 
     @Override
     public void addToList(List<Module> modules) {

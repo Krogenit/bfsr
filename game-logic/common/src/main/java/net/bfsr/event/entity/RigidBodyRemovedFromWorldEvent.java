@@ -10,5 +10,5 @@ import net.bfsr.entity.RigidBody;
 @Accessors(fluent = true)
 @AllArgsConstructor
 public class RigidBodyRemovedFromWorldEvent extends Event {
-    private final RigidBody<?> rigidBody;
+    private final RigidBody rigidBody;
 }

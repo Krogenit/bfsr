@@ -74,7 +74,71 @@ public class ShipSpawner {
         }
     }
 
+    private void spawnShipsSides(World world) {
+        List<Ship> ships = world.getEntitiesByType(Ship.class);
+        boolean sameFaction = true;
+        if (ships.size() != 0) {
+            Faction faction = ships.get(0).getFaction();
+            for (int i = 1; i < ships.size(); i++) {
+                Ship ship = ships.get(i);
+                if (ship.getFaction() != faction) {
+                    sameFaction = false;
+                    break;
+                }
+            }
+        }
+
+        if (ships.size() > 1 && !sameFaction)
+            return;
+
+        int count = 100;
+
+        float padding = 10;
+        float startSpawnX = -500;
+        float startSpawnY = -500;
+        Random rand = world.getRand();
+        Faction firstFaction = Faction.get((byte) rand.nextInt(3));
+        for (int i = 0; i < count; i++) {
+            if (firstFaction == Faction.HUMAN)
+                world.add(ShipFactory.get().createBotHumanSmall(world, startSpawnX, startSpawnY, 0, AiFactory.createAi()), false);
+            else if (firstFaction == Faction.SAIMON)
+                world.add(ShipFactory.get().createBotSaimonSmall(world, startSpawnX, startSpawnY, 0, AiFactory.createAi()),
+                        false);
+            else
+                world.add(ShipFactory.get().createBotEngiSmall(world, startSpawnX, startSpawnY, 0, AiFactory.createAi()), false);
+            startSpawnY += padding;
+        }
+
+        startSpawnX = 500;
+        startSpawnY = -500;
+        Faction secondFaction = Faction.get((byte) rand.nextInt(3));
+        while (secondFaction == firstFaction) {
+            secondFaction = Faction.get((byte) rand.nextInt(3));
+        }
+
+        for (int i = 0; i < count; i++) {
+            if (secondFaction == Faction.HUMAN)
+                world.add(ShipFactory.get().createBotHumanSmall(world, startSpawnX, startSpawnY, 0, AiFactory.createAi()), false);
+            else if (secondFaction == Faction.SAIMON)
+                world.add(ShipFactory.get().createBotSaimonSmall(world, startSpawnX, startSpawnY, 0, AiFactory.createAi()),
+                        false);
+            else
+                world.add(ShipFactory.get().createBotEngiSmall(world, startSpawnX, startSpawnY, 0, AiFactory.createAi()), false);
+
+            startSpawnY += padding;
+        }
+    }
+
     public void update(World world) {
+        List<Ship> ships = world.getEntitiesByType(Ship.class);
+        for (int i = 0; i < ships.size(); i++) {
+            Ship ship = ships.get(i);
+            Vector2f position = ship.getPosition();
+            if (Math.abs(position.x) >= 1000 || Math.abs(position.y) >= 1000) {
+                ship.setDead();
+            }
+        }
+
         spawnShips(world);
     }
 }

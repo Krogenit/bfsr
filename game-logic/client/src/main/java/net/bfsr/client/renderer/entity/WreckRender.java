@@ -16,7 +16,8 @@ import net.bfsr.event.entity.wreck.WreckDeathEvent;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-public class WreckRender extends RigidBodyRender<Wreck> {
+public class WreckRender extends RigidBodyRender {
+    private final Wreck wreck;
     @Getter
     private final AbstractTexture textureFire, textureLight;
 
@@ -37,12 +38,13 @@ public class WreckRender extends RigidBodyRender<Wreck> {
 
     public WreckRender(Wreck object) {
         super(Engine.assetsManager.getTexture(object.getConfigData().getTexture()), object, 0.5f, 0.5f, 0.5f, 1.0f);
+        this.wreck = object;
 
         if (object.isEmitFire()) {
             spawnAccumulator.resetTime();
         }
 
-        WreckData wreckData = object.getConfigData();
+        WreckData wreckData = object.getWreckData();
         this.textureFire = Engine.assetsManager.getTexture(wreckData.getFireTexture());
         this.textureLight =
                 wreckData.getSparkleTexture() != null ? Engine.assetsManager.getTexture(wreckData.getSparkleTexture()) : null;
@@ -63,8 +65,8 @@ public class WreckRender extends RigidBodyRender<Wreck> {
         lastColor.w = color.w;
         lastColorFire.set(colorFire);
         lastColorLight.set(colorLight);
-        lastSin = object.getSin();
-        lastCos = object.getCos();
+        lastSin = wreck.getSin();
+        lastCos = wreck.getCos();
         lastPosition.set(object.getPosition());
 
         updateLifeTime();
@@ -73,7 +75,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
     }
 
     private void updateLifeTime() {
-        color.w = 1.0f - object.getLifeTime() / (float) object.getMaxLifeTime();
+        color.w = 1.0f - wreck.getLifeTime() / (float) wreck.getMaxLifeTime();
     }
 
     private void emitFire() {
@@ -84,7 +86,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
     }
 
     private void updateFireAndExplosion() {
-        if (object.isEmitFire()) {
+        if (wreck.isEmitFire()) {
             emitFire();
         }
 
@@ -149,7 +151,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
             }
 
             if (sparkleBlinkTimer >= 100.0f) {
-                sparkleActivationTimerInTicks = Core.get().convertToTicks(200.0f + object.getWorld().getRand().nextInt(200));
+                sparkleActivationTimerInTicks = Core.get().convertToTicks(200.0f + wreck.getWorld().getRand().nextInt(200));
                 sparkleBlinkTimer = 0.0f;
             }
         }
@@ -174,7 +176,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
         Vector2f position = object.getPosition();
         Vector2f size = object.getSize();
         spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
-                object.getSin(), object.getCos(), size.x, size.y, color.x, color.y, color.z, color.w, texture,
+                wreck.getSin(), wreck.getCos(), size.x, size.y, color.x, color.y, color.z, color.w, texture,
                 BufferType.ENTITIES_ALPHA);
     }
 
@@ -184,7 +186,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
             Vector2f position = object.getPosition();
             Vector2f size = object.getSize();
             spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
-                    object.getSin(), object.getCos(), size.x, size.y, lastColorFire, colorFire, textureFire,
+                    wreck.getSin(), wreck.getCos(), size.x, size.y, lastColorFire, colorFire, textureFire,
                     BufferType.ENTITIES_ADDITIVE);
         }
 
@@ -192,7 +194,7 @@ public class WreckRender extends RigidBodyRender<Wreck> {
             Vector2f position = object.getPosition();
             Vector2f size = object.getSize();
             spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
-                    object.getSin(), object.getCos(), size.x, size.y, lastColorLight, colorLight, textureLight,
+                    wreck.getSin(), wreck.getCos(), size.x, size.y, lastColorLight, colorLight, textureLight,
                     BufferType.ENTITIES_ADDITIVE);
         }
     }

@@ -3,6 +3,7 @@ package net.bfsr.engine.renderer.particle;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.opengl.GL;
@@ -32,8 +33,10 @@ public class ParticleRenderer {
     @Getter
     private int taskCount;
     private boolean multithreaded;
+    private final Profiler profiler;
 
-    public ParticleRenderer() {
+    public ParticleRenderer(Profiler profiler) {
+        this.profiler = profiler;
         RenderLayer[] renderLayers = RenderLayer.VALUES;
         for (int i = 0; i < renderLayers.length; i++) {
             materialBuffers[renderLayers[i].ordinal()] = renderer.createByteBuffer(
@@ -186,12 +189,16 @@ public class ParticleRenderer {
     }
 
     public void renderBackground() {
+        profiler.start("waitTasks");
         waitTasks(backgroundTaskFutures);
+        profiler.end();
         render(RenderLayer.BACKGROUND_ALPHA_BLENDED, RenderLayer.BACKGROUND_ADDITIVE);
     }
 
     public void render() {
+        profiler.start("waitTasks");
         waitTasks(taskFutures);
+        profiler.end();
         render(RenderLayer.DEFAULT_ALPHA_BLENDED, RenderLayer.DEFAULT_ADDITIVE);
     }
 

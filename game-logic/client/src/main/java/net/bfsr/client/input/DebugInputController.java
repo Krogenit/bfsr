@@ -1,7 +1,6 @@
 package net.bfsr.client.input;
 
 import net.bfsr.client.Core;
-import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.command.Command;
 import net.bfsr.engine.Engine;
@@ -11,10 +10,13 @@ import net.bfsr.network.packet.client.PacketCommand;
 import net.bfsr.network.packet.client.PacketPauseGame;
 import org.joml.Vector2f;
 
-import static net.bfsr.engine.input.Keys.*;
+import static net.bfsr.engine.input.Keys.KEY_B;
+import static net.bfsr.engine.input.Keys.KEY_F;
+import static net.bfsr.engine.input.Keys.KEY_LEFT_CONTROL;
+import static net.bfsr.engine.input.Keys.KEY_P;
+import static net.bfsr.engine.input.Keys.KEY_R;
 
 public class DebugInputController extends InputController {
-    private GuiManager guiManager;
     private Core core;
     private final AbstractMouse mouse = Engine.mouse;
     private final AbstractKeyboard keyboard = Engine.keyboard;
@@ -22,19 +24,14 @@ public class DebugInputController extends InputController {
     @Override
     public void init() {
         core = Core.get();
-        guiManager = core.getGuiManager();
     }
 
     @Override
     public boolean input(int key) {
-        if (guiManager.isActive()) return false;
-
         if (keyboard.isKeyDown(KEY_LEFT_CONTROL)) {
             if (key == KEY_F) {
                 Vector2f pos = mouse.getWorldPosition(Engine.renderer.camera);
-                core.sendTCPPacket(
-                        new PacketCommand(Command.SPAWN_SHIP, String.valueOf((int) pos.x), String.valueOf((int) pos.y))
-                );
+                core.sendTCPPacket(new PacketCommand(Command.SPAWN_SHIP, String.valueOf((int) pos.x), String.valueOf((int) pos.y)));
                 return true;
             } else if (key == KEY_P) {
                 core.setPaused(!core.isPaused());

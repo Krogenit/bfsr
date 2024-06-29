@@ -20,10 +20,10 @@ public class RigidBodySpawnLogic implements EntitySpawnLogic<RigidBodySpawnData>
         World world = Core.get().getWorld();
         ConfigToDataConverter<?, ?> converter = ConfigConverterManager.INSTANCE.getConverter(spawnData.getRegistryId());
         GameObjectConfigData configData = (GameObjectConfigData) converter.get(spawnData.getDataId());
-        RigidBody<GameObjectConfigData> rigidBody = new RigidBody<>(spawnData.getPosX(), spawnData.getPosY(), spawnData.getSin(),
+        RigidBody rigidBody = new RigidBody(spawnData.getPosX(), spawnData.getPosY(), spawnData.getSin(),
                 spawnData.getCos(), configData.getSizeX(), configData.getSizeY(), configData, spawnData.getRegistryId());
         rigidBody.init(world, spawnData.getEntityId());
-        
+
         List<Convex> convexList = configData.getConvexList();
         Body body = rigidBody.getBody();
         for (int i = 0; i < convexList.size(); i++) {

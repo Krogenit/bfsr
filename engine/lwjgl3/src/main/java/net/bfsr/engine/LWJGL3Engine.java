@@ -3,6 +3,7 @@ package net.bfsr.engine;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.engine.dialog.AbstractSystemDialogs;
 import net.bfsr.engine.dialog.SystemDialogs;
+import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.input.Keyboard;
@@ -58,15 +59,14 @@ public class LWJGL3Engine extends AbstractGameLoop implements EngineConfiguratio
         Engine.keyboard.init(window);
         fpsSync.init();
         renderer = Engine.renderer;
+        profiler = Engine.profiler;
 
         try {
-            gameLogic = gameLogicClass.getConstructor().newInstance();
+            gameLogic = gameLogicClass.getConstructor(Profiler.class).newInstance(profiler);
             gameLogic.init();
         } catch (Exception e) {
             throw new RuntimeException("Couldn't create game logic instance", e);
         }
-
-        profiler = gameLogic.getProfiler();
 
         glfwShowWindow(window);
     }
@@ -108,26 +108,27 @@ public class LWJGL3Engine extends AbstractGameLoop implements EngineConfiguratio
 
     @Override
     public void update(double time) {
-        profiler.startSection("update");
+        profiler.start("update");
         renderer.update();
         gameLogic.update(time);
-        profiler.endSection("update");
+        profiler.end();
     }
 
     @Override
     public void render(float interpolation) {
-        profiler.startSection("render");
+        profiler.start("render");
         if (gameLogic.isPaused()) {
             interpolation = 1.0f;
         }
 
         renderer.setInterpolation(interpolation);
         gameLogic.render(interpolation);
-        profiler.endSection("render");
+        profiler.start("swapBuffers");
         GLFW.glfwSwapBuffers(window);
-        profiler.endStartSection("pollEvents");
+        profiler.endStart("pollEvents");
         GLFW.glfwPollEvents();
-        profiler.endSection("pollEvents");
+        profiler.end();
+        profiler.end();
     }
 
     @Override
@@ -188,6 +189,11 @@ public class LWJGL3Engine extends AbstractGameLoop implements EngineConfiguratio
     @Override
     public AssetsManager createAssetManager() {
         return new AssetsManager(new TextureLoader(), new SoundLoader());
+    }
+
+    @Override
+    public GuiManager createGuiManager() {
+        return new GuiManager();
     }
 
     @Override

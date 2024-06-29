@@ -1,32 +1,22 @@
 package net.bfsr.client.input;
 
 import lombok.Getter;
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.input.AbstractInputHandler;
 
 public class InputHandler extends AbstractInputHandler {
-    private final MouseConsumer[][] mouseConsumers = new MouseConsumer[2][2];
     private final GuiInputController guiInputController = new GuiInputController();
     @Getter
     private final PlayerInputController playerInputController = new PlayerInputController();
     private final CameraInputController cameraInputController = new CameraInputController();
     private final DebugInputController debugInputController = new DebugInputController();
 
-    public InputHandler() {
-        mouseConsumers[0][1] = action -> onMouseLeftClick();
-        mouseConsumers[0][0] = action -> onMouseLeftRelease();
-        mouseConsumers[1][1] = action -> onMouseRightClick();
-        mouseConsumers[1][0] = action -> onMouseRightRelease();
-    }
-
+    @Override
     public void init() {
+        super.init();
         guiInputController.init();
         playerInputController.init();
         cameraInputController.init();
         debugInputController.init();
-
-        Engine.mouse.setInputHandler(this);
-        Engine.keyboard.setInputHandler(this);
     }
 
     public void update() {
@@ -37,8 +27,9 @@ public class InputHandler extends AbstractInputHandler {
     @Override
     public void input(int key) {
         if (!guiInputController.input(key)) {
-            playerInputController.input(key);
-            debugInputController.input(key);
+            if (!playerInputController.input(key)) {
+                debugInputController.input(key);
+            }
         }
     }
 
@@ -52,36 +43,37 @@ public class InputHandler extends AbstractInputHandler {
         playerInputController.release(key);
     }
 
-    public void onMouseLeftClick() {
-        if (!guiInputController.onMouseLeftClick()) {
-            playerInputController.onMouseLeftClick();
+    @Override
+    protected void mouseLeftClick() {
+        if (!guiInputController.mouseLeftClick()) {
+            playerInputController.mouseLeftClick();
         }
-    }
-
-    public void onMouseLeftRelease() {
-        if (!guiInputController.onMouseLeftRelease()) {
-            playerInputController.onMouseLeftRelease();
-        }
-    }
-
-    public void onMouseRightClick() {
-        if (!guiInputController.onMouseRightClick()) {
-            playerInputController.onMouseRightClick();
-        }
-    }
-
-    public void onMouseRightRelease() {
-        guiInputController.onMouseRightRelease();
     }
 
     @Override
-    public void mouseInput(int button, int action) {
-        mouseConsumers[button][action].input(action);
+    protected void mouseLeftRelease() {
+        if (!guiInputController.mouseLeftRelease()) {
+            playerInputController.mouseLeftRelease();
+        }
+    }
+
+    @Override
+    protected void mouseRightClick() {
+        if (!guiInputController.mouseRightClick()) {
+            playerInputController.mouseRightClick();
+        }
+    }
+
+    @Override
+    protected void mouseRightRelease() {
+        guiInputController.mouseRightRelease();
     }
 
     @Override
     public void mouseMove(float x, float y) {
-        cameraInputController.mouseMove(x, y);
+        if (!guiInputController.mouseMove(x, y)) {
+            cameraInputController.mouseMove(x, y);
+        }
     }
 
     @Override

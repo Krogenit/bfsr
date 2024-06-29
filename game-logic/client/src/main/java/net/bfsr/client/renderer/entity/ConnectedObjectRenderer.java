@@ -7,7 +7,7 @@ import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.entity.GameObject;
 import org.joml.Vector2f;
 
-public class ConnectedObjectRenderer extends Render<GameObject> {
+public class ConnectedObjectRenderer extends Render {
     private final ConnectedObject<?> connectedObject;
 
     ConnectedObjectRenderer(ConnectedObject<?> connectedObject) {

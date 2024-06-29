@@ -297,8 +297,15 @@ public class SpriteRenderer extends AbstractSpriteRenderer {
 
     @Override
     public void putVerticesCentered(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer, MutableInt bufferIndex) {
-        putVertices(-sizeX + x, sizeY + y, sizeX + x, sizeY + y, sizeX + x, -sizeY + y, -sizeX + x, -sizeY + y, floatBuffer,
+        putVertices(-sizeX + x, -sizeY + y, sizeX + x, -sizeY + y, sizeX + x, sizeY + y, -sizeX + x, sizeY + y, floatBuffer,
                 bufferIndex);
+    }
+
+    @Override
+    public void putVerticesCenteredClockWise(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer,
+                                             MutableInt bufferIndex) {
+        putVerticesClockWise(-sizeX + x, sizeY + y, sizeX + x, sizeY + y, sizeX + x, -sizeY + y, -sizeX + x, -sizeY + y,
+                floatBuffer, bufferIndex);
     }
 
     @Override
@@ -312,16 +319,64 @@ public class SpriteRenderer extends AbstractSpriteRenderer {
         final float x1 = -cosSizeX - sinSizeY + x;
         final float x2 = cosSizeX - sinSizeY + x;
         final float x3 = cosSizeX + sinSizeY + x;
-        final float y3 = sinSizeX - cosSizeY + y;
         final float y1 = -sinSizeX + cosSizeY + y;
         final float y2 = sinSizeX + cosSizeY + y;
+        final float y3 = sinSizeX - cosSizeY + y;
 
-        putVertices(x1, y1, x2, y2, x3, y3, x1 + (x3 - x2), y3 - (y2 - y1), floatBuffer, bufferIndex);
+        putVertices(x1 + (x3 - x2), y3 - (y2 - y1), x3, y3, x2, y2, x1, y1, floatBuffer, bufferIndex);
+    }
+
+    @Override
+    public void putVerticesCenteredClockWise(float x, float y, float sin, float cos, float halfSizeX, float halfSizeY,
+                                             FloatBuffer floatBuffer, MutableInt bufferIndex) {
+        final float sinSizeX = sin * halfSizeX;
+        final float cosSizeX = cos * halfSizeX;
+        final float sinSizeY = sin * halfSizeY;
+        final float cosSizeY = cos * halfSizeY;
+
+        final float x1 = -cosSizeX - sinSizeY + x;
+        final float x2 = cosSizeX - sinSizeY + x;
+        final float x3 = cosSizeX + sinSizeY + x;
+        final float y1 = -sinSizeX + cosSizeY + y;
+        final float y2 = sinSizeX + cosSizeY + y;
+        final float y3 = sinSizeX - cosSizeY + y;
+
+        putVerticesClockWise(x1, y1, x2, y2, x3, y3, x1 + (x3 - x2), y3 - (y2 - y1), floatBuffer, bufferIndex);
     }
 
     @Override
     public void putVertices(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4,
                             FloatBuffer floatBuffer, MutableInt bufferIndex) {
+        final float u1 = 0.0f;
+        final float v1 = 0.0f;
+        final float u2 = 1.0f;
+        final float v2 = 0.0f;
+        final float u3 = 1.0f;
+        final float v3 = 1.0f;
+        final float u4 = 0.0f;
+        final float v4 = 1.0f;
+
+        floatBuffer.put(bufferIndex.getAndIncrement(), x1);
+        floatBuffer.put(bufferIndex.getAndIncrement(), y1);
+        floatBuffer.put(bufferIndex.getAndIncrement(), u1);
+        floatBuffer.put(bufferIndex.getAndIncrement(), v1);
+        floatBuffer.put(bufferIndex.getAndIncrement(), x2);
+        floatBuffer.put(bufferIndex.getAndIncrement(), y2);
+        floatBuffer.put(bufferIndex.getAndIncrement(), u2);
+        floatBuffer.put(bufferIndex.getAndIncrement(), v2);
+        floatBuffer.put(bufferIndex.getAndIncrement(), x3);
+        floatBuffer.put(bufferIndex.getAndIncrement(), y3);
+        floatBuffer.put(bufferIndex.getAndIncrement(), u3);
+        floatBuffer.put(bufferIndex.getAndIncrement(), v3);
+        floatBuffer.put(bufferIndex.getAndIncrement(), x4);
+        floatBuffer.put(bufferIndex.getAndIncrement(), y4);
+        floatBuffer.put(bufferIndex.getAndIncrement(), u4);
+        floatBuffer.put(bufferIndex.getAndIncrement(), v4);
+    }
+
+    @Override
+    public void putVerticesClockWise(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4,
+                                     FloatBuffer floatBuffer, MutableInt bufferIndex) {
         final float u1 = 0.0f;
         final float v1 = 1.0f;
         final float u2 = 1.0f;

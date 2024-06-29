@@ -4,56 +4,48 @@ import net.bfsr.client.Core;
 import net.bfsr.client.renderer.Render;
 import net.bfsr.client.renderer.RenderManager;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.gui.Gui;
-import net.bfsr.engine.gui.object.TexturedGuiObject;
-import net.bfsr.engine.renderer.AbstractRenderer;
+import net.bfsr.engine.gui.component.TexturedRectangle;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
-import net.bfsr.world.World;
 import org.dyn4j.geometry.AABB;
 import org.joml.Vector2f;
-import org.joml.Vector4f;
 
 import java.util.List;
 
-public class MiniMap {
-    private final AbstractRenderer renderer = Engine.renderer;
-    private final AbstractGUIRenderer guiRenderer = renderer.guiRenderer;
-    private final RenderManager renderManager = Core.get().getRenderManager();
-    private final TexturedGuiObject map = new TexturedGuiObject(TextureRegister.guiHudShip);
-
+public class MiniMap extends TexturedRectangle {
+    private final Core core = Core.get();
+    private final RenderManager renderManager = core.getRenderManager();
     private final AABB boundingBox = new AABB(0);
     private final AABB shipAABB = new AABB(0);
-    private final Vector4f color = new Vector4f();
 
-    public void init(Gui gui) {
-        int scaleX = 280;
-        int scaleY = 220;
-
-        map.setSize(scaleX, scaleY).atTopLeftCorner(0, 0);
-        gui.registerGuiObject(map);
+    public MiniMap() {
+        super(TextureRegister.guiHudShip, 280, 220);
     }
 
-    public void render(World world) {
-        List<Ship> ships = world.getEntitiesByType(Ship.class);
-        Vector2f camPos = renderer.camera.getPosition();
+    @Override
+    public void render(AbstractGUIRenderer guiRenderer, int lastX, int lastY, int x, int y) {
+        super.render(guiRenderer, lastX, lastY, x, y);
+        guiRenderer.render();
+        List<Ship> ships = core.getWorld().getEntitiesByType(Ship.class);
+        Vector2f camPos = Engine.renderer.camera.getPosition();
         float mapOffsetX = 600;
         float mapOffsetY = 600;
         boundingBox.set(camPos.x - mapOffsetX, camPos.y - mapOffsetY, camPos.x + mapOffsetX, camPos.y + mapOffsetY);
         float mapScaleX = 5.0f;
         float mapScaleY = 7.0f;
         float shipSize = 1.0f;
-        renderer.glEnable(GL.GL_SCISSOR_TEST);
+        Engine.renderer.glEnable(GL.GL_SCISSOR_TEST);
         int offsetY = 17;
         int offsetX = 22;
-        renderer.glScissor(map.getX() + offsetX, renderer.getScreenHeight() - map.getHeight() + offsetY,
-                map.getWidth() - (offsetX << 1), map.getHeight() - (offsetY << 1));
+        Engine.renderer.glScissor(this.x + offsetX, Engine.renderer.getScreenHeight() - height + offsetY,
+                width - (offsetX << 1), height - (offsetY << 1));
 
-        int miniMapX = map.getX() + map.getWidth() / 2;
-        int miniMapY = map.getY() + map.getHeight() / 2;
+        int miniMapX = this.x + width / 2;
+        int miniMapY = this.y + height / 2;
+        float r, g, b;
         for (int i = 0; i < ships.size(); i++) {
             Ship s = ships.get(i);
             Vector2f pos = s.getPosition();
@@ -64,39 +56,35 @@ public class MiniMap {
             if (boundingBox.overlaps(shipAABB)) {
                 Faction faction = s.getFaction();
                 if (faction == Faction.ENGI) {
-                    color.x = 0.5f;
-                    color.y = 1.0f;
-                    color.z = 0.5f;
+                    r = 0.5f;
+                    g = 1.0f;
+                    b = 0.5f;
                 } else if (faction == Faction.HUMAN) {
-                    color.x = 0.5f;
-                    color.y = 0.5f;
-                    color.z = 1.0f;
+                    r = 0.5f;
+                    g = 0.5f;
+                    b = 1.0f;
                 } else {
-                    color.x = 1.0f;
-                    color.y = 1.0f;
-                    color.z = 0.5f;
+                    r = 1.0f;
+                    g = 1.0f;
+                    b = 0.5f;
                 }
 
-                Render<?> render = renderManager.getRender(s.getId());
+                Render render = renderManager.getRender(s.getId());
                 if (render != null) {
                     Vector2f lastPosition = render.getLastPosition();
-                    int lastX = (int) (miniMapX + (lastPosition.x - camPos.x) / mapScaleX);
-                    int lastY = (int) (miniMapY + (lastPosition.y - camPos.y) / mapScaleY);
-                    int x = (int) (miniMapX + (pos.x - camPos.x) / mapScaleX);
-                    int y = (int) (miniMapY + (pos.y - camPos.y) / mapScaleY);
+                    int lastX1 = (int) (miniMapX + (lastPosition.x - camPos.x) / mapScaleX);
+                    int lastY1 = (int) (miniMapY + (-lastPosition.y + camPos.y) / mapScaleY);
+                    int x1 = (int) (miniMapX + (pos.x - camPos.x) / mapScaleX);
+                    int y1 = (int) (miniMapY + (-pos.y + camPos.y) / mapScaleY);
                     int sizeX = (int) (scale.x * shipSize);
                     int sizeY = (int) (scale.y * shipSize);
-                    guiRenderer.add(lastX, lastY, x, y, render.getLastSin(), render.getLastCos(), s.getSin(), s.getCos(), sizeX,
-                            sizeY, color.x, color.y, color.z, 1.0f, render.getTexture());
+                    guiRenderer.addRotated(lastX + lastX1, lastY + lastY1, x + x1, y + y1, render.getLastSin(), render.getLastCos(),
+                            s.getSin(), s.getCos(), sizeX, sizeY, r, g, b, 1.0f, render.getTexture());
                 }
             }
         }
 
         guiRenderer.render();
-        renderer.glDisable(GL.GL_SCISSOR_TEST);
-    }
-
-    public int getHeight() {
-        return map.getHeight();
+        Engine.renderer.glDisable(GL.GL_SCISSOR_TEST);
     }
 }

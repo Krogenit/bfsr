@@ -28,7 +28,7 @@ public abstract class Module extends GameObject {
         modules.add(this);
     }
 
-    public void postPhysicsUpdate(RigidBody<?> rigidBody) {}
+    public void postPhysicsUpdate(RigidBody rigidBody) {}
 
     @Override
     public void postPhysicsUpdate() {

@@ -13,7 +13,7 @@ import net.bfsr.config.entity.ship.EnginesData;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
-import net.bfsr.engine.gui.component.StringObject;
+import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.font.StringOffsetType;
@@ -42,16 +42,17 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 
-public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
+public class ShipRender extends DamageableRigidBodyRenderer {
     private static final AbstractTexture JUMP_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.particleJump);
     private static final AbstractTexture REACTOR_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.moduleReactor);
     private static final AbstractTexture ENGINE_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.moduleEngine);
     private static final AbstractTexture SHIELD_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.moduleShield);
 
-    private final StringObject stringObject = new StringObject(FontType.XOLONIUM, 14, StringOffsetType.CENTERED).setShadow(true)
+    private final Ship ship;
+    private final Label label = new Label(FontType.XOLONIUM, 14, StringOffsetType.CENTERED).setShadow(true)
             .setShadowOffsetX(2).setShadowOffsetY(2);
 
-    private final List<WeaponSlotRender<? extends WeaponSlot>> weaponRenders = new ArrayList<>();
+    private final List<WeaponSlotRender> weaponRenders = new ArrayList<>();
     private final AbstractTexture shieldTexture;
 
     private final Vector2f jumpPosition = new Vector2f();
@@ -67,6 +68,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
 
     public ShipRender(Ship ship) {
         super(Engine.assetsManager.getTexture(ship.getConfigData().getTexture()), ship);
+        this.ship = ship;
 
         shieldTexture = Engine.assetsManager.getTexture(ship.getModules().getShield().getShieldData().getTexturePath());
         createWeaponSlotsRenders(ship);
@@ -82,7 +84,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
         WeaponRenderRegistry weaponRenderRegistry = Core.get().getRenderManager().getWeaponRenderRegistry();
         for (int i = 0; i < weaponSlots.size(); i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
-            WeaponSlotRender<?> render = weaponRenderRegistry.createRender(weaponSlot);
+            WeaponSlotRender render = weaponRenderRegistry.createRender(weaponSlot);
             weaponRenders.add(render);
             weaponSlot.getWeaponSlotEventBus().addOneTimeListener(WeaponSlotRemovedEvent.class,
                     event -> {
@@ -94,7 +96,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
     }
 
     private void initEngineEffectsRunnable(Ship ship) {
-        TMap<Direction, EnginesData> engines = ship.getConfigData().getEngines();
+        TMap<Direction, EnginesData> engines = ship.getShipData().getEngines();
         engines.forEachEntry((direction, enginesData) -> {
             int size = enginesData.engines().size();
             ArrayList<SpawnAccumulator> accumulators = new ArrayList<>(size);
@@ -107,7 +109,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
 
         Body body = ship.getBody();
         Vector2f shipPos = ship.getPosition();
-        Vector4f effectsColor = ship.getConfigData().getEffectsColor();
+        Vector4f effectsColor = ship.getShipData().getEffectsColor();
         Vector2 shipVelocity = body.getLinearVelocity();
 
         Direction[] directions = Direction.VALUES;
@@ -175,7 +177,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
     }
 
     private void createModuleRenders(Ship ship) {
-        Modules modules = object.getModules();
+        Modules modules = ship.getModules();
 
         moduleRenders.add(new ModuleRenderer(ship, modules.getReactor(), REACTOR_TEXTURE));
 
@@ -185,7 +187,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
         }
 
         Engines enginesModule = modules.getEngines();
-        TMap<Direction, EnginesData> engines = object.getConfigData().getEngines();
+        TMap<Direction, EnginesData> engines = ship.getShipData().getEngines();
         engines.forEachEntry((direction, enginesData) -> {
             List<EngineData> engineDataList = enginesData.engines();
             for (int i = 0; i < engineDataList.size(); i++) {
@@ -208,7 +210,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
     public void update() {
         super.update();
 
-        if (!object.isSpawned()) {
+        if (!ship.isSpawned()) {
             lastJumpDelta = jumpDelta;
             lastJumpPosition.set(jumpPosition);
         }
@@ -221,7 +223,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
             moduleRenders.get(i).update();
         }
 
-        object.getMoveDirections().forEach(direction -> {
+        ship.getMoveDirections().forEach(direction -> {
             engineEffectsRunnable.get(direction).run();
             return true;
         });
@@ -239,10 +241,10 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
             moduleRenders.get(i).postWorldUpdate();
         }
 
-        if (!object.isSpawned()) {
+        if (!ship.isSpawned()) {
             Vector2f position = object.getPosition();
-            Vector2f objectJumpPosition = object.getJumpPosition();
-            jumpDelta = 1.0f - object.getJumpTimer() / (float) object.getJumpTimeInTicks();
+            Vector2f objectJumpPosition = ship.getJumpPosition();
+            jumpDelta = 1.0f - ship.getJumpTimer() / (float) ship.getJumpTimeInTicks();
             jumpPosition.set(objectJumpPosition.x + (position.x - objectJumpPosition.x) * jumpDelta * 0.9f,
                     objectJumpPosition.y + (position.y - objectJumpPosition.y) * jumpDelta * 0.9f);
         }
@@ -253,14 +255,14 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
         super.updateAABB();
 
         Vector2f position = object.getPosition();
-        float halfStringWidth = stringObject.getWidth() / (stringObject.getFontSize() * 1.4f);
-        aabb.union(position.x - halfStringWidth, aabb.getMinY(), position.x + halfStringWidth,
-                position.y + 3.2f + object.getSize().y / 4.0f);
+        float halfStringWidth = label.getWidth() / (label.getFontSize() * 1.4f);
+        aabb.union(position.x - halfStringWidth, position.y + getStringYPosition(), position.x + halfStringWidth,
+                position.y + object.getSize().y / 4.0f);
     }
 
     @Override
     public void renderAlpha() {
-        if (!object.isSpawned()) return;
+        if (!ship.isSpawned()) return;
 
         for (int i = 0; i < moduleRenders.size(); i++) {
             moduleRenders.get(i).renderAlpha();
@@ -270,44 +272,47 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
         renderGunSlots();
 
         Vector2f position = object.getPosition();
-        Vector2f size = object.getSize();
-        float yOffset = 3.2f + size.y / 4.0f;
-        stringObject.render(BufferType.ENTITIES_ALPHA, lastPosition.x, lastPosition.y + yOffset, position.x,
+        float yOffset = getStringYPosition();
+        label.render(BufferType.ENTITIES_ALPHA, lastPosition.x, lastPosition.y + yOffset, position.x,
                 position.y + yOffset);
+    }
+
+    private float getStringYPosition() {
+        return -3.2f - object.getSize().y / 4.0f;
     }
 
     @Override
     public void renderAdditive() {
-        if (object.isSpawned()) {
+        if (ship.isSpawned()) {
             renderGunSlotsAdditive();
-            renderShield(object, object.getModules().getShield());
+            renderShield(ship, ship.getModules().getShield());
         } else {
             float delta = lastJumpDelta + (jumpDelta - lastJumpDelta) * renderer.getInterpolation();
             float size = 40.0f * delta;
-            Vector4f effectsColor = object.getConfigData().getEffectsColor();
+            Vector4f effectsColor = ship.getShipData().getEffectsColor();
 
             spriteRenderer.addToRenderPipeLineSinCos(lastJumpPosition.x, lastJumpPosition.y, jumpPosition.x, jumpPosition.y,
-                    object.getSin(), object.getCos(), size, size, effectsColor.x, effectsColor.y, effectsColor.z, delta,
+                    ship.getSin(), ship.getCos(), size, size, effectsColor.x, effectsColor.y, effectsColor.z, delta,
                     JUMP_TEXTURE, BufferType.ENTITIES_ADDITIVE);
         }
     }
 
     @Override
     public void renderDebug() {
-        if (object.isSpawned()) {
+        if (ship.isSpawned()) {
             super.renderDebug();
         }
     }
 
     private void renderGunSlots() {
         for (int i = 0, size = weaponRenders.size(); i < size; i++) {
-            weaponRenders.get(i).renderAlpha(lastSin, lastCos, object.getSin(), object.getCos());
+            weaponRenders.get(i).renderAlpha(lastSin, lastCos, ship.getSin(), ship.getCos());
         }
     }
 
     private void renderGunSlotsAdditive() {
         for (int i = 0, size = weaponRenders.size(); i < size; i++) {
-            weaponRenders.get(i).renderAdditive(lastSin, lastCos, object.getSin(), object.getCos());
+            weaponRenders.get(i).renderAdditive(lastSin, lastCos, ship.getSin(), ship.getCos());
         }
     }
 
@@ -315,7 +320,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
         if (shield != null && shield.isAlive()) {
             Vector2f diameter = shield.getDiameter();
             float size = shield.getSize().x;
-            Vector4f color = ship.getConfigData().getEffectsColor();
+            Vector4f color = ship.getShipData().getEffectsColor();
             spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, ship.getPosition().x, ship.getPosition().y,
                     lastSin, lastCos, ship.getSin(), ship.getCos(), diameter.x * size, diameter.y * size, color.x, color.y,
                     color.z, color.w, shieldTexture, BufferType.ENTITIES_ADDITIVE);
@@ -323,7 +328,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
     }
 
     private void createName() {
-        stringObject.setStringAndCompile(object.getName()).scale(0.1f, 0.1f);
+        label.setStringAndCompile(ship.getName()).scale(0.1f, -0.1f);
     }
 
     @EventHandler
@@ -333,7 +338,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
             Vector2f velocity = ship.getVelocity();
             Vector2f position = ship.getPosition();
             Vector2f size = ship.getSize();
-            Vector4f effectsColor = ship.getConfigData().getEffectsColor();
+            Vector4f effectsColor = ship.getShipData().getEffectsColor();
             JumpEffects.jump(position.x, position.y, 32.0f + size.x * 0.25f, velocity.x * 0.5f, velocity.y * 0.5f,
                     effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
             createName();
@@ -347,7 +352,7 @@ public class ShipRender extends DamageableRigidBodyRenderer<Ship> {
     @Override
     public void clear() {
         super.clear();
-        object.getShipEventBus().unregister(this);
+        ship.getShipEventBus().unregister(this);
 
         for (int i = 0; i < weaponRenders.size(); i++) {
             weaponRenders.get(i).clear();

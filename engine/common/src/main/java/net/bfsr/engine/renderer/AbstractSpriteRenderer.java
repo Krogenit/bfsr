@@ -58,13 +58,19 @@ public abstract class AbstractSpriteRenderer {
 
     public abstract void putVertices(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4,
                                      FloatBuffer floatBuffer, MutableInt bufferIndex);
+    public abstract void putVerticesClockWise(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4,
+                                              FloatBuffer floatBuffer, MutableInt bufferIndex);
     public abstract void putVertices(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin,
                                      float cos, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
                                      float interpolation, FloatBuffer floatBuffer, MutableInt bufferIndex);
     public abstract void putVerticesCentered(float x, float y, float sin, float cos, float halfSizeX, float halfSizeY,
                                              FloatBuffer floatBuffer, MutableInt bufferIndex);
+    public abstract void putVerticesCenteredClockWise(float x, float y, float sin, float cos, float halfSizeX, float halfSizeY,
+                                                      FloatBuffer floatBuffer, MutableInt bufferIndex);
     public abstract void putVerticesCentered(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer,
                                              MutableInt bufferIndex);
+    public abstract void putVerticesCenteredClockWise(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer,
+                                                      MutableInt bufferIndex);
 
 
     public abstract void putColor(float r, float g, float b, float a, ByteBuffer byteBuffer, MutableInt bufferIndex);

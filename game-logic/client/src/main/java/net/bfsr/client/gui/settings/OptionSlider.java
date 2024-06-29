@@ -18,7 +18,7 @@ public class OptionSlider extends Slider {
     @Override
     protected void onValueChanged() {
         option.changeValue(value);
-        stringObject.setStringAndCompileAtOrigin(Lang.getString("settings." + option.getOptionName()) + ": " +
+        label.setStringAndCompileAtOrigin(Lang.getString("settings." + option.getOptionName()) + ": " +
                 DecimalUtils.strictFormatWithToDigits(option.getFloat()));
     }
 }

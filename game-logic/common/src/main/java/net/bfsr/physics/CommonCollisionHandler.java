@@ -17,7 +17,7 @@ import org.dyn4j.world.ContactCollisionData;
 public class CommonCollisionHandler {
     protected final EventBus eventBus;
 
-    public void bulletRigidBody(Bullet bullet, RigidBody<?> rigidBody, BodyFixture bulletFixture, BodyFixture rigidBodyFixture,
+    public void bulletRigidBody(Bullet bullet, RigidBody rigidBody, BodyFixture bulletFixture, BodyFixture rigidBodyFixture,
                                 float contactX, float contactY, float normalX, float normalY,
                                 ContactCollisionData<Body> collision) {
         collision.getContactConstraint().setEnabled(false);

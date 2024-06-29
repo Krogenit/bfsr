@@ -34,7 +34,7 @@ public class MinimizableListBuilder extends ComponentBuilder {
         }, object, fields, values, valueSetterConsumer, annotation.arrayElementName());
 
         for (int i = 0; i < objects.size(); i++) {
-            minimizablePropertyList.add(objects.get(i));
+            minimizablePropertyList.addProperty(objects.get(i));
         }
 
         return minimizablePropertyList;

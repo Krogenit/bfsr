@@ -1,5 +1,6 @@
 package net.bfsr.entity.ship.module.armor;
 
+import lombok.Getter;
 import net.bfsr.config.component.armor.ArmorPlateData;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.ModuleType;
@@ -7,11 +8,14 @@ import net.bfsr.entity.ship.module.ModuleWithCells;
 import net.bfsr.entity.ship.module.hull.HullCell;
 
 public class Armor extends ModuleWithCells<ArmorPlate> {
+    @Getter
+    private final ArmorPlateData data;
     private final float repairSpeed;
 
     public Armor(ArmorPlateData armorPlateData, Ship ship) {
         super(ship, ArmorPlate.class, () -> new ArmorPlate(armorPlateData));
-        repairSpeed = armorPlateData.getRegenAmount();
+        this.data = armorPlateData;
+        this.repairSpeed = armorPlateData.getRegenAmount();
 
         for (int i = 0; i < cells.length; i++) {
             for (int i1 = 0; i1 < cells[0].length; i1++) {

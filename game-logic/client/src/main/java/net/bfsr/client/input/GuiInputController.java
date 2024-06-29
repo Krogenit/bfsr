@@ -1,103 +1,70 @@
 package net.bfsr.client.input;
 
 import net.bfsr.client.Core;
-import net.bfsr.client.event.gui.CloseGuiEvent;
-import net.bfsr.client.event.gui.CloseHUDEvent;
-import net.bfsr.client.event.gui.OpenGuiEvent;
-import net.bfsr.client.event.gui.ShowHUDEvent;
-import net.bfsr.engine.event.EventHandler;
-import net.bfsr.engine.event.EventListener;
-import net.bfsr.engine.gui.Gui;
+import net.bfsr.engine.gui.GuiManager;
+import net.bfsr.engine.gui.component.GuiObject;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
-public class GuiInputController extends InputController {
-    private final Deque<Gui> guiStack = new ArrayDeque<>();
+class GuiInputController extends InputController {
+    private GuiManager guiManager;
 
     @Override
     public void init() {
-        Core.get().getEventBus().register(this);
-    }
-
-    @EventHandler
-    public EventListener<OpenGuiEvent> openGuiEvent() {
-        return event -> guiStack.add(event.gui());
-    }
-
-    @EventHandler
-    public EventListener<CloseGuiEvent> closeGuiEvent() {
-        return event -> guiStack.remove(event.gui());
-    }
-
-    @EventHandler
-    public EventListener<ShowHUDEvent> showHUDEvent() {
-        return event -> guiStack.add(event.hud());
-    }
-
-    @EventHandler
-    public EventListener<CloseHUDEvent> closeHUDEvent() {
-        return event -> guiStack.remove(event.hud());
+        guiManager = Core.get().getGuiManager();
     }
 
     @Override
     public boolean input(int key) {
-        if (guiStack.size() > 0) {
-            return guiStack.getLast().input(key);
-        }
-
-        return false;
+        return guiManager.getLast().input(key);
     }
 
     @Override
-    public void textInput(int key) {
-        if (guiStack.size() > 0) {
-            guiStack.getLast().textInput(key);
-        }
+    public boolean textInput(int key) {
+        return guiManager.getLast().textInput(key);
     }
 
     @Override
     public boolean scroll(float y) {
-        if (guiStack.size() > 0) {
-            return guiStack.getLast().onMouseScroll(y);
-        }
-
-        return false;
+        return guiManager.getLast().mouseScroll(y);
     }
 
     @Override
-    public boolean onMouseLeftClick() {
-        if (guiStack.size() > 0) {
-            return guiStack.getLast().onMouseLeftClick();
-        }
-
-        return false;
+    public boolean mouseMove(float x, float y) {
+        return guiManager.getLast().mouseMove(x, y);
     }
 
     @Override
-    public boolean onMouseLeftRelease() {
-        if (guiStack.size() > 0) {
-            return guiStack.getLast().onMouseLeftRelease();
-        }
-
-        return false;
+    public boolean mouseLeftClick() {
+        GuiObject hoveredGuiObject = guiManager.findHoveredGuiObject();
+        guiManager.forEach(GuiObject::mouseLeftClick);
+        if (hoveredGuiObject == null) return false;
+        hoveredGuiObject.getLeftClickRunnable().run();
+        return true;
     }
 
     @Override
-    public boolean onMouseRightClick() {
-        if (guiStack.size() > 0) {
-            return guiStack.getLast().onMouseRightClick();
-        }
-
-        return false;
+    public boolean mouseLeftRelease() {
+        GuiObject hoveredGuiObject = guiManager.findHoveredGuiObject();
+        guiManager.forEach(GuiObject::mouseLeftRelease);
+        if (hoveredGuiObject == null) return false;
+        hoveredGuiObject.getLeftReleaseRunnable().run();
+        return true;
     }
 
     @Override
-    public boolean onMouseRightRelease() {
-        if (guiStack.size() > 0) {
-            return guiStack.getLast().onMouseRightRelease();
-        }
+    public boolean mouseRightClick() {
+        GuiObject hoveredGuiObject = guiManager.findHoveredGuiObject();
+        guiManager.forEach(GuiObject::mouseRightClick);
+        if (hoveredGuiObject == null) return false;
+        hoveredGuiObject.getRightClickRunnable().run();
+        return true;
+    }
 
-        return false;
+    @Override
+    public boolean mouseRightRelease() {
+        GuiObject hoveredGuiObject = guiManager.findHoveredGuiObject();
+        guiManager.forEach(GuiObject::mouseRightRelease);
+        if (hoveredGuiObject == null) return false;
+        hoveredGuiObject.getRightReleaseRunnable().run();
+        return true;
     }
 }

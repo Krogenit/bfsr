@@ -17,7 +17,7 @@ public class PacketWeaponShootHandler extends PacketHandler<PacketWeaponShoot, N
     public void handle(PacketWeaponShoot packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
         World world = Core.get().getWorld();
-        RigidBody<?> obj = world.getEntityById(packet.getId());
+        RigidBody obj = world.getEntityById(packet.getId());
         if (obj instanceof Ship ship) {
             WeaponSlot weaponSlot = ship.getWeaponSlot(packet.getSlot());
             if (weaponSlot != null) {

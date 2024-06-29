@@ -14,7 +14,7 @@ public interface PropertiesHolder {
     void setDefaultValues();
     void setName(String name);
     String getName();
-    void registerChangeNameEventListener(ChangeNameEventListener listener);
+    void addChangeNameEventListener(ChangeNameEventListener listener);
     void clearListeners();
     default PropertiesHolder copy() {
         Class<? extends PropertiesHolder> aClass = getClass();
@@ -22,7 +22,8 @@ public interface PropertiesHolder {
             PropertiesHolder propertiesHolder = aClass.getConstructor().newInstance();
             copyFields(this, propertiesHolder);
             return propertiesHolder;
-        } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NegativeArraySizeException | NoSuchMethodException |
+        } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NegativeArraySizeException |
+                 NoSuchMethodException |
                  SecurityException |
                  InvocationTargetException e) {
             e.printStackTrace();
@@ -36,7 +37,7 @@ public interface PropertiesHolder {
             e.printStackTrace();
         }
     }
-    default void copyFields(PropertiesHolder source, PropertiesHolder dest) throws SecurityException, IllegalArgumentException, IllegalAccessException, NegativeArraySizeException {
+    default void copyFields(PropertiesHolder source, PropertiesHolder dest) throws IllegalAccessException {
         Field[] declaredFields = getClass().getDeclaredFields();
 
         for (int i = 0; i < declaredFields.length; i++) {

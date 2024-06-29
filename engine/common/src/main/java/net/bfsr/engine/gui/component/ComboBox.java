@@ -1,145 +1,154 @@
 package net.bfsr.engine.gui.component;
 
 import lombok.Getter;
-import net.bfsr.engine.gui.object.GuiObjectWithSubObjects;
-import net.bfsr.engine.gui.object.GuiObjectsHandler;
-import net.bfsr.engine.gui.object.SimpleGuiObject;
+import net.bfsr.engine.Engine;
+import net.bfsr.engine.gui.Gui;
+import net.bfsr.engine.gui.renderer.combobox.ComboBoxRenderer;
+import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.StringOffsetType;
 
-public class ComboBox<V> extends GuiObjectWithSubObjects {
+import java.util.ArrayList;
+import java.util.List;
+
+public class ComboBox<V> extends GuiObject {
     @Getter
     private int selectedIndex;
     @Getter
     private boolean opened;
+    @Getter
+    private final Label label;
+    private final FontType fontType;
+    private final int fontSize;
+    private final int stringOffsetY;
+    private final List<ComboBoxData<V>> data = new ArrayList<>();
 
-    public ComboBox(int width, int height) {
+    public ComboBox(int width, int height, FontType fontType, int fontSize, int stringOffsetY) {
         super(width, height);
-    }
+        this.fontType = fontType;
+        this.fontSize = fontSize;
+        this.stringOffsetY = stringOffsetY;
 
-    @Override
-    protected void registerSubElements(GuiObjectsHandler gui) {
-        gui.registerGuiObject(subObjects.get(selectedIndex));
-    }
+        add(this.label = new Label(fontType, "", fontSize, StringOffsetType.CENTERED).compileAtOrigin());
+        label.atTopLeft(width / 2,
+                label.getStringCache().getCenteredYOffset(label.getString(), height, fontSize) + stringOffsetY);
 
-    @Override
-    protected void unregisterSubElements(GuiObjectsHandler gui) {
-        gui.unregisterGuiObject(subObjects.get(selectedIndex));
-    }
-
-    @Override
-    protected void setRepositionConsumerForSubObjects() {
-        subObjectsRepositionConsumer.setup(subObjects.get(selectedIndex), 0, 0);
-        int offsetIndex = 1;
-        for (int i = 0; i < subObjects.size(); i++) {
-            if (i != selectedIndex) {
-                subObjectsRepositionConsumer.setup(subObjects.get(i), 0, offsetIndex * height);
-                offsetIndex++;
+        setRenderer(new ComboBoxRenderer(this));
+        setLeftReleaseRunnable(() -> {
+            if (opened) {
+                opened = false;
+                removeNotSelected();
+            } else {
+                open();
             }
-        }
+        });
     }
 
-    @Override
-    public boolean onMouseLeftClick() {
-        if (opened) {
+    public void addData(V value) {
+        ComboBoxData<V> data = new ComboBoxData<>(width, height, value, value.toString(), fontType, fontSize, stringOffsetY);
+        this.data.add(data);
+        data.setWidthFunction((width, height) -> this.width);
+        data.setLeftReleaseRunnable(() -> {
             opened = false;
-            unregisterNotSelected();
-
-            for (int i = 0; i < subObjects.size(); i++) {
-                CompoBoxElement<V> element = (CompoBoxElement<V>) subObjects.get(i);
-                if (element.isMouseHover()) {
-                    if (i != selectedIndex) {
-                        gui.unregisterGuiObject(subObjects.get(selectedIndex));
-                        selectedIndex = i;
-                        setRepositionConsumerForSubObjects();
-                        CompoBoxElement<V> compoBoxElement = (CompoBoxElement<V>) subObjects.get(selectedIndex);
-                        compoBoxElement.setSelected(true);
-                        gui.registerGuiObject(compoBoxElement);
-                    }
-
-                    return true;
-                }
-            }
-        } else if (isMouseHover()) {
-            open();
-            return true;
-        }
-
-        return false;
+            removeNotSelected();
+            setSelectedIndex(this.data.indexOf(data));
+        });
     }
 
-    public void open() {
+    public void removeData(ComboBoxData<V> data) {
+        this.data.remove(data);
+    }
+
+    private void updateDataPositions() {
+        int y = height;
+        for (int i = 0; i < data.size(); i++) {
+            if (i != selectedIndex) {
+                ComboBoxData<V> comboBoxData = data.get(i);
+                comboBoxData.setPosition(getSceneX(), getSceneY() + y);
+                y += height;
+            }
+        }
+    }
+
+    private void open() {
         opened = true;
-
-        for (int i = 0; i < subObjects.size(); i++) {
+        updateDataPositions();
+        Gui gui = Engine.guiManager.getGui();
+        for (int i = 0; i < data.size(); i++) {
             if (i != selectedIndex) {
-                CompoBoxElement<V> element = (CompoBoxElement<V>) subObjects.get(i);
-                element.setSelected(false);
-                gui.registerGuiObject(element);
+                gui.add(data.get(i));
             }
         }
     }
 
-    private void unregisterNotSelected() {
-        for (int i = 0; i < subObjects.size(); i++) {
+    private void removeNotSelected() {
+        Gui gui = Engine.guiManager.getGui();
+        for (int i = 0; i < data.size(); i++) {
             if (i != selectedIndex) {
-                gui.unregisterGuiObject(subObjects.get(i));
+                gui.remove(data.get(i));
             }
         }
+    }
+
+    public void setSelectedIndex(int selectedIndex) {
+        this.selectedIndex = selectedIndex;
+        label.setStringAndCompileAtOrigin(getSelected().getLabel().getString());
     }
 
     @Override
-    public SimpleGuiObject setColor(float r, float g, float b, float a) {
-        for (int i = 0; i < subObjects.size(); i++) {
-            subObjects.get(i).setColor(r, g, b, a);
+    public GuiObject setColor(float r, float g, float b, float a) {
+        for (int i = 0; i < data.size(); i++) {
+            data.get(i).setColor(r, g, b, a);
         }
         return super.setColor(r, g, b, a);
     }
 
     @Override
-    public SimpleGuiObject setHoverColor(float r, float g, float b, float a) {
-        for (int i = 0; i < subObjects.size(); i++) {
-            subObjects.get(i).setHoverColor(r, g, b, a);
+    public GuiObject setHoverColor(float r, float g, float b, float a) {
+        for (int i = 0; i < data.size(); i++) {
+            data.get(i).setHoverColor(r, g, b, a);
         }
         return super.setHoverColor(r, g, b, a);
     }
 
     @Override
-    public SimpleGuiObject setOutlineColor(float r, float g, float b, float a) {
-        for (int i = 0; i < subObjects.size(); i++) {
-            subObjects.get(i).setOutlineColor(r, g, b, a);
+    public GuiObject setOutlineColor(float r, float g, float b, float a) {
+        for (int i = 0; i < data.size(); i++) {
+            data.get(i).setOutlineColor(r, g, b, a);
         }
         return super.setOutlineColor(r, g, b, a);
     }
 
     @Override
-    public SimpleGuiObject setOutlineHoverColor(float r, float g, float b, float a) {
-        for (int i = 0; i < subObjects.size(); i++) {
-            subObjects.get(i).setOutlineHoverColor(r, g, b, a);
+    public GuiObject setOutlineHoverColor(float r, float g, float b, float a) {
+        for (int i = 0; i < data.size(); i++) {
+            data.get(i).setOutlineHoverColor(r, g, b, a);
         }
         return super.setOutlineHoverColor(r, g, b, a);
     }
 
     @Override
-    public SimpleGuiObject setTextColor(float r, float g, float b, float a) {
-        for (int i = 0; i < subObjects.size(); i++) {
-            subObjects.get(i).setTextColor(r, g, b, a);
+    public GuiObject setTextColor(float r, float g, float b, float a) {
+        label.setColor(r, g, b, a).compileAtOrigin();
+        for (int i = 0; i < data.size(); i++) {
+            data.get(i).setTextColor(r, g, b, a);
         }
         return this;
     }
 
-    public void setSelectedIndex(int selectedIndex) {
-        this.selectedIndex = selectedIndex;
-        ((CompoBoxElement<V>) subObjects.get(selectedIndex)).setSelected(true);
+    @Override
+    public GuiObject setWidth(int width) {
+        super.setWidth(width);
+        for (int i = 0; i < data.size(); i++) {
+            data.get(i).updatePositionAndSize(width, height);
+        }
+        return this;
     }
 
-    @Override
-    public SimpleGuiObject setWidth(int width) {
-        for (int i = 0; i < subObjects.size(); i++) {
-            subObjects.get(i).setWidth(width);
-        }
-        return super.setWidth(width);
+    private ComboBoxData<V> getSelected() {
+        return data.get(selectedIndex);
     }
 
     public V getSelectedValue() {
-        return ((CompoBoxElement<V>) subObjects.get(selectedIndex)).getValue();
+        return getSelected().getValue();
     }
 }

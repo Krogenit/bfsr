@@ -11,7 +11,11 @@ import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
-import net.bfsr.physics.*;
+import net.bfsr.physics.CCDTransformHandler;
+import net.bfsr.physics.CollisionMatrix;
+import net.bfsr.physics.CommonCollisionHandler;
+import net.bfsr.physics.ContactListener;
+import net.bfsr.physics.CustomValueMixer;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.ContinuousDetectionMode;
 import org.dyn4j.world.PhysicsWorld;
@@ -77,20 +81,22 @@ public class World {
     public void update(double timestamp) {
         this.timestamp = timestamp;
 
+        profiler.start("entityManager");
         entityManager.update();
-        profiler.endStartSection("physics");
+        profiler.endStart("physics");
         ccdTransformHandler.clear();
         physicWorld.step(1);
         ccdTransformHandler.restoreTransforms();
-        profiler.endStartSection("postPhysicsUpdate");
+        profiler.endStart("postPhysicsUpdate");
         entityManager.postPhysicsUpdate();
+        profiler.end();
     }
 
-    public void add(RigidBody<?> entity) {
+    public void add(RigidBody entity) {
         add(entity, true);
     }
 
-    public void add(RigidBody<?> entity, boolean addToPhysicWorld) {
+    public void add(RigidBody entity, boolean addToPhysicWorld) {
         entityManager.add(entity);
 
         if (addToPhysicWorld) {
@@ -100,7 +106,7 @@ public class World {
         entity.onAddedToWorld();
     }
 
-    public void remove(int index, RigidBody<?> entity) {
+    public void remove(int index, RigidBody entity) {
         entityManager.remove(index, entity);
         physicWorld.removeBody(entity.getBody());
         entity.onRemovedFromWorld();
@@ -136,15 +142,15 @@ public class World {
         return entityManager.get(ShipWreck.class).size();
     }
 
-    public List<? extends RigidBody<?>> getEntities() {
+    public List<? extends RigidBody> getEntities() {
         return entityManager.getEntities();
     }
 
-    public RigidBody<?> getEntityById(int id) {
+    public RigidBody getEntityById(int id) {
         return entityManager.get(id);
     }
 
-    public <T extends RigidBody<?>> List<T> getEntitiesByType(Class<T> classType) {
+    public <T extends RigidBody> List<T> getEntitiesByType(Class<T> classType) {
         return (List<T>) entityManager.get(classType);
     }
 

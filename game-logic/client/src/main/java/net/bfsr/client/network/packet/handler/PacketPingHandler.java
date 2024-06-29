@@ -2,6 +2,7 @@ package net.bfsr.client.network.packet.handler;
 
 import io.netty.channel.ChannelHandlerContext;
 import net.bfsr.client.Core;
+import net.bfsr.client.event.PingEvent;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.engine.util.Side;
 import net.bfsr.network.packet.PacketHandler;
@@ -16,7 +17,7 @@ public class PacketPingHandler extends PacketHandler<PacketPing, NetworkSystem> 
             long clientToServerPing = packet.getOneWayTime() / 1000;
             double rtt = System.nanoTime() - packet.getOriginalSentTime();
             Core core = Core.get();
-            core.getGuiManager().getHud().setPing(clientToServerPing / 1000.0f);
+            core.getEventBus().publish(new PingEvent(clientToServerPing / 1000.0f));
 
             double clientToServerDiffTime = packet.getResponseSentTime() - packet.getOriginalSentTime() - rtt / 2;
             core.setClientToServerDiffTime(clientToServerDiffTime);

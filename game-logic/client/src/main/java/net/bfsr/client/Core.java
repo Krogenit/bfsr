@@ -6,11 +6,13 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.damage.DamageHandler;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
-import net.bfsr.client.gui.GuiManager;
+import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.gui.main.GuiMainMenu;
 import net.bfsr.client.input.InputHandler;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.listener.entity.ShipEventListener;
+import net.bfsr.client.listener.gui.GuiEventListener;
+import net.bfsr.client.listener.gui.HUDEventListener;
 import net.bfsr.client.listener.world.WorldEventListener;
 import net.bfsr.client.module.ShieldLogic;
 import net.bfsr.client.network.NetworkSystem;
@@ -29,7 +31,9 @@ import net.bfsr.client.world.entity.ClientEntityIdManager;
 import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
+import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.logic.ClientGameLogic;
+import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.sound.AbstractSoundManager;
 import net.bfsr.engine.util.Side;
 import net.bfsr.entity.CommonEntityManager;
@@ -43,19 +47,19 @@ import java.net.InetAddress;
 @Log4j2
 @Getter
 public class Core extends ClientGameLogic {
-    public static final String GAME_VERSION = "Dev 0.1.0";
+    public static final String GAME_VERSION = "Dev 0.1.2";
     private static Core instance;
 
     private final AbstractSoundManager soundManager = Engine.soundManager;
     private final NetworkSystem networkSystem = new NetworkSystem();
+    private final GuiManager guiManager = Engine.guiManager;
     private final InputHandler inputHandler = new InputHandler();
-    private final GuiManager guiManager = new GuiManager();
     private final ParticleManager particleManager = new ParticleManager();
     private final RenderManager renderManager = new RenderManager();
     private final DamageHandler damageHandler = new DamageHandler(renderManager);
     private final ConfigSettings settings = new ConfigSettings();
     private final GlobalRenderer globalRenderer = new GlobalRenderer(
-            guiManager, profiler, renderManager, particleManager, new WorldRenderer(renderManager)
+            guiManager, profiler, renderManager, particleManager, new WorldRenderer(profiler, renderManager)
     );
 
     private World world = BlankWorld.get();
@@ -69,78 +73,84 @@ public class Core extends ClientGameLogic {
     @Getter
     private final double clientRenderDelayInNanos = Engine.getClientRenderDelayInMills() * 1_000_000;
 
-    public Core() {
+    public Core(Profiler profiler) {
+        super(profiler);
         instance = this;
     }
 
     @Override
     public void init() {
         Lang.load();
-        this.inputHandler.init();
-        this.settings.load();
-        this.networkSystem.init();
-        this.globalRenderer.init();
-        this.renderManager.init();
-        this.guiManager.init();
-        this.profiler.setEnable(ClientSettings.IS_PROFILING.getBoolean());
-        this.soundManager.setGain(ClientSettings.SOUND_VOLUME.getFloat());
-        this.particleManager.init();
+        inputHandler.init();
+        settings.load();
+        networkSystem.init();
+        globalRenderer.init();
+        renderManager.init();
+        guiManager.init(eventBus);
+        profiler.setEnable(ClientSettings.IS_PROFILING.getBoolean());
+        soundManager.setGain(ClientSettings.SOUND_VOLUME.getFloat());
+        particleManager.init();
         ConfigConverterManager.INSTANCE.init();
         ConfigConverterManager.INSTANCE.registerConfigRegistry(ParticleEffectsRegistry.INSTANCE);
         registerListeners();
         super.init();
-        this.guiManager.openGui(new GuiMainMenu());
+        guiManager.openGui(new GuiMainMenu());
         registerLogic(LogicType.SHIELD_UPDATE.ordinal(), new ShieldLogic());
     }
 
     private void registerListeners() {
         eventBus.register(new ShipEventListener());
         eventBus.register(new WorldEventListener());
+        eventBus.register(new GuiEventListener());
+        eventBus.register(new HUDEventListener());
     }
 
     @Override
     public void update(double time) {
         super.update(time);
-        profiler.startSection("renderer");
+        profiler.start("renderer");
 
         if (!isPaused()) {
             renderManager.update();
             globalRenderer.update();
         }
 
-        profiler.endStartSection("inputHandler");
+        profiler.endStart("inputHandler");
         inputHandler.update();
-        profiler.endStartSection("soundManager");
+        profiler.endStart("soundManager");
         soundManager.updateListenerPosition(Engine.renderer.camera.getPosition());
         soundManager.updateGain(ClientSettings.SOUND_VOLUME.getFloat());
+        profiler.end();
 
         serverTime = time + clientToServerDiffTime;
         renderTime = time - clientRenderDelayInNanos;
 
-        profiler.endStartSection("network");
+        profiler.start("network");
         networkSystem.update(renderTime);
 
         if (!isPaused()) {
-            profiler.endStartSection("world");
+            profiler.endStart("world");
             world.update(renderTime);
-            profiler.endStartSection("particles");
+            profiler.endStart("particles");
             particleManager.update();
         }
 
-        profiler.endStartSection("guiManager");
+        profiler.endStart("guiManager");
         guiManager.update();
-        profiler.endStartSection("renderManager.postUpdate");
+        profiler.endStart("renderManager.postUpdate");
 
         if (!isPaused()) {
             renderManager.postWorldUpdate();
         }
 
-        profiler.endSection();
+        profiler.end();
     }
 
     @Override
     public void render(float interpolation) {
+        profiler.start("globalRenderer");
         globalRenderer.render(interpolation);
+        profiler.end();
     }
 
     public void startSinglePlayer() {
@@ -151,7 +161,7 @@ public class Core extends ClientGameLogic {
 
     private void startLocalServer() {
         playerName = "Local Player";
-        localServer = new LocalServer(new LocalServerGameLogic());
+        localServer = new LocalServer(new LocalServerGameLogic(new Profiler()));
         ThreadLocalServer threadLocalServer = new ThreadLocalServer(localServer);
         threadLocalServer.setName("Local Server");
         threadLocalServer.start();
@@ -163,7 +173,6 @@ public class Core extends ClientGameLogic {
             try {
                 Thread.sleep(1);
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
                 return;
             }
         }
@@ -245,6 +254,10 @@ public class Core extends ClientGameLogic {
 
     public static Core get() {
         return instance;
+    }
+
+    public HUD createHUD() {
+        return new HUD();
     }
 
     @Override

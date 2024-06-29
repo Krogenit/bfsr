@@ -16,7 +16,8 @@ import net.bfsr.editor.object.ship.ShipProperties;
 import net.bfsr.editor.object.ship.TestShip;
 import net.bfsr.editor.property.holder.Vector2fPropertiesHolder;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.gui.component.StringObject;
+import net.bfsr.engine.gui.component.GuiObject;
+import net.bfsr.engine.gui.component.Label;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.faction.Faction;
@@ -29,36 +30,32 @@ import java.util.List;
 @Log4j2
 public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
     private TestShip testShip;
-
     private final ShipConverter converter = Mappers.getMapper(ShipConverter.class);
-
     private boolean polygonCreationMode;
-    private final StringObject polygonCreationModeString = new StringObject(fontType, "Polygon creation mode",
-            fontSize).compileAtOrigin();
+    private final Label polygonCreationModeString = new Label(fontType, "Polygon creation mode", fontSize).compileAtOrigin();
     private PolygonProperty polygonProperty;
     private final GameObject polygonObject = new GameObject();
-    private final Render<GameObject> polygonRender = new Render<>(polygonObject) {
-        @Override
-        public void renderDebug() {
-            if (!polygonCreationMode) return;
-
-            List<Vector2fPropertiesHolder> vertices = polygonProperty.getVertices();
-            if (vertices.size() == 0) return;
-
-            debugRenderer.addCommand(vertices.size());
-            Vector4f color = new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
-            Vector2f position = testShip.getPosition();
-            for (int i = 0; i < vertices.size(); i++) {
-                Vector2fPropertiesHolder vertex = vertices.get(i);
-                debugRenderer.addVertex(vertex.getX() + position.x, vertex.getY() + position.y, color);
-            }
-        }
-    };
     private boolean lastDebugBoxesMode;
 
     public GuiShipEditor() {
         super("Ships", ShipRegistry.INSTANCE, Mappers.getMapper(ShipConverter.class), ShipConfig.class, ShipProperties.class);
-        Core.get().getRenderManager().addRender(polygonRender);
+        Core.get().getRenderManager().addRender(new Render(polygonObject) {
+            @Override
+            public void renderDebug() {
+                if (!polygonCreationMode) return;
+
+                List<Vector2fPropertiesHolder> vertices = polygonProperty.getVertices();
+                if (vertices.isEmpty()) return;
+
+                debugRenderer.addCommand(vertices.size());
+                Vector4f color = new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
+                Vector2f position = testShip.getPosition();
+                for (int i = 0; i < vertices.size(); i++) {
+                    Vector2fPropertiesHolder vertex = vertices.get(i);
+                    debugRenderer.addVertex(vertex.getX() + position.x, vertex.getY() + position.y, color);
+                }
+            }
+        });
     }
 
     @Override
@@ -96,9 +93,16 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
                 render.getMaskTexture().createEmpty();
             } catch (Exception e) {
                 log.error("Can't create ship for selected entry", e);
-                propertiesPanel.close();
+                remove(propertiesPanel);
                 selectedEntry = null;
             }
+        }
+    }
+
+    @Override
+    protected void onEntryDeselected() {
+        if (testShip != null) {
+            testShip.setDead();
         }
     }
 
@@ -107,27 +111,26 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
         polygonCreationMode = !polygonCreationMode;
 
         if (polygonCreationMode) {
-            registerGuiObject(polygonCreationModeString.atTop(-polygonCreationModeString.getWidth() / 2, elementHeight));
+            add(polygonCreationModeString.atTop(-polygonCreationModeString.getWidth() / 2, elementHeight));
             this.polygonProperty = polygonProperty;
             lastDebugBoxesMode = ClientSettings.SHOW_DEBUG_BOXES.getBoolean();
             ClientSettings.SHOW_DEBUG_BOXES.setValue(true);
         } else {
-            unregisterGuiObject(polygonCreationModeString);
+            remove(polygonCreationModeString);
             ClientSettings.SHOW_DEBUG_BOXES.setValue(lastDebugBoxesMode);
         }
     }
 
     @Override
-    public boolean onMouseLeftRelease() {
-        boolean leftRelease = super.onMouseLeftRelease();
+    public GuiObject mouseLeftRelease() {
+        GuiObject child = super.mouseLeftRelease();
 
-        if (!leftRelease && polygonCreationMode && !inspectionPanel.isMouseHover() && !propertiesPanel.isIntersectsWithMouse()) {
+        if (child == null && polygonCreationMode && !inspectionPanel.isMouseHover() && !propertiesPanel.isIntersectsWithMouse()) {
             Vector2f position = Engine.mouse.getWorldPosition(renderer.camera);
-            polygonProperty.add(new Vector2fPropertiesHolder(position.x, position.y));
-            updatePositions();
+            polygonProperty.addProperty(new Vector2fPropertiesHolder(position.x, position.y));
         }
 
-        return leftRelease;
+        return child;
     }
 
     @Override

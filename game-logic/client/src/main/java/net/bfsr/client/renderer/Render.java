@@ -16,8 +16,8 @@ import org.joml.Vector4f;
 
 @Getter
 @NoArgsConstructor
-public class Render<T extends GameObject> {
-    protected T object;
+public class Render {
+    protected GameObject object;
     @Setter
     protected AbstractTexture texture;
     protected final Vector2f lastSize = new Vector2f();
@@ -31,7 +31,7 @@ public class Render<T extends GameObject> {
     protected final AbstractSpriteRenderer spriteRenderer = renderer.spriteRenderer;
     protected final AbstractDebugRenderer debugRenderer = renderer.debugRenderer;
 
-    public Render(AbstractTexture texture, T object, float r, float g, float b, float a) {
+    public Render(AbstractTexture texture, GameObject object, float r, float g, float b, float a) {
         this.object = object;
         this.texture = texture;
         this.lastPosition.set(object.getPosition());
@@ -40,11 +40,11 @@ public class Render<T extends GameObject> {
         this.lastSize.set(object.getSize());
     }
 
-    public Render(AbstractTexture texture, T object) {
+    public Render(AbstractTexture texture, GameObject object) {
         this(texture, object, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public Render(T object) {
+    public Render(GameObject object) {
         this(AbstractTextureLoader.dummyTexture, object);
     }
 

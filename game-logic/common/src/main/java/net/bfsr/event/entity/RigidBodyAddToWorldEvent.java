@@ -8,5 +8,5 @@ import net.bfsr.entity.RigidBody;
 @AllArgsConstructor
 @Getter
 public class RigidBodyAddToWorldEvent extends Event {
-    private final RigidBody<?> rigidBody;
+    private final RigidBody rigidBody;
 }

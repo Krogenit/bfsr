@@ -29,14 +29,15 @@ public class GLString extends AbstractGLString {
     }
 
     @Override
-    public void checkBuffers(int dataSize) {
-        while (vertexBuffer.capacity() - vertexBuffer.position() < dataSize * AbstractSpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES) {
+    public void checkBuffers(int length) {
+        while (vertexBuffer.capacity() - vertexBuffer.position() < length * AbstractSpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES) {
             FloatBuffer newBuffer = BufferUtils.createFloatBuffer(vertexBuffer.capacity() << 1);
             vertexBuffer.flip();
             newBuffer.put(vertexBuffer);
             vertexBuffer = newBuffer;
         }
-        while (materialBuffer.capacity() - materialBuffer.position() < dataSize * AbstractSpriteRenderer.MATERIAL_DATA_SIZE_IN_BYTES) {
+
+        while (materialBuffer.capacity() - materialBuffer.position() < length * AbstractSpriteRenderer.MATERIAL_DATA_SIZE_IN_BYTES) {
             ByteBuffer newBuffer = BufferUtils.createByteBuffer(materialBuffer.capacity() << 1);
             materialBuffer.flip();
             newBuffer.put(materialBuffer);

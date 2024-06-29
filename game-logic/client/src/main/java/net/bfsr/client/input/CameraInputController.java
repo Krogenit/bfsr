@@ -2,22 +2,30 @@ package net.bfsr.client.input;
 
 import net.bfsr.client.Core;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
-import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
+import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.network.packet.client.PacketCameraPosition;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 
 import java.util.List;
 
-import static net.bfsr.engine.input.Keys.*;
+import static net.bfsr.engine.input.Keys.KEY_A;
+import static net.bfsr.engine.input.Keys.KEY_D;
+import static net.bfsr.engine.input.Keys.KEY_DOWN;
+import static net.bfsr.engine.input.Keys.KEY_LEFT;
+import static net.bfsr.engine.input.Keys.KEY_RIGHT;
+import static net.bfsr.engine.input.Keys.KEY_S;
+import static net.bfsr.engine.input.Keys.KEY_UP;
+import static net.bfsr.engine.input.Keys.KEY_W;
 
 public class CameraInputController extends InputController {
     private final AbstractRenderer renderer = Engine.renderer;
@@ -26,7 +34,7 @@ public class CameraInputController extends InputController {
     private final AbstractMouse mouse = Engine.mouse;
     private final AbstractKeyboard keyboard = Engine.keyboard;
     private Core core;
-    private Ship followShip;
+    private @Nullable Ship followShip;
     private PlayerInputController playerInputController;
     private long lastSendTime;
 
@@ -40,35 +48,35 @@ public class CameraInputController extends InputController {
 
     @Override
     public void update() {
-        if (core.isInWorld()) {
-            if (!guiManager.isActive()) {
-                if (ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS.getBoolean()) moveByScreenBorders();
+        if (!core.isInWorld()) return;
 
-                boolean noShip = !playerInputController.isControllingShip();
-                float keyMoveSpeed = ClientSettings.CAMERA_MOVE_BY_KEY_SPEED.getFloat() * core.convertToDeltaTime(60.0f);
-                if (keyboard.isKeyDown(KEY_LEFT) || (noShip && keyboard.isKeyDown(KEY_A))) {
-                    camera.move(-keyMoveSpeed, 0);
-                } else if (keyboard.isKeyDown(KEY_RIGHT) || (noShip && keyboard.isKeyDown(KEY_D))) {
-                    camera.move(keyMoveSpeed, 0);
-                }
+        if (!guiManager.isActive()) {
+            if (ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS.getBoolean()) moveByScreenBorders();
 
-                if (keyboard.isKeyDown(KEY_UP) || (noShip && keyboard.isKeyDown(KEY_W))) {
-                    camera.move(0, -keyMoveSpeed);
-                } else if (keyboard.isKeyDown(KEY_DOWN) || (noShip && keyboard.isKeyDown(KEY_S))) {
-                    camera.move(0, keyMoveSpeed);
-                }
+            boolean noShip = !playerInputController.isControllingShip();
+            float keyMoveSpeed = ClientSettings.CAMERA_MOVE_BY_KEY_SPEED.getFloat() * core.convertToDeltaTime(60.0f);
+            if (keyboard.isKeyDown(KEY_LEFT) || (noShip && keyboard.isKeyDown(KEY_A))) {
+                camera.move(-keyMoveSpeed, 0);
+            } else if (keyboard.isKeyDown(KEY_RIGHT) || (noShip && keyboard.isKeyDown(KEY_D))) {
+                camera.move(keyMoveSpeed, 0);
             }
 
-            if (ClientSettings.CAMERA_FOLLOW_PLAYER.getBoolean()) followShip();
+            if (keyboard.isKeyDown(KEY_UP) || (noShip && keyboard.isKeyDown(KEY_W))) {
+                camera.move(0, keyMoveSpeed);
+            } else if (keyboard.isKeyDown(KEY_DOWN) || (noShip && keyboard.isKeyDown(KEY_S))) {
+                camera.move(0, -keyMoveSpeed);
+            }
+        }
 
-            Vector2f position = camera.getPosition();
-            Vector2f lastPosition = camera.getLastPosition();
-            if (position.x != lastPosition.x || position.y != lastPosition.y) {
-                long time = System.currentTimeMillis();
-                if (time - lastSendTime > 500) {
-                    core.sendUDPPacket(new PacketCameraPosition(position.x, position.y));
-                    lastSendTime = time;
-                }
+        if (ClientSettings.CAMERA_FOLLOW_PLAYER.getBoolean()) followShip();
+
+        Vector2f position = camera.getPosition();
+        Vector2f lastPosition = camera.getLastPosition();
+        if (position.x != lastPosition.x || position.y != lastPosition.y) {
+            long time = System.currentTimeMillis();
+            if (time - lastSendTime > 500) {
+                core.sendUDPPacket(new PacketCameraPosition(position.x, position.y));
+                lastSendTime = time;
             }
         }
     }
@@ -139,27 +147,26 @@ public class CameraInputController extends InputController {
         }
 
         if (cursorPosition.y <= offset) {
-            camera.move(0, -screenMoveSpeed);
-        } else if (cursorPosition.y >= renderer.getScreenHeight() - offset) {
             camera.move(0, screenMoveSpeed);
+        } else if (cursorPosition.y >= renderer.getScreenHeight() - offset) {
+            camera.move(0, -screenMoveSpeed);
         }
     }
 
     @Override
     public boolean scroll(float y) {
-        if (guiManager.noGui() || guiManager.getGui().isAllowCameraZoom()) {
-            camera.zoom(y * ClientSettings.CAMERA_ZOOM_SPEED.getFloat());
+        camera.zoom(y * ClientSettings.CAMERA_ZOOM_SPEED.getFloat());
+        return true;
+    }
+
+    @Override
+    public boolean mouseMove(float x, float y) {
+        if (mouse.isRightDown()) {
+            camera.moveByMouse(x, -y);
             return true;
         }
 
         return false;
-    }
-
-    @Override
-    public void mouseMove(float x, float y) {
-        if (mouse.isRightDown()) {
-            camera.moveByMouse(x, y);
-        }
     }
 
     @EventHandler

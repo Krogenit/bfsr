@@ -14,19 +14,22 @@ import net.bfsr.physics.filter.BulletFilter;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Polygon;
 
-public class Bullet extends RigidBody<GunData> {
+public class Bullet extends RigidBody {
     @Getter
-    protected final RigidBody<?> owner;
+    protected final RigidBody owner;
     private final float bulletSpeed;
     @Getter
     private final BulletDamage damage;
     private final Polygon polygon;
     @Setter
     @Getter
-    private RigidBody<?> lastCollidedRigidBody;
+    private RigidBody lastCollidedRigidBody;
+    @Getter
+    private final GunData gunData;
 
-    public Bullet(float x, float y, float sin, float cos, GunData gunData, RigidBody<?> owner, BulletDamage damage) {
+    public Bullet(float x, float y, float sin, float cos, GunData gunData, RigidBody owner, BulletDamage damage) {
         super(x, y, sin, cos, gunData.getBulletSizeX(), gunData.getBulletSizeY(), gunData, GunRegistry.INSTANCE.getId());
+        this.gunData = gunData;
         this.owner = owner;
         this.maxLifeTime = gunData.getBulletLifeTimeInTicks();
         this.bulletSpeed = gunData.getBulletSpeed();

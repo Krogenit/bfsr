@@ -24,7 +24,7 @@ public class PacketShieldRemoveHandler extends PacketHandler<PacketShieldRemove,
             if (shield != null) {
                 shield.removeShield();
                 Vector2f position = ship.getPosition();
-                Vector4f shipEffectColor = ship.getConfigData().getEffectsColor();
+                Vector4f shipEffectColor = ship.getShipData().getEffectsColor();
                 ShieldEffects.disable(position.x, position.y, ship.getSize().x * 2.0f, shipEffectColor.x, shipEffectColor.y,
                         shipEffectColor.z, 1.0f);
             }

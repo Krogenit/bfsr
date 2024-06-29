@@ -1,6 +1,7 @@
 package net.bfsr.engine;
 
 import net.bfsr.engine.dialog.AbstractSystemDialogs;
+import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.renderer.AbstractRenderer;
@@ -14,6 +15,7 @@ public interface EngineConfiguration {
         Engine.mouse = createMouse();
         Engine.keyboard = createKeyboard();
         Engine.systemDialogs = createSystemDialogs();
+        Engine.guiManager = createGuiManager();
     }
 
     AbstractSystemDialogs createSystemDialogs();
@@ -22,4 +24,5 @@ public interface EngineConfiguration {
     AbstractSoundManager createSoundManager();
     AbstractRenderer createRenderer();
     AssetsManager createAssetManager();
+    GuiManager createGuiManager();
 }

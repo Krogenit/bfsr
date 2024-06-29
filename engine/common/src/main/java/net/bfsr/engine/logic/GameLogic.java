@@ -3,6 +3,7 @@ package net.bfsr.engine.logic;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.Engine;
@@ -13,6 +14,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Log4j2
+@RequiredArgsConstructor
 public class GameLogic {
     @Getter
     @Setter
@@ -29,7 +31,7 @@ public class GameLogic {
     @Getter
     private boolean paused;
     @Getter
-    protected final Profiler profiler = new Profiler();
+    protected final Profiler profiler;
 
     /**
      * Queue of Runnable which will execute in next game logic update step
@@ -48,11 +50,11 @@ public class GameLogic {
     }
 
     public void update(double time) {
-        profiler.startSection("tasks");
+        profiler.start("tasks");
         while (!futureTasks.isEmpty()) {
             futureTasks.poll().run();
         }
-        profiler.endSection();
+        profiler.end();
     }
 
     /**

@@ -52,7 +52,7 @@ public class Shield extends DamageableModule {
     }
 
     @Override
-    public void createFixture(RigidBody<?> rigidBody) {
+    public void createFixture(RigidBody rigidBody) {
         fixture = new BodyFixture(shieldConvex);
         fixture.setUserData(this);
         fixture.setFilter(new ShipFilter(rigidBody));

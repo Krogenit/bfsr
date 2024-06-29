@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import net.bfsr.client.Core;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.renderer.component.WeaponRenderRegistry;
-import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
@@ -25,8 +24,8 @@ public class RenderManager {
     @Getter
     private final WeaponRenderRegistry weaponRenderRegistry = new WeaponRenderRegistry();
 
-    private final List<Render<?>> renderList = new ArrayList<>();
-    private final TIntObjectMap<Render<?>> renders = new TIntObjectHashMap<>();
+    private final List<Render> renderList = new ArrayList<>();
+    private final TIntObjectMap<Render> renders = new TIntObjectHashMap<>();
 
     public void init() {
         Core.get().getEventBus().register(this);
@@ -34,7 +33,7 @@ public class RenderManager {
 
     public void update() {
         for (int i = 0; i < renderList.size(); i++) {
-            Render<?> render = renderList.get(i);
+            Render render = renderList.get(i);
             if (render.isDead()) {
                 render.clear();
                 renderList.remove(i--);
@@ -47,14 +46,14 @@ public class RenderManager {
 
     public void postWorldUpdate() {
         for (int i = 0; i < renderList.size(); i++) {
-            Render<?> render = renderList.get(i);
+            Render render = renderList.get(i);
             render.postWorldUpdate();
         }
     }
 
     public void renderAlpha() {
         for (int i = 0; i < renderList.size(); i++) {
-            Render<?> render = renderList.get(i);
+            Render render = renderList.get(i);
             if (render.getAabb().overlaps(camera.getBoundingBox())) {
                 render.renderAlpha();
             }
@@ -63,7 +62,7 @@ public class RenderManager {
 
     void renderAdditive() {
         for (int i = 0; i < renderList.size(); i++) {
-            Render<?> render = renderList.get(i);
+            Render render = renderList.get(i);
             if (render.getAabb().overlaps(camera.getBoundingBox())) {
                 render.renderAdditive();
             }
@@ -72,23 +71,23 @@ public class RenderManager {
 
     void renderDebug() {
         for (int i = 0; i < renderList.size(); i++) {
-            Render<?> render = renderList.get(i);
+            Render render = renderList.get(i);
             if (render.getAabb().overlaps(camera.getBoundingBox())) {
                 render.renderDebug();
             }
         }
     }
 
-    public void createRender(RigidBody<? extends GameObjectConfigData> rigidBody) {
+    public void createRender(RigidBody rigidBody) {
         addRender(renderRegistry.createRender(rigidBody));
     }
 
-    public void addRender(Render<?> render) {
+    public void addRender(Render render) {
         renderList.add(render);
         renders.put(render.getObject().getId(), render);
     }
 
-    public <T extends Render<?>> T getRender(int id) {
+    public <T extends Render> T getRender(int id) {
         return (T) renders.get(id);
     }
 

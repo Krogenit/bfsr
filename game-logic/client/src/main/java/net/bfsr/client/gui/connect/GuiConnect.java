@@ -6,7 +6,7 @@ import net.bfsr.client.language.Lang;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.InputBox;
-import net.bfsr.engine.gui.component.StringObject;
+import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
@@ -16,30 +16,27 @@ import java.net.UnknownHostException;
 
 @Log4j2
 public class GuiConnect extends Gui {
-    private final StringObject connectingText = new StringObject(FontType.XOLONIUM, 20, StringOffsetType.CENTERED);
+    private final Label connectingText = new Label(FontType.XOLONIUM, 20, StringOffsetType.CENTERED).setColor(1.0f, 1.0f,
+            1.0f, 0.0f);
 
     public GuiConnect(Gui parentGui) {
         super(parentGui);
-        connectingText.setColor(1.0f, 1.0f, 1.0f, 0.0f);
-    }
 
-    @Override
-    protected void initElements() {
         int buttonOffsetX = -150;
         int fontSize = 20;
         int offsetX = 24;
 
         InputBox hostInputBox = new InputBox(TextureRegister.guiButtonBase, Lang.getString("gui.connect.host"),
                 fontSize, offsetX, 0).setString("192.168.2.2:34000");
-        registerGuiObject(hostInputBox.atCenter(buttonOffsetX, -100));
+        add(hostInputBox.atCenter(buttonOffsetX, -100));
         InputBox usernameInputBox = new InputBox(TextureRegister.guiButtonBase, Lang.getString("gui.connect.username"),
                 fontSize, offsetX, 0).setString("Krogenit");
-        registerGuiObject(usernameInputBox.atCenter(buttonOffsetX, -50));
+        add(usernameInputBox.atCenter(buttonOffsetX, -50));
         InputBox passwordInputBox = new InputBox(TextureRegister.guiButtonBase, Lang.getString("gui.connect.password"),
                 fontSize, offsetX, 0).setString("test");
-        registerGuiObject(passwordInputBox.atCenter(buttonOffsetX, 0));
+        add(passwordInputBox.atCenter(buttonOffsetX, 0));
 
-        registerGuiObject(new Button(Lang.getString("gui.connect.connect"), () -> {
+        add(new Button(Lang.getString("gui.connect.connect"), () -> {
             if (connectingText.getColor().w <= 0.01f) {
                 setErrorMessage(Lang.getString("gui.connecting"));
                 Thread t = new Thread(() -> {
@@ -97,11 +94,11 @@ public class GuiConnect extends Gui {
                 t.start();
             }
         }).atCenter(buttonOffsetX, 50));
-        registerGuiObject(new Button(Lang.getString("gui.back"), () -> {
+        add(new Button(Lang.getString("gui.back"), () -> {
             Core.get().clearNetwork();
             Core.get().openGui(parentGui);
         }).atCenter(buttonOffsetX, 200));
-        registerGuiObject(connectingText.atCenter(0, 150));
+        add(connectingText.atCenter(0, 150));
     }
 
     @Override

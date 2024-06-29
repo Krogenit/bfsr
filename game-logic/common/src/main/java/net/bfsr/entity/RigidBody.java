@@ -22,7 +22,7 @@ import org.dyn4j.geometry.Vector2;
 import org.joml.Vector2f;
 
 @NoArgsConstructor
-public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObject {
+public class RigidBody extends GameObject {
     protected static final int DEFAULT_MAX_LIFE_TIME_IN_TICKS = 1200;
 
     @Getter
@@ -42,7 +42,7 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
     protected EventBus eventBus;
     @Setter
     @Getter
-    protected CONFIG_DATA configData;
+    protected GameObjectConfigData configData;
     @Setter
     @Getter
     protected int registryId;
@@ -53,7 +53,7 @@ public class RigidBody<CONFIG_DATA extends GameObjectConfigData> extends GameObj
     protected final RigidBodyPostPhysicsUpdateEvent postPhysicsUpdateEvent = new RigidBodyPostPhysicsUpdateEvent(this);
     private EntityDataHistoryManager dataHistoryManager;
 
-    public RigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, CONFIG_DATA configData, int registryId) {
+    public RigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, GameObjectConfigData configData, int registryId) {
         super(x, y, sizeX, sizeY);
         this.sin = sin;
         this.cos = cos;

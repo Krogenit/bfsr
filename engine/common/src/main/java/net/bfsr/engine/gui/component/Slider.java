@@ -1,50 +1,41 @@
 package net.bfsr.engine.gui.component;
 
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.gui.object.SimpleGuiObject;
-import net.bfsr.engine.gui.object.TexturedGuiObject;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.font.StringCache;
 import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
+import org.joml.Vector4f;
 
-public class Slider extends TexturedGuiObject {
+public class Slider extends TexturedRectangle {
     protected float value;
     private boolean movingByMouse;
     private final int indent;
-    protected final StringObject stringObject;
-    private final SimpleGuiObject slider;
-
-    public Slider(int x, int y, int width, int height, float value, String string) {
-        this(x, y, width, height, 20, value, string);
-    }
+    protected final Label label;
+    private final TexturedRectangle slider = new TexturedRectangle(TextureRegister.guiSlider, 0, 0, 29, 50);
 
     public Slider(int x, int y, int width, int height, int fontSize, float value, String string) {
         super(TextureRegister.guiButtonBase, x, y, width, height);
         this.value = value;
         this.indent = 28;
 
-        FontType font = FontType.XOLONIUM;
-        StringCache stringCache = font.getStringCache();
-        stringObject = new StringObject(font, string, 0, 0, fontSize, StringOffsetType.CENTERED);
-        stringObject.setPosition(x + width / 2,
-                (int) (y + (height - stringCache.getHeight(string, fontSize)) / 2.0f + stringCache.getAscent(string, fontSize)));
-        stringObject.compileAtOrigin();
-
-        slider = new TexturedGuiObject(TextureRegister.guiSlider, x, y, 29, 50);
+        add(slider);
         slider.setX(calculateSliderXPos());
         setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
-        slider.setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
+
+        FontType font = FontType.XOLONIUM;
+        StringCache stringCache = font.getStringCache();
+        add(label = new Label(font, string, width / 2,
+                (int) ((height - stringCache.getHeight(string, fontSize)) / 2.0f + stringCache.getAscent(string, fontSize)),
+                fontSize, StringOffsetType.CENTERED).compileAtOrigin());
     }
 
     @Override
     public void update() {
         super.update();
-        slider.update();
-        stringObject.update();
 
         if (movingByMouse) {
-            int sliderX = (int) Engine.mouse.getPosition().x - slider.getWidth() / 2;
+            int sliderX = (int) Engine.mouse.getPosition().x - getSceneX() - slider.getWidth() / 2;
 
             int maxXPos = getMaxX();
             int minXPos = getMinX();
@@ -60,47 +51,7 @@ public class Slider extends TexturedGuiObject {
         }
     }
 
-    @Override
-    public void updateMouseHover() {
-        super.updateMouseHover();
-        slider.updateMouseHover();
-    }
-
     protected void onValueChanged() {}
-
-    @Override
-    public void render() {
-        super.render();
-        slider.render();
-        stringObject.render();
-    }
-
-    @Override
-    public Slider setPosition(int x, int y) {
-        super.setPosition(x, y);
-        slider.setPosition(calculateSliderXPos(), y);
-        StringCache stringCache = stringObject.getStringCache();
-        stringObject.setPosition(x + width / 2, (int) (y + (height - stringCache.getHeight(stringObject.getString(),
-                stringObject.getFontSize())) / 2.0f + stringCache.getAscent(stringObject.getString(),
-                stringObject.getFontSize())));
-        return this;
-    }
-
-    @Override
-    public void setX(int x) {
-        super.setX(x);
-        slider.setX(calculateSliderXPos());
-        stringObject.setX(x + width / 2);
-    }
-
-    @Override
-    public void setY(int y) {
-        super.setY(y);
-        slider.setY(y);
-        StringCache stringCache = stringObject.getStringCache();
-        stringObject.setY((int) (y + (height - stringCache.getHeight(stringObject.getString(), stringObject.getFontSize())) / 2.0f
-                + stringCache.getAscent(stringObject.getString(), stringObject.getFontSize())));
-    }
 
     private int calculateSliderXPos() {
         int maxXPos = getMaxX();
@@ -109,24 +60,46 @@ public class Slider extends TexturedGuiObject {
     }
 
     private int getMaxX() {
-        return x + width - indent - slider.getWidth();
+        return width - indent - slider.getWidth();
     }
 
     private int getMinX() {
-        return x + indent;
+        return indent;
     }
 
     @Override
-    public boolean onMouseLeftClick() {
-        if (!isMouseHover()) return false;
-        movingByMouse = true;
-        onLeftClickSupplier.get();
-        return true;
+    public boolean isMouseHover() {
+        return super.isMouseHover() || slider.isMouseHover();
     }
 
     @Override
-    public boolean onMouseLeftRelease() {
+    public GuiObject mouseLeftClick() {
+        GuiObject guiObject = super.mouseLeftClick();
+
+        if (isMouseHover()) {
+            movingByMouse = true;
+        }
+
+        return guiObject;
+    }
+
+    @Override
+    public GuiObject mouseLeftRelease() {
         movingByMouse = false;
-        return false;
+        return super.mouseLeftRelease();
+    }
+
+    @Override
+    public Slider setHoverColor(float r, float g, float b, float a) {
+        slider.setHoverColor(r, g, b, a);
+        super.setHoverColor(r, g, b, a);
+        return this;
+    }
+
+    @Override
+    public Slider setHoverColor(Vector4f color) {
+        slider.setHoverColor(color.x, color.y, color.z, color.w);
+        super.setHoverColor(color);
+        return this;
     }
 }

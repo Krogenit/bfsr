@@ -14,17 +14,17 @@ public final class RigidBodyUtils {
     public final Vector2f angleToVelocity = new Vector2f();
     private final List<Direction> directions = new ArrayList<>();
 
-    public float getRotationDifference(RigidBody<?> gameObject, Vector2f vector) {
+    public float getRotationDifference(RigidBody gameObject, Vector2f vector) {
         return getRotationDifference(gameObject, vector.x, vector.y);
     }
 
-    private float getRotationDifference(RigidBody<?> gameObject, float x, float y) {
+    private float getRotationDifference(RigidBody gameObject, float x, float y) {
         Vector2f position = gameObject.getPosition();
         return angleToVelocity.set(gameObject.getCos(), gameObject.getSin()).angle(rotateToVector.set(x - position.x,
                 y - position.y));
     }
 
-    public void rotateToVector(RigidBody<?> gameObject, Vector2f vector, float rotationSpeed) {
+    public void rotateToVector(RigidBody gameObject, Vector2f vector, float rotationSpeed) {
         Body body = gameObject.getBody();
 
         float diffRad = getRotationDifference(gameObject, vector);
@@ -49,7 +49,7 @@ public final class RigidBodyUtils {
         body.setAngularVelocity(body.getAngularVelocity() * 0.98f);
     }
 
-    public List<Direction> calculateDirectionsToPoint(RigidBody<?> gameObject, Vector2f point) {
+    public List<Direction> calculateDirectionsToPoint(RigidBody gameObject, Vector2f point) {
         float diff = getRotationDifference(gameObject, point);
         float diffAbs = Math.abs(diff);
         directions.clear();
@@ -69,11 +69,11 @@ public final class RigidBodyUtils {
         return directions;
     }
 
-    public Direction calculateDirectionToPoint(RigidBody<?> gameObject, Vector2f point) {
+    public Direction calculateDirectionToPoint(RigidBody gameObject, Vector2f point) {
         return calculateDirectionToPoint(gameObject, point.x, point.y);
     }
 
-    public Direction calculateDirectionToPoint(RigidBody<?> gameObject, float x, float y) {
+    public Direction calculateDirectionToPoint(RigidBody gameObject, float x, float y) {
         float diff = getRotationDifference(gameObject, x, y);
         float diffAbs = Math.abs(diff);
 

@@ -1,10 +1,9 @@
 package net.bfsr.client.renderer;
 
 import lombok.RequiredArgsConstructor;
-import net.bfsr.client.gui.GuiManager;
 import net.bfsr.client.particle.ParticleManager;
-import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
@@ -14,6 +13,7 @@ import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.shader.AbstractShaderProgram;
+import net.bfsr.engine.util.RunnableUtils;
 
 @RequiredArgsConstructor
 public class GlobalRenderer {
@@ -29,6 +29,8 @@ public class GlobalRenderer {
     private final ParticleManager particleManager;
     private final WorldRenderer worldRenderer;
 
+    private Runnable debugBoxesRenderRunnable = RunnableUtils.EMPTY_RUNNABLE;
+
     public void init() {
         worldRenderer.init();
     }
@@ -38,10 +40,10 @@ public class GlobalRenderer {
     }
 
     public void render(float interpolation) {
-        profiler.startSection("prepareRender");
+        profiler.start("prepareRender");
         worldRenderer.prepareRender(particleManager.getParticlesCount(), interpolation);
 
-        profiler.endStartSection("globalRenderer.setup");
+        profiler.endStart("setup");
         renderer.resetDrawCalls();
         renderer.glClear();
         camera.calculateInterpolatedViewMatrix(interpolation);
@@ -49,19 +51,16 @@ public class GlobalRenderer {
         spriteRenderer.bind();
         shader.enable();
 
-        profiler.endStartSection("worldRenderer.render");
+        profiler.endStart("worldRenderer");
         worldRenderer.render();
 
-        if (ClientSettings.SHOW_DEBUG_BOXES.getBoolean()) {
-            profiler.endStartSection("debugRenderer");
-            renderDebug();
-        }
+        debugBoxesRenderRunnable.run();
 
-        profiler.endStartSection("guiManager.render");
+        profiler.endStart("gui");
         camera.bindGUI();
         guiManager.render();
         spriteRenderer.render(BufferType.GUI);
-        profiler.endSection();
+        profiler.end();
     }
 
     private void renderDebug() {
@@ -81,6 +80,17 @@ public class GlobalRenderer {
 
     public void createBackgroundTexture(long seed) {
         worldRenderer.createBackgroundTexture(seed);
+    }
+
+    public void setDebugBoxesEnabled(boolean value) {
+        if (value) {
+            debugBoxesRenderRunnable = () -> {
+                profiler.endStart("debugRenderer");
+                renderDebug();
+            };
+        } else {
+            debugBoxesRenderRunnable = RunnableUtils.EMPTY_RUNNABLE;
+        }
     }
 
     public ParticleRenderer getParticleRenderer() {

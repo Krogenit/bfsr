@@ -14,27 +14,28 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.operation.buffer.BufferOp;
-import org.locationtech.jts.operation.buffer.BufferParameters;
 
 import java.nio.ByteBuffer;
 
-public class DamageableRigidBodyRenderer<T extends DamageableRigidBody<?>> extends RigidBodyRender<T> {
+@Getter
+public class DamageableRigidBodyRenderer extends RigidBodyRender {
     private static final Vector4f CONTOUR_COLOR = new Vector4f(1.0f, 0.6f, 0.4f, 1.0f);
     private static final Vector4f CONTOUR_OFFSET_COLOR = new Vector4f(1.0f, 0.6f, 0.4f, 0.6f);
 
-    @Getter
     protected final DamageMaskTexture maskTexture;
+    protected final DamageableRigidBody damageableRigidBody;
 
-    DamageableRigidBodyRenderer(AbstractTexture texture, T object) {
-        this(texture, object, 1.0f, 1.0f, 1.0f, 1.0f);
-    }
-
-    DamageableRigidBodyRenderer(AbstractTexture texture, T object, float r, float g, float b, float a) {
+    DamageableRigidBodyRenderer(AbstractTexture texture, DamageableRigidBody object, float r, float g, float b, float a) {
         super(texture, object, r, g, b, a);
+        this.damageableRigidBody = object;
 
         DamageMask mask = object.getMask();
         maskTexture = new DamageMaskTexture(mask.getWidth(), mask.getHeight());
         maskTexture.createEmpty();
+    }
+
+    DamageableRigidBodyRenderer(AbstractTexture texture, DamageableRigidBody object) {
+        this(texture, object, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     @Override
@@ -50,8 +51,8 @@ public class DamageableRigidBodyRenderer<T extends DamageableRigidBody<?>> exten
     @Override
     public void renderAlpha() {
         Vector2f position = object.getPosition();
-        float sin = object.getSin();
-        float cos = object.getCos();
+        float sin = rigidBody.getSin();
+        float cos = rigidBody.getCos();
         Vector2f scale = object.getSize();
         spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
                 sin, cos, scale.x, scale.y, color.x, color.y, color.z, color.w, texture, maskTexture, BufferType.ENTITIES_ALPHA);
@@ -60,13 +61,13 @@ public class DamageableRigidBodyRenderer<T extends DamageableRigidBody<?>> exten
     @Override
     public void renderDebug() {
         super.renderDebug();
-        Polygon polygon = object.getPolygon();
+        Polygon polygon = damageableRigidBody.getPolygon();
         Vector2f position = object.getPosition();
         Vector2f interpolatedPosition = new Vector2f(
                 lastPosition.x + (position.x - lastPosition.x) * renderer.getInterpolation(),
                 lastPosition.y + (position.y - lastPosition.y) * renderer.getInterpolation());
-        float sin = lastSin + (object.getSin() - lastSin) * renderer.getInterpolation();
-        float cos = lastCos + (object.getCos() - lastCos) * renderer.getInterpolation();
+        float sin = lastSin + (rigidBody.getSin() - lastSin) * renderer.getInterpolation();
+        float cos = lastCos + (rigidBody.getCos() - lastCos) * renderer.getInterpolation();
 
         CoordinateSequence coordinateSequence = polygon.getExteriorRing().getCoordinateSequence();
         renderRing(interpolatedPosition.x, interpolatedPosition.y, sin, cos, coordinateSequence);
@@ -91,8 +92,7 @@ public class DamageableRigidBodyRenderer<T extends DamageableRigidBody<?>> exten
     }
 
     private void renderRingOffset(float x, float y, float sin, float cos, Polygon polygon) {
-        Polygon polygon1 = (Polygon) BufferOp.bufferOp(polygon, DamageSystem.CLIPPING_DELTA,
-                new BufferParameters(1, BufferParameters.CAP_SQUARE, BufferParameters.JOIN_MITRE, 1.0));
+        Polygon polygon1 = (Polygon) BufferOp.bufferOp(polygon, DamageSystem.BUFFER_DISTANCE, DamageSystem.BUFFER_PARAMETERS);
         CoordinateSequence coordinates = polygon1.getExteriorRing().getCoordinateSequence();
         int size = coordinates.size() - 1;
 

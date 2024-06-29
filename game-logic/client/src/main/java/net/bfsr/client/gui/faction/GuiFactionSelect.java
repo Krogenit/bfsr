@@ -5,8 +5,10 @@ import net.bfsr.client.language.Lang;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
-import net.bfsr.engine.gui.component.StringObject;
-import net.bfsr.engine.gui.object.TexturedGuiObject;
+import net.bfsr.engine.gui.component.GuiObject;
+import net.bfsr.engine.gui.component.Label;
+import net.bfsr.engine.gui.component.TexturedRectangle;
+import net.bfsr.engine.gui.component.TexturedRotatedRectangle;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
@@ -14,54 +16,55 @@ import net.bfsr.faction.Faction;
 import net.bfsr.network.packet.client.PacketFactionSelect;
 import org.joml.Vector2f;
 
-public class GuiFactionSelect extends Gui {
-    private int shipsStartIndex;
+import java.util.ArrayList;
+import java.util.List;
 
-    @Override
-    protected void initElements() {
-        registerGuiObject(new TexturedGuiObject(TextureRegister.guiFactionSelect).atCenter(-1024 / 2, -600 / 2)
+public class GuiFactionSelect extends Gui {
+    private final List<GuiObject> ships = new ArrayList<>(3);
+
+    public GuiFactionSelect() {
+        add(new TexturedRectangle(TextureRegister.guiFactionSelect).atCenter(-1024 / 2, -600 / 2)
                 .setSize(1024, 600));
-        registerGuiObject(new TexturedGuiObject(TextureRegister.guiLogoBFSR).atCenter(-216 / 2, -200 - 216 / 2)
+        add(new TexturedRectangle(TextureRegister.guiLogoBFSR).atCenter(-216 / 2, -200 - 216 / 2)
                 .setSize(216, 216));
-        registerGuiObject(new TexturedGuiObject(TextureRegister.guiBfsrText2).atCenter(-860 / 2, -200 - 80 / 2).setSize(860, 80));
-        registerGuiObject(new Button(Lang.getString("gui.selectFaction.human"), () -> {
+        add(new TexturedRectangle(TextureRegister.guiBfsrText2, 860, 80).atCenter(-860 / 2, -200 - 80 / 2));
+        add(new Button(Lang.getString("gui.selectFaction.human"), () -> {
             Core.get().sendTCPPacket(new PacketFactionSelect(Faction.HUMAN));
             Core.get().closeGui();
         }).atCenter(-309 - 300 / 2, 230 - 50 / 2));
-        registerGuiObject(new Button(Lang.getString("gui.selectFaction.saimon"), () -> {
+        add(new Button(Lang.getString("gui.selectFaction.saimon"), () -> {
             Core.get().sendTCPPacket(new PacketFactionSelect(Faction.SAIMON));
             Core.get().closeGui();
         }).atCenter(-1 - 300 / 2, 230 - 50 / 2));
-        registerGuiObject(new Button(Lang.getString("gui.selectFaction.engi"), () -> {
+        add(new Button(Lang.getString("gui.selectFaction.engi"), () -> {
             Core.get().sendTCPPacket(new PacketFactionSelect(Faction.ENGI));
             Core.get().closeGui();
         }).atCenter(309 - 300 / 2, 230 - 50 / 2));
 
-        shipsStartIndex = guiObjects.size();
-        registerGuiObject(new TexturedGuiObject(TextureRegister.shipHumanSmall0).centered().atCenter(-309 - 60, 70 - 60)
-                .setSize(120, 120));
-        registerGuiObject(new TexturedGuiObject(TextureRegister.shipSaimonSmall0).centered().atCenter(-85, 70 - 85)
-                .setSize(170, 170));
-        registerGuiObject(new TexturedGuiObject(TextureRegister.shipEngiSmall0).centered().atCenter(309 - 90, 70 - 90)
-                .setSize(180, 180));
+        ships.add(new TexturedRotatedRectangle(TextureRegister.shipHumanSmall0, 120, 120).atCenter(-309 - 60, 70 - 60));
+        ships.add(new TexturedRotatedRectangle(TextureRegister.shipSaimonSmall0, 170, 170).atCenter(-85, 70 - 85));
+        ships.add(new TexturedRotatedRectangle(TextureRegister.shipEngiSmall0, 180, 180).atCenter(309 - 90, 70 - 90));
 
-        StringObject stringObject = new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.maintext"), 24)
+        for (int i = 0; i < ships.size(); i++) {
+            add(ships.get(i));
+        }
+
+        Label label = new Label(FontType.XOLONIUM, Lang.getString("gui.selectFaction.maintext"), 24)
                 .compileAtOrigin();
-        registerGuiObject(stringObject.atCenter(-stringObject.getWidth() / 2, -96));
+        add(label.atCenter(-label.getWidth() / 2, -96));
 
         int discFontSize = 16;
-        registerGuiObject(new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.humanDisc"), discFontSize)
+        add(new Label(FontType.XOLONIUM, Lang.getString("gui.selectFaction.humanDisc"), discFontSize)
                 .compileAtOrigin().atCenter(-450, -64));
-        registerGuiObject(new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.saimonDisc"), discFontSize)
+        add(new Label(FontType.XOLONIUM, Lang.getString("gui.selectFaction.saimonDisc"), discFontSize)
                 .compileAtOrigin().atCenter(-142, -64));
-        registerGuiObject(new StringObject(FontType.XOLONIUM, Lang.getString("gui.selectFaction.engiDisc"), discFontSize)
+        add(new Label(FontType.XOLONIUM, Lang.getString("gui.selectFaction.engiDisc"), discFontSize)
                 .compileAtOrigin().atCenter(166, -64));
     }
 
-    private void updateRot(TexturedGuiObject guiObject, Vector2f mousePosition) {
+    private void updateRot(GuiObject guiObject, Vector2f mousePosition) {
         float rotSpeed = 0.04f;
 
-        guiObject.setLastRotation(guiObject.getRotation());
         if (guiObject.isIntersects(mousePosition)) {
             guiObject.setRotation(guiObject.getRotation() + rotSpeed);
 
@@ -96,9 +99,8 @@ public class GuiFactionSelect extends Gui {
         super.update();
 
         Vector2f position = Engine.mouse.getPosition();
-        for (int i = 0; i < 3; i++) {
-            TexturedGuiObject guiObject = (TexturedGuiObject) guiObjects.get(shipsStartIndex + i);
-            updateRot(guiObject, position);
+        for (int i = 0; i < ships.size(); i++) {
+            updateRot(ships.get(i), position);
         }
     }
 }

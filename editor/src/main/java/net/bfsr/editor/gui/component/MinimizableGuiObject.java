@@ -1,239 +1,230 @@
 package net.bfsr.editor.gui.component;
 
 import lombok.Getter;
-import lombok.Setter;
-import net.bfsr.engine.gui.component.StringObject;
-import net.bfsr.engine.gui.object.AbstractGuiObject;
-import net.bfsr.engine.gui.object.GuiObjectWithSubObjects;
-import net.bfsr.engine.gui.object.GuiObjectsHandler;
+import net.bfsr.editor.gui.renderer.MinimizableGuiObjectRenderer;
+import net.bfsr.engine.gui.component.GuiObject;
+import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.renderer.font.FontType;
 import net.bfsr.engine.renderer.font.StringCache;
-import net.bfsr.engine.util.MutableInt;
-import net.bfsr.engine.util.RunnableUtils;
 import org.joml.Vector4f;
 
-public class MinimizableGuiObject extends GuiObjectWithSubObjects {
+import java.util.ArrayList;
+import java.util.List;
+
+public class MinimizableGuiObject extends GuiObject {
     public static final int MINIMIZABLE_STRING_X_OFFSET = 20;
     private static final int STATIC_STRING_X_OFFSET = 6;
-    public static final int TRIANGLE_HALF_WIDTH = 4;
-    public static final int TRIANGLE_HALF_HEIGHT = 4;
 
     @Getter
     protected boolean maximized;
     @Getter
-    protected final StringObject stringObject;
+    protected final Label label;
+    protected final FontType fontType;
     protected final int fontSize;
     private final StringCache stringCache;
-    protected final int stringYOffset;
-    @Setter
-    private Runnable onMaximizeRunnable = RunnableUtils.EMPTY_RUNNABLE;
-    @Setter
-    private Runnable onMinimizeRunnable = RunnableUtils.EMPTY_RUNNABLE;
-    @Setter
+    private final int stringOffsetX, minimizableStringOffsetX;
+    protected final int stringOffsetY;
     @Getter
     protected boolean canMaximize = true;
+    protected final List<GuiObject> hideableObjects = new ArrayList<>();
+    @Getter
+    protected final int baseHeight;
 
-    public MinimizableGuiObject(int width, int height, String name, FontType fontType, int fontSize, int stringYOffset) {
+    public MinimizableGuiObject(int width, int height, String name, FontType fontType, int fontSize, int stringOffsetX, int stringOffsetY,
+                                int minimizableStringOffsetX) {
         super(width, height);
+        this.baseHeight = height;
+        this.fontType = fontType;
         this.fontSize = fontSize;
         this.stringCache = fontType.getStringCache();
-        this.stringObject = new StringObject(fontType, name, fontSize).compileAtOrigin();
-        this.stringYOffset = stringYOffset;
-        setHeightResizeFunction((integer, integer2) -> this.height);
+        this.label = new Label(fontType, name, fontSize).compileAtOrigin();
+        addNonConcealable(
+                label.atTopLeft(minimizableStringOffsetX, stringCache.getCenteredYOffset(name, height, fontSize) + stringOffsetY));
+        this.stringOffsetX = stringOffsetX;
+        this.stringOffsetY = stringOffsetY;
+        this.minimizableStringOffsetX = minimizableStringOffsetX;
+        setRenderer(new MinimizableGuiObjectRenderer(this));
+        setLeftReleaseRunnable(() -> {
+            if (maximized) {
+                maximized = false;
+                minimize();
+            } else if (canMaximize) {
+                maximized = true;
+                maximize();
+            }
+        });
     }
 
-    @Override
-    public void update() {
-        super.update();
-        stringObject.update();
+    public MinimizableGuiObject(int width, int height, String name, FontType fontType, int fontSize, int stringOffsetY) {
+        this(width, height, name, fontType, fontSize, STATIC_STRING_X_OFFSET, stringOffsetY, MINIMIZABLE_STRING_X_OFFSET);
     }
 
-    @Override
-    public boolean onMouseLeftRelease() {
-        if (!isMouseHover()) return false;
-
-        if (maximized) {
-            minimize();
-        } else {
-            maximize();
-        }
-
-        return true;
-    }
-
-    public void maximize() {
+    public void tryMaximize() {
         if (canMaximize && !maximized) {
             maximized = true;
-            registerSubElements(gui);
-            onMaximizeRunnable.run();
+            maximize();
         }
     }
 
-    public void minimize() {
+    protected void maximize() {
+        updateHeight();
+        addHideable();
+    }
+
+    protected void minimize() {
+        updateHeight();
+        removeHideable();
+    }
+
+    protected void updateHeight() {
         if (maximized) {
-            maximized = false;
-            unregisterSubElements(gui);
-            onMinimizeRunnable.run();
+            int height = baseHeight;
+            for (int i = 0; i < hideableObjects.size(); i++) {
+                height += hideableObjects.get(i).getHeight();
+            }
+
+            setHeight(height);
+        } else {
+            setHeight(baseHeight);
         }
     }
 
     protected void onNameChanged(String name) {
-        stringObject.setStringAndCompileAtOrigin(name);
+        label.setStringAndCompileAtOrigin(name);
     }
 
     protected void onStartMoving() {}
 
-    @Override
-    protected void registerSubElements(GuiObjectsHandler gui) {
+    private void addHideable() {
+        for (int i = 0; i < hideableObjects.size(); i++) {
+            super.add(hideableObjects.get(i));
+        }
+    }
+
+    private void removeHideable() {
+        for (int i = 0; i < hideableObjects.size(); i++) {
+            super.remove(hideableObjects.get(i));
+        }
+    }
+
+    protected void addHideable(GuiObject object) {
+        hideableObjects.add(object);
+        onHideableAdded(object);
+    }
+
+    private void addHideableAt(int index, GuiObject object) {
+        hideableObjects.add(index, object);
+        onHideableAdded(object);
+    }
+
+    private int addHideableBefore(GuiObject object, GuiObject beforeObject) {
+        int index = hideableObjects.indexOf(beforeObject);
+        if (index >= 0) {
+            addHideableAt(index, object);
+            return index;
+        } else {
+            throw new RuntimeException("Failed to add hideable gui object " + object + " before " + beforeObject);
+        }
+    }
+
+    private void onHideableAdded(GuiObject object) {
         if (maximized) {
-            super.registerSubElements(gui);
+            super.add(object);
+            updateHeight();
         }
+
+        updatePositionAndSize();
+    }
+
+    protected void removeHideable(GuiObject object) {
+        hideableObjects.remove(object);
+        super.remove(object);
+        updateHeight();
+        updatePositionAndSize();
+    }
+
+    protected void addNonConcealable(GuiObject guiObject) {
+        super.add(guiObject);
+    }
+
+    protected void removeNonConcealable(GuiObject guiObject) {
+        super.remove(guiObject);
     }
 
     @Override
-    public AbstractGuiObject atTopLeftCorner(int x, int y) {
-        super.atTopLeftCorner(x, y);
-        stringObject.atTopLeftCorner(
-                x + (canMaximize ? MINIMIZABLE_STRING_X_OFFSET : STATIC_STRING_X_OFFSET),
-                y + stringCache.getCenteredYOffset(stringObject.getString(), height, fontSize) + stringYOffset
-        );
-        return this;
+    public void add(GuiObject guiObject) {
+        addHideable(guiObject);
     }
 
     @Override
-    public AbstractGuiObject atTopRightCorner(int x, int y) {
-        super.atTopRightCorner(x, y);
-        stringObject.atTopRightCorner(
-                x + (canMaximize ? MINIMIZABLE_STRING_X_OFFSET : STATIC_STRING_X_OFFSET),
-                y + stringCache.getCenteredYOffset(stringObject.getString(), height, fontSize) + stringYOffset
-        );
-        return this;
+    public void addAt(int index, GuiObject guiObject) {
+        addHideableAt(index, guiObject);
     }
 
     @Override
-    protected void setRepositionConsumerForSubObjects() {
-        int height = this.height;
-        for (int i = 0; i < subObjects.size(); i++) {
-            AbstractGuiObject guiObject = subObjects.get(i);
-            subObjectsRepositionConsumer.setup(guiObject, MINIMIZABLE_STRING_X_OFFSET, height);
-            height += guiObject.getHeight();
-        }
+    public int addBefore(GuiObject guiObject, GuiObject beforeObject) {
+        return addHideableBefore(guiObject, beforeObject);
+    }
+
+    @Override
+    public void remove(GuiObject guiObject) {
+        removeHideable(guiObject);
     }
 
     @Override
     public void updatePositionAndSize(int width, int height) {
         super.updatePositionAndSize(width, height);
-        stringObject.updatePositionAndSize(width, height);
-        forEachSubObject(guiObject -> guiObject.updatePositionAndSize(width, height));
+        updateConcealableObjectsPositions();
     }
 
-    @Override
-    public void addSubObject(AbstractGuiObject object) {
-        subObjects.add(object);
-        if (gui != null && maximized) {
-            gui.registerGuiObject(object);
-        }
-    }
-
-    @Override
-    public void addSubObject(int index, AbstractGuiObject object) {
-        subObjects.add(index, object);
-        if (gui != null && maximized) {
-            gui.registerGuiObject(object);
-        }
-    }
-
-    @Override
-    public void renderNoInterpolation() {
-        super.renderNoInterpolation();
-        renderTriangle(x + 10, y + height / 2);
-    }
-
-    @Override
-    public void render() {
-        renderBase();
-
-        if (canMaximize) {
-            float interpolation = renderer.getInterpolation();
-            renderTriangle((int) (lastX + (x - lastX) * interpolation + 10),
-                    (int) (lastY + (y - lastY) * interpolation + height / 2));
+    public void updateConcealableObjectsPositions() {
+        int height = baseHeight;
+        for (int i = 0; i < hideableObjects.size(); i++) {
+            GuiObject guiObject = hideableObjects.get(i);
+            guiObject.atTopLeft(getStringOffsetX(), height);
+            height += guiObject.getHeight();
         }
 
-        stringObject.render();
+        updateHeight();
     }
 
-    protected void renderBase() {
-        if (isMouseHover()) {
-            guiRenderer.add(lastX, lastY, x, y, width, height, hoverColor.x, hoverColor.y, hoverColor.z,
-                    hoverColor.w);
-        }
-    }
-
-    private void renderTriangle(int centerX, int centerY) {
-        Vector4f textColor = stringObject.getColor();
-
-        if (maximized) {
-            guiRenderer.addPrimitive(centerX - TRIANGLE_HALF_WIDTH, centerY - TRIANGLE_HALF_HEIGHT, centerX,
-                    centerY + TRIANGLE_HALF_HEIGHT, centerX + TRIANGLE_HALF_WIDTH, centerY - TRIANGLE_HALF_HEIGHT,
-                    centerX - TRIANGLE_HALF_WIDTH, centerY - TRIANGLE_HALF_HEIGHT,
-                    textColor.x, textColor.y, textColor.z, textColor.w, 0);
-        } else {
-            guiRenderer.addPrimitive(centerX - TRIANGLE_HALF_WIDTH, centerY - TRIANGLE_HALF_HEIGHT,
-                    centerX - TRIANGLE_HALF_WIDTH, centerY + TRIANGLE_HALF_HEIGHT, centerX + TRIANGLE_HALF_WIDTH, centerY,
-                    centerX - TRIANGLE_HALF_WIDTH, centerY - TRIANGLE_HALF_HEIGHT,
-                    textColor.x, textColor.y, textColor.z, textColor.w, 0);
-        }
-    }
-
-    @Override
-    public void setY(int y) {
-        super.setY(y);
-        stringObject.setY(y + stringCache.getCenteredYOffset(stringObject.getString(), height, fontSize) + stringYOffset);
-        MutableInt subObjectsY = new MutableInt(y + height);
-        forEachSubObject(guiObject -> guiObject.setY(subObjectsY.getAndAdd(guiObject.getHeight())));
-    }
-
-    @Override
-    public MinimizableGuiObject setPosition(int x, int y) {
-        super.setPosition(x, y);
-        stringObject.setPosition(x + (canMaximize ? MINIMIZABLE_STRING_X_OFFSET : STATIC_STRING_X_OFFSET),
-                y + stringCache.getCenteredYOffset(stringObject.getString(), height, fontSize) + stringYOffset);
-        MutableInt subObjectsY = new MutableInt(y + height);
-        forEachSubObject(guiObject -> guiObject.setPosition(x + MINIMIZABLE_STRING_X_OFFSET,
-                subObjectsY.getAndAdd(guiObject.getHeight())));
-        return this;
+    protected void setCanMaximize(boolean canMaximize) {
+        this.canMaximize = canMaximize;
+        label.atTopLeft(getStringOffsetX(),
+                stringCache.getCenteredYOffset(label.getString(), baseHeight, fontSize) + stringOffsetY);
+        label.updatePositionAndSize();
     }
 
     @Override
     public MinimizableGuiObject setTextColor(float r, float g, float b, float a) {
-        stringObject.setColor(r, g, b, a).compileAtOrigin();
+        label.setColor(r, g, b, a).compileAtOrigin();
         return this;
     }
 
     public MinimizableGuiObject setTextColor(Vector4f color) {
-        this.setTextColor(color.x, color.y, color.z, color.w);
+        setTextColor(color.x, color.y, color.z, color.w);
         return this;
     }
 
     public MinimizableGuiObject setName(String string) {
-        stringObject.setStringAndCompile(string);
+        label.setStringAndCompileAtOrigin(string);
         return this;
     }
 
-    @Override
-    public int getHeight() {
-        if (maximized) {
-            int height = this.height;
-            for (int i = 0; i < subObjects.size(); i++) {
-                height += subObjects.get(i).getHeight();
-            }
-            return height;
-        } else {
-            return height;
-        }
+    private int getStringOffsetX() {
+        return canMaximize ? minimizableStringOffsetX : stringOffsetX;
     }
 
     public String getName() {
-        return stringObject.getString();
+        return label.getString();
+    }
+
+    @Override
+    public List<GuiObject> getGuiObjects() {
+        return hideableObjects;
+    }
+
+    public List<GuiObject> getNonHideableObjects() {
+        return guiObjects;
     }
 }
