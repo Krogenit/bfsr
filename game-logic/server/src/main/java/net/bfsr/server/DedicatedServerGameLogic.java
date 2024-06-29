@@ -6,7 +6,7 @@ import net.bfsr.server.config.ServerSettings;
 
 @Log4j2
 public class DedicatedServerGameLogic extends ServerGameLogic {
-    protected DedicatedServerGameLogic(Profiler profiler) {
+    public DedicatedServerGameLogic(Profiler profiler) {
         super(profiler);
     }
 

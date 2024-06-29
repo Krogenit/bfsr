@@ -1,15 +1,18 @@
 package net.bfsr.server;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.loop.AbstractGameLoop;
 import net.bfsr.engine.profiler.Profiler;
 
 @Log4j2
-@AllArgsConstructor
 public abstract class Server extends AbstractGameLoop {
-    protected final ServerGameLogic gameLogic;
-    private final Profiler profiler = new Profiler();
+    final ServerGameLogic gameLogic;
+    private final Profiler profiler;
+
+    protected Server(ServerGameLogic gameLogic) {
+        this.gameLogic = gameLogic;
+        profiler = gameLogic.getProfiler();
+    }
 
     @Override
     public void run() {
