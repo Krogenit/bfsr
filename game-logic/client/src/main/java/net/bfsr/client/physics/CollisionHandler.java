@@ -2,8 +2,10 @@ package net.bfsr.client.physics;
 
 import net.bfsr.client.particle.effect.GarbageSpawner;
 import net.bfsr.client.particle.effect.WeaponEffects;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.math.MathUtils;
+import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.Modules;
@@ -16,6 +18,7 @@ import net.bfsr.event.module.weapon.beam.BeamDamageShipHullEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageShipShieldEvent;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.physics.CommonCollisionHandler;
+import net.bfsr.physics.correction.DynamicCorrectionHandler;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
@@ -87,6 +90,14 @@ public class CollisionHandler extends CommonCollisionHandler {
                 ship2.setLastAttacker(ship1);
                 damageShipByCollision(ship2, contactX, contactY, normalX, normalY);
             }
+
+            if (ship1.isControlledByPlayer()) {
+                setDynamicCorrection(ship1);
+                setDynamicCorrection(ship2);
+            } else if (ship2.isControlledByPlayer()) {
+                setDynamicCorrection(ship2);
+                setDynamicCorrection(ship1);
+            }
         }
     }
 
@@ -102,6 +113,11 @@ public class CollisionHandler extends CommonCollisionHandler {
             } else {
                 WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
             }
+        }
+
+        if (ship.isControlledByPlayer()) {
+            setDynamicCorrection(ship);
+            setDynamicCorrection(wreck);
         }
     }
 
@@ -151,6 +167,11 @@ public class CollisionHandler extends CommonCollisionHandler {
         RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.15f, angleToVelocity);
         GarbageSpawner.smallGarbage(rand.nextInt(4), contactX, contactY,
                 velocity.x * 0.25f + angleToVelocity.x, velocity.y * 0.25f + angleToVelocity.y, 2.0f * rand.nextFloat());
+    }
+
+    private void setDynamicCorrection(RigidBody rigidBody) {
+        rigidBody.setCorrectionHandler(
+                new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), rigidBody.getCorrectionHandler()));
     }
 
     private boolean isShieldAlive(Shield shield) {

@@ -8,11 +8,12 @@ import net.bfsr.engine.event.EventBus;
 import net.bfsr.event.entity.RigidBodyAddToWorldEvent;
 import net.bfsr.event.entity.RigidBodyPostPhysicsUpdateEvent;
 import net.bfsr.event.entity.RigidBodyRemovedFromWorldEvent;
-import net.bfsr.network.packet.common.entity.PacketWorldSnapshot;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.RigidBodySpawnData;
 import net.bfsr.physics.CollisionMatrixType;
 import net.bfsr.physics.PhysicsUtils;
+import net.bfsr.physics.correction.CorrectionHandler;
+import net.bfsr.physics.correction.HistoryCorrectionHandler;
 import net.bfsr.physics.filter.ShipFilter;
 import net.bfsr.world.World;
 import org.dyn4j.dynamics.Body;
@@ -33,7 +34,7 @@ public class RigidBody extends GameObject {
     @Setter
     protected int id;
     @Getter
-    protected Vector2f velocity = new Vector2f();
+    protected final Vector2f velocity = new Vector2f();
     @Getter
     protected int lifeTime, maxLifeTime = DEFAULT_MAX_LIFE_TIME_IN_TICKS;
     @Getter
@@ -49,9 +50,9 @@ public class RigidBody extends GameObject {
     @Setter
     @Getter
     protected float health;
-
     protected final RigidBodyPostPhysicsUpdateEvent postPhysicsUpdateEvent = new RigidBodyPostPhysicsUpdateEvent(this);
-    private EntityDataHistoryManager dataHistoryManager;
+    @Getter
+    private CorrectionHandler correctionHandler = new HistoryCorrectionHandler();
 
     public RigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, GameObjectConfigData configData, int registryId) {
         super(x, y, sizeX, sizeY);
@@ -80,7 +81,7 @@ public class RigidBody extends GameObject {
         this.id = id;
         this.eventBus = world.getEventBus();
         this.eventBus.optimizeEvent(postPhysicsUpdateEvent);
-        this.dataHistoryManager = world.getEntityManager().getDataHistoryManager();
+        this.correctionHandler.setRigidBody(this);
         initBody();
     }
 
@@ -152,8 +153,13 @@ public class RigidBody extends GameObject {
         body.setLinearVelocity(x, y);
     }
 
-    private void setAngularVelocity(float angularVelocity) {
+    public void setAngularVelocity(float angularVelocity) {
         body.setAngularVelocity(angularVelocity);
+    }
+
+    public void setCorrectionHandler(CorrectionHandler correctionHandler) {
+        this.correctionHandler = correctionHandler;
+        correctionHandler.setRigidBody(this);
     }
 
     public float getX() {
@@ -170,24 +176,6 @@ public class RigidBody extends GameObject {
 
     public int getDataId() {
         return configData.getId();
-    }
-
-    public void updatePosition(double timestamp) {
-        TransformData transformData = dataHistoryManager.getTransformData(id, timestamp);
-        if (transformData != null) {
-            Vector2f epdPosition = transformData.getPosition();
-            setPosition(epdPosition.x, epdPosition.y);
-            setRotation(transformData.getSin(), transformData.getCos());
-        }
-    }
-
-    public void updateData(double timestamp) {
-        PacketWorldSnapshot.EntityData entityData = dataHistoryManager.getData(id, timestamp);
-        if (entityData != null) {
-            Vector2f velocity = entityData.getVelocity();
-            setVelocity(velocity.x, velocity.y);
-            setAngularVelocity(entityData.getAngularVelocity());
-        }
     }
 
     public int getCollisionMatrixType() {
