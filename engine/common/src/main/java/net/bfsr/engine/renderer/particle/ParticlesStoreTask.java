@@ -2,6 +2,7 @@ package net.bfsr.engine.renderer.particle;
 
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractRenderer;
+import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.util.MutableInt;
 
 import java.nio.ByteBuffer;
@@ -9,9 +10,11 @@ import java.nio.FloatBuffer;
 import java.util.List;
 
 public class ParticlesStoreTask implements Runnable {
+    private static final int MATERIAL_BUFFER_INDEX_OFFSET = AbstractSpriteRenderer.MATERIAL_DATA_SIZE / 4;
+
     private float interpolation;
-    private final MutableInt alphaBufferIndex = new MutableInt();
-    private final MutableInt additiveBufferIndex = new MutableInt();
+    private final MutableInt alphaMaterialBufferIndex = new MutableInt();
+    private final MutableInt additiveMaterialBufferIndex = new MutableInt();
     private final MutableInt alphaVertexBufferIndex = new MutableInt();
     private final MutableInt additiveVertexBufferIndex = new MutableInt();
     private int alphaParticlesStartIndex, alphaParticlesEndIndex;
@@ -42,20 +45,20 @@ public class ParticlesStoreTask implements Runnable {
         if (renderLayer == RenderLayer.DEFAULT_ALPHA_BLENDED) {
             runnables[0] = () -> storeParticles(particlesByRenderLayer[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()],
                     defaultAlphaBlendedVertexBuffer, defaultAlphaBlendedBuffer,
-                    interpolation, alphaParticlesStartIndex, alphaParticlesEndIndex, alphaVertexBufferIndex, alphaBufferIndex);
+                    interpolation, alphaParticlesStartIndex, alphaParticlesEndIndex, alphaVertexBufferIndex, alphaMaterialBufferIndex);
             runnables[1] = () -> storeParticles(particlesByRenderLayer[RenderLayer.DEFAULT_ADDITIVE.ordinal()],
                     defaultAdditiveBlendedVertexBuffer, defaultAdditiveBlendedBuffer,
                     interpolation, additiveParticlesStartIndex, additiveParticlesEndIndex, additiveVertexBufferIndex,
-                    additiveBufferIndex);
+                    additiveMaterialBufferIndex);
         } else {
             runnables[0] = () -> storeParticles(particlesByRenderLayer[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()],
                     backgroundAlphaBlendedVertexBuffer, backgroundAlphaBlendedBuffer, interpolation, alphaParticlesStartIndex,
                     alphaParticlesEndIndex, alphaVertexBufferIndex,
-                    alphaBufferIndex);
+                    alphaMaterialBufferIndex);
             runnables[1] = () -> storeParticles(particlesByRenderLayer[RenderLayer.BACKGROUND_ADDITIVE.ordinal()],
                     backgroundAdditiveBlendedVertexBuffer,
                     backgroundAdditiveBlendedBuffer, interpolation, additiveParticlesStartIndex, additiveParticlesEndIndex,
-                    additiveVertexBufferIndex, additiveBufferIndex);
+                    additiveVertexBufferIndex, additiveMaterialBufferIndex);
         }
     }
 
@@ -64,9 +67,9 @@ public class ParticlesStoreTask implements Runnable {
                        int additiveParticlesEndIndex) {
         this.interpolation = renderer.getInterpolation();
         this.alphaVertexBufferIndex.set(alphaBufferIndex);
-        this.alphaBufferIndex.set(alphaBufferIndex * 3);
+        this.alphaMaterialBufferIndex.set(alphaBufferIndex * MATERIAL_BUFFER_INDEX_OFFSET);
         this.additiveVertexBufferIndex.set(additiveBufferIndex);
-        this.additiveBufferIndex.set(additiveBufferIndex * 3);
+        this.additiveMaterialBufferIndex.set(additiveBufferIndex * MATERIAL_BUFFER_INDEX_OFFSET);
         this.alphaParticlesStartIndex = alphaParticlesStartIndex;
         this.alphaParticlesEndIndex = alphaParticlesEndIndex;
         this.additiveParticlesStartIndex = additiveParticlesStartIndex;

@@ -12,6 +12,7 @@ in Data {
     flat uvec2 maskTextureHandle;
     flat float fireAmount;
     flat float fireUVAnimation;
+    flat bool font;
 } in_Data;
 
 sampler2D fireTexture;
@@ -34,7 +35,12 @@ void main() {
 
     vec4 albedo = texture(sampler2D(in_Data.textureHandle), in_Data.textureCoords);
     if (!in_Data.useMask) {
-        out_Color = albedo * in_Data.color;
+        if (in_Data.font) {
+            out_Color = vec4(in_Data.color.xyz, in_Data.color.a * albedo.r);
+        } else {
+            out_Color = albedo * in_Data.color;
+        }
+
         return;
     }
 

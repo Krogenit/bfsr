@@ -5,6 +5,8 @@ import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
+import net.bfsr.engine.renderer.font.stb.STBTrueTypeGlyphsBuilder;
 import net.bfsr.engine.renderer.font.string.AbstractGLString;
 import net.bfsr.engine.renderer.font.string.AbstractStringGeometryBuilder;
 import net.bfsr.engine.renderer.font.string.AbstractStringRenderer;
@@ -35,9 +37,9 @@ public final class StringRenderer extends AbstractStringRenderer {
     }
 
     @Override
-    public int render(String string, StringCache stringCache, int fontSize, int x, int y, float r, float g, float b, float a,
+    public int render(String string, GlyphsBuilder glyphsBuilder, int fontSize, int x, int y, float r, float g, float b, float a,
                       int maxWidth, int indent, BufferType bufferType) {
-        stringGeometryBuilder.createString(glString, stringCache, string, x, y, fontSize, r, g, b, a, maxWidth, indent);
+        stringGeometryBuilder.createString(glString, glyphsBuilder, string, x, y, fontSize, r, g, b, a, maxWidth, indent);
         render(glString, bufferType);
         return glString.getHeight();
     }
@@ -89,5 +91,10 @@ public final class StringRenderer extends AbstractStringRenderer {
                           BufferType bufferType) {
         float interpolation = renderer.getInterpolation();
         addString(glString, lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation, bufferType);
+    }
+
+    @Override
+    public GlyphsBuilder createSTBTrueTypeGlyphsBuilder(String fontFile) {
+        return new STBTrueTypeGlyphsBuilder(fontFile);
     }
 }

@@ -49,16 +49,8 @@ public class Profiler {
         return results.getOrDefault(name, 0.0f);
     }
 
-    public void print() {
-        StringBuilder stringBuilder = new StringBuilder(16);
-        getResults(true).compute(node -> System.out.println(stringBuilder + node.getName() + ", time: " + node.getAverageTime()),
-                (node) -> stringBuilder.append(" "), (node) -> stringBuilder.deleteCharAt(stringBuilder.length() - 1));
-    }
-
     public Node getResults(boolean sort) {
-        results.object2FloatEntrySet().fastForEach(entry -> {
-            resultTree.getOrCreateCategory(entry.getKey()).addTime(entry.getFloatValue());
-        });
+        results.object2FloatEntrySet().fastForEach(entry -> resultTree.getOrCreateCategory(entry.getKey()).addTime(entry.getFloatValue()));
 
         if (sort) {
             resultTree.sort();

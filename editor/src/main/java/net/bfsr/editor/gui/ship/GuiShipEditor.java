@@ -32,7 +32,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
     private TestShip testShip;
     private final ShipConverter converter = Mappers.getMapper(ShipConverter.class);
     private boolean polygonCreationMode;
-    private final Label polygonCreationModeString = new Label(fontType, "Polygon creation mode", fontSize).compileAtOrigin();
+    private final Label polygonCreationModeString = new Label(font, "Polygon creation mode", fontSize);
     private PolygonProperty polygonProperty;
     private final GameObject polygonObject = new GameObject();
     private boolean lastDebugBoxesMode;

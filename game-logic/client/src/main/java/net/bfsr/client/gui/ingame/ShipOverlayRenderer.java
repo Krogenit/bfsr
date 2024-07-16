@@ -10,7 +10,7 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.TexturedRectangle;
 import net.bfsr.engine.math.MathUtils;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
@@ -35,7 +35,7 @@ public abstract class ShipOverlayRenderer extends TexturedRectangle {
     final AbstractTexture energy = Engine.assetsManager.getTexture(TextureRegister.guiEnergy);
     private final AbstractTexture shield = Engine.assetsManager.getTexture(TextureRegister.guiShield);
     private final AbstractTexture shieldTexture = Engine.assetsManager.getTexture(TextureRegister.shieldSmall0);
-    private final Label textShield = new Label(FontType.CONSOLA);
+    private final Label textShield = new Label(Font.CONSOLA);
     private final Core core = Core.get();
     private final RenderManager renderManager = core.getRenderManager();
     final Vector2f rotationVector = new Vector2f();
@@ -102,10 +102,10 @@ public abstract class ShipOverlayRenderer extends TexturedRectangle {
      * TODO: optimize shield value rendering
      */
     void renderShieldValue(Shield shield, int x, int y) {
-        textShield.setStringAndCompileAtOrigin(String.valueOf(Math.round(shield.getShieldHp())));
+        textShield.setString(String.valueOf(Math.round(shield.getShieldHp())));
         guiRenderer.addCentered(x, y + 70, textShield.getWidth() + 8, 18, 0.0f, 0.0f, 0.0f, 1.0f, shieldTexture);
         int x1 = x - textShield.getWidth() / 2;
-        int y1 = y + 74;
+        int y1 = y + 64;
         textShield.render(guiRenderer, x1, y1, x1, y1);
     }
 

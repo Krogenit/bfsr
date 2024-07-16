@@ -23,7 +23,7 @@ public class ChatInput extends InputBox {
             Core.get().sendTCPPacket(new PacketChatMessage(Core.get().getPlayerName() + ": " + input));
         }
 
-        label.setStringAndCompile("");
+        label.setString("");
         resetCursorPosition();
         enableTyping();
     }

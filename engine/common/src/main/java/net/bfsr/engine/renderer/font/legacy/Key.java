@@ -1,4 +1,4 @@
-package net.bfsr.engine.renderer.font;
+package net.bfsr.engine.renderer.font.legacy;
 
 public class Key {
     /**

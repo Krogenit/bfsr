@@ -8,7 +8,7 @@ import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.gui.component.ScrollPane;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.settings.SettingsCategory;
@@ -61,10 +61,10 @@ public class GuiSettings extends Gui {
         for (Map.Entry<SettingsCategory, List<ClientSettings>> entry : optionsByCategory.entrySet()) {
             List<ClientSettings> options = entry.getValue();
 
-            Label sectionText = new Label(FontType.XOLONIUM, Lang.getString("settings.section." +
+            Label sectionText = new Label(Font.XOLONIUM, Lang.getString("settings.section." +
                     entry.getKey().getCategoryName()), fontSectionSize, StringOffsetType.CENTERED);
-            sectionText.atTop(0, y);
-            scrollPane.add(sectionText.compile());
+            sectionText.atTop(0, y - 20);
+            scrollPane.add(sectionText);
 
             for (int i = 0; i < options.size(); i++) {
                 ClientSettings option = options.get(i);
@@ -96,8 +96,9 @@ public class GuiSettings extends Gui {
         add(new Rectangle(0, 0, width, backgroundHeight).setAllColors(0.1f, 0.2f, 0.4f, 1.0f));
         add(new Rectangle(0, height - backgroundHeight, width, backgroundHeight).setAllColors(0.1f, 0.2f, 0.4f, 1.0f));
 
-        add(new Label(FontType.XOLONIUM, Lang.getString("gui.settings.mainText"), 24, StringOffsetType.CENTERED).compileAtOrigin()
-                .atTop(0, 40));
+        String string = Lang.getString("gui.settings.mainText");
+        Label label = new Label(Font.XOLONIUM, string, 24, StringOffsetType.CENTERED);
+        add(label.atTop(0, label.getCenteredOffsetY(backgroundHeight)));
 
         add(new Button(Lang.getString("gui.settings.save"), 20, () -> {
             Core.get().getSettings().save();

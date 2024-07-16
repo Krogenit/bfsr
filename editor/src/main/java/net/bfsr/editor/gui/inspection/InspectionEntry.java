@@ -3,13 +3,13 @@ package net.bfsr.editor.gui.inspection;
 import lombok.Getter;
 import net.bfsr.editor.gui.EditorTheme;
 import net.bfsr.editor.gui.component.ComponentHolder;
-import net.bfsr.editor.gui.component.MinimizableGuiObject;
 import net.bfsr.editor.gui.renderer.InspectionEntryRenderer;
 import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.InputBox;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.gui.component.MinimizableGuiObject;
+import net.bfsr.engine.renderer.font.Font;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
@@ -29,9 +29,9 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
     private final Vector2i selectPosition = new Vector2i();
     private @Nullable InputBox inputBox;
 
-    public InspectionEntry(InspectionPanel<T> inspectionPanel, int width, int height, String name, FontType fontType, int fontSize,
+    public InspectionEntry(InspectionPanel<T> inspectionPanel, int width, int height, String name, Font font, int fontSize,
                            int stringOffsetY) {
-        super(width, height, name, fontType, fontSize, stringOffsetY);
+        super(width, height, name, font, fontSize, stringOffsetY);
         this.inspectionPanel = inspectionPanel;
         setCanMaximize(false);
         setRenderer(new InspectionEntryRenderer(this));
@@ -66,7 +66,7 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
             } else if (selected) {
                 if (mouseX >= sceneX + selectOffsetX && mouseX < sceneX + width) {
                     if (wasSelected) {
-                        inputBox = new InputBox(width - selectOffsetX, height, "", label.getStringCache(), fontSize, 3,
+                        inputBox = new InputBox(width - selectOffsetX, height, "", font, fontSize, 3,
                                 this.stringOffsetY, 300);
                         inputBox.setX(selectOffsetX);
                         inputBox.setOnUnselectedRunnable(() -> {

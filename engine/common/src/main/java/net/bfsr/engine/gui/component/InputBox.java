@@ -8,8 +8,8 @@ import net.bfsr.engine.gui.renderer.inputbox.InputBoxRenderer;
 import net.bfsr.engine.gui.renderer.inputbox.TexturedInputBoxRenderer;
 import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
-import net.bfsr.engine.renderer.font.FontType;
-import net.bfsr.engine.renderer.font.StringCache;
+import net.bfsr.engine.renderer.font.Font;
+import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.util.RunnableUtils;
 import org.jetbrains.annotations.Nullable;
@@ -65,48 +65,44 @@ public class InputBox extends GuiObject {
     private final AbstractKeyboard keyboard = Engine.keyboard;
     private final AbstractMouse mouse = Engine.mouse;
     private InputBoxRenderer renderer;
+    private final GlyphsBuilder glyphsBuilder;
 
-    public InputBox(int width, int height, String string, StringCache stringCache, int fontSize, int stringOffsetX, int stringOffsetY,
+    public InputBox(int width, int height, String string, Font font, int fontSize, int stringOffsetX, int stringOffsetY,
                     int maxLineSize) {
         super(width, height);
-        this.stringOffset = new Vector2i(stringOffsetX, stringCache.getCenteredYOffset(string, height, fontSize) + stringOffsetY);
+        this.stringOffset = new Vector2i(stringOffsetX, font.getGlyphsBuilder().getCenteredOffsetY(string, height, fontSize));
         this.maxStringOffsetX = stringOffset.x;
+        this.glyphsBuilder = font.getGlyphsBuilder();
 
         int stringX = stringOffset.x;
         int stringY = stringOffset.y;
-        this.label = new Label(stringCache, fontSize, textColor.x, textColor.y, textColor.z, textColor.w).atTopLeft(stringX,
+        this.label = new Label(font, fontSize, textColor.x, textColor.y, textColor.z, textColor.w).atTopLeft(stringX,
                 stringY);
-        add(this.emptyLabel = new Label(stringCache, string, fontSize, textColor.x, textColor.y, textColor.z,
-                textColor.w).atTopLeft(stringX, stringY).compileAtOrigin());
+        add(this.emptyLabel = new Label(font, string, fontSize, textColor.x, textColor.y, textColor.z, textColor.w).atTopLeft(
+                stringX, stringY));
 
         this.maxLineSize = maxLineSize;
         this.cursorHeight = (int) (height / 1.7f);
         this.renderer = new InputBoxRenderer(this);
     }
 
-    public InputBox(int width, int height, String string, FontType fontType, int fontSize, int stringOffsetX, int stringOffsetY,
-                    int maxLineSize) {
-        this(width, height, string, fontType.getStringCache(), fontSize, stringOffsetX, stringOffsetY, maxLineSize);
-    }
-
-    public InputBox(TextureRegister texture, int width, int height, String string, FontType fontType, int fontSize,
-                    int stringOffsetX, int stringOffsetY) {
-        this(width, height, string, fontType.getStringCache(), fontSize, stringOffsetX, stringOffsetY,
+    public InputBox(TextureRegister texture, int width, int height, String string, Font font, int fontSize, int stringOffsetX,
+                    int stringOffsetY) {
+        this(width, height, string, font, fontSize, stringOffsetX, stringOffsetY,
                 (int) (width / 1.2f));
         setRenderer(renderer = new TexturedInputBoxRenderer(this, texture));
     }
 
-    public InputBox(TextureRegister texture, int width, int height, String string, int fontSize, int stringOffsetX,
-                    int stringOffsetY) {
-        this(texture, width, height, string, FontType.XOLONIUM, fontSize, stringOffsetX, stringOffsetY);
+    public InputBox(TextureRegister texture, int width, int height, String string, int fontSize, int stringOffsetX, int stringOffsetY) {
+        this(texture, width, height, string, Font.XOLONIUM, fontSize, stringOffsetX, stringOffsetY);
     }
 
-    public InputBox(int width, int height, String string, FontType fontType, int fontSize, int stringOffsetX, int stringOffsetY) {
-        this(width, height, string, fontType.getStringCache(), fontSize, stringOffsetX, stringOffsetY, (int) (width / 1.2f));
+    public InputBox(int width, int height, String string, Font font, int fontSize, int stringOffsetX, int stringOffsetY) {
+        this(width, height, string, font, fontSize, stringOffsetX, stringOffsetY, (int) (width / 1.2f));
     }
 
     public InputBox(int width, int height, String string, int fontSize, int stringOffsetX, int stringOffsetY) {
-        this(width, height, string, FontType.XOLONIUM, fontSize, stringOffsetX, stringOffsetY);
+        this(width, height, string, Font.XOLONIUM, fontSize, stringOffsetX, stringOffsetY);
     }
 
     public InputBox(TextureRegister texture, String string, int fontSize, int stringOffsetX, int stringOffsetY) {
@@ -236,7 +232,7 @@ public class InputBox extends GuiObject {
                         cursorPosition = cursorPositionEnd;
                     }
                 }
-                label.setStringAndCompileAtOrigin(newString);
+                label.setString(newString);
                 onStringChanged();
                 checkCursorOutOfBoundsPosition(cursorPosition);
             }
@@ -259,7 +255,7 @@ public class InputBox extends GuiObject {
                         cursorPosition = cursorPositionEnd;
                     }
                 }
-                label.setStringAndCompileAtOrigin(newString);
+                label.setString(newString);
                 onStringChanged();
             }
         } else if (key == KEY_ENTER) {
@@ -285,8 +281,7 @@ public class InputBox extends GuiObject {
     }
 
     private void checkCursorOutOfBoundsPosition(int cursorPosition) {
-        checkCursorOutOfBoundsPosition(label.getStringCache()
-                        .getStringWidth(label.getString().substring(0, cursorPosition), label.getFontSize()),
+        checkCursorOutOfBoundsPosition(glyphsBuilder.getWidth(label.getString().substring(0, cursorPosition), label.getFontSize()),
                 stringOffsetMovingThreshold);
     }
 
@@ -339,8 +334,8 @@ public class InputBox extends GuiObject {
 
         if (cursorPosition == cursorPositionEnd) {
             String newString = prevString.substring(0, cursorPosition) + string + prevString.substring(cursorPosition);
-            if (label.getStringCache().getStringWidth(newString, label.getFontSize()) < maxLineSize) {
-                label.setStringAndCompileAtOrigin(newString);
+            if (glyphsBuilder.getWidth(newString, label.getFontSize()) < maxLineSize) {
+                label.setString(newString);
 
                 cursorPosition = cursorPositionEnd += string.length();
                 checkCursorOutOfBoundsPosition(cursorPosition);
@@ -355,8 +350,8 @@ public class InputBox extends GuiObject {
                 newString = prevString.substring(0, cursorPositionEnd) + string + prevString.substring(cursorPosition);
                 cursorPosition = cursorPositionEnd;
             }
-            if (label.getStringCache().getStringWidth(newString, label.getFontSize()) < maxLineSize) {
-                label.setStringAndCompileAtOrigin(newString);
+            if (glyphsBuilder.getWidth(newString, label.getFontSize()) < maxLineSize) {
+                label.setString(newString);
                 cursorPosition = cursorPositionEnd += string.length();
                 checkCursorOutOfBoundsPosition(cursorPosition);
                 onStringChanged();
@@ -418,7 +413,7 @@ public class InputBox extends GuiObject {
     }
 
     public InputBox setString(String string) {
-        this.label.setStringAndCompileAtOrigin(string);
+        this.label.setString(string);
         onStringChanged();
         return this;
     }

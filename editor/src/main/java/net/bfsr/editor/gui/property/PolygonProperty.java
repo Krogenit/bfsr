@@ -8,7 +8,7 @@ import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.InputBox;
 import net.bfsr.engine.gui.renderer.RectangleOutlinedRenderer;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -21,14 +21,14 @@ import static net.bfsr.editor.gui.EditorTheme.setupInputBox;
 
 @Log4j2
 public class PolygonProperty extends SimplePropertyList<Vector2fPropertiesHolder> {
-    public PolygonProperty(int width, int height, String name, FontType fontType, int fontSize, int propertyOffsetX, int stringOffsetY,
+    public PolygonProperty(int width, int height, String name, Font font, int fontSize, int propertyOffsetX, int stringOffsetY,
                            Supplier<Vector2fPropertiesHolder> supplier, Object object, List<Field> fields, Object[] values,
                            PropertyGuiElementType propertyGuiElementType, String propertyName, BiConsumer<Object, Integer> valueConsumer) {
-        super(width, height, name, fontType, fontSize, propertyOffsetX, stringOffsetY, supplier, object, fields, values,
+        super(width, height, name, font, fontSize, propertyOffsetX, stringOffsetY, supplier, object, fields, values,
                 propertyGuiElementType, propertyName, valueConsumer);
 
         int x1 = -addButton.getWidth() - 20;
-        Button removeButton = new Button(0, 0, 20, 20, "", fontType, fontSize, stringOffsetY, () -> {
+        Button removeButton = new Button(0, 0, 20, 20, "", font, fontSize, stringOffsetY, () -> {
             if (properties.size() > 0) {
                 removeProperty(properties.get(properties.size() - 1));
             }
@@ -49,7 +49,7 @@ public class PolygonProperty extends SimplePropertyList<Vector2fPropertiesHolder
             }
         });
 
-        Button polygonCreationModeButton = new Button(0, 0, 100, 20, "Edit polygon", fontType, fontSize, stringOffsetY, () -> {
+        Button polygonCreationModeButton = new Button(0, 0, 100, 20, "Edit polygon", font, fontSize, stringOffsetY, () -> {
             Gui gui = Core.get().getGuiManager().getGui();
             if (gui instanceof GuiEditor) {
                 ((GuiEditor<?, ?>) gui).switchPolygonEditMode(this);
@@ -58,11 +58,11 @@ public class PolygonProperty extends SimplePropertyList<Vector2fPropertiesHolder
         x1 -= polygonCreationModeButton.getWidth();
         add(setupButton(polygonCreationModeButton).atBottomRight(x1, -baseHeight));
 
-        Button scaleButton = new Button(60, 20, "Scale", fontType, fontSize, stringOffsetY);
+        Button scaleButton = new Button(60, 20, "Scale", font, fontSize, stringOffsetY);
         x1 -= scaleButton.getWidth();
         add(setupButton(scaleButton).atBottomRight(x1, -baseHeight));
 
-        InputBox scaleInputBox = new InputBox(50, height, "", fontType, fontSize, 3, stringOffsetY);
+        InputBox scaleInputBox = new InputBox(50, height, "", font, fontSize, 3, stringOffsetY);
         x1 -= scaleInputBox.getWidth();
         add(setupInputBox(scaleInputBox).atBottomRight(x1, -baseHeight));
 

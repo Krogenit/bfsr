@@ -526,10 +526,6 @@ public class GuiObject {
         return y + parent.getSceneY();
     }
 
-    public int getYForScroll() {
-        return y;
-    }
-
     public void clear() {
         for (int i = 0, size = guiObjects.size(); i < size; i++) {
             guiObjects.get(i).clear();
