@@ -60,18 +60,17 @@ public class DebugInfoElement extends MinimizableGuiObject {
 
         int width = 300 - STATIC_STRING_X_OFFSET - 10;
         int height = 20;
-        int stringOffsetY = 12;
         int y = height;
         int yOffset = 14;
-        addDebugLabel(y, stringOffsetY, "BFSR Client " + Core.GAME_VERSION + "\n", label1 -> {});
+        addDebugLabel(y, "BFSR Client " + Core.GAME_VERSION + "\n", label1 -> {});
         y += yOffset;
-        addDebugLabel(y, stringOffsetY, "", label1 -> {
+        addDebugLabel(y, "", label1 -> {
             ServerGameLogic server = ServerGameLogic.getInstance();
             int ups = server != null ? server.getUps() : 0;
             label1.setString("FPS " + Engine.renderer.getFps() + ", Local Server UPS " + ups);
         });
         y += yOffset;
-        addDebugLabel(y, stringOffsetY, "", label1 -> {
+        addDebugLabel(y, "", label1 -> {
             Runtime runtime = Runtime.getRuntime();
             long maxMemory = runtime.maxMemory();
             long totalMemory = runtime.totalMemory();
@@ -83,12 +82,12 @@ public class DebugInfoElement extends MinimizableGuiObject {
                     "MB up to " + maxMemoryMB + "MB");
         });
         y += yOffset;
-        addDebugLabel(y, stringOffsetY, "", label1 -> {
+        addDebugLabel(y, "", label1 -> {
             Vector2f mousePosition = mouse.getPosition();
             label1.setString("Mouse screen pos: " + (int) mousePosition.x + ", " + (int) mousePosition.y);
         });
         y += yOffset;
-        addDebugLabel(y, stringOffsetY, "", label1 -> {
+        addDebugLabel(y, "", label1 -> {
             AbstractCamera camera = Engine.renderer.camera;
             Vector2f mouseWorldPosition = mouse.getWorldPosition(camera);
             label1.setString("Mouse world pos: " + DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.x) +
@@ -97,10 +96,10 @@ public class DebugInfoElement extends MinimizableGuiObject {
         y += yOffset;
         addMinimizableWithLabel(width, height, y, "Profiler", profilerLabel);
         y += height;
-        addMinimizableWithLabel(width, height, y, "Network", createLabel(0, 0, "",
+        addMinimizableWithLabel(width, height, y, "Network", createLabel(0, "",
                 label1 -> label1.setString("Ping: " + DecimalUtils.strictFormatWithToDigits(ping) + "ms")));
         y += height;
-        addMinimizableWithLabel(width, height, y, "Render", createLabel(0, stringOffsetY, "",
+        addMinimizableWithLabel(width, height, y, "Render", createLabel(0, "",
                 label1 -> {
                     AbstractCamera camera = Engine.renderer.camera;
                     Vector2f camPos = camera.getPosition();
@@ -114,7 +113,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
                                     "single-threaded"));
                 }));
         y += height;
-        addMinimizableWithLabel(width, height, y, "World", createLabel(0, stringOffsetY, "",
+        addMinimizableWithLabel(width, height, y, "World", createLabel(0, "",
                 label1 -> {
                     World world = core.getWorld();
                     int bulletsCount = world.getBulletsCount();
@@ -147,7 +146,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
                             "\nShip wrecks count: " + shipWreckCount + "/" + sShipWrecksCount);
                 }));
         y += height;
-        addMinimizableWithLabel(width, height, y, "Player ship", createLabel(0, stringOffsetY, "",
+        addMinimizableWithLabel(width, height, y, "Player ship", createLabel(0, "",
                 label1 -> {
                     Ship playerShip = playerInputController.getShip();
                     if (playerShip != null) {
@@ -155,16 +154,6 @@ public class DebugInfoElement extends MinimizableGuiObject {
                         Vector2f velocity = playerShip.getVelocity();
                         Shield shield = playerShip.getModules().getShield();
                         Reactor reactor = playerShip.getModules().getReactor();
-                        stringBuilder.append("\nPos: ").append(DecimalUtils.strictFormatWithToDigits(pos.x)).append(", ")
-                                .append(DecimalUtils.strictFormatWithToDigits(pos.y));
-                        stringBuilder.append("\nVelocity: ").append(DecimalUtils.strictFormatWithToDigits(velocity.x)).append(", ")
-                                .append(DecimalUtils.strictFormatWithToDigits(velocity.y));
-                        stringBuilder.append("\nMass: ")
-                                .append(DecimalUtils.strictFormatWithToDigits(playerShip.getBody().getMass().getMass()));
-                        stringBuilder.append("\nShield: ").append(DecimalUtils.strictFormatWithToDigits(shield.getShieldHp())).append("/")
-                                .append(DecimalUtils.strictFormatWithToDigits(shield.getMaxHp()));
-                        stringBuilder.append("\nReactor: ").append(DecimalUtils.strictFormatWithToDigits(reactor.getEnergy())).append("/")
-                                .append(DecimalUtils.strictFormatWithToDigits(reactor.getMaxEnergy()));
 
                         label1.setString("Ship: " + playerShip.getClass().getSimpleName() +
                                 "\nPos: " + DecimalUtils.strictFormatWithToDigits(pos.x) + ", " +
@@ -181,7 +170,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
                     }
                 }));
         y += height;
-        addMinimizableWithLabel(width, height, y, "Selected Ship", createLabel(0, stringOffsetY, "",
+        addMinimizableWithLabel(width, height, y, "Selected Ship", createLabel(0, "",
                 label1 -> {
                     Ship ship = hud.getSelectedShip();
                     if (ship != null) {
@@ -192,11 +181,11 @@ public class DebugInfoElement extends MinimizableGuiObject {
                 }));
     }
 
-    private void addDebugLabel(int y, int stringOffsetY, String text, Consumer<Label> updateConsumer) {
-        scrollPane.add(createLabel(y, stringOffsetY, text, updateConsumer));
+    private void addDebugLabel(int y, String text, Consumer<Label> updateConsumer) {
+        scrollPane.add(createLabel(y, text, updateConsumer));
     }
 
-    private Label createLabel(int y, int stringOffsetY, String text, Consumer<Label> updateConsumer) {
+    private Label createLabel(int y, String text, Consumer<Label> updateConsumer) {
         return new Label(Font.CONSOLA, text, 0, 0, FONT_SIZE) {
             @Override
             public void update() {
