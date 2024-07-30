@@ -5,7 +5,13 @@ import net.bfsr.damage.DamageMask;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.server.dto.ShipModel;
-import org.mapstruct.*;
+import org.mapstruct.AfterMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.Mappings;
+import org.mapstruct.ObjectFactory;
+import org.mapstruct.TargetType;
 
 import java.util.List;
 
@@ -27,9 +33,10 @@ public abstract class ShipConverter {
             @Mapping(target = "hull", ignore = true), @Mapping(target = "reactor", ignore = true),
             @Mapping(target = "registryId", ignore = true), @Mapping(target = "fixturesToRemove", ignore = true),
             @Mapping(target = "connectedObjects", ignore = true), @Mapping(target = "collisionTimer", ignore = true),
-            @Mapping(target = "chronologicalDataProcessor", ignore = true), @Mapping(target = "lastAttacker", ignore = true),
-            @Mapping(target = "positionCalculator", ignore = true), @Mapping(target = "ai", ignore = true),
-            @Mapping(target = "updateRunnable", ignore = true), @Mapping(target = "mask", ignore = true)
+            @Mapping(target = "updateRunnable", ignore = true), @Mapping(target = "mask", ignore = true),
+            @Mapping(target = "angularVelocity", ignore = true), @Mapping(target = "correctionHandler", ignore = true),
+            @Mapping(target = "crew", ignore = true), @Mapping(target = "lastAttacker", ignore = true),
+            @Mapping(target = "ai", ignore = true), @Mapping(target = "shipData", ignore = true)
     })
     public abstract Ship from(ShipModel shipModel);
 

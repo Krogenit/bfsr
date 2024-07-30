@@ -14,10 +14,8 @@ import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
-import net.bfsr.entity.EntityDataHistoryManager;
 import net.bfsr.entity.PositionHistory;
 import net.bfsr.entity.RigidBody;
-import net.bfsr.entity.TransformData;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.math.Direction;
@@ -27,6 +25,9 @@ import net.bfsr.network.packet.input.PacketMouseLeftRelease;
 import net.bfsr.network.packet.input.PacketShipMove;
 import net.bfsr.network.packet.input.PacketShipStopMove;
 import net.bfsr.network.packet.input.PacketSyncPlayerMousePosition;
+import net.bfsr.physics.correction.DynamicCorrectionHandler;
+import net.bfsr.physics.correction.HistoryCorrectionHandler;
+import net.bfsr.physics.correction.LocalPlayerInputCorrectionHandler;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.geometry.AABB;
 import org.joml.Vector2f;
@@ -54,10 +55,13 @@ public class PlayerInputController extends InputController {
     private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
     private final PositionHistory positionHistory = new PositionHistory(500);
     private EventBus eventBus;
+    private LocalPlayerInputCorrectionHandler localPlayerInputCorrectionHandler;
 
     @Override
     public void init() {
         core = Core.get();
+        localPlayerInputCorrectionHandler = new LocalPlayerInputCorrectionHandler(positionHistory,
+                Core.get().getClientRenderDelayInNanos());
         guiManager = core.getGuiManager();
         eventBus = core.getEventBus();
         eventBus.register(this);
@@ -229,36 +233,16 @@ public class PlayerInputController extends InputController {
 
     public void setShip(Ship ship) {
         if (this.ship != null) {
-            this.ship.resetPositionCalculatorAndChronologicalProcessor();
+            this.ship.setCorrectionHandler(
+                    new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), new HistoryCorrectionHandler()));
             this.ship.setControlledByPlayer(false);
         }
 
         this.ship = ship;
 
         if (ship != null) {
-            EntityDataHistoryManager historyManager = ship.getWorld().getEntityManager().getDataHistoryManager();
-            ship.setPositionCalculator(timestamp -> {
-                Vector2f position = ship.getPosition();
-                double time = timestamp + Core.get().getClientRenderDelayInNanos();
-                positionHistory.addPositionData(position, ship.getSin(), ship.getCos(), time);
-
-                TransformData serverTransformData = historyManager.getTransformData(ship.getId(), timestamp);
-
-                if (serverTransformData == null) {
-                    return;
-                }
-
-                TransformData localTransformData = positionHistory.get(timestamp);
-                if (localTransformData != null) {
-                    Vector2f serverPosition = serverTransformData.getPosition();
-                    Vector2f localPosition = localTransformData.getPosition();
-                    float dx = serverPosition.x - localPosition.x;
-                    float dy = serverPosition.y - localPosition.y;
-                    ship.setPosition(position.x + dx, position.y + dy);
-                    positionHistory.correction(dx, dy);
-                }
-            });
-            ship.setChronologicalDataProcessor(timestamp -> {});
+            ship.setCorrectionHandler(
+                    new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), localPlayerInputCorrectionHandler));
             ship.setControlledByPlayer(true);
         }
     }
