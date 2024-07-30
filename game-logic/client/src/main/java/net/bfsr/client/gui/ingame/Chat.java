@@ -5,7 +5,7 @@ import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.gui.component.TexturedRectangle;
 import net.bfsr.engine.gui.renderer.RectangleTexturedRenderer;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 
 public class Chat extends TexturedRectangle {
@@ -23,9 +23,8 @@ public class Chat extends TexturedRectangle {
 
     public void addChatMessage(String message) {
         int y = scrollPane.getTotalHeight() +
-                FontType.DEFAULT.getStringCache().getStringHeight(message, chatInput.getFontSize(), chatInput.getWidth() - 40, -1);
-        Label label = new Label(FontType.DEFAULT, message, 0, y, chatInput.getFontSize()).compileAtOrigin();
-        scrollPane.add(label.atTopLeft(0, y));
+                Font.SANS_SERIF_LEGACY.getGlyphsBuilder().getHeight(message, chatInput.getFontSize(), chatInput.getWidth() - 40, -1);
+        scrollPane.add(new Label(Font.SANS_SERIF_LEGACY, message, 0, y, chatInput.getFontSize()).atTopLeft(0, y));
         scrollPane.scrollBottom();
     }
 

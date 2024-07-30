@@ -1,11 +1,8 @@
-package net.bfsr.editor.gui.component;
+package net.bfsr.engine.gui.component;
 
 import lombok.Getter;
-import net.bfsr.editor.gui.renderer.MinimizableGuiObjectRenderer;
-import net.bfsr.engine.gui.component.GuiObject;
-import net.bfsr.engine.gui.component.Label;
-import net.bfsr.engine.renderer.font.FontType;
-import net.bfsr.engine.renderer.font.StringCache;
+import net.bfsr.engine.gui.renderer.MinimizableGuiObjectRenderer;
+import net.bfsr.engine.renderer.font.Font;
 import org.joml.Vector4f;
 
 import java.util.ArrayList;
@@ -13,15 +10,14 @@ import java.util.List;
 
 public class MinimizableGuiObject extends GuiObject {
     public static final int MINIMIZABLE_STRING_X_OFFSET = 20;
-    private static final int STATIC_STRING_X_OFFSET = 6;
+    public static final int STATIC_STRING_X_OFFSET = 6;
 
     @Getter
     protected boolean maximized;
     @Getter
     protected final Label label;
-    protected final FontType fontType;
+    protected final Font font;
     protected final int fontSize;
-    private final StringCache stringCache;
     private final int stringOffsetX, minimizableStringOffsetX;
     protected final int stringOffsetY;
     @Getter
@@ -29,20 +25,20 @@ public class MinimizableGuiObject extends GuiObject {
     protected final List<GuiObject> hideableObjects = new ArrayList<>();
     @Getter
     protected final int baseHeight;
+    private int hideableObjectsOffsetX;
 
-    public MinimizableGuiObject(int width, int height, String name, FontType fontType, int fontSize, int stringOffsetX, int stringOffsetY,
-                                int minimizableStringOffsetX) {
+    public MinimizableGuiObject(int width, int height, String name, Font font, int fontSize, int stringOffsetX, int stringOffsetY,
+                                int minimizableStringOffsetX, int hideableObjectsOffsetX) {
         super(width, height);
         this.baseHeight = height;
-        this.fontType = fontType;
+        this.font = font;
         this.fontSize = fontSize;
-        this.stringCache = fontType.getStringCache();
-        this.label = new Label(fontType, name, fontSize).compileAtOrigin();
-        addNonConcealable(
-                label.atTopLeft(minimizableStringOffsetX, stringCache.getCenteredYOffset(name, height, fontSize) + stringOffsetY));
+        this.label = new Label(font, name, fontSize);
+        addNonConcealable(label.atTopLeft(minimizableStringOffsetX, label.getCenteredOffsetY(height)));
         this.stringOffsetX = stringOffsetX;
         this.stringOffsetY = stringOffsetY;
         this.minimizableStringOffsetX = minimizableStringOffsetX;
+        this.hideableObjectsOffsetX = hideableObjectsOffsetX;
         setRenderer(new MinimizableGuiObjectRenderer(this));
         setLeftReleaseRunnable(() -> {
             if (maximized) {
@@ -55,8 +51,9 @@ public class MinimizableGuiObject extends GuiObject {
         });
     }
 
-    public MinimizableGuiObject(int width, int height, String name, FontType fontType, int fontSize, int stringOffsetY) {
-        this(width, height, name, fontType, fontSize, STATIC_STRING_X_OFFSET, stringOffsetY, MINIMIZABLE_STRING_X_OFFSET);
+    public MinimizableGuiObject(int width, int height, String name, Font font, int fontSize, int stringOffsetY) {
+        this(width, height, name, font, fontSize, STATIC_STRING_X_OFFSET, stringOffsetY, MINIMIZABLE_STRING_X_OFFSET,
+                MINIMIZABLE_STRING_X_OFFSET);
     }
 
     public void tryMaximize() {
@@ -90,7 +87,7 @@ public class MinimizableGuiObject extends GuiObject {
     }
 
     protected void onNameChanged(String name) {
-        label.setStringAndCompileAtOrigin(name);
+        label.setString(name);
     }
 
     protected void onStartMoving() {}
@@ -181,7 +178,7 @@ public class MinimizableGuiObject extends GuiObject {
         int height = baseHeight;
         for (int i = 0; i < hideableObjects.size(); i++) {
             GuiObject guiObject = hideableObjects.get(i);
-            guiObject.atTopLeft(getStringOffsetX(), height);
+            guiObject.atTopLeft(hideableObjectsOffsetX, height);
             height += guiObject.getHeight();
         }
 
@@ -190,14 +187,13 @@ public class MinimizableGuiObject extends GuiObject {
 
     protected void setCanMaximize(boolean canMaximize) {
         this.canMaximize = canMaximize;
-        label.atTopLeft(getStringOffsetX(),
-                stringCache.getCenteredYOffset(label.getString(), baseHeight, fontSize) + stringOffsetY);
+        label.atTopLeft(getStringOffsetX(), label.getCenteredOffsetY(baseHeight) + stringOffsetY);
         label.updatePositionAndSize();
     }
 
     @Override
     public MinimizableGuiObject setTextColor(float r, float g, float b, float a) {
-        label.setColor(r, g, b, a).compileAtOrigin();
+        label.setColor(r, g, b, a);
         return this;
     }
 
@@ -207,7 +203,7 @@ public class MinimizableGuiObject extends GuiObject {
     }
 
     public MinimizableGuiObject setName(String string) {
-        label.setStringAndCompileAtOrigin(string);
+        label.setString(string);
         return this;
     }
 

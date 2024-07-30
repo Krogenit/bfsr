@@ -3,7 +3,6 @@ package net.bfsr.editor.gui.inspection;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.Core;
-import net.bfsr.editor.gui.component.MinimizableGuiObject;
 import net.bfsr.editor.gui.component.receive.DragTarget;
 import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.engine.Engine;
@@ -12,10 +11,11 @@ import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.Label;
+import net.bfsr.engine.gui.component.MinimizableGuiObject;
 import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.renderer.AbstractRenderer;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.util.MutableInt;
 import org.jetbrains.annotations.Nullable;
@@ -41,7 +41,7 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
     private final String name;
     @Getter
     private final ScrollPane scrollPane;
-    private final FontType fontType;
+    private final Font font;
     private final int fontSize;
     private final int stringOffsetY;
     private final int elementHeight = 20;
@@ -58,23 +58,23 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
     private long hoverTime;
     private final List<Button> bottomButtons = new ArrayList<>();
 
-    public InspectionPanel(Gui gui, String name, int width, int height, FontType fontType, int fontSize, int stringOffsetY) {
+    public InspectionPanel(Gui gui, String name, int width, int height, Font font, int fontSize, int stringOffsetY) {
         super(width, height);
         this.gui = gui;
         this.name = name;
         this.scrollPane = setupScrollPane(new ScrollPane(width, height - elementHeight, 16));
-        this.fontType = fontType;
+        this.font = font;
         this.fontSize = fontSize;
         this.stringOffsetY = stringOffsetY;
         setWidthFunction((width1, height1) -> getPanelWidth()).updatePositionAndSize();
-        add(new Label(fontType, name, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w).compileAtOrigin()
-                .atTopLeft(0, fontType.getStringCache().getCenteredYOffset(name, elementHeight, fontSize) + stringOffsetY));
+        Label label = new Label(font, name, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w);
+        add(label.atTopLeft(0, label.getCenteredOffsetY(elementHeight)));
         add(scrollPane.atTopLeft(0, elementHeight).setWidthFunction((width1, height1) -> getPanelWidth())
                 .setHeightFunction((width1, height1) -> this.height - elementHeight));
     }
 
     public void addBottomButton(int x, int y, String name, Runnable runnable) {
-        Button button = new Button(scrollPane.getWidth(), elementHeight, name, fontType, fontSize, stringOffsetY, runnable);
+        Button button = new Button(scrollPane.getWidth(), elementHeight, name, font, fontSize, stringOffsetY, runnable);
         add(setupButton(button).atBottomLeft(x, y).setWidthFunction((width1, height1) -> getPanelWidth()));
         bottomButtons.add(button);
         scrollPane.setHeight(renderer.getScreenHeight() - elementHeight - bottomButtons.size() * elementHeight);

@@ -14,7 +14,7 @@ import java.util.concurrent.Future;
 public abstract class AbstractSpriteRenderer {
     private static final int VERTEX_DATA_SIZE = 4;
     public static final int VERTEX_DATA_SIZE_IN_BYTES = VERTEX_DATA_SIZE << 2;
-    private static final int MATERIAL_DATA_SIZE = 12;
+    public static final int MATERIAL_DATA_SIZE = 16;
     public static final int MATERIAL_DATA_SIZE_IN_BYTES = MATERIAL_DATA_SIZE << 2;
 
     public abstract void init();
@@ -60,6 +60,9 @@ public abstract class AbstractSpriteRenderer {
                                      FloatBuffer floatBuffer, MutableInt bufferIndex);
     public abstract void putVerticesClockWise(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4,
                                               FloatBuffer floatBuffer, MutableInt bufferIndex);
+    public abstract void putVertices(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4,
+                                     float u1, float v1, float u2, float v2, float u3, float v3, float u4, float v4,
+                                     FloatBuffer floatBuffer, MutableInt bufferIndex);
     public abstract void putVertices(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin,
                                      float cos, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
                                      float interpolation, FloatBuffer floatBuffer, MutableInt bufferIndex);
@@ -67,16 +70,13 @@ public abstract class AbstractSpriteRenderer {
                                              FloatBuffer floatBuffer, MutableInt bufferIndex);
     public abstract void putVerticesCenteredClockWise(float x, float y, float sin, float cos, float halfSizeX, float halfSizeY,
                                                       FloatBuffer floatBuffer, MutableInt bufferIndex);
-    public abstract void putVerticesCentered(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer,
-                                             MutableInt bufferIndex);
+    public abstract void putVerticesCentered(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer, MutableInt bufferIndex);
     public abstract void putVerticesCenteredClockWise(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer,
                                                       MutableInt bufferIndex);
 
-
     public abstract void putColor(float r, float g, float b, float a, ByteBuffer byteBuffer, MutableInt bufferIndex);
-    public abstract void putColor(Vector4f lastColor, Vector4f color, ByteBuffer byteBuffer, MutableInt index,
-                                  float interpolation);
+    public abstract void putColor(Vector4f lastColor, Vector4f color, ByteBuffer byteBuffer, MutableInt index, float interpolation);
     public abstract void putTextureHandle(long textureHandle, ByteBuffer byteBuffer, MutableInt bufferIndex);
-    public abstract void putMaterialData(long maskTextureHandle, float fireAmount, float fireUVAnimation, ByteBuffer byteBuffer,
+    public abstract void putMaterialData(long maskTextureHandle, float fireAmount, float fireUVAnimation, int font, ByteBuffer byteBuffer,
                                          MutableInt bufferIndex);
 }

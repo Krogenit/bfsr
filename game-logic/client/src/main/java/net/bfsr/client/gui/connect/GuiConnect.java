@@ -7,7 +7,7 @@ import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.InputBox;
 import net.bfsr.engine.gui.component.Label;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 
@@ -16,7 +16,7 @@ import java.net.UnknownHostException;
 
 @Log4j2
 public class GuiConnect extends Gui {
-    private final Label connectingText = new Label(FontType.XOLONIUM, 20, StringOffsetType.CENTERED).setColor(1.0f, 1.0f,
+    private final Label connectingText = new Label(Font.XOLONIUM, 20, StringOffsetType.CENTERED).setColor(1.0f, 1.0f,
             1.0f, 0.0f);
 
     public GuiConnect(Gui parentGui) {
@@ -105,21 +105,19 @@ public class GuiConnect extends Gui {
     public void update() {
         super.update();
 
-        if (connectingText.getColor().w > 0.0f) {
-            connectingText.getColor().w -= 0.0025f;
-            if (connectingText.getColor().w < 0.0f) connectingText.getColor().w = 0.0f;
-            connectingText.compileAtOrigin();
+        float colorAlpha = connectingText.getColorAlpha();
+        if (colorAlpha > 0.0f) {
+            colorAlpha -= 0.0025f;
+            if (colorAlpha < 0.0f) {
+                colorAlpha = 0.0f;
+            }
+
+            connectingText.setColorAlpha(colorAlpha);
         }
     }
 
     private void setErrorMessage(String text) {
         connectingText.getColor().w = 1.0f;
-        connectingText.setStringAndCompileAtOrigin(text);
-    }
-
-    @Override
-    public void clear() {
-        super.clear();
-        connectingText.clear();
+        connectingText.setString(text);
     }
 }

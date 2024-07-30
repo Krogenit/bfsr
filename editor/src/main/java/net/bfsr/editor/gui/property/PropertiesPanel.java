@@ -1,7 +1,6 @@
 package net.bfsr.editor.gui.property;
 
 import net.bfsr.client.Core;
-import net.bfsr.editor.gui.component.MinimizableGuiObject;
 import net.bfsr.editor.gui.component.MinimizableHolder;
 import net.bfsr.editor.property.PropertiesBuilder;
 import net.bfsr.editor.property.holder.PropertiesHolder;
@@ -9,9 +8,10 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.Label;
+import net.bfsr.engine.gui.component.MinimizableGuiObject;
 import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.gui.component.ScrollPane;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.util.RunnableUtils;
 import org.joml.Vector2f;
@@ -26,7 +26,7 @@ import static net.bfsr.editor.gui.EditorTheme.setupContextMenuButton;
 import static net.bfsr.editor.gui.EditorTheme.setupScrollPane;
 
 public class PropertiesPanel extends Rectangle {
-    private final FontType fontType;
+    private final Font font;
     private final int fontSize;
     private final int elementHeight = 20;
     private final int stringXOffset;
@@ -38,11 +38,11 @@ public class PropertiesPanel extends Rectangle {
     private final Button removeButton;
     private PropertiesHolder clipboard;
 
-    public PropertiesPanel(int width, int height, FontType fontType, int fontSize, int stringXOffset, int stringYOffset,
+    public PropertiesPanel(int width, int height, Font font, int fontSize, int stringXOffset, int stringYOffset,
                            int contextMenuStringXOffset) {
         super(width, height);
         this.width = width;
-        this.fontType = fontType;
+        this.font = font;
         this.fontSize = fontSize;
         this.scrollPane = setupScrollPane(new ScrollPane(width, height - (elementHeight << 1), 16));
         this.stringXOffset = stringXOffset;
@@ -50,9 +50,8 @@ public class PropertiesPanel extends Rectangle {
         this.contextMenuStringXOffset = contextMenuStringXOffset;
 
         String string = "Properties";
-        add(new Label(fontType, string, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w)
-                .compileAtOrigin()
-                .atTopRight(-width, fontType.getStringCache().getCenteredYOffset(string, elementHeight, fontSize) + stringYOffset));
+        Label label = new Label(font, string, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w);
+        add(label.atTopRight(-width, label.getCenteredOffsetY(elementHeight)));
 
         add(scrollPane.atTopRight(-width, elementHeight).setHeightFunction((screenWidth, screenHeight) -> screenHeight -
                 (elementHeight << 1)));
@@ -60,9 +59,9 @@ public class PropertiesPanel extends Rectangle {
         int buttonWidth = width / 2;
         int x = -width;
 
-        add(saveButton = new Button(buttonWidth, elementHeight, "Save", fontType, fontSize, stringYOffset));
+        add(saveButton = new Button(buttonWidth, elementHeight, "Save", font, fontSize, stringYOffset));
         setupButton(saveButton).atBottomRight(x, -elementHeight);
-        add(removeButton = new Button(buttonWidth, elementHeight, "Remove", fontType, fontSize, stringYOffset));
+        add(removeButton = new Button(buttonWidth, elementHeight, "Remove", font, fontSize, stringYOffset));
         setupButton(removeButton).atBottomRight(x + buttonWidth, -elementHeight);
     }
 
@@ -73,7 +72,7 @@ public class PropertiesPanel extends Rectangle {
 
     private void createMinimizable(PropertiesHolder propertiesHolder, String name, int width, int height, int propertyOffsetX) {
         propertiesHolder.clearListeners();
-        MinimizableHolder<PropertiesHolder> minimizableHolder = new MinimizableHolder<>(width, height, name, fontType, fontSize,
+        MinimizableHolder<PropertiesHolder> minimizableHolder = new MinimizableHolder<>(width, height, name, font, fontSize,
                 stringYOffset, propertiesHolder);
         minimizableHolder.setRightClickRunnable(() -> {
             Vector2f mousePos = Engine.mouse.getPosition();
@@ -81,22 +80,22 @@ public class PropertiesPanel extends Rectangle {
             int y1 = (int) mousePos.y;
             String buttonName = "Copy";
             Button copyButton = new Button(x1, y1,
-                    fontType.getStringCache().getStringWidth(buttonName, fontSize) + contextMenuStringXOffset, elementHeight,
-                    buttonName, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
+                    font.getGlyphsBuilder().getWidth(buttonName, fontSize) + contextMenuStringXOffset, elementHeight,
+                    buttonName, font, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
                     RunnableUtils.EMPTY_RUNNABLE);
             copyButton.setLeftReleaseRunnable(() -> clipboard = propertiesHolder.copy());
             y1 += elementHeight;
             buttonName = "Paste";
             Button pastButton = new Button(x1, y1,
-                    fontType.getStringCache().getStringWidth(buttonName, fontSize) + contextMenuStringXOffset, elementHeight,
-                    buttonName, fontType, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
+                    font.getGlyphsBuilder().getWidth(buttonName, fontSize) + contextMenuStringXOffset, elementHeight,
+                    buttonName, font, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
                     RunnableUtils.EMPTY_RUNNABLE);
             pastButton.setLeftReleaseRunnable(() -> {
                 if (clipboard != null && clipboard.getClass() == propertiesHolder.getClass()) {
                     propertiesHolder.paste(clipboard);
                     minimizableHolder.removeAll();
                     PropertiesBuilder.createGuiProperties(propertiesHolder, width - MinimizableGuiObject.MINIMIZABLE_STRING_X_OFFSET,
-                            height, fontType, fontSize, propertyOffsetX, stringYOffset, minimizableHolder::add);
+                            height, font, fontSize, propertyOffsetX, stringYOffset, minimizableHolder::add);
                     updatePositionAndSize();
                 }
             });
@@ -106,7 +105,7 @@ public class PropertiesPanel extends Rectangle {
         propertiesHolder.addChangeNameEventListener(minimizableHolder::setName);
 
         PropertiesBuilder.createGuiProperties(propertiesHolder, width - MinimizableGuiObject.MINIMIZABLE_STRING_X_OFFSET, height,
-                fontType, fontSize, propertyOffsetX, stringYOffset, minimizableHolder::add);
+                font, fontSize, propertyOffsetX, stringYOffset, minimizableHolder::add);
 
         scrollPane.add(setup(minimizableHolder));
         minimizableProperties.add(minimizableHolder);

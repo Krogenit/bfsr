@@ -1,11 +1,18 @@
-package net.bfsr.engine.renderer.font;
+package net.bfsr.engine.renderer.font.legacy;
 
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.util.PathHelper;
 
-import java.awt.*;
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.LineMetrics;
@@ -13,10 +20,9 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.*;
 
 /**
  * @author https://github.com/secretdataz/BetterFonts
@@ -68,7 +74,6 @@ public class GlyphCache {
      */
     private boolean antiAliasEnabled;
 
-
     /**
      * Temporary image for rendering a string to and then extracting the glyph images from.
      */
@@ -78,7 +83,6 @@ public class GlyphCache {
      * The Graphics2D associated with stringImage and used for string drawing to extract the individual glyph shapes.
      */
     private Graphics2D stringGraphics;
-
 
     /**
      * All font glyphs are packed inside this image and are then loaded from here into an OpenGL texture.
@@ -95,33 +99,25 @@ public class GlyphCache {
      */
     private final FontRenderContext fontRenderContext = glyphCacheGraphics.getFontRenderContext();
 
-
     /**
      * Intermediate data array for use with textureImage.getRgb().
      */
     private final int[] imageData = new int[TEXTURE_WIDTH * TEXTURE_HEIGHT];
+    private final byte[] imageDataBytes = new byte[TEXTURE_WIDTH * TEXTURE_HEIGHT];
 
     /**
      * A big-endian direct int buffer used with glTexSubImage2D() and glTexImage2D(). Used for loading the pre-rendered glyph
      * images from the glyphCacheImage BufferedImage into OpenGL textures. This buffer uses big-endian byte ordering to ensure
      * that the integers holding packed RGBA colors are stored into memory in a predictable order.
      */
-    private final IntBuffer imageBuffer =
-            ByteBuffer.allocateDirect(4 * TEXTURE_WIDTH * TEXTURE_HEIGHT).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
+    private final ByteBuffer imageBuffer = Engine.renderer.createByteBuffer(TEXTURE_WIDTH * TEXTURE_HEIGHT);
 
     /**
      * List of all available physical fonts on the system. Used by lookupFont() to find alternate fonts.
      */
     private final List<Font> allFonts = Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts());
 
-    /**
-     * A list of all fonts that have been returned so far by lookupFont(), and that will always be searched first for a usable font before
-     * searching through allFonts[]. This list will only have plain variation of a font at a dummy point size, unlike fontCache which could
-     * have multiple entries for the various styles (i.e. bold, italic, etc.) of a font. This list starts with Java's "SansSerif" logical
-     * font.
-     */
-    protected List<Font> usedFonts = new ArrayList<>();
-
+    private Font font;
 
     /**
      * ID of current OpenGL cache texture being used by cacheGlyphs() to store pre-rendered glyph images.
@@ -141,7 +137,6 @@ public class GlyphCache {
      * index of the font in the fontCache. This makes for a single globally unique number to identify any glyph from any font.
      */
     private final LinkedHashMap<Long, Entry> glyphCache = new LinkedHashMap<>();
-
 
     /**
      * The X coordinate of the upper=left corner in glyphCacheImage where the next glyph image should be stored. Glyphs are
@@ -222,7 +217,7 @@ public class GlyphCache {
 
         /* Use Java's logical font as the default initial font if user does not override it in some configuration file */
         GraphicsEnvironment.getLocalGraphicsEnvironment().preferLocaleFonts();
-        usedFonts.add(new Font(Font.SANS_SERIF, Font.PLAIN, 72));
+        font = new Font(Font.SANS_SERIF, Font.PLAIN, 72);
     }
 
     /**
@@ -234,12 +229,8 @@ public class GlyphCache {
     void setFontFromFile(String fontFileName, boolean antiAlias) {
         try {
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            Font font = Font.createFont(Font.TRUETYPE_FONT, PathHelper.FONT.resolve(fontFileName).toFile());
+            font = Font.createFont(Font.TRUETYPE_FONT, PathHelper.FONT.resolve(fontFileName).toFile());
             ge.registerFont(font);
-            font = font.deriveFont(Font.PLAIN, 72);
-
-            usedFonts.clear();
-            usedFonts.add(font);
 
             antiAliasEnabled = antiAlias;
             setRenderingHints();
@@ -248,16 +239,24 @@ public class GlyphCache {
         }
     }
 
-    float getHeight(String s, int fontSize) {
-        Font font = lookupFont(s.toCharArray(), 0, s.length(), Font.PLAIN, fontSize);
-        LineMetrics lineMetrics = font.getLineMetrics(s, fontRenderContext);
+    float getHeight(String s, float fontSize) {
+        LineMetrics lineMetrics = font.deriveFont(fontSize).getLineMetrics(s, fontRenderContext);
         return lineMetrics.getHeight();
     }
 
-    public int getAscent(String s, int fontSize) {
-        Font font = lookupFont(s.toCharArray(), 0, s.length(), Font.PLAIN, fontSize);
-        LineMetrics lineMetrics = font.getLineMetrics(s, fontRenderContext);
-        return (int) (lineMetrics.getAscent());
+    float getAscent(String s, float fontSize) {
+        LineMetrics lineMetrics = font.deriveFont(fontSize).getLineMetrics(s, fontRenderContext);
+        return lineMetrics.getAscent();
+    }
+
+    float getDescent(String s, float fontSize) {
+        LineMetrics lineMetrics = font.deriveFont(fontSize).getLineMetrics(s, fontRenderContext);
+        return lineMetrics.getDescent();
+    }
+
+    float getLeading(String s, float fontSize) {
+        LineMetrics lineMetrics = font.deriveFont(fontSize).getLineMetrics(s, fontRenderContext);
+        return lineMetrics.getLeading();
     }
 
     /**
@@ -288,35 +287,21 @@ public class GlyphCache {
      * @param style combination of the Font.PLAIN, Font.BOLD, and Font.ITALIC to request a particular font style
      * @return an OpenType font capable of displaying at least the first character at the start position in text
      */
-    Font lookupFont(char[] text, int start, int limit, int style, int fontSize) {
+    Font lookupFont(char[] text, int start, int limit, int style, float fontSize) {
         /* Try using an already known base font; the first font in usedFonts list is the one set with setDefaultFont() */
-        Iterator<Font> iterator = usedFonts.iterator();
-        while (iterator.hasNext()) {
-            /* Only use the font if it can layout at least the first character of the requested string range */
-            Font font = iterator.next();
-            if (font.canDisplayUpTo(text, start, limit) != start) {
-                /* Return a font instance of the proper point size and style; usedFonts has only 1pt sized plain style fonts */
-                return font.deriveFont(style, fontSize);
-            }
+        if (font.canDisplayUpTo(text, start, limit) != start) {
+            /* Return a font instance of the proper point size and style; usedFonts has only 1pt sized plain style fonts */
+            return font.deriveFont(style, fontSize);
         }
 
         /* If still not found, try searching through all fonts installed on the system for the first that can layout this string */
-        iterator = allFonts.iterator();
-        while (iterator.hasNext()) {
+        for (Font font : allFonts) {
             /* Only use the font if it can layout at least the first character of the requested string range */
-            Font font = iterator.next();
             if (font.canDisplayUpTo(text, start, limit) != start) {
-                /* If found, add this font to the usedFonts list so it can be looked up faster next time */
-                //System.out.println("BetterFonts loading font \"" + font.getFontName() + "\"");
-                usedFonts.add(font);
-
                 /* Return a font instance of the proper point size and style; allFonts has only 1pt sized plain style fonts */
                 return font.deriveFont(style, fontSize);
             }
         }
-
-        /* If no supported fonts found, use the default one (first in usedFonts) so it can draw its unknown character glyphs */
-        Font font = usedFonts.get(0);
 
         /* Return a font instance of the proper point size and style; usedFonts only 1pt sized plain style fonts */
         return font.deriveFont(style, fontSize);
@@ -519,7 +504,7 @@ public class GlyphCache {
         if (dirty != null) {
             /* Load imageBuffer with pixel data ready for transfer to OpenGL texture */
             updateImageBuffer(dirty.x, dirty.y, dirty.width, dirty.height);
-            Engine.renderer.subImage2D(texture.getId(), dirty.x, dirty.y, dirty.width, dirty.height, GL.GL_RGBA, imageBuffer);
+            Engine.renderer.subImage2D(texture.getId(), dirty.x, dirty.y, dirty.width, dirty.height, GL.GL_RED, imageBuffer);
         }
     }
 
@@ -574,7 +559,7 @@ public class GlyphCache {
          * Initialize texture with the now cleared BufferedImage. Using a texture with GL_ALPHA8 internal format may result in
          * faster rendering since the GPU has to only fetch 1 byte per texel instead of 4 with a regular RGBA texture.
          */
-        Engine.renderer.uploadTexture(texture, GL.GL_RGBA8, GL.GL_RGBA, GL.GL_CLAMP_TO_BORDER, GL.GL_NEAREST, imageBuffer);
+        Engine.renderer.uploadTexture(texture, GL.GL_R8, GL.GL_RED, GL.GL_CLAMP_TO_BORDER, GL.GL_NEAREST, imageBuffer);
     }
 
     /**
@@ -593,12 +578,12 @@ public class GlyphCache {
         /* Swizzle each color integer from Java's ARGB format to OpenGL's RGBA */
         for (int i = 0; i < width * height; i++) {
             int color = imageData[i];
-            imageData[i] = (color << 8) | (color >>> 24);
+            imageDataBytes[i] = (byte) ((color << 8) | (color >>> 24));
         }
 
         /* Copy int array to direct buffer; big-endian order ensures a 0xRR, 0xGG, 0xBB, 0xAA byte layout */
         imageBuffer.clear();
-        imageBuffer.put(imageData);
+        imageBuffer.put(imageDataBytes);
         imageBuffer.flip();
     }
 }

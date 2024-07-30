@@ -6,12 +6,15 @@ import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.gui.component.BlankGuiObject;
+import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.Label;
+import net.bfsr.engine.gui.component.MinimizableGuiObject;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.entity.ship.Ship;
@@ -20,15 +23,23 @@ import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.util.DecimalUtils;
 import net.bfsr.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 
-public class DebugInfoElement extends ScrollPane {
+import java.util.List;
+import java.util.function.Consumer;
+
+public class DebugInfoElement extends MinimizableGuiObject {
+    private static final int MINIMIZABLE_STRING_OFFSET_Y = 3;
+    private static final Font FONT_TYPE = Font.CONSOLA;
+    private static final int FONT_SIZE = 13;
+
     private final StringBuilder stringBuilder = new StringBuilder(64);
     private final String openGlVersion = Engine.renderer.glGetString(GL.GL_VERSION);
     private final String openGlRenderer = Engine.renderer.glGetString(GL.GL_RENDERER);
     @Setter
     private float ping;
-    private final Label label = new Label(FontType.CONSOLA);
+
     private final Core core = Core.get();
     private final ParticleRenderer particleRenderer = core.getGlobalRenderer().getParticleRenderer();
     private final PlayerInputController playerInputController = core.getInputHandler().getPlayerInputController();
@@ -36,149 +47,234 @@ public class DebugInfoElement extends ScrollPane {
     private int sortTimer;
     private final StringBuilder offset = new StringBuilder(32);
     private final StringBuilder fullCategoryName = new StringBuilder(32);
-    private final HUD hud;
+    private final ScrollPane scrollPane = new ScrollPane(300 - STATIC_STRING_X_OFFSET, 300, 10);
+    private final Label profilerLabel = new Label(FONT_TYPE);
 
     public DebugInfoElement(HUD hud) {
-        super(300, 350, 10);
-        this.hud = hud;
-        add(label);
+        super(300, 20, "Debug info", FONT_TYPE, FONT_SIZE, 0, 0, MINIMIZABLE_STRING_X_OFFSET,
+                STATIC_STRING_X_OFFSET);
+
+        setTextColor(205 / 255.0f, 205 / 255.0f, 205 / 255.0f, 1.0f).setHoverColor(0.3f, 0.3f, 0.3f, 0.5f);
+
+        add(scrollPane);
+
+        int width = 300 - STATIC_STRING_X_OFFSET - 10;
+        int height = 20;
+        int y = height;
+        int yOffset = 14;
+        addDebugLabel(y, "BFSR Client " + Core.GAME_VERSION + "\n", label1 -> {});
+        y += yOffset;
+        addDebugLabel(y, "", label1 -> {
+            ServerGameLogic server = ServerGameLogic.getInstance();
+            int ups = server != null ? server.getUps() : 0;
+            label1.setString("FPS " + Engine.renderer.getFps() + ", Local Server UPS " + ups);
+        });
+        y += yOffset;
+        addDebugLabel(y, "", label1 -> {
+            Runtime runtime = Runtime.getRuntime();
+            long maxMemory = runtime.maxMemory();
+            long totalMemory = runtime.totalMemory();
+            long freeMemory = runtime.freeMemory();
+            long maxMemoryMB = maxMemory / 1024L / 1024L;
+            long totalMemoryMB = totalMemory / 1024L / 1024L;
+            long freeMemoryMB = freeMemory / 1024L / 1024L;
+            label1.setString("Memory: " + (totalMemoryMB - freeMemoryMB) + "MB / " + totalMemoryMB +
+                    "MB up to " + maxMemoryMB + "MB");
+        });
+        y += yOffset;
+        addDebugLabel(y, "", label1 -> {
+            Vector2f mousePosition = mouse.getPosition();
+            label1.setString("Mouse screen pos: " + (int) mousePosition.x + ", " + (int) mousePosition.y);
+        });
+        y += yOffset;
+        addDebugLabel(y, "", label1 -> {
+            AbstractCamera camera = Engine.renderer.camera;
+            Vector2f mouseWorldPosition = mouse.getWorldPosition(camera);
+            label1.setString("Mouse world pos: " + DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.x) +
+                    ", " + DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.y));
+        });
+        y += yOffset;
+        addMinimizableWithLabel(width, height, y, "Profiler", profilerLabel);
+        y += height;
+        addMinimizableWithLabel(width, height, y, "Network", createLabel(0, "",
+                label1 -> label1.setString("Ping: " + DecimalUtils.strictFormatWithToDigits(ping) + "ms")));
+        y += height;
+        addMinimizableWithLabel(width, height, y, "Render", createLabel(0, "",
+                label1 -> {
+                    AbstractCamera camera = Engine.renderer.camera;
+                    Vector2f camPos = camera.getPosition();
+                    label1.setString("GPU: " + openGlRenderer +
+                            "\nDriver version: " + openGlVersion +
+                            "\nCamera pos: " + DecimalUtils.strictFormatWithToDigits(camPos.x) + ", " +
+                            DecimalUtils.strictFormatWithToDigits(camPos.y) +
+                            "\nDraw calls: " + Engine.renderer.getLastFrameDrawCalls() +
+                            "\nParticle Renderer: " +
+                            (particleRenderer.getTaskCount() > 1 ? particleRenderer.getTaskCount() + " active threads" :
+                                    "single-threaded"));
+                }));
+        y += height;
+        addMinimizableWithLabel(width, height, y, "World", createLabel(0, "",
+                label1 -> {
+                    World world = core.getWorld();
+                    int bulletsCount = world.getBulletsCount();
+                    int shipsCount = world.getEntitiesByType(Ship.class).size();
+                    int particlesCount = core.getParticlesCount();
+                    int wreckCount = world.getWreckCount();
+                    int shipWreckCount = world.getShipWreckCount();
+                    int bodyCount = world.getPhysicWorld().getBodyCount();
+
+                    ServerGameLogic server = ServerGameLogic.getInstance();
+                    int sBulletsCount = 0;
+                    int sShipsCount = 0;
+                    int sWrecksCount = 0;
+                    int sShipWrecksCount = 0;
+                    int sBodyCount = 0;
+                    if (server != null) {
+                        World sWorld = server.getWorld();
+                        sBulletsCount = sWorld.getBulletsCount();
+                        sShipsCount = sWorld.getEntitiesByType(Ship.class).size();
+                        sWrecksCount = sWorld.getWreckCount();
+                        sShipWrecksCount = sWorld.getShipWreckCount();
+                        sBodyCount = sWorld.getPhysicWorld().getBodyCount();
+                    }
+
+                    label1.setString("Physic body count: " + bodyCount + "/" + sBodyCount +
+                            "\nShips count: " + shipsCount + "/" + sShipsCount +
+                            "\nBullets count:" + bulletsCount + "/" + sBulletsCount +
+                            "\nParticles count: " + particlesCount +
+                            "\nWrecks count: " + wreckCount + "/" + sWrecksCount +
+                            "\nShip wrecks count: " + shipWreckCount + "/" + sShipWrecksCount);
+                }));
+        y += height;
+        addMinimizableWithLabel(width, height, y, "Player ship", createLabel(0, "",
+                label1 -> {
+                    Ship playerShip = playerInputController.getShip();
+                    if (playerShip != null) {
+                        Vector2f pos = playerShip.getPosition();
+                        Vector2f velocity = playerShip.getVelocity();
+                        Shield shield = playerShip.getModules().getShield();
+                        Reactor reactor = playerShip.getModules().getReactor();
+
+                        label1.setString("Ship: " + playerShip.getClass().getSimpleName() +
+                                "\nPos: " + DecimalUtils.strictFormatWithToDigits(pos.x) + ", " +
+                                DecimalUtils.strictFormatWithToDigits(pos.y) +
+                                "\nVelocity:" + DecimalUtils.strictFormatWithToDigits(velocity.x) + ", " +
+                                DecimalUtils.strictFormatWithToDigits(velocity.y) +
+                                "\nMass: " + DecimalUtils.strictFormatWithToDigits(playerShip.getBody().getMass().getMass()) +
+                                "\nShield: " + DecimalUtils.strictFormatWithToDigits(shield.getShieldHp()) + "/" +
+                                DecimalUtils.strictFormatWithToDigits(shield.getMaxHp()) +
+                                "\nReactor: " + DecimalUtils.strictFormatWithToDigits(reactor.getEnergy()) + "/" +
+                                DecimalUtils.strictFormatWithToDigits(reactor.getMaxEnergy()));
+                    } else {
+                        label1.setString("");
+                    }
+                }));
+        y += height;
+        addMinimizableWithLabel(width, height, y, "Selected Ship", createLabel(0, "",
+                label1 -> {
+                    Ship ship = hud.getSelectedShip();
+                    if (ship != null) {
+                        label1.setString("Id: " + ship.getId());
+                    } else {
+                        label1.setString("");
+                    }
+                }));
+    }
+
+    private void addDebugLabel(int y, String text, Consumer<Label> updateConsumer) {
+        scrollPane.add(createLabel(y, text, updateConsumer));
+    }
+
+    private Label createLabel(int y, String text, Consumer<Label> updateConsumer) {
+        return new Label(Font.CONSOLA, text, 0, 0, FONT_SIZE) {
+            @Override
+            public void update() {
+                super.update();
+                updateConsumer.accept(this);
+            }
+        }.atTopLeft(0, y);
+    }
+
+    private void addMinimizableWithLabel(int width, int height, int y, String name, Label label) {
+        MinimizableGuiObject minimizableGuiObject = new MinimizableGuiObject(width, height, name, FONT_TYPE, FONT_SIZE,
+                MINIMIZABLE_STRING_X_OFFSET, MINIMIZABLE_STRING_OFFSET_Y, MINIMIZABLE_STRING_X_OFFSET, STATIC_STRING_X_OFFSET);
+        scrollPane.add(minimizableGuiObject.atTopLeft(0, y).setTextColor(205 / 255.0f, 205 / 255.0f, 205 / 255.0f, 1.0f)
+                .setHoverColor(0.3f, 0.3f, 0.3f, 0.5f));
+        minimizableGuiObject.add(label);
     }
 
     @Override
     public void update() {
-        if (!ClientSettings.IS_DEBUG.getBoolean()) return;
-
         super.update();
 
-        int drawCalls = Engine.renderer.getLastFrameDrawCalls();
+        if (!ClientSettings.IS_DEBUG.getBoolean() || profilerLabel.getParent() == BlankGuiObject.INSTANCE) return;
 
-        Runtime runtime = Runtime.getRuntime();
-        long maxMemory = runtime.maxMemory();
-        long totalMemory = runtime.totalMemory();
-        long freeMemory = runtime.freeMemory();
-        long maxMemoryMB = maxMemory / 1024L / 1024L;
-        long totalMemoryMB = totalMemory / 1024L / 1024L;
-        long freeMemoryMB = freeMemory / 1024L / 1024L;
+        if (((MinimizableGuiObject) profilerLabel.getParent()).isMaximized()) {
+            stringBuilder.setLength(0);
+            Profiler profiler = core.getProfiler();
+            offset.setLength(0);
+            fullCategoryName.setLength(0);
+            fullCategoryName.append("root");
+            boolean needSort = sortTimer-- == 0;
+            @Nullable Profiler serverProfiler;
 
-        ServerGameLogic server = ServerGameLogic.getInstance();
-        int ups = server != null ? server.getUps() : 0;
-
-        stringBuilder.setLength(0);
-        stringBuilder.append("BFSR Client " + Core.GAME_VERSION + "\n");
-        stringBuilder.append("FPS ").append(Engine.renderer.getFps()).append(", Local Server UPS ").append(ups);
-        stringBuilder.append("\nMemory: ").append(totalMemoryMB - freeMemoryMB).append("MB / ").append(totalMemoryMB)
-                .append("MB up to ").append(maxMemoryMB).append("MB");
-        stringBuilder.append("\nMouse screen pos: ");
-        Vector2f mousePosition = mouse.getPosition();
-        stringBuilder.append((int) mousePosition.x).append(", ").append((int) mousePosition.y);
-        AbstractCamera camera = Engine.renderer.camera;
-        Vector2f mouseWorldPosition = mouse.getWorldPosition(camera);
-        stringBuilder.append("\nMouse world pos: ").append(DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.x))
-                .append(", ").append(DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.y));
-        stringBuilder.append("\n\n---Profiler---");
-        Profiler profiler = core.getProfiler();
-
-        offset.setLength(0);
-        fullCategoryName.setLength(0);
-        fullCategoryName.append("root");
-        boolean needSort = sortTimer-- == 0;
-        Profiler serverProfiler;
-
-        if (server != null) {
-            serverProfiler = server.getProfiler();
-        } else {
-            serverProfiler = null;
-        }
-
-        profiler.getResults(needSort).compute(node -> {
-            float serverResult = 0.0f;
-
-            if (serverProfiler != null) {
-                serverResult = serverProfiler.getResult(fullCategoryName + "." + node.getName());
+            ServerGameLogic server = ServerGameLogic.getInstance();
+            if (server != null) {
+                serverProfiler = server.getProfiler();
+            } else {
+                serverProfiler = null;
             }
 
-            stringBuilder.append("\n").append(offset).append(node.getName()).append(": ")
-                    .append(DecimalUtils.strictFormatWithToDigits(node.getAverageTime()))
-                    .append("ms");
+            profiler.getResults(needSort).compute(node -> {
+                float serverResult = 0.0f;
 
-            if (serverResult > 0.0f) {
-                stringBuilder.append(" / ").append(DecimalUtils.strictFormatWithToDigits(serverResult)).append("ms");
+                if (serverProfiler != null) {
+                    serverResult = serverProfiler.getResult(fullCategoryName + "." + node.getName());
+                }
+
+                stringBuilder.append(offset).append(node.getName()).append(": ")
+                        .append(DecimalUtils.strictFormatWithToDigits(node.getAverageTime()))
+                        .append("ms");
+
+                if (serverResult > 0.0f) {
+                    stringBuilder.append(" / ").append(DecimalUtils.strictFormatWithToDigits(serverResult)).append("ms");
+                }
+
+                stringBuilder.append("\n");
+            }, (node) -> {
+                offset.append(" ");
+                fullCategoryName.append(".").append(node.getName());
+            }, (node) -> {
+                offset.deleteCharAt(offset.length() - 1);
+                fullCategoryName.delete(fullCategoryName.lastIndexOf("."), fullCategoryName.length());
+            });
+
+            profilerLabel.setString(stringBuilder.toString());
+
+            if (needSort) {
+                sortTimer = 60;
             }
-        }, (node) -> {
-            offset.append(" ");
-            fullCategoryName.append(".").append(node.getName());
-        }, (node) -> {
-            offset.deleteCharAt(offset.length() - 1);
-            fullCategoryName.delete(fullCategoryName.lastIndexOf("."), fullCategoryName.length());
-        });
-
-        if (needSort) {
-            sortTimer = 60;
         }
+    }
 
-        stringBuilder.append("\n\n---Network---");
-        stringBuilder.append("\nPing: ").append(DecimalUtils.strictFormatWithToDigits(ping)).append("ms");
+    @Override
+    protected void onChildSizeChanged(GuiObject guiObject, int width, int height) {
+        super.onChildSizeChanged(guiObject, width, height);
+        updatePositionAndSize();
+    }
 
-        stringBuilder.append("\n\n---Render---");
-        stringBuilder.append("\nGPU: ").append(openGlRenderer);
-        stringBuilder.append(" \nDriver version ").append(openGlVersion);
-        Vector2f camPos = camera.getPosition();
-        stringBuilder.append("\nCamera pos: ");
-        stringBuilder.append(DecimalUtils.strictFormatWithToDigits(camPos.x)).append(", ")
-                .append(DecimalUtils.strictFormatWithToDigits(camPos.y));
-        stringBuilder.append("\nDraw calls: ").append(drawCalls);
-        stringBuilder.append("\nParticle Renderer: ");
-        stringBuilder.append(
-                particleRenderer.getTaskCount() > 1 ? particleRenderer.getTaskCount() + " active threads" : "single-threaded");
+    @Override
+    public void updatePositionAndSize() {
+        updatePositions();
+        super.updatePositionAndSize();
+    }
 
-        World world = core.getWorld();
-        int bulletsCount = world.getBulletsCount();
-        int shipsCount = world.getEntitiesByType(Ship.class).size();
-        int particlesCount = core.getParticlesCount();
-        int wreckCount = world.getWreckCount();
-        int shipWreckCount = world.getShipWreckCount();
-        int bodyCount = world.getPhysicWorld().getBodyCount();
-
-        World sWorld = server != null ? server.getWorld() : null;
-        int sBulletsCount = sWorld != null ? sWorld.getBulletsCount() : 0;
-        int sShipsCount = sWorld != null ? sWorld.getEntitiesByType(Ship.class).size() : 0;
-        int sWrecksCount = sWorld != null ? sWorld.getWreckCount() : 0;
-        int sShipWrecksCount = sWorld != null ? sWorld.getShipWreckCount() : 0;
-        int sBodyCount = sWorld != null ? sWorld.getPhysicWorld().getBodyCount() : 0;
-        stringBuilder.append("\n\n---World--- ");
-        stringBuilder.append("\nPhysic body count: ").append(bodyCount).append("/").append(sBodyCount);
-        stringBuilder.append("\nShips count: ").append(shipsCount).append("/").append(sShipsCount);
-        stringBuilder.append("\nBullets count: ").append(bulletsCount).append("/").append(sBulletsCount);
-        stringBuilder.append("\nParticles count: ").append(particlesCount);
-        stringBuilder.append("\nWrecks count: ").append(wreckCount).append("/").append(sWrecksCount);
-        stringBuilder.append("\nShip wrecks count: ").append(shipWreckCount).append("/").append(sShipWrecksCount);
-
-        Ship playerShip = playerInputController.getShip();
-        if (playerShip != null) {
-            Vector2f pos = playerShip.getPosition();
-            Vector2f velocity = playerShip.getVelocity();
-            Shield shield = playerShip.getModules().getShield();
-            Reactor reactor = playerShip.getModules().getReactor();
-            stringBuilder.append("\n\n---Player Ship--- ");
-            stringBuilder.append("\nShip: ").append(playerShip.getClass().getSimpleName());
-            stringBuilder.append("\nPos: ").append(DecimalUtils.strictFormatWithToDigits(pos.x)).append(", ")
-                    .append(DecimalUtils.strictFormatWithToDigits(pos.y));
-            stringBuilder.append("\nVelocity: ").append(DecimalUtils.strictFormatWithToDigits(velocity.x)).append(", ")
-                    .append(DecimalUtils.strictFormatWithToDigits(velocity.y));
-            stringBuilder.append("\nMass: ")
-                    .append(DecimalUtils.strictFormatWithToDigits(playerShip.getBody().getMass().getMass()));
-            stringBuilder.append("\nShield: ").append(DecimalUtils.strictFormatWithToDigits(shield.getShieldHp())).append("/")
-                    .append(DecimalUtils.strictFormatWithToDigits(shield.getMaxHp()));
-            stringBuilder.append("\nReactor: ").append(DecimalUtils.strictFormatWithToDigits(reactor.getEnergy())).append("/")
-                    .append(DecimalUtils.strictFormatWithToDigits(reactor.getMaxEnergy()));
+    private void updatePositions() {
+        List<GuiObject> guiObjects = scrollPane.getGuiObjects();
+        for (int i = 0, y = 0; i < guiObjects.size(); i++) {
+            GuiObject guiObject = guiObjects.get(i);
+            guiObject.atTopLeft(0, y);
+            y += guiObject.getHeight();
         }
-
-        Ship ship = hud.getSelectedShip();
-        if (ship != null) {
-            stringBuilder.append("\n\n---Selected Ship--- ");
-            stringBuilder.append("\nId: ").append(ship.getId());
-        }
-
-        label.setStringAndCompileAtOrigin(stringBuilder.toString());
     }
 }

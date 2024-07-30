@@ -8,7 +8,7 @@ import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.TexturedRectangle;
 import net.bfsr.engine.math.MathUtils;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.cargo.Cargo;
@@ -19,46 +19,44 @@ import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.client.PacketShipControl;
 
 public class ShipOverlay extends ShipOverlayRenderer {
-    private final Label shipCargo = new Label(FontType.CONSOLA);
-    private final Label shipCrew = new Label(FontType.CONSOLA);
-    private final Label controlText = new Label(FontType.XOLONIUM, Lang.getString("gui.control"), 16);
+    private final Label shipCargo = new Label(Font.CONSOLA);
+    private final Label shipCrew = new Label(Font.CONSOLA);
     private final Core core = Core.get();
     private final PlayerInputController playerInputController = core.getInputHandler().getPlayerInputController();
+    private final Button controlButton;
 
     public ShipOverlay(HUD hud) {
         TexturedRectangle shipAddInfoPanel = new TexturedRectangle(TextureRegister.guiHudShipAdd, 140, 72);
         add(shipAddInfoPanel.atBottomRight(-width - shipAddInfoPanel.getWidth() + 20, -shipAddInfoPanel.getHeight()));
-        shipAddInfoPanel.add(shipCargo.atTopLeft(16, 26));
-        shipAddInfoPanel.add(shipCrew.atTopLeft(16, 40));
+        shipAddInfoPanel.add(shipCargo.atTopLeft(16, 16));
+        shipAddInfoPanel.add(shipCrew.atTopLeft(16, 30));
 
-        if (playerInputController.isControllingShip()) {
-            controlText.setStringAndCompileAtOrigin(Lang.getString("gui.cancelControl"));
-        } else {
-            controlText.setStringAndCompileAtOrigin(Lang.getString("gui.control"));
-        }
-        add(controlText.atBottomRight(-width / 2 - controlText.getWidth() / 2, -height - 1));
-        add(new Button(TextureRegister.guiButtonControl, 256, 40, () -> {
-            Ship playerControlledShip = playerInputController.getShip();
-            if (playerControlledShip != null) {
-                core.sendTCPPacket(new PacketShipControl(playerControlledShip.getId(), false));
-                playerInputController.resetControlledShip();
-                selectShip(playerControlledShip);
-                onShipControlCanceled();
-            } else if (ship != null) {
-                playerInputController.setShip(ship);
-                hud.onShipControlStarted();
-                core.sendTCPPacket(new PacketShipControl(ship.getId(), true));
-            }
-        }).atBottomRight(-128 - width / 2, -height - 26));
+        controlButton = new Button(TextureRegister.guiButtonControl, 256, 40,
+                playerInputController.isControllingShip() ? Lang.getString("gui.cancelControl") : Lang.getString("gui.control"),
+                Font.XOLONIUM, 16,
+                () -> {
+                    Ship playerControlledShip = playerInputController.getShip();
+                    if (playerControlledShip != null) {
+                        core.sendTCPPacket(new PacketShipControl(playerControlledShip.getId(), false));
+                        playerInputController.resetControlledShip();
+                        selectShip(playerControlledShip);
+                        onShipControlCanceled();
+                    } else if (ship != null) {
+                        playerInputController.setShip(ship);
+                        hud.onShipControlStarted();
+                        core.sendTCPPacket(new PacketShipControl(ship.getId(), true));
+                    }
+                });
+        add(controlButton.atBottomRight(-128 - width / 2, -height - 26));
     }
 
     private void onCurrentShipSelected() {
         Cargo cargo = ship.getModules().getCargo();
-        shipCargo.setStringAndCompileAtOrigin(Lang.getString(Lang.getString("gui.shipCargo") + ": " + cargo.getCapacity() + "/" +
+        shipCargo.setString(Lang.getString(Lang.getString("gui.shipCargo") + ": " + cargo.getCapacity() + "/" +
                 cargo.getMaxCapacity()));
 
         Crew crew = ship.getModules().getCrew();
-        shipCrew.setStringAndCompileAtOrigin(Lang.getString(Lang.getString("gui.shipCrew") + ": " + crew.getCrewSize() + "/" +
+        shipCrew.setString(Lang.getString(Lang.getString("gui.shipCrew") + ": " + crew.getCrewSize() + "/" +
                 crew.getMaxCrewSize()));
     }
 
@@ -117,10 +115,10 @@ public class ShipOverlay extends ShipOverlayRenderer {
     }
 
     public void onShipControlStarted() {
-        controlText.setStringAndCompileAtOrigin(Lang.getString("gui.cancelControl"));
+        controlButton.setString(Lang.getString("gui.cancelControl"));
     }
 
     private void onShipControlCanceled() {
-        controlText.setStringAndCompileAtOrigin(Lang.getString("gui.control"));
+        controlButton.setString(Lang.getString("gui.control"));
     }
 }

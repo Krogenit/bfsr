@@ -6,7 +6,7 @@ import net.bfsr.editor.property.PropertiesBuilder;
 import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.Button;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.util.RunnableUtils;
 import org.joml.Vector2f;
@@ -24,11 +24,11 @@ public class SimplePropertyList<PRIMITIVE_TYPE> extends PropertyList<PropertyCom
     private final String propertyName;
     final List<PRIMITIVE_TYPE> objects = new ArrayList<>();
 
-    public SimplePropertyList(int width, int height, String name, FontType fontType, int fontSize, int propertyOffsetX,
+    public SimplePropertyList(int width, int height, String name, Font font, int fontSize, int propertyOffsetX,
                               int stringOffsetY, Supplier<PRIMITIVE_TYPE> supplier, Object object, List<Field> fields,
                               Object[] values, PropertyGuiElementType propertyGuiElementType, String propertyName,
                               BiConsumer<Object, Integer> valueConsumer) {
-        super(width, height, name, fontType, fontSize, propertyOffsetX, stringOffsetY, supplier, object, fields, values,
+        super(width, height, name, font, fontSize, propertyOffsetX, stringOffsetY, supplier, object, fields, values,
                 valueConsumer);
         this.propertyGuiElementType = propertyGuiElementType;
         this.propertyName = propertyName;
@@ -48,11 +48,11 @@ public class SimplePropertyList<PRIMITIVE_TYPE> extends PropertyList<PropertyCom
     public void addProperty(PRIMITIVE_TYPE arrayElement) {
         try {
             if (arrayElement instanceof PropertiesHolder) {
-                PropertiesBuilder.createGuiProperties(arrayElement, baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight, fontType,
+                PropertiesBuilder.createGuiProperties(arrayElement, baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight, font,
                         fontSize, MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, this::addPropertyComponent, propertyName);
             } else {
                 addPropertyComponent(ComponentBuilder.build(propertyGuiElementType, baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight,
-                        propertyName, fontType.getStringCache().getStringWidth(propertyName, fontSize), fontType, fontSize, stringOffsetY,
+                        propertyName, font.getGlyphsBuilder().getWidth(propertyName, fontSize), font, fontSize, stringOffsetY,
                         fields, new Object[]{arrayElement}, arrayElement, (o, integer) -> ((List) values[0]).set(integer, o)));
             }
         } catch (IllegalAccessException e) {
@@ -71,8 +71,8 @@ public class SimplePropertyList<PRIMITIVE_TYPE> extends PropertyList<PropertyCom
             String addString = "Remove";
             Vector2f mousePos = Engine.mouse.getPosition();
             Button button = new Button((int) mousePos.x, (int) mousePos.y,
-                    fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight,
-                    addString, fontType, fontSize, 4, stringOffsetY, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
+                    font.getGlyphsBuilder().getWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight,
+                    addString, font, fontSize, 4, stringOffsetY, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
             setupContextMenuButton(button);
             button.setLeftReleaseRunnable(() -> removeProperty(propertyComponent));
             Core.get().getGuiManager().openContextMenu(button);

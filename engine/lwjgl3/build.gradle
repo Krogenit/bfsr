@@ -15,6 +15,7 @@ dependencies {
     api "org.lwjgl:lwjgl-opengl"
     api "org.lwjgl:lwjgl-stb"
     api "org.lwjgl:lwjgl-tinyfd"
+    api "org.lwjgl:lwjgl-freetype"
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
@@ -22,6 +23,7 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-tinyfd::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-freetype::$lwjglNatives"
 
     testImplementation project(path: ":engine:common", configuration: 'testArtifacts')
 }

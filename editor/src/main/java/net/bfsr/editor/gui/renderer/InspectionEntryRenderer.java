@@ -1,6 +1,7 @@
 package net.bfsr.editor.gui.renderer;
 
 import net.bfsr.editor.gui.inspection.InspectionEntry;
+import net.bfsr.engine.gui.renderer.MinimizableGuiObjectRenderer;
 
 public class InspectionEntryRenderer extends MinimizableGuiObjectRenderer {
     private final InspectionEntry<?> inspectionEntry;

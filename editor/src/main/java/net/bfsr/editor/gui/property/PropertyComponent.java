@@ -3,9 +3,9 @@ package net.bfsr.editor.gui.property;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.editor.gui.EditorTheme;
-import net.bfsr.editor.gui.component.MinimizableGuiObject;
 import net.bfsr.engine.gui.component.GuiObject;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.gui.component.MinimizableGuiObject;
+import net.bfsr.engine.renderer.font.Font;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -22,10 +22,10 @@ public abstract class PropertyComponent extends MinimizableGuiObject {
     protected final BiConsumer<Object, Integer> valueConsumer;
     int baseWidth;
 
-    protected PropertyComponent(int width, int height, String name, FontType fontType, int fontSize, int propertyOffsetX,
+    protected PropertyComponent(int width, int height, String name, Font font, int fontSize, int propertyOffsetX,
                                 int propertyOffsetY, int minimizableStringOffsetX, int stringOffsetY, Object object, List<Field> fields,
                                 Object[] values, BiConsumer<Object, Integer> valueConsumer) {
-        super(width, height, name, fontType, fontSize, 0, stringOffsetY, minimizableStringOffsetX);
+        super(width, height, name, font, fontSize, 0, stringOffsetY, minimizableStringOffsetX, minimizableStringOffsetX);
         this.baseWidth = width;
         this.object = object;
         this.fields = fields;
@@ -38,10 +38,10 @@ public abstract class PropertyComponent extends MinimizableGuiObject {
         setCanMaximize(false);
     }
 
-    protected PropertyComponent(int width, int height, String name, FontType fontType, int fontSize, int propertyOffsetX,
+    protected PropertyComponent(int width, int height, String name, Font font, int fontSize, int propertyOffsetX,
                                 int propertyOffsetY, int stringOffsetY, Object object, List<Field> fields, Object[] values,
                                 BiConsumer<Object, Integer> valueConsumer) {
-        this(width, height, name, fontType, fontSize, propertyOffsetX, propertyOffsetY, 0, stringOffsetY, object, fields, values,
+        this(width, height, name, font, fontSize, propertyOffsetX, propertyOffsetY, 0, stringOffsetY, object, fields, values,
                 valueConsumer);
     }
 

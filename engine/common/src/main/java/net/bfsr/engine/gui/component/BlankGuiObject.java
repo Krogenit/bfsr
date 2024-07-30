@@ -2,8 +2,8 @@ package net.bfsr.engine.gui.component;
 
 import net.bfsr.engine.Engine;
 
-final class BlankGuiObject extends GuiObject {
-    static final BlankGuiObject INSTANCE = new BlankGuiObject();
+public final class BlankGuiObject extends GuiObject {
+    public static final BlankGuiObject INSTANCE = new BlankGuiObject();
 
     private BlankGuiObject() {
         setWidthFunction((width, height) -> Engine.renderer.getScreenWidth());

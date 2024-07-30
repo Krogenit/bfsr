@@ -4,7 +4,7 @@ import lombok.Getter;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.renderer.combobox.ComboBoxRenderer;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.font.StringOffsetType;
 
 import java.util.ArrayList;
@@ -17,20 +17,19 @@ public class ComboBox<V> extends GuiObject {
     private boolean opened;
     @Getter
     private final Label label;
-    private final FontType fontType;
+    private final Font font;
     private final int fontSize;
     private final int stringOffsetY;
     private final List<ComboBoxData<V>> data = new ArrayList<>();
 
-    public ComboBox(int width, int height, FontType fontType, int fontSize, int stringOffsetY) {
+    public ComboBox(int width, int height, Font font, int fontSize, int stringOffsetY) {
         super(width, height);
-        this.fontType = fontType;
+        this.font = font;
         this.fontSize = fontSize;
         this.stringOffsetY = stringOffsetY;
 
-        add(this.label = new Label(fontType, "", fontSize, StringOffsetType.CENTERED).compileAtOrigin());
-        label.atTopLeft(width / 2,
-                label.getStringCache().getCenteredYOffset(label.getString(), height, fontSize) + stringOffsetY);
+        add(this.label = new Label(font, "", fontSize, StringOffsetType.CENTERED));
+        label.atTopLeft(width / 2, label.getCenteredOffsetY(height));
 
         setRenderer(new ComboBoxRenderer(this));
         setLeftReleaseRunnable(() -> {
@@ -44,7 +43,7 @@ public class ComboBox<V> extends GuiObject {
     }
 
     public void addData(V value) {
-        ComboBoxData<V> data = new ComboBoxData<>(width, height, value, value.toString(), fontType, fontSize, stringOffsetY);
+        ComboBoxData<V> data = new ComboBoxData<>(width, height, value, value.toString(), font, fontSize, stringOffsetY);
         this.data.add(data);
         data.setWidthFunction((width, height) -> this.width);
         data.setLeftReleaseRunnable(() -> {
@@ -91,7 +90,7 @@ public class ComboBox<V> extends GuiObject {
 
     public void setSelectedIndex(int selectedIndex) {
         this.selectedIndex = selectedIndex;
-        label.setStringAndCompileAtOrigin(getSelected().getLabel().getString());
+        label.setString(getSelected().getLabel().getString());
     }
 
     @Override
@@ -128,7 +127,7 @@ public class ComboBox<V> extends GuiObject {
 
     @Override
     public GuiObject setTextColor(float r, float g, float b, float a) {
-        label.setColor(r, g, b, a).compileAtOrigin();
+        label.setColor(r, g, b, a);
         for (int i = 0; i < data.size(); i++) {
             data.get(i).setTextColor(r, g, b, a);
         }
