@@ -47,7 +47,7 @@ import java.net.InetAddress;
 @Log4j2
 @Getter
 public class Core extends ClientGameLogic {
-    public static final String GAME_VERSION = "Dev 0.1.3";
+    public static final String GAME_VERSION = "Dev 0.1.4";
     private static Core instance;
 
     private final AbstractSoundManager soundManager = Engine.soundManager;
