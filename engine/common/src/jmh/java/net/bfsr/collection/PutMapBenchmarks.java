@@ -2,14 +2,21 @@ package net.bfsr.collection;
 
 import com.carrotsearch.hppc.IntObjectHashMap;
 import com.carrotsearch.hppc.IntObjectMap;
-import com.carrotsearch.hppc.IntObjectWormMap;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.agrona.collections.Int2ObjectHashMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Level;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -77,15 +84,6 @@ public class PutMapBenchmarks {
     @Benchmark
     public IntObjectMap<Entity> putHPPCHashMap() {
         IntObjectMap<Entity> map = new IntObjectHashMap<>(setSize);
-        for (int i = 0; i < setSize; i++) {
-            map.put(addedKeys[i], addedValues[i]);
-        }
-        return map;
-    }
-
-    @Benchmark
-    public IntObjectMap<Entity> putHPPCWormHashMap() {
-        IntObjectMap<Entity> map = new IntObjectWormMap<>(setSize);
         for (int i = 0; i < setSize; i++) {
             map.put(addedKeys[i], addedValues[i]);
         }

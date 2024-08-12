@@ -2,14 +2,21 @@ package net.bfsr.collection;
 
 import com.carrotsearch.hppc.IntObjectHashMap;
 import com.carrotsearch.hppc.IntObjectMap;
-import com.carrotsearch.hppc.IntObjectWormMap;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.agrona.collections.Int2ObjectHashMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Level;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +58,6 @@ public class RemoveMapBenchmarks {
         fastUtilMap = new Int2ObjectOpenHashMap<>(setSize);
         nettyMap = new io.netty.util.collection.IntObjectHashMap<>(setSize);
         hppcMap = new IntObjectHashMap<>(setSize);
-        hppcWormMap = new IntObjectWormMap<>(setSize);
         eclipseMap = new org.eclipse.collections.impl.map.mutable.primitive.IntObjectHashMap<>(setSize);
         agronaMap = new Int2ObjectHashMap<>(setSize, 0.65f);
 

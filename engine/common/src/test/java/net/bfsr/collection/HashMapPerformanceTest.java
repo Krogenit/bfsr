@@ -1,7 +1,5 @@
 package net.bfsr.collection;
 
-import com.carrotsearch.hppc.IntObjectWormMap;
-import com.carrotsearch.hppc.ObjectObjectWormMap;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
@@ -23,7 +21,15 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 public final class HashMapPerformanceTest {
     public static void main(String[] args) {
@@ -57,7 +63,6 @@ public final class HashMapPerformanceTest {
         IntObjectMap<Entity> nettyMap = new IntObjectHashMap<>(count);
         Int2ObjectMap<Entity> fastUtilMap = new Int2ObjectOpenHashMap<>(count);
         com.carrotsearch.hppc.IntObjectMap<Entity> hppcMap = new com.carrotsearch.hppc.IntObjectHashMap<>(count);
-        com.carrotsearch.hppc.IntObjectMap<Entity> hppcWormMap = new IntObjectWormMap<>(count);
         MutableIntObjectMap<Entity> eclipseMap = new org.eclipse.collections.impl.map.mutable.primitive.IntObjectHashMap<>(count);
 
         Random random = new Random(3487162487124L);
@@ -105,11 +110,6 @@ public final class HashMapPerformanceTest {
             PerformanceTest.finishTest("hppcMap PUT");
             PerformanceTest.beginTest();
             for (int i = 0; i < keys.length; i++) {
-                hppcWormMap.put(keys[i], values.get(i));
-            }
-            PerformanceTest.finishTest("hppcWormMap PUT");
-            PerformanceTest.beginTest();
-            for (int i = 0; i < keys.length; i++) {
                 eclipseMap.put(keys[i], values.get(i));
             }
             PerformanceTest.finishTest("eclipseMap PUT");
@@ -149,16 +149,6 @@ public final class HashMapPerformanceTest {
             PerformanceTest.finishTest("hppcMap GET");
             PerformanceTest.beginTest();
             for (int i = 0; i < keys.length; i++) {
-                entity1 = hppcWormMap.get(keys[i]);
-            }
-            PerformanceTest.finishTest("hppcWormMap GET");
-            PerformanceTest.beginTest();
-            for (int i = 0; i < keys.length; i++) {
-                entity1 = hppcWormMap.get(keys[i]);
-            }
-            PerformanceTest.finishTest("hppcWormMap GET");
-            PerformanceTest.beginTest();
-            for (int i = 0; i < keys.length; i++) {
                 entity1 = eclipseMap.get(keys[i]);
             }
             PerformanceTest.finishTest("eclipseMap GET");
@@ -196,16 +186,6 @@ public final class HashMapPerformanceTest {
                 hppcMap.remove(keys[i]);
             }
             PerformanceTest.finishTest("hppcMap REMOVE");
-            PerformanceTest.beginTest();
-            for (int i = 0; i < keys.length; i++) {
-                hppcWormMap.remove(keys[i]);
-            }
-            PerformanceTest.finishTest("hppcWormMap REMOVE");
-            PerformanceTest.beginTest();
-            for (int i = 0; i < keys.length; i++) {
-                hppcWormMap.remove(keys[i]);
-            }
-            PerformanceTest.finishTest("hppcWormMap REMOVE");
             PerformanceTest.beginTest();
             for (int i = 0; i < keys.length; i++) {
                 eclipseMap.remove(keys[i]);
@@ -255,7 +235,6 @@ public final class HashMapPerformanceTest {
 //        IntObjectMap<Entity> nettyMap = new IntObjectHashMap<>(count);
         Object2ObjectMap<Class, Entity> fastUtilMap = new Object2ObjectOpenHashMap();
         com.carrotsearch.hppc.ObjectObjectMap<Class, Entity> hppcMap = new com.carrotsearch.hppc.ObjectObjectHashMap<>(count);
-        com.carrotsearch.hppc.ObjectObjectMap<Class, Entity> hppcWormMap = new ObjectObjectWormMap(count);
         MutableMap<Class, Entity> eclipseMap = new org.eclipse.collections.impl.map.mutable.UnifiedMap<>(count);
 
         List<Class> classes = new ArrayList<>();
@@ -310,11 +289,6 @@ public final class HashMapPerformanceTest {
             PerformanceTest.finishTest("hppcMap PUT");
             PerformanceTest.beginTest();
             for (int i = 0; i < classes.size(); i++) {
-                hppcWormMap.put(classes.get(i), values.get(i));
-            }
-            PerformanceTest.finishTest("hppcWormMap PUT");
-            PerformanceTest.beginTest();
-            for (int i = 0; i < classes.size(); i++) {
                 eclipseMap.put(classes.get(i), values.get(i));
             }
             PerformanceTest.finishTest("eclipseMap PUT");
@@ -348,16 +322,6 @@ public final class HashMapPerformanceTest {
             PerformanceTest.finishTest("hppcMap GET");
             PerformanceTest.beginTest();
             for (int i = 0; i < classes.size(); i++) {
-                Entity entity1 = hppcWormMap.get(classes.get(i));
-            }
-            PerformanceTest.finishTest("hppcWormMap GET");
-            PerformanceTest.beginTest();
-            for (int i = 0; i < classes.size(); i++) {
-                Entity entity1 = hppcWormMap.get(classes.get(i));
-            }
-            PerformanceTest.finishTest("hppcWormMap GET");
-            PerformanceTest.beginTest();
-            for (int i = 0; i < classes.size(); i++) {
                 Entity entity1 = eclipseMap.get(classes.get(i));
             }
             PerformanceTest.finishTest("eclipseMap GET");
@@ -389,16 +353,6 @@ public final class HashMapPerformanceTest {
                 hppcMap.remove(classes.get(i));
             }
             PerformanceTest.finishTest("hppcMap REMOVE");
-            PerformanceTest.beginTest();
-            for (int i = 0; i < classes.size(); i++) {
-                hppcWormMap.remove(classes.get(i));
-            }
-            PerformanceTest.finishTest("hppcWormMap REMOVE");
-            PerformanceTest.beginTest();
-            for (int i = 0; i < classes.size(); i++) {
-                hppcWormMap.remove(classes.get(i));
-            }
-            PerformanceTest.finishTest("hppcWormMap REMOVE");
             PerformanceTest.beginTest();
             for (int i = 0; i < classes.size(); i++) {
                 eclipseMap.remove(classes.get(i));
