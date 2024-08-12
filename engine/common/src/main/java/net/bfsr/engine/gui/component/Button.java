@@ -31,7 +31,7 @@ public class Button extends GuiObject {
     }
 
     public Button(int x, int y, int width, int height, String string, int fontSize, Runnable leftReleaseRunnable) {
-        this(x, y, width, height, string, Font.XOLONIUM, fontSize, leftReleaseRunnable);
+        this(x, y, width, height, string, Font.XOLONIUM_FT, fontSize, leftReleaseRunnable);
     }
 
     public Button(TextureRegister texture, int x, int y, int width, int height, String string, int fontSize) {
@@ -62,7 +62,7 @@ public class Button extends GuiObject {
     }
 
     public Button(int width, int height, String string, int fontSize, Runnable leftReleaseRunnable) {
-        this(width, height, string, Font.XOLONIUM, fontSize, 0, leftReleaseRunnable);
+        this(width, height, string, Font.XOLONIUM_FT, fontSize, 0, leftReleaseRunnable);
     }
 
     public Button(String string, int fontSize, Runnable leftReleaseRunnable) {

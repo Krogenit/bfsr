@@ -22,7 +22,7 @@ public class Slider extends TexturedRectangle {
         slider.setX(calculateSliderXPos());
         setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
 
-        Font font = Font.XOLONIUM;
+        Font font = Font.XOLONIUM_FT;
         this.label = new Label(font, string, fontSize, StringOffsetType.CENTERED);
         add(label.atTopLeft(width / 2, label.getCenteredOffsetY(height)));
     }

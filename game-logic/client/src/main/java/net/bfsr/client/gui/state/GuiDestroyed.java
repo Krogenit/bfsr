@@ -36,8 +36,8 @@ public class GuiDestroyed extends Gui {
         add(new Button(TextureRegister.guiButtonBase, buttonWidth, buttonHeight,
                 Lang.getString("gui.ingamemenu.tomainmenu"), 16, () -> Core.get().quitToMainMenu())
                 .atCenter(-buttonsOffset - buttonWidth / 2, 72));
-        add(new Label(Font.XOLONIUM, Lang.getString("gui.destroyed.shipWasDestroyed"), 20).atCenter(-286, -124));
-        add(new Label(Font.CONSOLA, Lang.getString("gui.destroyed.destroyedBy") + ": " + destroyedBy, 16).atCenter(-286, -74));
+        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.destroyed.shipWasDestroyed"), 20).atCenter(-286, -124));
+        add(new Label(Font.CONSOLA_FT, Lang.getString("gui.destroyed.destroyedBy") + ": " + destroyedBy, 16).atCenter(-286, -74));
     }
 
     @Override

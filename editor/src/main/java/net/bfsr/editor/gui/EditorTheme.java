@@ -44,7 +44,7 @@ public final class EditorTheme {
     private static final Vector4f SCROLL_COLOR = new Vector4f(77 / 255.0f, 78 / 255.0f, 81 / 255.0f, 1.0f);
     private static final Vector4f SCROLL_HOVER_COLOR = new Vector4f(92 / 255.0f, 93 / 255.0f, 94 / 255.0f, 1.0f);
 
-    public static final Font FONT_TYPE = Font.Segoe_UI;
+    public static final Font FONT_TYPE = Font.Segoe_UI_FT;
 
     public static MinimizableGuiObject setup(MinimizableGuiObject object) {
         object.setTextColor(TEXT_COLOR).setHoverColor(MINIMIZABLE_COLOR);

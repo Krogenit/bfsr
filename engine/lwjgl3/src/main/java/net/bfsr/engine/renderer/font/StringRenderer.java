@@ -10,6 +10,7 @@ import net.bfsr.engine.renderer.font.stb.STBTrueTypeGlyphsBuilder;
 import net.bfsr.engine.renderer.font.string.AbstractGLString;
 import net.bfsr.engine.renderer.font.string.AbstractStringGeometryBuilder;
 import net.bfsr.engine.renderer.font.string.AbstractStringRenderer;
+import net.bfsr.engine.renderer.font.truetype.TrueTypeGlyphsBuilder;
 
 public final class StringRenderer extends AbstractStringRenderer {
     private static final int INITIAL_QUADS_COUNT = 128;
@@ -96,5 +97,10 @@ public final class StringRenderer extends AbstractStringRenderer {
     @Override
     public GlyphsBuilder createSTBTrueTypeGlyphsBuilder(String fontFile) {
         return new STBTrueTypeGlyphsBuilder(fontFile);
+    }
+
+    @Override
+    public GlyphsBuilder createTrueTypeGlyphsBuilder(String fontFile) {
+        return new TrueTypeGlyphsBuilder(fontFile);
     }
 }

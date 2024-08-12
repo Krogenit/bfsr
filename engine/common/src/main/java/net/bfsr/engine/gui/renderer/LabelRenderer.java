@@ -27,6 +27,26 @@ public class LabelRenderer extends GuiObjectRenderer {
     @Override
     public void render(int lastX, int lastY, int x, int y, int width, int height) {
         stringRenderer.addString(glString, lastX, lastY, x, y, BufferType.GUI);
+
+        /* For debug
+        String string = label.getString();
+        int fontSize = label.getFontSize();
+        float topOffset = Math.round(glyphsBuilder.getTopOffset(string, fontSize));
+        guiRenderer.add(x, y, 1, topOffset, 1, 0, 0, 1);
+
+        //ascender
+        float ascent = glyphsBuilder.getAscent(string, fontSize);
+        guiRenderer.add(x + 10, y + topOffset - ascent, 1, ascent, 0, 1, 0, 1);
+
+        //descender
+        float descent = glyphsBuilder.getDescent(string, fontSize);
+        if (descent < 0) descent = -descent;
+        guiRenderer.add(x + 20, y + topOffset, 1, descent, 1, 1, 0, 1);
+
+        //height
+        float height1 = glyphsBuilder.getHeight(string, fontSize);
+        guiRenderer.add(x + 30, y, 1, height1, 1, 0, 1, 1);
+         */
     }
 
     public void render(BufferType bufferType, float lastX, float lastY, float x, float y) {

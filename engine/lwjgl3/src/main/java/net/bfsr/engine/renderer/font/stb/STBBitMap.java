@@ -1,16 +1,15 @@
 package net.bfsr.engine.renderer.font.stb;
 
-import it.unimi.dsi.fastutil.chars.Char2IntOpenHashMap;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
 import it.unimi.dsi.fastutil.chars.CharArraySet;
 import it.unimi.dsi.fastutil.chars.CharList;
 import it.unimi.dsi.fastutil.chars.CharSet;
 import lombok.Getter;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.font.FontBitMap;
+import net.bfsr.engine.renderer.font.FontPackResult;
 import net.bfsr.engine.renderer.opengl.GL;
-import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.util.IOUtils;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTTPackContext;
 import org.lwjgl.stb.STBTTPackRange;
@@ -29,7 +28,7 @@ import static org.lwjgl.stb.STBTruetype.stbtt_PackSetSkipMissingCodepoints;
 import static org.lwjgl.stb.STBTruetype.stbtt_ScaleForMappingEmToPixels;
 
 @Getter
-class STBBitMap {
+class STBBitMap extends FontBitMap {
     private static final CharSet invisiblePackableChars = new CharArraySet();
 
     static {
@@ -37,19 +36,11 @@ class STBBitMap {
         invisiblePackableChars.add((char) 160);
     }
 
-    private final int width;
-    private final int height;
-    private final ByteBuffer bitmap;
     private STBTTPackedchar.Buffer packedChars;
     private final STBTTPackContext packContext;
-    private AbstractTexture bitmapTexture;
-    private final Char2IntOpenHashMap packedCharMap = new Char2IntOpenHashMap();
-    private int packedCharIndex;
 
     STBBitMap(int width, int height) {
-        this.width = width;
-        this.height = height;
-        bitmap = BufferUtils.createByteBuffer(width * height);
+        super(width, height);
         packContext = STBTTPackContext.create();
         packedCharMap.defaultReturnValue(-1);
         stbtt_PackSetSkipMissingCodepoints(packContext, true);
@@ -61,8 +52,8 @@ class STBBitMap {
         }
     }
 
-    STBPackResult packChars(String fontName, STBTTFontinfo fontInfo, CharList charList, int fontSize, ByteBuffer fontByteBuffer,
-                            int index) {
+    FontPackResult packChars(String fontName, STBTTFontinfo fontInfo, CharList charList, int fontSize, ByteBuffer fontByteBuffer,
+                             int index) {
         try (MemoryStack memoryStack = MemoryStack.stackPush()) {
             IntBuffer charBuffer = memoryStack.mallocInt(charList.size());
             for (int i = 0; i < charList.size(); i++) {
@@ -85,7 +76,7 @@ class STBBitMap {
                 Engine.renderer.subImage2D(bitmapTexture.getId(), 0, 0, width, height, GL.GL_RED, bitmap);
             }
 
-            IOUtils.writePNGGrayScale(bitmap, width, height, fontName + "_atlas_" + fontSize + "_" + index);
+            IOUtils.writePNGGrayScale(bitmap, width, height, "stb_" + fontName + "_atlas_" + fontSize + "_" + index);
 
             IntBuffer advance = memoryStack.mallocInt(1);
             IntBuffer leftSideBearing = memoryStack.mallocInt(1);
@@ -134,24 +125,12 @@ class STBBitMap {
 
             this.packedChars.flip();
 
-            return new STBPackResult(packed, packedCharsList, unpackedCharsList);
+            return new FontPackResult(packed, packedCharsList, unpackedCharsList);
         }
     }
 
     void endPack() {
         stbtt_PackEnd(packContext);
-    }
-
-    int getCharIndex(char charCode) {
-        return packedCharMap.get(charCode);
-    }
-
-    long getTextureHandle() {
-        return bitmapTexture.getTextureHandle();
-    }
-
-    private int getNextCharIndex() {
-        return packedCharIndex++;
     }
 
     private boolean isPacked(STBTTPackedchar packedChar, char charCode) {

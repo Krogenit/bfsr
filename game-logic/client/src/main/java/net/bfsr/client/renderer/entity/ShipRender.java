@@ -49,7 +49,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     private static final AbstractTexture SHIELD_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.moduleShield);
 
     private final Ship ship;
-    private final Label label = new Label(Font.XOLONIUM, 24, StringOffsetType.CENTERED).setShadow(true)
+    private final Label label = new Label(Font.XOLONIUM_FT, 24, StringOffsetType.CENTERED).setShadow(true)
             .setShadowOffsetX(2).setShadowOffsetY(2);
 
     private final List<WeaponSlotRender> weaponRenders = new ArrayList<>();

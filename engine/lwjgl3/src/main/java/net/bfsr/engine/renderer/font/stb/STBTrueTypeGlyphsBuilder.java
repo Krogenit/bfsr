@@ -1,24 +1,19 @@
 package net.bfsr.engine.renderer.font.stb;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.bfsr.engine.renderer.font.Font;
+import lombok.extern.log4j.Log4j2;
+import net.bfsr.engine.renderer.font.DynamicGlyphsBuilder;
 import net.bfsr.engine.renderer.font.glyph.Glyph;
-import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
 import net.bfsr.engine.renderer.font.glyph.GlyphsData;
+import net.bfsr.engine.util.IOUtils;
 import net.bfsr.engine.util.PathHelper;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTTAlignedQuad;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.system.MemoryStack;
 
-import javax.annotation.Nullable;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,51 +25,41 @@ import static org.lwjgl.stb.STBTruetype.stbtt_InitFont;
 import static org.lwjgl.stb.STBTruetype.stbtt_ScaleForMappingEmToPixels;
 import static org.lwjgl.stb.STBTruetype.stbtt_ScaleForPixelHeight;
 
-public class STBTrueTypeGlyphsBuilder extends GlyphsBuilder {
+@Log4j2
+public class STBTrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<STBTrueTypeFontPacker> {
     private final STBTTFontinfo fontInfo;
     private final ByteBuffer fontByteBuffer;
-    private final Int2ObjectMap<STBTrueTypeFont> fontsBySize = new Int2ObjectOpenHashMap<>();
     private final int ascent;
     private final int descent;
-    private final int lineGap;
-
-    private final int bitmapWidth = 256;
-    private final int bitmapHeight = 256;
-
-    private final String fontFile;
 
     public STBTrueTypeGlyphsBuilder(String fontFile) {
-        this.fontFile = fontFile;
-        try {
-            byte[] bytes = Files.readAllBytes(PathHelper.FONT.resolve(fontFile));
-            fontByteBuffer = BufferUtils.createByteBuffer(bytes.length);
-            fontByteBuffer.put(bytes);
-            fontByteBuffer.flip();
+        super(fontFile);
+        this.fontByteBuffer = IOUtils.fileToByteBuffer(PathHelper.FONT.resolve(fontFile));
+        this.fontInfo = STBTTFontinfo.create();
+        if (!stbtt_InitFont(fontInfo, fontByteBuffer)) {
+            throw new IllegalStateException("Failed to initialize font information.");
+        }
 
-            fontInfo = STBTTFontinfo.create();
-            if (!stbtt_InitFont(fontInfo, fontByteBuffer)) {
-                throw new IllegalStateException("Failed to initialize font information.");
-            }
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer pAscent = stack.mallocInt(1);
+            IntBuffer pDescent = stack.mallocInt(1);
+            IntBuffer pLineGap = stack.mallocInt(1);
 
-            try (MemoryStack stack = MemoryStack.stackPush()) {
-                IntBuffer pAscent = stack.mallocInt(1);
-                IntBuffer pDescent = stack.mallocInt(1);
-                IntBuffer pLineGap = stack.mallocInt(1);
-
-                stbtt_GetFontVMetrics(fontInfo, pAscent, pDescent, pLineGap);
-                ascent = pAscent.get(0);
-                descent = pDescent.get(0);
-                lineGap = pLineGap.get(0);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Can't load font file " + fontFile, e);
+            stbtt_GetFontVMetrics(fontInfo, pAscent, pDescent, pLineGap);
+            ascent = pAscent.get(0);
+            descent = pDescent.get(0);
         }
     }
 
     @Override
+    protected STBTrueTypeFontPacker createNewFont(int fontSize) {
+        return new STBTrueTypeFontPacker(fontFile, this, fontInfo, fontByteBuffer, bitmapWidth, bitmapHeight, fontSize);
+    }
+
+    @Override
     public GlyphsData getGlyphsData(String text, int fontSize) {
-        STBTrueTypeFont stbTrueTypeFont = getFontBySize(fontSize);
-        stbTrueTypeFont.packNewChars(fontInfo, text);
+        STBTrueTypeFontPacker stbTrueTypeFontPacker = getFontBySize(fontSize);
+        stbTrueTypeFontPacker.packNewChars(text);
         float scale = scale(fontSize);
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -86,10 +71,11 @@ public class STBTrueTypeGlyphsBuilder extends GlyphsBuilder {
 
             for (int i = 0, to = text.length(); i < to; i++) {
                 char charCode = text.charAt(i);
-                if (!getPackedQuad(stbTrueTypeFont, charCode, fontSize, x, y, quad, textureBuffer)) {
+                if (!getPackedQuad(stbTrueTypeFontPacker, charCode, fontSize, x, y, quad, textureBuffer)) {
                     continue;
                 }
 
+                int advance = (int) x.get(0);
                 x.put(0, x.get(0));
 
                 if (i + 1 < to) {
@@ -98,7 +84,7 @@ public class STBTrueTypeGlyphsBuilder extends GlyphsBuilder {
 
                 if (quad.x1() - quad.x0() > 0.0f) {
                     glyphs.add(new Glyph(quad.x0(), quad.y0(), quad.x1(), quad.y1(), quad.s0(), quad.t0(), quad.s1(), quad.t1(),
-                            textureBuffer.get(0)));
+                            textureBuffer.get(0), advance));
                 }
             }
 
@@ -106,19 +92,20 @@ public class STBTrueTypeGlyphsBuilder extends GlyphsBuilder {
         }
     }
 
-    private boolean getPackedQuad(STBTrueTypeFont stbTrueTypeFont, char charCode, int fontSize, FloatBuffer x, FloatBuffer y,
+    private boolean getPackedQuad(STBTrueTypeFontPacker stbTrueTypeFontPacker, char charCode, int fontSize, FloatBuffer x, FloatBuffer y,
                                   STBTTAlignedQuad quad, LongBuffer textureBuffer) {
-        STBBitMap bitMap = stbTrueTypeFont.getBitMapByChar(charCode);
+        STBBitMap bitMap = stbTrueTypeFontPacker.getBitMapByChar(charCode);
         if (bitMap == null) {
-            STBTrueTypeGlyphsBuilder trueTypeGlyphsBuilder = findFontSupportedChar(charCode);
+            STBTrueTypeGlyphsBuilder trueTypeGlyphsBuilder = findFontSupportedChar(charCode,
+                    glyphsBuilder -> glyphsBuilder instanceof STBTrueTypeGlyphsBuilder);
             if (trueTypeGlyphsBuilder == null) return false;
-            STBTrueTypeFont stbTrueTypeFont1 = trueTypeGlyphsBuilder.getFontBySize(fontSize);
-            stbTrueTypeFont1.packNewChars(fontInfo, "" + charCode);
-            bitMap = stbTrueTypeFont1.getBitMapByChar(charCode);
+            STBTrueTypeFontPacker stbTrueTypeFontPacker1 = trueTypeGlyphsBuilder.getFontBySize(fontSize);
+            stbTrueTypeFontPacker1.packNewChars("" + charCode);
+            bitMap = stbTrueTypeFontPacker1.getBitMapByChar(charCode);
 
-            stbTrueTypeFont1.getPackedQuad(bitMap, charCode, x, y, quad);
+            stbTrueTypeFontPacker1.getPackedQuad(bitMap, charCode, x, y, quad);
         } else {
-            stbTrueTypeFont.getPackedQuad(bitMap, charCode, x, y, quad);
+            stbTrueTypeFontPacker.getPackedQuad(bitMap, charCode, x, y, quad);
         }
 
         textureBuffer.put(0, bitMap.getTextureHandle());
@@ -126,33 +113,9 @@ public class STBTrueTypeGlyphsBuilder extends GlyphsBuilder {
         return true;
     }
 
-    @Nullable
-    private STBTrueTypeGlyphsBuilder findFontSupportedChar(char charCode) {
-        Font[] fonts = Font.values();
-        for (int i = 0; i < fonts.length; i++) {
-            GlyphsBuilder glyphsBuilder = fonts[i].getGlyphsBuilder();
-            if (glyphsBuilder instanceof STBTrueTypeGlyphsBuilder trueTypeGlyphsBuilder) {
-                if (trueTypeGlyphsBuilder.isCharCodeSupported(charCode)) {
-                    return trueTypeGlyphsBuilder;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    boolean isCharCodeSupported(char charCode) {
+    @Override
+    public boolean isCharCodeSupported(char charCode) {
         return stbtt_FindGlyphIndex(fontInfo, charCode) != 0;
-    }
-
-    private STBTrueTypeFont getFontBySize(int fontSize) {
-        STBTrueTypeFont stbTrueTypeFont = fontsBySize.get(fontSize);
-        if (stbTrueTypeFont == null) {
-            stbTrueTypeFont = new STBTrueTypeFont(fontFile, this, fontInfo, fontByteBuffer, bitmapWidth, bitmapHeight, fontSize);
-            fontsBySize.put(fontSize, stbTrueTypeFont);
-        }
-
-        return stbTrueTypeFont;
     }
 
     @Override
@@ -205,7 +168,7 @@ public class STBTrueTypeGlyphsBuilder extends GlyphsBuilder {
 
     @Override
     public int getWidth(String string, int fontSize) {
-        STBTrueTypeFont stbTrueTypeFont = getFontBySize(fontSize);
+        STBTrueTypeFontPacker stbTrueTypeFontPacker = getFontBySize(fontSize);
         float scale = stbtt_ScaleForMappingEmToPixels(fontInfo, fontSize);
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -216,7 +179,7 @@ public class STBTrueTypeGlyphsBuilder extends GlyphsBuilder {
 
             for (int i = 0; i < string.length(); i++) {
                 char cp = string.charAt(i);
-                getPackedQuad(stbTrueTypeFont, cp, fontSize, x, y, quad, textureBuffer);
+                getPackedQuad(stbTrueTypeFontPacker, cp, fontSize, x, y, quad, textureBuffer);
 
                 if (i + 1 < string.length()) {
                     x.put(0, x.get(0) + stbtt_GetCodepointKernAdvance(fontInfo, cp, string.charAt(i + 1)) * scale);
@@ -230,7 +193,7 @@ public class STBTrueTypeGlyphsBuilder extends GlyphsBuilder {
     @Override
     public float getHeight(String string, int fontSize) {
         float scale = scale(fontSize);
-        return (int) ((ascent - descent + lineGap) * scale);
+        return (int) ((ascent - descent) * scale);
     }
 
     @Override
@@ -245,7 +208,7 @@ public class STBTrueTypeGlyphsBuilder extends GlyphsBuilder {
 
     @Override
     public float getLeading(String string, int fontSize) {
-        return lineGap * scale(fontSize);
+        return 0;
     }
 
     @Override
