@@ -1,4 +1,4 @@
-package net.bfsr.engine.renderer.font.stb;
+package net.bfsr.engine.renderer.font;
 
 import it.unimi.dsi.fastutil.chars.CharList;
 import lombok.AllArgsConstructor;
@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-class STBPackResult {
+public class FontPackResult {
     private boolean allCharsPacked;
     private final CharList packedCharsList;
     private final CharList unpackedCharsList;

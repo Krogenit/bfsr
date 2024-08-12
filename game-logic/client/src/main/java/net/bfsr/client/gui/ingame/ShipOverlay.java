@@ -19,8 +19,8 @@ import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.client.PacketShipControl;
 
 public class ShipOverlay extends ShipOverlayRenderer {
-    private final Label shipCargo = new Label(Font.CONSOLA);
-    private final Label shipCrew = new Label(Font.CONSOLA);
+    private final Label shipCargo = new Label(Font.CONSOLA_FT);
+    private final Label shipCrew = new Label(Font.CONSOLA_FT);
     private final Core core = Core.get();
     private final PlayerInputController playerInputController = core.getInputHandler().getPlayerInputController();
     private final Button controlButton;
@@ -33,7 +33,7 @@ public class ShipOverlay extends ShipOverlayRenderer {
 
         controlButton = new Button(TextureRegister.guiButtonControl, 256, 40,
                 playerInputController.isControllingShip() ? Lang.getString("gui.cancelControl") : Lang.getString("gui.control"),
-                Font.XOLONIUM, 16,
+                Font.XOLONIUM_FT, 16,
                 () -> {
                     Ship playerControlledShip = playerInputController.getShip();
                     if (playerControlledShip != null) {

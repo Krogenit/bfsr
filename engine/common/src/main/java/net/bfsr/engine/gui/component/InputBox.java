@@ -94,7 +94,7 @@ public class InputBox extends GuiObject {
     }
 
     public InputBox(TextureRegister texture, int width, int height, String string, int fontSize, int stringOffsetX, int stringOffsetY) {
-        this(texture, width, height, string, Font.XOLONIUM, fontSize, stringOffsetX, stringOffsetY);
+        this(texture, width, height, string, Font.XOLONIUM_FT, fontSize, stringOffsetX, stringOffsetY);
     }
 
     public InputBox(int width, int height, String string, Font font, int fontSize, int stringOffsetX, int stringOffsetY) {
@@ -102,7 +102,7 @@ public class InputBox extends GuiObject {
     }
 
     public InputBox(int width, int height, String string, int fontSize, int stringOffsetX, int stringOffsetY) {
-        this(width, height, string, Font.XOLONIUM, fontSize, stringOffsetX, stringOffsetY);
+        this(width, height, string, Font.XOLONIUM_FT, fontSize, stringOffsetX, stringOffsetY);
     }
 
     public InputBox(TextureRegister texture, String string, int fontSize, int stringOffsetX, int stringOffsetY) {

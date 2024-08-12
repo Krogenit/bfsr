@@ -12,10 +12,6 @@ public class LegacyGlyphsBuilder extends GlyphsBuilder {
         this.stringCache = new StringCache(fontFile, antialias);
     }
 
-    public LegacyGlyphsBuilder() {
-        this.stringCache = new StringCache();
-    }
-
     @Override
     public GlyphsData getGlyphsData(String text, int fontSize) {
         Entry entry = stringCache.cacheString(text, fontSize);
@@ -26,7 +22,7 @@ public class LegacyGlyphsBuilder extends GlyphsBuilder {
             Glyph glyph = glyphs[i];
             glyphArrayList.add(new net.bfsr.engine.renderer.font.glyph.Glyph(glyph.x / 2, glyph.y / 2, (glyph.x + glyph.texture.width) / 2,
                     (glyph.y + glyph.texture.height) / 2, glyph.texture.u1, glyph.texture.v1, glyph.texture.u2, glyph.texture.v2,
-                    glyph.texture.textureHandle));
+                    glyph.texture.textureHandle, glyph.advance));
         }
 
         return new GlyphsData(glyphArrayList, entry.advance / 2);

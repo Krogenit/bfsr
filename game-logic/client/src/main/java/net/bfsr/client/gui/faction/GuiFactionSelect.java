@@ -49,13 +49,13 @@ public class GuiFactionSelect extends Gui {
             add(ships.get(i));
         }
 
-        Label label = new Label(Font.XOLONIUM, Lang.getString("gui.selectFaction.maintext"), 24);
+        Label label = new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.maintext"), 24);
         add(label.atCenter(-label.getWidth() / 2, -96));
 
         int discFontSize = 16;
-        add(new Label(Font.XOLONIUM, Lang.getString("gui.selectFaction.humanDisc"), discFontSize).atCenter(-450, -64));
-        add(new Label(Font.XOLONIUM, Lang.getString("gui.selectFaction.saimonDisc"), discFontSize).atCenter(-142, -64));
-        add(new Label(Font.XOLONIUM, Lang.getString("gui.selectFaction.engiDisc"), discFontSize).atCenter(166, -64));
+        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.humanDisc"), discFontSize).atCenter(-450, -64));
+        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.saimonDisc"), discFontSize).atCenter(-142, -64));
+        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.engiDisc"), discFontSize).atCenter(166, -64));
     }
 
     private void updateRot(GuiObject guiObject, Vector2f mousePosition) {

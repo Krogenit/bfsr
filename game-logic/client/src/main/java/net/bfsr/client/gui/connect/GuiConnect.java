@@ -16,7 +16,7 @@ import java.net.UnknownHostException;
 
 @Log4j2
 public class GuiConnect extends Gui {
-    private final Label connectingText = new Label(Font.XOLONIUM, 20, StringOffsetType.CENTERED).setColor(1.0f, 1.0f,
+    private final Label connectingText = new Label(Font.XOLONIUM_FT, 20, StringOffsetType.CENTERED).setColor(1.0f, 1.0f,
             1.0f, 0.0f);
 
     public GuiConnect(Gui parentGui) {

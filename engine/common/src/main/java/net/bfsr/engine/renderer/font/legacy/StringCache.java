@@ -84,14 +84,6 @@ public class StringCache {
      */
     private final Key lookupKey = new Key();
 
-    /**
-     * A single StringCache object is allocated by Minecraft's FontRenderer which forwards all string drawing and requests for
-     * string width to this class.
-     */
-    StringCache() {
-        glyphCache = new GlyphCache();
-    }
-
     StringCache(String fontFileName, boolean antiAlias) {
         glyphCache = new GlyphCache();
 

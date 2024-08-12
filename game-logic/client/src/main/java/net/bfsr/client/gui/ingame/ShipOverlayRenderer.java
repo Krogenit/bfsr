@@ -35,7 +35,7 @@ public abstract class ShipOverlayRenderer extends TexturedRectangle {
     final AbstractTexture energy = Engine.assetsManager.getTexture(TextureRegister.guiEnergy);
     private final AbstractTexture shield = Engine.assetsManager.getTexture(TextureRegister.guiShield);
     private final AbstractTexture shieldTexture = Engine.assetsManager.getTexture(TextureRegister.shieldSmall0);
-    private final Label textShield = new Label(Font.CONSOLA);
+    private final Label textShield = new Label(Font.CONSOLA_FT);
     private final Core core = Core.get();
     private final RenderManager renderManager = core.getRenderManager();
     final Vector2f rotationVector = new Vector2f();

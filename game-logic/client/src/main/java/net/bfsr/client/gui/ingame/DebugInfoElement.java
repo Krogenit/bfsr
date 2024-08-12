@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 
 public class DebugInfoElement extends MinimizableGuiObject {
     private static final int MINIMIZABLE_STRING_OFFSET_Y = 3;
-    private static final Font FONT_TYPE = Font.CONSOLA;
+    private static final Font FONT_TYPE = Font.CONSOLA_FT;
     private static final int FONT_SIZE = 13;
 
     private final StringBuilder stringBuilder = new StringBuilder(64);
@@ -186,7 +186,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
     }
 
     private Label createLabel(int y, String text, Consumer<Label> updateConsumer) {
-        return new Label(Font.CONSOLA, text, 0, 0, FONT_SIZE) {
+        return new Label(Font.CONSOLA_FT, text, 0, 0, FONT_SIZE) {
             @Override
             public void update() {
                 super.update();

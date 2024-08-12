@@ -22,8 +22,6 @@ public class Label extends GuiObject {
     private int shadowOffsetX, shadowOffsetY;
     private final LabelRenderer labelRenderer;
     @Getter
-    private float ascent;
-    @Getter
     private int maxWidth;
 
     public Label(Font font) {
@@ -78,7 +76,6 @@ public class Label extends GuiObject {
         this.fontSize = fontSize;
         this.offsetType = offsetType;
         this.color.set(r, g, b, a);
-        this.ascent = glyphsBuilder.getAscent(string, fontSize);
         this.setCanBeHovered(false);
         setRenderer(this.labelRenderer = new LabelRenderer(this, glyphsBuilder));
         packGlyphs();
@@ -106,14 +103,12 @@ public class Label extends GuiObject {
     public Label setString(String string) {
         this.string = string;
         setWidth(glyphsBuilder.getWidth(string, fontSize));
-        ascent = glyphsBuilder.getAscent(string, fontSize);
         return packGlyphs();
     }
 
     public Label setFontSize(int fontSize) {
         this.fontSize = fontSize;
         setWidth(glyphsBuilder.getWidth(string, fontSize));
-        ascent = glyphsBuilder.getAscent(string, fontSize);
         return this;
     }
 

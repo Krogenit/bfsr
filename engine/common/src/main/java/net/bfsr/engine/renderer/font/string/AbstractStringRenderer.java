@@ -15,4 +15,5 @@ public abstract class AbstractStringRenderer {
     public abstract void addString(AbstractGLString glString, float lastX, float lastY, float x, float y, BufferType bufferType);
 
     public abstract GlyphsBuilder createSTBTrueTypeGlyphsBuilder(String fontFile);
+    public abstract GlyphsBuilder createTrueTypeGlyphsBuilder(String fontFile);
 }

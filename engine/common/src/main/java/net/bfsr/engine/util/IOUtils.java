@@ -13,6 +13,9 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public final class IOUtils {
     public static void writePNGGrayScale(ByteBuffer byteBuffer, int width, int height, String fileName) {
@@ -31,6 +34,15 @@ public final class IOUtils {
             ImageIO.write(image, "png", new File(fileName + ".png"));
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static ByteBuffer fileToByteBuffer(Path path) {
+        try {
+            byte[] bytes = Files.readAllBytes(path);
+            return ByteBuffer.allocateDirect(bytes.length).order(ByteOrder.nativeOrder()).put(bytes).flip();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not load file " + path, e);
         }
     }
 }

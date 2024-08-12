@@ -61,7 +61,7 @@ public class GuiSettings extends Gui {
         for (Map.Entry<SettingsCategory, List<ClientSettings>> entry : optionsByCategory.entrySet()) {
             List<ClientSettings> options = entry.getValue();
 
-            Label sectionText = new Label(Font.XOLONIUM, Lang.getString("settings.section." +
+            Label sectionText = new Label(Font.XOLONIUM_FT, Lang.getString("settings.section." +
                     entry.getKey().getCategoryName()), fontSectionSize, StringOffsetType.CENTERED);
             sectionText.atTop(0, y - 20);
             scrollPane.add(sectionText);
@@ -97,7 +97,7 @@ public class GuiSettings extends Gui {
         add(new Rectangle(0, height - backgroundHeight, width, backgroundHeight).setAllColors(0.1f, 0.2f, 0.4f, 1.0f));
 
         String string = Lang.getString("gui.settings.mainText");
-        Label label = new Label(Font.XOLONIUM, string, 24, StringOffsetType.CENTERED);
+        Label label = new Label(Font.XOLONIUM_FT, string, 24, StringOffsetType.CENTERED);
         add(label.atTop(0, label.getCenteredOffsetY(backgroundHeight)));
 
         add(new Button(Lang.getString("gui.settings.save"), 20, () -> {
