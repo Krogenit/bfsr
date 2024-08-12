@@ -2,7 +2,7 @@ package net.bfsr.editor.gui.property;
 
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.renderer.GuiObjectRenderer;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -17,12 +17,12 @@ abstract class PropertyList<T extends PropertyComponent, O> extends PropertyObje
     final Supplier<O> supplier;
     final int contextMenuStringXOffset = 8;
 
-    PropertyList(int width, int height, String name, FontType fontType, int fontSize, int propertyOffsetX, int stringOffsetY,
+    PropertyList(int width, int height, String name, Font font, int fontSize, int propertyOffsetX, int stringOffsetY,
                  Supplier<O> supplier, Object object, List<Field> fields, Object[] values, BiConsumer<Object, Integer> valueConsumer) {
-        super(width, height, name, fontType, fontSize, propertyOffsetX, stringOffsetY, object, fields, values, valueConsumer);
+        super(width, height, name, font, fontSize, propertyOffsetX, stringOffsetY, object, fields, values, valueConsumer);
         this.supplier = supplier;
         int addButtonSize = 20;
-        add(addButton = new Button(width - addButtonSize, height - baseHeight, addButtonSize, addButtonSize, "", fontType,
+        add(addButton = new Button(width - addButtonSize, height - baseHeight, addButtonSize, addButtonSize, "", font,
                 fontSize, stringOffsetY, () -> addProperty(createObject())));
         setupButton(addButton).atBottomRight(-addButton.getWidth(), -addButton.getHeight());
         addButton.setRenderer(new GuiObjectRenderer(addButton) {

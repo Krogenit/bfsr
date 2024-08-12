@@ -49,15 +49,12 @@ public class PacketRegistry<NET_HANDLER extends NetworkHandler> {
 
         String oppositeSideName = side.getOpposite().toString().toLowerCase(Locale.ENGLISH);
         packetRegistry.forEachValue(aClass -> {
-            if (aClass.getPackageName().contains(oppositeSideName))
-                try {
-                    PacketHandler<Packet, NET_HANDLER> packetHandler = getPacketHandler(aClass.getConstructor().newInstance());
-                    if (packetHandler == null) {
-                        throw new RuntimeException("Can't find packet handler for packet class " + aClass);
-                    }
-                } catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
-                    throw new RuntimeException(e);
+            if (aClass.getPackageName().contains(oppositeSideName)) {
+                PacketHandler<Packet, NET_HANDLER> packetHandler = getPacketHandler(aClass);
+                if (packetHandler == null) {
+                    throw new RuntimeException("Can't find packet handler for packet class " + aClass);
                 }
+            }
 
             return true;
         });
@@ -83,5 +80,9 @@ public class PacketRegistry<NET_HANDLER extends NetworkHandler> {
 
     public PacketHandler<Packet, NET_HANDLER> getPacketHandler(Packet packet) {
         return packetHandlerRegistry.get(packet.getClass());
+    }
+
+    private PacketHandler<Packet, NET_HANDLER> getPacketHandler(Class<? extends Packet> packetClass) {
+        return packetHandlerRegistry.get(packetClass);
     }
 }

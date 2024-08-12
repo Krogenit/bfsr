@@ -146,7 +146,7 @@ public final class GUIRenderer extends AbstractGUIRenderer {
                 buffersHolder.getVertexBufferIndex());
         spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
-        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, 0, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         buffersHolder.incrementObjectCount();
     }
 
@@ -156,7 +156,7 @@ public final class GUIRenderer extends AbstractGUIRenderer {
                 buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
         spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
-        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, 0, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         buffersHolder.incrementObjectCount();
     }
 
@@ -168,7 +168,7 @@ public final class GUIRenderer extends AbstractGUIRenderer {
                 buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
         spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
-        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, 0, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         buffersHolder.incrementObjectCount();
     }
 
@@ -179,7 +179,7 @@ public final class GUIRenderer extends AbstractGUIRenderer {
                 height * 0.5f, buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());
         spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
-        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, 0, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         buffersHolder.incrementObjectCount();
     }
 
@@ -192,7 +192,7 @@ public final class GUIRenderer extends AbstractGUIRenderer {
                 buffersHolder.getVertexBufferIndex());
         spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
-        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, 0, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         buffersHolder.incrementObjectCount();
     }
 
@@ -201,7 +201,7 @@ public final class GUIRenderer extends AbstractGUIRenderer {
                 buffersHolder.getVertexBufferIndex());
         spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
-        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, 0, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         buffersHolder.incrementObjectCount();
     }
 
@@ -210,7 +210,7 @@ public final class GUIRenderer extends AbstractGUIRenderer {
                 buffersHolder.getVertexBufferIndex());
         spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
-        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, 0, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         buffersHolder.incrementObjectCount();
     }
 
@@ -224,7 +224,7 @@ public final class GUIRenderer extends AbstractGUIRenderer {
                 buffersHolder.getVertexBufferIndex());
         spriteRenderer.putColor(r, g, b, a, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         spriteRenderer.putTextureHandle(textureHandle, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
-        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, 0, buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         buffersHolder.incrementObjectCount();
     }
 }

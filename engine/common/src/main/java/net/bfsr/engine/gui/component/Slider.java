@@ -1,8 +1,7 @@
 package net.bfsr.engine.gui.component;
 
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.renderer.font.FontType;
-import net.bfsr.engine.renderer.font.StringCache;
+import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import org.joml.Vector4f;
@@ -23,11 +22,9 @@ public class Slider extends TexturedRectangle {
         slider.setX(calculateSliderXPos());
         setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
 
-        FontType font = FontType.XOLONIUM;
-        StringCache stringCache = font.getStringCache();
-        add(label = new Label(font, string, width / 2,
-                (int) ((height - stringCache.getHeight(string, fontSize)) / 2.0f + stringCache.getAscent(string, fontSize)),
-                fontSize, StringOffsetType.CENTERED).compileAtOrigin());
+        Font font = Font.XOLONIUM_FT;
+        this.label = new Label(font, string, fontSize, StringOffsetType.CENTERED);
+        add(label.atTopLeft(width / 2, label.getCenteredOffsetY(height)));
     }
 
     @Override

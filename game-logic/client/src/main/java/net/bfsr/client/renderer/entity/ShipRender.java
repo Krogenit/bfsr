@@ -15,7 +15,7 @@ import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.renderer.buffer.BufferType;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
@@ -49,7 +49,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     private static final AbstractTexture SHIELD_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.moduleShield);
 
     private final Ship ship;
-    private final Label label = new Label(FontType.XOLONIUM, 14, StringOffsetType.CENTERED).setShadow(true)
+    private final Label label = new Label(Font.XOLONIUM_FT, 24, StringOffsetType.CENTERED).setShadow(true)
             .setShadowOffsetX(2).setShadowOffsetY(2);
 
     private final List<WeaponSlotRender> weaponRenders = new ArrayList<>();
@@ -272,9 +272,8 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         renderGunSlots();
 
         Vector2f position = object.getPosition();
-        float yOffset = getStringYPosition();
-        label.render(BufferType.ENTITIES_ALPHA, lastPosition.x, lastPosition.y + yOffset, position.x,
-                position.y + yOffset);
+        float yOffset = getStringYPosition() + 1.6f;
+        label.render(BufferType.ENTITIES_ALPHA, lastPosition.x, lastPosition.y + yOffset, position.x, position.y + yOffset);
     }
 
     private float getStringYPosition() {
@@ -328,7 +327,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     }
 
     private void createName() {
-        label.setStringAndCompile(ship.getName()).scale(0.1f, -0.1f);
+        label.setString(ship.getName()).scale(0.05f, -0.05f);
     }
 
     @EventHandler

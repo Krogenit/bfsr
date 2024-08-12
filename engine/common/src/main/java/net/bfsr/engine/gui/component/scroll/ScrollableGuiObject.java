@@ -10,11 +10,11 @@ final class ScrollableGuiObject {
 
     ScrollableGuiObject(GuiObject guiObject) {
         this.guiObject = guiObject;
-        this.y = guiObject.getYForScroll();
+        this.y = guiObject.getY();
     }
 
     void updateY() {
-        this.y = guiObject.getYForScroll();
+        this.y = guiObject.getY();
     }
 
     @Override

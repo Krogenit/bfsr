@@ -6,6 +6,7 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.InputBox;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.renderer.GuiObjectRenderer;
+import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
 import net.bfsr.engine.renderer.opengl.GL;
 import org.joml.Vector2i;
 import org.joml.Vector4f;
@@ -16,10 +17,12 @@ public class InputBoxRenderer extends GuiObjectRenderer {
     @Getter
     private boolean renderCursor;
     private final InputBox inputBox;
+    private final GlyphsBuilder glyphsBuilder;
 
     public InputBoxRenderer(InputBox inputBox) {
         super(inputBox);
         this.inputBox = inputBox;
+        this.glyphsBuilder = inputBox.getLabel().getGlyphsBuilder();
     }
 
     @Override
@@ -66,19 +69,17 @@ public class InputBoxRenderer extends GuiObjectRenderer {
                 int leftStringWidth;
                 int rightStringWidth;
                 if (cursorPosition < cursorPositionEnd) {
-                    leftStringWidth = label.getStringCache().getStringWidth(string.substring(0, cursorPosition), fontSize);
-                    rightStringWidth = label.getStringCache()
-                            .getStringWidth(string.substring(cursorPosition, cursorPositionEnd), fontSize);
+                    leftStringWidth = glyphsBuilder.getWidth(string.substring(0, cursorPosition), fontSize);
+                    rightStringWidth = glyphsBuilder.getWidth(string.substring(cursorPosition, cursorPositionEnd), fontSize);
                 } else {
-                    leftStringWidth = label.getStringCache().getStringWidth(string.substring(0, cursorPositionEnd), fontSize);
-                    rightStringWidth = label.getStringCache()
-                            .getStringWidth(string.substring(cursorPositionEnd, cursorPosition), fontSize);
+                    leftStringWidth = glyphsBuilder.getWidth(string.substring(0, cursorPositionEnd), fontSize);
+                    rightStringWidth = glyphsBuilder.getWidth(string.substring(cursorPositionEnd, cursorPosition), fontSize);
                 }
                 guiRenderer.add(lastX + stringOffset.x + leftStringWidth, lastCursorY, x + leftStringWidth + stringOffset.x, cursorY,
                         rightStringWidth, cursorHeight, selectionColor.x, selectionColor.y, selectionColor.z, selectionColor.w);
                 return;
             } else {
-                lineWidth = label.getStringCache().getStringWidth(string.substring(0, cursorPosition), fontSize);
+                lineWidth = glyphsBuilder.getWidth(string.substring(0, cursorPosition), fontSize);
             }
         } else {
             lineWidth = 0;

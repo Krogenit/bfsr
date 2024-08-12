@@ -93,10 +93,6 @@ public class Ship extends DamageableRigidBody {
     @Getter
     @Setter
     private RigidBody target;
-    @Setter
-    private Consumer<Double> positionCalculator = super::updatePosition;
-    @Setter
-    private Consumer<Double> chronologicalDataProcessor = super::updateData;
     private final Vector2f rotationHelper = new Vector2f();
     @Getter
     private final EventBus shipEventBus = new EventBus();
@@ -314,21 +310,6 @@ public class Ship extends DamageableRigidBody {
         if (!DamageSystem.isPolygonConnectedToContour(shipData.getShieldPolygon().getVertices(), polygon)) {
             shield.setDead();
         }
-    }
-
-    @Override
-    public void updatePosition(double timestamp) {
-        positionCalculator.accept(timestamp);
-    }
-
-    @Override
-    public void updateData(double timestamp) {
-        chronologicalDataProcessor.accept(timestamp);
-    }
-
-    public void resetPositionCalculatorAndChronologicalProcessor() {
-        positionCalculator = super::updatePosition;
-        chronologicalDataProcessor = super::updateData;
     }
 
     @Override

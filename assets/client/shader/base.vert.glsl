@@ -12,6 +12,7 @@ out Data {
     flat uvec2 maskTextureHandle;
     flat float fireAmount;
     flat float fireUVAnimation;
+    flat bool font;
 } out_Data;
 
 layout(std140, binding = UBO_CAMERA_MATRIX) uniform ProjectionViewMatrix {
@@ -33,4 +34,5 @@ void main() {
     out_Data.maskTextureHandle = material.maskTextureHandle;
     out_Data.fireAmount = material.fireAmount;
     out_Data.fireUVAnimation = material.fireUVAnimation;
+    out_Data.font = material.font;
 }

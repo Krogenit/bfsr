@@ -93,7 +93,7 @@ public class WorldRenderer {
     }
 
     void createBackgroundTexture(long seed) {
-        backgroundTexture = Engine.renderer.textureGenerator.generateNebulaTexture(2560 << 1, 2560 << 1, new Random(seed));
+        backgroundTexture = Engine.renderer.textureGenerator.generateNebulaTexture(5120, 5120, new Random(seed));
     }
 
     @EventHandler

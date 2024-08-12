@@ -10,7 +10,7 @@ import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.TexturedRectangle;
 import net.bfsr.engine.gui.component.TexturedRotatedRectangle;
 import net.bfsr.engine.math.MathUtils;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.packet.client.PacketFactionSelect;
@@ -49,17 +49,13 @@ public class GuiFactionSelect extends Gui {
             add(ships.get(i));
         }
 
-        Label label = new Label(FontType.XOLONIUM, Lang.getString("gui.selectFaction.maintext"), 24)
-                .compileAtOrigin();
+        Label label = new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.maintext"), 24);
         add(label.atCenter(-label.getWidth() / 2, -96));
 
         int discFontSize = 16;
-        add(new Label(FontType.XOLONIUM, Lang.getString("gui.selectFaction.humanDisc"), discFontSize)
-                .compileAtOrigin().atCenter(-450, -64));
-        add(new Label(FontType.XOLONIUM, Lang.getString("gui.selectFaction.saimonDisc"), discFontSize)
-                .compileAtOrigin().atCenter(-142, -64));
-        add(new Label(FontType.XOLONIUM, Lang.getString("gui.selectFaction.engiDisc"), discFontSize)
-                .compileAtOrigin().atCenter(166, -64));
+        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.humanDisc"), discFontSize).atCenter(-450, -64));
+        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.saimonDisc"), discFontSize).atCenter(-142, -64));
+        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.engiDisc"), discFontSize).atCenter(166, -64));
     }
 
     private void updateRot(GuiObject guiObject, Vector2f mousePosition) {

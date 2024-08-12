@@ -5,7 +5,7 @@ import net.bfsr.editor.gui.builder.ComponentBuilder;
 import net.bfsr.editor.gui.property.PropertyComponent;
 import net.bfsr.editor.gui.property.PropertyGuiElementType;
 import net.bfsr.editor.property.holder.PropertiesHolder;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
@@ -27,12 +27,12 @@ public final class PropertiesBuilder {
         return fields;
     }
 
-    public static void createGuiProperties(Object object, int width, int height, FontType fontType, int fontSize, int propertyOffsetX,
+    public static void createGuiProperties(Object object, int width, int height, Font font, int fontSize, int propertyOffsetX,
                                            int stringYOffset, Consumer<PropertyComponent> consumer) {
-        createGuiProperties(object, width, height, fontType, fontSize, propertyOffsetX, stringYOffset, consumer, "");
+        createGuiProperties(object, width, height, font, fontSize, propertyOffsetX, stringYOffset, consumer, "");
     }
 
-    public static void createGuiProperties(Object object, int width, int height, FontType fontType, int fontSize, int propertyOffsetX,
+    public static void createGuiProperties(Object object, int width, int height, Font font, int fontSize, int propertyOffsetX,
                                            int stringYOffset, Consumer<PropertyComponent> consumer, String propertyName) {
         List<Field> fields = getAllFields(new LinkedList<>(), object.getClass());
         int fieldsAmount = 0;
@@ -56,7 +56,7 @@ public final class PropertiesBuilder {
                     field.setAccessible(true);
 
                     try {
-                        createGuiProperties(field.get(object), width, height, fontType, fontSize, propertyOffsetX, stringYOffset,
+                        createGuiProperties(field.get(object), width, height, font, fontSize, propertyOffsetX, stringYOffset,
                                 consumer, propertyName);
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
@@ -70,7 +70,7 @@ public final class PropertiesBuilder {
 
                 if (fieldsBulk.size() == fieldsAmount) {
                     try {
-                        consumer.accept(createProperty(object, width, height, propertyOffsetX, fontType, fontSize, stringYOffset,
+                        consumer.accept(createProperty(object, width, height, propertyOffsetX, font, fontSize, stringYOffset,
                                 propertyName, elementType, new ArrayList<>(fieldsBulk)));
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
@@ -83,7 +83,7 @@ public final class PropertiesBuilder {
         }
     }
 
-    private static PropertyComponent createProperty(Object object, int width, int height, int propertyOffsetX, FontType fontType,
+    private static PropertyComponent createProperty(Object object, int width, int height, int propertyOffsetX, Font font,
                                                     int fontSize, int stringYOffset, String propertyName,
                                                     PropertyGuiElementType elementType, List<Field> fields) throws IllegalAccessException {
         Object[] values = new Object[fields.size()];
@@ -99,7 +99,7 @@ public final class PropertiesBuilder {
             }
         }
 
-        return ComponentBuilder.build(elementType, width, height, propertyName, propertyOffsetX, fontType, fontSize, stringYOffset, fields,
+        return ComponentBuilder.build(elementType, width, height, propertyName, propertyOffsetX, font, fontSize, stringYOffset, fields,
                 values, object, (o, integer) -> {
                     try {
                         fields.get(integer).set(object, o);

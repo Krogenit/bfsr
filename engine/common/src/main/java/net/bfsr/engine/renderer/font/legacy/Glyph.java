@@ -1,4 +1,4 @@
-package net.bfsr.engine.renderer.font;
+package net.bfsr.engine.renderer.font.legacy;
 
 /**
  * Identifies a single glyph in the layed-out string. Includes a reference to a GlyphCache.Entry with the OpenGL texture ID
@@ -6,19 +6,29 @@ package net.bfsr.engine.renderer.font;
  * the string to which this Glyph object belongs.
  */
 public class Glyph implements Comparable<Glyph> {
-    /** The index into the original string (i.e. with color codes) for the character that generated this glyph. */
+    /**
+     * The index into the original string (i.e. with color codes) for the character that generated this glyph.
+     */
     public int stringIndex;
 
-    /** Texture ID and position/size of the glyph's pre-rendered image within the cache texture. */
+    /**
+     * Texture ID and position/size of the glyph's pre-rendered image within the cache texture.
+     */
     public GlyphCache.Entry texture;
 
-    /** Glyph's horizontal position (in pixels) relative to the entire string's baseline */
+    /**
+     * Glyph's horizontal position (in pixels) relative to the entire string's baseline
+     */
     public int x;
 
-    /** Glyph's vertical position (in pixels) relative to the entire string's baseline */
+    /**
+     * Glyph's vertical position (in pixels) relative to the entire string's baseline
+     */
     public int y;
 
-    /** Glyph's horizontal advance (in pixels) used for strikethrough and underline effects */
+    /**
+     * Glyph's horizontal advance (in pixels) used for strikethrough and underline effects
+     */
     int advance;
 
     /**

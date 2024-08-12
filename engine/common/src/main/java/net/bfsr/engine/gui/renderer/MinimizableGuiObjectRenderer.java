@@ -1,8 +1,7 @@
-package net.bfsr.editor.gui.renderer;
+package net.bfsr.engine.gui.renderer;
 
-import net.bfsr.editor.gui.component.MinimizableGuiObject;
 import net.bfsr.engine.gui.component.GuiObject;
-import net.bfsr.engine.gui.renderer.GuiObjectRenderer;
+import net.bfsr.engine.gui.component.MinimizableGuiObject;
 import org.joml.Vector4f;
 
 import java.util.List;

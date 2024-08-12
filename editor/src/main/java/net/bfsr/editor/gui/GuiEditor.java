@@ -17,7 +17,7 @@ import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.ScrollPane;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.util.PathHelper;
 import net.bfsr.engine.util.RunnableUtils;
@@ -47,7 +47,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
 
     private final int leftPanelWidth = 300;
 
-    protected final FontType fontType = EditorTheme.FONT_TYPE;
+    protected final Font font = EditorTheme.FONT_TYPE;
     protected final int fontSize = 13;
     private final int stringOffsetX = 4;
     private final int stringOffsetY = 0;
@@ -59,7 +59,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
     private final List<InspectionEntry<PROPERTIES_TYPE>> entries = new ArrayList<>();
     protected final InspectionPanel<PROPERTIES_TYPE> inspectionPanel;
     protected final PropertiesPanel propertiesPanel = new PropertiesPanel(
-            propertiesContainerWidth, Engine.renderer.getScreenHeight() - elementHeight, fontType, fontSize, stringOffsetX,
+            propertiesContainerWidth, Engine.renderer.getScreenHeight() - elementHeight, font, fontSize, stringOffsetX,
             stringOffsetY, contextMenuStringOffsetX
     );
 
@@ -71,7 +71,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
     protected GuiEditor(String inspectionPanelName, ConfigToDataConverter<CONFIG_TYPE, ?> configRegistry,
                         EditorObjectConverter<CONFIG_TYPE, PROPERTIES_TYPE> converter, Class<CONFIG_TYPE> configClass,
                         Class<PROPERTIES_TYPE> propertiesClass) {
-        this.inspectionPanel = new InspectionPanel<>(this, inspectionPanelName, leftPanelWidth, Engine.renderer.getScreenHeight(), fontType,
+        this.inspectionPanel = new InspectionPanel<>(this, inspectionPanelName, leftPanelWidth, Engine.renderer.getScreenHeight(), font,
                 fontSize, stringOffsetY);
         this.configRegistry = configRegistry;
         this.converter = converter;
@@ -102,8 +102,8 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
 
                     String name = "Create Folder";
                     Button createEntryButton =
-                            new Button(x1, y1, fontType.getStringCache().getStringWidth(name, fontSize) + contextMenuStringOffsetX,
-                                    elementHeight, name, fontType, fontSize, stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT,
+                            new Button(x1, y1, font.getGlyphsBuilder().getWidth(name, fontSize) + contextMenuStringOffsetX,
+                                    elementHeight, name, font, fontSize, stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT,
                                     RunnableUtils.EMPTY_RUNNABLE);
                     createEntryButton.setLeftReleaseRunnable(() -> inspectionPanel.add(createEntry()));
 
@@ -111,8 +111,8 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
 
                     name = "Create Object";
                     Button createEffectButton =
-                            new Button(x1, y1, fontType.getStringCache().getStringWidth(name, fontSize) + contextMenuStringOffsetX,
-                                    elementHeight, name, fontType, fontSize, stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT,
+                            new Button(x1, y1, font.getGlyphsBuilder().getWidth(name, fontSize) + contextMenuStringOffsetX,
+                                    elementHeight, name, font, fontSize, stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT,
                                     RunnableUtils.EMPTY_RUNNABLE);
                     createEffectButton.setLeftReleaseRunnable(() -> inspectionPanel.add(createObject()));
 
@@ -242,15 +242,15 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
     private InspectionEntry<PROPERTIES_TYPE> createEntry(String name) {
         ScrollPane scrollPane = inspectionPanel.getScrollPane();
         InspectionEntry<PROPERTIES_TYPE> entry = new InspectionEntry<>(inspectionPanel, scrollPane.getWidth() - scrollPane.getScrollWidth(),
-                elementHeight, name, fontType, fontSize, stringOffsetY);
+                elementHeight, name, font, fontSize, stringOffsetY);
         entry.setRightClickRunnable(() -> {
             Vector2f mousePos = Engine.mouse.getPosition();
             int x1 = (int) mousePos.x;
             int y1 = (int) mousePos.y;
             String addString = "Create Entry";
             Button createEntryButton = new Button(x1, y1,
-                    fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringOffsetX,
-                    elementHeight, addString, fontType, fontSize, stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT,
+                    font.getGlyphsBuilder().getWidth(addString, fontSize) + contextMenuStringOffsetX,
+                    elementHeight, addString, font, fontSize, stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT,
                     () -> {
                         InspectionEntry<PROPERTIES_TYPE> childEntry = createEntry();
                         entry.add(childEntry);
@@ -262,8 +262,8 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
 
             addString = "Create Object";
             Button createEffectButton = new Button(x1, y1,
-                    fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringOffsetX,
-                    elementHeight, addString, fontType, fontSize, stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT,
+                    font.getGlyphsBuilder().getWidth(addString, fontSize) + contextMenuStringOffsetX,
+                    elementHeight, addString, font, fontSize, stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT,
                     () -> {
                         InspectionEntry<PROPERTIES_TYPE> inspectionHolder = createEntry();
                         entry.add(inspectionHolder);
@@ -274,8 +274,8 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
 
             addString = "Remove";
             Button removeButton = new Button(x1, y1,
-                    fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringOffsetX,
-                    elementHeight, addString, fontType, fontSize, stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT,
+                    font.getGlyphsBuilder().getWidth(addString, fontSize) + contextMenuStringOffsetX,
+                    elementHeight, addString, font, fontSize, stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT,
                     () -> remove(entry)
             );
 

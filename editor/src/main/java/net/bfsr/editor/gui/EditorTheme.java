@@ -1,14 +1,14 @@
 package net.bfsr.editor.gui;
 
-import net.bfsr.editor.gui.component.MinimizableGuiObject;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.CheckBox;
 import net.bfsr.engine.gui.component.ComboBox;
 import net.bfsr.engine.gui.component.InputBox;
+import net.bfsr.engine.gui.component.MinimizableGuiObject;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.gui.renderer.RectangleOutlinedRenderer;
 import net.bfsr.engine.gui.renderer.inputbox.InputBoxOutlinedRenderer;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 import org.joml.Vector4f;
 
 public final class EditorTheme {
@@ -44,7 +44,7 @@ public final class EditorTheme {
     private static final Vector4f SCROLL_COLOR = new Vector4f(77 / 255.0f, 78 / 255.0f, 81 / 255.0f, 1.0f);
     private static final Vector4f SCROLL_HOVER_COLOR = new Vector4f(92 / 255.0f, 93 / 255.0f, 94 / 255.0f, 1.0f);
 
-    public static final FontType FONT_TYPE = FontType.Segoe_UI;
+    public static final Font FONT_TYPE = Font.Segoe_UI_FT;
 
     public static MinimizableGuiObject setup(MinimizableGuiObject object) {
         object.setTextColor(TEXT_COLOR).setHoverColor(MINIMIZABLE_COLOR);

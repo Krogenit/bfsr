@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-
 @Log4j2
 public class ParticleRenderer {
     private static final int START_PARTICLE_COUNT = 8192;

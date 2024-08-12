@@ -6,7 +6,7 @@ import net.bfsr.editor.property.converter.PropertyConverter;
 import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.Button;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.util.RunnableUtils;
 import org.joml.Vector2f;
@@ -23,10 +23,10 @@ import static net.bfsr.editor.gui.EditorTheme.setupContextMenuButton;
 public class PropertyMap<KEY> extends PropertyList<PropertyObject<PropertyComponent>, PropertiesHolder> {
     private final Supplier<KEY> keySupplier;
 
-    public PropertyMap(int width, int height, String name, FontType fontType, int fontSize, int propertyOffsetX, int stringOffsetY,
+    public PropertyMap(int width, int height, String name, Font font, int fontSize, int propertyOffsetX, int stringOffsetY,
                        Object object, List<Field> fields, Object[] values, BiConsumer<Object, Integer> valueConsumer,
                        Supplier<KEY> keySupplier, Supplier<PropertiesHolder> supplier) {
-        super(width, height, name, fontType, fontSize, propertyOffsetX, stringOffsetY, supplier, object, fields, values, valueConsumer);
+        super(width, height, name, font, fontSize, propertyOffsetX, stringOffsetY, supplier, object, fields, values, valueConsumer);
         this.keySupplier = keySupplier;
     }
 
@@ -44,7 +44,7 @@ public class PropertyMap<KEY> extends PropertyList<PropertyObject<PropertyCompon
 
     public void add(KEY key, PropertiesHolder propertiesHolder) {
         PropertyObject<PropertyComponent> component = new PropertyObject<>(baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight,
-                key.toString(), fontType, fontSize, MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, propertiesHolder, null,
+                key.toString(), font, fontSize, MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, propertiesHolder, null,
                 new Object[]{propertiesHolder}, (o, integer) -> {});
 
         component.addProperty(new PropertyInputBox(width - MINIMIZABLE_STRING_X_OFFSET, baseHeight, "keyName",
@@ -60,8 +60,8 @@ public class PropertyMap<KEY> extends PropertyList<PropertyObject<PropertyCompon
             String addString = "Remove";
             Vector2f mousePos = Engine.mouse.getPosition();
             Button button = new Button((int) mousePos.x, (int) mousePos.y,
-                    fontType.getStringCache().getStringWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight,
-                    addString, fontType, fontSize, 4, stringOffsetY, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
+                    font.getGlyphsBuilder().getWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight,
+                    addString, font, fontSize, 4, stringOffsetY, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
             setupContextMenuButton(button);
             button.setLeftReleaseRunnable(() -> remove(component));
             Core.get().getGuiManager().openContextMenu(button);

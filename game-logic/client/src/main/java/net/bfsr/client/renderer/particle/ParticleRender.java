@@ -72,6 +72,6 @@ public class ParticleRender extends Render implements net.bfsr.engine.renderer.p
                 particle.getCos(), lastSize.x, lastSize.y, size.x, size.y, interpolation, vertexBuffer, vertexBufferIndex);
         spriteRenderer.putColor(lastColor, color, materialBuffer, materialBufferIndex, interpolation);
         spriteRenderer.putTextureHandle(textureHandle, materialBuffer, materialBufferIndex);
-        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, materialBuffer, materialBufferIndex);
+        spriteRenderer.putMaterialData(0, 0.0f, 0.0f, 0, materialBuffer, materialBufferIndex);
     }
 }

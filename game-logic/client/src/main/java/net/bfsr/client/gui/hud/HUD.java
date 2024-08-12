@@ -14,11 +14,11 @@ import net.bfsr.entity.ship.Ship;
 import static net.bfsr.engine.input.Keys.KEY_ESCAPE;
 
 public class HUD extends HUDAdapter {
+    private final ShipOverlay shipOverlay = new ShipOverlay(this);
+    private final OtherShipOverlay otherShipOverlay = new OtherShipOverlay();
     private final DebugInfoElement debugInfoElement = new DebugInfoElement(this);
     private final MiniMap miniMap = new MiniMap();
     private final Chat chat = new Chat();
-    private final ShipOverlay shipOverlay = new ShipOverlay(this);
-    private final OtherShipOverlay otherShipOverlay = new OtherShipOverlay();
     private final GuiManager guiManager = Core.get().getGuiManager();
 
     public HUD() {

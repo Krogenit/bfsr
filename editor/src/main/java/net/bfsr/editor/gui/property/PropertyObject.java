@@ -2,7 +2,7 @@ package net.bfsr.editor.gui.property;
 
 import lombok.Getter;
 import net.bfsr.editor.property.PropertiesBuilder;
-import net.bfsr.engine.renderer.font.FontType;
+import net.bfsr.engine.renderer.font.Font;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -13,13 +13,13 @@ import java.util.function.BiConsumer;
 public class PropertyObject<PROPERTY_TYPE extends PropertyComponent> extends PropertyComponent {
     final List<PROPERTY_TYPE> properties = new ArrayList<>();
 
-    public PropertyObject(int width, int height, String name, FontType fontType, int fontSize, int propertyOffsetX, int stringOffsetY,
+    public PropertyObject(int width, int height, String name, Font font, int fontSize, int propertyOffsetX, int stringOffsetY,
                           Object object, List<Field> fields, Object[] values, BiConsumer<Object, Integer> valueConsumer) {
-        super(width, height, name, fontType, fontSize, propertyOffsetX + MINIMIZABLE_STRING_X_OFFSET, 1, MINIMIZABLE_STRING_X_OFFSET,
+        super(width, height, name, font, fontSize, propertyOffsetX + MINIMIZABLE_STRING_X_OFFSET, 1, MINIMIZABLE_STRING_X_OFFSET,
                 stringOffsetY, object, fields, values, valueConsumer);
         setCanMaximize(true);
 
-        PropertiesBuilder.createGuiProperties(values[0], width - MINIMIZABLE_STRING_X_OFFSET, height, fontType, fontSize,
+        PropertiesBuilder.createGuiProperties(values[0], width - MINIMIZABLE_STRING_X_OFFSET, height, font, fontSize,
                 MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, propertyComponent -> addProperty((PROPERTY_TYPE) propertyComponent));
     }
 

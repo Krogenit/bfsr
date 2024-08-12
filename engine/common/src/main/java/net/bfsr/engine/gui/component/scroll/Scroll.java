@@ -27,7 +27,7 @@ public class Scroll extends Rectangle {
     @Setter
     private int scrollAmount = 40;
     private int accumulator;
-    private int minObjectY, maxObjectY = Integer.MIN_VALUE;
+    private int minObjectY = Integer.MAX_VALUE, maxObjectY = Integer.MIN_VALUE;
     private final AbstractMouse mouse = Engine.mouse;
 
     public Scroll(int width, int height) {
@@ -38,7 +38,7 @@ public class Scroll extends Rectangle {
         scrollableElements.add(new ScrollableGuiObject(guiObject));
         minObjectY = Math.min(guiObject.getY(), minObjectY);
         maxObjectY = Math.max(guiObject.getY() + guiObject.getHeight(), maxObjectY);
-        totalHeight = maxObjectY - minObjectY;
+        totalHeight = maxObjectY - minObjectY + (minObjectY > 0 ? minObjectY : 0);
         updateScrollPositionAndSize();
     }
 
@@ -106,15 +106,17 @@ public class Scroll extends Rectangle {
 
     private void updateTotalHeight() {
         if (scrollableElements.size() > 0) {
-            GuiObject guiObject = scrollableElements.get(0).getGuiObject();
-            minObjectY = guiObject.getY();
-            maxObjectY = guiObject.getY() + guiObject.getHeight();
+            ScrollableGuiObject scrollableGuiObject = scrollableElements.get(0);
+            GuiObject guiObject = scrollableGuiObject.getGuiObject();
+            minObjectY = scrollableGuiObject.getY();
+            maxObjectY = scrollableGuiObject.getY() + guiObject.getHeight();
             for (int i = 0; i < scrollableElements.size(); i++) {
-                guiObject = scrollableElements.get(i).getGuiObject();
-                minObjectY = Math.min(guiObject.getY(), minObjectY);
-                maxObjectY = Math.max(guiObject.getY() + guiObject.getHeight(), maxObjectY);
+                scrollableGuiObject = scrollableElements.get(i);
+                guiObject = scrollableGuiObject.getGuiObject();
+                minObjectY = Math.min(scrollableGuiObject.getY(), minObjectY);
+                maxObjectY = Math.max(scrollableGuiObject.getY() + guiObject.getHeight(), maxObjectY);
             }
-            totalHeight = maxObjectY - minObjectY;
+            totalHeight = maxObjectY - minObjectY + (minObjectY > 0 ? minObjectY : 0);
         } else {
             totalHeight = 0;
         }
@@ -190,5 +192,7 @@ public class Scroll extends Rectangle {
     public void clear() {
         super.clear();
         scrollableElements.clear();
+        minObjectY = Integer.MAX_VALUE;
+        maxObjectY = Integer.MIN_VALUE;
     }
 }

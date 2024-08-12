@@ -25,4 +25,7 @@ public abstract class Gui extends GuiObject {
             guiObjects.get(i).onScreenResize(width, height);
         }
     }
+
+    @Override
+    public void clear() {}
 }

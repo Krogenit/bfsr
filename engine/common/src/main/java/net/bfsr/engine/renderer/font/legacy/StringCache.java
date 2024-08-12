@@ -1,8 +1,9 @@
-package net.bfsr.engine.renderer.font;
+package net.bfsr.engine.renderer.font.legacy;
 
 import org.joml.Vector3f;
 
-import java.awt.*;
+import java.awt.Font;
+import java.awt.Point;
 import java.awt.font.GlyphVector;
 import java.lang.ref.WeakReference;
 import java.text.Bidi;
@@ -10,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.WeakHashMap;
-
 
 /**
  * The StringCache is the public interface for rendering of all Unicode strings using OpenType fonts. It caches the glyph layout
@@ -43,7 +43,6 @@ public class StringCache {
     private static final Vector3f[] COLOR_TABLE = new Vector3f[32];
     private static final char SPACE = ' ';
     private static final char NEW_LINE = '\n';
-    private static final char COLOR_CODE = '§';
 
     static {
         for (int i = 0; i < 32; ++i) {
@@ -66,7 +65,9 @@ public class StringCache {
         }
     }
 
-    /** Reference to the unicode.FontRenderer class. Needed for creating GlyphVectors and retrieving glyph texture coordinates. */
+    /**
+     * Reference to the unicode.FontRenderer class. Needed for creating GlyphVectors and retrieving glyph texture coordinates.
+     */
     private final GlyphCache glyphCache;
 
     /**
@@ -83,19 +84,6 @@ public class StringCache {
      */
     private final Key lookupKey = new Key();
 
-    /**
-     * The point size at which every OpenType font is rendered.
-     */
-    private int fontSize = 18;
-
-    /**
-     * A single StringCache object is allocated by Minecraft's FontRenderer which forwards all string drawing and requests for
-     * string width to this class.
-     */
-    StringCache() {
-        glyphCache = new GlyphCache();
-    }
-
     StringCache(String fontFileName, boolean antiAlias) {
         glyphCache = new GlyphCache();
 
@@ -108,164 +96,6 @@ public class StringCache {
         stringCache.clear();
     }
 
-    public void setFontSize(int fontSize) {
-        this.fontSize = fontSize << 1;
-    }
-
-    public int getStringWidth(String str, int fontSize) {
-        setFontSize(fontSize);
-        return getStringWidth(str);
-    }
-
-    /**
-     * Return the width of a string in pixels. Used for centering strings inside GUI buttons.
-     *
-     * @param str compute the width of this string
-     * @return the width in pixels (divided by 2; this matches the scaled coordinate system used by GUIs in Minecraft)
-     */
-    @SuppressWarnings("unused")
-    public int getStringWidth(String str) {
-        /* Check for invalid arguments */
-        if (str == null || str.isEmpty()) {
-            return 0;
-        }
-
-        /* Make sure the entire string is cached and rendered since it will probably be used again in a renderString() call */
-        Entry entry = cacheString(str);
-
-        /* Return total horizontal advance (slightly wider than the bounding box, but close enough for centering strings) */
-        return entry.advance / 2;
-    }
-
-    public int getCursorPositionInLine(String str, float mouseX, int fontSize) {
-        /* Check for invalid arguments */
-        if (str.isEmpty()) {
-            return 0;
-        }
-
-        setFontSize(fontSize);
-        mouseX += mouseX;
-
-        /* The glyph array for a string is sorted by the string's logical character position */
-        Glyph[] glyphs = cacheString(str).glyphs;
-
-        /* Add up the individual advance of each glyph until it exceeds the specified width */
-        float advance = 0.0f;
-        int index = 0;
-        while (index < glyphs.length && advance <= mouseX) {
-            float halfAdvance = glyphs[index].advance / 2.0f;
-            float nextAdvance = advance + halfAdvance;
-            if (nextAdvance <= mouseX) {
-                advance = nextAdvance + halfAdvance;
-                index++;
-            } else {
-                break;
-            }
-        }
-
-        /* The string index of the last glyph that wouldn't fit gives the total desired length of the string in characters */
-        return index < glyphs.length ? glyphs[index].stringIndex : str.length();
-    }
-
-    /**
-     * Return the number of characters in a string that will completly fit inside the specified width when rendered.
-     *
-     * @param str   the String to analyze
-     * @param width the desired string width (in GUI coordinate system)
-     * @return the number of characters from str that will fit inside width
-     */
-    @SuppressWarnings("unused")
-    public int sizeStringToWidth(String str, int width) {
-        return sizeString(str, width, true);
-    }
-
-    /**
-     * Return the number of characters in a string that will completly fit inside the specified width when rendered, with
-     * or without prefering to break the line at whitespace instead of breaking in the middle of a word. This private provides
-     * the real implementation of both sizeStringToWidth() and trimStringToWidth().
-     *
-     * @param str           the String to analyze
-     * @param width         the desired string width (in GUI coordinate system)
-     * @param breakAtSpaces set to prefer breaking line at spaces than in the middle of a word
-     * @return the number of characters from str that will fit inside width
-     */
-    public int sizeString(String str, int width, boolean breakAtSpaces) {
-        /* Check for invalid arguments */
-        if (str == null || str.isEmpty()) {
-            return 0;
-        }
-
-        width += width;
-
-        /* The glyph array for a string is sorted by the string's logical character position */
-        Glyph[] glyphs = cacheString(str).glyphs;
-
-        /* Index of the last whitespace found in the string; used if breakAtSpaces is true */
-        int wsIndex = -1;
-
-        /* Add up the individual advance of each glyph until it exceeds the specified width */
-        int advance = 0, index = 0;
-        while (index < glyphs.length && advance <= width) {
-            /* Keep track of spaces if breakAtSpaces it set */
-            if (breakAtSpaces) {
-                char c = str.charAt(glyphs[index].stringIndex);
-                if (c == SPACE) {
-                    wsIndex = index + 1;
-                } else if (c == NEW_LINE) {
-                    wsIndex = index + 1;
-                    break;
-                }
-            }
-
-            int nextAdvance = advance + glyphs[index].advance;
-            if (nextAdvance <= width) {
-                advance = nextAdvance;
-                index++;
-            } else {
-                break;
-            }
-        }
-
-        /* Avoid splitting individual words if breakAtSpaces set; same test condition as in Minecraft's FontRenderer */
-        if (index < glyphs.length && wsIndex >= 0) {
-            index = wsIndex;
-        }
-
-        /* The string index of the last glyph that wouldn't fit gives the total desired length of the string in characters */
-        return index < glyphs.length ? glyphs[index].stringIndex : str.length();
-    }
-
-    /**
-     * Trim a string so that it fits in the specified width when rendered, optionally reversing the string
-     *
-     * @param str     the String to trim
-     * @param width   the desired string width (in GUI coordinate system)
-     * @param reverse if true, the returned string will also be reversed
-     * @return the trimmed and optionally reversed string
-     */
-    @SuppressWarnings("unused")
-    public String trimStringToWidth(String str, int width, boolean reverse) {
-        if (reverse)
-            str = new StringBuilder(str).reverse().toString();
-
-        int length = sizeString(str, width, true);
-        str = str.substring(0, length);
-
-        if (reverse) {
-            str = (new StringBuilder(str)).reverse().toString();
-        }
-
-        return str;
-    }
-
-    String trimStringToWidthSaveWords(String string, int width) {
-        return string.substring(0, sizeString(string, width, true));
-    }
-
-    public Vector3f getColor(int colorCode) {
-        return COLOR_TABLE[colorCode];
-    }
-
     /**
      * Add a string to the string cache by perform full layout on it, remembering its glyph positions, and making sure that
      * every font glyph used by the string is pre-rendering. If this string has already been cached, then simply return its
@@ -276,13 +106,14 @@ public class StringCache {
      * @param str this String will be layed out and added to the cache (or looked up, if alraedy cached)
      * @return the string's cache entry containing all the glyph positions
      */
-    public Entry cacheString(String str) {
+    Entry cacheString(String str, int fontSize) {
         /*
          * New Key object allocated only if the string was not found in the StringCache using lookupKey. This variable must
          * be outside the (entry == null) code block to have a temporary strong reference between the time when the Key is
          * added to stringCache and added to weakRefCache.
          */
         Key key;
+        fontSize = fontSize << 1;
 
         /* Re-use existing lookupKey to avoid allocation overhead on the critical rendering path */
         lookupKey.str = str;
@@ -298,11 +129,11 @@ public class StringCache {
 
             /* Strip all color codes from the string */
             entry = new Entry();
-            int length = stripColorCodes(entry, str, text);
+            int length = text.length;
 
             /* Layout the entire string, splitting it up by color codes and the Unicode bidirectional algorithm */
             List<Glyph> glyphList = new ArrayList<>();
-            entry.advance = layoutBidiString(glyphList, text, 0, length, entry.colors);
+            entry.advance = layoutBidiString(glyphList, text, 0, length, fontSize);
 
             /* Convert the accumulated Glyph list to an array for efficient storage */
             entry.glyphs = new Glyph[glyphList.size()];
@@ -313,24 +144,6 @@ public class StringCache {
              * This will apply color codes in the string's logical character order and not the visual order on screen.
              */
             Arrays.sort(entry.glyphs);
-
-            /* Do some post-processing on each Glyph object */
-            int colorIndex = 0, shift = 0;
-            for (int glyphIndex = 0; glyphIndex < entry.glyphs.length; glyphIndex++) {
-                Glyph glyph = entry.glyphs[glyphIndex];
-
-                /*
-                 * Adjust the string index for each glyph to point into the original string with unstripped color codes. The while
-                 * loop is necessary to handle multiple consecutive color codes with no visible glyphs between them. These new adjusted
-                 * stringIndex can now be compared against the color stringIndex during rendering. It also allows lookups of ASCII
-                 * digits in the original string for fast glyph replacement during rendering.
-                 */
-                while (colorIndex < entry.colors.length && glyph.stringIndex + shift >= entry.colors[colorIndex].stringIndex) {
-                    shift += 2;
-                    colorIndex++;
-                }
-                glyph.stringIndex += shift;
-            }
 
             /* Wrap the string in a Key object (to change how ASCII digits are compared) and cache it along with the newly generated Entry */
             key = new Key();
@@ -350,96 +163,6 @@ public class StringCache {
     }
 
     /**
-     * Remove all color codes from the string by shifting data in the text[] array over so it overwrites them. The value of each
-     * color code and its position (relative to the new stripped text[]) is also recorded in a separate array. The color codes must
-     * be removed for a font's context sensitive glyph substitution to work (like Arabic letter middle form).
-     *
-     * @param cacheEntry each color change in the string will add a new ColorCode object to this list
-     * @param str        the string from which color codes will be stripped
-     * @param text       on input it should be an identical copy of str; on output it will be string with all color codes removed
-     * @return the length of the new stripped string in text[]; actual text.length will not change because the array is not reallocated
-     */
-    private int stripColorCodes(Entry cacheEntry, String str, char[] text) {
-        List<ColorCode> colorList = new ArrayList<>();
-        int start = 0, shift = 0, next;
-
-        byte fontStyle = Font.PLAIN;
-        byte renderStyle = 0;
-        byte colorCode = -1;
-
-        /* Search for section mark characters indicating the start of a color code (but only if followed by at least one character) */
-        while ((next = str.indexOf(COLOR_CODE, start)) != -1 && next + 1 < str.length()) {
-            /*
-             * Remove the two char color code from text[] by shifting the remaining data in the array over on top of it.
-             * The "start" and "next" variables all contain offsets into the original unmodified "str" string. The "shift"
-             * variable keeps track of how many characters have been sripped so far, and it's used to compute offsets into
-             * the text[] array based on the start/next offsets in the original string.
-             */
-            System.arraycopy(text, next - shift + 2, text, next - shift, text.length - next - 2);
-
-            /* Decode escape code used in the string and change current font style / color based on it */
-            int code = "0123456789abcdefklmnor".indexOf(Character.toLowerCase(str.charAt(next + 1)));
-            switch (code) {
-                /* Bold style */
-                case 17 -> fontStyle |= Font.BOLD;
-
-
-                /* Strikethrough style */
-                case 18 -> {
-                    renderStyle |= ColorCode.STRIKETHROUGH;
-                    cacheEntry.specialRender = true;
-                }
-
-                /* Underline style */
-                case 19 -> {
-                    renderStyle |= ColorCode.UNDERLINE;
-                    cacheEntry.specialRender = true;
-                }
-
-                /* Italic style */
-                case 20 -> fontStyle |= Font.ITALIC;
-
-
-                /* Plain style */
-                case 21 -> {
-                    fontStyle = Font.PLAIN;
-                    renderStyle = 0;
-                    colorCode = -1; // This may be a bug in Minecraft's original FontRenderer
-                }
-
-                /* Otherwise, must be a color code or some other unsupported code */
-                default -> {
-                    if (code >= 0) {
-                        colorCode = (byte) code;
-                        fontStyle = Font.PLAIN; // This may be a bug in Minecraft's original FontRenderer
-                        renderStyle = 0; // This may be a bug in Minecraft's original FontRenderer
-                    }
-                }
-            }
-
-            /* Create a new ColorCode object that tracks the position of the code in the original string */
-            ColorCode entry = new ColorCode();
-            entry.stringIndex = next;
-            entry.stripIndex = next - shift;
-            entry.colorCode = colorCode;
-            entry.fontStyle = fontStyle;
-            entry.renderStyle = renderStyle;
-            colorList.add(entry);
-
-            /* Resume search for section marks after skipping this one */
-            start = next + 2;
-            shift += 2;
-        }
-
-        /* Convert the accumulated ColorCode list to an array for efficient storage */
-        cacheEntry.colors = new ColorCode[colorList.size()];
-        cacheEntry.colors = colorList.toArray(cacheEntry.colors);
-
-        /* Return the new length of the string after all color codes were removed */
-        return text.length - shift;
-    }
-
-    /**
      * Split a string into contiguous LTR or RTL sections by applying the Unicode Bidirectional Algorithm. Calls layoutString()
      * for each contiguous run to perform further analysis.
      *
@@ -449,7 +172,7 @@ public class StringCache {
      * @param limit     the (offset + length) at which to stop performing the layout
      * @return the total advance (horizontal distance) of this string
      */
-    private int layoutBidiString(List<Glyph> glyphList, char[] text, int start, int limit, ColorCode[] colors) {
+    private int layoutBidiString(List<Glyph> glyphList, char[] text, int start, int limit, int fontSize) {
         int advance = 0;
 
         /* Avoid performing full bidirectional analysis if text has no "strong" right-to-left characters */
@@ -459,7 +182,7 @@ public class StringCache {
 
             /* If text is entirely right-to-left, then insert an EntryText node for the entire string */
             if (bidi.isRightToLeft()) {
-                return layoutStyle(glyphList, text, start, limit, Font.LAYOUT_RIGHT_TO_LEFT, advance, colors);
+                return layoutStyle(glyphList, text, start, limit, Font.LAYOUT_RIGHT_TO_LEFT, advance, fontSize);
             }
 
             /* Otherwise text has a mixture of LTR and RLT, and it requires full bidirectional analysis */
@@ -486,7 +209,7 @@ public class StringCache {
                     /* An odd numbered level indicates right-to-left ordering */
                     int layoutFlag = (bidi.getRunLevel(logicalIndex) & 1) == 1 ? Font.LAYOUT_RIGHT_TO_LEFT : Font.LAYOUT_LEFT_TO_RIGHT;
                     advance = layoutStyle(glyphList, text, start + bidi.getRunStart(logicalIndex), start + bidi.getRunLimit(logicalIndex),
-                            layoutFlag, advance, colors);
+                            layoutFlag, advance, fontSize);
                 }
             }
 
@@ -495,53 +218,16 @@ public class StringCache {
 
         /* If text is entirely left-to-right, then insert an EntryText node for the entire string */
         else {
-            return layoutStyle(glyphList, text, start, limit, Font.LAYOUT_LEFT_TO_RIGHT, advance, colors);
+            return layoutStyle(glyphList, text, start, limit, Font.LAYOUT_LEFT_TO_RIGHT, advance, fontSize);
         }
     }
 
-    private int layoutStyle(List<Glyph> glyphList, char[] text, int start, int limit, int layoutFlags, int advance, ColorCode[] colors) {
-        int currentFontStyle = Font.PLAIN;
-
-        /* Find ColorCode object with stripIndex <= start; that will have the font style in effect at the beginning of this text run */
-        int colorIndex = Arrays.binarySearch(colors, start);
-
-        /*
-         * If no exact match is found, Arrays.binarySearch() returns (-(insertion point) - 1) where the insertion point is the index
-         * of the first ColorCode with a stripIndex > start. In that case, colorIndex is adjusted to select the immediately preceding
-         * ColorCode whose stripIndex < start.
-         */
-        if (colorIndex < 0) {
-            colorIndex = -colorIndex - 2;
-        }
-
+    private int layoutStyle(List<Glyph> glyphList, char[] text, int start, int limit, int layoutFlags, int advance, int fontSize) {
         /* Break up the string into segments, where each segment has the same font style in use */
         while (start < limit) {
-            int next = limit;
-
-            /* In case of multiple consecutive color codes with the same stripIndex, select the last one which will have active font style */
-            while (colorIndex >= 0 && colorIndex < (colors.length - 1) && colors[colorIndex].stripIndex == colors[colorIndex + 1].stripIndex) {
-                colorIndex++;
-            }
-
-            /* If an actual ColorCode object was found (colorIndex within the array), use its fontStyle for layout and render */
-            if (colorIndex >= 0 && colorIndex < colors.length) {
-                currentFontStyle = colors[colorIndex].fontStyle;
-            }
-
-            /*
-             * Search for the next ColorCode that uses a different fontStyle than the current one. If found, the stripIndex of that
-             * new code is the split point where the string must be split into a separately styled segment.
-             */
-            while (++colorIndex < colors.length) {
-                if (colors[colorIndex].fontStyle != currentFontStyle) {
-                    next = colors[colorIndex].stripIndex;
-                    break;
-                }
-            }
-
             /* Layout the string segment with the style currently selected by the last color code */
-            advance = layoutString(glyphList, text, start, next, layoutFlags, advance, currentFontStyle);
-            start = next;
+            advance = layoutString(glyphList, text, start, limit, layoutFlags, advance, Font.PLAIN, fontSize);
+            start = limit;
         }
 
         return advance;
@@ -563,7 +249,8 @@ public class StringCache {
      * todo Correctly handling RTL font selection requires scanning the sctring from RTL as well.
      * todo Use bitmap fonts as a fallback if no OpenType font could be found
      */
-    private int layoutString(List<Glyph> glyphList, char[] text, int start, int limit, int layoutFlags, int advance, int style) {
+    private int layoutString(List<Glyph> glyphList, char[] text, int start, int limit, int layoutFlags, int advance, int style,
+                             int fontSize) {
         /* Break the string up into segments, where each segment can be displayed using a single font */
         while (start < limit) {
             Font font = glyphCache.lookupFont(text, start, limit, style, fontSize);
@@ -654,19 +341,155 @@ public class StringCache {
         return advance;
     }
 
-    public float getHeight(String s) {
-        return getHeight(s, fontSize / 2);
+    /**
+     * Return the width of a string in pixels. Used for centering strings inside GUI buttons.
+     *
+     * @param str compute the width of this string
+     * @return the width in pixels (divided by 2; this matches the scaled coordinate system used by GUIs in Minecraft)
+     */
+    @SuppressWarnings("unused")
+    public int getWidth(String str, int fontSize) {
+        /* Check for invalid arguments */
+        if (str == null || str.isEmpty()) {
+            return 0;
+        }
+
+        /* Make sure the entire string is cached and rendered since it will probably be used again in a renderString() call */
+        Entry entry = cacheString(str, fontSize);
+
+        /* Return total horizontal advance (slightly wider than the bounding box, but close enough for centering strings) */
+        return entry.advance / 2;
     }
 
-    public float getHeight(String s, int fontSize) {
-        return glyphCache.getHeight(s, fontSize);
+    public int getCursorPositionInLine(String str, float mouseX, int fontSize) {
+        /* Check for invalid arguments */
+        if (str.isEmpty()) {
+            return 0;
+        }
+
+        mouseX += mouseX;
+
+        /* The glyph array for a string is sorted by the string's logical character position */
+        Glyph[] glyphs = cacheString(str, fontSize).glyphs;
+
+        /* Add up the individual advance of each glyph until it exceeds the specified width */
+        float advance = 0.0f;
+        int index = 0;
+        while (index < glyphs.length && advance <= mouseX) {
+            float halfAdvance = glyphs[index].advance / 2.0f;
+            float nextAdvance = advance + halfAdvance;
+            if (nextAdvance <= mouseX) {
+                advance = nextAdvance + halfAdvance;
+                index++;
+            } else {
+                break;
+            }
+        }
+
+        /* The string index of the last glyph that wouldn't fit gives the total desired length of the string in characters */
+        return index < glyphs.length ? glyphs[index].stringIndex : str.length();
     }
 
-    public int getAscent(String s, int fontSize) {
-        return glyphCache.getAscent(s, fontSize);
+    /**
+     * Return the number of characters in a string that will completly fit inside the specified width when rendered.
+     *
+     * @param str   the String to analyze
+     * @param width the desired string width (in GUI coordinate system)
+     * @return the number of characters from str that will fit inside width
+     */
+    @SuppressWarnings("unused")
+    public int sizeStringToWidth(String str, int fontSie, int width) {
+        return getWidth(str, fontSie, width, true);
     }
 
-    public int getStringHeight(String text, int fontSize, int maxWidth, int indent) {
+    /**
+     * Trim a string so that it fits in the specified width when rendered, optionally reversing the string
+     *
+     * @param str     the String to trim
+     * @param width   the desired string width (in GUI coordinate system)
+     * @param reverse if true, the returned string will also be reversed
+     * @return the trimmed and optionally reversed string
+     */
+    @SuppressWarnings("unused")
+    public String trimStringToWidth(String str, int fontSize, int width, boolean reverse) {
+        if (reverse)
+            str = new StringBuilder(str).reverse().toString();
+
+        int length = getWidth(str, fontSize, width, true);
+        str = str.substring(0, length);
+
+        if (reverse) {
+            str = (new StringBuilder(str)).reverse().toString();
+        }
+
+        return str;
+    }
+
+    String trimStringToWidthSaveWords(String string, int fontSize, int width) {
+        return string.substring(0, getWidth(string, fontSize, width, true));
+    }
+
+    public Vector3f getColor(int colorCode) {
+        return COLOR_TABLE[colorCode];
+    }
+
+    /**
+     * Return the number of characters in a string that will completly fit inside the specified width when rendered, with
+     * or without prefering to break the line at whitespace instead of breaking in the middle of a word. This private provides
+     * the real implementation of both sizeStringToWidth() and trimStringToWidth().
+     *
+     * @param str           the String to analyze
+     * @param width         the desired string width (in GUI coordinate system)
+     * @param breakAtSpaces set to prefer breaking line at spaces than in the middle of a word
+     * @return the number of characters from str that will fit inside width
+     */
+    public int getWidth(String str, int fontSize, int width, boolean breakAtSpaces) {
+        /* Check for invalid arguments */
+        if (str == null || str.isEmpty()) {
+            return 0;
+        }
+
+        width += width;
+
+        /* The glyph array for a string is sorted by the string's logical character position */
+        Glyph[] glyphs = cacheString(str, fontSize).glyphs;
+
+        /* Index of the last whitespace found in the string; used if breakAtSpaces is true */
+        int wsIndex = -1;
+
+        /* Add up the individual advance of each glyph until it exceeds the specified width */
+        int advance = 0, index = 0;
+        while (index < glyphs.length && advance <= width) {
+            /* Keep track of spaces if breakAtSpaces it set */
+            if (breakAtSpaces) {
+                char c = str.charAt(glyphs[index].stringIndex);
+                if (c == SPACE) {
+                    wsIndex = index + 1;
+                } else if (c == NEW_LINE) {
+                    wsIndex = index + 1;
+                    break;
+                }
+            }
+
+            int nextAdvance = advance + glyphs[index].advance;
+            if (nextAdvance <= width) {
+                advance = nextAdvance;
+                index++;
+            } else {
+                break;
+            }
+        }
+
+        /* Avoid splitting individual words if breakAtSpaces set; same test condition as in Minecraft's FontRenderer */
+        if (index < glyphs.length && wsIndex >= 0) {
+            index = wsIndex;
+        }
+
+        /* The string index of the last glyph that wouldn't fit gives the total desired length of the string in characters */
+        return index < glyphs.length ? glyphs[index].stringIndex : str.length();
+    }
+
+    public int getHeight(String text, int fontSize, int maxWidth, int indent) {
         int offset = 0;
         int height = 0;
         for (int i = 0; i < text.length(); i++) {
@@ -677,10 +500,26 @@ public class StringCache {
         return height + getTrimmedStringHeight(text.substring(offset).trim(), fontSize, maxWidth, indent);
     }
 
+    public float getHeight(String s, int fontSize) {
+        return glyphCache.getHeight(s, fontSize);
+    }
+
+    public float getAscent(String s, int fontSize) {
+        return glyphCache.getAscent(s, fontSize);
+    }
+
+    public float getDescent(String s, int fontSize) {
+        return glyphCache.getDescent(s, fontSize);
+    }
+
+    public float getLeading(String s, int fontSize) {
+        return glyphCache.getLeading(s, fontSize);
+    }
+
     private int getTrimmedStringHeight(String string, int fontSize, int maxWidth, int indent) {
         int height = 0;
         do {
-            String temp = trimStringToWidthSaveWords(string, maxWidth);
+            String temp = trimStringToWidthSaveWords(string, fontSize, maxWidth);
             string = string.replace(temp, "").trim();
             height += getHeight(temp, fontSize) + indent;
         } while (!string.isEmpty());
@@ -688,7 +527,8 @@ public class StringCache {
         return height;
     }
 
-    public int getCenteredYOffset(String string, int height, int fontSize) {
-        return (int) ((height - getHeight(string, fontSize)) / 2.0f + getAscent(string, fontSize));
+    public int getCenteredOffsetY(String string, int height, int fontSize) {
+        float v = height - getAscent(string, fontSize);
+        return Math.round(v / 2.0f);
     }
 }
