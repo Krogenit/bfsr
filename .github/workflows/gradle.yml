@@ -21,11 +21,11 @@ jobs:
         with:
           token: ${{ secrets.DYN4J_TOKEN }}
           submodules: true
-      - name: Set up JDK 18
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 18
+          java-version: 22
           cache: gradle
       - name: Validate Gradle wrapper
         uses: gradle/actions/wrapper-validation@v3
