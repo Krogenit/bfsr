@@ -6,8 +6,8 @@ jar {
 dependencies {
     api project(':common-server-data-model')
 
-    annotationProcessor "org.mapstruct:mapstruct-processor:1.5.5.Final", "org.projectlombok:lombok-mapstruct-binding:0.2.0"
-    testAnnotationProcessor "org.mapstruct:mapstruct-processor:1.5.5.Final"
+    annotationProcessor "org.mapstruct:mapstruct-processor:1.6.0", "org.projectlombok:lombok-mapstruct-binding:0.2.0"
+    testAnnotationProcessor "org.mapstruct:mapstruct-processor:1.6.0"
 
     implementation 'org.springframework.boot:spring-boot-starter-rsocket'
 
