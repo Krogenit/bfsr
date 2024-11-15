@@ -2,7 +2,7 @@ package net.bfsr.math;
 
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.RigidBody;
-import org.dyn4j.dynamics.Body;
+import org.jbox2d.dynamics.Body;
 import org.joml.Math;
 import org.joml.Vector2f;
 
@@ -19,9 +19,8 @@ public final class RigidBodyUtils {
     }
 
     private float getRotationDifference(RigidBody gameObject, float x, float y) {
-        Vector2f position = gameObject.getPosition();
-        return angleToVelocity.set(gameObject.getCos(), gameObject.getSin()).angle(rotateToVector.set(x - position.x,
-                y - position.y));
+        return angleToVelocity.set(gameObject.getCos(), gameObject.getSin()).angle(rotateToVector.set(x - gameObject.getX(),
+                y - gameObject.getY()));
     }
 
     public void rotateToVector(RigidBody gameObject, Vector2f vector, float rotationSpeed) {

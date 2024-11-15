@@ -68,7 +68,7 @@ public abstract class ShipOverlayRenderer extends TexturedRectangle {
 
     void renderShield(Shield shield, int x, int y) {
         float shieldValue = shield.getShieldHp() / shield.getShieldMaxHp();
-        int shieldSize = (int) (220 * shield.getSize().x);
+        int shieldSize = (int) (220 * shield.getSizeX());
         renderQuad(x, y, shieldSize, shieldSize, 1.0f - shieldValue, shieldValue, 0.0f, 1.0f, this.shield);
     }
 
@@ -143,8 +143,8 @@ public abstract class ShipOverlayRenderer extends TexturedRectangle {
                 float reload = slot.getReloadTimer() / (float) slot.getTimeToReload();
                 Vector2f pos = slot.getLocalPosition();
                 RotationHelper.rotate(-MathUtils.HALF_PI, pos.x, pos.y, rotationVector);
-                int slotWidth = (int) (slot.getSize().x * shipSize);
-                int slothHeight = (int) (slot.getSize().y * shipSize);
+                int slotWidth = (int) (slot.getSizeX() * shipSize);
+                int slothHeight = (int) (slot.getSizeY() * shipSize);
                 Render render = renderManager.getRender(ship.getId());
                 if (render instanceof ShipRender shipRender) {
                     AbstractTexture texture = shipRender.getWeaponSlotTexture(i);

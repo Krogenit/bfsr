@@ -1,9 +1,9 @@
 package net.bfsr.physics.filter;
 
-import net.bfsr.entity.ship.Ship;
+import org.jbox2d.dynamics.Filter;
 
-public class BeamFilter extends CollisionFilter {
-    public BeamFilter(Ship userData) {
-        super(userData, Categories.BEAM_CATEGORY, Categories.SHIP_CATEGORY);
+public class BeamFilter extends Filter {
+    BeamFilter() {
+        super(Categories.BEAM_CATEGORY, Categories.SHIP_CATEGORY);
     }
 }

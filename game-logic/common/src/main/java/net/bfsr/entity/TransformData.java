@@ -19,7 +19,7 @@ public class TransformData extends ChronologicalEntityData {
         destination.time = time;
     }
 
-    public void setPosition(Vector2f pos) {
-        position.set(pos);
+    public void setPosition(float x, float y) {
+        position.set(x, y);
     }
 }

@@ -29,6 +29,7 @@ public class RenderManager {
 
     public void init() {
         Core.get().getEventBus().register(this);
+        renderRegistry.init();
     }
 
     public void update() {

@@ -9,7 +9,7 @@ import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.Module;
 import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.math.Direction;
-import org.dyn4j.dynamics.Body;
+import org.jbox2d.dynamics.Body;
 
 import java.util.ArrayList;
 import java.util.EnumMap;

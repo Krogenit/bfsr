@@ -5,9 +5,7 @@ import net.bfsr.config.ConfigToDataConverter;
 
 @ConfigConverter
 public final class ReactorRegistry extends ConfigToDataConverter<ReactorConfig, ReactorData> {
-    public static final ReactorRegistry INSTANCE = new ReactorRegistry();
-
-    private ReactorRegistry() {
+    public ReactorRegistry() {
         super("module/reactor", ReactorConfig.class, (fileName, wreckConfig) -> fileName, ReactorData::new);
     }
 }

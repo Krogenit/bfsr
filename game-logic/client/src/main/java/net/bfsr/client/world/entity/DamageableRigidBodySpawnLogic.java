@@ -2,14 +2,15 @@ package net.bfsr.client.world.entity;
 
 import net.bfsr.client.Core;
 import net.bfsr.client.damage.DamageHandler;
+import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.network.packet.common.entity.spawn.DamageableRigidBodySpawnData;
-import org.dyn4j.geometry.MassType;
+import net.bfsr.network.packet.common.entity.spawn.connectedobject.ConnectedObjectSpawnData;
 
 import java.util.List;
 
-abstract class DamageableRigidBodySpawnLogic<T extends DamageableRigidBodySpawnData<?>> implements EntitySpawnLogic<T> {
+abstract class DamageableRigidBodySpawnLogic<T extends DamageableRigidBodySpawnData> implements EntitySpawnLogic<T> {
     private final DamageHandler damageHandler = Core.get().getDamageHandler();
 
     void updateDamage(DamageableRigidBody rigidBody, T spawnData) {
@@ -18,14 +19,19 @@ abstract class DamageableRigidBodySpawnLogic<T extends DamageableRigidBodySpawnD
     }
 
     void addFixturesAndConnectedObjects(DamageableRigidBody rigidBody, T spawnData) {
-        List<ConnectedObject<?>> connectedObjects = spawnData.getConnectedObjects();
-        for (int i = 0; i < connectedObjects.size(); i++) {
-            ConnectedObject<?> connectedObject = connectedObjects.get(i);
+        ConfigConverterManager configConverterManager = Core.get().getConfigConverterManager();
+
+        List<ConnectedObjectSpawnData> connectedObjectSpawnData = spawnData.getConnectedObjectSpawnData();
+        for (int i = 0; i < connectedObjectSpawnData.size(); i++) {
+            ConnectedObjectSpawnData coSpawnData = connectedObjectSpawnData.get(i);
+
+            ConnectedObject<?> connectedObject = coSpawnData.create(
+                    configConverterManager.getConverter(coSpawnData.getConfigConvertedId()).get(coSpawnData.getConfigId()));
+
             rigidBody.initConnectedObject(connectedObject);
             rigidBody.addConnectedObject(connectedObject);
         }
 
         rigidBody.setFixtures(spawnData.getFixtures());
-        rigidBody.getBody().setMass(MassType.NORMAL);
     }
 }

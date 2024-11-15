@@ -3,7 +3,6 @@ package net.bfsr.client.renderer.particle;
 import net.bfsr.client.particle.Particle;
 import net.bfsr.client.renderer.Render;
 import net.bfsr.engine.util.MutableInt;
-import org.joml.Vector2f;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -11,19 +10,15 @@ import java.nio.FloatBuffer;
 public class ParticleRender extends Render implements net.bfsr.engine.renderer.particle.ParticleRender {
     private Particle particle;
     private long textureHandle;
-    protected Vector2f position;
-    protected Vector2f size;
     private boolean isAlphaFromZero;
     private float maxAlpha;
 
     public ParticleRender init(Particle object, long textureHandle, float r, float g, float b, float a, boolean isAlphaFromZero) {
         this.object = this.particle = object;
-        this.position = object.getPosition();
-        this.size = object.getSize();
-        this.lastPosition.set(position);
+        this.lastPosition.set(object.getX(), object.getY());
         this.lastSin = object.getSin();
         this.lastCos = object.getCos();
-        this.lastSize.set(size);
+        this.lastSize.set(object.getSizeX(), object.getSizeY());
         this.color.set(r, g, b, a);
         this.lastColor.set(color);
         this.textureHandle = textureHandle;
@@ -39,12 +34,12 @@ public class ParticleRender extends Render implements net.bfsr.engine.renderer.p
 
     @Override
     public void update() {
-        lastPosition.set(object.getPosition());
+        lastPosition.set(object.getX(), object.getY());
         lastSin = particle.getSin();
         lastCos = particle.getCos();
 
         if (particle.getSizeVelocity() != 0) {
-            lastSize.set(object.getSize());
+            lastSize.set(object.getSizeX(), object.getSizeY());
         }
 
         float alphaVelocity = particle.getAlphaVelocity();
@@ -68,8 +63,9 @@ public class ParticleRender extends Render implements net.bfsr.engine.renderer.p
     @Override
     public void putToBuffer(FloatBuffer vertexBuffer, ByteBuffer materialBuffer, float interpolation,
                             MutableInt vertexBufferIndex, MutableInt materialBufferIndex) {
-        spriteRenderer.putVertices(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, particle.getSin(),
-                particle.getCos(), lastSize.x, lastSize.y, size.x, size.y, interpolation, vertexBuffer, vertexBufferIndex);
+        spriteRenderer.putVertices(lastPosition.x, lastPosition.y, object.getX(), object.getY(), lastSin, lastCos, particle.getSin(),
+                particle.getCos(), lastSize.x, lastSize.y, object.getSizeX(), object.getSizeY(), interpolation, vertexBuffer,
+                vertexBufferIndex);
         spriteRenderer.putColor(lastColor, color, materialBuffer, materialBufferIndex, interpolation);
         spriteRenderer.putTextureHandle(textureHandle, materialBuffer, materialBufferIndex);
         spriteRenderer.putMaterialData(0, 0.0f, 0.0f, 0, materialBuffer, materialBufferIndex);

@@ -9,30 +9,27 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.engine.Engine;
 import net.bfsr.math.Direction;
-import org.dyn4j.geometry.AABB;
-import org.dyn4j.geometry.Convex;
-import org.dyn4j.geometry.Vector2;
-import org.joml.Vector2f;
+import org.jbox2d.collision.AABB;
+import org.jbox2d.collision.shapes.Polygon;
+import org.jbox2d.common.Rotation;
+import org.jbox2d.common.Transform;
+import org.jbox2d.common.Vector2;
 
 public class ModuleRenderer extends Render {
     private float x, y;
     private float sin, cos;
-    private final Vector2f shipPosition;
     private final Runnable updateRunnable;
     private final float sizeX, sizeY;
 
     public ModuleRenderer(Ship ship, DamageableModule module, AbstractTexture texture) {
         super(texture, module);
-        this.shipPosition = ship.getPosition();
 
-        Convex convex = module.getFixture().getShape();
-        Vector2 center = convex.getCenter();
-        float centerX = (float) center.x;
-        float centerY = (float) center.y;
-        org.dyn4j.geometry.AABB aabb1 = new AABB(0, 0, 0, 0);
-        convex.computeAABB(aabb1);
-        float dx = (float) (aabb1.getMaxX() - aabb1.getMinX());
-        float dy = (float) (aabb1.getMaxY() - aabb1.getMinY());
+        Polygon polygon = (Polygon) module.getFixture().getShape();
+        Vector2 center = polygon.centroid;
+        AABB aabb1 = new AABB();
+        polygon.computeAABB(aabb1, new Transform(new Vector2(), new Rotation(0)), 0);
+        float dx = aabb1.getWidth();
+        float dy = aabb1.getHeight();
 
         if (dy > dx) {
             sizeX = dx;
@@ -41,8 +38,8 @@ public class ModuleRenderer extends Render {
             updateRunnable = () -> {
                 sin = ship.getSin();
                 cos = ship.getCos();
-                x = cos * centerX - sin * centerY + shipPosition.x;
-                y = sin * centerX + cos * centerY + shipPosition.y;
+                x = cos * center.x - sin * center.y + ship.getX();
+                y = sin * center.x + cos * center.y + ship.getY();
             };
         } else {
             sizeX = dy;
@@ -56,24 +53,21 @@ public class ModuleRenderer extends Render {
                 float cos = ship.getCos();
                 this.cos = cos1 * cos - sin1 * sin;
                 this.sin = sin1 * cos + cos1 * sin;
-                x = cos * centerX - sin * centerY + shipPosition.x;
-                y = sin * centerX + cos * centerY + shipPosition.y;
+                x = cos * center.x - sin * center.y + ship.getX();
+                y = sin * center.x + cos * center.y + ship.getY();
             };
         }
     }
 
     public ModuleRenderer(Ship ship, Engine engine, AbstractTexture engineTexture, Direction direction) {
         super(engineTexture, engine);
-        this.shipPosition = ship.getPosition();
 
-        Convex convex = engine.getFixture().getShape();
-        Vector2 center = convex.getCenter();
-        float centerX = (float) center.x;
-        float centerY = (float) center.y;
-        org.dyn4j.geometry.AABB aabb1 = new AABB(0, 0, 0, 0);
-        convex.computeAABB(aabb1);
-        float dx = (float) (aabb1.getMaxX() - aabb1.getMinX());
-        float dy = (float) (aabb1.getMaxY() - aabb1.getMinY());
+        Polygon shape = (Polygon) engine.getFixture().getShape();
+        Vector2 center = shape.centroid;
+        AABB aabb1 = new AABB();
+        shape.computeAABB(aabb1, new Transform(new Vector2(), new Rotation(0)), 0);
+        float dx = aabb1.getWidth();
+        float dy = aabb1.getHeight();
 
         if (dy > dx) {
             sizeX = dy;
@@ -87,8 +81,8 @@ public class ModuleRenderer extends Render {
             updateRunnable = () -> {
                 sin = ship.getSin();
                 cos = ship.getCos();
-                x = cos * centerX - sin * centerY + shipPosition.x;
-                y = sin * centerX + cos * centerY + shipPosition.y;
+                x = cos * center.x - sin * center.y + ship.getX();
+                y = sin * center.x + cos * center.y + ship.getY();
             };
         } else {
             float sin1;
@@ -112,8 +106,8 @@ public class ModuleRenderer extends Render {
                 float cos = ship.getCos();
                 this.cos = cos1 * cos - sin1 * sin;
                 this.sin = sin1 * cos + cos1 * sin;
-                x = cos * centerX - sin * centerY + shipPosition.x;
-                y = sin * centerX + cos * centerY + shipPosition.y;
+                x = cos * center.x - sin * center.y + ship.getX();
+                y = sin * center.x + cos * center.y + ship.getY();
             };
         }
     }

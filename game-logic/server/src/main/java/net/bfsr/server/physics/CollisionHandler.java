@@ -25,10 +25,8 @@ import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.world.World;
-import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.Transform;
-import org.dyn4j.world.ContactCollisionData;
+import org.jbox2d.common.Vector2;
+import org.jbox2d.dynamics.Fixture;
 import org.joml.Math;
 import org.joml.Vector2f;
 import org.locationtech.jts.geom.Polygon;
@@ -45,20 +43,18 @@ public class CollisionHandler extends CommonCollisionHandler {
     }
 
     @Override
-    public void bulletRigidBody(Bullet bullet, RigidBody rigidBody, BodyFixture bulletFixture, BodyFixture rigidBodyFixture,
-                                float contactX, float contactY, float normalX, float normalY,
-                                ContactCollisionData<Body> collision) {
-        super.bulletRigidBody(bullet, rigidBody, bulletFixture, rigidBodyFixture, contactX, contactY, normalX, normalY,
-                collision);
+    public void bulletRigidBody(Bullet bullet, RigidBody rigidBody, Fixture bulletFixture, Fixture rigidBodyFixture,
+                                float contactX, float contactY, float normalX, float normalY) {
+        super.bulletRigidBody(bullet, rigidBody, bulletFixture, rigidBodyFixture, contactX, contactY, normalX, normalY);
         damageRigidBody(rigidBody, bullet.getDamage().getHull());
     }
 
     @Override
-    public void bulletShip(Bullet bullet, Ship ship, BodyFixture bulletFixture, BodyFixture shipFixture, float contactX,
-                           float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
+    public void bulletShip(Bullet bullet, Ship ship, Fixture bulletFixture, Fixture shipFixture, float contactX,
+                           float contactY, float normalX, float normalY) {
         if (bullet.getLastCollidedRigidBody() == ship) return;
 
-        super.bulletShip(bullet, ship, bulletFixture, shipFixture, contactX, contactY, normalX, normalY, collision);
+        super.bulletShip(bullet, ship, bulletFixture, shipFixture, contactX, contactY, normalX, normalY);
 
         damageShip(ship, bullet.getDamage(), 1.0f, contactX, contactY, shipFixture, () -> {
             bullet.damage();
@@ -68,37 +64,37 @@ public class CollisionHandler extends CommonCollisionHandler {
             Random rand = world.getRand();
             if (rand.nextInt(2) == 0) {
                 RotationHelper.angleToVelocity(net.bfsr.engine.math.MathUtils.TWO_PI * rand.nextFloat(), 1.5f, angleToVelocity);
-                float velocityX = ship.getVelocity().x * 0.005f;
-                float velocityY = ship.getVelocity().y * 0.005f;
-                WreckSpawner.spawnDamageDebris(world, rand.nextInt(2), contactX, contactY,
-                        velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f);
+                float velocityX = ship.getLinearVelocity().x * 0.005f;
+                float velocityY = ship.getLinearVelocity().y * 0.005f;
+                world.getGameLogic().addFutureTask(() -> WreckSpawner.spawnDamageDebris(world, rand.nextInt(2), contactX, contactY,
+                        velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f));
             }
             bullet.setDead();
         });
     }
 
     @Override
-    public void bulletWreck(Bullet bullet, Wreck wreck, BodyFixture bulletFixture, BodyFixture wreckFixture, float contactX,
-                            float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
-        super.bulletWreck(bullet, wreck, bulletFixture, wreckFixture, contactX, contactY, normalX, normalY, collision);
+    public void bulletWreck(Bullet bullet, Wreck wreck, Fixture bulletFixture, Fixture wreckFixture, float contactX,
+                            float contactY, float normalX, float normalY) {
+        super.bulletWreck(bullet, wreck, bulletFixture, wreckFixture, contactX, contactY, normalX, normalY);
         damageWreck(wreck, bullet.getDamage().getHull());
     }
 
     @Override
-    public void bulletShipWreck(Bullet bullet, ShipWreck wreck, BodyFixture bulletFixture, BodyFixture shipWreckFixture,
-                                float contactX, float contactY, float normalX, float normalY,
-                                ContactCollisionData<Body> collision) {
-        super.bulletShipWreck(bullet, wreck, bulletFixture, shipWreckFixture, contactX, contactY, normalX, normalY, collision);
+    public void bulletShipWreck(Bullet bullet, ShipWreck wreck, Fixture bulletFixture, Fixture shipWreckFixture,
+                                float contactX, float contactY, float normalX, float normalY) {
+        super.bulletShipWreck(bullet, wreck, bulletFixture, shipWreckFixture, contactX, contactY, normalX, normalY);
         createDamage(wreck, contactX, contactY);
     }
 
     @Override
-    public void shipShip(Ship ship1, Ship ship2, BodyFixture ship1Fixture, BodyFixture ship2Fixture, float contactX,
-                         float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
-        float dx = ship2.getVelocity().x - ship1.getVelocity().x;
-        float dy = ship2.getVelocity().y - ship1.getVelocity().y;
-        float impactPower = (float) ((Math.sqrt(dx * dx + dy * dy)) *
-                (ship1.getBody().getMass().getMass() / ship2.getBody().getMass().getMass()));
+    public void shipShip(Ship ship1, Ship ship2, Fixture ship1Fixture, Fixture ship2Fixture, float contactX,
+                         float contactY, float normalX, float normalY) {
+        Vector2 linearVelocity1 = ship1.getLinearVelocity();
+        Vector2 linearVelocity2 = ship2.getLinearVelocity();
+        float dx = linearVelocity2.x - linearVelocity1.x;
+        float dy = linearVelocity2.y - linearVelocity1.y;
+        float impactPower = (Math.sqrt(dx * dx + dy * dy)) * (ship1.getBody().getMass() / ship2.getBody().getMass());
 
         impactPower /= 10.0f;
 
@@ -118,14 +114,14 @@ public class CollisionHandler extends CommonCollisionHandler {
     }
 
     @Override
-    public void weaponSlotBeamShip(WeaponSlotBeam weaponSlot, Ship ship, BodyFixture fixture, float contactX, float contactY,
+    public void weaponSlotBeamShip(WeaponSlotBeam weaponSlot, Ship ship, Fixture fixture, float contactX, float contactY,
                                    float normalX, float normalY) {
         damageShip(ship, weaponSlot.getDamage(), weaponSlot.getBeamPower() * ship.getWorld().getUpdateDeltaTime(), contactX,
                 contactY, fixture, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE);
     }
 
     @Override
-    public void weaponSlotBeamWreck(WeaponSlotBeam weaponSlotBeam, Wreck wreck, BodyFixture wreckFixture, float contactX,
+    public void weaponSlotBeamWreck(WeaponSlotBeam weaponSlotBeam, Wreck wreck, Fixture wreckFixture, float contactX,
                                     float contactY, float normalX, float normalY) {
         super.weaponSlotBeamWreck(weaponSlotBeam, wreck, wreckFixture, contactX, contactY, normalX, normalY);
         damageWreck(wreck, weaponSlotBeam.getDamage().getHull() * weaponSlotBeam.getBeamPower() *
@@ -133,7 +129,7 @@ public class CollisionHandler extends CommonCollisionHandler {
     }
 
     private void damageShip(Ship ship, BulletDamage damage, float multiplayer, float contactX, float contactY,
-                            BodyFixture fixture, Runnable onShieldDamageRunnable, Runnable onArmorDamageRunnable,
+                            Fixture fixture, Runnable onShieldDamageRunnable, Runnable onArmorDamageRunnable,
                             Runnable onHullDamageRunnable) {
         Modules modules = ship.getModules();
         Shield shield = modules.getShield();
@@ -166,7 +162,7 @@ public class CollisionHandler extends CommonCollisionHandler {
         }
     }
 
-    private void damageShipByCollision(Ship ship, BodyFixture fixture, float impactPower, float contactX, float contactY) {
+    private void damageShipByCollision(Ship ship, Fixture fixture, float impactPower, float contactX, float contactY) {
         Modules modules = ship.getModules();
         Shield shield = modules.getShield();
         if (shield != null && damageShield(shield, impactPower)) {
@@ -229,16 +225,15 @@ public class CollisionHandler extends CommonCollisionHandler {
     }
 
     private void createDamage(DamageableRigidBody rigidBody, float contactX, float contactY) {
-        Transform transform = rigidBody.getBody().getTransform();
-        float x = (float) transform.getTranslationX();
-        float y = (float) transform.getTranslationY();
-        float sin = (float) transform.getSint();
-        float cos = (float) transform.getCost();
+        float x = rigidBody.getX();
+        float y = rigidBody.getY();
+        float sin = rigidBody.getSin();
+        float cos = rigidBody.getCos();
         float polygonRadius = 0.5f;
         float radius = 1.0f;
 
         Polygon clip = damageSystem.createCirclePath(contactX - x, contactY - y, -sin, cos, 12, polygonRadius);
-        damageSystem.damage(rigidBody, contactX, contactY, clip, radius, x, y, sin, cos,
-                () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(), new PacketSyncDamage(rigidBody)));
+        rigidBody.getWorld().getGameLogic().addFutureTask(() -> damageSystem.damage(rigidBody, contactX, contactY, clip, radius, x, y, sin,
+                cos, () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(), new PacketSyncDamage(rigidBody))));
     }
 }

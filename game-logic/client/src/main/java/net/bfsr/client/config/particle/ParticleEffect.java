@@ -16,7 +16,7 @@ import net.bfsr.engine.renderer.particle.RenderLayer;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.util.PathHelper;
 import net.bfsr.engine.util.RandomHelper;
-import org.dyn4j.geometry.Rotation;
+import org.jbox2d.common.Rotation;
 import org.joml.Vector4f;
 
 import java.util.ArrayList;
@@ -68,8 +68,8 @@ public class ParticleEffect extends ConfigData {
         float apply(float value);
     }
 
-    public ParticleEffect(ParticleEffectConfig config, String fileName, int dataIndex) {
-        super(fileName, dataIndex);
+    public ParticleEffect(ParticleEffectConfig config, String fileName, int dataIndex, int registryId) {
+        super(fileName, dataIndex, registryId);
         applyConfig(config);
     }
 
@@ -183,8 +183,8 @@ public class ParticleEffect extends ConfigData {
                 int spawnCount = rand.nextInt(maxSpawnCount - minSpawnCount + 1) + minSpawnCount;
                 for (int i = 0; i < spawnCount; i++) {
                     Rotation rotation = angleSupplier.get();
-                    float cos1 = cos * (float) rotation.getCost() - sin * (float) rotation.getSint();
-                    float sin1 = sin * (float) rotation.getCost() + cos * (float) rotation.getSint();
+                    float cos1 = cos * rotation.getCos() - sin * rotation.getSin();
+                    float sin1 = sin * rotation.getCos() + cos * rotation.getSin();
                     PARTICLE_POOL.get().init(textureSupplier.get(), worldX + localXSupplier.get(), worldY + localYSupplier.get(),
                             localX, localY, velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), sin1, cos1,
                             angularVelocitySupplier.get(), sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY),
@@ -198,8 +198,8 @@ public class ParticleEffect extends ConfigData {
                                     updateLogic) -> {
                     for (int i = 0; i < minSpawnCount; i++) {
                         Rotation rotation = angleSupplier.get();
-                        float cos1 = cos * (float) rotation.getCost() - sin * (float) rotation.getSint();
-                        float sin1 = sin * (float) rotation.getCost() + cos * (float) rotation.getSint();
+                        float cos1 = cos * rotation.getCos() - sin * rotation.getSin();
+                        float sin1 = sin * rotation.getCos() + cos * rotation.getSin();
                         PARTICLE_POOL.get().init(textureSupplier.get(), worldX + localXSupplier.get(),
                                 worldY + localYSupplier.get(), localX, localY, velocityXFunc.apply(velocityX),
                                 velocityYFunc.apply(velocityY), sin1, cos1, angularVelocitySupplier.get(), sizeXFunc.apply(sizeX),
@@ -211,8 +211,8 @@ public class ParticleEffect extends ConfigData {
                 spawnRunnables.add((worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
                                     updateLogic) -> {
                     Rotation rotation = angleSupplier.get();
-                    float cos1 = cos * (float) rotation.getCost() - sin * (float) rotation.getSint();
-                    float sin1 = sin * (float) rotation.getCost() + cos * (float) rotation.getSint();
+                    float cos1 = cos * rotation.getCos() - sin * rotation.getSin();
+                    float sin1 = sin * rotation.getCos() + cos * rotation.getSin();
                     PARTICLE_POOL.get().init(textureSupplier.get(), worldX + localXSupplier.get(), worldY + localYSupplier.get(),
                             localX, localY, velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), sin1, cos1,
                             angularVelocitySupplier.get(), sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY),

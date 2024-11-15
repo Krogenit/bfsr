@@ -33,8 +33,8 @@ import net.bfsr.event.module.weapon.WeaponSlotRemovedEvent;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.math.RotationHelper;
-import org.dyn4j.dynamics.Body;
-import org.dyn4j.geometry.Vector2;
+import org.jbox2d.common.Vector2;
+import org.jbox2d.dynamics.Body;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -108,7 +108,6 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         });
 
         Body body = ship.getBody();
-        Vector2f shipPos = ship.getPosition();
         Vector4f effectsColor = ship.getShipData().getEffectsColor();
         Vector2 shipVelocity = body.getLinearVelocity();
 
@@ -118,15 +117,17 @@ public class ShipRender extends DamageableRigidBodyRenderer {
             Runnable runnable;
             if (direction == Direction.STOP) {
                 runnable = () -> {
-                    float x = -(float) body.getLinearVelocity().x;
-                    float y = -(float) body.getLinearVelocity().y;
+                    float shipX = ship.getX();
+                    float shipY = ship.getY();
+                    float velocityX = -(float) body.getLinearVelocity().x;
+                    float velocityY = -(float) body.getLinearVelocity().y;
 
-                    if (Math.abs(x) > 0.5f) {
-                        engineEffectsRunnable.get(rigidBodyUtils.calculateDirectionToPoint(ship, x + shipPos.x, shipPos.y)).run();
+                    if (Math.abs(velocityX) > 0.5f) {
+                        engineEffectsRunnable.get(rigidBodyUtils.calculateDirectionToPoint(ship, velocityX + shipX, shipY)).run();
                     }
 
-                    if (Math.abs(y) > 0.5f) {
-                        engineEffectsRunnable.get(rigidBodyUtils.calculateDirectionToPoint(ship, shipPos.x, y + shipPos.y)).run();
+                    if (Math.abs(velocityY) > 0.5f) {
+                        engineEffectsRunnable.get(rigidBodyUtils.calculateDirectionToPoint(ship, shipX, velocityY + shipY)).run();
                     }
                 };
             } else {
@@ -139,6 +140,8 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
                     if (direction == Direction.FORWARD) {
                         runnable = () -> {
+                            float shipX = ship.getX();
+                            float shipY = ship.getY();
                             float sin = ship.getSin();
                             float cos = ship.getCos();
 
@@ -146,14 +149,16 @@ public class ShipRender extends DamageableRigidBodyRenderer {
                                 if (!engineModules.get(j).isDead()) {
                                     Vector2f effectPosition = engineDataList.get(j).effectPosition();
                                     RotationHelper.rotate(sin, cos, effectPosition.x, effectPosition.y, rotateToVector);
-                                    EngineEffects.smallEngine(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y, sin,
-                                            cos, 10.0f, (float) shipVelocity.x / 50.0f, (float) shipVelocity.y / 50.0f,
+                                    EngineEffects.smallEngine(shipX + rotateToVector.x, shipY + rotateToVector.y, sin,
+                                            cos, 10.0f, shipVelocity.x / 50.0f, shipVelocity.y / 50.0f,
                                             effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, accumulators.get(j));
                                 }
                             }
                         };
                     } else {
                         runnable = () -> {
+                            float shipX = ship.getX();
+                            float shipY = ship.getY();
                             float sin = ship.getSin();
                             float cos = ship.getCos();
 
@@ -161,7 +166,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
                                 if (!engineModules.get(j).isDead()) {
                                     Vector2f effectPosition = engineDataList.get(j).effectPosition();
                                     RotationHelper.rotate(sin, cos, effectPosition.x, effectPosition.y, rotateToVector);
-                                    EngineEffects.secondaryEngine(shipPos.x + rotateToVector.x, shipPos.y + rotateToVector.y,
+                                    EngineEffects.secondaryEngine(shipX + rotateToVector.x, shipY + rotateToVector.y,
                                             accumulators.get(j));
                                 }
                             }
@@ -242,11 +247,10 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         }
 
         if (!ship.isSpawned()) {
-            Vector2f position = object.getPosition();
             Vector2f objectJumpPosition = ship.getJumpPosition();
             jumpDelta = 1.0f - ship.getJumpTimer() / (float) ship.getJumpTimeInTicks();
-            jumpPosition.set(objectJumpPosition.x + (position.x - objectJumpPosition.x) * jumpDelta * 0.9f,
-                    objectJumpPosition.y + (position.y - objectJumpPosition.y) * jumpDelta * 0.9f);
+            jumpPosition.set(objectJumpPosition.x + (object.getX() - objectJumpPosition.x) * jumpDelta * 0.9f,
+                    objectJumpPosition.y + (object.getY() - objectJumpPosition.y) * jumpDelta * 0.9f);
         }
     }
 
@@ -254,10 +258,10 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     protected void updateAABB() {
         super.updateAABB();
 
-        Vector2f position = object.getPosition();
+        float x = object.getX();
+        float y = object.getY();
         float halfStringWidth = label.getWidth() / (label.getFontSize() * 1.4f);
-        aabb.union(position.x - halfStringWidth, position.y + getStringYPosition(), position.x + halfStringWidth,
-                position.y + object.getSize().y / 4.0f);
+        aabb.combine(x - halfStringWidth, y + getStringYPosition(), x + halfStringWidth, y + object.getSizeY() / 4.0f);
     }
 
     @Override
@@ -271,13 +275,12 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         super.renderAlpha();
         renderGunSlots();
 
-        Vector2f position = object.getPosition();
         float yOffset = getStringYPosition() + 1.6f;
-        label.render(BufferType.ENTITIES_ALPHA, lastPosition.x, lastPosition.y + yOffset, position.x, position.y + yOffset);
+        label.render(BufferType.ENTITIES_ALPHA, lastPosition.x, lastPosition.y + yOffset, object.getX(), object.getY() + yOffset);
     }
 
     private float getStringYPosition() {
-        return -3.2f - object.getSize().y / 4.0f;
+        return -3.2f - object.getSizeY() / 4.0f;
     }
 
     @Override
@@ -318,9 +321,9 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     private void renderShield(Ship ship, Shield shield) {
         if (shield != null && shield.isAlive()) {
             Vector2f diameter = shield.getDiameter();
-            float size = shield.getSize().x;
+            float size = shield.getSizeX();
             Vector4f color = ship.getShipData().getEffectsColor();
-            spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, ship.getPosition().x, ship.getPosition().y,
+            spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, ship.getX(), ship.getY(),
                     lastSin, lastCos, ship.getSin(), ship.getCos(), diameter.x * size, diameter.y * size, color.x, color.y,
                     color.z, color.w, shieldTexture, BufferType.ENTITIES_ADDITIVE);
         }
@@ -334,11 +337,9 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     public EventListener<ShipJumpInEvent> shipJumpInEvent() {
         return event -> {
             Ship ship = event.ship();
-            Vector2f velocity = ship.getVelocity();
-            Vector2f position = ship.getPosition();
-            Vector2f size = ship.getSize();
+            Vector2 velocity = ship.getLinearVelocity();
             Vector4f effectsColor = ship.getShipData().getEffectsColor();
-            JumpEffects.jump(position.x, position.y, 32.0f + size.x * 0.25f, velocity.x * 0.5f, velocity.y * 0.5f,
+            JumpEffects.jump(ship.getX(), ship.getY(), 32.0f + ship.getSizeX() * 0.25f, velocity.x * 0.5f, velocity.y * 0.5f,
                     effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
             createName();
         };

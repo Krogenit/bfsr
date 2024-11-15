@@ -5,7 +5,6 @@ import net.bfsr.damage.ConnectedObject;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.entity.GameObject;
-import org.joml.Vector2f;
 
 public class ConnectedObjectRenderer extends Render {
     private final ConnectedObject<?> connectedObject;
@@ -17,9 +16,7 @@ public class ConnectedObjectRenderer extends Render {
 
     @Override
     public void update() {
-        Vector2f position = connectedObject.getPosition();
-        lastPosition.x = position.x;
-        lastPosition.y = position.y;
+        lastPosition.set(connectedObject.getX(), connectedObject.getY());
         lastSin = connectedObject.getSin();
         lastCos = connectedObject.getCos();
     }
@@ -29,12 +26,11 @@ public class ConnectedObjectRenderer extends Render {
 
     @Override
     public void renderAlpha() {
-        Vector2f position = connectedObject.getPosition();
-        Vector2f size = connectedObject.getSize();
         float sin = connectedObject.getSin();
         float cos = connectedObject.getCos();
 
-        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin,
-                cos, size.x, size.y, 0.25f, 0.25f, 0.25f, 1.0f, texture, BufferType.ENTITIES_ALPHA);
+        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, connectedObject.getX(), connectedObject.getY(), lastSin,
+                lastCos, sin, cos, connectedObject.getSizeX(), connectedObject.getSizeY(), 0.25f, 0.25f, 0.25f, 1.0f, texture,
+                BufferType.ENTITIES_ALPHA);
     }
 }

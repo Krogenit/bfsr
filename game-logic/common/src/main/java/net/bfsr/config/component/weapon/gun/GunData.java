@@ -6,7 +6,7 @@ import net.bfsr.config.SoundData;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.util.PathHelper;
 import net.bfsr.entity.bullet.BulletDamage;
-import org.dyn4j.geometry.Polygon;
+import org.jbox2d.collision.shapes.Polygon;
 import org.joml.Vector4f;
 
 import java.nio.file.Path;
@@ -26,8 +26,8 @@ public class GunData extends GameObjectConfigData {
     private final Polygon bulletPolygon;
     private final float hp;
 
-    public GunData(GunConfig config, String fileName, int id) {
-        super(config, fileName, id);
+    public GunData(GunConfig config, String fileName, int id, int registryId) {
+        super(config, fileName, id, registryId);
         this.reloadTimeInTicks = Engine.convertToTicks(config.getReloadTimeInSeconds());
         this.energyCost = config.getEnergyCost();
         this.damage = new BulletDamage(config.getDamage());

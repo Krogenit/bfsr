@@ -25,14 +25,12 @@ public class WeaponSlotRender extends Render {
 
     @Override
     public void update() {
-        lastPosition.set(object.getPosition());
+        lastPosition.set(object.getX(), object.getY());
     }
 
     public void renderAlpha(float lastSin, float lastCos, float sin, float cos) {
-        Vector2f position = object.getPosition();
-        Vector2f scale = object.getSize();
-        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos, sin,
-                cos, scale.x, scale.y, color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
+        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, object.getX(), object.getY(), lastSin, lastCos, sin,
+                cos, object.getSizeX(), object.getSizeY(), color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
     }
 
     public void renderAdditive(float lastSin, float lastCos, float sin, float cos) {}
@@ -48,19 +46,20 @@ public class WeaponSlotRender extends Render {
     }
 
     public void onShot() {
-        Vector2f position = object.getPosition();
+        float x = object.getX();
+        float y = object.getY();
         Vector4f color = weaponSlot.getGunData().getColor();
         Ship ship = weaponSlot.getShip();
         float sin = ship.getSin();
         float cos = ship.getCos();
         RotationHelper.rotate(sin, cos, 1.0f, 0, rotationHelper);
-        WeaponEffects.spawnWeaponShoot(position.x, position.y, rotationHelper.x, rotationHelper.y, sin, cos, 8.0f, color.x,
+        WeaponEffects.spawnWeaponShoot(x, y, rotationHelper.x, rotationHelper.y, sin, cos, 8.0f, color.x,
                 color.y, color.z, color.w, particle -> {
                     particle.setSin(ship.getSin());
                     particle.setCos(ship.getCos());
-                    particle.setPosition(position.x + rotationHelper.x, position.y + rotationHelper.y);
+                    particle.setPosition(object.getX() + rotationHelper.x, object.getY() + rotationHelper.y);
                 });
-        playSounds(weaponSlot.getGunData(), ship.getWorld().getRand(), position.x, position.y);
+        playSounds(weaponSlot.getGunData(), ship.getWorld().getRand(), x, y);
     }
 
     void playSounds(GunData gunData, Random random, float x, float y) {

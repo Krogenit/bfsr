@@ -6,8 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.util.PathHelper;
-import org.dyn4j.geometry.Polygon;
-import org.dyn4j.geometry.Vector2;
+import org.jbox2d.collision.shapes.Polygon;
+import org.jbox2d.common.Vector2;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.locationtech.jts.geom.Coordinate;
@@ -22,6 +22,7 @@ import java.util.function.Function;
 public class ConfigData {
     private final String fileName;
     private final int id;
+    private final int registryId;
 
     protected Polygon convertToPolygon(Vector2fConfigurable[] configurableVertices) {
         Vector2[] vertices = convert(configurableVertices);

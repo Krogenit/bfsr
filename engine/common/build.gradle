@@ -4,7 +4,7 @@ jar {
 }
 
 dependencies {
-    api project(':dyn4j')
+    api project(':physics-engine')
 
     api 'org.apache.logging.log4j:log4j-core:2.23.1'
     api 'org.apache.logging.log4j:log4j-api:2.23.1'

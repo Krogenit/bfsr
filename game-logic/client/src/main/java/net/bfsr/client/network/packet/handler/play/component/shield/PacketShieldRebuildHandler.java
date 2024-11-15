@@ -9,7 +9,6 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.server.component.PacketShieldRebuild;
-import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 import java.net.InetSocketAddress;
@@ -24,9 +23,8 @@ public class PacketShieldRebuildHandler extends PacketHandler<PacketShieldRebuil
             if (shield != null) {
                 shield.rebuildShield();
 
-                Vector2f position = ship.getPosition();
                 Vector4f shipEffectColor = ship.getShipData().getEffectsColor();
-                ShieldEffects.rebuild(position.x, position.y, ship.getSize().x * 2.0f, shipEffectColor.x, shipEffectColor.y,
+                ShieldEffects.rebuild(ship.getX(), ship.getY(), ship.getSizeX() * 2.0f, shipEffectColor.x, shipEffectColor.y,
                         shipEffectColor.z, 1.0f);
             }
         }

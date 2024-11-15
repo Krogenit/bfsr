@@ -5,9 +5,7 @@ import net.bfsr.config.ConfigToDataConverter;
 
 @ConfigConverter
 public final class ShipRegistry extends ConfigToDataConverter<ShipConfig, ShipData> {
-    public static final ShipRegistry INSTANCE = new ShipRegistry();
-
-    private ShipRegistry() {
+    public ShipRegistry() {
         super("entity/ship", ShipConfig.class, (fileName, shipConfig) -> fileName, ShipData::new);
     }
 }

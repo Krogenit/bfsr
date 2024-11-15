@@ -13,7 +13,6 @@ import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.event.entity.wreck.WreckDeathEvent;
-import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 public class WreckRender extends RigidBodyRender {
@@ -67,7 +66,7 @@ public class WreckRender extends RigidBodyRender {
         lastColorLight.set(colorLight);
         lastSin = wreck.getSin();
         lastCos = wreck.getCos();
-        lastPosition.set(object.getPosition());
+        lastPosition.set(object.getX(), object.getY());
 
         updateLifeTime();
         updateFireAndExplosion();
@@ -80,8 +79,7 @@ public class WreckRender extends RigidBodyRender {
 
     private void emitFire() {
         if (color.w > 0.6f) {
-            Vector2f position = object.getPosition();
-            FireEffects.emitFire(position.x, position.y, spawnAccumulator);
+            FireEffects.emitFire(object.getX(), object.getY(), spawnAccumulator);
         }
     }
 
@@ -173,28 +171,22 @@ public class WreckRender extends RigidBodyRender {
 
     @Override
     public void renderAlpha() {
-        Vector2f position = object.getPosition();
-        Vector2f size = object.getSize();
-        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
-                wreck.getSin(), wreck.getCos(), size.x, size.y, color.x, color.y, color.z, color.w, texture,
+        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, wreck.getX(), wreck.getY(), lastSin, lastCos,
+                wreck.getSin(), wreck.getCos(), wreck.getSizeX(), wreck.getSizeY(), color.x, color.y, color.z, color.w, texture,
                 BufferType.ENTITIES_ALPHA);
     }
 
     @Override
     public void renderAdditive() {
         if (colorFire.w > 0) {
-            Vector2f position = object.getPosition();
-            Vector2f size = object.getSize();
-            spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
-                    wreck.getSin(), wreck.getCos(), size.x, size.y, lastColorFire, colorFire, textureFire,
+            spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, wreck.getX(), wreck.getY(), lastSin, lastCos,
+                    wreck.getSin(), wreck.getCos(), wreck.getSizeX(), wreck.getSizeY(), lastColorFire, colorFire, textureFire,
                     BufferType.ENTITIES_ADDITIVE);
         }
 
         if (colorLight.w > 0) {
-            Vector2f position = object.getPosition();
-            Vector2f size = object.getSize();
-            spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
-                    wreck.getSin(), wreck.getCos(), size.x, size.y, lastColorLight, colorLight, textureLight,
+            spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, wreck.getX(), wreck.getY(), lastSin, lastCos,
+                    wreck.getSin(), wreck.getCos(), wreck.getSizeX(), wreck.getSizeY(), lastColorLight, colorLight, textureLight,
                     BufferType.ENTITIES_ADDITIVE);
         }
     }
@@ -204,8 +196,7 @@ public class WreckRender extends RigidBodyRender {
         return event -> {
             Wreck wreck = event.wreck();
             if (color.w > 0.01f) {
-                Vector2f pos = wreck.getPosition();
-                ExplosionEffects.spawnSmallExplosion(pos.x, pos.y, wreck.getSize().x);
+                ExplosionEffects.spawnSmallExplosion(wreck.getX(), wreck.getY(), wreck.getSizeX());
             }
         };
     }

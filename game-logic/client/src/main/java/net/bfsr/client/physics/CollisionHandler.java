@@ -20,9 +20,8 @@ import net.bfsr.math.RotationHelper;
 import net.bfsr.physics.CommonCollisionHandler;
 import net.bfsr.physics.correction.DynamicCorrectionHandler;
 import net.bfsr.world.World;
-import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.world.ContactCollisionData;
+import org.jbox2d.common.Vector2;
+import org.jbox2d.dynamics.Fixture;
 import org.joml.Math;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -43,38 +42,39 @@ public class CollisionHandler extends CommonCollisionHandler {
     }
 
     @Override
-    public void bulletShip(Bullet bullet, Ship ship, BodyFixture bulletFixture, BodyFixture shipFixture, float contactX,
-                           float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
+    public void bulletShip(Bullet bullet, Ship ship, Fixture bulletFixture, Fixture shipFixture, float contactX,
+                           float contactY, float normalX, float normalY) {
         if (bullet.getLastCollidedRigidBody() == ship) return;
 
-        super.bulletShip(bullet, ship, bulletFixture, shipFixture, contactX, contactY, normalX, normalY, collision);
+        super.bulletShip(bullet, ship, bulletFixture, shipFixture, contactX, contactY, normalX, normalY);
 
         Vector4f color = bullet.getGunData().getColor();
         float colorAlpha = (1.0f - bullet.getLifeTime() / (float) bullet.getMaxLifeTime()) * 1.5f;
         damageShip(ship, contactX, contactY, () -> {
             bullet.reflect(normalX, normalY);
-            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSize().x * 1.5f, color.x, color.y,
+            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
                     color.z, colorAlpha);
         }, () -> {
-            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSize().x * 1.5f, color.x, color.y,
+            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
                     color.z, colorAlpha);
-            GarbageSpawner.bulletArmorDamage(contactX, contactY, ship.getVelocity().x, ship.getVelocity().y, normalX, normalY);
+            GarbageSpawner.bulletArmorDamage(contactX, contactY, ship.getLinearVelocity().x, ship.getLinearVelocity().y, normalX, normalY);
             bullet.setDead();
         }, () -> {
-            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSize().x * 1.5f, color.x, color.y,
+            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
                     color.z, colorAlpha);
-            GarbageSpawner.bulletHullDamage(contactX, contactY, ship.getVelocity().x, ship.getVelocity().y, normalX, normalY);
+            GarbageSpawner.bulletHullDamage(contactX, contactY, ship.getLinearVelocity().x, ship.getLinearVelocity().y, normalX, normalY);
             bullet.setDead();
         });
     }
 
     @Override
-    public void shipShip(Ship ship1, Ship ship2, BodyFixture ship1Fixture, BodyFixture ship2Fixture, float contactX,
-                         float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
-        float dx = ship2.getVelocity().x - ship1.getVelocity().x;
-        float dy = ship2.getVelocity().y - ship1.getVelocity().y;
-        float impactPower = (float) ((Math.sqrt(dx * dx + dy * dy)) *
-                (ship1.getBody().getMass().getMass() / ship2.getBody().getMass().getMass()));
+    public void shipShip(Ship ship1, Ship ship2, Fixture ship1Fixture, Fixture ship2Fixture, float contactX,
+                         float contactY, float normalX, float normalY) {
+        Vector2 linearVelocity1 = ship1.getLinearVelocity();
+        Vector2 linearVelocity2 = ship2.getLinearVelocity();
+        float dx = linearVelocity2.x - linearVelocity1.x;
+        float dy = linearVelocity2.y - linearVelocity1.y;
+        float impactPower = (Math.sqrt(dx * dx + dy * dy)) * (ship1.getBody().getMass() / ship2.getBody().getMass());
 
         impactPower /= 10.0f;
 
@@ -102,8 +102,8 @@ public class CollisionHandler extends CommonCollisionHandler {
     }
 
     @Override
-    public void shipWreck(Ship ship, Wreck wreck, BodyFixture shipFixture, BodyFixture wreckFixture, float contactX,
-                          float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
+    public void shipWreck(Ship ship, Wreck wreck, Fixture shipFixture, Fixture wreckFixture, float contactX,
+                          float contactY, float normalX, float normalY) {
         if (ship.getCollisionTimer() <= 0) {
             ship.setCollisionTimer(ship.getWorld().convertToTicks(0.5f));
             Shield shield = ship.getModules().getShield();
@@ -122,7 +122,7 @@ public class CollisionHandler extends CommonCollisionHandler {
     }
 
     @Override
-    public void weaponSlotBeamShip(WeaponSlotBeam weaponSlot, Ship ship, BodyFixture fixture, float contactX, float contactY,
+    public void weaponSlotBeamShip(WeaponSlotBeam weaponSlot, Ship ship, Fixture fixture, float contactX, float contactY,
                                    float normalX, float normalY) {
         EventBus weaponSlotEventBus = weaponSlot.getWeaponSlotEventBus();
         damageShip(ship, contactX, contactY, () -> weaponSlotEventBus.publishOptimized(beamDamageShipShieldEvent.set(weaponSlot,
@@ -161,7 +161,7 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         World world = ship.getWorld();
         Random rand = world.getRand();
-        Vector2f velocity = ship.getVelocity();
+        Vector2 velocity = ship.getLinearVelocity();
         WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f,
                 1.0f, 1.0f, 1.0f);
         RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.15f, angleToVelocity);

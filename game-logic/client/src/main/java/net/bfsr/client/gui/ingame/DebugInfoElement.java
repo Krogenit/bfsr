@@ -23,6 +23,7 @@ import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.util.DecimalUtils;
 import net.bfsr.world.World;
+import org.jbox2d.common.Vector2;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 
@@ -150,17 +151,16 @@ public class DebugInfoElement extends MinimizableGuiObject {
                 label1 -> {
                     Ship playerShip = playerInputController.getShip();
                     if (playerShip != null) {
-                        Vector2f pos = playerShip.getPosition();
-                        Vector2f velocity = playerShip.getVelocity();
+                        Vector2 velocity = playerShip.getLinearVelocity();
                         Shield shield = playerShip.getModules().getShield();
                         Reactor reactor = playerShip.getModules().getReactor();
 
                         label1.setString("Ship: " + playerShip.getClass().getSimpleName() +
-                                "\nPos: " + DecimalUtils.strictFormatWithToDigits(pos.x) + ", " +
-                                DecimalUtils.strictFormatWithToDigits(pos.y) +
+                                "\nPos: " + DecimalUtils.strictFormatWithToDigits(playerShip.getX()) + ", " +
+                                DecimalUtils.strictFormatWithToDigits(playerShip.getY()) +
                                 "\nVelocity:" + DecimalUtils.strictFormatWithToDigits(velocity.x) + ", " +
                                 DecimalUtils.strictFormatWithToDigits(velocity.y) +
-                                "\nMass: " + DecimalUtils.strictFormatWithToDigits(playerShip.getBody().getMass().getMass()) +
+                                "\nMass: " + DecimalUtils.strictFormatWithToDigits(playerShip.getBody().getMass()) +
                                 "\nShield: " + DecimalUtils.strictFormatWithToDigits(shield.getShieldHp()) + "/" +
                                 DecimalUtils.strictFormatWithToDigits(shield.getMaxHp()) +
                                 "\nReactor: " + DecimalUtils.strictFormatWithToDigits(reactor.getEnergy()) + "/" +

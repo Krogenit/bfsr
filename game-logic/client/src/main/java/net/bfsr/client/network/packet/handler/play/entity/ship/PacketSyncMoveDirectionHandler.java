@@ -15,7 +15,8 @@ public class PacketSyncMoveDirectionHandler extends PacketHandler<PacketSyncMove
     private final Direction[] directions = Direction.values();
 
     @Override
-    public void handle(PacketSyncMoveDirection packet, NetworkSystem networkSystem, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketSyncMoveDirection packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         GameObject obj = Core.get().getWorld().getEntityById(packet.getId());
         if (obj instanceof Ship ship) {
             Direction direction = directions[packet.getDirection()];

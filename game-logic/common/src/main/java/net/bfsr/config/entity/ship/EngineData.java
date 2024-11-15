@@ -1,6 +1,6 @@
 package net.bfsr.config.entity.ship;
 
-import org.dyn4j.geometry.Polygon;
+import org.jbox2d.collision.shapes.Polygon;
 import org.joml.Vector2f;
 
 import java.util.List;

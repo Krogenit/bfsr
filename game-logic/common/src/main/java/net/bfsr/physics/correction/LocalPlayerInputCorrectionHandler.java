@@ -15,9 +15,8 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
 
     @Override
     public void updateTransform(double timestamp) {
-        Vector2f position = rigidBody.getPosition();
         double time = timestamp + clientRenderDelayInNanos;
-        positionHistory.addPositionData(position, rigidBody.getSin(), rigidBody.getCos(), time);
+        positionHistory.addPositionData(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), time);
 
         TransformData serverTransformData = dataHistoryManager.getTransformData(rigidBody.getId(), timestamp);
 
@@ -30,8 +29,8 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
             Vector2f serverPosition = serverTransformData.getPosition();
             Vector2f localPosition = localTransformData.getPosition();
 
-            correction(serverPosition, localPosition, (dx, dy) -> {
-                rigidBody.setPosition(position.x + dx, position.y + dy);
+            correction(serverPosition, localPosition.x, localPosition.y, (dx, dy) -> {
+                rigidBody.setPosition(rigidBody.getX() + dx, rigidBody.getY() + dy);
                 positionHistory.correction(dx, dy);
             });
 

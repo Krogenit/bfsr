@@ -12,7 +12,8 @@ import java.net.InetSocketAddress;
 
 public class PacketDestroyingShipHandler extends PacketHandler<PacketDestroyingShip, NetworkSystem> {
     @Override
-    public void handle(PacketDestroyingShip packet, NetworkSystem networkSystem, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketDestroyingShip packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         GameObject obj = Core.get().getWorld().getEntityById(packet.getId());
         if (obj instanceof Ship ship) {
             ship.setDestroying();

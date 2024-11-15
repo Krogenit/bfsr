@@ -14,13 +14,12 @@ import net.bfsr.physics.CollisionMatrixType;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.physics.correction.CorrectionHandler;
 import net.bfsr.physics.correction.HistoryCorrectionHandler;
-import net.bfsr.physics.filter.ShipFilter;
+import net.bfsr.physics.filter.Filters;
 import net.bfsr.world.World;
-import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.Transform;
-import org.dyn4j.geometry.Vector2;
-import org.joml.Vector2f;
+import org.jbox2d.common.Transform;
+import org.jbox2d.common.Vector2;
+import org.jbox2d.dynamics.Body;
+import org.jbox2d.dynamics.Fixture;
 
 @NoArgsConstructor
 public class RigidBody extends GameObject {
@@ -29,16 +28,12 @@ public class RigidBody extends GameObject {
     @Getter
     protected World world;
     @Getter
-    protected final Body body = new Body();
+    protected Body body = new Body();
     @Getter
     @Setter
     protected int id;
     @Getter
-    protected final Vector2f velocity = new Vector2f();
-    @Getter
     protected int lifeTime, maxLifeTime = DEFAULT_MAX_LIFE_TIME_IN_TICKS;
-    @Getter
-    protected float sin, cos;
     private final Transform savedTransform = new Transform();
     protected EventBus eventBus;
     @Setter
@@ -46,26 +41,21 @@ public class RigidBody extends GameObject {
     protected GameObjectConfigData configData;
     @Setter
     @Getter
-    protected int registryId;
-    @Setter
-    @Getter
     protected float health;
     protected final RigidBodyPostPhysicsUpdateEvent postPhysicsUpdateEvent = new RigidBodyPostPhysicsUpdateEvent(this);
     @Getter
     private CorrectionHandler correctionHandler = new HistoryCorrectionHandler();
 
-    public RigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, GameObjectConfigData configData, int registryId) {
+    public RigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, GameObjectConfigData configData) {
         super(x, y, sizeX, sizeY);
-        this.sin = sin;
-        this.cos = cos;
-        this.body.getTransform().setTranslation(x, y);
-        this.body.getTransform().setRotation(sin, cos);
+        this.body.setPosition(x, y);
+        this.body.setRotation(sin, cos);
+        this.body.setUserData(this);
         this.configData = configData;
-        this.registryId = registryId;
     }
 
     public RigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY) {
-        this(x, y, sin, cos, sizeX, sizeY, null, -1);
+        this(x, y, sin, cos, sizeX, sizeY, null);
     }
 
     protected RigidBody(float x, float y, float sizeX, float sizeY) {
@@ -85,11 +75,14 @@ public class RigidBody extends GameObject {
         initBody();
     }
 
-    protected void initBody() {}
+    protected void initBody() {
+        body.world = world.getPhysicWorld();
+        body.setActive(true);
+    }
 
-    public BodyFixture setupFixture(BodyFixture bodyFixture) {
+    public Fixture setupFixture(Fixture bodyFixture) {
         bodyFixture.setUserData(this);
-        bodyFixture.setFilter(new ShipFilter(this));
+        bodyFixture.setFilter(Filters.SHIP_FILTER);
         bodyFixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         return bodyFixture;
     }
@@ -105,14 +98,6 @@ public class RigidBody extends GameObject {
 
     @Override
     public void postPhysicsUpdate() {
-        sin = (float) body.getTransform().getSint();
-        cos = (float) body.getTransform().getCost();
-        position.x = (float) body.getTransform().getTranslationX();
-        position.y = (float) body.getTransform().getTranslationY();
-        Vector2 vel = body.getLinearVelocity();
-        velocity.x = (float) vel.x;
-        velocity.y = (float) vel.y;
-
         eventBus.publishOptimized(postPhysicsUpdateEvent);
     }
 
@@ -133,28 +118,28 @@ public class RigidBody extends GameObject {
     }
 
     public void restoreTransform() {
-        body.setTransform(savedTransform);
+        body.getTransform().set(savedTransform);
     }
 
     @Override
     public void setPosition(float x, float y) {
-        super.setPosition(x, y);
-        body.getTransform().setTranslation(x, y);
+        body.setPosition(x, y);
     }
 
     public void setRotation(float sin, float cos) {
-        this.sin = sin;
-        this.cos = cos;
-        body.getTransform().setRotation(sin, cos);
+        body.setRotation(sin, cos);
     }
 
     public void setVelocity(float x, float y) {
-        velocity.set(x, y);
         body.setLinearVelocity(x, y);
     }
 
     public void setAngularVelocity(float angularVelocity) {
         body.setAngularVelocity(angularVelocity);
+    }
+
+    public void setLinearVelocity(Vector2 velocity) {
+        body.setLinearVelocity(velocity);
     }
 
     public void setCorrectionHandler(CorrectionHandler correctionHandler) {
@@ -163,15 +148,31 @@ public class RigidBody extends GameObject {
     }
 
     public float getX() {
-        return position.x;
+        return body.getTransform().getX();
     }
 
     public float getY() {
-        return position.y;
+        return body.getTransform().getY();
+    }
+
+    public float getSin() {
+        return body.getTransform().getSin();
+    }
+
+    public float getCos() {
+        return body.getTransform().getCos();
     }
 
     public float getAngularVelocity() {
-        return (float) body.getAngularVelocity();
+        return body.getAngularVelocity();
+    }
+
+    public Vector2 getLinearVelocity() {
+        return body.getLinearVelocity();
+    }
+
+    public int getRegistryId() {
+        return configData.getRegistryId();
     }
 
     public int getDataId() {

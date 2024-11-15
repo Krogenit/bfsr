@@ -24,16 +24,16 @@ public class PacketBulletHitShipHandler extends PacketHandler<PacketBulletHitShi
         if (bulletGameObject instanceof Bullet bullet && shipGameObject instanceof Ship ship) {
             DamageType damageType = packet.getDamageType();
             if (damageType == DamageType.ARMOR) {
-                GarbageSpawner.bulletArmorDamage(packet.getContactX(), packet.getContactY(), ship.getVelocity().x,
-                        ship.getVelocity().y, packet.getNormalX(), packet.getNormalY());
+                GarbageSpawner.bulletArmorDamage(packet.getContactX(), packet.getContactY(), ship.getLinearVelocity().x,
+                        ship.getLinearVelocity().y, packet.getNormalX(), packet.getNormalY());
             } else if (damageType == DamageType.HULL) {
-                GarbageSpawner.bulletHullDamage(packet.getContactX(), packet.getContactY(), ship.getVelocity().x,
-                        ship.getVelocity().y, packet.getNormalX(), packet.getNormalY());
+                GarbageSpawner.bulletHullDamage(packet.getContactX(), packet.getContactY(), ship.getLinearVelocity().x,
+                        ship.getLinearVelocity().y, packet.getNormalX(), packet.getNormalY());
             }
 
             Vector4f color = bullet.getGunData().getColor();
             WeaponEffects.spawnDirectedSpark(packet.getContactX(), packet.getContactY(), packet.getNormalX(),
-                    packet.getNormalY(), bullet.getSize().x * 1.5f, color.x, color.y, color.z,
+                    packet.getNormalY(), bullet.getSizeX() * 1.5f, color.x, color.y, color.z,
                     1.0f - bullet.getLifeTime() / (float) bullet.getMaxLifeTime());
         }
     }

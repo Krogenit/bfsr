@@ -4,11 +4,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.joml.Vector2f;
 
-@Getter
 @NoArgsConstructor
 public class GameObject {
-    protected final Vector2f position = new Vector2f();
-    protected final Vector2f size = new Vector2f();
+    private final Vector2f position = new Vector2f();
+    private final Vector2f size = new Vector2f();
+    @Getter
     protected boolean isDead;
 
     public GameObject(float x, float y, float sizeX, float sizeY) {
@@ -28,8 +28,16 @@ public class GameObject {
         position.set(x, y);
     }
 
+    protected void addPosition(float x, float y) {
+        position.add(x, y);
+    }
+
     public void setSize(float x, float y) {
         size.set(x, y);
+    }
+
+    public void addSize(float x, float y) {
+        size.add(x, y);
     }
 
     public void setDead() {
@@ -38,5 +46,21 @@ public class GameObject {
 
     public int getId() {
         return -1;
+    }
+
+    public float getX() {
+        return position.x;
+    }
+
+    public float getY() {
+        return position.y;
+    }
+
+    public float getSizeX() {
+        return size.x;
+    }
+
+    public float getSizeY() {
+        return size.y;
     }
 }

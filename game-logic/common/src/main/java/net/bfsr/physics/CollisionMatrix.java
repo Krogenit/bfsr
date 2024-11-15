@@ -6,9 +6,7 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
-import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.world.ContactCollisionData;
+import org.jbox2d.dynamics.Fixture;
 
 import java.util.Arrays;
 
@@ -26,11 +24,8 @@ public class CollisionMatrix {
         matrix = new CollisionListener[size][size];
         rayCastMatrix = new RayCastListener[size][size];
         CanCollideFunction<?, ?> canCollideFunction = (rigidBody1, rigidBody2) -> rigidBody1 != rigidBody2;
-        CollisionListener<?, ?> listener = (rigidBody1, rigidBody2, fixture1, fixture2, contactX, contactY, normalX,
-                                            normalY, collision) -> {
-        };
-        RayCastListener<?, ?> rayCastListener = (rayCastSource, rigidBody, fixture, contactX, contactY, normalX, normalY) -> {
-        };
+        CollisionListener<?, ?> listener = (rigidBody1, rigidBody2, fixture1, fixture2, contactX, contactY, normalX, normalY) -> {};
+        RayCastListener<?, ?> rayCastListener = (rayCastSource, rigidBody, fixture, contactX, contactY, normalX, normalY) -> {};
         for (int i = 0; i < canCollideFunctions.length; i++) {
             Arrays.fill(canCollideFunctions[i], canCollideFunction);
         }
@@ -73,11 +68,11 @@ public class CollisionMatrix {
     private void register(CollisionMatrixType type1, CollisionMatrixType type2,
                           @SuppressWarnings("rawtypes") CollisionListener collisionListener) {
         matrix[type1.ordinal()][type2.ordinal()] = (rigidBody1, rigidBody2, fixture1, fixture2, contactX, contactY, normalX,
-                                                    normalY, collision) -> collisionListener.handle(
-                rigidBody1, rigidBody2, fixture1, fixture2, contactX, contactY, -normalX, -normalY, collision);
+                                                    normalY) -> collisionListener.handle(
+                rigidBody1, rigidBody2, fixture1, fixture2, contactX, contactY, -normalX, -normalY);
         matrix[type2.ordinal()][type1.ordinal()] = (rigidBody1, rigidBody2, fixture1, fixture2, contactX, contactY, normalX,
-                                                    normalY, collision) -> collisionListener.handle(rigidBody2, rigidBody1,
-                fixture2, fixture1, contactX, contactY, normalX, normalY, collision);
+                                                    normalY) -> collisionListener.handle(rigidBody2, rigidBody1,
+                fixture2, fixture1, contactX, contactY, normalX, normalY);
     }
 
     private void register(RayCastType rayCastType, CollisionMatrixType collisionMatrixType,
@@ -85,14 +80,15 @@ public class CollisionMatrix {
         rayCastMatrix[rayCastType.ordinal()][collisionMatrixType.ordinal()] = rayCastListener;
     }
 
-    void collision(RigidBody rigidBody1, RigidBody rigidBody2, BodyFixture fixture1, BodyFixture fixture2,
-                   float contactX, float contactY, float normalX, float normalY, ContactCollisionData<Body> collision) {
+    void collision(RigidBody rigidBody1, RigidBody rigidBody2, Fixture fixture1, Fixture fixture2,
+                   float contactX, float contactY, float normalX, float normalY) {
         matrix[rigidBody1.getCollisionMatrixType()][rigidBody2.getCollisionMatrixType()].handle(rigidBody1, rigidBody2,
-                fixture1, fixture2, contactX, contactY, normalX, normalY, collision);
+                fixture1, fixture2, contactX, contactY, normalX, normalY);
     }
 
-    public void rayCast(RayCastSource rayCastSource, RigidBody rigidBody, BodyFixture fixture, float contactX, float contactY,
+    public void rayCast(RayCastSource rayCastSource, Fixture fixture, float contactX, float contactY,
                         float normalX, float normalY) {
+        RigidBody rigidBody = ((RigidBody) fixture.getBody().getUserData());
         rayCastMatrix[rayCastSource.getRayCastType()][rigidBody.getCollisionMatrixType()].handle(rayCastSource, rigidBody,
                 fixture, contactX, contactY, normalX, normalY);
     }
@@ -104,13 +100,13 @@ public class CollisionMatrix {
 
     @FunctionalInterface
     private interface CollisionListener<BODY_1 extends RigidBody, BODY_2 extends RigidBody> {
-        void handle(BODY_1 rigidBody1, BODY_2 rigidBody2, BodyFixture fixture1, BodyFixture fixture2,
-                    float contactX, float contactY, float normalX, float normalY, ContactCollisionData<Body> collision);
+        void handle(BODY_1 rigidBody1, BODY_2 rigidBody2, Fixture fixture1, Fixture fixture2,
+                    float contactX, float contactY, float normalX, float normalY);
     }
 
     @FunctionalInterface
     private interface RayCastListener<RAY_CAST_SOURCE extends RayCastSource, RIGID_BODY extends RigidBody> {
-        void handle(RAY_CAST_SOURCE rayCastSource, RIGID_BODY rigidBody, BodyFixture fixture, float contactX, float contactY,
+        void handle(RAY_CAST_SOURCE rayCastSource, RIGID_BODY rigidBody, Fixture fixture, float contactX, float contactY,
                     float normalX, float normalY);
     }
 

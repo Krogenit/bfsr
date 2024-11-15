@@ -5,9 +5,7 @@ import net.bfsr.config.ConfigToDataConverter;
 
 @ConfigConverter
 public final class EngineRegistry extends ConfigToDataConverter<EngineConfig, EnginesData> {
-    public static final EngineRegistry INSTANCE = new EngineRegistry();
-
-    private EngineRegistry() {
+    public EngineRegistry() {
         super("module/engine", EngineConfig.class, (fileName, engineConfig) -> fileName, EnginesData::new);
     }
 }

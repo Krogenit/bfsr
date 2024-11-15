@@ -13,7 +13,7 @@ public class RigidBodySpawnData extends EntityPacketSpawnData {
 
     public RigidBodySpawnData(RigidBody rigidBody) {
         super(rigidBody);
-        this.registryId = rigidBody.getRegistryId();
+        this.registryId = rigidBody.getConfigData().getRegistryId();
         this.dataId = rigidBody.getConfigData().getId();
     }
 
