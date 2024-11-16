@@ -32,7 +32,6 @@ public abstract class MutableStack<E> implements IDynamicStack<E> {
     private int size;
 
     public MutableStack(int argInitSize) {
-        index = 0;
         stack = null;
         index = 0;
         extendStack(argInitSize);
@@ -52,7 +51,7 @@ public abstract class MutableStack<E> implements IDynamicStack<E> {
 
     public final E pop() {
         if (index >= size) {
-            extendStack(size * 2);
+            extendStack(size << 1);
         }
         return stack[index++];
     }
