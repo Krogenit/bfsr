@@ -23,7 +23,7 @@ public abstract class ShipConverter {
 
     @Mappings({@Mapping(target = "dead", ignore = true),
             @Mapping(target = "id", ignore = true), @Mapping(target = "upFixture", ignore = true),
-            @Mapping(target = "shield", ignore = true),
+            @Mapping(target = "shield", ignore = true), @Mapping(target = "linearVelocity", ignore = true),
             @Mapping(target = "faction", ignore = true), @Mapping(target = "cargo", ignore = true),
             @Mapping(target = "name", ignore = true), @Mapping(target = "controlledByPlayer", ignore = true),
             @Mapping(target = "target", ignore = true), @Mapping(target = "owner", ignore = true),
