@@ -65,6 +65,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
     private final PacketRegistry<PlayerNetworkHandler> packetRegistry = ServerGameLogic.getNetwork().getPacketRegistry();
     @Setter
     private double ping;
+    private final ShipOutfitter shipOutfitter = new ShipOutfitter(ServerGameLogic.getInstance().getConfigConverterManager());
 
     public void update() {
         if (connectionState != ConnectionState.DISCONNECTED) {
@@ -176,7 +177,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
             ship.setName(player.getUsername());
             ship.setOwner(player.getUsername());
             ship.setFaction(player.getFaction());
-            ShipOutfitter.get().outfit(ship);
+            shipOutfitter.outfit(ship);
         }
     }
 

@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import lombok.Getter;
+import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
@@ -64,20 +65,23 @@ public class PlayerManager {
     }
 
     public void respawnPlayer(World world, Player player, float x, float y) {
+        ShipFactory shipFactory = new ShipFactory(ServerGameLogic.getInstance().getConfigConverterManager().getConverter(
+                ShipRegistry.class), new ShipOutfitter(ServerGameLogic.getInstance().getConfigConverterManager()));
+
         Faction faction = player.getFaction();
 
         Ship playerShip;
         if (faction == Faction.HUMAN) {
-            playerShip = ShipFactory.get().createPlayerShipHumanSmall(world, x, y,
+            playerShip = shipFactory.createPlayerShipHumanSmall(world, x, y,
                     world.getRand().nextFloat() * MathUtils.TWO_PI);
         } else if (faction == Faction.SAIMON) {
-            playerShip = ShipFactory.get().createPlayerShipSaimonSmall(world, x, y,
+            playerShip = shipFactory.createPlayerShipSaimonSmall(world, x, y,
                     world.getRand().nextFloat() * MathUtils.TWO_PI);
         } else {
-            playerShip = ShipFactory.get().createPlayerShipEngiSmall(world, x, y, world.getRand().nextFloat() * MathUtils.TWO_PI);
+            playerShip = shipFactory.createPlayerShipEngiSmall(world, x, y, world.getRand().nextFloat() * MathUtils.TWO_PI);
         }
 
-        ShipOutfitter.get().outfit(playerShip);
+        shipFactory.getShipOutfitter().outfit(playerShip);
         playerShip.setOwner(player.getUsername());
         playerShip.setName(player.getUsername());
         world.add(playerShip, false);

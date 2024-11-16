@@ -4,40 +4,20 @@ import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.bfsr.config.component.armor.ArmorPlateRegistry;
-import net.bfsr.config.component.cargo.CargoRegistry;
-import net.bfsr.config.component.crew.CrewRegistry;
-import net.bfsr.config.component.engine.EngineRegistry;
-import net.bfsr.config.component.hull.HullRegistry;
-import net.bfsr.config.component.reactor.ReactorRegistry;
-import net.bfsr.config.component.shield.ShieldRegistry;
-import net.bfsr.config.entity.ship.ShipRegistry;
-import net.bfsr.damage.DamageMask;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.entity.ship.module.Modules;
-import net.bfsr.entity.ship.module.armor.Armor;
-import net.bfsr.entity.ship.module.cargo.Cargo;
-import net.bfsr.entity.ship.module.crew.Crew;
 import net.bfsr.entity.ship.module.engine.Engine;
 import net.bfsr.entity.ship.module.engine.Engines;
-import net.bfsr.entity.ship.module.hull.Hull;
-import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
-import net.bfsr.faction.Faction;
-import net.bfsr.logic.LogicType;
 import net.bfsr.math.Direction;
 import net.bfsr.network.util.ByteBufUtils;
-import org.dyn4j.geometry.decompose.SweepLine;
 
 import java.util.EnumMap;
 import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
-    private static final SweepLine SWEEP_LINE = new SweepLine();
-
+public class ShipSpawnData extends DamageableRigidBodySpawnData {
     private boolean isSpawned;
     private String name;
     private byte faction;
@@ -78,6 +58,7 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
 
         Shield shield = modules.getShield();
         this.hasShield = shield != null;
+        this.shieldDataId = -1;
         if (hasShield) {
             this.shieldDead = shield.isDead();
             if (!shieldDead) {
@@ -166,47 +147,7 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
     }
 
     @Override
-    protected Ship createRigidBody() {
-        Ship ship = ShipFactory.get().create(posX, posY, sin, cos, Faction.get(faction), ShipRegistry.INSTANCE.get(dataId),
-                new DamageMask(32, 32, null));
-        ship.setName(name);
-        ship.setPolygon(polygon);
-        return ship;
-    }
-
-    @Override
     public EntityPacketSpawnType getType() {
         return EntityPacketSpawnType.SHIP;
-    }
-
-    public void outfit(Ship ship) {
-        ship.setReactor(new Reactor(ReactorRegistry.INSTANCE.get(reactorDataId),
-                ship.getShipData().getReactorPolygon()));
-        Engines engines = new Engines(EngineRegistry.INSTANCE.get(enginesDataId), ship);
-        ship.setEngine(engines);
-
-        enginesMap.forEach((direction, booleans) -> {
-            List<Engine> engineList = engines.getEngines(direction);
-            for (int i = 0; i < engineList.size(); i++) {
-                if (booleans.getBoolean(i))
-                    engineList.get(i).setDead();
-            }
-        });
-
-        ship.setHull(new Hull(HullRegistry.INSTANCE.get(hullDataId), ship));
-        ship.setArmor(new Armor(ArmorPlateRegistry.INSTANCE.get(armorDataId), ship));
-        ship.setCrew(new Crew(CrewRegistry.INSTANCE.get(crewDataId)));
-        ship.setCargo(new Cargo(CargoRegistry.INSTANCE.get(cargoDataId)));
-        if (hasShield) {
-            Shield shield = new Shield(ShieldRegistry.INSTANCE.get(shieldDataId), ship.getShipData().getShieldPolygon(),
-                    ship.getWorld().getGameLogic().getLogic(LogicType.SHIELD_UPDATE.ordinal()));
-            ship.setShield(shield);
-            if (shieldDead) {
-                shield.setDead();
-            } else {
-                shield.setShieldHp(shieldHp);
-                shield.setRebuildingTime(shieldRebuildingTime);
-            }
-        }
     }
 }

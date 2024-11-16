@@ -28,19 +28,19 @@ public class AiFlyingAround extends AiTask {
     @Override
     public void execute() {
         if (obj != null) {
-            if (currentPoint == null || ship.getPosition().distance(currentPoint.x, currentPoint.y) <= UPDATE_LENGTH) {
-                calculateNewPoint(obj.getPosition());
+            if (currentPoint == null || currentPoint.distance(ship.getX(), ship.getY()) <= UPDATE_LENGTH) {
+                calculateNewPoint(obj.getX(), obj.getY());
             }
         } else if (point != null) {
-            if (currentPoint == null || ship.getPosition().distance(currentPoint.x, currentPoint.y) <= UPDATE_LENGTH) {
-                calculateNewPoint(point);
+            if (currentPoint == null || currentPoint.distance(ship.getX(), ship.getY()) <= UPDATE_LENGTH) {
+                calculateNewPoint(point.x, point.y);
             }
         }
     }
 
-    private void calculateNewPoint(Vector2f pos) {
+    private void calculateNewPoint(float x, float y) {
         RotationHelper.angleToVelocity(MathUtils.TWO_PI * obj.getWorld().getRand().nextFloat(), size, angleToVelocity);
-        currentPoint = new Vector2f(pos.x + angleToVelocity.x, pos.y + angleToVelocity.y);
+        currentPoint = new Vector2f(x + angleToVelocity.x, y + angleToVelocity.y);
     }
 
     @Override

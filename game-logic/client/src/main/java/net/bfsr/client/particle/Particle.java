@@ -18,13 +18,13 @@ import java.util.function.Consumer;
 
 public class Particle extends GameObject {
     private static final ObjectPool<ParticleRender> RENDER_POOL = new ObjectPool<>(ParticleRender::new);
-    static final ParticleManager PARTICLE_MANAGER = Core.get().getParticleManager();
-    static final ParticleRenderer PARTICLE_RENDERER = Core.get().getGlobalRenderer().getParticleRenderer();
+    private static final ParticleManager PARTICLE_MANAGER = Core.get().getParticleManager();
+    private static final ParticleRenderer PARTICLE_RENDERER = Core.get().getGlobalRenderer().getParticleRenderer();
 
     @Getter
     @Setter
     protected float sin, cos;
-    protected float localSin, localCos;
+    private float localSin, localCos;
     @Getter
     protected float sizeVelocity, alphaVelocity;
     private float angularVelocitySin, angularVelocityCos;
@@ -59,7 +59,7 @@ public class Particle extends GameObject {
                          float velocityY, float sin, float cos, float angularVelocity, float scaleX, float scaleY,
                          float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero,
                          RenderLayer renderLayer, Consumer<Particle> updateLogic) {
-        this.position.set(worldX, worldY);
+        setPosition(worldX, worldY);
         this.localPosition.set(localX, localY);
         Core core = Core.get();
         this.velocity.set(core.convertToDeltaTime(velocityX), core.convertToDeltaTime(velocityY));
@@ -70,7 +70,7 @@ public class Particle extends GameObject {
         float angularVelocityInTick = core.convertToDeltaTime(angularVelocity);
         this.angularVelocitySin = LUT.sin(angularVelocityInTick);
         this.angularVelocityCos = LUT.cos(angularVelocityInTick);
-        this.size.set(scaleX, scaleY);
+        setSize(scaleX, scaleY);
         this.sizeVelocity = core.convertToDeltaTime(sizeVelocity);
         this.alphaVelocity = core.convertToDeltaTime(alphaVelocity);
         this.zeroVelocity = velocity.lengthSquared() <= 0.01f;
@@ -99,16 +99,15 @@ public class Particle extends GameObject {
         this.sin = sin;
 
         if (!zeroVelocity) {
-            position.x += velocity.x;
-            position.y += velocity.y;
+            addPosition(velocity.x, velocity.y);
             velocity.x *= 0.99f;
             velocity.y *= 0.99f;
         }
 
         if (sizeVelocity != 0) {
-            size.add(sizeVelocity, sizeVelocity);
+            addSize(sizeVelocity, sizeVelocity);
 
-            if (size.x <= 0.0f || size.y <= 0.0f)
+            if (getSizeX() <= 0.0f || getSizeY() <= 0.0f)
                 setDead();
         }
     }
@@ -118,7 +117,6 @@ public class Particle extends GameObject {
         float sin = this.localCos * angularVelocitySin + this.localSin * angularVelocityCos;
         this.cos = cos * object.getCos() - sin * object.getSin();
         this.sin = cos * object.getSin() + sin * object.getCos();
-        Vector2f objectPosition = object.getPosition();
 
         if (!zeroVelocity) {
             localPosition.x += velocity.x;
@@ -128,14 +126,13 @@ public class Particle extends GameObject {
         }
 
         if (sizeVelocity != 0) {
-            size.add(sizeVelocity, sizeVelocity);
+            addSize(sizeVelocity, sizeVelocity);
 
-            if (size.x <= 0.0f || size.y <= 0.0f)
+            if (getSizeX() <= 0.0f || getSizeY() <= 0.0f)
                 setDead();
         }
 
-        this.position.x = objectPosition.x + localPosition.x;
-        this.position.y = objectPosition.y + localPosition.y;
+        addPosition(localPosition.x, localPosition.y);
     }
 
     public void onRemoved() {

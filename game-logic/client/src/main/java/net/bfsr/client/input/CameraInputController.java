@@ -85,12 +85,13 @@ public class CameraInputController extends InputController {
         Vector2f position = camera.getPosition();
         Ship playerShip = playerInputController.getShip();
         if (playerShip != null) {
-            Vector2f shipPosition = playerShip.getPosition();
+            float x = playerShip.getX();
+            float y = playerShip.getY();
             float minDistance = 0.04f;
-            float dis = shipPosition.distanceSquared(position);
+            float dis = position.distanceSquared(x, y);
             if (dis > minDistance) {
-                float mDx = shipPosition.x - position.x;
-                float mDy = shipPosition.y - position.y;
+                float mDx = x - position.x;
+                float mDy = y - position.y;
                 float animationSpeed = core.convertToDeltaTime(3.0f);
                 camera.move(mDx * animationSpeed, mDy * animationSpeed);
             }
@@ -98,12 +99,13 @@ public class CameraInputController extends InputController {
             if (followShip == null || followShip.isDead()) {
                 findShipToFollow();
             } else {
-                Vector2f shipPosition = followShip.getPosition();
-                float dis = shipPosition.distanceSquared(position);
+                float x = followShip.getX();
+                float y = followShip.getY();
+                float dis = position.distanceSquared(x, y);
                 float minDistance = 0.04f;
                 if (dis > minDistance) {
-                    float mDx = shipPosition.x - position.x;
-                    float mDy = shipPosition.y - position.y;
+                    float mDx = x - position.x;
+                    float mDy = y - position.y;
                     float max = 400.0f;
                     if (mDx < -max) mDx = -max;
                     else if (mDx > max) mDx = max;
@@ -123,10 +125,10 @@ public class CameraInputController extends InputController {
         if (ships.size() > 0) {
             float minDist = Float.MAX_VALUE;
             for (int i = 0; i < ships.size(); i++) {
-                Ship s = ships.get(i);
-                float dist = s.getPosition().distance(camera.getPosition());
+                Ship ship = ships.get(i);
+                float dist = camera.getPosition().distance(ship.getX(), ship.getY());
                 if (dist < minDist) {
-                    newShip = s;
+                    newShip = ship;
                     minDist = dist;
                 }
             }

@@ -9,13 +9,11 @@ import java.util.List;
 
 @ConfigConverter
 public final class WreckRegistry extends ConfigToDataConverter<WreckConfig, WreckData> {
-    public static final WreckRegistry INSTANCE = new WreckRegistry();
-
     private final List<WreckData>[] wrecksByType;
 
-    private WreckRegistry() {
+    public WreckRegistry() {
         super("entity/wreck", WreckConfig.class, (fileName, wreckConfig) -> fileName,
-                (config, fileName, index) -> new WreckData(config, index));
+                (config, fileName, index, registryId) -> new WreckData(config, index, registryId));
         WreckType[] values = WreckType.values();
         wrecksByType = new List[values.length];
         for (int i = 0; i < values.length; i++) {

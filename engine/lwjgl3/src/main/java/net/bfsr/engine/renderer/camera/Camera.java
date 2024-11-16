@@ -2,8 +2,8 @@ package net.bfsr.engine.renderer.camera;
 
 import lombok.Getter;
 import net.bfsr.engine.math.MatrixUtils;
-import net.bfsr.engine.util.AABB;
 import net.bfsr.engine.util.MatrixBufferUtils;
+import org.jbox2d.collision.AABB;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.lwjgl.opengl.GL30;

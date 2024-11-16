@@ -1,9 +1,9 @@
 package net.bfsr.engine.math;
 
-import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.AABB;
-import org.dyn4j.geometry.Transform;
+import org.jbox2d.collision.AABB;
+import org.jbox2d.common.Transform;
+import org.jbox2d.dynamics.Body;
+import org.jbox2d.dynamics.Fixture;
 import org.joml.Math;
 
 import java.util.List;
@@ -35,11 +35,15 @@ public final class MathUtils {
     }
 
     public static void computeAABB(AABB aabb, Body body, Transform transform, AABB cache) {
-        List<BodyFixture> fixtures = body.getFixtures();
-        fixtures.get(0).getShape().computeAABB(transform, aabb);
-        for (int i = 1, size = fixtures.size(); i < size; i++) {
-            fixtures.get(i).getShape().computeAABB(transform, cache);
-            aabb.union(cache);
+        List<Fixture> fixtures = body.fixtures;
+        if (fixtures.isEmpty()) {
+            return;
+        }
+
+        fixtures.get(0).getShape().computeAABB(aabb, transform, 0);
+        for (int i = 1; i < fixtures.size(); i++) {
+            fixtures.get(i).getShape().computeAABB(cache, transform, 0);
+            aabb.combine(cache);
         }
     }
 

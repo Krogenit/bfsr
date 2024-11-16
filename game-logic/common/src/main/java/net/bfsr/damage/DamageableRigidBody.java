@@ -6,33 +6,33 @@ import lombok.Setter;
 import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.physics.CollisionMatrixType;
-import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.BodyFixture;
+import org.jbox2d.dynamics.Fixture;
 import org.locationtech.jts.geom.Polygon;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
 @RequiredArgsConstructor
 public class DamageableRigidBody extends RigidBody {
+    @Getter
     private final DamageMask mask;
     @Setter
+    @Getter
     private Polygon polygon;
-    protected final List<BodyFixture> fixturesToAdd = new ArrayList<>();
-    protected final List<BodyFixture> fixturesToRemove = new ArrayList<>();
+    private final List<Fixture> fixturesToAdd = new ArrayList<>();
+    private final List<Fixture> fixturesToRemove = new ArrayList<>();
+    @Getter
     private final List<ConnectedObject<?>> connectedObjects = new ArrayList<>();
 
-    protected DamageableRigidBody(float sizeX, float sizeY, GameObjectConfigData configData, int registryId, DamageMask mask,
-                                  Polygon polygon) {
-        super(0, 0, 0, 1, sizeX, sizeY, configData, registryId);
+    protected DamageableRigidBody(float sizeX, float sizeY, GameObjectConfigData configData, DamageMask mask, Polygon polygon) {
+        super(0, 0, 0, 1, sizeX, sizeY, configData);
         this.mask = mask;
         this.polygon = polygon;
     }
 
     protected DamageableRigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, GameObjectConfigData configData,
-                                  int registryId, DamageMask mask, Polygon polygon) {
-        super(x, y, sin, cos, sizeX, sizeY, configData, registryId);
+                                  DamageMask mask, Polygon polygon) {
+        super(x, y, sin, cos, sizeX, sizeY, configData);
         this.mask = mask;
         this.polygon = polygon;
     }
@@ -45,29 +45,21 @@ public class DamageableRigidBody extends RigidBody {
     }
 
     protected void updateFixtures() {
-        boolean updated = false;
-
         if (fixturesToAdd.size() > 0) {
-            body.removeAllFixtures();
-            for (int i = 0; i < fixturesToAdd.size(); i++) {
-                body.addFixture(fixturesToAdd.get(i));
-            }
+            body.setFixtures(fixturesToAdd);
             addConnectedObjectFixturesToBody();
             fixturesToAdd.clear();
             fixturesToRemove.clear();
-            updated = true;
-        }
-
-        if (fixturesToRemove.size() > 0) {
+        } else if (fixturesToRemove.size() > 0) {
             for (int i = 0; i < fixturesToRemove.size(); i++) {
-                body.removeFixture(fixturesToRemove.get(i));
+                Fixture fixture = fixturesToRemove.get(i);
+                if (fixture.body == null) {
+                    fixturesToRemove.remove(i--);
+                }
             }
-            fixturesToRemove.clear();
-            updated = true;
-        }
 
-        if (updated) {
-            body.updateMass();
+            body.removeFixtures(fixturesToRemove);
+            fixturesToRemove.clear();
         }
     }
 
@@ -87,17 +79,12 @@ public class DamageableRigidBody extends RigidBody {
 
     public void onContourReconstructed(Polygon polygon) {}
 
-    public void setFixtures(List<BodyFixture> fixtures) {
-        Body body = getBody();
-        List<BodyFixture> bodyFixtures = body.getFixtures();
-        while (bodyFixtures.size() > 0) {
-            body.removeFixture(0);
-        }
-
+    public void setFixtures(List<Fixture> fixtures) {
         for (int i = 0; i < fixtures.size(); i++) {
-            body.addFixture(setupFixture(fixtures.get(i)));
+            setupFixture(fixtures.get(i));
         }
 
+        body.setFixtures(fixtures);
         addConnectedObjectFixturesToBody();
     }
 
@@ -119,8 +106,20 @@ public class DamageableRigidBody extends RigidBody {
         connectedObject.init(this);
     }
 
+    public void addFixtureToAdd(Fixture fixture) {
+        fixturesToAdd.add(fixture);
+    }
+
+    public void addFixtureToRemove(Fixture fixture) {
+        fixturesToRemove.add(fixture);
+    }
+
     @Override
     public int getCollisionMatrixType() {
         return CollisionMatrixType.DAMAGEABLE_RIGID_BODY.ordinal();
+    }
+
+    void clearFixturesToAdd() {
+        fixturesToAdd.clear();
     }
 }

@@ -9,7 +9,7 @@ import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
 import net.bfsr.network.packet.common.PacketScheduled;
 import net.bfsr.network.util.ByteBufUtils;
-import org.dyn4j.dynamics.BodyFixture;
+import org.jbox2d.dynamics.Fixture;
 import org.locationtech.jts.geom.Polygon;
 
 import java.io.IOException;
@@ -28,7 +28,7 @@ public class PacketSyncDamage extends PacketScheduled {
     private int id;
     private ByteBuffer byteBuffer;
     private int width, height;
-    private List<BodyFixture> fixtures;
+    private List<Fixture> fixtures;
 
     public PacketSyncDamage(DamageableRigidBody damageable) {
         super(damageable.getWorld().getTimestamp());
@@ -77,6 +77,6 @@ public class PacketSyncDamage extends PacketScheduled {
         byteBuffer.position(0);
         fixtures = new ArrayList<>(32);
 
-        DamageSystem.decompose(polygon, polygon -> fixtures.add(new BodyFixture(polygon)));
+        DamageSystem.decompose(polygon, polygon -> fixtures.add(new Fixture(polygon)));
     }
 }

@@ -10,7 +10,7 @@ import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
-import org.dyn4j.geometry.AABB;
+import org.jbox2d.collision.AABB;
 import org.joml.Vector2f;
 
 import java.util.List;
@@ -18,8 +18,8 @@ import java.util.List;
 public class MiniMap extends TexturedRectangle {
     private final Core core = Core.get();
     private final RenderManager renderManager = core.getRenderManager();
-    private final AABB boundingBox = new AABB(0);
-    private final AABB shipAABB = new AABB(0);
+    private final AABB boundingBox = new AABB();
+    private final AABB shipAABB = new AABB();
 
     public MiniMap() {
         super(TextureRegister.guiHudShip, 280, 220);
@@ -47,14 +47,16 @@ public class MiniMap extends TexturedRectangle {
         int miniMapY = this.y + height / 2;
         float r, g, b;
         for (int i = 0; i < ships.size(); i++) {
-            Ship s = ships.get(i);
-            Vector2f pos = s.getPosition();
-            Vector2f scale = s.getSize();
-            float sX = scale.x * shipSize / 2.0f;
-            float sY = scale.y * shipSize / 2.0f;
-            shipAABB.set(pos.x - sX, pos.y - sY, pos.x + sX, pos.y + sY);
+            Ship ship = ships.get(i);
+            float shipX = ship.getX();
+            float shipY = ship.getY();
+            float shipSizeX = ship.getSizeX();
+            float shipSizeY = ship.getSizeY();
+            float sX = shipSizeX * shipSize / 2.0f;
+            float sY = shipSizeY * shipSize / 2.0f;
+            shipAABB.set(shipX - sX, shipY - sY, shipX + sX, shipY + sY);
             if (boundingBox.overlaps(shipAABB)) {
-                Faction faction = s.getFaction();
+                Faction faction = ship.getFaction();
                 if (faction == Faction.ENGI) {
                     r = 0.5f;
                     g = 1.0f;
@@ -69,17 +71,17 @@ public class MiniMap extends TexturedRectangle {
                     b = 0.5f;
                 }
 
-                Render render = renderManager.getRender(s.getId());
+                Render render = renderManager.getRender(ship.getId());
                 if (render != null) {
                     Vector2f lastPosition = render.getLastPosition();
                     int lastX1 = (int) (miniMapX + (lastPosition.x - camPos.x) / mapScaleX);
                     int lastY1 = (int) (miniMapY + (-lastPosition.y + camPos.y) / mapScaleY);
-                    int x1 = (int) (miniMapX + (pos.x - camPos.x) / mapScaleX);
-                    int y1 = (int) (miniMapY + (-pos.y + camPos.y) / mapScaleY);
-                    int sizeX = (int) (scale.x * shipSize);
-                    int sizeY = (int) (scale.y * shipSize);
+                    int x1 = (int) (miniMapX + (shipX - camPos.x) / mapScaleX);
+                    int y1 = (int) (miniMapY + (-shipY + camPos.y) / mapScaleY);
+                    int sizeX = (int) (shipSizeX * shipSize);
+                    int sizeY = (int) (shipSizeY * shipSize);
                     guiRenderer.addRotated(lastX + lastX1, lastY + lastY1, x + x1, y + y1, render.getLastSin(), render.getLastCos(),
-                            s.getSin(), s.getCos(), sizeX, sizeY, r, g, b, 1.0f, render.getTexture());
+                            ship.getSin(), ship.getCos(), sizeX, sizeY, r, g, b, 1.0f, render.getTexture());
                 }
             }
         }

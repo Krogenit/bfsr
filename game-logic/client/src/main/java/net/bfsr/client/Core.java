@@ -28,6 +28,7 @@ import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.client.settings.ConfigSettings;
 import net.bfsr.client.world.BlankWorld;
 import net.bfsr.client.world.entity.ClientEntityIdManager;
+import net.bfsr.client.world.entity.EntitySpawnLoginRegistry;
 import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
@@ -50,8 +51,10 @@ public class Core extends ClientGameLogic {
     public static final String GAME_VERSION = "Dev 0.1.4";
     private static Core instance;
 
+    private final ConfigConverterManager configConverterManager = new ConfigConverterManager();
     private final AbstractSoundManager soundManager = Engine.soundManager;
     private final NetworkSystem networkSystem = new NetworkSystem();
+    private final EntitySpawnLoginRegistry entitySpawnLoginRegistry = new EntitySpawnLoginRegistry();
     private final GuiManager guiManager = Engine.guiManager;
     private final InputHandler inputHandler = new InputHandler();
     private final ParticleManager particleManager = new ParticleManager();
@@ -83,15 +86,16 @@ public class Core extends ClientGameLogic {
         Lang.load();
         inputHandler.init();
         settings.load();
+        configConverterManager.init();
+        configConverterManager.registerConfigRegistry(ParticleEffectsRegistry.INSTANCE);
         networkSystem.init();
+        entitySpawnLoginRegistry.init(configConverterManager);
         globalRenderer.init();
         renderManager.init();
         guiManager.init(eventBus);
         profiler.setEnable(ClientSettings.IS_PROFILING.getBoolean());
         soundManager.setGain(ClientSettings.SOUND_VOLUME.getFloat());
         particleManager.init();
-        ConfigConverterManager.INSTANCE.init();
-        ConfigConverterManager.INSTANCE.registerConfigRegistry(ParticleEffectsRegistry.INSTANCE);
         registerListeners();
         super.init();
         guiManager.openGui(new GuiMainMenu());

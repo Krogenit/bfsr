@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.ai.Ai;
 import net.bfsr.config.entity.ship.ShipData;
-import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
@@ -36,12 +35,9 @@ import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.ShipSpawnData;
 import net.bfsr.physics.CollisionMatrixType;
 import net.bfsr.world.World;
-import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.dynamics.Force;
-import org.dyn4j.geometry.Convex;
-import org.dyn4j.geometry.MassType;
-import org.dyn4j.geometry.Vector2;
-import org.dyn4j.geometry.Wound;
+import org.jbox2d.collision.shapes.Shape;
+import org.jbox2d.common.Vector2;
+import org.jbox2d.dynamics.Fixture;
 import org.joml.Vector2f;
 import org.locationtech.jts.geom.Polygon;
 
@@ -102,7 +98,7 @@ public class Ship extends DamageableRigidBody {
     private final ShipData shipData;
 
     public Ship(ShipData shipData, DamageMask mask) {
-        super(shipData.getSizeX(), shipData.getSizeY(), shipData, ShipRegistry.INSTANCE.getId(), mask, shipData.getPolygonJTS());
+        super(shipData.getSizeX(), shipData.getSizeY(), shipData, mask, shipData.getPolygonJTS());
         this.shipData = shipData;
         this.timeToDestroy = shipData.getDestroyTimeInTicks();
         this.maxSparksTimer = timeToDestroy / 3;
@@ -118,29 +114,30 @@ public class Ship extends DamageableRigidBody {
 
     @Override
     protected void initBody() {
-        List<Convex> convexes = configData.getConvexList();
+        super.initBody();
+
+        List<Shape> convexes = configData.getShapeList();
         for (int i = 0; i < convexes.size(); i++) {
-            body.addFixture(setupFixture(new BodyFixture(convexes.get(i))));
+            body.addFixture(setupFixture(new Fixture(convexes.get(i))));
         }
 
-        body.setMass(MassType.NORMAL);
         body.setUserData(this);
         body.setLinearDamping(0.05f);
         body.setAngularDamping(0.005f);
     }
 
     private void addForce(Vector2f rotationVector, float speed) {
-        body.applyForce(new Force(rotationVector.x * speed, rotationVector.y * speed));
+        body.applyForceToCenter(rotationVector.x * speed, rotationVector.y * speed);
     }
 
     public void move(Direction dir) {
         if (dir == Direction.STOP) {
-            body.getLinearVelocity().multiply(modules.getEngines().getManeuverability() * 0.98f);
+            body.getLinearVelocity().mulLocal(modules.getEngines().getManeuverability() * 0.98f);
             return;
         }
 
-        double sin = body.getTransform().getSint();
-        double cos = body.getTransform().getCost();
+        float sin = getSin();
+        float cos = getCos();
 
         if (dir == Direction.FORWARD) {
             addForce(rotationHelper.set(cos, sin), modules.getEngines().getForwardAcceleration());
@@ -227,30 +224,10 @@ public class Ship extends DamageableRigidBody {
         lifeTime++;
     }
 
-    @Override
-    protected void updateFixtures() {
-        if (fixturesToAdd.size() > 0) {
-            body.removeAllFixtures();
-            for (int i = 0; i < fixturesToAdd.size(); i++) {
-                body.addFixture(fixturesToAdd.get(i));
-            }
-            addConnectedObjectFixturesToBody();
-            fixturesToAdd.clear();
-            fixturesToRemove.clear();
-        }
-
-        if (fixturesToRemove.size() > 0) {
-            for (int i = 0; i < fixturesToRemove.size(); i++) {
-                body.removeFixture(fixturesToRemove.get(i));
-            }
-            fixturesToRemove.clear();
-        }
-    }
-
     private void updateJump() {
         if (jumpTimer-- == 0) {
             setSpawned();
-            RotationHelper.angleToVelocity(sin, cos, 15.0f, rotationHelper);
+            RotationHelper.angleToVelocity(getSin(), getCos(), 15.0f, rotationHelper);
             setVelocity(rotationHelper.x, rotationHelper.y);
         }
     }
@@ -264,15 +241,15 @@ public class Ship extends DamageableRigidBody {
 
         float maxForwardSpeed = modules.getEngines().getMaxForwardVelocity();
         float maxForwardSpeedSquared = maxForwardSpeed * maxForwardSpeed;
-        double magnitudeSquared = body.getLinearVelocity().getMagnitudeSquared();
+        float magnitudeSquared = body.getLinearVelocity().lengthSquared();
 
         float maxSideSpeed = maxForwardSpeedSquared * 0.8f;
         if (moveDirections.size() > 0 && !moveDirections.contains(Direction.FORWARD) && magnitudeSquared > maxSideSpeed) {
-            double percent = maxSideSpeed / magnitudeSquared;
-            body.getLinearVelocity().multiply(percent);
+            float percent = maxSideSpeed / magnitudeSquared;
+            getLinearVelocity().mulLocal(percent);
         } else if (magnitudeSquared > maxForwardSpeedSquared) {
-            double percent = maxForwardSpeedSquared / magnitudeSquared;
-            body.getLinearVelocity().multiply(percent);
+            float percent = maxForwardSpeedSquared / magnitudeSquared;
+            getLinearVelocity().mulLocal(percent);
         }
 
         modules.update();
@@ -300,7 +277,7 @@ public class Ship extends DamageableRigidBody {
         List<Engine> engines = modules.getEngines().getEngines();
         for (int i = 0; i < engines.size(); i++) {
             Engine engine = engines.get(i);
-            Vector2[] vertices = ((Wound) engine.getFixture().getShape()).getVertices();
+            Vector2[] vertices = ((org.jbox2d.collision.shapes.Polygon) engine.getFixture().getShape()).getVertices();
             if (!DamageSystem.isPolygonConnectedToContour(vertices, polygon)) {
                 engine.setDead();
             }
@@ -384,8 +361,8 @@ public class Ship extends DamageableRigidBody {
     }
 
     private void setJumpPosition() {
-        RotationHelper.angleToVelocity(sin, cos, -100.0f, jumpPosition);
-        jumpPosition.add(position);
+        RotationHelper.angleToVelocity(getSin(), getCos(), -100.0f, jumpPosition);
+        jumpPosition.add(getX(), getY());
     }
 
     public void setDestroying() {

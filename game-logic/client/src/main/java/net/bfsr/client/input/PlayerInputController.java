@@ -28,8 +28,8 @@ import net.bfsr.network.packet.input.PacketSyncPlayerMousePosition;
 import net.bfsr.physics.correction.DynamicCorrectionHandler;
 import net.bfsr.physics.correction.HistoryCorrectionHandler;
 import net.bfsr.physics.correction.LocalPlayerInputCorrectionHandler;
-import org.dyn4j.dynamics.Body;
-import org.dyn4j.geometry.AABB;
+import org.jbox2d.collision.AABB;
+import org.jbox2d.dynamics.Body;
 import org.joml.Vector2f;
 
 import java.util.List;
@@ -161,7 +161,7 @@ public class PlayerInputController extends InputController {
 
     private void controlShip() {
         Body body = ship.getBody();
-        if (body.isAtRest()) body.setAtRest(false);
+        if (!body.isAwake()) body.setAwake(true);
 
         Vector2f mouseWorldPosition = Engine.mouse.getWorldPosition(camera);
         rigidBodyUtils.rotateToVector(ship, mouseWorldPosition, ship.getModules().getEngines().getAngularVelocity());
@@ -226,8 +226,8 @@ public class PlayerInputController extends InputController {
     }
 
     private boolean isMouseIntersectsWith(RigidBody rigidBody, float mouseX, float mouseY) {
-        AABB aabb = new AABB(0);
-        MathUtils.computeAABB(aabb, rigidBody.getBody(), rigidBody.getBody().getTransform(), new AABB(0));
+        AABB aabb = new AABB();
+        MathUtils.computeAABB(aabb, rigidBody.getBody(), rigidBody.getBody().getTransform(), new AABB());
         return aabb.contains(mouseX, mouseY);
     }
 

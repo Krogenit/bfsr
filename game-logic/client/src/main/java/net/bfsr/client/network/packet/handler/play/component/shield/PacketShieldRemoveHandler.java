@@ -9,7 +9,6 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.server.component.PacketShieldRemove;
-import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 import java.net.InetSocketAddress;
@@ -23,9 +22,8 @@ public class PacketShieldRemoveHandler extends PacketHandler<PacketShieldRemove,
             Shield shield = ship.getModules().getShield();
             if (shield != null) {
                 shield.removeShield();
-                Vector2f position = ship.getPosition();
                 Vector4f shipEffectColor = ship.getShipData().getEffectsColor();
-                ShieldEffects.disable(position.x, position.y, ship.getSize().x * 2.0f, shipEffectColor.x, shipEffectColor.y,
+                ShieldEffects.disable(ship.getX(), ship.getY(), ship.getSizeX() * 2.0f, shipEffectColor.x, shipEffectColor.y,
                         shipEffectColor.z, 1.0f);
             }
         }

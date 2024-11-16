@@ -50,22 +50,20 @@ public class DamageableRigidBodyRenderer extends RigidBodyRender {
 
     @Override
     public void renderAlpha() {
-        Vector2f position = object.getPosition();
         float sin = rigidBody.getSin();
         float cos = rigidBody.getCos();
-        Vector2f scale = object.getSize();
-        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, position.x, position.y, lastSin, lastCos,
-                sin, cos, scale.x, scale.y, color.x, color.y, color.z, color.w, texture, maskTexture, BufferType.ENTITIES_ALPHA);
+        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, rigidBody.getX(), rigidBody.getY(), lastSin, lastCos,
+                sin, cos, rigidBody.getSizeX(), rigidBody.getSizeY(), color.x, color.y, color.z, color.w, texture, maskTexture,
+                BufferType.ENTITIES_ALPHA);
     }
 
     @Override
     public void renderDebug() {
         super.renderDebug();
         Polygon polygon = damageableRigidBody.getPolygon();
-        Vector2f position = object.getPosition();
         Vector2f interpolatedPosition = new Vector2f(
-                lastPosition.x + (position.x - lastPosition.x) * renderer.getInterpolation(),
-                lastPosition.y + (position.y - lastPosition.y) * renderer.getInterpolation());
+                lastPosition.x + (object.getX() - lastPosition.x) * renderer.getInterpolation(),
+                lastPosition.y + (object.getY() - lastPosition.y) * renderer.getInterpolation());
         float sin = lastSin + (rigidBody.getSin() - lastSin) * renderer.getInterpolation();
         float cos = lastCos + (rigidBody.getCos() - lastCos) * renderer.getInterpolation();
 

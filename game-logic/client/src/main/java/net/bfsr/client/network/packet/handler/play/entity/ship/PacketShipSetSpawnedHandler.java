@@ -12,7 +12,8 @@ import java.net.InetSocketAddress;
 
 public class PacketShipSetSpawnedHandler extends PacketHandler<PacketShipSetSpawned, NetworkSystem> {
     @Override
-    public void handle(PacketShipSetSpawned packet, NetworkSystem networkSystem, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketShipSetSpawned packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         GameObject gameObject = Core.get().getWorld().getEntityById(packet.getId());
         if (gameObject instanceof Ship ship) {
             ship.setSpawned();

@@ -13,7 +13,8 @@ import java.net.InetSocketAddress;
 
 public class PacketShieldRebuildingTimeHandler extends PacketHandler<PacketShieldRebuildingTime, NetworkSystem> {
     @Override
-    public void handle(PacketShieldRebuildingTime packet, NetworkSystem networkSystem, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketShieldRebuildingTime packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         GameObject obj = Core.get().getWorld().getEntityById(packet.getId());
         if (obj instanceof Ship ship) {
             Shield shield = ship.getModules().getShield();

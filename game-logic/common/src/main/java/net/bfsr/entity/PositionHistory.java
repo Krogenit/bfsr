@@ -1,7 +1,6 @@
 package net.bfsr.entity;
 
 import net.bfsr.engine.util.ObjectPool;
-import org.joml.Vector2f;
 
 public class PositionHistory extends EntityDataHistory<TransformData> {
     private final ObjectPool<TransformData> cache = new ObjectPool<>(TransformData::new);
@@ -11,9 +10,9 @@ public class PositionHistory extends EntityDataHistory<TransformData> {
         super(historyLengthMillis);
     }
 
-    public void addPositionData(Vector2f pos, float sin, float cos, double time) {
+    public void addPositionData(float x, float y, float sin, float cos, double time) {
         TransformData positionData = cache.get();
-        positionData.setPosition(pos);
+        positionData.setPosition(x, y);
         positionData.setSin(sin);
         positionData.setCos(cos);
         positionData.setTime(time);

@@ -11,22 +11,21 @@ import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
-import net.bfsr.physics.CCDTransformHandler;
 import net.bfsr.physics.CollisionMatrix;
 import net.bfsr.physics.CommonCollisionHandler;
 import net.bfsr.physics.ContactListener;
-import net.bfsr.physics.CustomValueMixer;
-import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.ContinuousDetectionMode;
-import org.dyn4j.world.PhysicsWorld;
+import net.bfsr.physics.filter.ContactFilter;
+import org.jbox2d.common.Vector2;
 
 import java.util.List;
 import java.util.Random;
 
 public class World {
+    private static final int VELOCITY_ITERATIONS = 1;
+    private static final int POSITION_ITERATIONS = 1;
+
     @Getter
-    private org.dyn4j.world.World<Body> physicWorld;
-    private final CCDTransformHandler ccdTransformHandler = new CCDTransformHandler();
+    private org.jbox2d.dynamics.World physicWorld;
     @Getter
     protected final Side side;
     @Getter
@@ -46,6 +45,8 @@ public class World {
     @Getter
     private final CollisionMatrix collisionMatrix;
     @Getter
+    private final ContactFilter contactFilter;
+    @Getter
     private final ObjectPools objectPools = new ObjectPools();
 
     public World(Profiler profiler, Side side, long seed, EventBus eventBus, CommonEntityManager entityManager,
@@ -58,19 +59,13 @@ public class World {
         this.entityIdManager = entityIdManager;
         this.gameLogic = gameLogic;
         this.collisionMatrix = new CollisionMatrix(collisionHandler);
+        this.contactFilter = new ContactFilter(collisionMatrix);
     }
 
     private void initPhysicWorld() {
-        physicWorld = new org.dyn4j.world.World<>();
-        physicWorld.setGravity(PhysicsWorld.ZERO_GRAVITY);
-        physicWorld.getSettings().setMaximumTranslation(30);
-        physicWorld.getSettings().setPositionConstraintSolverIterations(1);
-        physicWorld.getSettings().setVelocityConstraintSolverIterations(1);
-        physicWorld.getSettings().setStepFrequency(gameLogic.getUpdateDeltaTime());
-        physicWorld.getSettings().setContinuousDetectionMode(ContinuousDetectionMode.BULLETS_ONLY);
-        physicWorld.addContactListener(new ContactListener(collisionMatrix));
-        physicWorld.addTimeOfImpactListener(ccdTransformHandler);
-        physicWorld.setValueMixer(new CustomValueMixer());
+        physicWorld = new org.jbox2d.dynamics.World(new Vector2());
+        physicWorld.setContactListener(new ContactListener(collisionMatrix));
+        physicWorld.setContactFilter(contactFilter);
     }
 
     public void init() {
@@ -84,9 +79,7 @@ public class World {
         profiler.start("entityManager");
         entityManager.update();
         profiler.endStart("physics");
-        ccdTransformHandler.clear();
-        physicWorld.step(1);
-        ccdTransformHandler.restoreTransforms();
+        physicWorld.step(gameLogic.getUpdateDeltaTime(), VELOCITY_ITERATIONS, POSITION_ITERATIONS);
         profiler.endStart("postPhysicsUpdate");
         entityManager.postPhysicsUpdate();
         profiler.end();

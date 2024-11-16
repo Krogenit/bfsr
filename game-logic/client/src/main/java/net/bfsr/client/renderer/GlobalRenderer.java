@@ -64,10 +64,10 @@ public class GlobalRenderer {
     }
 
     private void renderDebug() {
-        debugRenderer.clear();
         debugRenderer.bind();
         renderManager.renderDebug();
         debugRenderer.render(GL.GL_LINE_LOOP);
+        debugRenderer.clear();
         spriteRenderer.bind();
         shader.enable();
     }

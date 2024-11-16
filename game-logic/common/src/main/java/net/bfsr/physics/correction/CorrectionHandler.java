@@ -7,6 +7,7 @@ import net.bfsr.entity.EntityDataHistoryManager;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.TransformData;
 import net.bfsr.network.packet.common.entity.PacketWorldSnapshot;
+import org.jbox2d.common.Vector2;
 import org.joml.Vector2f;
 
 import java.util.function.BiConsumer;
@@ -16,7 +17,6 @@ import java.util.function.Consumer;
 public class CorrectionHandler {
     protected RigidBody rigidBody;
     EntityDataHistoryManager dataHistoryManager;
-    private Vector2f position, velocity;
     float correctionAmount = 1.0f;
 
     CorrectionHandler(float correctionAmount) {
@@ -32,7 +32,8 @@ public class CorrectionHandler {
         TransformData transformData = dataHistoryManager.getTransformData(rigidBody.getId(), timestamp);
         if (transformData != null) {
             Vector2f serverPosition = transformData.getPosition();
-            correction(serverPosition, position, (dx, dy) -> rigidBody.setPosition(position.x + dx, position.y + dy));
+            correction(serverPosition, rigidBody.getX(), rigidBody.getY(),
+                    (dx, dy) -> rigidBody.setPosition(rigidBody.getX() + dx, rigidBody.getY() + dy));
             angleCorrection(transformData.getCos(), transformData.getSin(), rigidBody.getCos(), rigidBody.getSin());
         }
     }
@@ -41,13 +42,15 @@ public class CorrectionHandler {
         PacketWorldSnapshot.EntityData entityData = dataHistoryManager.getData(rigidBody.getId(), timestamp);
         if (entityData != null) {
             Vector2f serverVelocity = entityData.getVelocity();
-            correction(serverVelocity, velocity, (dx, dy) -> rigidBody.setVelocity(velocity.x + dx, velocity.y + dy));
+            Vector2 linearVelocity = rigidBody.getLinearVelocity();
+            correction(serverVelocity, linearVelocity.x, linearVelocity.y,
+                    (dx, dy) -> rigidBody.setVelocity(linearVelocity.x + dx, linearVelocity.y + dy));
             correction(entityData.getAngularVelocity(), rigidBody.getAngularVelocity(), rigidBody::setAngularVelocity);
         }
     }
 
-    void correction(Vector2f serverVector, Vector2f localVector, BiConsumer<Float, Float> correctionConsumer) {
-        correctionConsumer.accept((serverVector.x - localVector.x) * correctionAmount, (serverVector.y - localVector.y) * correctionAmount);
+    void correction(Vector2f serverVector, float localX, float localY, BiConsumer<Float, Float> correctionConsumer) {
+        correctionConsumer.accept((serverVector.x - localX) * correctionAmount, (serverVector.y - localY) * correctionAmount);
     }
 
     private void correction(float serverValue, float localValue, Consumer<Float> correctionConsumer) {
@@ -63,8 +66,6 @@ public class CorrectionHandler {
 
     public CorrectionHandler setRigidBody(RigidBody rigidBody) {
         this.rigidBody = rigidBody;
-        this.position = rigidBody.getPosition();
-        this.velocity = rigidBody.getVelocity();
         this.dataHistoryManager = rigidBody.getWorld().getEntityManager().getDataHistoryManager();
         return this;
     }

@@ -34,7 +34,7 @@ public class EntityDataHistoryManager {
     public void addData(PacketWorldSnapshot.EntityData entityData, double timestamp) {
         int id = entityData.getEntityId();
         positionHistoryMap.computeIfAbsent(id, key -> new PositionHistory(HISTORY_DURATION_MILLIS))
-                .addPositionData(entityData.getPosition(), entityData.getSin(), entityData.getCos(), timestamp);
+                .addPositionData(entityData.getX(), entityData.getY(), entityData.getSin(), entityData.getCos(), timestamp);
         dataHistoryMap.computeIfAbsent(id, key -> new EntityDataHistory<>(HISTORY_DURATION_MILLIS)).addData(entityData);
     }
 

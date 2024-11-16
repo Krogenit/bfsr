@@ -5,8 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.entity.wreck.WreckType;
-import net.bfsr.network.util.ByteBufUtils;
-import org.joml.Vector2f;
+import org.jbox2d.common.Vector2;
 
 @Getter
 @NoArgsConstructor
@@ -17,7 +16,8 @@ public class WreckSpawnData extends RigidBodySpawnData {
     private int maxLifeTime;
     private boolean isFire, isLight, isFireExplosion;
     private float rotationSpeed;
-    private Vector2f velocity, size;
+    private float velocityX, velocityY;
+    private float sizeX, sizeY;
     private WreckType wreckType;
 
     public WreckSpawnData(Wreck wreck) {
@@ -28,8 +28,11 @@ public class WreckSpawnData extends RigidBodySpawnData {
         this.isFireExplosion = wreck.isEmitFire();
         this.maxLifeTime = wreck.getMaxLifeTime();
         this.rotationSpeed = wreck.getAngularVelocity();
-        this.velocity = wreck.getVelocity();
-        this.size = wreck.getSize();
+        Vector2 linearVelocity = wreck.getLinearVelocity();
+        this.velocityX = linearVelocity.x;
+        this.velocityY = linearVelocity.y;
+        this.sizeX = wreck.getSizeX();
+        this.sizeY = wreck.getSizeY();
         this.wreckType = wreck.getWreckType();
     }
 
@@ -44,9 +47,11 @@ public class WreckSpawnData extends RigidBodySpawnData {
         data.writeBoolean(isFireExplosion);
         data.writeInt(maxLifeTime);
 
-        ByteBufUtils.writeVector(data, velocity);
+        data.writeFloat(velocityX);
+        data.writeFloat(velocityY);
         data.writeFloat(rotationSpeed);
-        ByteBufUtils.writeVector(data, size);
+        data.writeFloat(sizeX);
+        data.writeFloat(sizeY);
     }
 
     @Override
@@ -60,9 +65,11 @@ public class WreckSpawnData extends RigidBodySpawnData {
         isFireExplosion = data.readBoolean();
         maxLifeTime = data.readInt();
 
-        ByteBufUtils.readVector(data, velocity = new Vector2f());
+        velocityX = data.readFloat();
+        velocityY = data.readFloat();
         rotationSpeed = data.readFloat();
-        ByteBufUtils.readVector(data, size = new Vector2f());
+        sizeX = data.readFloat();
+        sizeY = data.readFloat();
     }
 
     @Override

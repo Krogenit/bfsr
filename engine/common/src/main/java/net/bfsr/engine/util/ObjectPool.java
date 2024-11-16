@@ -23,6 +23,10 @@ public class ObjectPool<T> {
         objects.addFirst(particle);
     }
 
+    public int size() {
+        return objects.size();
+    }
+
     public void clear() {
         objects.clear();
     }

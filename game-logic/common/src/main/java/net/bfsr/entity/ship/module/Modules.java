@@ -10,7 +10,7 @@ import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
-import org.dyn4j.dynamics.Body;
+import org.jbox2d.dynamics.Body;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -120,7 +120,7 @@ public class Modules {
         for (int i = 0; i < weaponSlots.size(); i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
             if (weaponSlot.getId() == id) {
-                ship.getFixturesToRemove().add(weaponSlot.getFixture());
+                ship.addFixtureToRemove(weaponSlot.getFixture());
                 weaponSlots.remove(i);
                 weaponSlot.onRemoved();
                 return;

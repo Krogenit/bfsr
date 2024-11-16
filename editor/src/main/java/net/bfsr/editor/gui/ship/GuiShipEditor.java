@@ -38,7 +38,8 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
     private boolean lastDebugBoxesMode;
 
     public GuiShipEditor() {
-        super("Ships", ShipRegistry.INSTANCE, Mappers.getMapper(ShipConverter.class), ShipConfig.class, ShipProperties.class);
+        super("Ships", Core.get().getConfigConverterManager().getConverter(ShipRegistry.class), Mappers.getMapper(ShipConverter.class),
+                ShipConfig.class, ShipProperties.class);
         Core.get().getRenderManager().addRender(new Render(polygonObject) {
             @Override
             public void renderDebug() {
@@ -49,10 +50,9 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
 
                 debugRenderer.addCommand(vertices.size());
                 Vector4f color = new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
-                Vector2f position = testShip.getPosition();
                 for (int i = 0; i < vertices.size(); i++) {
                     Vector2fPropertiesHolder vertex = vertices.get(i);
-                    debugRenderer.addVertex(vertex.getX() + position.x, vertex.getY() + position.y, color);
+                    debugRenderer.addVertex(vertex.getX() + testShip.getX(), vertex.getY() + testShip.getY(), color);
                 }
             }
         });
@@ -71,13 +71,13 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
             }
 
             try {
-                testShip = new TestShip(new ShipData(converter.from(properties), "ship", 0));
+                testShip = new TestShip(new ShipData(converter.from(properties), "ship", 0, 0));
                 testShip.init(Core.get().getWorld(), -1);
                 testShip.setFaction(Faction.HUMAN);
                 testShip.setSpawned();
 
                 try {
-                    ShipOutfitter.get().outfit(testShip);
+                    new ShipOutfitter(Core.get().getConfigConverterManager()).outfit(testShip);
                 } catch (Exception e) {
                     log.error("Can't outfit ship", e);
                 }
