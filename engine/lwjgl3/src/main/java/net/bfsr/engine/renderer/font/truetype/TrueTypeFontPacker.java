@@ -45,6 +45,8 @@ class TrueTypeFontPacker extends FontPacker<TrueTypeBitMap> {
                 ascender = glyph.bitmap_top();
             }
         }
+
+        descender = (int) (ftFace.size().metrics().descender() >> 6);
     }
 
     @Override

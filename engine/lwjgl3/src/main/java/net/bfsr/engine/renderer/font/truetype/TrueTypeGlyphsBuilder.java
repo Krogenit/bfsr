@@ -8,8 +8,6 @@ import net.bfsr.engine.util.IOUtils;
 import net.bfsr.engine.util.PathHelper;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.util.freetype.FT_Face;
-import org.lwjgl.util.freetype.FT_GlyphSlot;
-import org.lwjgl.util.freetype.FreeType;
 
 import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
@@ -20,9 +18,7 @@ import static org.lwjgl.util.freetype.FreeType.FT_Err_Ok;
 import static org.lwjgl.util.freetype.FreeType.FT_Err_Unknown_File_Format;
 import static org.lwjgl.util.freetype.FreeType.FT_Get_Char_Index;
 import static org.lwjgl.util.freetype.FreeType.FT_Init_FreeType;
-import static org.lwjgl.util.freetype.FreeType.FT_Load_Char;
 import static org.lwjgl.util.freetype.FreeType.FT_New_Memory_Face;
-import static org.lwjgl.util.freetype.FreeType.FT_Set_Pixel_Sizes;
 
 @Log4j2
 public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPacker> {
@@ -38,9 +34,9 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
         library = libraryPointerBuffer.get(0);
     }
 
-    //This should be keep in memory
+    // This should be keep in memory
     private final ByteBuffer byteBuffer;
-    //This should be keep in memory
+    // This should be keep in memory
     private final PointerBuffer ftFacePointerBuffer;
     private final FT_Face ftFace;
 
@@ -118,8 +114,6 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
             return 0;
         }
 
-        FT_Set_Pixel_Sizes(ftFace, 0, fontSize);
-
         int lastIndex = -1;
         int index = 0, advance = 0;
         while (index < string.length() && advance <= maxWidth) {
@@ -134,11 +128,12 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
                 }
             }
 
-            if (FT_Load_Char(ftFace, cp, FreeType.FT_LOAD_DEFAULT) != FT_Err_Ok) {
+            Glyph glyph = getGlyph(cp, fontSize);
+            if (glyph == null) {
                 continue;
             }
 
-            int nextAdvance = advance + (int) (ftFace.glyph().advance().x() >> 6);
+            int nextAdvance = advance + glyph.getAdvance();
             if (nextAdvance <= maxWidth) {
                 advance = nextAdvance;
                 index++;
@@ -156,16 +151,14 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
 
     @Override
     public int getWidth(String string, int fontSize) {
-        FT_Set_Pixel_Sizes(ftFace, 0, fontSize);
         int width = 0;
         for (int i = 0; i < string.length(); i++) {
-            char cp = string.charAt(i);
-            if (FT_Load_Char(ftFace, cp, FreeType.FT_LOAD_DEFAULT) != FT_Err_Ok) {
+            Glyph glyph = getGlyph(string.charAt(i), fontSize);
+            if (glyph == null) {
                 continue;
             }
 
-            FT_GlyphSlot glyph = ftFace.glyph();
-            width += (int) (glyph.advance().x() >> 6);
+            width += glyph.getAdvance();
         }
 
         return width;
@@ -183,8 +176,7 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
 
     @Override
     public float getDescent(String string, int fontSize) {
-        FT_Set_Pixel_Sizes(ftFace, 0, fontSize);
-        return (int) (ftFace.size().metrics().descender() >> 6);
+        return getFontBySize(fontSize).getDescender();
     }
 
     @Override
@@ -203,15 +195,15 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
             return 0;
         }
 
-        FT_Set_Pixel_Sizes(ftFace, 0, fontSize);
         float advance = 0.0f;
         int index = 0;
         while (index < string.length() && advance <= mouseX) {
-            if (FT_Load_Char(ftFace, string.charAt(index), FreeType.FT_LOAD_DEFAULT) != FT_Err_Ok) {
+            Glyph glyph = getGlyph(string.charAt(index), fontSize);
+            if (glyph == null) {
                 continue;
             }
 
-            float charHalfAdvance = ftFace.glyph().advance().x() / 64.0f * 0.5f;
+            float charHalfAdvance = (glyph.getAdvance() << 6) / 64.0f * 0.5f;
             float nextAdvance = advance + charHalfAdvance;
             if (nextAdvance <= mouseX) {
                 advance = nextAdvance + charHalfAdvance;
