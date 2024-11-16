@@ -50,7 +50,7 @@ public class GuiFactionSelect extends Gui {
         }
 
         Label label = new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.maintext"), 24);
-        add(label.atCenter(-label.getWidth() / 2, -96));
+        add(label.atCenter(-label.getWidth() / 2, -120));
 
         int discFontSize = 16;
         add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.humanDisc"), discFontSize).atCenter(-450, -64));
