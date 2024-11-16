@@ -98,7 +98,8 @@ public class DebugInfoElement extends MinimizableGuiObject {
         addMinimizableWithLabel(width, height, y, "Profiler", profilerLabel);
         y += height;
         addMinimizableWithLabel(width, height, y, "Network", createLabel(0, "",
-                label1 -> label1.setString("Ping: " + DecimalUtils.strictFormatWithToDigits(ping) + "ms")));
+                label1 -> label1.setString("Ping: " + DecimalUtils.strictFormatWithToDigits(ping) + "ms" +
+                        "\nClient render delay: " + client.getClientRenderDelayInNanos() / 1_000_000 + "ms")));
         y += height;
         addMinimizableWithLabel(width, height, y, "Render", createLabel(0, "",
                 label1 -> {
