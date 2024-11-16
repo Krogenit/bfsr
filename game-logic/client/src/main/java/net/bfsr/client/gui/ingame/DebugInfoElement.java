@@ -58,6 +58,8 @@ public class DebugInfoElement extends MinimizableGuiObject {
         setTextColor(205 / 255.0f, 205 / 255.0f, 205 / 255.0f, 1.0f).setHoverColor(0.3f, 0.3f, 0.3f, 0.5f);
 
         add(scrollPane);
+        scrollPane.setScrollColor(0.5f, 0.5f, 0.5f, 0.25f);
+        scrollPane.setScrollHoverColor(0.5f, 0.5f, 0.5f, 0.5f);
 
         int width = 300 - STATIC_STRING_X_OFFSET - 10;
         int height = 20;
