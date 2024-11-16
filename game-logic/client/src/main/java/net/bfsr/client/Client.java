@@ -47,9 +47,9 @@ import java.net.InetAddress;
 
 @Log4j2
 @Getter
-public class Core extends ClientGameLogic {
+public class Client extends ClientGameLogic {
     public static final String GAME_VERSION = "Dev 0.1.5";
-    private static Core instance;
+    private static Client instance;
 
     private final ConfigConverterManager configConverterManager = new ConfigConverterManager();
     private final AbstractSoundManager soundManager = Engine.soundManager;
@@ -76,7 +76,7 @@ public class Core extends ClientGameLogic {
     @Getter
     private final double clientRenderDelayInNanos = Engine.getClientRenderDelayInMills() * 1_000_000;
 
-    public Core(Profiler profiler) {
+    public Client(Profiler profiler) {
         super(profiler);
         instance = this;
     }
@@ -256,7 +256,7 @@ public class Core extends ClientGameLogic {
         world = BlankWorld.get();
     }
 
-    public static Core get() {
+    public static Client get() {
         return instance;
     }
 

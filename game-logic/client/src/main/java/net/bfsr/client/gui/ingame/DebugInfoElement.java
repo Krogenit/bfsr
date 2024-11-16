@@ -1,7 +1,7 @@
 package net.bfsr.client.gui.ingame;
 
 import lombok.Setter;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.settings.ClientSettings;
@@ -41,9 +41,9 @@ public class DebugInfoElement extends MinimizableGuiObject {
     @Setter
     private float ping;
 
-    private final Core core = Core.get();
-    private final ParticleRenderer particleRenderer = core.getGlobalRenderer().getParticleRenderer();
-    private final PlayerInputController playerInputController = core.getInputHandler().getPlayerInputController();
+    private final Client client = Client.get();
+    private final ParticleRenderer particleRenderer = client.getGlobalRenderer().getParticleRenderer();
+    private final PlayerInputController playerInputController = client.getInputHandler().getPlayerInputController();
     private final AbstractMouse mouse = Engine.mouse;
     private int sortTimer;
     private final StringBuilder offset = new StringBuilder(32);
@@ -63,7 +63,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
         int height = 20;
         int y = height;
         int yOffset = 14;
-        addDebugLabel(y, "BFSR Client " + Core.GAME_VERSION + "\n", label1 -> {});
+        addDebugLabel(y, "BFSR Client " + Client.GAME_VERSION + "\n", label1 -> {});
         y += yOffset;
         addDebugLabel(y, "", label1 -> {
             ServerGameLogic server = ServerGameLogic.getInstance();
@@ -116,10 +116,10 @@ public class DebugInfoElement extends MinimizableGuiObject {
         y += height;
         addMinimizableWithLabel(width, height, y, "World", createLabel(0, "",
                 label1 -> {
-                    World world = core.getWorld();
+                    World world = client.getWorld();
                     int bulletsCount = world.getBulletsCount();
                     int shipsCount = world.getEntitiesByType(Ship.class).size();
-                    int particlesCount = core.getParticlesCount();
+                    int particlesCount = client.getParticlesCount();
                     int wreckCount = world.getWreckCount();
                     int shipWreckCount = world.getShipWreckCount();
                     int bodyCount = world.getPhysicWorld().getBodyCount();
@@ -211,7 +211,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
 
         if (((MinimizableGuiObject) profilerLabel.getParent()).isMaximized()) {
             stringBuilder.setLength(0);
-            Profiler profiler = core.getProfiler();
+            Profiler profiler = client.getProfiler();
             offset.setLength(0);
             fullCategoryName.setLength(0);
             fullCategoryName.append("root");

@@ -3,7 +3,7 @@ package net.bfsr.client.network;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.gui.connect.GuiDisconnected;
 import net.bfsr.client.gui.main.GuiMainMenu;
 import net.bfsr.client.network.manager.NetworkManagerTCP;
@@ -109,21 +109,21 @@ public class NetworkSystem extends NetworkHandler {
 
     public void onDisconnect(String reason) {
         if (connectionState == ConnectionState.CONNECTED) {
-            Core.get().addFutureTask(() -> {
-                Core.get().quitToMainMenu();
-                Core.get().openGui(new GuiDisconnected(new GuiMainMenu(), "disconnect.lost", reason));
+            Client.get().addFutureTask(() -> {
+                Client.get().quitToMainMenu();
+                Client.get().openGui(new GuiDisconnected(new GuiMainMenu(), "disconnect.lost", reason));
             });
         } else if (connectionState == ConnectionState.LOGIN) {
-            Core.get().addFutureTask(() -> Core.get().openGui(new GuiDisconnected(new GuiMainMenu(), "login.failed", reason)));
+            Client.get().addFutureTask(() -> Client.get().openGui(new GuiDisconnected(new GuiMainMenu(), "login.failed", reason)));
         } else {
-            Core.get().addFutureTask(() -> Core.get().openGui(new GuiDisconnected(new GuiMainMenu(), "other", reason)));
+            Client.get().addFutureTask(() -> Client.get().openGui(new GuiDisconnected(new GuiMainMenu(), "other", reason)));
         }
 
         connectionState = ConnectionState.DISCONNECTED;
 
         shutdown();
         clear();
-        Core.get().addFutureTask(() -> Core.get().stopLocalServer());
+        Client.get().addFutureTask(() -> Client.get().stopLocalServer());
     }
 
     @Override

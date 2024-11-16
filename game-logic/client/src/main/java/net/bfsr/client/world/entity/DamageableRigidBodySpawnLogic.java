@@ -1,6 +1,6 @@
 package net.bfsr.client.world.entity;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.damage.DamageHandler;
 import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.damage.ConnectedObject;
@@ -11,7 +11,7 @@ import net.bfsr.network.packet.common.entity.spawn.connectedobject.ConnectedObje
 import java.util.List;
 
 abstract class DamageableRigidBodySpawnLogic<T extends DamageableRigidBodySpawnData> implements EntitySpawnLogic<T> {
-    private final DamageHandler damageHandler = Core.get().getDamageHandler();
+    private final DamageHandler damageHandler = Client.get().getDamageHandler();
 
     void updateDamage(DamageableRigidBody rigidBody, T spawnData) {
         damageHandler.updateDamage(rigidBody, 0, 0, rigidBody.getMask().getWidth(), rigidBody.getMask().getHeight(),
@@ -19,7 +19,7 @@ abstract class DamageableRigidBodySpawnLogic<T extends DamageableRigidBodySpawnD
     }
 
     void addFixturesAndConnectedObjects(DamageableRigidBody rigidBody, T spawnData) {
-        ConfigConverterManager configConverterManager = Core.get().getConfigConverterManager();
+        ConfigConverterManager configConverterManager = Client.get().getConfigConverterManager();
 
         List<ConnectedObjectSpawnData> connectedObjectSpawnData = spawnData.getConnectedObjectSpawnData();
         for (int i = 0; i < connectedObjectSpawnData.size(); i++) {

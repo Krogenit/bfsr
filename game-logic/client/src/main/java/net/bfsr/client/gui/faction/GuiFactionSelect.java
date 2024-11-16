@@ -1,6 +1,6 @@
 package net.bfsr.client.gui.faction;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.language.Lang;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
@@ -29,16 +29,16 @@ public class GuiFactionSelect extends Gui {
                 .setSize(216, 216));
         add(new TexturedRectangle(TextureRegister.guiBfsrText2, 860, 80).atCenter(-860 / 2, -200 - 80 / 2));
         add(new Button(Lang.getString("gui.selectFaction.human"), () -> {
-            Core.get().sendTCPPacket(new PacketFactionSelect(Faction.HUMAN));
-            Core.get().closeGui();
+            Client.get().sendTCPPacket(new PacketFactionSelect(Faction.HUMAN));
+            Client.get().closeGui();
         }).atCenter(-309 - 300 / 2, 230 - 50 / 2));
         add(new Button(Lang.getString("gui.selectFaction.saimon"), () -> {
-            Core.get().sendTCPPacket(new PacketFactionSelect(Faction.SAIMON));
-            Core.get().closeGui();
+            Client.get().sendTCPPacket(new PacketFactionSelect(Faction.SAIMON));
+            Client.get().closeGui();
         }).atCenter(-1 - 300 / 2, 230 - 50 / 2));
         add(new Button(Lang.getString("gui.selectFaction.engi"), () -> {
-            Core.get().sendTCPPacket(new PacketFactionSelect(Faction.ENGI));
-            Core.get().closeGui();
+            Client.get().sendTCPPacket(new PacketFactionSelect(Faction.ENGI));
+            Client.get().closeGui();
         }).atCenter(309 - 300 / 2, 230 - 50 / 2));
 
         ships.add(new TexturedRotatedRectangle(TextureRegister.shipHumanSmall0, 120, 120).atCenter(-309 - 60, 70 - 60));

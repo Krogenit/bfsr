@@ -1,6 +1,6 @@
 package net.bfsr.client.gui.ingame;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.language.Lang;
@@ -21,8 +21,8 @@ import net.bfsr.network.packet.client.PacketShipControl;
 public class ShipOverlay extends ShipOverlayRenderer {
     private final Label shipCargo = new Label(Font.CONSOLA_FT);
     private final Label shipCrew = new Label(Font.CONSOLA_FT);
-    private final Core core = Core.get();
-    private final PlayerInputController playerInputController = core.getInputHandler().getPlayerInputController();
+    private final Client client = Client.get();
+    private final PlayerInputController playerInputController = client.getInputHandler().getPlayerInputController();
     private final Button controlButton;
 
     public ShipOverlay(HUD hud) {
@@ -37,14 +37,14 @@ public class ShipOverlay extends ShipOverlayRenderer {
                 () -> {
                     Ship playerControlledShip = playerInputController.getShip();
                     if (playerControlledShip != null) {
-                        core.sendTCPPacket(new PacketShipControl(playerControlledShip.getId(), false));
+                        client.sendTCPPacket(new PacketShipControl(playerControlledShip.getId(), false));
                         playerInputController.resetControlledShip();
                         selectShip(playerControlledShip);
                         onShipControlCanceled();
                     } else if (ship != null) {
                         playerInputController.setShip(ship);
                         hud.onShipControlStarted();
-                        core.sendTCPPacket(new PacketShipControl(ship.getId(), true));
+                        client.sendTCPPacket(new PacketShipControl(ship.getId(), true));
                     }
                 });
         add(controlButton.atBottomRight(-128 - width / 2, -height - 26));
@@ -111,7 +111,7 @@ public class ShipOverlay extends ShipOverlayRenderer {
     }
 
     private boolean canControlShip(Ship ship) {
-        return core.getPlayerName().equals(ship.getName());
+        return client.getPlayerName().equals(ship.getName());
     }
 
     public void onShipControlStarted() {

@@ -1,6 +1,6 @@
 package net.bfsr.client.gui.main;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.gui.connect.GuiConnect;
 import net.bfsr.client.gui.settings.GuiSettings;
 import net.bfsr.client.language.Lang;
@@ -18,12 +18,12 @@ public class GuiMainMenu extends Gui {
         int buttonHeight = 40;
         int x = -buttonWidth / 2;
         add(new Button(buttonWidth, buttonHeight, Lang.getString("gui.mainmenu.singleplayer"),
-                () -> Core.get().startSinglePlayer()).atCenter(x, -45));
+                () -> Client.get().startSinglePlayer()).atCenter(x, -45));
         add(new Button(buttonWidth, buttonHeight, Lang.getString("gui.mainmenu.multiplayer"),
-                () -> Core.get().openGui(new GuiConnect(this))).atCenter(x, 0));
+                () -> Client.get().openGui(new GuiConnect(this))).atCenter(x, 0));
         add(new Button(buttonWidth, buttonHeight, Lang.getString("gui.mainmenu.options"),
-                () -> Core.get().openGui(new GuiSettings(this))).atCenter(x, 45));
-        add(new Button(buttonWidth, buttonHeight, Lang.getString("gui.mainmenu.quit"), () -> Core.get().stop())
+                () -> Client.get().openGui(new GuiSettings(this))).atCenter(x, 45));
+        add(new Button(buttonWidth, buttonHeight, Lang.getString("gui.mainmenu.quit"), () -> Client.get().stop())
                 .atCenter(x, 90));
     }
 }

@@ -2,7 +2,7 @@ package net.bfsr.client.renderer;
 
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.renderer.entity.BulletRender;
 import net.bfsr.client.renderer.entity.RigidBodyRender;
 import net.bfsr.client.renderer.entity.ShipRender;
@@ -35,7 +35,7 @@ class RenderRegistry {
     }
 
     public void init() {
-        configConverterManager = Core.get().getConfigConverterManager();
+        configConverterManager = Client.get().getConfigConverterManager();
         shipRegistry = configConverterManager.getConverter(ShipRegistry.class);
     }
 

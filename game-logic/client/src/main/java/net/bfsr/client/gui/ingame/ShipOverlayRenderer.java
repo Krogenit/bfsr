@@ -2,7 +2,7 @@ package net.bfsr.client.gui.ingame;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.renderer.Render;
 import net.bfsr.client.renderer.RenderManager;
 import net.bfsr.client.renderer.entity.ShipRender;
@@ -36,8 +36,8 @@ public abstract class ShipOverlayRenderer extends TexturedRectangle {
     private final AbstractTexture shield = Engine.assetsManager.getTexture(TextureRegister.guiShield);
     private final AbstractTexture shieldTexture = Engine.assetsManager.getTexture(TextureRegister.shieldSmall0);
     private final Label textShield = new Label(Font.CONSOLA_FT);
-    private final Core core = Core.get();
-    private final RenderManager renderManager = core.getRenderManager();
+    private final Client client = Client.get();
+    private final RenderManager renderManager = client.getRenderManager();
     final Vector2f rotationVector = new Vector2f();
 
     @Setter

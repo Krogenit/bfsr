@@ -1,7 +1,7 @@
 package net.bfsr.client.config.particle;
 
 import lombok.Getter;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.particle.Particle;
 import net.bfsr.client.particle.ParticleManager;
 import net.bfsr.client.particle.SpawnAccumulator;
@@ -305,7 +305,7 @@ public class ParticleEffect extends ConfigData {
     public void debug(float x, float y, float sizeX, float sizeY, float sin, float cos, float velocityX, float velocityY,
                       SpawnAccumulator spawnAccumulator) {
         removeDeadParticles();
-        ParticleManager particleManager = Core.get().getParticleManager();
+        ParticleManager particleManager = Client.get().getParticleManager();
         int particlesCount = particleManager.getParticlesCount();
 
         if (spawnTime > 0) {

@@ -2,7 +2,7 @@ package net.bfsr.client.particle;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.renderer.particle.ParticleRender;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.LUT;
@@ -18,8 +18,8 @@ import java.util.function.Consumer;
 
 public class Particle extends GameObject {
     private static final ObjectPool<ParticleRender> RENDER_POOL = new ObjectPool<>(ParticleRender::new);
-    private static final ParticleManager PARTICLE_MANAGER = Core.get().getParticleManager();
-    private static final ParticleRenderer PARTICLE_RENDERER = Core.get().getGlobalRenderer().getParticleRenderer();
+    private static final ParticleManager PARTICLE_MANAGER = Client.get().getParticleManager();
+    private static final ParticleRenderer PARTICLE_RENDERER = Client.get().getGlobalRenderer().getParticleRenderer();
 
     @Getter
     @Setter
@@ -61,18 +61,18 @@ public class Particle extends GameObject {
                          RenderLayer renderLayer, Consumer<Particle> updateLogic) {
         setPosition(worldX, worldY);
         this.localPosition.set(localX, localY);
-        Core core = Core.get();
-        this.velocity.set(core.convertToDeltaTime(velocityX), core.convertToDeltaTime(velocityY));
+        Client client = Client.get();
+        this.velocity.set(client.convertToDeltaTime(velocityX), client.convertToDeltaTime(velocityY));
         this.sin = sin;
         this.cos = cos;
         this.localSin = 0;
         this.localCos = 1;
-        float angularVelocityInTick = core.convertToDeltaTime(angularVelocity);
+        float angularVelocityInTick = client.convertToDeltaTime(angularVelocity);
         this.angularVelocitySin = LUT.sin(angularVelocityInTick);
         this.angularVelocityCos = LUT.cos(angularVelocityInTick);
         setSize(scaleX, scaleY);
-        this.sizeVelocity = core.convertToDeltaTime(sizeVelocity);
-        this.alphaVelocity = core.convertToDeltaTime(alphaVelocity);
+        this.sizeVelocity = client.convertToDeltaTime(sizeVelocity);
+        this.alphaVelocity = client.convertToDeltaTime(alphaVelocity);
         this.zeroVelocity = velocity.lengthSquared() <= 0.01f;
         this.isDead = false;
         this.updateLogic = updateLogic;

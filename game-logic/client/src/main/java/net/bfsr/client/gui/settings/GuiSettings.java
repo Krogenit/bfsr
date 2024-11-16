@@ -1,6 +1,6 @@
 package net.bfsr.client.gui.settings;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.gui.Gui;
@@ -32,7 +32,7 @@ public class GuiSettings extends Gui {
             lastOptions[i] = new SettingsOption<>(options[i].getValue());
         }
 
-        if (Core.get().isInWorld()) {
+        if (Client.get().isInWorld()) {
             add(new Rectangle(0, 0, width, height).setAllColors(0.0f, 0.0f, 0.0f, 0.5f));
         }
 
@@ -101,8 +101,8 @@ public class GuiSettings extends Gui {
         add(label.atTop(0, label.getCenteredOffsetY(backgroundHeight)));
 
         add(new Button(Lang.getString("gui.settings.save"), 20, () -> {
-            Core.get().getSettings().save();
-            Core.get().openGui(parentGui);
+            Client.get().getSettings().save();
+            Client.get().openGui(parentGui);
         }).atBottom(-150, -55));
     }
 
@@ -112,7 +112,7 @@ public class GuiSettings extends Gui {
 
         if (!input && key == KEY_ESCAPE) {
             restoreSettings();
-            Core.get().openGui(parentGui);
+            Client.get().openGui(parentGui);
             return true;
         }
 

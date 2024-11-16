@@ -2,7 +2,7 @@ package net.bfsr.editor.gui.inspection;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.editor.gui.component.receive.DragTarget;
 import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.engine.Engine;
@@ -36,7 +36,7 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
 
     private final AbstractRenderer renderer = Engine.renderer;
     private final AbstractGUIRenderer guiRenderer = renderer.guiRenderer;
-    private final GuiManager guiManager = Core.get().getGuiManager();
+    private final GuiManager guiManager = Client.get().getGuiManager();
     private final Gui gui;
     private final String name;
     @Getter

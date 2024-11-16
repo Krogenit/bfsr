@@ -1,7 +1,7 @@
 package net.bfsr.editor.gui.property;
 
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.editor.gui.GuiEditor;
 import net.bfsr.editor.property.holder.Vector2fPropertiesHolder;
 import net.bfsr.engine.gui.Gui;
@@ -50,7 +50,7 @@ public class PolygonProperty extends SimplePropertyList<Vector2fPropertiesHolder
         });
 
         Button polygonCreationModeButton = new Button(0, 0, 100, 20, "Edit polygon", font, fontSize, stringOffsetY, () -> {
-            Gui gui = Core.get().getGuiManager().getGui();
+            Gui gui = Client.get().getGuiManager().getGui();
             if (gui instanceof GuiEditor) {
                 ((GuiEditor<?, ?>) gui).switchPolygonEditMode(this);
             }

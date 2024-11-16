@@ -1,6 +1,6 @@
 package net.bfsr.editor.hud;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.editor.gui.EditorTheme;
 import net.bfsr.editor.gui.particle.GuiParticleEditor;
@@ -13,9 +13,9 @@ public class EditorHUD extends HUD {
         int buttonHeight = 36;
         int y = 0;
         add(EditorTheme.setupButton(new Button(buttonWidth, buttonHeight, "Particle Editor", 22,
-                () -> Core.get().openGui(new GuiParticleEditor()))).atRight(-buttonWidth, y));
+                () -> Client.get().openGui(new GuiParticleEditor()))).atRight(-buttonWidth, y));
         y += buttonHeight;
         add(EditorTheme.setupButton(new Button(buttonWidth, buttonHeight, "Ship Editor", 22,
-                () -> Core.get().openGui(new GuiShipEditor()))).atRight(-buttonWidth, y));
+                () -> Client.get().openGui(new GuiShipEditor()))).atRight(-buttonWidth, y));
     }
 }

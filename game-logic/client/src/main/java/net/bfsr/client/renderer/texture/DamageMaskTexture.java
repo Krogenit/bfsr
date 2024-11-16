@@ -1,6 +1,6 @@
 package net.bfsr.client.renderer.texture;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.opengl.GL;
@@ -16,8 +16,8 @@ public class DamageMaskTexture extends AbstractDamageMaskTexture {
     private float lastFireAmount, lastFireUVAnimation;
     private float fireAmount, fireUVAnimation;
     private boolean changeFire;
-    private final float fireAnimationSpeed = Core.get().convertToDeltaTime(0.24f);
-    private final float uvAnimationSpeed = Core.get().convertToDeltaTime(0.12f);
+    private final float fireAnimationSpeed = Client.get().convertToDeltaTime(0.24f);
+    private final float uvAnimationSpeed = Client.get().convertToDeltaTime(0.12f);
 
     public DamageMaskTexture(int width, int height) {
         this.texture = Engine.assetsManager.newTexture(width, height);

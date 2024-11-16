@@ -1,7 +1,7 @@
 package net.bfsr.client.renderer;
 
 import lombok.Getter;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.Engine;
@@ -47,7 +47,7 @@ public class WorldRenderer {
 
         particleRenderer.init();
 
-        Core.get().getEventBus().register(this);
+        Client.get().getEventBus().register(this);
     }
 
     public void update() {

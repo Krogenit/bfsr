@@ -1,7 +1,7 @@
 package net.bfsr.editor.gui;
 
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.config.Config;
 import net.bfsr.config.ConfigLoader;
@@ -116,7 +116,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
                                     RunnableUtils.EMPTY_RUNNABLE);
                     createEffectButton.setLeftReleaseRunnable(() -> inspectionPanel.add(createObject()));
 
-                    Core.get().getGuiManager().openContextMenu(
+                    Client.get().getGuiManager().openContextMenu(
                             setupContextMenuButton(createEntryButton), setupContextMenuButton(createEffectButton));
                 }));
 
@@ -158,7 +158,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
         boolean input = super.input(key);
 
         if (key == KEY_ESCAPE) {
-            Core.get().closeGui();
+            Client.get().closeGui();
         }
 
         return input;
@@ -279,7 +279,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
                     () -> remove(entry)
             );
 
-            Core.get().getGuiManager().openContextMenu(setupContextMenuButton(createEntryButton),
+            Client.get().getGuiManager().openContextMenu(setupContextMenuButton(createEntryButton),
                     setupContextMenuButton(createEffectButton),
                     setupContextMenuButton(removeButton));
         });

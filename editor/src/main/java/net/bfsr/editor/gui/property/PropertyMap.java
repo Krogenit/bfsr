@@ -1,6 +1,6 @@
 package net.bfsr.editor.gui.property;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.editor.property.converter.ConverterUtils;
 import net.bfsr.editor.property.converter.PropertyConverter;
 import net.bfsr.editor.property.holder.PropertiesHolder;
@@ -64,7 +64,7 @@ public class PropertyMap<KEY> extends PropertyList<PropertyObject<PropertyCompon
                     addString, font, fontSize, 4, stringOffsetY, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
             setupContextMenuButton(button);
             button.setLeftReleaseRunnable(() -> remove(component));
-            Core.get().getGuiManager().openContextMenu(button);
+            Client.get().getGuiManager().openContextMenu(button);
         });
 
         properties.add(component);

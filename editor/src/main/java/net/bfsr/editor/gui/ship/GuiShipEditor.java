@@ -1,7 +1,7 @@
 package net.bfsr.editor.gui.ship;
 
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.renderer.Render;
 import net.bfsr.client.renderer.entity.ShipRender;
 import net.bfsr.client.settings.ClientSettings;
@@ -38,9 +38,9 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
     private boolean lastDebugBoxesMode;
 
     public GuiShipEditor() {
-        super("Ships", Core.get().getConfigConverterManager().getConverter(ShipRegistry.class), Mappers.getMapper(ShipConverter.class),
+        super("Ships", Client.get().getConfigConverterManager().getConverter(ShipRegistry.class), Mappers.getMapper(ShipConverter.class),
                 ShipConfig.class, ShipProperties.class);
-        Core.get().getRenderManager().addRender(new Render(polygonObject) {
+        Client.get().getRenderManager().addRender(new Render(polygonObject) {
             @Override
             public void renderDebug() {
                 if (!polygonCreationMode) return;
@@ -67,17 +67,17 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
 
             if (testShip != null) {
                 testShip.setDead();
-                Core.get().getRenderManager().removeRenderById(testShip.getId());
+                Client.get().getRenderManager().removeRenderById(testShip.getId());
             }
 
             try {
                 testShip = new TestShip(new ShipData(converter.from(properties), "ship", 0, 0));
-                testShip.init(Core.get().getWorld(), -1);
+                testShip.init(Client.get().getWorld(), -1);
                 testShip.setFaction(Faction.HUMAN);
                 testShip.setSpawned();
 
                 try {
-                    new ShipOutfitter(Core.get().getConfigConverterManager()).outfit(testShip);
+                    new ShipOutfitter(Client.get().getConfigConverterManager()).outfit(testShip);
                 } catch (Exception e) {
                     log.error("Can't outfit ship", e);
                 }
@@ -89,7 +89,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
                         super.renderDebug();
                     }
                 };
-                Core.get().getRenderManager().addRender(render);
+                Client.get().getRenderManager().addRender(render);
                 render.getMaskTexture().createEmpty();
             } catch (Exception e) {
                 log.error("Can't create ship for selected entry", e);

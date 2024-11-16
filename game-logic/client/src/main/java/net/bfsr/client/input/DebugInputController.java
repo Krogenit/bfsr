@@ -1,6 +1,6 @@
 package net.bfsr.client.input;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.command.Command;
 import net.bfsr.engine.Engine;
@@ -17,13 +17,13 @@ import static net.bfsr.engine.input.Keys.KEY_P;
 import static net.bfsr.engine.input.Keys.KEY_R;
 
 public class DebugInputController extends InputController {
-    private Core core;
+    private Client client;
     private final AbstractMouse mouse = Engine.mouse;
     private final AbstractKeyboard keyboard = Engine.keyboard;
 
     @Override
     public void init() {
-        core = Core.get();
+        client = Client.get();
     }
 
     @Override
@@ -31,14 +31,14 @@ public class DebugInputController extends InputController {
         if (keyboard.isKeyDown(KEY_LEFT_CONTROL)) {
             if (key == KEY_F) {
                 Vector2f pos = mouse.getWorldPosition(Engine.renderer.camera);
-                core.sendTCPPacket(new PacketCommand(Command.SPAWN_SHIP, String.valueOf((int) pos.x), String.valueOf((int) pos.y)));
+                client.sendTCPPacket(new PacketCommand(Command.SPAWN_SHIP, String.valueOf((int) pos.x), String.valueOf((int) pos.y)));
                 return true;
             } else if (key == KEY_P) {
-                core.setPaused(!core.isPaused());
-                core.sendTCPPacket(new PacketPauseGame());
+                client.setPaused(!client.isPaused());
+                client.sendTCPPacket(new PacketPauseGame());
                 return true;
             } else if (key == KEY_R) {
-                core.getGlobalRenderer().reloadShaders();
+                client.getGlobalRenderer().reloadShaders();
                 return true;
             } else if (key == KEY_B) {
                 ClientSettings.SHOW_DEBUG_BOXES.setValue(!ClientSettings.SHOW_DEBUG_BOXES.getBoolean());

@@ -1,7 +1,7 @@
 package net.bfsr.client.renderer.entity;
 
 import gnu.trove.map.TMap;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.particle.effect.EngineEffects;
 import net.bfsr.client.particle.effect.JumpEffects;
@@ -81,7 +81,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     private void createWeaponSlotsRenders(Ship ship) {
         Modules modules = ship.getModules();
         List<WeaponSlot> weaponSlots = modules.getWeaponSlots();
-        WeaponRenderRegistry weaponRenderRegistry = Core.get().getRenderManager().getWeaponRenderRegistry();
+        WeaponRenderRegistry weaponRenderRegistry = Client.get().getRenderManager().getWeaponRenderRegistry();
         for (int i = 0; i < weaponSlots.size(); i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
             WeaponSlotRender render = weaponRenderRegistry.createRender(weaponSlot);

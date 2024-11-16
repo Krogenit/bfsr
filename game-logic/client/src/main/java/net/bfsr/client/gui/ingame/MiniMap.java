@@ -1,6 +1,6 @@
 package net.bfsr.client.gui.ingame;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.renderer.Render;
 import net.bfsr.client.renderer.RenderManager;
 import net.bfsr.engine.Engine;
@@ -16,8 +16,8 @@ import org.joml.Vector2f;
 import java.util.List;
 
 public class MiniMap extends TexturedRectangle {
-    private final Core core = Core.get();
-    private final RenderManager renderManager = core.getRenderManager();
+    private final Client client = Client.get();
+    private final RenderManager renderManager = client.getRenderManager();
     private final AABB boundingBox = new AABB();
     private final AABB shipAABB = new AABB();
 
@@ -29,7 +29,7 @@ public class MiniMap extends TexturedRectangle {
     public void render(AbstractGUIRenderer guiRenderer, int lastX, int lastY, int x, int y) {
         super.render(guiRenderer, lastX, lastY, x, y);
         guiRenderer.render();
-        List<Ship> ships = core.getWorld().getEntitiesByType(Ship.class);
+        List<Ship> ships = client.getWorld().getEntitiesByType(Ship.class);
         Vector2f camPos = Engine.renderer.camera.getPosition();
         float mapOffsetX = 600;
         float mapOffsetY = 600;

@@ -1,6 +1,6 @@
 package net.bfsr.client.gui.hud;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.gui.ingame.Chat;
 import net.bfsr.client.gui.ingame.DebugInfoElement;
 import net.bfsr.client.gui.ingame.GuiInGameMenu;
@@ -19,7 +19,7 @@ public class HUD extends HUDAdapter {
     private final DebugInfoElement debugInfoElement = new DebugInfoElement(this);
     private final MiniMap miniMap = new MiniMap();
     private final Chat chat = new Chat();
-    private final GuiManager guiManager = Core.get().getGuiManager();
+    private final GuiManager guiManager = Client.get().getGuiManager();
 
     public HUD() {
         shipOverlay.atBottomRight(-shipOverlay.getWidth(), -shipOverlay.getHeight());

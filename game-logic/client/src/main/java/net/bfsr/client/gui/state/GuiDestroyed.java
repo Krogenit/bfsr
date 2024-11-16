@@ -1,6 +1,6 @@
 package net.bfsr.client.gui.state;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.language.Lang;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.Engine;
@@ -29,12 +29,12 @@ public class GuiDestroyed extends Gui {
         add(new Button(TextureRegister.guiButtonBase, buttonWidth, buttonHeight,
                 Lang.getString("gui.destroyed.respawn"), 16, () -> {
             Vector2f position = renderer.camera.getPosition();
-            Core.get().sendTCPPacket(new PacketRespawn(position.x, position.y));
-            Core.get().closeGui();
+            Client.get().sendTCPPacket(new PacketRespawn(position.x, position.y));
+            Client.get().closeGui();
         }).atCenter(buttonsOffset - buttonWidth / 2, 72));
 
         add(new Button(TextureRegister.guiButtonBase, buttonWidth, buttonHeight,
-                Lang.getString("gui.ingamemenu.tomainmenu"), 16, () -> Core.get().quitToMainMenu())
+                Lang.getString("gui.ingamemenu.tomainmenu"), 16, () -> Client.get().quitToMainMenu())
                 .atCenter(-buttonsOffset - buttonWidth / 2, 72));
         add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.destroyed.shipWasDestroyed"), 20).atCenter(-286, -124));
         add(new Label(Font.CONSOLA_FT, Lang.getString("gui.destroyed.destroyedBy") + ": " + destroyedBy, 16).atCenter(-286, -74));
@@ -45,7 +45,7 @@ public class GuiDestroyed extends Gui {
         boolean input = super.input(key);
 
         if (ClientSettings.IS_DEBUG.getBoolean() && keyboard.isKeyDown(KEY_LEFT_CONTROL) && key == KEY_C) {
-            Core.get().closeGui();
+            Client.get().closeGui();
         }
 
         return input;

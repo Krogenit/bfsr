@@ -1,6 +1,6 @@
 package net.bfsr.client.input;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.gui.component.GuiObject;
 
@@ -9,7 +9,7 @@ class GuiInputController extends InputController {
 
     @Override
     public void init() {
-        guiManager = Core.get().getGuiManager();
+        guiManager = Client.get().getGuiManager();
     }
 
     @Override

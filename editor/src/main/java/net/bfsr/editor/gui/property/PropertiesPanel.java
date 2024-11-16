@@ -1,6 +1,6 @@
 package net.bfsr.editor.gui.property;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.editor.gui.component.MinimizableHolder;
 import net.bfsr.editor.property.PropertiesBuilder;
 import net.bfsr.editor.property.holder.PropertiesHolder;
@@ -99,7 +99,7 @@ public class PropertiesPanel extends Rectangle {
                     updatePositionAndSize();
                 }
             });
-            Core.get().getGuiManager().openContextMenu(setupContextMenuButton(copyButton), setupContextMenuButton(pastButton));
+            Client.get().getGuiManager().openContextMenu(setupContextMenuButton(copyButton), setupContextMenuButton(pastButton));
         });
 
         propertiesHolder.addChangeNameEventListener(minimizableHolder::setName);

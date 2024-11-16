@@ -1,7 +1,7 @@
 package net.bfsr.client.network.packet.handler.play.entity.ship;
 
 import io.netty.channel.ChannelHandlerContext;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
@@ -15,7 +15,7 @@ public class PacketRemoveWeaponSlotHandler extends PacketHandler<PacketRemoveWea
     @Override
     public void handle(PacketRemoveWeaponSlot packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
-        RigidBody obj = Core.get().getWorld().getEntityById(packet.getShipId());
+        RigidBody obj = Client.get().getWorld().getEntityById(packet.getShipId());
         if (obj instanceof Ship ship) {
             WeaponSlot weaponSlot = ship.getWeaponSlot(packet.getSlotId());
             ship.removeConnectedObject(weaponSlot);
