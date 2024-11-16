@@ -385,7 +385,7 @@ public class Island {
 
         profile.solvePosition.accum(timer.getMilliseconds());
 
-        report(contactSolver.m_velocityConstraints);
+        report(contactSolver.velocityConstraints);
 
         if (allowSleep) {
             float minSleepTime = Float.MAX_VALUE;
@@ -550,7 +550,7 @@ public class Island {
             body.synchronizeTransform();
         }
 
-        report(toiContactSolver.m_velocityConstraints);
+        report(toiContactSolver.velocityConstraints);
     }
 
     public void add(Body body) {
