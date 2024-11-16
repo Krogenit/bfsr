@@ -73,7 +73,7 @@ public class NetworkSystem extends NetworkHandler {
             if (connectionState == ConnectionState.CONNECTED) {
                 long now = System.currentTimeMillis();
                 if (now - lastPingCheck > PING_CHECK_INTERVAL) {
-                    sendPacketUDP(new PacketPing(Side.CLIENT, System.nanoTime() - handshakeTime));
+                    sendPacketUDP(new PacketPing(Side.CLIENT));
                     lastPingCheck = now;
                 }
             }

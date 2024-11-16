@@ -74,7 +74,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
             if (connectionState == ConnectionState.CONNECTED) {
                 long now = System.currentTimeMillis();
                 if (now - lastPingCheckTime > PING_PERIOD_IN_MILLS) {
-                    sendUDPPacket(new PacketPing(Side.SERVER, System.nanoTime()));
+                    sendUDPPacket(new PacketPing(Side.SERVER));
                     lastPingCheckTime = now;
                 }
             } else if (connectionState == ConnectionState.LOGIN) {

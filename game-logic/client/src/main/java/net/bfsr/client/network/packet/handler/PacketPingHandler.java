@@ -14,15 +14,12 @@ public class PacketPingHandler extends PacketHandler<PacketPing, NetworkSystem> 
     @Override
     public void handle(PacketPing packet, NetworkSystem netHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
         if (packet.getSide() == Side.CLIENT) {
-            long clientToServerPing = packet.getOneWayTime() / 1000;
-            double rtt = System.nanoTime() - packet.getOriginalSentTime();
+            long rtt = System.nanoTime() - packet.getOriginalSentTime();
             Client client = Client.get();
-            client.getEventBus().publish(new PingEvent(clientToServerPing / 1000.0f));
-
-            double clientToServerDiffTime = packet.getResponseSentTime() - packet.getOriginalSentTime() - rtt / 2;
-            client.setClientToServerDiffTime(clientToServerDiffTime);
+            client.getEventBus().publish(new PingEvent(rtt / 2000000.0f));
+            client.setClientToServerDiffTime(rtt / 2.0);
         } else {
-            netHandler.sendPacketUDP(new PacketPing(0, packet.getOriginalSentTime(), System.nanoTime(), packet.getSide()));
+            netHandler.sendPacketUDP(new PacketPing(packet.getSide()));
         }
     }
 }
