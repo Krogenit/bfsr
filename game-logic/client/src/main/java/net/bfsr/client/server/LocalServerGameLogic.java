@@ -17,9 +17,6 @@ public class LocalServerGameLogic extends ServerGameLogic {
     }
 
     @Override
-    protected void loadConfigs() {}
-
-    @Override
     public void onPlayerDisconnected(Player player) {
         super.onPlayerDisconnected(player);
         log.info("Stopping local server");

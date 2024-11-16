@@ -29,15 +29,13 @@ public class BeamParticles {
     public void onShot() {
         weaponSpawnAccumulator.resetTime();
 
-        Vector2f size = slot.getSize();
         Ship ship = slot.getShip();
-        Vector2f position = slot.getPosition();
         particles.add(PARTICLE_POOL.get().init(Engine.assetsManager.getTexture(TextureRegister.particleLight).getTextureHandle(),
-                position.x, position.y, 0, 0, 0, 0, slot.getSin(), slot.getCos(), 0.0f, size.x * 2.5f, size.y * 2.5f, 0,
+                slot.getX(), slot.getY(), 0, 0, 0, 0, slot.getSin(), slot.getCos(), 0.0f, slot.getSizeX() * 2.5f, slot.getSizeY() * 2.5f, 0,
                 color.x, color.y, color.z, color.w, 0, false, RenderLayer.DEFAULT_ADDITIVE, particle -> {
                     particle.setSin(ship.getSin());
                     particle.setCos(ship.getCos());
-                    particle.setPosition(position.x, position.y);
+                    particle.setPosition(slot.getX(), slot.getY());
                     particle.getRender().getColor().w = slot.getBeamPower() * 0.6f;
                 }));
 
@@ -46,13 +44,13 @@ public class BeamParticles {
     }
 
     private void spawnBeam(float sizeYMultiplayer, float colorMultiplayer) {
-        Vector2f slotScale = slot.getSize();
-        Vector2f slotPos = slot.getPosition();
+        float slotSizeX = slot.getSizeX();
+        float slotSizeY = slot.getSizeY();
         Ship ship = slot.getShip();
         float cos = ship.getCos();
         float sin = ship.getSin();
 
-        float startRange = -slotScale.x;
+        float startRange = -slotSizeX;
 
         float startX = cos * startRange;
         float startY = sin * startRange;
@@ -60,11 +58,11 @@ public class BeamParticles {
         float localX = startX + cos * slot.getCurrentBeamRange();
         float localY = startY + sin * slot.getCurrentBeamRange();
 
-        float worldX = slotPos.x + localX * 0.5f;
-        float worldY = slotPos.y + localY * 0.5f;
+        float worldX = slot.getX() + localX * 0.5f;
+        float worldY = slot.getY() + localY * 0.5f;
 
         particles.add(PARTICLE_POOL.get().init(Engine.assetsManager.getTexture(TextureRegister.particleBeam).getTextureHandle(),
-                worldX, worldY, 0, 0, 0, 0, sin, cos, 0.0f, 0.0f, slotScale.y * sizeYMultiplayer, 0,
+                worldX, worldY, 0, 0, 0, 0, sin, cos, 0.0f, 0.0f, slotSizeY * sizeYMultiplayer, 0,
                 color.x, color.y, color.z, color.w * colorMultiplayer, 0, false, RenderLayer.DEFAULT_ADDITIVE, particle -> {
                     float cos1 = ship.getCos();
                     float sin1 = ship.getSin();
@@ -72,7 +70,7 @@ public class BeamParticles {
                     particle.setSin(sin1);
                     particle.setCos(cos1);
 
-                    float startRange1 = -slotScale.x;
+                    float startRange1 = -slotSizeX;
 
                     float startX1 = cos1 * startRange1;
                     float startY1 = sin1 * startRange1;
@@ -80,13 +78,12 @@ public class BeamParticles {
                     float localX1 = startX1 + cos1 * slot.getCurrentBeamRange();
                     float localY1 = startY1 + sin1 * slot.getCurrentBeamRange();
 
-                    particle.setPosition(slotPos.x + localX1 * 0.5f, slotPos.y + localY1 * 0.5f);
+                    particle.setPosition(slot.getX() + localX1 * 0.5f, slot.getY() + localY1 * 0.5f);
 
-                    Vector2f particleSize = particle.getSize();
-                    particle.getRender().getLastSize().set(particleSize);
-                    particleSize.x = (float) Math.sqrt(
-                            (localX1 - startX1) * (localX1 - startX1) + (localY1 - startY1) * (localY1 - startY1));
-                    particleSize.y = slotScale.y * sizeYMultiplayer;
+                    particle.getRender().getLastSize().set(particle.getSizeX(), particle.getSizeY());
+                    particle.setSize(
+                            (float) Math.sqrt((localX1 - startX1) * (localX1 - startX1) + (localY1 - startY1) * (localY1 - startY1)),
+                            slotSizeY * sizeYMultiplayer);
 
                     Vector4f particleColor = particle.getRender().getColor();
                     particle.getRender().getLastColor().w = particleColor.w;
@@ -99,8 +96,7 @@ public class BeamParticles {
         float sin = ship.getSin();
         float cos = ship.getCos();
         RotationHelper.angleToVelocity(sin, cos, 15.0f, angleToVelocity);
-        Vector2f position = slot.getPosition();
-        BeamEffects.beam(position.x, position.y, 0, 0, 2.0f, sin, cos, angleToVelocity.x, angleToVelocity.y, color.x,
+        BeamEffects.beam(slot.getX(), slot.getY(), 0, 0, 2.0f, sin, cos, angleToVelocity.x, angleToVelocity.y, color.x,
                 color.y, color.z, color.w * 0.6f, weaponSpawnAccumulator, particle -> {
                     Vector2f localPosition = particle.getLocalPosition();
                     Vector2f velocity = particle.getVelocity();
@@ -108,10 +104,10 @@ public class BeamParticles {
                     velocity.x *= 0.99f;
                     velocity.y *= 0.99f;
 
-                    particle.getSize().add(particle.getSizeVelocity(), particle.getSizeVelocity());
+                    particle.addSize(particle.getSizeVelocity(), particle.getSizeVelocity());
                     particle.setSin(ship.getSin());
                     particle.setCos(ship.getCos());
-                    particle.setPosition(position.x + localPosition.x, position.y + localPosition.y);
+                    particle.setPosition(slot.getX() + localPosition.x, slot.getY() + localPosition.y);
                 });
 
         while (lightingParticles.size() < slot.getCurrentBeamRange() / 10.0f) {

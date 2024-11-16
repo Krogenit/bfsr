@@ -6,6 +6,7 @@ import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.config.component.weapon.gun.GunRegistry;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.dto.WeaponModel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -25,12 +26,13 @@ public interface WeaponConverter {
 
     @ObjectFactory
     default <T extends WeaponSlot> T to(WeaponModel weaponModel, @TargetType Class<T> entityClass) {
-        GunData gunData = GunRegistry.INSTANCE.get(weaponModel.name());
+        GunData gunData = ServerGameLogic.getInstance().getConfigConverterManager().getConverter(GunRegistry.class).get(weaponModel.name());
         if (gunData != null) {
             return (T) new WeaponSlot(gunData);
         }
 
-        BeamData beamData = BeamRegistry.INSTANCE.get(weaponModel.name());
+        BeamData beamData = ServerGameLogic.getInstance().getConfigConverterManager().getConverter(BeamRegistry.class)
+                .get(weaponModel.name());
         if (beamData != null) {
             return (T) new WeaponSlotBeam(beamData);
         }

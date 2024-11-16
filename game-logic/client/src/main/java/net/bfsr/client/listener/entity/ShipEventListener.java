@@ -7,7 +7,6 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.entity.ship.ShipDestroyEvent;
 import net.bfsr.event.entity.ship.ShipDestroyingExplosionEvent;
 import net.bfsr.world.World;
-import org.joml.Vector2f;
 
 import java.util.Random;
 
@@ -22,12 +21,12 @@ public class ShipEventListener {
         return event -> {
             Ship ship = event.ship();
             World world = ship.getWorld();
-            Vector2f position = ship.getPosition();
-            Vector2f size = ship.getSize();
+            float sizeX = ship.getSizeX();
+            float sizeY = ship.getSizeY();
             Random rand = world.getRand();
-            float randomVectorX = -size.x * 0.4f + size.x * 0.8f * rand.nextFloat();
-            float randomVectorY = -size.y * 0.4f + size.y * 0.8f * rand.nextFloat();
-            ExplosionEffects.spawnSmallExplosion(position.x + randomVectorX, position.y + randomVectorY, 2.0f);
+            float randomVectorX = -sizeX * 0.4f + sizeX * 0.8f * rand.nextFloat();
+            float randomVectorY = -sizeY * 0.4f + sizeY * 0.8f * rand.nextFloat();
+            ExplosionEffects.spawnSmallExplosion(ship.getX() + randomVectorX, ship.getY() + randomVectorY, 2.0f);
         };
     }
 }

@@ -7,9 +7,9 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.physics.PhysicsUtils;
-import net.bfsr.physics.filter.ShipFilter;
-import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.Polygon;
+import net.bfsr.physics.filter.Filters;
+import org.jbox2d.collision.shapes.Polygon;
+import org.jbox2d.dynamics.Fixture;
 
 public class Engine extends DamageableModule {
     @Getter
@@ -19,7 +19,7 @@ public class Engine extends DamageableModule {
     public Engine(EngineData engineData) {
         super(5.0f);
         this.engineData = engineData;
-        this.polygon = engineData.polygons().get(0);
+        this.polygon = engineData.polygons().get(0).clone();
     }
 
     public void init(Ship ship, int id) {
@@ -29,17 +29,16 @@ public class Engine extends DamageableModule {
 
     @Override
     protected void createFixture(RigidBody rigidBody) {
-        fixture = new BodyFixture(polygon);
-        fixture.setUserData(this);
-        fixture.setFilter(new ShipFilter(rigidBody));
-        fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-        rigidBody.getBody().addFixture(fixture);
+        rigidBody.getBody().addFixture(fixture = new Fixture(polygon, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
     }
 
     @Override
     protected void destroy() {
         super.destroy();
-        ship.getFixturesToRemove().add(fixture);
+        if (ship.getWorld().isServer()) {
+            ship.addFixtureToRemove(fixture);
+        }
+
         if (!ship.getModules().getEngines().isSomeEngineAlive()) {
             ship.setDead();
         }

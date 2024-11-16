@@ -9,6 +9,7 @@ import net.bfsr.entity.ChronologicalEntityData;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.network.packet.common.PacketScheduled;
 import net.bfsr.network.util.ByteBufUtils;
+import org.jbox2d.common.Vector2;
 import org.joml.Vector2f;
 
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class PacketWorldSnapshot extends PacketScheduled {
     @RequiredArgsConstructor
     public static class EntityData extends ChronologicalEntityData {
         private final int entityId;
-        private final Vector2f position;
+        private final float x, y;
         private final float sin;
         private final float cos;
         private final Vector2f velocity;
@@ -62,17 +63,20 @@ public class PacketWorldSnapshot extends PacketScheduled {
         public EntityData(RigidBody rigidBody, double time) {
             super(time);
             entityId = rigidBody.getId();
-            position = new Vector2f(rigidBody.getPosition());
+            x = rigidBody.getX();
+            y = rigidBody.getY();
             sin = rigidBody.getSin();
             cos = rigidBody.getCos();
-            velocity = new Vector2f(rigidBody.getVelocity());
+            Vector2 linearVelocity = rigidBody.getLinearVelocity();
+            velocity = new Vector2f(linearVelocity.x, linearVelocity.y);
             angularVelocity = rigidBody.getAngularVelocity();
         }
 
         EntityData(ByteBuf data) {
             super(data.readDouble());
             entityId = data.readInt();
-            ByteBufUtils.readVector(data, position = new Vector2f());
+            x = data.readFloat();
+            y = data.readFloat();
             sin = data.readFloat();
             cos = data.readFloat();
             ByteBufUtils.readVector(data, velocity = new Vector2f());
@@ -82,7 +86,8 @@ public class PacketWorldSnapshot extends PacketScheduled {
         public void write(ByteBuf data) {
             data.writeDouble(time);
             data.writeInt(entityId);
-            ByteBufUtils.writeVector(data, position);
+            data.writeFloat(x);
+            data.writeFloat(y);
             data.writeFloat(sin);
             data.writeFloat(cos);
             ByteBufUtils.writeVector(data, velocity);

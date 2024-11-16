@@ -2,23 +2,16 @@ package net.bfsr.entity.ship.module.weapon;
 
 import lombok.Getter;
 import net.bfsr.config.component.weapon.beam.BeamData;
-import net.bfsr.config.component.weapon.beam.BeamRegistry;
 import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.engine.Engine;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.BulletDamage;
-import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.physics.RayCastSource;
 import net.bfsr.physics.RayCastType;
-import net.bfsr.physics.filter.BeamFilter;
-import org.dyn4j.collision.narrowphase.Raycast;
-import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.Ray;
-import org.dyn4j.geometry.Vector2;
-import org.dyn4j.world.DetectFilter;
-import org.dyn4j.world.result.RaycastResult;
+import net.bfsr.physics.filter.Filters;
+import org.jbox2d.callbacks.RayCastCallback;
+import org.jbox2d.common.Vector2;
 import org.joml.Vector2f;
 
 import java.util.function.Consumer;
@@ -35,8 +28,6 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     @Getter
     private final BulletDamage damage;
     private final Vector2 rayStart = new Vector2();
-    private final Ray ray = new Ray(0);
-    private DetectFilter<Body, BodyFixture> detectFilter;
     private final Vector2 rayDirection = new Vector2();
     private final float powerAnimationSpeed = Engine.convertToDeltaTime(3.5f);
     @Getter
@@ -48,12 +39,6 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
         this.beamMaxRange = beamData.getBeamMaxRange();
         this.damage = beamData.getDamage();
         this.maxAliveTimerInTicks = beamData.getAliveTimeInTicks();
-    }
-
-    @Override
-    public void init(int id, Ship ship) {
-        super.init(id, ship);
-        this.detectFilter = new DetectFilter<>(true, true, new BeamFilter(ship));
     }
 
     @Override
@@ -104,39 +89,34 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
 
         float cos = ship.getCos();
         float sin = ship.getSin();
-        float startRange = -size.x;
+        float startRange = -getSizeX();
 
         float startX = cos * startRange;
         float startY = sin * startRange;
-        rayStart.x = startX + position.x;
-        rayStart.y = startY + position.y;
+        rayStart.x = startX + getX();
+        rayStart.y = startY + getY();
         collisionPoint.x = 0;
         collisionPoint.y = 0;
-        ray.setStart(rayStart);
-        rayDirection.set(cos, sin);
-        ray.setDirection(rayDirection);
-        RaycastResult<Body, BodyFixture> result = world.getPhysicWorld().raycastClosest(ray, currentBeamRange, detectFilter);
-        if (result == null) {
-            return;
-        }
+        rayDirection.set(rayStart.x + cos * currentBeamRange, rayStart.y + sin * currentBeamRange);
+        world.getPhysicWorld().raycast((RayCastCallback) (fixture, point, normal, fraction) -> {
+            if (!world.getContactFilter().shouldCollide(fixture.getFilter(), Filters.BEAM_FILTER)) {
+                return -1.0f;
+            }
 
-        Raycast raycast = result.getRaycast();
-        Vector2 point = raycast.getPoint();
-        Vector2 normal = raycast.getNormal();
-        collisionPoint.x = (float) point.x;
-        collisionPoint.y = (float) point.y;
-        currentBeamRange = (float) raycast.getDistance();
-        world.getCollisionMatrix().rayCast(this, (RigidBody) result.getBody().getUserData(), result.getFixture(),
-                collisionPoint.x, collisionPoint.y, (float) normal.x, (float) normal.y);
+            if (fixture.getBody() == ship.getBody()) {
+                return -1.0f;
+            }
+
+            collisionPoint.x = point.x;
+            collisionPoint.y = point.y;
+            currentBeamRange = collisionPoint.distance(rayStart.x, rayStart.y);
+            world.getCollisionMatrix().rayCast(this, fixture, collisionPoint.x, collisionPoint.y, normal.x, normal.y);
+            return 0.0f;
+        }, rayStart, rayDirection);
     }
 
     @Override
     public void createBullet(float fastForwardTime) {}
-
-    @Override
-    public int getRegistryId() {
-        return BeamRegistry.INSTANCE.getId();
-    }
 
     @Override
     public ConnectedObjectType getConnectedObjectType() {

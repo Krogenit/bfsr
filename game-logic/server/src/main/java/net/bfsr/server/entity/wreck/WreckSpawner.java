@@ -1,5 +1,6 @@
 package net.bfsr.server.entity.wreck;
 
+import net.bfsr.config.entity.wreck.WreckRegistry;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.ship.Ship;
@@ -7,6 +8,7 @@ import net.bfsr.entity.wreck.WreckType;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.world.World;
+import org.jbox2d.common.Vector2;
 import org.joml.Vector2f;
 
 import java.util.Random;
@@ -14,14 +16,17 @@ import java.util.Random;
 public final class WreckSpawner {
     private static final Random RAND = ServerGameLogic.getInstance().getWorld().getRand();
     private static final Vector2f ANGLE_TO_VELOCITY = new Vector2f();
+    private static final WreckRegistry WRECK_REGISTRY = ServerGameLogic.getInstance().getConfigConverterManager()
+            .getConverter(WreckRegistry.class);
 
     public static void spawnDestroyShipSmall(Ship ship) {
-        Vector2f pos = ship.getPosition();
-        Vector2f velocity = ship.getVelocity();
+        float x = ship.getX();
+        float y = ship.getY();
+        Vector2 linearVelocity = ship.getLinearVelocity();
         World w = ship.getWorld();
         Random rand = w.getRand();
-        spawnDamageDebris(w, rand.nextInt(3), pos.x, pos.y, velocity.x * 0.025f, velocity.y * 0.025f, 1.0f);
-        spawnDamageWrecks(w, rand.nextInt(2), pos.x, pos.y, velocity.x * 0.25f, velocity.y * 0.25f);
+        spawnDamageDebris(w, rand.nextInt(3), x, y, linearVelocity.x * 0.025f, linearVelocity.y * 0.025f, 1.0f);
+        spawnDamageWrecks(w, rand.nextInt(2), x, y, linearVelocity.x * 0.25f, linearVelocity.y * 0.25f);
     }
 
     public static void spawnDamageDebris(World world, int count, float x, float y, float velocityX, float velocityY, float size) {
@@ -35,9 +40,10 @@ public final class WreckSpawner {
             int maxLifeTime = world.convertToTicks(30);
             boolean isFire = RAND.nextInt(3) == 0;
             boolean isFireExplosion = isFire && RAND.nextInt(5) == 0;
-            world.add(world.getObjectPools().getWrecksPool().get().init(world, world.getNextId(), RAND.nextInt(6), false, isFire,
+            int wreckIndex = RAND.nextInt(6);
+            world.add(world.getObjectPools().getWrecksPool().get().init(world, world.getNextId(), wreckIndex, false, isFire,
                     isFireExplosion, x, y, ANGLE_TO_VELOCITY.x, ANGLE_TO_VELOCITY.y, LUT.sin(angle), LUT.cos(angle), angleVel,
-                    size2, size2, maxLifeTime, WreckType.SMALL));
+                    size2, size2, maxLifeTime, WreckType.SMALL, WRECK_REGISTRY.getWreck(WreckType.SMALL, wreckIndex)));
         }
     }
 
@@ -50,9 +56,11 @@ public final class WreckSpawner {
             float size = (1.0F - RAND.nextFloat() / 3.0F) * 4.0f;
             int maxLifeTime = world.convertToTicks(60);
             boolean isFireExplosion = RAND.nextInt(4) == 0;
-            world.add(world.getObjectPools().getWrecksPool().get().init(world, world.getNextId(), RAND.nextInt(3), true, true,
+            int wreckIndex = RAND.nextInt(3);
+            world.add(world.getObjectPools().getWrecksPool().get().init(world, world.getNextId(), wreckIndex, true, true,
                     isFireExplosion, x, y, ANGLE_TO_VELOCITY.x + velocityX * 0.7f, ANGLE_TO_VELOCITY.y + velocityY * 0.7f,
-                    LUT.sin(angle), LUT.cos(angle), angleVel, size, size, maxLifeTime, WreckType.DEFAULT));
+                    LUT.sin(angle), LUT.cos(angle), angleVel, size, size, maxLifeTime, WreckType.DEFAULT,
+                    WRECK_REGISTRY.getWreck(WreckType.DEFAULT, wreckIndex)));
         }
     }
 }

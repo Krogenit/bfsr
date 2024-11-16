@@ -3,7 +3,7 @@ package net.bfsr.entity.ship.module;
 import lombok.Getter;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.ship.Ship;
-import org.dyn4j.geometry.AABB;
+import org.jbox2d.collision.AABB;
 
 import java.lang.reflect.Array;
 import java.util.function.Supplier;
@@ -14,10 +14,10 @@ public abstract class ModuleWithCells<T> extends Module {
     protected final float width, height;
 
     protected ModuleWithCells(Ship ship, Class<T> componentType, Supplier<T> supplier) {
-        AABB aabb = new AABB(0);
-        MathUtils.computeAABB(aabb, ship.getBody(), new AABB(0));
-        this.width = (float) aabb.getWidth();
-        this.height = (float) aabb.getHeight();
+        AABB aabb = new AABB();
+        MathUtils.computeAABB(aabb, ship.getBody(), new AABB());
+        this.width = aabb.getWidth();
+        this.height = aabb.getHeight();
         int width = (int) Math.ceil(this.width / 2);
         int height = (int) Math.ceil(this.height / 2);
         this.cells = (T[][]) Array.newInstance(componentType, width, height);
@@ -30,14 +30,14 @@ public abstract class ModuleWithCells<T> extends Module {
     }
 
     public T getCell(float contactX, float contactY, Ship ship) {
-        float sin = (float) -ship.getBody().getTransform().getSint();
-        float cos = (float) ship.getBody().getTransform().getCost();
+        float sin = -ship.getSin();
+        float cos = ship.getCos();
 
         float halfWidth = width * 0.5f;
         float halfHeight = height * 0.5f;
 
-        float localPosX = contactX - (float) ship.getBody().getTransform().getTranslationX();
-        float localPosY = contactY - (float) ship.getBody().getTransform().getTranslationY();
+        float localPosX = contactX - ship.getX();
+        float localPosY = contactY - ship.getY();
         float rotatedX = cos * localPosX - sin * localPosY;
         float rotatedY = sin * localPosX + cos * localPosY;
         int localX = Math.max(Math.min((int) ((rotatedX + halfWidth) * (halfWidth / cells.length)), cells.length - 1), 0);

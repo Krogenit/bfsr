@@ -7,9 +7,9 @@ import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.physics.PhysicsUtils;
-import net.bfsr.physics.filter.ShipFilter;
-import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.Convex;
+import net.bfsr.physics.filter.Filters;
+import org.jbox2d.collision.shapes.Shape;
+import org.jbox2d.dynamics.Fixture;
 
 public class Reactor extends DamageableModule {
     @Getter
@@ -18,26 +18,22 @@ public class Reactor extends DamageableModule {
     @Getter
     private final float maxEnergy;
     private final float regenEnergy;
-    private final Convex reactorConvex;
+    private final Shape shape;
     @Getter
     private final ReactorData reactorData;
 
-    public Reactor(ReactorData reactorData, Convex reactorConvex) {
+    public Reactor(ReactorData reactorData, Shape shape) {
         super(reactorData.getHp());
         this.reactorData = reactorData;
         this.energy = reactorData.getMaxEnergyCapacity();
         this.maxEnergy = reactorData.getMaxEnergyCapacity();
         this.regenEnergy = reactorData.getRegenAmount();
-        this.reactorConvex = reactorConvex;
+        this.shape = shape;
     }
 
     @Override
     protected void createFixture(RigidBody rigidBody) {
-        fixture = new BodyFixture(reactorConvex);
-        fixture.setUserData(this);
-        fixture.setFilter(new ShipFilter(rigidBody));
-        fixture.setDensity(PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
-        rigidBody.getBody().addFixture(fixture);
+        rigidBody.getBody().addFixture(fixture = new Fixture(shape, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
     }
 
     @Override
@@ -66,7 +62,7 @@ public class Reactor extends DamageableModule {
     @Override
     protected void destroy() {
         super.destroy();
-        ship.getFixturesToRemove().add(fixture);
+        ship.addFixtureToRemove(fixture);
         ship.setDestroying();
     }
 

@@ -9,9 +9,9 @@ public class ParticleEffectsRegistry extends ConfigToDataConverter<ParticleEffec
 
     public ParticleEffectsRegistry() {
         super("particle-effect", ParticleEffectConfig.class,
-                (fileName, particleEffectConfig) -> particleEffectConfig.getFullPath(), (config, fileName, index) -> {
+                (fileName, particleEffectConfig) -> particleEffectConfig.getFullPath(), (config, fileName, index, registryId) -> {
                     config.processDeprecated();
-                    return new ParticleEffect(config, fileName, index);
+                    return new ParticleEffect(config, fileName, index, registryId);
                 });
     }
 

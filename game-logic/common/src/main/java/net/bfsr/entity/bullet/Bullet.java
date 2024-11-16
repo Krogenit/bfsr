@@ -3,16 +3,17 @@ package net.bfsr.entity.bullet;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.weapon.gun.GunData;
-import net.bfsr.config.component.weapon.gun.GunRegistry;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
+import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.network.packet.common.entity.spawn.BulletSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.physics.CollisionMatrixType;
-import net.bfsr.physics.filter.BulletFilter;
-import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.Polygon;
+import net.bfsr.physics.filter.Filters;
+import org.jbox2d.collision.shapes.Polygon;
+import org.jbox2d.common.Vector2;
+import org.jbox2d.dynamics.Fixture;
 
 public class Bullet extends RigidBody {
     @Getter
@@ -27,8 +28,10 @@ public class Bullet extends RigidBody {
     @Getter
     private final GunData gunData;
 
+    private Runnable postPhysicsRotationUpdater = RunnableUtils.EMPTY_RUNNABLE;
+
     public Bullet(float x, float y, float sin, float cos, GunData gunData, RigidBody owner, BulletDamage damage) {
-        super(x, y, sin, cos, gunData.getBulletSizeX(), gunData.getBulletSizeY(), gunData, GunRegistry.INSTANCE.getId());
+        super(x, y, sin, cos, gunData.getBulletSizeX(), gunData.getBulletSizeY(), gunData);
         this.gunData = gunData;
         this.owner = owner;
         this.maxLifeTime = gunData.getBulletLifeTimeInTicks();
@@ -36,20 +39,15 @@ public class Bullet extends RigidBody {
         this.damage = damage;
         this.health = damage.getAverage();
         this.polygon = gunData.getBulletPolygon();
-        this.velocity.set(cos * bulletSpeed, sin * bulletSpeed);
+        this.body.setLinearVelocity(cos * bulletSpeed, sin * bulletSpeed);
+        this.body.setBullet(true);
         this.lastCollidedRigidBody = owner;
     }
 
     @Override
     protected void initBody() {
-        BodyFixture bodyFixture = new BodyFixture(polygon);
-        bodyFixture.setFilter(new BulletFilter(this));
-        bodyFixture.setSensor(true);
-
-        body.setBullet(true);
-        body.addFixture(bodyFixture);
-        body.setUserData(this);
-        body.setLinearVelocity(velocity.x, velocity.y);
+        super.initBody();
+        this.body.addFixture(new Fixture(polygon, Filters.BULLET_FILTER, this, 0.0f));
     }
 
     @Override
@@ -63,17 +61,19 @@ public class Bullet extends RigidBody {
 
     @Override
     public void postPhysicsUpdate() {
-        position.x = (float) body.getTransform().getTranslationX();
-        position.y = (float) body.getTransform().getTranslationY();
-
-        eventBus.publish(postPhysicsUpdateEvent);
+        super.postPhysicsUpdate();
+        postPhysicsRotationUpdater.run();
     }
 
     public void reflect(float normalX, float normalY) {
+        Vector2 velocity = getLinearVelocity();
         float dot = velocity.x * normalX + velocity.y * normalY;
         setVelocity(velocity.x - 2 * dot * normalX, velocity.y - 2 * dot * normalY);
         float rotateToVector = (float) Math.atan2(-velocity.x, velocity.y) + MathUtils.HALF_PI;
-        setRotation(LUT.sin(rotateToVector), LUT.cos(rotateToVector));
+        postPhysicsRotationUpdater = () -> {
+            setRotation(LUT.sin(rotateToVector), LUT.cos(rotateToVector));
+            postPhysicsRotationUpdater = RunnableUtils.EMPTY_RUNNABLE;
+        };
     }
 
     public void damage() {

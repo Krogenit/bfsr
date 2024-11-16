@@ -1,9 +1,9 @@
 package net.bfsr.physics.filter;
 
-import net.bfsr.entity.RigidBody;
+import org.jbox2d.dynamics.Filter;
 
-public class ShipFilter extends CollisionFilter {
-    public ShipFilter(RigidBody userData) {
-        super(userData, Categories.SHIP_CATEGORY, Categories.all());
+public class ShipFilter extends Filter {
+    ShipFilter() {
+        super(Categories.SHIP_CATEGORY, Categories.all());
     }
 }

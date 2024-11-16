@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.bfsr.ai.task.AiTask;
 import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.engine.Engines;
@@ -16,7 +17,8 @@ import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.server.component.PacketWeaponShoot;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.EntityTrackingManager;
-import org.dyn4j.geometry.AABB;
+import org.jbox2d.collision.AABB;
+import org.jbox2d.common.Vector2;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;
@@ -29,7 +31,7 @@ public class AiAttackTarget extends AiTask {
     private int changeDirTimer;
     private final List<Direction> directionsToAdd = new ArrayList<>(5);
     private Direction sideDirection;
-    private final AABB targetAABB = new AABB(0, 0, 0, 0);
+    private final AABB targetAABB = new AABB();
     private final Vector2f targetPos = new Vector2f();
     private final Vector2f targetFinalPos = new Vector2f();
     private final Vector2f totalTargetVelocity = new Vector2f();
@@ -38,31 +40,35 @@ public class AiAttackTarget extends AiTask {
     private final EntityTrackingManager trackingManager = ServerGameLogic.getInstance().getEntityTrackingManager();
     private final Vector2f rotatedVector = new Vector2f();
     private final Vector2f pointToRotate = new Vector2f();
+    private final AABB cache = new AABB();
 
     @Override
     public void execute() {
         RigidBody target = ship.getTarget();
-        target.getBody().computeAABB(targetAABB);
-        targetPos.set((float) ((targetAABB.getMinX() + targetAABB.getMaxX()) / 2),
-                (float) ((targetAABB.getMinY() + targetAABB.getMaxY()) / 2));
-        Vector2f pos = ship.getPosition();
+        MathUtils.computeAABB(targetAABB, target.getBody(), target.getBody().getTransform(), cache);
+        targetPos.set((targetAABB.getMinX() + targetAABB.getMaxX()) / 2,
+                (targetAABB.getMinY() + targetAABB.getMaxY()) / 2);
 
-        float distanceToTarget = targetPos.distance(pos.x, pos.y);
+        float x = ship.getX();
+        float y = ship.getY();
+        float distanceToTarget = targetPos.distance(x, y);
         if (distanceToTarget >= maxAttackRange || target.isDead() || Math.abs(targetPos.x) > 1000 ||
                 Math.abs(targetPos.y) > 1000) {
             ship.setTarget(null);
             return;
         }
 
-        Vector2f shipSize = ship.getSize();
-        float shipSizeAverage = (shipSize.x + shipSize.y) / 2.0f;
+        float sizeX = ship.getSizeX();
+        float sizeY = ship.getSizeY();
+        float shipSizeAverage = (sizeX + sizeY) / 2.0f;
         float minTargetToShip = Float.MAX_VALUE;
 
         float maxDistance = 0;
-        Vector2f targetSize = target.getSize();
-        float targetSizeAverage = (targetSize.x + targetSize.y) / 2.0f;
+        float targetSizeX = target.getSizeX();
+        float targetSizeY = target.getSizeY();
+        float targetSizeAverage = (targetSizeX + targetSizeY) / 2.0f;
 
-        Vector2f targetVelocity = target.getVelocity();
+        Vector2 targetVelocity = target.getLinearVelocity();
 
         directionsToAdd.clear();
 
@@ -90,9 +96,9 @@ public class AiAttackTarget extends AiTask {
 
                     float totalVelocityX = -cos * bulletSpeed * Engine.getUpdateDeltaTime() * totalIterations;
                     float totalVelocityY = -sin * bulletSpeed * Engine.getUpdateDeltaTime() * totalIterations;
-                    bulletFinalPos.set(pos.x + xPos + totalVelocityX, pos.y + yPos + totalVelocityY);
+                    bulletFinalPos.set(x + xPos + totalVelocityX, y + yPos + totalVelocityY);
 
-                    gunEffectiveDistance = bulletFinalPos.distance(pos) - 2.0f;
+                    gunEffectiveDistance = bulletFinalPos.distance(x, y) - 2.0f;
 
                     if (distanceToTarget < gunEffectiveDistance) {
                         totalIterations *= distanceToTarget / gunEffectiveDistance;
@@ -104,7 +110,7 @@ public class AiAttackTarget extends AiTask {
                             targetPos.y + totalTargetVelocity.y - yPos);
                 }
 
-                float finalDistanceToTarget = targetFinalPos.distance(pos);
+                float finalDistanceToTarget = targetFinalPos.distance(x, y);
 
                 if (finalDistanceToTarget <= gunEffectiveDistance) {
                     if (Math.abs(rigidBodyUtils.getRotationDifference(ship, targetFinalPos)) <= 0.05f) {
@@ -132,17 +138,17 @@ public class AiAttackTarget extends AiTask {
             if (minTargetToShip >= maxDistance - targetSizeAverage - shipSizeAverage) {
                 if (!engines.isEngineAlive(Direction.FORWARD)) {
                     if (engines.isEngineAlive(Direction.RIGHT)) {
-                        RotationHelper.rotate(-1.0f, 0.0f, rotatedVector.x - pos.x,
-                                rotatedVector.y - pos.y, rotatedVector);
-                        rotatedVector.add(pos.x, pos.y);
+                        RotationHelper.rotate(-1.0f, 0.0f, rotatedVector.x - x,
+                                rotatedVector.y - y, rotatedVector);
+                        rotatedVector.add(x, y);
                     } else if (engines.isEngineAlive(Direction.LEFT)) {
-                        RotationHelper.rotate(1.0f, 0.0f, rotatedVector.x - pos.x, rotatedVector.y - pos.y,
+                        RotationHelper.rotate(1.0f, 0.0f, rotatedVector.x - x, rotatedVector.y - y,
                                 rotatedVector);
-                        rotatedVector.add(pos.x, pos.y);
+                        rotatedVector.add(x, y);
                     } else if (engines.isEngineAlive(Direction.BACKWARD)) {
-                        RotationHelper.rotate(0.0f, -1.0f, rotatedVector.x - pos.x, rotatedVector.y - pos.y,
+                        RotationHelper.rotate(0.0f, -1.0f, rotatedVector.x - x, rotatedVector.y - y,
                                 rotatedVector);
-                        rotatedVector.add(pos.x, pos.y);
+                        rotatedVector.add(x, y);
                     }
                 }
 
@@ -224,17 +230,17 @@ public class AiAttackTarget extends AiTask {
 
             if (!engines.isEngineAlive(Direction.FORWARD)) {
                 if (engines.isEngineAlive(Direction.RIGHT)) {
-                    RotationHelper.rotate(-1.0f, 0.0f, rotatedVector.x - pos.x, rotatedVector.y - pos.y,
+                    RotationHelper.rotate(-1.0f, 0.0f, rotatedVector.x - x, rotatedVector.y - y,
                             rotatedVector);
-                    rotatedVector.add(pos.x, pos.y);
+                    rotatedVector.add(x, y);
                 } else if (engines.isEngineAlive(Direction.LEFT)) {
-                    RotationHelper.rotate(1.0f, 0.0f, rotatedVector.x - pos.x, rotatedVector.y - pos.y,
+                    RotationHelper.rotate(1.0f, 0.0f, rotatedVector.x - x, rotatedVector.y - y,
                             rotatedVector);
-                    rotatedVector.add(pos.x, pos.y);
+                    rotatedVector.add(x, y);
                 } else if (engines.isEngineAlive(Direction.BACKWARD)) {
-                    RotationHelper.rotate(0.0f, -1.0f, rotatedVector.x - pos.x, rotatedVector.y - pos.y,
+                    RotationHelper.rotate(0.0f, -1.0f, rotatedVector.x - x, rotatedVector.y - y,
                             rotatedVector);
-                    rotatedVector.add(pos.x, pos.y);
+                    rotatedVector.add(x, y);
                 }
             }
 

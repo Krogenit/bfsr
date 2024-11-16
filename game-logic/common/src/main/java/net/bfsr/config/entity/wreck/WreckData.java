@@ -4,7 +4,7 @@ import lombok.Getter;
 import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.engine.util.PathHelper;
 import net.bfsr.entity.wreck.WreckType;
-import org.dyn4j.geometry.Polygon;
+import org.jbox2d.collision.shapes.Polygon;
 
 import java.nio.file.Path;
 
@@ -15,8 +15,8 @@ public class WreckData extends GameObjectConfigData {
     private final Path sparkleTexture;
     private final Polygon polygon;
 
-    WreckData(WreckConfig wreckConfig, int id) {
-        super(wreckConfig, wreckConfig.getName(), id);
+    WreckData(WreckConfig wreckConfig, int id, int registryId) {
+        super(wreckConfig, wreckConfig.getName(), id, registryId);
         this.type = wreckConfig.getType();
         this.fireTexture = PathHelper.convertPath(wreckConfig.getFireTexture());
         this.sparkleTexture = wreckConfig.getSparkleTexture() != null ? PathHelper.convertPath(wreckConfig.getSparkleTexture())

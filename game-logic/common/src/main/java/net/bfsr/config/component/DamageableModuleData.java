@@ -7,8 +7,8 @@ import net.bfsr.config.ConfigData;
 public class DamageableModuleData extends ConfigData {
     private final float hp;
 
-    public DamageableModuleData(DamageableModuleConfig config, String fileName, int id) {
-        super(fileName, id);
+    public DamageableModuleData(DamageableModuleConfig config, String fileName, int id, int registryId) {
+        super(fileName, id, registryId);
         this.hp = config.getHp();
     }
 }

@@ -23,8 +23,7 @@ public class ConfigToDataConverter<CONFIG_TYPE, DATA_TYPE extends ConfigData> {
     private final BiFunction<String, CONFIG_TYPE, String> nameFunction;
     private final ConfigToDataFunction<CONFIG_TYPE, DATA_TYPE> mapFunction;
 
-    public ConfigToDataConverter(String folder, Class<CONFIG_TYPE> configClass,
-                                 BiFunction<String, CONFIG_TYPE, String> nameFunction,
+    public ConfigToDataConverter(String folder, Class<CONFIG_TYPE> configClass, BiFunction<String, CONFIG_TYPE, String> nameFunction,
                                  ConfigToDataFunction<CONFIG_TYPE, DATA_TYPE> mapFunction) {
         this.folder = PathHelper.CONFIG.resolve(folder);
         this.configClass = configClass;
@@ -39,7 +38,7 @@ public class ConfigToDataConverter<CONFIG_TYPE, DATA_TYPE extends ConfigData> {
 
     public void add(String path, String fileName, CONFIG_TYPE config) {
         try {
-            DATA_TYPE data = mapFunction.convert(config, fileName, dataTypeList.size());
+            DATA_TYPE data = mapFunction.convert(config, fileName, dataTypeList.size(), id);
             add(data, nameFunction.apply(fileName, config));
         } catch (Exception e) {
             throw new RuntimeException("Can't map config " + config + " to data", e);

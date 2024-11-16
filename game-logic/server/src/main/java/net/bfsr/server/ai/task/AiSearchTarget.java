@@ -7,7 +7,6 @@ import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.Direction;
 import net.bfsr.world.World;
-import org.joml.Vector2f;
 
 import java.util.List;
 
@@ -21,7 +20,7 @@ public class AiSearchTarget extends AiTask {
         if (type == AiAggressiveType.ATTACK) {
             RigidBody attacker = ship.getLastAttacker();
             if (attacker != null && !attacker.isDead() && attacker instanceof Ship && isEnemy((Ship) attacker) &&
-                    Math.abs(attacker.getPosition().x) < 1000 && Math.abs(attacker.getPosition().y) < 1000) {
+                    Math.abs(attacker.getX()) < 1000 && Math.abs(attacker.getY()) < 1000) {
                 ship.setTarget(attacker);
             } else findNewTarget();
         } else if (type == AiAggressiveType.DEFEND) {
@@ -31,11 +30,11 @@ public class AiSearchTarget extends AiTask {
                 ship.setTarget(attacker);
             }
         } else if (type == AiAggressiveType.NOTHING) {
-            if (ship.getVelocity().length() > 0.1f && ship.getModules().getEngines().isSomeEngineAlive()) {
+            if (ship.getLinearVelocity().length() > 0.1f && ship.getModules().getEngines().isSomeEngineAlive()) {
                 ship.move(Direction.STOP);
             }
             if (Math.abs(ship.getAngularVelocity()) > 0.01f) {
-                ship.getBody().setAngularVelocity(ship.getAngularVelocity() * 0.99f);
+                ship.setAngularVelocity(ship.getAngularVelocity() * 0.99f);
             }
         }
     }
@@ -47,9 +46,8 @@ public class AiSearchTarget extends AiTask {
         Ship nearShip = null;
         for (int i = 0, shipsSize = ships.size(); i < shipsSize; i++) {
             Ship ship = ships.get(i);
-            Vector2f position = ship.getPosition();
-            if (this.ship != ship && isEnemy(ship) && Math.abs(position.x) < 1000 && Math.abs(position.y) < 1000) {
-                float newDist = this.ship.getPosition().distance(position);
+            if (this.ship != ship && isEnemy(ship) && Math.abs(ship.getX()) < 1000 && Math.abs(ship.getY()) < 1000) {
+                float newDist = this.ship.getBody().getTransform().position.distance(ship.getX(), ship.getY());
                 if (newDist < distance && newDist <= maxSearchRange) {
                     nearShip = ship;
                     distance = newDist;

@@ -1,6 +1,6 @@
 package net.bfsr.engine.renderer.debug;
 
-import net.bfsr.engine.util.AABB;
+import org.jbox2d.collision.AABB;
 import org.joml.Vector4f;
 
 public abstract class AbstractDebugRenderer {

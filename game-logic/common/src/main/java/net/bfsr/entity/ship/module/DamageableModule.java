@@ -7,8 +7,8 @@ import net.bfsr.engine.event.EventBus;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.module.ModuleDestroyEvent;
-import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.BodyFixture;
+import org.jbox2d.dynamics.Body;
+import org.jbox2d.dynamics.Fixture;
 
 @NoArgsConstructor
 public abstract class DamageableModule extends Module {
@@ -18,7 +18,7 @@ public abstract class DamageableModule extends Module {
     @Setter
     protected float hp;
     @Getter
-    protected BodyFixture fixture;
+    protected Fixture fixture;
     private EventBus eventBus;
     @Getter
     protected Ship ship;
@@ -62,8 +62,11 @@ public abstract class DamageableModule extends Module {
 
     @Override
     public void setDead() {
+        if (!isDead) {
+            destroy();
+        }
+
         super.setDead();
-        destroy();
     }
 
     protected void destroy() {

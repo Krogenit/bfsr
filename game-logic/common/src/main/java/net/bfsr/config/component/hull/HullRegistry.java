@@ -5,9 +5,7 @@ import net.bfsr.config.ConfigToDataConverter;
 
 @ConfigConverter
 public final class HullRegistry extends ConfigToDataConverter<HullConfig, HullData> {
-    public static final HullRegistry INSTANCE = new HullRegistry();
-
-    private HullRegistry() {
+    public HullRegistry() {
         super("module/hull", HullConfig.class, (fileName, hullConfig) -> fileName, HullData::new);
     }
 }

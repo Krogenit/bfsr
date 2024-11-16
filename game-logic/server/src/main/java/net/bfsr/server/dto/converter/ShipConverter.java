@@ -4,6 +4,7 @@ import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.dto.ShipModel;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
@@ -22,16 +23,15 @@ public abstract class ShipConverter {
 
     @Mappings({@Mapping(target = "dead", ignore = true),
             @Mapping(target = "id", ignore = true), @Mapping(target = "upFixture", ignore = true),
-            @Mapping(target = "velocity", ignore = true), @Mapping(target = "shield", ignore = true),
+            @Mapping(target = "shield", ignore = true), @Mapping(target = "linearVelocity", ignore = true),
             @Mapping(target = "faction", ignore = true), @Mapping(target = "cargo", ignore = true),
             @Mapping(target = "name", ignore = true), @Mapping(target = "controlledByPlayer", ignore = true),
             @Mapping(target = "target", ignore = true), @Mapping(target = "owner", ignore = true),
             @Mapping(target = "fixtures", ignore = true), @Mapping(target = "moveDirections", ignore = true),
-            @Mapping(target = "polygon", ignore = true), @Mapping(target = "fixturesToAdd", ignore = true),
+            @Mapping(target = "polygon", ignore = true),
             @Mapping(target = "armor", ignore = true), @Mapping(target = "configData", ignore = true),
             @Mapping(target = "engine", ignore = true), @Mapping(target = "health", ignore = true),
             @Mapping(target = "hull", ignore = true), @Mapping(target = "reactor", ignore = true),
-            @Mapping(target = "registryId", ignore = true), @Mapping(target = "fixturesToRemove", ignore = true),
             @Mapping(target = "connectedObjects", ignore = true), @Mapping(target = "collisionTimer", ignore = true),
             @Mapping(target = "updateRunnable", ignore = true), @Mapping(target = "mask", ignore = true),
             @Mapping(target = "angularVelocity", ignore = true), @Mapping(target = "correctionHandler", ignore = true),
@@ -50,6 +50,8 @@ public abstract class ShipConverter {
 
     @ObjectFactory
     public <T extends Ship> T to(ShipModel shipModel, @TargetType Class<T> entityClass) {
-        return (T) new Ship(ShipRegistry.INSTANCE.get(shipModel.name()), new DamageMask(32, 32));
+        return (T) new Ship(
+                ServerGameLogic.getInstance().getConfigConverterManager().getConverter(ShipRegistry.class).get(shipModel.name()),
+                new DamageMask(32, 32));
     }
 }

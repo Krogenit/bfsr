@@ -3,16 +3,15 @@ package net.bfsr.network.packet.common.entity.spawn;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.bfsr.config.ConfigConverterManager;
-import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
+import net.bfsr.network.packet.common.entity.spawn.connectedobject.ConnectedObjectSpawnData;
 import net.bfsr.network.util.ByteBufUtils;
-import org.dyn4j.dynamics.BodyFixture;
+import org.jbox2d.dynamics.Fixture;
 import org.locationtech.jts.geom.Polygon;
 
 import java.nio.ByteBuffer;
@@ -21,17 +20,16 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public abstract class DamageableRigidBodySpawnData<T extends DamageableRigidBody> extends RigidBodySpawnData {
+public abstract class DamageableRigidBodySpawnData extends RigidBodySpawnData {
     protected Polygon polygon;
-    protected List<BodyFixture> fixtures;
+    protected List<Fixture> fixtures;
 
     protected int maskWidth, maskHeight;
     private byte[] damageMaskBytes;
     private ByteBuffer damageMaskByteBuffer;
 
     protected List<ConnectedObject<?>> connectedObjects;
-
-    private T rigidBody;
+    private List<ConnectedObjectSpawnData> connectedObjectSpawnData;
 
     DamageableRigidBodySpawnData(DamageableRigidBody damageableRigidBody) {
         super(damageableRigidBody);
@@ -78,21 +76,15 @@ public abstract class DamageableRigidBodySpawnData<T extends DamageableRigidBody
         damageMaskByteBuffer.position(0);
 
         fixtures = new ArrayList<>(32);
-        DamageSystem.decompose(polygon, convex -> fixtures.add(new BodyFixture(convex)));
-
-        rigidBody = createRigidBody();
+        DamageSystem.decompose(polygon, convex -> fixtures.add(new Fixture(convex)));
 
         short connectedObjectsCount = data.readShort();
-        connectedObjects = new ArrayList<>(connectedObjectsCount);
+        connectedObjectSpawnData = new ArrayList<>(connectedObjectsCount);
         for (int i = 0; i < connectedObjectsCount; i++) {
             ConnectedObjectType type = ConnectedObjectType.get(data.readByte());
-            GameObjectConfigData configData = ((GameObjectConfigData) ConfigConverterManager.INSTANCE.getConverter(data.readInt())
-                    .get(data.readInt()));
-            ConnectedObject<?> connectedObject = type.createInstance(configData);
+            ConnectedObjectSpawnData connectedObject = type.createInstance();
             connectedObject.readData(data);
-            connectedObjects.add(connectedObject);
+            connectedObjectSpawnData.add(connectedObject);
         }
     }
-
-    protected abstract T createRigidBody();
 }

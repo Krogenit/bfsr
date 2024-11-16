@@ -1,23 +1,21 @@
 package net.bfsr.damage;
 
 import lombok.RequiredArgsConstructor;
-import net.bfsr.config.GameObjectConfigData;
-import net.bfsr.config.component.weapon.beam.BeamData;
-import net.bfsr.config.component.weapon.gun.GunData;
-import net.bfsr.entity.ship.module.weapon.WeaponSlot;
-import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
+import net.bfsr.network.packet.common.entity.spawn.connectedobject.BeamSlotConnectedObjectSpawnData;
+import net.bfsr.network.packet.common.entity.spawn.connectedobject.ConnectedObjectSpawnData;
+import net.bfsr.network.packet.common.entity.spawn.connectedobject.WeaponSlotConnectObjectSpawnData;
 
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 @RequiredArgsConstructor
 public enum ConnectedObjectType {
-    WEAPON_SLOT((configData) -> new WeaponSlot((GunData) configData)),
-    WEAPON_SLOT_BEAM((configData -> new WeaponSlotBeam((BeamData) configData)));
+    WEAPON_SLOT(WeaponSlotConnectObjectSpawnData::new),
+    WEAPON_SLOT_BEAM(BeamSlotConnectedObjectSpawnData::new);
 
-    private final Function<GameObjectConfigData, ConnectedObject<?>> function;
+    private final Supplier<ConnectedObjectSpawnData> supplier;
 
-    public ConnectedObject<?> createInstance(GameObjectConfigData configData) {
-        return function.apply(configData);
+    public ConnectedObjectSpawnData createInstance() {
+        return supplier.get();
     }
 
     private static final ConnectedObjectType[] VALUES = values();

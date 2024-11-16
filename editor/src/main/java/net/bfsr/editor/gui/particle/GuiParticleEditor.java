@@ -21,7 +21,6 @@ import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.entity.GameObject;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector2f;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
@@ -37,10 +36,8 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
         @Override
         public void renderAlpha() {
             if (particleEffect != null && playing && texture != null) {
-                Vector2f position = object.getPosition();
-                Vector2f scale = object.getSize();
-                spriteRenderer.add(position.x, position.y, scale.x, scale.y, color.x, color.y, color.z, color.w, texture,
-                        BufferType.ENTITIES_ALPHA);
+                spriteRenderer.add(object.getX(), object.getY(), object.getSizeX(), object.getSizeY(), color.x, color.y, color.z, color.w,
+                        texture, BufferType.ENTITIES_ALPHA);
             }
         }
     };
@@ -80,7 +77,7 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
         if (particleEffectProperties != null) {
             propertiesPanel.add(particleEffectProperties, "Particle Effect");
             spawnAccumulator.resetTime();
-            particleEffect = new ParticleEffect(converter.from(particleEffectProperties), "particle_effect", 0);
+            particleEffect = new ParticleEffect(converter.from(particleEffectProperties), "particle_effect", 0, 0);
             findChild(particleEffect, selectedEntry);
         } else {
             particleEffect = null;
@@ -94,7 +91,7 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
             InspectionEntry<ParticleEffectProperties> childEntry = (InspectionEntry<ParticleEffectProperties>) guiObjects.get(i);
             ParticleEffectProperties componentByType = childEntry.getComponentByType(ParticleEffectProperties.class);
             if (componentByType != null) {
-                ParticleEffect childParticleEffect = new ParticleEffect(converter.from(componentByType), "particle_effect", 0);
+                ParticleEffect childParticleEffect = new ParticleEffect(converter.from(componentByType), "particle_effect", 0, 0);
                 childParticleEffect.init();
                 particleEffect.addChild(childParticleEffect);
                 findChild(childParticleEffect, childEntry);

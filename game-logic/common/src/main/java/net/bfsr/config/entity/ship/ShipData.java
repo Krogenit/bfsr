@@ -7,7 +7,7 @@ import net.bfsr.config.Vector2fConfigurable;
 import net.bfsr.config.component.ModulesPolygonsConfig;
 import net.bfsr.engine.Engine;
 import net.bfsr.math.Direction;
-import org.dyn4j.geometry.Polygon;
+import org.jbox2d.collision.shapes.Polygon;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -23,8 +23,8 @@ public class ShipData extends GameObjectConfigData {
     private final Polygon shieldPolygon;
     private final TMap<Direction, EnginesData> engines;
 
-    public ShipData(ShipConfig shipConfig, String fileName, int id) {
-        super(shipConfig, fileName, id);
+    public ShipData(ShipConfig shipConfig, String fileName, int id, int registryId) {
+        super(shipConfig, fileName, id, registryId);
         this.destroyTimeInTicks = Engine.convertToTicks(shipConfig.getDestroyTimeInSeconds());
         this.effectsColor = convert(shipConfig.getEffectsColor());
 

@@ -3,24 +3,21 @@ package net.bfsr.network.packet.common.entity.spawn;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.bfsr.config.entity.ship.ShipData;
-import net.bfsr.config.entity.ship.ShipRegistry;
-import net.bfsr.damage.DamageMask;
 import net.bfsr.entity.wreck.ShipWreck;
-import org.joml.Vector2f;
+import org.jbox2d.common.Vector2;
 
 @NoArgsConstructor
 @Getter
-public class ShipWreckSpawnData extends DamageableRigidBodySpawnData<ShipWreck> {
+public class ShipWreckSpawnData extends DamageableRigidBodySpawnData {
     private float velocityX, velocityY;
     private float angularVelocity;
     private float localOffsetX, localOffsetY;
 
     public ShipWreckSpawnData(ShipWreck wreck) {
         super(wreck);
-        Vector2f velocity = wreck.getVelocity();
-        this.velocityX = velocity.x;
-        this.velocityY = velocity.y;
+        Vector2 linearVelocity = wreck.getLinearVelocity();
+        this.velocityX = linearVelocity.x;
+        this.velocityY = linearVelocity.y;
         this.angularVelocity = wreck.getAngularVelocity();
         this.localOffsetX = wreck.getLocalOffsetX();
         this.localOffsetY = wreck.getLocalOffsetY();
@@ -48,13 +45,6 @@ public class ShipWreckSpawnData extends DamageableRigidBodySpawnData<ShipWreck> 
         velocityX = data.readFloat();
         velocityY = data.readFloat();
         angularVelocity = data.readFloat();
-    }
-
-    @Override
-    protected ShipWreck createRigidBody() {
-        ShipData shipData = ShipRegistry.INSTANCE.get(dataId);
-        return new ShipWreck(posX, posY, sin, cos, shipData.getSizeX(), shipData.getSizeY(), shipData,
-                new DamageMask(maskWidth, maskHeight, null), polygon, localOffsetX, localOffsetY);
     }
 
     @Override

@@ -42,6 +42,8 @@ public class ServerGameLogic extends GameLogic {
     private net.bfsr.world.World world;
 
     @Getter
+    private final ConfigConverterManager configConverterManager = new ConfigConverterManager();
+    @Getter
     private final PlayerManager playerManager = new PlayerManager();
     @Getter
     private final NetworkSystem networkSystem = new NetworkSystem(playerManager);
@@ -64,22 +66,19 @@ public class ServerGameLogic extends GameLogic {
         world.init();
         profiler.setEnable(true);
         networkSystem.init();
-        loadConfigs();
+        configConverterManager.init();
         settings = createSettings();
         startupNetworkSystem(settings);
         initListeners();
-        super.init();
         registerLogic(LogicType.SHIELD_UPDATE.ordinal(), new ShieldLogic());
+        shipSpawner.init();
+        super.init();
     }
 
     private void initListeners() {
         eventBus.register(new ShipEventListener());
         eventBus.register(new WeaponEventListener());
         eventBus.register(new ModuleEventListener());
-    }
-
-    protected void loadConfigs() {
-        ConfigConverterManager.INSTANCE.init();
     }
 
     protected ServerSettings createSettings() {

@@ -11,8 +11,8 @@ public class EnginesData extends ConfigData {
     private final float maneuverability;
     private final float angularVelocity;
 
-    EnginesData(EngineConfig engineConfig, String fileName, int id) {
-        super(fileName, id);
+    EnginesData(EngineConfig engineConfig, String fileName, int id, int registryId) {
+        super(fileName, id, registryId);
         this.forwardAcceleration = engineConfig.forwardAcceleration();
         this.backwardAcceleration = engineConfig.backwardAcceleration();
         this.sideAcceleration = engineConfig.sideAcceleration();
