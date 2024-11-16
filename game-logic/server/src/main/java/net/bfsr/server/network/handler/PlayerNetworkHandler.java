@@ -202,9 +202,12 @@ public class PlayerNetworkHandler extends NetworkHandler {
     public void onDisconnected() {
         if (connectionStateBeforeDisconnect == ConnectionState.CONNECTED) {
             log.info("{} lost connection: {}", player.getUsername(), terminationReason);
-            server.onPlayerDisconnected(player);
         } else {
             log.info("{} lost connection: {}", socketChannel.remoteAddress(), terminationReason);
+        }
+
+        if (player != null) {
+            server.onPlayerDisconnected(player);
         }
     }
 
