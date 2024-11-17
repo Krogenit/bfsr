@@ -185,8 +185,7 @@ public final class DamageSystem {
 
         for (int i = 0; i < removedPaths.size(); i++) {
             org.locationtech.jts.geom.Polygon removedPath = removedPaths.get(i);
-            DamageMask damageMask = createInvertedDamageMask(removedPath, mask, sizeX, sizeY, damageable.getLocalOffsetX(),
-                    damageable.getLocalOffsetY());
+            DamageMask damageMask = createInvertedDamageMask(removedPath, mask, sizeX, sizeY);
             ShipWreck wreck = createWreck(world, x, y, sin, cos, sizeX, sizeY, removedPath,
                     damageMask, (ShipData) damageable.getConfigData());
             wreck.setLinearVelocity(damageable.getLinearVelocity());
@@ -414,9 +413,9 @@ public final class DamageSystem {
     }
 
     private DamageMask createInvertedDamageMask(org.locationtech.jts.geom.Polygon polygon, DamageMask damageMask, float sizeX,
-                                                float sizeY, float localOffsetX, float localOffsetY) {
+                                                float sizeY) {
         DamageMask damagedTexture = new DamageMask(damageMask.getWidth(), damageMask.getHeight(), damageMask.copy());
-        List<Coordinate> path = clipTextureOutside(polygon, damagedTexture, sizeX, sizeY, localOffsetX, localOffsetY);
+        List<Coordinate> path = clipTextureOutside(polygon, damagedTexture, sizeX, sizeY, 0, 0);
         for (int i = 0; i < path.size(); i++) {
             Coordinate point = path.get(i);
             if (point.x < damagedTexture.getX()) damagedTexture.setX((int) point.x);
