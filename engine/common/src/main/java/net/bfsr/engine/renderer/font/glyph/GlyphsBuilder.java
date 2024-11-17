@@ -32,7 +32,7 @@ public abstract class GlyphsBuilder {
         int height = 0;
         for (int i = 0; i < string.length(); i++) {
             if (string.charAt(i) == NEW_LINE) {
-                height += getHeight("\n", fontSize) * indent;
+                height = (int) (height + getHeight("\n", fontSize) * indent);
             }
         }
         return height + getTrimmedStringHeight(string.substring(offset).trim(), fontSize, maxWidth, indent);
@@ -43,7 +43,7 @@ public abstract class GlyphsBuilder {
         do {
             String temp = trimStringToWidthSaveWords(string, fontSize, maxWidth);
             string = string.replace(temp, "").trim();
-            height += getHeight(temp, fontSize) + indent;
+            height = (int) (height + (getHeight(temp, fontSize) + indent));
         } while (!string.isEmpty());
 
         return height;

@@ -331,7 +331,7 @@ public class StringCache {
         }
 
         /* Compute the advance position of the last glyph (or only glyph) since it can't be done by the above loop */
-        advance += vector.getGlyphPosition(numGlyphs).getX();
+        advance = (int) (advance + vector.getGlyphPosition(numGlyphs).getX());
 
         if (glyph != null) {
             glyph.advance = advance - glyph.x;
@@ -494,7 +494,7 @@ public class StringCache {
         int height = 0;
         for (int i = 0; i < text.length(); i++) {
             if (text.charAt(i) == NEW_LINE) {
-                height += getHeight("\n", fontSize) * indent;
+                height = (int) (height + getHeight("\n", fontSize) * indent);
             }
         }
         return height + getTrimmedStringHeight(text.substring(offset).trim(), fontSize, maxWidth, indent);
@@ -521,7 +521,7 @@ public class StringCache {
         do {
             String temp = trimStringToWidthSaveWords(string, fontSize, maxWidth);
             string = string.replace(temp, "").trim();
-            height += getHeight(temp, fontSize) + indent;
+            height = (int) (height + (getHeight(temp, fontSize) + indent));
         } while (!string.isEmpty());
 
         return height;
