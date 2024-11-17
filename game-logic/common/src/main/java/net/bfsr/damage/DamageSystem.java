@@ -53,7 +53,8 @@ public final class DamageSystem {
         mask.reset();
         damageable.clearFixturesToAdd();
 
-        clipTexture(contactX, contactY, -sin, cos, damageable, radius, mask, world.getRand());
+        clipTexture(contactX, contactY, -sin, cos, damageable, radius, mask, world.getRand(), damageable.getLocalOffsetX(),
+                damageable.getLocalOffsetY());
 
         org.locationtech.jts.geom.Polygon polygon = damageable.getPolygon();
 
@@ -66,7 +67,8 @@ public final class DamageSystem {
             if (area > MIN_POLYGON_AREA) {
                 org.locationtech.jts.geom.Geometry geometry = optimizeAndReverse(polygon1);
                 if (geometry instanceof org.locationtech.jts.geom.Polygon polygon2) {
-                    clipTextureOutside(polygon2, mask, damageable.getSizeX(), damageable.getSizeY());
+                    clipTextureOutside(polygon2, mask, damageable.getSizeX(), damageable.getSizeY(), damageable.getLocalOffsetX(),
+                            damageable.getLocalOffsetY());
                     damageable.setPolygon(polygon2);
                     decompose(polygon2, polygon3 -> damageable.addFixtureToAdd(damageable.setupFixture(new Fixture(polygon3))));
 
@@ -183,7 +185,8 @@ public final class DamageSystem {
 
         for (int i = 0; i < removedPaths.size(); i++) {
             org.locationtech.jts.geom.Polygon removedPath = removedPaths.get(i);
-            DamageMask damageMask = createInvertedDamageMask(removedPath, mask, sizeX, sizeY);
+            DamageMask damageMask = createInvertedDamageMask(removedPath, mask, sizeX, sizeY, damageable.getLocalOffsetX(),
+                    damageable.getLocalOffsetY());
             ShipWreck wreck = createWreck(world, x, y, sin, cos, sizeX, sizeY, removedPath,
                     damageMask, (ShipData) damageable.getConfigData());
             wreck.setLinearVelocity(damageable.getLinearVelocity());
@@ -201,7 +204,7 @@ public final class DamageSystem {
         }
 
         if (!damageable.isDead()) {
-            clipTextureOutside(newHull, mask, sizeX, sizeY);
+            clipTextureOutside(newHull, mask, sizeX, sizeY, damageable.getLocalOffsetX(), damageable.getLocalOffsetY());
         }
     }
 
@@ -302,7 +305,7 @@ public final class DamageSystem {
     }
 
     private static List<Coordinate> clipTextureOutside(org.locationtech.jts.geom.Polygon polygon, DamageMask mask, float sizeX,
-                                                       float sizeY) {
+                                                       float sizeY, float offsetX, float offsetY) {
         float halfSizeX = sizeX / 2.0f;
         float halfSizeY = sizeY / 2.0f;
         float localScaleX = mask.getWidth() / sizeX;
@@ -322,7 +325,7 @@ public final class DamageSystem {
         List<Coordinate> res = new ArrayList<>(coordinateSequence1.size() - 1);
         for (int i = 0, length = coordinateSequence1.size() - 1; i < length; i++) {
             Coordinate coordinate = coordinateSequence1.getCoordinate(i);
-            res.add(new Coordinate((coordinate.x + halfSizeX) * localScaleX, (coordinate.y + halfSizeY) * localScaleY));
+            res.add(new Coordinate((coordinate.x + halfSizeX + offsetX) * localScaleX, (coordinate.y + halfSizeY + offsetY) * localScaleY));
         }
         fillTextureOutsidePolygon(res, res.size(), mask, (byte) 0);
 
@@ -335,7 +338,7 @@ public final class DamageSystem {
     }
 
     private void clipTexture(float x, float y, float sin, float cos, DamageableRigidBody damageable, float clipRadius,
-                             DamageMask mask, Random random) {
+                             DamageMask mask, Random random, float localOffsetX, float localOffsetY) {
         float sizeX = damageable.getSizeX();
         float sizeY = damageable.getSizeY();
         float halfSizeX = sizeX / 2.0f;
@@ -348,8 +351,8 @@ public final class DamageSystem {
         float localPosY = y - damageable.getY();
         float rotatedX = cos * localPosX - sin * localPosY;
         float rotatedY = sin * localPosX + cos * localPosY;
-        int localX = (int) ((rotatedX + halfSizeX) * (width / sizeX));
-        int localY = (int) ((rotatedY + halfSizeY) * (height / sizeY));
+        int localX = (int) ((rotatedX + halfSizeX + localOffsetX) * (width / sizeX));
+        int localY = (int) ((rotatedY + halfSizeY + localOffsetY) * (height / sizeY));
         int startX = Math.max(localX - radius, 0);
         int startY = Math.max(localY - radius, 0);
         int maxX = Math.min(localX + radius, width);
@@ -411,9 +414,9 @@ public final class DamageSystem {
     }
 
     private DamageMask createInvertedDamageMask(org.locationtech.jts.geom.Polygon polygon, DamageMask damageMask, float sizeX,
-                                                float sizeY) {
+                                                float sizeY, float localOffsetX, float localOffsetY) {
         DamageMask damagedTexture = new DamageMask(damageMask.getWidth(), damageMask.getHeight(), damageMask.copy());
-        List<Coordinate> path = clipTextureOutside(polygon, damagedTexture, sizeX, sizeY);
+        List<Coordinate> path = clipTextureOutside(polygon, damagedTexture, sizeX, sizeY, localOffsetX, localOffsetY);
         for (int i = 0; i < path.size(); i++) {
             Coordinate point = path.get(i);
             if (point.x < damagedTexture.getX()) damagedTexture.setX((int) point.x);
