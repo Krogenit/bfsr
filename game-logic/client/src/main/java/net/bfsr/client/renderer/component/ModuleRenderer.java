@@ -3,6 +3,7 @@ package net.bfsr.client.renderer.component;
 import net.bfsr.client.renderer.Render;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
+import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.entity.ship.Ship;
@@ -113,21 +114,32 @@ public class ModuleRenderer extends Render {
     }
 
     @Override
-    public void update() {
-        lastPosition.x = x;
-        lastPosition.y = y;
-        lastSin = sin;
-        lastCos = cos;
+    public void init() {
+        updateRunnable.run();
+        id = spriteRenderer.add(x, y, sin, cos, sizeX, sizeY, color.x, color.y, color.z, color.w,
+                texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
+    }
+
+    @Override
+    protected void updateLastRenderValues() {
+        spriteRenderer.setLastPosition(id, BufferType.ENTITIES_ALPHA, x, y);
+        spriteRenderer.setLastRotation(id, BufferType.ENTITIES_ALPHA, sin, cos);
+    }
+
+    @Override
+    protected void updateRenderValues() {
+        spriteRenderer.setPosition(id, BufferType.ENTITIES_ALPHA, x, y);
+        spriteRenderer.setRotation(id, BufferType.ENTITIES_ALPHA, sin, cos);
     }
 
     @Override
     public void postWorldUpdate() {
         updateRunnable.run();
+        updateRenderValues();
     }
 
     @Override
     public void renderAlpha() {
-        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, x, y, lastSin, lastCos, sin, cos, sizeX, sizeY,
-                1.0f, 1.0f, 1.0f, 1.0f, texture, BufferType.ENTITIES_ALPHA);
+        spriteRenderer.addDrawCommand(id, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ALPHA);
     }
 }

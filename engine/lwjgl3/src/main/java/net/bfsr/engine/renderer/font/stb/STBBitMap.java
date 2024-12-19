@@ -29,11 +29,11 @@ import static org.lwjgl.stb.STBTruetype.stbtt_ScaleForMappingEmToPixels;
 
 @Getter
 class STBBitMap extends FontBitMap {
-    private static final CharSet invisiblePackableChars = new CharArraySet();
+    private static final CharSet INVISIBLE_PACKABLE_CHARS = new CharArraySet();
 
     static {
-        invisiblePackableChars.add((char) 32);
-        invisiblePackableChars.add((char) 160);
+        INVISIBLE_PACKABLE_CHARS.add((char) 32);
+        INVISIBLE_PACKABLE_CHARS.add((char) 160);
     }
 
     private STBTTPackedchar.Buffer packedChars;
@@ -134,6 +134,6 @@ class STBBitMap extends FontBitMap {
     }
 
     private boolean isPacked(STBTTPackedchar packedChar, char charCode) {
-        return packedChar.x1() - packedChar.x0() > 0.0f || invisiblePackableChars.contains(charCode);
+        return packedChar.x1() - packedChar.x0() > 0.0f || INVISIBLE_PACKABLE_CHARS.contains(charCode);
     }
 }

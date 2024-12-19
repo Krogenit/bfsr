@@ -99,6 +99,7 @@ public class WeaponSlotBeamRender extends WeaponSlotRender {
 
     @Override
     public void clear() {
+        super.clear();
         weaponSlotBeam.getWeaponSlotEventBus().unregister(this);
         beamParticles.clear();
     }

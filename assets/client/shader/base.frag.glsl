@@ -1,7 +1,7 @@
 #version 450
-#extension GL_ARB_bindless_texture : enable
+#extension GL_ARB_bindless_texture: enable
 
-layout(location = 0) out vec4 out_Color;
+layout (location = 0) out vec4 out_Color;
 
 in Data {
     vec2 textureCoords;

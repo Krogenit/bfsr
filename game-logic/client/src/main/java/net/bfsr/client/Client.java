@@ -226,7 +226,6 @@ public class Client extends ClientGameLogic {
         world = new World(profiler, Side.CLIENT, seed, eventBus, new CommonEntityManager(), new ClientEntityIdManager(), this,
                 new CollisionHandler(eventBus));
         world.init();
-        globalRenderer.createBackgroundTexture(seed);
     }
 
     public void closeGui() {

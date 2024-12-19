@@ -11,19 +11,18 @@ import net.bfsr.engine.renderer.texture.TextureRegister;
 
 public class GuiMainMenu extends Gui {
     public GuiMainMenu() {
-        add(new TexturedRectangle(TextureRegister.guiLogoBFSR, 180, 180).atCenter(-90, -240));
-        add(new TexturedRectangle(TextureRegister.guiBfsrText2, 690, 79).atCenter(-345, -189));
+        add(new TexturedRectangle(TextureRegister.guiLogoBFSR, 180, 180).atCenter(0, 150));
+        add(new TexturedRectangle(TextureRegister.guiBfsrText2, 690, 79).atCenter(0, 150));
 
         int buttonWidth = 260;
         int buttonHeight = 40;
-        int x = -buttonWidth / 2;
         add(new Button(buttonWidth, buttonHeight, Lang.getString("gui.mainmenu.singleplayer"),
-                () -> Client.get().startSinglePlayer()).atCenter(x, -45));
+                () -> Client.get().startSinglePlayer()).atCenter(0, 5));
         add(new Button(buttonWidth, buttonHeight, Lang.getString("gui.mainmenu.multiplayer"),
-                () -> Client.get().openGui(new GuiConnect(this))).atCenter(x, 0));
+                () -> Client.get().openGui(new GuiConnect(this))).atCenter(0, -40));
         add(new Button(buttonWidth, buttonHeight, Lang.getString("gui.mainmenu.options"),
-                () -> Client.get().openGui(new GuiSettings(this))).atCenter(x, 45));
+                () -> Client.get().openGui(new GuiSettings(this))).atCenter(0, -85));
         add(new Button(buttonWidth, buttonHeight, Lang.getString("gui.mainmenu.quit"), () -> Client.get().stop())
-                .atCenter(x, 90));
+                .atCenter(0, -130));
     }
 }

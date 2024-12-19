@@ -1,6 +1,6 @@
 #version 450
 
-layout(location = 0) out vec4 out_Color;
+layout (location = 0) out vec4 out_Color;
 
 in Data {
     vec4 color;

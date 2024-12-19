@@ -7,21 +7,15 @@ import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
 
+@Getter
 public class Label extends GuiObject {
-    @Getter
     private String string;
-    @Getter
     private int fontSize;
-    @Getter
     private final GlyphsBuilder glyphsBuilder;
-    @Getter
     private StringOffsetType offsetType;
-    @Getter
     private boolean shadow;
-    @Getter
     private int shadowOffsetX, shadowOffsetY;
     private final LabelRenderer labelRenderer;
-    @Getter
     private int maxWidth;
 
     public Label(Font font) {
@@ -40,6 +34,10 @@ public class Label extends GuiObject {
         this(font, "", 0, 0, fontSize, offsetType);
     }
 
+    public Label(Font font, int fontSize, StringOffsetType offsetType, BufferType bufferType) {
+        this(font, "", fontSize, 0, 0, offsetType, bufferType);
+    }
+
     public Label(Font font, String string, int fontSize) {
         this(font, string, fontSize, StringOffsetType.DEFAULT);
     }
@@ -53,45 +51,68 @@ public class Label extends GuiObject {
     }
 
     public Label(Font font, int fontSize, float r, float g, float b, float a) {
-        this(font, "", 0, 0, fontSize, r, g, b, a, StringOffsetType.DEFAULT);
+        this(font, "", 0, 0, fontSize, r, g, b, a, StringOffsetType.DEFAULT, BufferType.GUI);
     }
 
     public Label(Font font, String string, int x, int y, int fontSize, StringOffsetType offsetType) {
-        this(font, string, x, y, fontSize, 1.0f, 1.0f, 1.0f, 1.0f, offsetType);
+        this(font, string, x, y, fontSize, 1.0f, 1.0f, 1.0f, 1.0f, offsetType, BufferType.GUI);
+    }
+
+    public Label(Font font, String string, int fontSize, int x, int y, StringOffsetType offsetType, BufferType bufferType) {
+        this(font, string, x, y, fontSize, 1.0f, 1.0f, 1.0f, 1.0f, offsetType, bufferType);
     }
 
     public Label(Font font, String string, int fontSize, float r, float g, float b, float a) {
-        this(font, string, 0, 0, fontSize, r, g, b, a, StringOffsetType.DEFAULT);
+        this(font, string, 0, 0, fontSize, r, g, b, a, StringOffsetType.DEFAULT, BufferType.GUI);
     }
 
     protected Label(Font font, String string, int x, int y, int fontSize, float r, float g, float b, float a) {
-        this(font, string, x, y, fontSize, r, g, b, a, StringOffsetType.DEFAULT);
+        this(font, string, x, y, fontSize, r, g, b, a, StringOffsetType.DEFAULT, BufferType.GUI);
     }
 
     protected Label(Font font, String string, int x, int y, int fontSize, float r, float g, float b, float a,
-                    StringOffsetType offsetType) {
-        super(x, y, font.getGlyphsBuilder().getWidth(string, fontSize), 0);
+                    StringOffsetType offsetType, BufferType bufferType) {
+        super(x, y, font.getGlyphsBuilder().getWidth(string, fontSize), Math.round(font.getGlyphsBuilder().getHeight(string, fontSize)));
         this.glyphsBuilder = font.getGlyphsBuilder();
         this.string = string;
         this.fontSize = fontSize;
         this.offsetType = offsetType;
         this.color.set(r, g, b, a);
         this.setCanBeHovered(false);
-        setRenderer(this.labelRenderer = new LabelRenderer(this, glyphsBuilder));
+        setRenderer(this.labelRenderer = new LabelRenderer(this, glyphsBuilder, bufferType));
         packGlyphs();
     }
 
-    public Label packGlyphs() {
-        labelRenderer.packGlyphs(0, 0);
+    private void packGlyphs() {
+        packGlyphs(0, 0);
+    }
+
+    private Label packGlyphs(float x, float y) {
+        if (isOnScene) {
+            renderer.remove();
+            labelRenderer.packGlyphs(x, y);
+            renderer.addToScene();
+        } else {
+            labelRenderer.packGlyphs(x, y);
+        }
+
         return this;
+    }
+
+    public void updatePosition(float x, float y) {
+        labelRenderer.updatePosition(x, y);
+    }
+
+    public void updateLastPosition(float x, float y) {
+        labelRenderer.updateLastPosition(x, y);
     }
 
     public void scale(float x, float y) {
         labelRenderer.scale(x, y);
     }
 
-    public void render(BufferType bufferType, float lastX, float lastY, float x, float y) {
-        labelRenderer.render(bufferType, this.lastX + lastX, this.lastY + lastY, this.x + x, this.y + y);
+    public void render() {
+        labelRenderer.render();
     }
 
     @Override
@@ -100,10 +121,21 @@ public class Label extends GuiObject {
         return this;
     }
 
+    @Override
+    public Label atBottomLeft(int x, int y) {
+        super.atBottomLeft(x, y);
+        return this;
+    }
+
     public Label setString(String string) {
+        return setString(string, 0, 0);
+    }
+
+    public Label setString(String string, float x, float y) {
         this.string = string;
         setWidth(glyphsBuilder.getWidth(string, fontSize));
-        return packGlyphs();
+        setHeight(Math.round(glyphsBuilder.getHeight(string, fontSize)));
+        return packGlyphs(x, y);
     }
 
     public Label setFontSize(int fontSize) {

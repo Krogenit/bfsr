@@ -15,44 +15,60 @@ public class ScrollPane extends GuiObject {
         this.scroll = new Scroll(scrollWidth, height);
 
         super.add(pane.setCanBeHovered(false).setFillParent());
-        super.add(scroll.setViewHeightResizeFunction((width1, height1) -> this.height).atTopRight(() -> -scroll.getWidth(), () -> 0)
+        super.add(scroll.setViewHeightResizeFunction((width1, height1) -> this.height).atBottomRight(0, 0)
                 .setWidthFunction((width1, height1) -> scrollWidth).setHeightFunction((width1, height1) -> this.height));
         setRenderer(new ScrollPaneRenderer(this, scroll));
     }
 
     @Override
     public void add(GuiObject guiObject) {
-        pane.add(guiObject);
+        pane.getGuiObjects().add(guiObject);
         scroll.addScrollable(guiObject);
         guiObject.setParent(this);
-        guiObject.onAdded();
+        guiObject.add();
     }
 
     @Override
     public void addAt(int index, GuiObject guiObject) {
-        pane.addAt(index, guiObject);
+        pane.getGuiObjects().add(index, guiObject);
         scroll.addScrollable(guiObject);
         guiObject.setParent(this);
-        guiObject.onAdded();
+        guiObject.add();
     }
 
     @Override
     public int addBefore(GuiObject guiObject, GuiObject beforeObject) {
-        int index = pane.addBefore(guiObject, beforeObject);
-        scroll.addScrollable(guiObject);
-        guiObject.setParent(this);
-        guiObject.onAdded();
-        return index;
+        int index = pane.getGuiObjects().indexOf(beforeObject);
+        if (index >= 0) {
+            addAt(index, guiObject);
+            return index;
+        } else {
+            throw new RuntimeException("Failed to add gui object " + guiObject + " before " + beforeObject);
+        }
     }
 
     @Override
     public void remove(GuiObject guiObject) {
-        pane.remove(guiObject);
+        pane.getGuiObjects().remove(guiObject);
         scroll.removeScrollable(guiObject);
+        guiObject.remove();
+        guiObject.setParent(BlankGuiObject.INSTANCE);
     }
 
     public void scrollBottom() {
         scroll.scrollBottom();
+    }
+
+    @Override
+    protected void onChildPositionChanged(GuiObject guiObject, int x, int y) {
+        super.onChildPositionChanged(guiObject, x, y);
+        scroll.updateScrollable(guiObject);
+    }
+
+    @Override
+    protected void onChildSizeChanged(GuiObject guiObject, int width, int height) {
+        super.onChildSizeChanged(guiObject, width, height);
+        scroll.updateScrollable(guiObject);
     }
 
     public void setScrollColor(Vector4f color) {
@@ -72,6 +88,10 @@ public class ScrollPane extends GuiObject {
     public ScrollPane setScrollHoverColor(float r, float g, float b, float a) {
         scroll.setHoverColor(r, g, b, a);
         return this;
+    }
+
+    public int getScroll() {
+        return scroll.getScroll();
     }
 
     public int getScrollWidth() {

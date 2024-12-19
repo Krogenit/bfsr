@@ -8,16 +8,14 @@ public abstract class AbstractCamera {
     public abstract void resize(int width, int height);
     public abstract void update();
     public abstract void calculateInterpolatedViewMatrix(float interpolation);
-    public abstract void bindInterpolatedWorldViewMatrix();
     public abstract void bindWorldViewMatrix();
     public abstract void bindGUI();
 
-    public abstract void zoom(float v);
+    public abstract void zoom(float value);
     public abstract void move(float x, float y);
-    public abstract void moveByMouse(float x, float y);
+    public abstract void moveByMouse(float dx, float dy);
 
     public abstract void setBoundingBox(float minX, float minY, float maxX, float maxY);
-    public abstract float getLastZoom();
     public abstract float getZoom();
     public abstract Vector2f getLastPosition();
     public abstract Vector2f getPosition();

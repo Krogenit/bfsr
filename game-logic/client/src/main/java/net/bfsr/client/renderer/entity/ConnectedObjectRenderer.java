@@ -3,6 +3,7 @@ package net.bfsr.client.renderer.entity;
 import net.bfsr.client.renderer.Render;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.entity.GameObject;
 
@@ -15,22 +16,31 @@ public class ConnectedObjectRenderer extends Render {
     }
 
     @Override
-    public void update() {
-        lastPosition.set(connectedObject.getX(), connectedObject.getY());
-        lastSin = connectedObject.getSin();
-        lastCos = connectedObject.getCos();
+    public void init() {
+        id = spriteRenderer.add(connectedObject.getX(), connectedObject.getY(), connectedObject.getSin(),
+                connectedObject.getCos(), connectedObject.getSizeX(), connectedObject.getSizeY(), 0.25f, 0.25f, 0.25f, 1.0f,
+                texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
     }
 
     @Override
-    public void postWorldUpdate() {}
+    public void postWorldUpdate() {
+        updateRenderValues();
+    }
+
+    @Override
+    protected void updateLastRenderValues() {
+        spriteRenderer.setLastPosition(id, BufferType.ENTITIES_ALPHA, connectedObject.getX(), connectedObject.getY());
+        spriteRenderer.setLastRotation(id, BufferType.ENTITIES_ALPHA, connectedObject.getSin(), connectedObject.getCos());
+    }
+
+    @Override
+    protected void updateRenderValues() {
+        spriteRenderer.setPosition(id, BufferType.ENTITIES_ALPHA, connectedObject.getX(), connectedObject.getY());
+        spriteRenderer.setRotation(id, BufferType.ENTITIES_ALPHA, connectedObject.getSin(), connectedObject.getCos());
+    }
 
     @Override
     public void renderAlpha() {
-        float sin = connectedObject.getSin();
-        float cos = connectedObject.getCos();
-
-        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, connectedObject.getX(), connectedObject.getY(), lastSin,
-                lastCos, sin, cos, connectedObject.getSizeX(), connectedObject.getSizeY(), 0.25f, 0.25f, 0.25f, 1.0f, texture,
-                BufferType.ENTITIES_ALPHA);
+        spriteRenderer.addDrawCommand(id, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ALPHA);
     }
 }

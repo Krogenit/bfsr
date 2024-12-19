@@ -12,12 +12,14 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 public class Scroll extends Rectangle {
+    @Getter
     private int scroll;
     private int clickStartScroll;
     private int mouseStartClickY;
     @Getter
     private int totalHeight;
     private int viewHeight;
+    private int firstElementGapHeight;
     @Getter
     private boolean movingByMouse;
     private int scrollHeight;
@@ -59,7 +61,8 @@ public class Scroll extends Rectangle {
         }
 
         if (movingByMouse) {
-            updateScroll((int) (clickStartScroll + (mouse.getPosition().y - mouseStartClickY) / (scrollHeight / (float) totalHeight)));
+            updateScroll((int) (clickStartScroll - (mouse.getGuiPosition().y - mouseStartClickY) /
+                    (scrollHeight / (float) (totalHeight + firstElementGapHeight))));
         }
     }
 
@@ -144,7 +147,7 @@ public class Scroll extends Rectangle {
     private void updateScrollableLastValues() {
         updateLastValues();
         for (int i = 0; i < scrollableElements.size(); i++) {
-            scrollableElements.get(i).getGuiObject().update();
+            scrollableElements.get(i).getGuiObject().updateLastValues();
         }
     }
 
@@ -153,7 +156,7 @@ public class Scroll extends Rectangle {
         if (!isMouseHover()) return null;
 
         movingByMouse = true;
-        mouseStartClickY = (int) mouse.getPosition().y;
+        mouseStartClickY = (int) (mouse.getGuiPosition().y);
         clickStartScroll = scroll;
 
         return this;

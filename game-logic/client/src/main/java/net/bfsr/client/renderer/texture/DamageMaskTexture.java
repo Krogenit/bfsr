@@ -1,5 +1,6 @@
 package net.bfsr.client.renderer.texture;
 
+import lombok.Getter;
 import net.bfsr.client.Client;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.MathUtils;
@@ -13,7 +14,7 @@ public class DamageMaskTexture extends AbstractDamageMaskTexture {
     public static final ByteBuffer WHITE_BUFFER = ByteBuffer.allocateDirect(4).put((byte) 255).flip();
 
     private final AbstractTexture texture;
-    private float lastFireAmount, lastFireUVAnimation;
+    @Getter
     private float fireAmount, fireUVAnimation;
     private boolean changeFire;
     private final float fireAnimationSpeed = Client.get().convertToDeltaTime(0.24f);
@@ -21,8 +22,8 @@ public class DamageMaskTexture extends AbstractDamageMaskTexture {
 
     public DamageMaskTexture(int width, int height) {
         this.texture = Engine.assetsManager.newTexture(width, height);
-        this.lastFireAmount = fireAmount = 2.0f;
-        this.lastFireUVAnimation = fireUVAnimation = (float) (Math.random() * MathUtils.TWO_PI);
+        this.fireAmount = 2.0f;
+        this.fireUVAnimation = (float) (Math.random() * MathUtils.TWO_PI);
     }
 
     public void createEmpty() {
@@ -39,8 +40,6 @@ public class DamageMaskTexture extends AbstractDamageMaskTexture {
     }
 
     public void updateEffects() {
-        lastFireAmount = fireAmount;
-        lastFireUVAnimation = fireUVAnimation;
 
         if (changeFire) {
             fireAmount -= fireAnimationSpeed;
@@ -65,16 +64,6 @@ public class DamageMaskTexture extends AbstractDamageMaskTexture {
     @Override
     public long getTextureHandle() {
         return texture.getTextureHandle();
-    }
-
-    @Override
-    public float getFireAmount(float interpolation) {
-        return lastFireAmount + (fireAmount - lastFireAmount) * interpolation;
-    }
-
-    @Override
-    public float getFireUVAnimation(float interpolation) {
-        return lastFireUVAnimation + (fireUVAnimation - lastFireUVAnimation) * interpolation;
     }
 
     @Override

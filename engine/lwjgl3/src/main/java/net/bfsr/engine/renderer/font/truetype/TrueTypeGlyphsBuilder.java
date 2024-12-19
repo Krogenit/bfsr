@@ -62,7 +62,7 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
         trueTypeFontPacker.packNewChars(text);
 
         List<Glyph> glyphs = new ArrayList<>(32);
-        int x = 0;
+        int width = 0;
 
         for (int i = 0, to = text.length(); i < to; i++) {
             char charCode = text.charAt(i);
@@ -71,13 +71,13 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
                 continue;
             }
 
-            glyphs.add(new Glyph(glyph.getX1() + x, glyph.getY1(), glyph.getX2() + x, glyph.getY2(), glyph.getU1(), glyph.getV1(),
-                    glyph.getU2(), glyph.getV2(), glyph.getTextureHandle(), glyph.getAdvance()));
+            glyphs.add(new Glyph(glyph.getX1(), glyph.getY1(), glyph.getX2(), glyph.getY2(), glyph.getU1(), glyph.getV1(),
+                    glyph.getU2(), glyph.getV2(), glyph.getTextureHandle(), glyph.getAdvance(), glyph.getCodepoint(), glyph.isEmpty()));
 
-            x += glyph.getAdvance();
+            width += glyph.getAdvance();
         }
 
-        return new GlyphsData(glyphs, x);
+        return new GlyphsData(glyphs, width);
     }
 
     @Override
@@ -166,7 +166,20 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
 
     @Override
     public float getHeight(String string, int fontSize) {
-        return getAscent(string, fontSize) - getDescent(string, fontSize);
+        float lineHeight = getLineHeight(fontSize);
+        float totalHeight = lineHeight;
+        for (int i = 0; i < string.length(); i++) {
+            if (string.charAt(i) == NEW_LINE) {
+                totalHeight += lineHeight;
+            }
+        }
+
+        return totalHeight;
+    }
+
+    @Override
+    public float getLineHeight(int fontSize) {
+        return getAscent("\n", fontSize) - getDescent("\n", fontSize);
     }
 
     @Override
@@ -186,7 +199,7 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
 
     @Override
     public int getCenteredOffsetY(String string, int height, int fontSize) {
-        return Math.round((height - getAscent(string, fontSize) + getDescent(string, fontSize)) / 2.0f);
+        return (int) ((height - getAscent(string, fontSize) + getDescent(string, fontSize)) / 2.0f);
     }
 
     @Override

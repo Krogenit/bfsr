@@ -1,13 +1,17 @@
 package net.bfsr.engine.renderer.primitive;
 
 import lombok.Getter;
+import net.bfsr.engine.util.RunnableUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
-import static org.lwjgl.opengl.GL45C.*;
+import static org.lwjgl.opengl.GL45C.glCreateBuffers;
+import static org.lwjgl.opengl.GL45C.glDeleteBuffers;
+import static org.lwjgl.opengl.GL45C.nglNamedBufferStorage;
+import static org.lwjgl.opengl.GL45C.nglNamedBufferSubData;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 
 public final class VBO {
@@ -25,58 +29,57 @@ public final class VBO {
     }
 
     void storeData(ByteBuffer data, int flags) {
-        storeData(Integer.toUnsignedLong(data.remaining()), flags, memAddress(data));
+        storeData(memAddress(data), Integer.toUnsignedLong(data.remaining()), flags);
     }
 
     void storeData(LongBuffer data, int flags) {
-        storeData(Integer.toUnsignedLong(data.remaining()) << 3, flags, memAddress(data));
+        storeData(memAddress(data), Integer.toUnsignedLong(data.remaining()) << 3, flags);
     }
 
-    void storeData(FloatBuffer data, int flags) {
-        storeData(Integer.toUnsignedLong(data.remaining()) << 2, flags, memAddress(data));
+    public void storeData(FloatBuffer data, int flags) {
+        storeData(memAddress(data), Integer.toUnsignedLong(data.remaining()) << 2, flags);
     }
 
     void storeData(FloatBuffer data, int flags, Runnable onResizeRunnable) {
-        storeData(Integer.toUnsignedLong(data.remaining()) << 2, flags, memAddress(data), onResizeRunnable);
+        storeData(memAddress(data), Integer.toUnsignedLong(data.remaining()) << 2, flags, onResizeRunnable);
     }
 
     void storeData(ByteBuffer data, int flags, Runnable onResizeRunnable) {
-        storeData(Integer.toUnsignedLong(data.remaining()), flags, memAddress(data), onResizeRunnable);
+        storeData(memAddress(data), Integer.toUnsignedLong(data.remaining()), flags, onResizeRunnable);
     }
 
     void storeData(IntBuffer data, int flags, Runnable onResizeRunnable) {
-        storeData(Integer.toUnsignedLong(data.remaining()) << 2, flags, memAddress(data), onResizeRunnable);
+        storeData(memAddress(data), Integer.toUnsignedLong(data.remaining()) << 2, flags, onResizeRunnable);
     }
 
-    void storeData(IntBuffer data, int flags) {
-        storeData(Integer.toUnsignedLong(data.remaining()) << 2, flags, memAddress(data));
+    public void storeData(IntBuffer data, int flags) {
+        storeData(memAddress(data), Integer.toUnsignedLong(data.remaining()) << 2, flags);
     }
 
-    private void storeData(long newDataSize, int flags, long dataAddress, Runnable onResizeRunnable) {
-        if (newDataSize <= maxDataSize) {
-            nglNamedBufferSubData(id, 0, newDataSize, dataAddress);
+    private void storeData(long address, long fullDataSize, int flags, Runnable onResizeRunnable) {
+        storeData(address, fullDataSize, 0, fullDataSize, flags, onResizeRunnable);
+    }
+
+    private void storeData(long address, long fullDataSize, long offset, long newDataSize, int flags, Runnable onResizeRunnable) {
+        if (newDataSize + offset <= maxDataSize) {
+            nglNamedBufferSubData(id, offset, newDataSize, address + offset);
         } else {
             if (maxDataSize > 0) {
                 glDeleteBuffers(id);
                 id = glCreateBuffers();
             }
             onResizeRunnable.run();
-            nglNamedBufferStorage(id, newDataSize, dataAddress, flags);
-            maxDataSize = newDataSize;
+            nglNamedBufferStorage(id, fullDataSize, address, flags);
+            maxDataSize = fullDataSize;
         }
     }
 
-    private void storeData(long newDataSize, int flags, long dataAddress) {
-        if (newDataSize <= maxDataSize) {
-            nglNamedBufferSubData(id, 0, newDataSize, dataAddress);
-        } else {
-            if (maxDataSize > 0) {
-                glDeleteBuffers(id);
-                id = glCreateBuffers();
-            }
-            nglNamedBufferStorage(id, newDataSize, dataAddress, flags);
-            maxDataSize = newDataSize;
-        }
+    private void storeData(long address, long newDataSize, int flags) {
+        storeData(address, newDataSize, 0, newDataSize, flags);
+    }
+
+    void storeData(long address, long fullDataSize, long offset, long newDataSize, int flags) {
+        storeData(address, fullDataSize, offset, newDataSize, flags, RunnableUtils.EMPTY_RUNNABLE);
     }
 
     public void clear() {
