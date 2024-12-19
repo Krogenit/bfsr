@@ -7,7 +7,6 @@ import net.bfsr.engine.util.MutableInt;
 import org.jbox2d.collision.AABB;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL40C;
-import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GL44C;
 import org.lwjgl.system.MemoryUtil;
 
@@ -15,8 +14,9 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static net.bfsr.engine.renderer.AbstractSpriteRenderer.FOUR_BYTES_ELEMENT_SHIFT;
+import static org.lwjgl.opengl.GL43C.glMultiDrawArraysIndirect;
 
-public class DebugRenderer extends AbstractDebugRenderer {
+public class DebugRenderer implements AbstractDebugRenderer {
     private static final int VERTEX_DATA_SIZE = 6;
     private static final int VERTEX_DATA_SIZE_IN_BYTES = VERTEX_DATA_SIZE << 2;
     private static final int COMMAND_SIZE_IN_BYTES = 4;
@@ -45,12 +45,6 @@ public class DebugRenderer extends AbstractDebugRenderer {
     }
 
     @Override
-    public void bind() {
-        vao.bind();
-        debugShader.enable();
-    }
-
-    @Override
     public void renderAABB(AABB aabb, Vector4f color) {
         addCommand(4);
         addVertex(aabb.getMinX(), aabb.getMinY(), color);
@@ -62,10 +56,12 @@ public class DebugRenderer extends AbstractDebugRenderer {
     @Override
     public void render(int mode) {
         if (objectsCount > 0) {
+            debugShader.enable();
+            vao.bind();
             vao.updateVertexBuffer(0, vertexBuffer.limit(vertexBufferIndex.get()), GL44C.GL_DYNAMIC_STORAGE_BIT, VERTEX_DATA_SIZE_IN_BYTES);
             vao.updateBuffer(1, cmdBuffer.limit(cmdBufferIndex.get()), GL44C.GL_DYNAMIC_STORAGE_BIT);
             vao.bindBuffer(GL40C.GL_DRAW_INDIRECT_BUFFER, 1);
-            GL43.glMultiDrawArraysIndirect(mode, 0, objectsCount, 0);
+            glMultiDrawArraysIndirect(mode, 0, objectsCount, 0);
             Engine.renderer.increaseDrawCalls();
         }
     }
@@ -121,12 +117,17 @@ public class DebugRenderer extends AbstractDebugRenderer {
         debugShader.init();
     }
 
-    @Override
-    public void clear() {
-        vertexBuffer.clear();
-        cmdBuffer.clear();
+    public void reset() {
         objectsCount = 0;
         vertexBufferIndex.set(0);
         cmdBufferIndex.set(0);
+    }
+
+    @Override
+    public void clear() {
+        debugShader.delete();
+        vao.clear();
+        MemoryUtil.memFree(vertexBuffer);
+        MemoryUtil.memFree(cmdBuffer);
     }
 }

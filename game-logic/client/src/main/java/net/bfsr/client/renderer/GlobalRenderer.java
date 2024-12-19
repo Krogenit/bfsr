@@ -65,10 +65,9 @@ public class GlobalRenderer {
     }
 
     private void renderDebug() {
-        debugRenderer.bind();
         renderManager.renderDebug();
         debugRenderer.render(GL.GL_LINE_LOOP);
-        debugRenderer.clear();
+        debugRenderer.reset();
         shader.enable();
     }
 

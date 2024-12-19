@@ -6,18 +6,20 @@ import net.bfsr.engine.util.MatrixBufferUtils;
 import org.jbox2d.collision.AABB;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
+import org.lwjgl.opengl.GL15C;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL44;
 import org.lwjgl.opengl.GL45;
 import org.lwjgl.opengl.GL45C;
+import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 
 import static net.bfsr.engine.renderer.Renderer.UBO_PROJECTION_MATRIX;
 import static net.bfsr.engine.renderer.Renderer.UBO_VIEW_DATA;
 
-public class Camera extends AbstractCamera {
+public class Camera implements AbstractCamera {
     private static final float Z_NEAR = -1.0f;
     private static final float Z_FAR = 1.0f;
     private static final float ZOOM_MAX = 30.0f;
@@ -74,16 +76,16 @@ public class Camera extends AbstractCamera {
                         -height / 2.0f, height / 2.0f, Z_NEAR, Z_FAR)
                 .get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
 
-        viewBuffer = Engine.renderer.createFloatBuffer(3);
-        viewBufferAddress = Engine.renderer.getAddress(viewBuffer);
+        viewBuffer = MemoryUtil.memAllocFloat(3);
+        viewBufferAddress = MemoryUtil.memAddress(viewBuffer);
         Engine.renderer.putValue(viewBufferAddress, 0);
         Engine.renderer.putValue(viewBufferAddress + 4, 0);
         Engine.renderer.putValue(viewBufferAddress + 8, zoom);
 
         GL45C.nglNamedBufferStorage(viewUBO, 12L, viewBufferAddress, GL44.GL_DYNAMIC_STORAGE_BIT);
 
-        guiViewBuffer = Engine.renderer.createFloatBuffer(3);
-        guiViewBufferAddress = Engine.renderer.getAddress(guiViewBuffer);
+        guiViewBuffer = MemoryUtil.memAllocFloat(3);
+        guiViewBufferAddress = MemoryUtil.memAddress(guiViewBuffer);
         Engine.renderer.putValue(guiViewBufferAddress, 0);
         Engine.renderer.putValue(guiViewBufferAddress + 4, 0);
         Engine.renderer.putValue(guiViewBufferAddress + 8, 1.0f);
@@ -191,5 +193,16 @@ public class Camera extends AbstractCamera {
     @Override
     public void setBoundingBox(float minX, float minY, float maxX, float maxY) {
         boundingBox.set(minX, minY, maxX, maxY);
+    }
+
+    @Override
+    public void clear() {
+        GL15C.glDeleteBuffers(worldProjectionMatrixUBO);
+        GL15C.glDeleteBuffers(GUIProjectionMatrixUBO);
+        GL15C.glDeleteBuffers(viewUBO);
+        GL15C.glDeleteBuffers(guiViewUBO);
+
+        MemoryUtil.memFree(viewBuffer);
+        MemoryUtil.memFree(guiViewBuffer);
     }
 }
