@@ -72,12 +72,12 @@ public class GuiRenderer extends AbstractGUIRenderer {
     }
 
     @Override
-    public int add(float x, float y, float width, float height, Vector4f color) {
+    public int add(int x, int y, int width, int height, Vector4f color) {
         return add(x, y, width, height, color.x, color.y, color.z, color.w, 0);
     }
 
     @Override
-    public int add(float x, float y, float width, float height, float r, float g, float b, float a) {
+    public int add(int x, int y, int width, int height, float r, float g, float b, float a) {
         return add(x, y, width, height, r, g, b, a, 0);
     }
 
@@ -87,28 +87,28 @@ public class GuiRenderer extends AbstractGUIRenderer {
     }
 
     @Override
-    public void add(float x, float y, float width, float height, float r, float g, float b, float a, AbstractTexture texture) {
+    public void add(int x, int y, int width, int height, float r, float g, float b, float a, AbstractTexture texture) {
         add(x, y, width, height, r, g, b, a, texture.getTextureHandle());
     }
 
     @Override
-    public int add(float x, float y, float width, float height, Vector4f color, AbstractTexture texture) {
+    public int add(int x, int y, int width, int height, Vector4f color, AbstractTexture texture) {
         return add(x, y, width, height, color.x, color.y, color.z, color.w, texture.getTextureHandle());
     }
 
     @Override
-    public int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle) {
+    public int add(int x, int y, int width, int height, float r, float g, float b, float a, long textureHandle) {
         return add(x, y, 0, 1, width, height, r, g, b, a, textureHandle, 0);
     }
 
     @Override
-    public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+    public int add(int x, int y, float sin, float cos, int width, int height, float r, float g, float b, float a,
                    AbstractTexture texture) {
         return add(x, y, sin, cos, width, height, r, g, b, a, texture.getTextureHandle(), 0);
     }
 
     @Override
-    public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+    public int add(int x, int y, float sin, float cos, int width, int height, float r, float g, float b, float a,
                    long textureHandle, int font) {
         return spriteRenderer.add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, font, buffersHolder);
     }
