@@ -21,7 +21,7 @@ dependencies {
     api 'com.carrotsearch:hppc:0.10.0'
     api 'org.eclipse.collections:eclipse-collections-api:11.1.0'
     api 'org.eclipse.collections:eclipse-collections:11.1.0'
-    api 'org.agrona:agrona:1.22.0'
+    api 'org.agrona:agrona:1.23.1'
     api 'org.locationtech.jts:jts-core:1.19.0'
     api 'org.locationtech.jts:jts:1.19.0'
     implementation 'org.slf4j:slf4j-nop:2.0.13'
