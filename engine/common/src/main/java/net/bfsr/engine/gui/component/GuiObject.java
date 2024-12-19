@@ -5,9 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.renderer.GuiObjectRenderer;
-import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.util.RunnableUtils;
-import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 import javax.annotation.Nullable;
@@ -21,19 +19,13 @@ import java.util.function.Supplier;
 @NoArgsConstructor
 public class GuiObject {
     @Getter
-    @Setter
     protected int x;
     @Getter
-    @Setter
     protected int y;
-    protected int lastX, lastY;
     @Getter
     protected int width, height;
     @Getter
-    @Setter
     protected float rotation;
-    @Getter
-    protected float lastRotation;
     @Getter
     protected final Vector4f color = new Vector4f(1.0f);
     @Getter
@@ -43,10 +35,11 @@ public class GuiObject {
     @Getter
     protected final Vector4f outlineHoverColor = new Vector4f(1.0f);
     @Setter
-    private Supplier<Boolean> intersectsCheckMethod = () -> isIntersects(Engine.mouse.getPosition().x, Engine.mouse.getPosition().y);
-    private BiConsumer<Integer, Integer> repositionConsumer = (width, height) -> {};
-    private BiFunction<Integer, Integer, Integer> widthFunction = (width, height) -> getWidth();
-    private BiFunction<Integer, Integer, Integer> heightFunction = (width, height) -> getHeight();
+    private Supplier<Boolean> intersectsCheckMethod = () -> isIntersects(Engine.mouse.getPosition().x, Engine.mouse.getGuiPosition().y);
+    private BiFunction<Integer, Integer, Integer> widthFunction = (width, height) -> this.width;
+    private BiFunction<Integer, Integer, Integer> heightFunction = (width, height) -> this.height;
+    private BiFunction<Integer, Integer, Integer> xFunction = (width, height) -> 0;
+    private BiFunction<Integer, Integer, Integer> yFunction = (width, height) -> 0;
     @Getter
     @Setter
     protected boolean mouseHover;
@@ -66,6 +59,8 @@ public class GuiObject {
     private boolean canBeHovered = true;
     @Getter
     protected GuiObjectRenderer renderer = new GuiObjectRenderer(this);
+    @Getter
+    protected boolean isOnScene;
 
     public GuiObject(int x, int y, int width, int height) {
         this.x = x;
@@ -79,47 +74,74 @@ public class GuiObject {
     }
 
     public GuiObject atTopLeft(int x, int y) {
-        repositionConsumer = (width, height) -> setPosition(x, y);
+        xFunction = (width, height) -> x;
+        yFunction = (width, height) -> height - this.height + y;
+        return this;
+    }
+
+    public GuiObject atTopLeft(int x, int y, Supplier<Integer> xSupplier, Supplier<Integer> ySupplier) {
+        xFunction = (width, height) -> x + xSupplier.get();
+        yFunction = (width, height) -> y + height - this.height + ySupplier.get();
         return this;
     }
 
     public GuiObject atBottomLeft(int x, int y) {
-        repositionConsumer = (width, height) -> setPosition(x, height + y);
+        xFunction = (width, height) -> x;
+        yFunction = (width, height) -> y;
+        return this;
+    }
+
+    public GuiObject atBottomLeft(Supplier<Integer> xSupplier, Supplier<Integer> ySupplier) {
+        xFunction = (width, height) -> xSupplier.get();
+        yFunction = (width, height) -> ySupplier.get();
         return this;
     }
 
     public GuiObject atBottomRight(int x, int y) {
-        repositionConsumer = (width, height) -> setPosition(width + x, height + y);
+        xFunction = (width, height) -> width + x - this.width;
+        yFunction = (width, height) -> y;
         return this;
     }
 
     public GuiObject atTop(int x, int y) {
-        repositionConsumer = (width, height) -> setPosition(width / 2 + x, y);
+        xFunction = (width, height) -> width / 2 + x - this.width / 2;
+        yFunction = (width, height) -> height + y - this.height;
         return this;
     }
 
     public GuiObject atTopRight(int x, int y) {
-        repositionConsumer = (width, height) -> setPosition(width + x, y);
+        xFunction = (width, height) -> width + x - this.width;
+        yFunction = (width, height) -> height + y - this.height;
         return this;
     }
 
-    public GuiObject atTopRight(Supplier<Integer> xSupplier, Supplier<Integer> ySupplier) {
-        repositionConsumer = (width, height) -> setPosition(width + xSupplier.get(), ySupplier.get());
+    public GuiObject atBottomRight(Supplier<Integer> xSupplier, Supplier<Integer> ySupplier) {
+        xFunction = (width, height) -> width + xSupplier.get() - this.width;
+        yFunction = (width, height) -> ySupplier.get();
         return this;
     }
 
     public GuiObject atBottom(int x, int y) {
-        repositionConsumer = (width, height) -> setPosition(width / 2 + x, height + y);
+        xFunction = (width, height) -> width / 2 + x - this.width / 2;
+        yFunction = (width, height) -> y;
+        return this;
+    }
+
+    public GuiObject atLeft(int x, int y) {
+        xFunction = (width, height) -> x;
+        yFunction = (width, height) -> height / 2 + y - this.height / 2;
         return this;
     }
 
     public GuiObject atRight(int x, int y) {
-        repositionConsumer = (width, height) -> setPosition(width + x, height / 2 + y);
+        xFunction = (width, height) -> width + x - this.width;
+        yFunction = (width, height) -> height / 2 + y - this.height / 2;
         return this;
     }
 
     public GuiObject atCenter(int x, int y) {
-        repositionConsumer = (width, height) -> setPosition(width / 2 + x, height / 2 + y);
+        xFunction = (width, height) -> width / 2 + x - this.width / 2;
+        yFunction = (width, height) -> height / 2 + y - this.height / 2;
         return this;
     }
 
@@ -133,11 +155,6 @@ public class GuiObject {
         return this;
     }
 
-    public GuiObject setRepositionConsumer(BiConsumer<Integer, Integer> repositionConsumer) {
-        this.repositionConsumer = repositionConsumer;
-        return this;
-    }
-
     public GuiObject setFillParent() {
         return setWidthFunction((width, height) -> width).setHeightFunction((width, height) -> height);
     }
@@ -147,45 +164,51 @@ public class GuiObject {
     }
 
     public void updatePositionAndSize() {
-        updatePositionAndSize(parent.getWidth(), parent.getHeight());
+        updatePositionAndSize(parent.width, parent.height);
     }
 
     public void updatePositionAndSize(int width, int height) {
         setWidth(widthFunction.apply(width, height));
         setHeight(heightFunction.apply(width, height));
-        repositionConsumer.accept(width, height);
-        update();
+        setPosition(xFunction.apply(width, height), yFunction.apply(width, height));
+        updateLastValues();
 
         for (int i = 0; i < guiObjects.size(); i++) {
             guiObjects.get(i).updatePositionAndSize(this.width, this.height);
         }
     }
 
-    public void onAdded() {
+    public void add() {
         updatePositionAndSize();
+        if (parent.isOnScene) {
+            addToScene();
+        }
     }
 
-    public void onRemoved() {}
+    public void remove() {
+        if (isOnScene) {
+            isOnScene = false;
+            mouseHover = false;
+            renderer.remove();
+
+            for (int i = 0, size = guiObjects.size(); i < size; i++) {
+                guiObjects.get(i).remove();
+            }
+        }
+    }
 
     public void update() {
-        updateLastValues();
+        renderer.update();
         for (int i = 0; i < guiObjects.size(); i++) {
             guiObjects.get(i).update();
         }
     }
 
     public void updateLastValues() {
-        lastX = x;
-        lastY = y;
-        lastRotation = rotation;
-    }
-
-    public void render() {
-        renderer.render(lastX, lastY, x, y, width, height);
-    }
-
-    public void render(AbstractGUIRenderer guiRenderer, int lastX, int lastY, int x, int y) {
-        renderer.render(lastX + this.lastX, lastY + this.lastY, x + this.x, y + this.y, width, height);
+        renderer.updateLastValues();
+        for (int i = 0; i < guiObjects.size(); i++) {
+            guiObjects.get(i).updateLastValues();
+        }
     }
 
     @Nullable
@@ -281,22 +304,39 @@ public class GuiObject {
         return false;
     }
 
-    public void onMouseHover() {}
+    public void onMouseHover() {
+        if (isOnScene) {
+            renderer.onMouseHover();
+        }
+    }
 
-    public void onMouseStopHover() {}
+    public void onMouseStopHover() {
+        if (isOnScene) {
+            renderer.onMouseStopHover();
+        }
+    }
 
     protected void onParentSizeChanged(int width, int height) {
         updatePositionAndSize(width, height);
     }
 
     protected void onChildSizeChanged(GuiObject guiObject, int width, int height) {
+        updatePositionAndSize(parent.width, parent.height);
         parent.onChildSizeChanged(guiObject, width, height);
     }
 
-    protected void onParentPositionChanged(int x, int y) {}
+    protected void onParentPositionChanged() {
+        if (isOnScene) {
+            renderer.updatePosition();
+
+            for (int i = 0; i < guiObjects.size(); i++) {
+                guiObjects.get(i).onParentPositionChanged();
+            }
+        }
+    }
 
     protected void onChildPositionChanged(GuiObject guiObject, int x, int y) {
-        parent.onChildPositionChanged(this, x, y);
+        parent.onChildPositionChanged(guiObject, x, y);
     }
 
     public void addIfAbsent(GuiObject guiObject) {
@@ -307,13 +347,13 @@ public class GuiObject {
     public void add(GuiObject guiObject) {
         guiObjects.add(guiObject);
         guiObject.setParent(this);
-        guiObject.onAdded();
+        guiObject.add();
     }
 
     public void addAt(int index, GuiObject guiObject) {
         guiObjects.add(index, guiObject);
         guiObject.setParent(this);
-        guiObject.onAdded();
+        guiObject.add();
     }
 
     public int addBefore(GuiObject guiObject, GuiObject beforeObject) {
@@ -328,7 +368,7 @@ public class GuiObject {
 
     public void remove(GuiObject guiObject) {
         guiObjects.remove(guiObject);
-        guiObject.onRemoved();
+        guiObject.remove();
         guiObject.setParent(BlankGuiObject.INSTANCE);
     }
 
@@ -344,6 +384,10 @@ public class GuiObject {
         for (int i = 0; i < guiObjects.size(); i++) {
             consumer.accept(guiObjects.get(i));
         }
+    }
+
+    public void applyPositionFunctions(BiConsumer<Integer, Integer> consumer) {
+        consumer.accept(xFunction.apply(parent.width, parent.height), yFunction.apply(parent.width, parent.height));
     }
 
     public GuiObject setLeftClickRunnable(Runnable runnable) {
@@ -372,8 +416,52 @@ public class GuiObject {
         if (changed) {
             this.x = x;
             this.y = y;
-            forEach(guiObject -> guiObject.onParentPositionChanged(x, y));
+            if (isOnScene) {
+                renderer.updatePosition();
+            }
+            forEach(GuiObject::onParentPositionChanged);
             parent.onChildPositionChanged(this, x, y);
+        }
+
+        return this;
+    }
+
+    public GuiObject setX(int x) {
+        boolean changed = x != this.x;
+
+        if (changed) {
+            this.x = x;
+            if (isOnScene) {
+                renderer.updatePosition();
+            }
+            forEach(GuiObject::onParentPositionChanged);
+        }
+
+        return this;
+    }
+
+    public GuiObject setY(int y) {
+        boolean changed = y != this.y;
+
+        if (changed) {
+            this.y = y;
+            if (isOnScene) {
+                renderer.updatePosition();
+            }
+            forEach(GuiObject::onParentPositionChanged);
+        }
+
+        return this;
+    }
+
+    public GuiObject setRotation(float rotation) {
+        boolean changed = rotation != this.rotation;
+
+        if (changed) {
+            this.rotation = rotation;
+            if (isOnScene) {
+                renderer.updateRotation();
+            }
         }
 
         return this;
@@ -385,6 +473,9 @@ public class GuiObject {
         if (changed) {
             this.width = width;
             this.height = height;
+            if (isOnScene) {
+                renderer.updateSize();
+            }
             forEach(guiObject -> guiObject.onParentSizeChanged(width, height));
             parent.onChildSizeChanged(this, width, height);
         }
@@ -397,6 +488,9 @@ public class GuiObject {
 
         if (changed) {
             this.width = width;
+            if (isOnScene) {
+                renderer.updateSize();
+            }
             forEach(guiObject -> guiObject.onParentSizeChanged(width, height));
             parent.onChildSizeChanged(this, width, height);
         }
@@ -409,6 +503,9 @@ public class GuiObject {
 
         if (changed) {
             this.height = height;
+            if (isOnScene) {
+                renderer.updateSize();
+            }
             forEach(guiObject -> guiObject.onParentSizeChanged(width, height));
             parent.onChildSizeChanged(this, width, height);
         }
@@ -418,11 +515,17 @@ public class GuiObject {
 
     public GuiObject setColor(float r, float g, float b, float a) {
         color.set(r, g, b, a);
+        if (isOnScene) {
+            renderer.updateColor();
+        }
         return this;
     }
 
     public GuiObject setColor(Vector4f color) {
         this.color.set(color);
+        if (isOnScene) {
+            renderer.updateColor();
+        }
         return this;
     }
 
@@ -486,11 +589,7 @@ public class GuiObject {
         return intersectsCheckMethod.get();
     }
 
-    public boolean isIntersects(Vector2f vector) {
-        return isIntersects(vector.x, vector.y);
-    }
-
-    private boolean isIntersects(float x, float y) {
+    public boolean isIntersects(float x, float y) {
         int sceneX = getSceneX();
         int sceneY = getSceneY();
         return x >= sceneX && y >= sceneY && x < sceneX + width && y < sceneY + height;
@@ -526,7 +625,18 @@ public class GuiObject {
         return y + parent.getSceneY();
     }
 
+    public void addToScene() {
+        isOnScene = true;
+        renderer.addToScene();
+
+        for (int i = 0, size = guiObjects.size(); i < size; i++) {
+            guiObjects.get(i).addToScene();
+        }
+    }
+
     public void clear() {
+        remove();
+
         for (int i = 0, size = guiObjects.size(); i < size; i++) {
             guiObjects.get(i).clear();
         }

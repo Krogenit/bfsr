@@ -2,45 +2,115 @@ package net.bfsr.editor.gui.control;
 
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.renderer.GuiObjectRenderer;
+import net.bfsr.engine.renderer.primitive.Primitive;
 
 import static net.bfsr.editor.gui.EditorTheme.setupButton;
 
 public class PlayButton extends Button {
+    private final Playble playble;
+
     public PlayButton(Playble playble, int width, int height) {
-        super(width, height, () -> playble.setPlaying(!playble.isPlaying()));
-        setupButton(this).setRenderer(new GuiObjectRenderer(this) {
-            @Override
-            public void render(int lastX, int lastY, int x, int y, int width, int height) {
-                int centerX = x + width / 2;
-                int centerY = y + height / 2;
-                int xOffset = 8;
-                int yOffset = 8;
-                float r, g, b;
-                if (isMouseHover()) {
-                    guiRenderer.add(x, y, width, height, outlineColor.x, outlineHoverColor.y, outlineHoverColor.z, outlineHoverColor.w);
-                    if (playble.isPlaying()) {
-                        float scale = 1.2f;
-                        guiRenderer.add(x + 1, y + 1, width - 2, height - 2, 35 / 255.0f * scale, 74 / 255.0f * scale,
-                                108 / 255.0f * scale, color.w);
-                    } else {
-                        guiRenderer.add(x + 1, y + 1, width - 2, height - 2, hoverColor.x, hoverColor.y, hoverColor.z, hoverColor.w);
-                    }
-
-                    r = g = b = 210 / 255.0f;
-                } else {
-                    guiRenderer.add(x, y, width, height, outlineColor.x, outlineColor.y, outlineColor.z, outlineColor.w);
-                    if (playble.isPlaying()) {
-                        guiRenderer.add(x + 1, y + 1, width - 2, height - 2, 35 / 255.0f, 74 / 255.0f, 108 / 255.0f, hoverColor.w);
-                    } else {
-                        guiRenderer.add(x + 1, y + 1, width - 2, height - 2, color.x, color.y, color.z, color.w);
-                    }
-
-                    r = g = b = 192 / 255.0f;
-                }
-
-                guiRenderer.addPrimitive(centerX - xOffset, centerY - yOffset, centerX - xOffset, centerY + yOffset,
-                        centerX + xOffset, centerY, centerX - xOffset, centerY - yOffset, r, g, b, 1.0f, 0);
-            }
+        super(width, height);
+        this.playble = playble;
+        setLeftClickRunnable(() -> {
+            playble.setPlaying(!playble.isPlaying());
+            ((PlayButtonRenderer) getRenderer()).setPlaying(playble.isPlaying());
         });
+        setupButton(this).setRenderer(new PlayButtonRenderer(this));
+    }
+
+    private static class PlayButtonRenderer extends GuiObjectRenderer {
+        private static final Primitive PLAY_SIGN_PRIMITIVE_PARAMS = new Primitive(-0.5f, 0.5f, 0.0f, 1.0f, -0.5f, -0.5f, 1.0f, 1.0f, 0.5f,
+                0.0f, 1.0f, 0.0f, -0.5f, 0.5f, 0.0f, 0.0f);
+
+        private final PlayButton playButton;
+        private int outlineId, bodyId, playId;
+
+        PlayButtonRenderer(PlayButton playButton) {
+            super(playButton);
+            this.playButton = playButton;
+        }
+
+        @Override
+        public void create() {
+            int x = guiObject.getSceneX();
+            int y = guiObject.getSceneY();
+            int width = guiObject.getWidth();
+            int height = guiObject.getHeight();
+            int centerX = x + width / 2;
+            int centerY = y + height / 2;
+
+            idList.add(outlineId = guiRenderer.add(x, y, width, height, outlineColor));
+            idList.add(bodyId = guiRenderer.add(x + 1, y + 1, width - 2, height - 2, color.x, color.y, color.z, color.w));
+
+            renderer.spriteRenderer.addPrimitive(PLAY_SIGN_PRIMITIVE_PARAMS);
+
+            float color = 192 / 255.0f;
+            idList.add(playId = guiRenderer.add(centerX, centerY, width - 10, height - 10, color, color, color, 1.0f, 0));
+        }
+
+        void setPlaying(boolean playing) {
+            if (playing) {
+                if (guiObject.isMouseHover()) {
+                    float scale = 1.2f;
+                    guiRenderer.setColor(bodyId, 35 / 255.0f * scale, 74 / 255.0f * scale, 108 / 255.0f * scale, color.w);
+                } else {
+                    guiRenderer.setColor(bodyId, 35 / 255.0f, 74 / 255.0f, 108 / 255.0f, hoverColor.w);
+                }
+            } else {
+                if (guiObject.isMouseHover()) {
+                    guiRenderer.setColor(bodyId, hoverColor);
+                } else {
+                    guiRenderer.setColor(bodyId, color);
+                }
+            }
+        }
+
+        @Override
+        public void onMouseHover() {
+            guiRenderer.setColor(outlineId, outlineHoverColor);
+            if (playButton.playble.isPlaying()) {
+                float scale = 1.2f;
+                guiRenderer.setColor(bodyId, 35 / 255.0f * scale, 74 / 255.0f * scale, 108 / 255.0f * scale, color.w);
+            } else {
+                guiRenderer.setColor(bodyId, hoverColor);
+            }
+
+            float color = 210 / 255.0f;
+            guiRenderer.setColor(playId, color, color, color, 1.0f);
+        }
+
+        @Override
+        public void onMouseStopHover() {
+            guiRenderer.setColor(outlineId, outlineColor);
+            if (playButton.playble.isPlaying()) {
+                guiRenderer.setColor(bodyId, 35 / 255.0f, 74 / 255.0f, 108 / 255.0f, hoverColor.w);
+            } else {
+                guiRenderer.setColor(bodyId, color);
+            }
+
+            float color = 192 / 255.0f;
+            guiRenderer.setColor(playId, color, color, color, 1.0f);
+        }
+
+        @Override
+        public void updatePosition() {
+            int x = guiObject.getSceneX();
+            int y = guiObject.getSceneY();
+            int width = guiObject.getWidth();
+            int height = guiObject.getHeight();
+            int centerX = x + width / 2;
+            int centerY = y + height / 2;
+            guiRenderer.setPosition(outlineId, x, y);
+            guiRenderer.setPosition(bodyId, x + 1, y + 1);
+            guiRenderer.setPosition(playId, centerX, centerY);
+        }
+
+        @Override
+        public void render() {
+            guiRenderer.addDrawCommand(outlineId);
+            guiRenderer.addDrawCommand(bodyId);
+            guiRenderer.addDrawCommand(playId, PLAY_SIGN_PRIMITIVE_PARAMS.getBaseVertex());
+        }
     }
 }

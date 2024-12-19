@@ -51,18 +51,18 @@ public class PropertiesPanel extends Rectangle {
 
         String string = "Properties";
         Label label = new Label(font, string, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w);
-        add(label.atTopRight(-width, label.getCenteredOffsetY(elementHeight)));
+        add(label.atBottomLeft(0, height + label.getCenteredOffsetY(elementHeight)));
 
-        add(scrollPane.atTopRight(-width, elementHeight).setHeightFunction((screenWidth, screenHeight) -> screenHeight -
+        add(scrollPane.atBottomRight(0, elementHeight).setHeightFunction((screenWidth, screenHeight) -> screenHeight -
                 (elementHeight << 1)));
 
         int buttonWidth = width / 2;
-        int x = -width;
+        int x = 0;
 
         add(saveButton = new Button(buttonWidth, elementHeight, "Save", font, fontSize, stringYOffset));
-        setupButton(saveButton).atBottomRight(x, -elementHeight);
+        setupButton(saveButton).atBottomLeft(x, 0);
         add(removeButton = new Button(buttonWidth, elementHeight, "Remove", font, fontSize, stringYOffset));
-        setupButton(removeButton).atBottomRight(x + buttonWidth, -elementHeight);
+        setupButton(removeButton).atBottomLeft(x + buttonWidth, 0);
     }
 
     public void add(PropertiesHolder propertiesHolder, String name) {
@@ -75,20 +75,19 @@ public class PropertiesPanel extends Rectangle {
         MinimizableHolder<PropertiesHolder> minimizableHolder = new MinimizableHolder<>(width, height, name, font, fontSize,
                 stringYOffset, propertiesHolder);
         minimizableHolder.setRightClickRunnable(() -> {
-            Vector2f mousePos = Engine.mouse.getPosition();
+            Vector2f mousePos = Engine.mouse.getGuiPosition();
             int x1 = (int) mousePos.x;
-            int y1 = (int) mousePos.y;
+            int y1 = (int) mousePos.y - elementHeight;
             String buttonName = "Copy";
             Button copyButton = new Button(x1, y1,
                     font.getGlyphsBuilder().getWidth(buttonName, fontSize) + contextMenuStringXOffset, elementHeight,
                     buttonName, font, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
                     RunnableUtils.EMPTY_RUNNABLE);
             copyButton.setLeftReleaseRunnable(() -> clipboard = propertiesHolder.copy());
-            y1 += elementHeight;
+            y1 -= elementHeight;
             buttonName = "Paste";
-            Button pastButton = new Button(x1, y1,
-                    font.getGlyphsBuilder().getWidth(buttonName, fontSize) + contextMenuStringXOffset, elementHeight,
-                    buttonName, font, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
+            Button pastButton = new Button(x1, y1, font.getGlyphsBuilder().getWidth(buttonName, fontSize) + contextMenuStringXOffset,
+                    elementHeight, buttonName, font, fontSize, stringXOffset, stringYOffset, StringOffsetType.DEFAULT,
                     RunnableUtils.EMPTY_RUNNABLE);
             pastButton.setLeftReleaseRunnable(() -> {
                 if (clipboard != null && clipboard.getClass() == propertiesHolder.getClass()) {
@@ -130,7 +129,7 @@ public class PropertiesPanel extends Rectangle {
             updatePropertiesOffsetAndWidth(minimizable,
                     width - scrollPane.getScrollWidth() - MinimizableGuiObject.MINIMIZABLE_STRING_X_OFFSET);
             minimizable.atTopLeft(0, y);
-            y += minimizable.getHeight();
+            y -= minimizable.getHeight();
         }
     }
 

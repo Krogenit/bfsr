@@ -1,13 +1,18 @@
 package net.bfsr.engine.input;
 
 import lombok.Getter;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
 public final class Mouse extends AbstractMouse {
     private long window;
-    private final Vector2f position = new Vector2f(), lastPosition = new Vector2f();
+    @Getter
+    private final Vector2f position = new Vector2f();
+    private final Vector2f lastPosition = new Vector2f();
+    @Getter
+    private final Vector2f guiPosition = new Vector2f();
     @Getter
     public final long inputCursor = GLFW.glfwCreateStandardCursor(GLFW.GLFW_IBEAM_CURSOR);
     @Getter
@@ -23,6 +28,7 @@ public final class Mouse extends AbstractMouse {
         GLFW.glfwSetCursorPosCallback(window, (windowHandle, xPos, yPos) -> {
             lastPosition.set(position.x, position.y);
             position.set((float) xPos, (float) yPos);
+            guiPosition.set((float) xPos, Engine.renderer.getScreenHeight() - (float) yPos);
             inputHandler.mouseMove(position.x - lastPosition.x, position.y - lastPosition.y);
         });
         GLFW.glfwSetCursorEnterCallback(window, (windowHandle, entered) -> {});
@@ -51,11 +57,6 @@ public final class Mouse extends AbstractMouse {
 
     public boolean isMiddleDown() {
         return GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_MIDDLE) == GLFW.GLFW_PRESS;
-    }
-
-    @Override
-    public Vector2f getPosition() {
-        return position;
     }
 
     @Override

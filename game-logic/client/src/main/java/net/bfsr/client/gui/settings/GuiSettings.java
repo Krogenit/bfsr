@@ -9,7 +9,6 @@ import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.renderer.font.Font;
-import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.settings.SettingsCategory;
 import net.bfsr.settings.option.SettingsOption;
@@ -38,7 +37,7 @@ public class GuiSettings extends Gui {
 
         int buttonXOffset = 250;
         int baseYOffset = 60;
-        int baseY = 30;
+        int baseY = height - 140;
         int x;
         int y = baseY;
         int fontSectionSize = 20;
@@ -56,28 +55,28 @@ public class GuiSettings extends Gui {
 
         ScrollPane scrollPane = new ScrollPane(width, height - 120, 25);
         scrollPane.setScrollColor(0.5f, 0.5f, 0.5f, 1.0f).setScrollHoverColor(0.7f, 0.7f, 0.7f, 1.0f);
-        add(scrollPane.atTopLeft(0, 60).setHeightFunction((width, height) -> height - 120));
+        add(scrollPane.atBottomLeft(0, 60).setHeightFunction((width, height) -> height - 120));
 
         for (Map.Entry<SettingsCategory, List<ClientSettings>> entry : optionsByCategory.entrySet()) {
             List<ClientSettings> options = entry.getValue();
 
             Label sectionText = new Label(Font.XOLONIUM_FT, Lang.getString("settings.section." +
-                    entry.getKey().getCategoryName()), fontSectionSize, StringOffsetType.CENTERED);
-            sectionText.atTop(0, y - 20);
+                    entry.getKey().getCategoryName()), fontSectionSize);
+            sectionText.atBottom(0, y - 20);
             scrollPane.add(sectionText);
 
             for (int i = 0; i < options.size(); i++) {
                 ClientSettings option = options.get(i);
 
                 if (i % 2 == 0) {
-                    x = -buttonXOffset - buttonWidth / 2;
-                    y += baseYOffset;
+                    x = -buttonXOffset;
+                    y -= baseYOffset;
                 } else {
-                    x = buttonXOffset - buttonWidth / 2;
+                    x = buttonXOffset;
                 }
 
                 if (option.useSlider()) {
-                    scrollPane.add(new OptionSlider(x, y - 35, buttonWidth, buttonHeight, option).atTop(x, y - 35));
+                    scrollPane.add(new OptionSlider(x, y - 35, buttonWidth, buttonHeight, option).atBottom(x, y - 35));
                 } else {
                     Button button = new Button(TextureRegister.guiButtonBase, x, y - 35, buttonWidth, buttonHeight,
                             Lang.getString("settings." + option.getOptionName()) + ": " + option.getValue(), 20);
@@ -85,25 +84,25 @@ public class GuiSettings extends Gui {
                         option.changeValue();
                         button.setString(Lang.getString("settings." + option.getOptionName()) + ": " + option.getValue());
                     });
-                    scrollPane.add(button.atTop(x, y - 35));
+                    scrollPane.add(button.atBottom(x, y - 35));
                 }
             }
 
-            y += baseYOffset;
+            y -= baseYOffset;
         }
 
         int backgroundHeight = 60;
-        add(new Rectangle(0, 0, width, backgroundHeight).setAllColors(0.1f, 0.2f, 0.4f, 1.0f));
-        add(new Rectangle(0, height - backgroundHeight, width, backgroundHeight).setAllColors(0.1f, 0.2f, 0.4f, 1.0f));
+        add(new Rectangle(width, backgroundHeight).atBottomLeft(0, 0).setAllColors(0.1f, 0.2f, 0.4f, 1.0f));
+        add(new Rectangle(width, backgroundHeight).atTopLeft(0, 0).setAllColors(0.1f, 0.2f, 0.4f, 1.0f));
 
         String string = Lang.getString("gui.settings.mainText");
-        Label label = new Label(Font.XOLONIUM_FT, string, 24, StringOffsetType.CENTERED);
-        add(label.atTop(0, label.getCenteredOffsetY(backgroundHeight)));
+        Label label = new Label(Font.XOLONIUM_FT, string, 24);
+        add(label.atTop(0, label.getCenteredOffsetY(backgroundHeight) - 36));
 
         add(new Button(Lang.getString("gui.settings.save"), 20, () -> {
             Client.get().getSettings().save();
             Client.get().openGui(parentGui);
-        }).atBottom(-150, -55));
+        }).atBottom(0, 6));
     }
 
     @Override

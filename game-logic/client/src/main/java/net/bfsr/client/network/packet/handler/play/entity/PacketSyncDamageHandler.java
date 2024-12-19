@@ -5,6 +5,7 @@ import net.bfsr.client.Client;
 import net.bfsr.client.damage.DamageHandler;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.damage.DamageableRigidBody;
+import net.bfsr.engine.Engine;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.server.entity.PacketSyncDamage;
@@ -24,6 +25,7 @@ public class PacketSyncDamageHandler extends PacketHandler<PacketSyncDamage, Net
             damageableRigidBody.setFixtures(packet.getFixtures());
             damageHandler.updateDamage(damageableRigidBody, packet.getX(), packet.getY(), packet.getWidth(), packet.getHeight(),
                     packet.getByteBuffer());
+            Engine.renderer.memFree(packet.getByteBuffer());
         }
     }
 }

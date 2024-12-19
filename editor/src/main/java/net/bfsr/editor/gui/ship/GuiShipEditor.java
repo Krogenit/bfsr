@@ -42,6 +42,12 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
                 ShipConfig.class, ShipProperties.class);
         Client.get().getRenderManager().addRender(new Render(polygonObject) {
             @Override
+            public void update() {}
+
+            @Override
+            public void postWorldUpdate() {}
+
+            @Override
             public void renderDebug() {
                 if (!polygonCreationMode) return;
 
@@ -89,6 +95,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
                         super.renderDebug();
                     }
                 };
+                render.init();
                 Client.get().getRenderManager().addRender(render);
                 render.getMaskTexture().createEmpty();
             } catch (Exception e) {
@@ -134,8 +141,8 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
     }
 
     @Override
-    public void clear() {
-        super.clear();
+    public void remove() {
+        super.remove();
 
         if (testShip != null) {
             testShip.setDead();

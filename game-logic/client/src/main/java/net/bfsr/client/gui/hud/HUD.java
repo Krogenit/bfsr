@@ -17,16 +17,15 @@ public class HUD extends HUDAdapter {
     private final ShipOverlay shipOverlay = new ShipOverlay(this);
     private final OtherShipOverlay otherShipOverlay = new OtherShipOverlay();
     private final DebugInfoElement debugInfoElement = new DebugInfoElement(this);
-    private final MiniMap miniMap = new MiniMap();
     private final Chat chat = new Chat();
     private final GuiManager guiManager = Client.get().getGuiManager();
 
     public HUD() {
-        shipOverlay.atBottomRight(-shipOverlay.getWidth(), -shipOverlay.getHeight());
-        otherShipOverlay.atTopRight(-otherShipOverlay.getWidth(), 0);
-        add(miniMap.atTopLeft(0, 0));
-        add(chat.atBottomLeft(0, -chat.getHeight()));
-        add(debugInfoElement.atTopLeft(6, miniMap.getHeight() + 6));
+        shipOverlay.atBottomRight(0, 0);
+        otherShipOverlay.atTopRight(0, 0);
+        add(new MiniMap().atTopLeft(0, 0));
+        add(chat.atBottomLeft(0, 0));
+        add(debugInfoElement.atTopRight(-6, -6));
     }
 
     @Override

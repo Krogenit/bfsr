@@ -2,10 +2,10 @@ package net.bfsr.client.renderer;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
+import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.AbstractTextureLoader;
@@ -18,7 +18,6 @@ import org.joml.Vector4f;
 @NoArgsConstructor
 public class Render {
     protected GameObject object;
-    @Setter
     protected AbstractTexture texture;
     protected final Vector2f lastSize = new Vector2f();
     protected final Vector2f lastPosition = new Vector2f();
@@ -30,6 +29,7 @@ public class Render {
     protected final AbstractRenderer renderer = Engine.renderer;
     protected final AbstractSpriteRenderer spriteRenderer = renderer.spriteRenderer;
     protected final AbstractDebugRenderer debugRenderer = renderer.debugRenderer;
+    protected int id = -1;
 
     public Render(AbstractTexture texture, GameObject object, float r, float g, float b, float a) {
         this.object = object;
@@ -48,10 +48,26 @@ public class Render {
         this(AbstractTextureLoader.dummyTexture, object);
     }
 
-    public void update() {}
+    public void init() {
+        id = spriteRenderer.add(object.getX(), object.getY(), object.getSizeX(), object.getSizeY(), color.x, color.y, color.z, color.w,
+                texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
+    }
+
+    public void update() {
+        updateLastRenderValues();
+    }
 
     public void postWorldUpdate() {
         updateAABB();
+        updateRenderValues();
+    }
+
+    protected void updateLastRenderValues() {
+        spriteRenderer.setLastPosition(id, BufferType.ENTITIES_ALPHA, object.getX(), object.getY());
+    }
+
+    protected void updateRenderValues() {
+        spriteRenderer.setPosition(id, BufferType.ENTITIES_ALPHA, object.getX(), object.getY());
     }
 
     public void renderAlpha() {}
@@ -72,9 +88,18 @@ public class Render {
         this.color.set(r, g, b, a);
     }
 
+    public void setTexture(AbstractTexture texture) {
+        this.texture = texture;
+        spriteRenderer.setTexture(id, BufferType.ENTITIES_ALPHA, texture.getTextureHandle());
+    }
+
     public boolean isDead() {
         return object.isDead();
     }
 
-    public void clear() {}
+    public void clear() {
+        if (id != -1) {
+            spriteRenderer.removeObject(id, BufferType.ENTITIES_ALPHA);
+        }
+    }
 }
