@@ -2,7 +2,7 @@ package net.bfsr.client.input;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.event.gui.SelectSecondaryShipEvent;
 import net.bfsr.client.event.gui.SelectShipEvent;
@@ -47,7 +47,7 @@ public class PlayerInputController extends InputController {
     private int controlledShipId = NOT_CONTROLLED_SHIP_ID;
     @Getter
     private Ship ship;
-    private Core core;
+    private Client client;
     private GuiManager guiManager;
     private final AbstractCamera camera = Engine.renderer.camera;
     private final Vector2f lastMousePosition = new Vector2f();
@@ -59,11 +59,11 @@ public class PlayerInputController extends InputController {
 
     @Override
     public void init() {
-        core = Core.get();
+        client = Client.get();
         localPlayerInputCorrectionHandler = new LocalPlayerInputCorrectionHandler(positionHistory,
-                Core.get().getClientRenderDelayInNanos());
-        guiManager = core.getGuiManager();
-        eventBus = core.getEventBus();
+                Client.get().getClientRenderDelayInNanos());
+        guiManager = client.getGuiManager();
+        eventBus = client.getEventBus();
         eventBus.register(this);
     }
 
@@ -76,7 +76,7 @@ public class PlayerInputController extends InputController {
                 return;
             }
 
-            RigidBody entity = core.getWorld().getEntityById(controlledShipId);
+            RigidBody entity = client.getWorld().getEntityById(controlledShipId);
             if (!(entity instanceof Ship ship)) {
                 return;
             }
@@ -91,7 +91,7 @@ public class PlayerInputController extends InputController {
             return;
         }
 
-        if (!core.isPaused() && ship.isSpawned() && ship.getLifeTime() == 0) {
+        if (!client.isPaused() && ship.isSpawned() && ship.getLifeTime() == 0) {
             controlShip();
         }
     }
@@ -102,27 +102,27 @@ public class PlayerInputController extends InputController {
 
         Engines engines = ship.getModules().getEngines();
         if (key == KEY_W && engines.isEngineAlive(Direction.FORWARD)) {
-            core.sendUDPPacket(new PacketShipMove(Direction.FORWARD));
+            client.sendUDPPacket(new PacketShipMove(Direction.FORWARD));
             ship.addMoveDirection(Direction.FORWARD);
         }
 
         if (key == KEY_S && engines.isEngineAlive(Direction.BACKWARD)) {
-            core.sendUDPPacket(new PacketShipMove(Direction.BACKWARD));
+            client.sendUDPPacket(new PacketShipMove(Direction.BACKWARD));
             ship.addMoveDirection(Direction.BACKWARD);
         }
 
         if (key == KEY_A && engines.isEngineAlive(Direction.LEFT)) {
-            core.sendUDPPacket(new PacketShipMove(Direction.RIGHT));
+            client.sendUDPPacket(new PacketShipMove(Direction.RIGHT));
             ship.addMoveDirection(Direction.RIGHT);
         }
 
         if (key == KEY_D && engines.isEngineAlive(Direction.RIGHT)) {
-            core.sendUDPPacket(new PacketShipMove(Direction.LEFT));
+            client.sendUDPPacket(new PacketShipMove(Direction.LEFT));
             ship.addMoveDirection(Direction.LEFT);
         }
 
         if (key == KEY_X && engines.isSomeEngineAlive()) {
-            core.sendUDPPacket(new PacketShipMove(Direction.STOP));
+            client.sendUDPPacket(new PacketShipMove(Direction.STOP));
             ship.addMoveDirection(Direction.STOP);
         }
 
@@ -134,27 +134,27 @@ public class PlayerInputController extends InputController {
         if (ship == null) return;
 
         if (key == KEY_W) {
-            core.sendUDPPacket(new PacketShipStopMove(Direction.FORWARD));
+            client.sendUDPPacket(new PacketShipStopMove(Direction.FORWARD));
             ship.removeMoveDirection(Direction.FORWARD);
         }
 
         if (key == KEY_S) {
-            core.sendUDPPacket(new PacketShipStopMove(Direction.BACKWARD));
+            client.sendUDPPacket(new PacketShipStopMove(Direction.BACKWARD));
             ship.removeMoveDirection(Direction.BACKWARD);
         }
 
         if (key == KEY_A) {
-            core.sendUDPPacket(new PacketShipStopMove(Direction.RIGHT));
+            client.sendUDPPacket(new PacketShipStopMove(Direction.RIGHT));
             ship.removeMoveDirection(Direction.RIGHT);
         }
 
         if (key == KEY_D) {
-            core.sendUDPPacket(new PacketShipStopMove(Direction.LEFT));
+            client.sendUDPPacket(new PacketShipStopMove(Direction.LEFT));
             ship.removeMoveDirection(Direction.LEFT);
         }
 
         if (key == KEY_X) {
-            core.sendUDPPacket(new PacketShipStopMove(Direction.STOP));
+            client.sendUDPPacket(new PacketShipStopMove(Direction.STOP));
             ship.removeMoveDirection(Direction.STOP);
         }
     }
@@ -166,7 +166,7 @@ public class PlayerInputController extends InputController {
         Vector2f mouseWorldPosition = Engine.mouse.getWorldPosition(camera);
         rigidBodyUtils.rotateToVector(ship, mouseWorldPosition, ship.getModules().getEngines().getAngularVelocity());
         if (mouseWorldPosition.x != lastMousePosition.x || mouseWorldPosition.y != lastMousePosition.y) {
-            core.sendUDPPacket(new PacketSyncPlayerMousePosition(mouseWorldPosition));
+            client.sendUDPPacket(new PacketSyncPlayerMousePosition(mouseWorldPosition));
         }
 
         ship.getMoveDirections().forEach(ship::move);
@@ -182,7 +182,7 @@ public class PlayerInputController extends InputController {
 
         if (ship == null) {
             Vector2f mousePosition = Engine.mouse.getWorldPosition(camera);
-            List<Ship> ships = core.getWorld().getEntitiesByType(Ship.class);
+            List<Ship> ships = client.getWorld().getEntitiesByType(Ship.class);
             for (int i = 0, size = ships.size(); i < size; i++) {
                 Ship ship = ships.get(i);
                 if (isMouseIntersectsWith(ship, mousePosition.x, mousePosition.y)) {
@@ -193,7 +193,7 @@ public class PlayerInputController extends InputController {
 
             eventBus.publish(new SelectShipEvent(null));
         } else {
-            core.sendUDPPacket(new PacketMouseLeftClick());
+            client.sendUDPPacket(new PacketMouseLeftClick());
             mouseLeftDown = true;
         }
 
@@ -204,7 +204,7 @@ public class PlayerInputController extends InputController {
     public boolean mouseLeftRelease() {
         if (ship == null) return false;
 
-        core.sendUDPPacket(new PacketMouseLeftRelease());
+        client.sendUDPPacket(new PacketMouseLeftRelease());
         mouseLeftDown = false;
         return false;
     }
@@ -212,7 +212,7 @@ public class PlayerInputController extends InputController {
     @Override
     public boolean mouseRightClick() {
         Vector2f mousePosition = Engine.mouse.getWorldPosition(camera);
-        List<Ship> ships = core.getWorld().getEntitiesByType(Ship.class);
+        List<Ship> ships = client.getWorld().getEntitiesByType(Ship.class);
         for (int i = 0, size = ships.size(); i < size; i++) {
             Ship ship = ships.get(i);
             if (isMouseIntersectsWith(ship, mousePosition.x, mousePosition.y)) {

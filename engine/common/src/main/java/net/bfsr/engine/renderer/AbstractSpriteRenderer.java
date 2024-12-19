@@ -2,81 +2,113 @@ package net.bfsr.engine.renderer;
 
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
-import net.bfsr.engine.renderer.texture.AbstractDamageMaskTexture;
-import net.bfsr.engine.renderer.texture.AbstractTexture;
-import net.bfsr.engine.util.MutableInt;
+import net.bfsr.engine.renderer.primitive.AbstractVAO;
+import net.bfsr.engine.renderer.primitive.GeometryBuffer;
 import org.joml.Vector4f;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.util.concurrent.Future;
 
-public abstract class AbstractSpriteRenderer {
-    private static final int VERTEX_DATA_SIZE = 4;
-    public static final int VERTEX_DATA_SIZE_IN_BYTES = VERTEX_DATA_SIZE << 2;
-    public static final int MATERIAL_DATA_SIZE = 16;
-    public static final int MATERIAL_DATA_SIZE_IN_BYTES = MATERIAL_DATA_SIZE << 2;
+public interface AbstractSpriteRenderer extends GeometryBuffer {
+    int VERTEX_DATA_SIZE = 4;
+    int MODEL_DATA_SIZE = 6;
+    int MODEL_DATA_SIZE_IN_BYTES = MODEL_DATA_SIZE << 2;
+    int COMMAND_SIZE = 5;
+    int COMMAND_SIZE_IN_BYTES = COMMAND_SIZE << 2;
+    int MATERIAL_DATA_SIZE = 16;
+    int LAST_UPDATE_MATERIAL_DATA_SIZE = 8;
+    int MATERIAL_DATA_SIZE_IN_BYTES = MATERIAL_DATA_SIZE << 2;
+    int LAST_UPDATE_MATERIAL_DATA_SIZE_IN_BYTES = LAST_UPDATE_MATERIAL_DATA_SIZE << 2;
 
-    public abstract void init();
+    int QUAD_INDEX_COUNT = 6;
 
-    public abstract void bind();
+    int FOUR_BYTES_ELEMENT_SHIFT = 2;
 
-    public abstract void clear();
+    int CENTERED_QUAD_BASE_VERTEX = 0;
+    int SIMPLE_QUAD_BASE_VERTEX = 4;
 
-    public abstract void addTask(Runnable runnable, BufferType bufferType);
-    public abstract Future<?> addTask(Runnable runnable);
+    int INSTANCE_COUNT_OFFSET = 4;
+    int FIRST_INDEX_OFFSET = 8;
+    int BASE_VERTEX_OFFSET = 12;
+    int BASE_INSTANCE_OFFSET = 16;
 
-    public abstract void syncAndRender(BufferType bufferType);
-    public abstract void render(BufferType bufferType);
-    public abstract void render(int mode, int objectCount, FloatBuffer vertexBuffer, ByteBuffer materialBuffer);
-    public abstract void render(int objectCount, FloatBuffer vertexBuffer, ByteBuffer materialBuffer);
+    void init();
 
-    public abstract AbstractBuffersHolder getBuffersHolder(BufferType bufferType);
+    AbstractVAO createVAO();
 
-    public abstract void add(float lastX, float lastY, float x, float y, float scaleX, float scaleY, float r, float g, float b,
-                             float a, AbstractTexture texture, BufferType bufferType);
-    public abstract void add(float x, float y, float scaleX, float scaleY, float r, float g, float b, float a,
-                             AbstractTexture texture, BufferType bufferType);
+    AbstractBuffersHolder[] createBuffersHolderArray(int length);
+    AbstractBuffersHolder createBuffersHolder(int capacity);
 
-    public abstract void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos,
-                                                   float sin, float cos, float lastScaleX, float lastScaleY, float scaleX,
-                                                   float scaleY, float r, float g, float b, float a, AbstractTexture texture,
-                                                   BufferType bufferType);
-    public abstract void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos,
-                                                   float sin, float cos, float scaleX, float scaleY, float r, float g, float b,
-                                                   float a, AbstractTexture texture, BufferType bufferType);
-    public abstract void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float sin, float cos, float scaleX,
-                                                   float scaleY, float r, float g, float b, float a, AbstractTexture texture,
-                                                   BufferType bufferType);
-    public abstract void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos,
-                                                   float sin, float cos, float scaleX, float scaleY, float r, float g, float b,
-                                                   float a, AbstractTexture texture, AbstractDamageMaskTexture maskTexture,
-                                                   BufferType bufferType);
-    public abstract void addToRenderPipeLineSinCos(float lastX, float lastY, float x, float y, float lastSin, float lastCos,
-                                                   float sin, float cos, float scaleX, float scaleY, Vector4f lastColor,
-                                                   Vector4f color, AbstractTexture texture, BufferType bufferType);
+    void updateBuffers();
+    void updateBuffers(AbstractBuffersHolder[] buffersHolderArray);
 
-    public abstract void putVertices(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4,
-                                     FloatBuffer floatBuffer, MutableInt bufferIndex);
-    public abstract void putVerticesClockWise(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4,
-                                              FloatBuffer floatBuffer, MutableInt bufferIndex);
-    public abstract void putVertices(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4,
-                                     float u1, float v1, float u2, float v2, float u3, float v3, float u4, float v4,
-                                     FloatBuffer floatBuffer, MutableInt bufferIndex);
-    public abstract void putVertices(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin,
-                                     float cos, float lastScaleX, float lastScaleY, float scaleX, float scaleY,
-                                     float interpolation, FloatBuffer floatBuffer, MutableInt bufferIndex);
-    public abstract void putVerticesCentered(float x, float y, float sin, float cos, float halfSizeX, float halfSizeY,
-                                             FloatBuffer floatBuffer, MutableInt bufferIndex);
-    public abstract void putVerticesCenteredClockWise(float x, float y, float sin, float cos, float halfSizeX, float halfSizeY,
-                                                      FloatBuffer floatBuffer, MutableInt bufferIndex);
-    public abstract void putVerticesCentered(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer, MutableInt bufferIndex);
-    public abstract void putVerticesCenteredClockWise(float x, float y, float sizeX, float sizeY, FloatBuffer floatBuffer,
-                                                      MutableInt bufferIndex);
+    void addTask(Runnable runnable, BufferType bufferType);
+    Future<?> addTask(Runnable runnable);
 
-    public abstract void putColor(float r, float g, float b, float a, ByteBuffer byteBuffer, MutableInt bufferIndex);
-    public abstract void putColor(Vector4f lastColor, Vector4f color, ByteBuffer byteBuffer, MutableInt index, float interpolation);
-    public abstract void putTextureHandle(long textureHandle, ByteBuffer byteBuffer, MutableInt bufferIndex);
-    public abstract void putMaterialData(long maskTextureHandle, float fireAmount, float fireUVAnimation, int font, ByteBuffer byteBuffer,
-                                         MutableInt bufferIndex);
+    void addDrawCommand(ByteBuffer commandBuffer, int count, BufferType bufferType);
+    void addDrawCommand(ByteBuffer commandBuffer, int count, AbstractBuffersHolder buffersHolder);
+    void addDrawCommand(int id, BufferType bufferType);
+    void addDrawCommand(int id, int baseVertex, BufferType bufferType);
+    void addDrawCommand(int id, int baseVertex, AbstractBuffersHolder buffersHolder);
+    void setIndexCount(int id, int count, AbstractBuffersHolder buffersHolder);
+
+    void syncAndRender(BufferType bufferType);
+    void render(BufferType bufferType);
+    void render(int mode, int objectCount, AbstractBuffersHolder buffersHolder);
+    void render(int objectCount, AbstractBuffersHolder buffersHolder);
+
+    int add(float x, float y, float width, float height, float r, float g, float b, float a,
+            long textureHandle, BufferType bufferType);
+    int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle,
+            float zoomFactor, BufferType bufferType);
+    int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+            long textureHandle, BufferType bufferType);
+    int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+            long textureHandle, long maskTextureHandle, BufferType bufferType);
+    int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+            long textureHandle, AbstractBuffersHolder buffersHolder);
+    int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle, int font,
+            AbstractBuffersHolder buffersHolder);
+    int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+            long textureHandle, int font, AbstractBuffersHolder buffersHolder);
+
+    void addMaterialData(float r, float g, float b, float a, long textureHandle, int font, int offset,
+                         AbstractBuffersHolder buffersHolder);
+    void addModelData(float x, float y, float sin, float cos, float width, float height, int offset,
+                      AbstractBuffersHolder buffersHolder);
+
+    void setPosition(int id, BufferType bufferType, float x, float y);
+    void setPosition(int id, AbstractBuffersHolder buffersHolder, float x, float y);
+    void setRotation(int id, BufferType bufferType, float sin, float cos);
+    void setRotation(int id, AbstractBuffersHolder buffersHolder, float sin, float cos);
+    void setSize(int id, BufferType bufferType, float width, float height);
+    void setSize(int id, AbstractBuffersHolder buffersHolder, float width, float height);
+    void setColor(int id, BufferType bufferType, Vector4f color);
+    void setColor(int id, AbstractBuffersHolder buffersHolder, Vector4f color);
+    void setColorAlpha(int id, BufferType bufferType, float a);
+    void setColorAlpha(int id, AbstractBuffersHolder buffersHolder, float a);
+    void setTexture(int id, BufferType bufferType, long textureHandle);
+    void setTexture(int id, AbstractBuffersHolder buffersHolder, long textureHandle);
+    void setFireAmount(int id, BufferType bufferType, float value);
+    void setFireUVAnimation(int id, BufferType bufferType, float value);
+    void setZoomFactor(int id, BufferType bufferType, float value);
+
+    void setLastPosition(int id, BufferType bufferType, float x, float y);
+    void setLastPosition(int id, AbstractBuffersHolder buffersHolder, float x, float y);
+    void setLastRotation(int id, BufferType bufferType, float sin, float cos);
+    void setLastRotation(int id, AbstractBuffersHolder buffersHolder, float sin, float cos);
+    void setLastSize(int id, BufferType bufferType, float width, float height);
+    void setLastSize(int id, AbstractBuffersHolder buffersHolder, float width, float height);
+    void setLastColor(int id, BufferType bufferType, Vector4f color);
+    void setLastColor(int id, AbstractBuffersHolder buffersHolder, Vector4f color);
+    void setLastColorAlpha(int id, BufferType bufferType, float a);
+    void setLastColorAlpha(int id, AbstractBuffersHolder buffersHolder, float a);
+    void setLastFireAmount(int id, BufferType bufferType, float value);
+    void setLastFireUVAnimation(int id, BufferType bufferType, float value);
+
+    AbstractBuffersHolder getBuffersHolder(BufferType bufferType);
+
+    void removeObject(int id, BufferType bufferType);
+
+    void clear();
 }

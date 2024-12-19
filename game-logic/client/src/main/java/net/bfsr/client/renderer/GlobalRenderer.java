@@ -7,6 +7,7 @@ import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
+import net.bfsr.engine.renderer.buffer.AbstractLockManager;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
@@ -22,6 +23,7 @@ public class GlobalRenderer {
     private final AbstractCamera camera = renderer.camera;
     private final AbstractSpriteRenderer spriteRenderer = renderer.spriteRenderer;
     private final AbstractDebugRenderer debugRenderer = renderer.debugRenderer;
+    private final AbstractLockManager lockManager = renderer.lockManager;
 
     private final GuiManager guiManager;
     private final Profiler profiler;
@@ -41,14 +43,14 @@ public class GlobalRenderer {
 
     public void render(float interpolation) {
         profiler.start("prepareRender");
-        worldRenderer.prepareRender(particleManager.getParticlesCount(), interpolation);
+        worldRenderer.prepareRender(particleManager.getParticlesCount());
+        spriteRenderer.updateBuffers();
 
         profiler.endStart("setup");
         renderer.resetDrawCalls();
         renderer.glClear();
         camera.calculateInterpolatedViewMatrix(interpolation);
-        camera.bindInterpolatedWorldViewMatrix();
-        spriteRenderer.bind();
+        camera.bindWorldViewMatrix();
         shader.enable();
 
         profiler.endStart("worldRenderer");
@@ -58,6 +60,7 @@ public class GlobalRenderer {
 
         profiler.endStart("gui");
         camera.bindGUI();
+        shader.enable();
         guiManager.render();
         spriteRenderer.render(BufferType.GUI);
         profiler.end();
@@ -68,7 +71,6 @@ public class GlobalRenderer {
         renderManager.renderDebug();
         debugRenderer.render(GL.GL_LINE_LOOP);
         debugRenderer.clear();
-        spriteRenderer.bind();
         shader.enable();
     }
 
@@ -76,10 +78,7 @@ public class GlobalRenderer {
         shader.delete();
         shader.load();
         shader.init();
-    }
-
-    public void createBackgroundTexture(long seed) {
-        worldRenderer.createBackgroundTexture(seed);
+        debugRenderer.reload();
     }
 
     public void setDebugBoxesEnabled(boolean value) {

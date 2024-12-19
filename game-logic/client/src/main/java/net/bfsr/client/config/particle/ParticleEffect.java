@@ -1,10 +1,11 @@
 package net.bfsr.client.config.particle;
 
 import lombok.Getter;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.particle.Particle;
 import net.bfsr.client.particle.ParticleManager;
 import net.bfsr.client.particle.SpawnAccumulator;
+import net.bfsr.client.renderer.particle.ParticleRender;
 import net.bfsr.client.sound.SoundEffect;
 import net.bfsr.config.ConfigData;
 import net.bfsr.config.ConfigurableSound;
@@ -60,7 +61,8 @@ public class ParticleEffect extends ConfigData {
     @FunctionalInterface
     private interface ParticleEffectSpawnRunnable {
         void spawn(float worldX, float worldY, float localX, float localY, float sizeX, float sizeY, float sin, float cos,
-                   float velocityX, float velocityY, float r, float g, float b, float a, Consumer<Particle> updateLogic);
+                   float velocityX, float velocityY, float r, float g, float b, float a, Consumer<Particle> updateLogic,
+                   Consumer<ParticleRender> lastValuesUpdateConsumer);
     }
 
     @FunctionalInterface
@@ -137,7 +139,7 @@ public class ParticleEffect extends ConfigData {
 
         if (soundEffects != null && soundEffects.length > 0) {
             spawnRunnables.add((worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
-                                updateLogic) -> {
+                                updateLogic, lastValuesUpdateConsumer) -> {
                 for (int i = 0; i < soundEffects.length; i++) {
                     SoundEffect soundEffect = soundEffects[i];
                     Engine.soundManager.play(soundEffect.soundBuffer(), soundEffect.volume(), worldX, worldY);
@@ -179,7 +181,7 @@ public class ParticleEffect extends ConfigData {
 
         if (maxSpawnCount > minSpawnCount) {
             spawnRunnables.add((worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
-                                updateLogic) -> {
+                                updateLogic, lastValuesUpdateConsumer) -> {
                 int spawnCount = rand.nextInt(maxSpawnCount - minSpawnCount + 1) + minSpawnCount;
                 for (int i = 0; i < spawnCount; i++) {
                     Rotation rotation = angleSupplier.get();
@@ -189,13 +191,13 @@ public class ParticleEffect extends ConfigData {
                             localX, localY, velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), sin1, cos1,
                             angularVelocitySupplier.get(), sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY),
                             sizeVelocitySupplier.get(), r * color.x, g * color.y, b * color.z, a * color.w,
-                            alphaVellocitySupplier.get(), isAlphaFromZero, renderLayer, updateLogic);
+                            alphaVellocitySupplier.get(), isAlphaFromZero, renderLayer, updateLogic, lastValuesUpdateConsumer);
                 }
             });
         } else {
             if (minSpawnCount > 1) {
                 spawnRunnables.add((worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
-                                    updateLogic) -> {
+                                    updateLogic, lastValuesUpdateConsumer) -> {
                     for (int i = 0; i < minSpawnCount; i++) {
                         Rotation rotation = angleSupplier.get();
                         float cos1 = cos * rotation.getCos() - sin * rotation.getSin();
@@ -204,12 +206,13 @@ public class ParticleEffect extends ConfigData {
                                 worldY + localYSupplier.get(), localX, localY, velocityXFunc.apply(velocityX),
                                 velocityYFunc.apply(velocityY), sin1, cos1, angularVelocitySupplier.get(), sizeXFunc.apply(sizeX),
                                 sizeYFunc.apply(sizeY), sizeVelocitySupplier.get(), r * color.x, g * color.y, b * color.z,
-                                a * color.w, alphaVellocitySupplier.get(), isAlphaFromZero, renderLayer, updateLogic);
+                                a * color.w, alphaVellocitySupplier.get(), isAlphaFromZero, renderLayer, updateLogic,
+                                lastValuesUpdateConsumer);
                     }
                 });
             } else if (minSpawnCount > 0) {
                 spawnRunnables.add((worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
-                                    updateLogic) -> {
+                                    updateLogic, lastValuesUpdateConsumer) -> {
                     Rotation rotation = angleSupplier.get();
                     float cos1 = cos * rotation.getCos() - sin * rotation.getSin();
                     float sin1 = sin * rotation.getCos() + cos * rotation.getSin();
@@ -217,7 +220,7 @@ public class ParticleEffect extends ConfigData {
                             localX, localY, velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), sin1, cos1,
                             angularVelocitySupplier.get(), sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY),
                             sizeVelocitySupplier.get(), r * color.x, g * color.y, b * color.z, a * color.w,
-                            alphaVellocitySupplier.get(), isAlphaFromZero, renderLayer, updateLogic);
+                            alphaVellocitySupplier.get(), isAlphaFromZero, renderLayer, updateLogic, lastValuesUpdateConsumer);
                 });
             }
         }
@@ -226,9 +229,9 @@ public class ParticleEffect extends ConfigData {
             for (int i = 0; i < childEffectsInstances.size(); i++) {
                 ParticleEffect effect = childEffectsInstances.get(i);
                 spawnRunnables.add((worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
-                                    updateLogic) -> effect.play(worldX + localXSupplier.get(), worldY + localYSupplier.get(),
-                        localX, localY, sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sin, cos, velocityXFunc.apply(velocityX),
-                        velocityYFunc.apply(velocityY), r, g, b, a, updateLogic));
+                                    updateLogic, lastValuesUpdateConsumer) -> effect.play(worldX + localXSupplier.get(),
+                        worldY + localYSupplier.get(), localX, localY, sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sin, cos,
+                        velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), r, g, b, a, updateLogic, lastValuesUpdateConsumer));
             }
         }
     }
@@ -266,29 +269,30 @@ public class ParticleEffect extends ConfigData {
     public void emit(float x, float y, float sizeX, float sizeY, float sin, float cos, float velocityX, float velocityY,
                      SpawnAccumulator spawnAccumulator) {
         emit(x, y, 0, 0, sizeX, sizeY, sin, cos, velocityX, velocityY, 1.0f, 1.0f, 1.0f, 1.0f, spawnAccumulator,
-                Particle::defaultUpdateLogic);
+                Particle::defaultUpdateLogic, ParticleRender::defaultUpdateLastValues);
     }
 
     public void emit(float x, float y, float size, float sin, float cos, float velocityX, float velocityY, float r, float g,
                      float b, float a, SpawnAccumulator spawnAccumulator) {
-        emit(x, y, 0, 0, size, size, sin, cos, velocityX, velocityY, r, g, b, a, spawnAccumulator, Particle::defaultUpdateLogic);
+        emit(x, y, 0, 0, size, size, sin, cos, velocityX, velocityY, r, g, b, a, spawnAccumulator, Particle::defaultUpdateLogic,
+                ParticleRender::defaultUpdateLastValues);
     }
 
-    public void emit(float worldX, float worldY, float sizeX, float sizeY, float sin, float cos,
+    public void emit(float x, float y, float sizeX, float sizeY, float sin, float cos,
                      float velocityX, float velocityY, float r, float g, float b, float a, SpawnAccumulator spawnAccumulator) {
-        emit(worldX, worldY, 0, 0, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a, spawnAccumulator,
-                Particle::defaultUpdateLogic);
+        emit(x, y, 0, 0, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a, spawnAccumulator,
+                Particle::defaultUpdateLogic, ParticleRender::defaultUpdateLastValues);
     }
 
-    public void emit(float worldX, float worldY, float localX, float localY, float sizeX, float sizeY, float sin, float cos,
+    public void emit(float x, float y, float localX, float localY, float sizeX, float sizeY, float sin, float cos,
                      float velocityX, float velocityY, float r, float g, float b, float a, SpawnAccumulator spawnAccumulator,
-                     Consumer<Particle> updateLogic) {
+                     Consumer<Particle> updateLogic, Consumer<ParticleRender> lastValuesUpdateConsumer) {
         spawnAccumulator.update();
         int maxSpawnCount = 4;
         int count = 0;
         while (spawnAccumulator.getAccumulatedTime() >= spawnTime) {
-            play(worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
-                    updateLogic);
+            play(x, y, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
+                    updateLogic, lastValuesUpdateConsumer);
             spawnAccumulator.consume(spawnTime);
             count++;
             if (count == maxSpawnCount) {
@@ -305,7 +309,7 @@ public class ParticleEffect extends ConfigData {
     public void debug(float x, float y, float sizeX, float sizeY, float sin, float cos, float velocityX, float velocityY,
                       SpawnAccumulator spawnAccumulator) {
         removeDeadParticles();
-        ParticleManager particleManager = Core.get().getParticleManager();
+        ParticleManager particleManager = Client.get().getParticleManager();
         int particlesCount = particleManager.getParticlesCount();
 
         if (spawnTime > 0) {
@@ -313,7 +317,7 @@ public class ParticleEffect extends ConfigData {
         } else {
             if (!isAlive()) {
                 play(x, y, 0, 0, sizeX, sizeY, sin, cos, velocityX, velocityY, 1.0f, 1.0f, 1.0f, 1.0f,
-                        Particle::defaultUpdateLogic);
+                        Particle::defaultUpdateLogic, ParticleRender::defaultUpdateLastValues);
             }
         }
 
@@ -327,30 +331,40 @@ public class ParticleEffect extends ConfigData {
     }
 
     public void play(float x, float y, float sizeX, float sizeY) {
-        play(x, y, 0, 0, sizeX, sizeY, 0.0f, 1.0f, 0, 0, 1.0f, 1.0f, 1.0f, 1.0f, Particle::defaultUpdateLogic);
+        play(x, y, 0, 0, sizeX, sizeY, 0.0f, 1.0f, 0, 0, 1.0f, 1.0f, 1.0f, 1.0f, Particle::defaultUpdateLogic,
+                ParticleRender::defaultUpdateLastValues);
     }
 
     public void play(float x, float y, float sizeX, float sizeY, float velocityX, float velocityY) {
-        play(x, y, 0, 0, sizeX, sizeY, 0.0f, 1.0f, velocityX, velocityY, 1.0f, 1.0f, 1.0f, 1.0f, Particle::defaultUpdateLogic);
+        play(x, y, 0, 0, sizeX, sizeY, 0.0f, 1.0f, velocityX, velocityY, 1.0f, 1.0f, 1.0f, 1.0f, Particle::defaultUpdateLogic,
+                ParticleRender::defaultUpdateLastValues);
     }
 
     public void play(float x, float y, float size, float r, float g, float b, float a) {
-        play(x, y, 0, 0, size, size, 0.0f, 1.0f, 0, 0, r, g, b, a, Particle::defaultUpdateLogic);
+        play(x, y, 0, 0, size, size, 0.0f, 1.0f, 0, 0, r, g, b, a, Particle::defaultUpdateLogic, ParticleRender::defaultUpdateLastValues);
     }
 
     public void playSinCos(float x, float y, float size, float sin, float cos, float r, float g, float b, float a) {
-        play(x, y, 0, 0, size, size, sin, cos, 0, 0, r, g, b, a, Particle::defaultUpdateLogic);
+        play(x, y, 0, 0, size, size, sin, cos, 0, 0, r, g, b, a, Particle::defaultUpdateLogic, ParticleRender::defaultUpdateLastValues);
     }
 
     public void play(float x, float y, float size, float velocityX, float velocityY, float r, float g, float b, float a) {
-        play(x, y, 0, 0, size, size, 0.0f, 1.0f, velocityX, velocityY, r, g, b, a, Particle::defaultUpdateLogic);
+        play(x, y, 0, 0, size, size, 0.0f, 1.0f, velocityX, velocityY, r, g, b, a, Particle::defaultUpdateLogic,
+                ParticleRender::defaultUpdateLastValues);
+    }
+
+    public void play(float x, float y, float localX, float localY, float sizeX, float sizeY, float sin, float cos,
+                     float velocityX, float velocityY, float r, float g, float b, float a, Consumer<Particle> updateLogic) {
+        play(x, y, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a, updateLogic,
+                ParticleRender::defaultUpdateLastValues);
     }
 
     public void play(float worldX, float worldY, float localX, float localY, float sizeX, float sizeY, float sin, float cos,
-                     float velocityX, float velocityY, float r, float g, float b, float a, Consumer<Particle> updateLogic) {
+                     float velocityX, float velocityY, float r, float g, float b, float a, Consumer<Particle> updateLogic,
+                     Consumer<ParticleRender> lastValuesUpdateConsumer) {
         for (int i = 0; i < spawnRunnables.size(); i++) {
             spawnRunnables.get(i).spawn(worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
-                    updateLogic);
+                    updateLogic, lastValuesUpdateConsumer);
         }
     }
 

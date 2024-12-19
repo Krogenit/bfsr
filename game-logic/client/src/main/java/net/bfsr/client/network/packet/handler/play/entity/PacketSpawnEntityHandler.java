@@ -1,7 +1,7 @@
 package net.bfsr.client.network.packet.handler.play.entity;
 
 import io.netty.channel.ChannelHandlerContext;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.world.entity.EntitySpawnLogicType;
 import net.bfsr.client.world.entity.EntitySpawnLoginRegistry;
@@ -16,9 +16,9 @@ public class PacketSpawnEntityHandler extends PacketHandler<PacketSpawnEntity, N
     @Override
     public void handle(PacketSpawnEntity packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
-        Core core = Core.get();
-        if (core.getWorld().getEntityById(packet.getEntityPacketSpawnData().getEntityId()) == null) {
-            EntitySpawnLoginRegistry entitySpawnLoginRegistry = core.getEntitySpawnLoginRegistry();
+        Client client = Client.get();
+        if (client.getWorld().getEntityById(packet.getEntityPacketSpawnData().getEntityId()) == null) {
+            EntitySpawnLoginRegistry entitySpawnLoginRegistry = client.getEntitySpawnLoginRegistry();
             entitySpawnLoginRegistry.spawn(SPAWN_LOGIC_TYPES[packet.getEntityPacketSpawnData().getType().ordinal()],
                     packet.getEntityPacketSpawnData());
         }

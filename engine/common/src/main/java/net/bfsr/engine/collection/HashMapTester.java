@@ -35,9 +35,9 @@ public class HashMapTester {
         if (now - lastInfoTime >= 500) {
             lastInfoTime = now;
 
-            float averageAddTime = 0;
-            float averageGetTime = 0;
-            float averageRemoveTime = 0;
+            double averageAddTime = 0;
+            double averageGetTime = 0;
+            double averageRemoveTime = 0;
 
             for (int i = 0; i < addTimes.size(); i++) {
                 averageAddTime += addTimes.get(i);

@@ -1,7 +1,7 @@
 package net.bfsr.client.world.entity;
 
 import lombok.RequiredArgsConstructor;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.config.component.weapon.gun.GunRegistry;
 import net.bfsr.entity.bullet.Bullet;
@@ -14,7 +14,7 @@ public class BulletSpawnLogic implements EntitySpawnLogic<BulletSpawnData> {
 
     @Override
     public void spawn(BulletSpawnData spawnData) {
-        World world = Core.get().getWorld();
+        World world = Client.get().getWorld();
 
         GunData gunData = gunRegistry.get(spawnData.getDataId());
         Bullet bullet = new Bullet(spawnData.getPosX(), spawnData.getPosY(), spawnData.getSin(), spawnData.getCos(), gunData,

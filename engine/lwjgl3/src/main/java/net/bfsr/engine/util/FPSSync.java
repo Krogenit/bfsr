@@ -7,7 +7,9 @@ public class FPSSync {
 
     private long nextFrameTime;
 
-    /** for calculating the averages the previous sleep/yield times are stored */
+    /**
+     * for calculating the averages the previous sleep/yield times are stored
+     */
     private final RunningAvg sleepDurations = new RunningAvg(10);
     private final RunningAvg yieldDurations = new RunningAvg(10);
 
@@ -94,10 +96,10 @@ public class FPSSync {
         void dampenForLowResTicker() {
             if (avg() > DAMPEN_THRESHOLD) {
                 for (int i = 0; i < slots.length; i++) {
-                    slots[i] *= DAMPEN_FACTOR;
+                    slots[i] = (long) (slots[i] * DAMPEN_FACTOR);
                 }
 
-                sum *= DAMPEN_FACTOR;
+                sum = (long) (sum * DAMPEN_FACTOR);
             }
         }
     }

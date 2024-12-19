@@ -74,7 +74,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
             if (connectionState == ConnectionState.CONNECTED) {
                 long now = System.currentTimeMillis();
                 if (now - lastPingCheckTime > PING_PERIOD_IN_MILLS) {
-                    sendUDPPacket(new PacketPing(Side.SERVER, System.nanoTime()));
+                    sendUDPPacket(new PacketPing(Side.SERVER));
                     lastPingCheckTime = now;
                 }
             } else if (connectionState == ConnectionState.LOGIN) {
@@ -202,9 +202,12 @@ public class PlayerNetworkHandler extends NetworkHandler {
     public void onDisconnected() {
         if (connectionStateBeforeDisconnect == ConnectionState.CONNECTED) {
             log.info("{} lost connection: {}", player.getUsername(), terminationReason);
-            server.onPlayerDisconnected(player);
         } else {
             log.info("{} lost connection: {}", socketChannel.remoteAddress(), terminationReason);
+        }
+
+        if (player != null) {
+            server.onPlayerDisconnected(player);
         }
     }
 

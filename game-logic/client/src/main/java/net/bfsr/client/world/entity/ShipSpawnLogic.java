@@ -2,7 +2,7 @@ package net.bfsr.client.world.entity;
 
 import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.RequiredArgsConstructor;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
@@ -23,7 +23,7 @@ public class ShipSpawnLogic extends DamageableRigidBodySpawnLogic<ShipSpawnData>
 
     @Override
     public void spawn(ShipSpawnData spawnData) {
-        World world = Core.get().getWorld();
+        World world = Client.get().getWorld();
 
         Ship ship = shipFactory.create(spawnData.getPosX(), spawnData.getPosY(), spawnData.getSin(), spawnData.getCos(),
                 Faction.get(spawnData.getFaction()), shipFactory.getShipRegistry().get(spawnData.getDataId()),

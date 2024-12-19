@@ -1,5 +1,6 @@
 package net.bfsr.entity;
 
+import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.util.ObjectPool;
 
 public class PositionHistory extends EntityDataHistory<TransformData> {
@@ -21,7 +22,7 @@ public class PositionHistory extends EntityDataHistory<TransformData> {
 
     @Override
     public TransformData get(double time) {
-        if (dataList.size() == 0) return null;
+        if (dataList.isEmpty()) return null;
 
         if (dataList.getFirst().getTime() < time) {
             return dataList.getFirst();
@@ -63,10 +64,16 @@ public class PositionHistory extends EntityDataHistory<TransformData> {
         cache.clear();
     }
 
-    public void correction(float dx, float dy) {
+    public void correction(float dx, float dy, float angle) {
         for (int i = 0; i < dataList.size(); i++) {
             TransformData transformData = dataList.get(i);
             transformData.getPosition().add(dx, dy);
+            float cos = transformData.getCos();
+            float sin = transformData.getSin();
+            float serverAngle = (float) ((sin >= 0) ? Math.acos(cos) : -Math.acos(cos));
+            serverAngle += angle;
+            transformData.setSin(LUT.sin(serverAngle));
+            transformData.setCos(LUT.cos(serverAngle));
         }
     }
 }

@@ -61,7 +61,7 @@ public class TrueTypeBitMap extends FontBitMap {
             FT_Bitmap glyphBitMap = glyph.bitmap();
 
             if (glyphBitMap.width() == 0) {
-                glyphsByCharCodeMap.put(charCode, new Glyph(0, 0, 0, 0, 0, 0, 0, 0, 0, (int) (glyph.advance().x() >> 6)));
+                glyphsByCharCodeMap.put(charCode, new Glyph(0, 0, 0, 0, 0, 0, 0, 0, 0, (int) (glyph.advance().x() >> 6), charCode, true));
                 packedCharsList.add(charCode);
                 continue;
             }
@@ -86,8 +86,8 @@ public class TrueTypeBitMap extends FontBitMap {
                 float u2 = (float) (placement.getX() + placement.getWidth()) / width;
                 float v2 = (float) (placement.getY() + placement.getHeight()) / height;
 
-                glyphsByCharCodeMap.put(charCode,
-                        new Glyph(x1, y1, x2, y2, u1, v1, u2, v2, bitmapTexture.getTextureHandle(), (int) (glyph.advance().x() >> 6)));
+                glyphsByCharCodeMap.put(charCode, new Glyph(x1, y1, x2, y2, u1, v1, u2, v2, bitmapTexture.getTextureHandle(),
+                        (int) (glyph.advance().x() >> 6), charCode, false));
                 packedCharsList.add(charCode);
 
                 // TODO: optimize calls to one

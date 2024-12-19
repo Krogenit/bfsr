@@ -60,7 +60,11 @@ public class CorrectionHandler {
     void angleCorrection(float serverCos, float serverSin, float localCos, float localSin) {
         float serverAngle = (float) ((serverSin >= 0) ? Math.acos(serverCos) : -Math.acos(serverCos));
         float localAngle = (float) ((localSin >= 0) ? Math.acos(localCos) : -Math.acos(localCos));
-        float angle = localAngle + MathUtils.lerpAngle(localAngle, serverAngle) * correctionAmount;
+        angleCorrection(localAngle, MathUtils.lerpAngle(localAngle, serverAngle));
+    }
+
+    void angleCorrection(float localAngle, float angleDiff) {
+        float angle = localAngle + angleDiff * correctionAmount;
         rigidBody.setRotation(LUT.sin(angle), LUT.cos(angle));
     }
 

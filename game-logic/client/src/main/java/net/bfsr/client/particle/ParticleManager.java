@@ -1,6 +1,6 @@
 package net.bfsr.client.particle;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
@@ -19,7 +19,7 @@ public class ParticleManager {
     private final List<Particle> particles = new ArrayList<>();
 
     public void init() {
-        Core.get().getEventBus().register(this);
+        Client.get().getEventBus().register(this);
     }
 
     public void update() {

@@ -1,13 +1,17 @@
 package net.bfsr.engine.gui.renderer.combobox;
 
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.ComboBox;
-import net.bfsr.engine.gui.renderer.GuiObjectRenderer;
+import net.bfsr.engine.gui.renderer.RectangleOutlinedRenderer;
+import net.bfsr.engine.renderer.primitive.Primitive;
 import org.joml.Vector4f;
 
-public class ComboBoxRenderer extends GuiObjectRenderer {
+public class ComboBoxRenderer extends RectangleOutlinedRenderer {
+    private static final Primitive TRIANGLE_PRIMITIVE = new Primitive(-0.5f, 0.2857f, 0.0f, 1.0f, 0.0f, -0.2857f, 1.0f,
+            1.0f, 0.5f, 0.2857f, 1.0f, 0.0f, -0.5f, 0.2857f, 0.0f, 0.0f);
+
     private final ComboBox<?> comboBox;
     private final int triangleXOffset = 4;
+    private int triangleId = -1;
 
     public ComboBoxRenderer(ComboBox<?> comboBox) {
         super(comboBox);
@@ -15,29 +19,27 @@ public class ComboBoxRenderer extends GuiObjectRenderer {
     }
 
     @Override
-    public void render(int lastX, int lastY, int x, int y, int width, int height) {
-        if (guiObject.isMouseHover()) {
-            guiRenderer.add(lastX, lastY, x, y, width, height, outlineHoverColor);
-            guiRenderer.add(lastX + 1, lastY + 1, x + 1, y + 1, width - 2, height - 2, hoverColor);
-        } else {
-            guiRenderer.add(lastX, lastY, x, y, width, height, outlineColor);
-            guiRenderer.add(lastX + 1, lastY + 1, x + 1, y + 1, width - 2, height - 2, color);
-        }
+    protected void create() {
+        super.create();
+        guiRenderer.addPrimitive(TRIANGLE_PRIMITIVE);
 
-        super.render(lastX, lastY, x, y, width, height);
+        int x = guiObject.getSceneX();
+        int y = guiObject.getSceneY();
+        int width = guiObject.getWidth();
+        int height = guiObject.getHeight();
 
-        int triangleWidth = 14;
-        int triangleHalfWidth = triangleWidth / 2;
-        int triangleHeight = 8;
-        int triangleHalfHeight = triangleHeight / 2;
-        float interpolation = Engine.renderer.getInterpolation();
-        int triangleX = (int) (lastX + (x - lastX) * interpolation + width - triangleWidth / 2 -
-                triangleXOffset);
-        int triangleY = (int) (lastY + (y - lastY) * interpolation + height / 2);
-
+        int triangleHalfWidth = 7;
+        int triangleHalfHeight = 4;
+        int triangleX = x + width - triangleHalfWidth - triangleXOffset;
+        int triangleY = y + height / 2;
         Vector4f color = comboBox.getLabel().getColor();
-        guiRenderer.addPrimitive(triangleX - triangleHalfWidth, triangleY - triangleHalfHeight, triangleX,
-                triangleY + triangleHalfHeight, triangleX + triangleHalfWidth, triangleY - triangleHalfHeight,
-                triangleX - triangleHalfWidth, triangleY - triangleHalfHeight, color.x, color.y, color.z, color.w, 0);
+
+        idList.add(triangleId = guiRenderer.add(triangleX, triangleY, triangleHalfWidth << 1, triangleHalfHeight << 1, color));
+    }
+
+    @Override
+    public void renderBody() {
+        super.renderBody();
+        guiRenderer.addDrawCommand(triangleId, TRIANGLE_PRIMITIVE.getBaseVertex());
     }
 }

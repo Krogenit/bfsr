@@ -1,7 +1,7 @@
 package net.bfsr.client.network.packet.handler.play.entity;
 
 import io.netty.channel.ChannelHandlerContext;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.engine.collection.UnorderedArrayList;
 import net.bfsr.entity.EntityDataHistoryManager;
@@ -15,7 +15,7 @@ public class PacketWorldSnapshotHandler extends PacketHandler<PacketWorldSnapsho
     public void handle(PacketWorldSnapshot packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
         UnorderedArrayList<PacketWorldSnapshot.EntityData> entityDataList = packet.getEntityDataList();
-        EntityDataHistoryManager historyManager = Core.get().getWorld().getEntityManager().getDataHistoryManager();
+        EntityDataHistoryManager historyManager = Client.get().getWorld().getEntityManager().getDataHistoryManager();
         for (int i = 0; i < entityDataList.size(); i++) {
             historyManager.addData(entityDataList.get(i), packet.getTimestamp());
         }

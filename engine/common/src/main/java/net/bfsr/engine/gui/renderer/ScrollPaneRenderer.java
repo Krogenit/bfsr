@@ -17,22 +17,22 @@ public class ScrollPaneRenderer extends GuiObjectRenderer {
     }
 
     @Override
-    public void render(int lastX, int lastY, int x, int y, int width, int height) {
+    public void render() {
         guiRenderer.render();
         Engine.renderer.glEnable(GL.GL_SCISSOR_TEST);
-        Engine.renderer.glScissor(x, Engine.renderer.getScreenHeight() - (y + height), width, height);
+        Engine.renderer.glScissor(guiObject.getSceneX(), guiObject.getSceneY(), guiObject.getWidth(), guiObject.getHeight());
 
         List<GuiObject> guiObjects = guiObject.getGuiObjects();
         for (int i = 0; i < guiObjects.size(); i++) {
             GuiObject guiObject = guiObjects.get(i);
             if (this.guiObject.isIntersects(guiObject)) {
-                guiObject.render(guiRenderer, lastX, lastY, x, y);
+                guiObject.getRenderer().render();
             }
         }
 
         guiRenderer.render();
         Engine.renderer.glDisable(GL.GL_SCISSOR_TEST);
 
-        scroll.render(guiRenderer, lastX, lastY, x, y);
+        scroll.getRenderer().render();
     }
 }

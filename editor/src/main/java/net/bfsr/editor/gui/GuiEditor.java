@@ -1,7 +1,7 @@
 package net.bfsr.editor.gui;
 
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.config.Config;
 import net.bfsr.config.ConfigLoader;
@@ -85,8 +85,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
         addInspectionPanel();
 
         propertiesPanel.setAllColors(BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w)
-                .setHeightFunction((width, height) -> height)
-                .atTopRight(-propertiesPanel.getWidth(), 0);
+                .setHeightFunction((width, height) -> height).atTopRight(0, 0);
 
         load();
     }
@@ -96,9 +95,9 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
                 .setAllColors(BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w)
                 .setHeightFunction((integer, integer2) -> Engine.renderer.getScreenHeight())
                 .setRightClickRunnable(() -> {
-                    Vector2f mousePos = Engine.mouse.getPosition();
+                    Vector2f mousePos = getMousePosition();
                     int x1 = (int) mousePos.x;
-                    int y1 = (int) mousePos.y;
+                    int y1 = (int) mousePos.y - elementHeight;
 
                     String name = "Create Folder";
                     Button createEntryButton =
@@ -107,7 +106,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
                                     RunnableUtils.EMPTY_RUNNABLE);
                     createEntryButton.setLeftReleaseRunnable(() -> inspectionPanel.add(createEntry()));
 
-                    y1 += elementHeight;
+                    y1 -= elementHeight;
 
                     name = "Create Object";
                     Button createEffectButton =
@@ -116,14 +115,14 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
                                     RunnableUtils.EMPTY_RUNNABLE);
                     createEffectButton.setLeftReleaseRunnable(() -> inspectionPanel.add(createObject()));
 
-                    Core.get().getGuiManager().openContextMenu(
+                    Client.get().getGuiManager().openContextMenu(
                             setupContextMenuButton(createEntryButton), setupContextMenuButton(createEffectButton));
                 }));
 
         int x = 0;
-        int y = -elementHeight;
+        int y = 0;
         inspectionPanel.addBottomButton(x, y, "Save All", this::saveAll);
-        y -= elementHeight;
+        y += elementHeight;
         inspectionPanel.addBottomButton(x, y, "Add", () -> inspectionPanel.add(createObject()));
     }
 
@@ -158,7 +157,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
         boolean input = super.input(key);
 
         if (key == KEY_ESCAPE) {
-            Core.get().closeGui();
+            Client.get().closeGui();
         }
 
         return input;
@@ -244,9 +243,9 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
         InspectionEntry<PROPERTIES_TYPE> entry = new InspectionEntry<>(inspectionPanel, scrollPane.getWidth() - scrollPane.getScrollWidth(),
                 elementHeight, name, font, fontSize, stringOffsetY);
         entry.setRightClickRunnable(() -> {
-            Vector2f mousePos = Engine.mouse.getPosition();
+            Vector2f mousePos = getMousePosition();
             int x1 = (int) mousePos.x;
-            int y1 = (int) mousePos.y;
+            int y1 = (int) mousePos.y - elementHeight;
             String addString = "Create Entry";
             Button createEntryButton = new Button(x1, y1,
                     font.getGlyphsBuilder().getWidth(addString, fontSize) + contextMenuStringOffsetX,
@@ -258,7 +257,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
                     }
             );
 
-            y1 += elementHeight;
+            y1 -= elementHeight;
 
             addString = "Create Object";
             Button createEffectButton = new Button(x1, y1,
@@ -270,7 +269,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
                         entry.tryMaximize();
                     }
             );
-            y1 += elementHeight;
+            y1 -= elementHeight;
 
             addString = "Remove";
             Button removeButton = new Button(x1, y1,
@@ -279,7 +278,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
                     () -> remove(entry)
             );
 
-            Core.get().getGuiManager().openContextMenu(setupContextMenuButton(createEntryButton),
+            Client.get().getGuiManager().openContextMenu(setupContextMenuButton(createEntryButton),
                     setupContextMenuButton(createEffectButton),
                     setupContextMenuButton(removeButton));
         });
@@ -381,9 +380,9 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
             return;
         }
 
+        propertiesPanel.open(() -> save(entry), () -> remove(entry));
         addIfAbsent(propertiesPanel);
 
-        propertiesPanel.open(() -> save(entry), () -> remove(entry));
         onEntrySelected(entry);
     }
 
@@ -394,8 +393,8 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
     public void switchPolygonEditMode(PolygonProperty polygonProperty) {}
 
     @Override
-    public void clear() {
-        super.clear();
+    public void remove() {
+        super.remove();
         ClientSettings.CAMERA_FOLLOW_PLAYER.setValue(prevFollowCameraOptionValue);
     }
 }

@@ -4,7 +4,7 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.renderer.component.WeaponRenderRegistry;
 import net.bfsr.engine.Engine;
@@ -28,7 +28,7 @@ public class RenderManager {
     private final TIntObjectMap<Render> renders = new TIntObjectHashMap<>();
 
     public void init() {
-        Core.get().getEventBus().register(this);
+        Client.get().getEventBus().register(this);
         renderRegistry.init();
     }
 

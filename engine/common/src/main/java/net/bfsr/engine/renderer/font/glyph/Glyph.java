@@ -12,4 +12,6 @@ public class Glyph {
     private float u1, v1, u2, v2;
     private long textureHandle;
     private int advance;
+    private char codepoint;
+    private boolean empty;
 }

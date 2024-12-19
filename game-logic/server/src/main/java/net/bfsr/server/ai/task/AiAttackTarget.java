@@ -101,7 +101,8 @@ public class AiAttackTarget extends AiTask {
                     gunEffectiveDistance = bulletFinalPos.distance(x, y) - 2.0f;
 
                     if (distanceToTarget < gunEffectiveDistance) {
-                        totalIterations *= distanceToTarget / gunEffectiveDistance;
+                        int iterations = Math.round(distanceToTarget / gunEffectiveDistance);
+                        totalIterations *= iterations;
                     }
 
                     totalTargetVelocity.set(targetVelocity.x * Engine.getUpdateDeltaTime(),

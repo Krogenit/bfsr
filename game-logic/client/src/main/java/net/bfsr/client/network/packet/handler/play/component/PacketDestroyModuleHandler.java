@@ -1,7 +1,7 @@
 package net.bfsr.client.network.packet.handler.play.component;
 
 import io.netty.channel.ChannelHandlerContext;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.network.NetworkHandler;
@@ -15,7 +15,7 @@ public class PacketDestroyModuleHandler extends PacketHandler<PacketDestroyModul
     public void handle(PacketDestroyModule packet, NetworkHandler networkHandler, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
         int entityId = packet.getEntityId();
-        RigidBody entity = Core.get().getWorld().getEntityById(entityId);
+        RigidBody entity = Client.get().getWorld().getEntityById(entityId);
         if (entity instanceof Ship ship) {
             ship.getModules().destroyModule(packet.getId(), packet.getType());
         }

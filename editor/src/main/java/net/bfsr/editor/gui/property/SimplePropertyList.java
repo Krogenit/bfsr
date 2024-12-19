@@ -1,6 +1,6 @@
 package net.bfsr.editor.gui.property;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.editor.gui.builder.ComponentBuilder;
 import net.bfsr.editor.property.PropertiesBuilder;
 import net.bfsr.editor.property.holder.PropertiesHolder;
@@ -75,7 +75,7 @@ public class SimplePropertyList<PRIMITIVE_TYPE> extends PropertyList<PropertyCom
                     addString, font, fontSize, 4, stringOffsetY, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
             setupContextMenuButton(button);
             button.setLeftReleaseRunnable(() -> removeProperty(propertyComponent));
-            Core.get().getGuiManager().openContextMenu(button);
+            Client.get().getGuiManager().openContextMenu(button);
         });
 
         properties.add(propertyComponent);

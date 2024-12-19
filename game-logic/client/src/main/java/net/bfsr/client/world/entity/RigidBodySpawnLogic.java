@@ -1,6 +1,6 @@
 package net.bfsr.client.world.entity;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.config.ConfigToDataConverter;
 import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.entity.RigidBody;
@@ -16,10 +16,10 @@ import java.util.List;
 public class RigidBodySpawnLogic implements EntitySpawnLogic<RigidBodySpawnData> {
     @Override
     public void spawn(RigidBodySpawnData spawnData) {
-        Core core = Core.get();
-        World world = core.getWorld();
+        Client client = Client.get();
+        World world = client.getWorld();
         ConfigToDataConverter<?, GameObjectConfigData> converter =
-                (ConfigToDataConverter<?, GameObjectConfigData>) core.getConfigConverterManager().getConverter(spawnData.getRegistryId());
+                (ConfigToDataConverter<?, GameObjectConfigData>) client.getConfigConverterManager().getConverter(spawnData.getRegistryId());
         GameObjectConfigData configData = converter.get(spawnData.getDataId());
         RigidBody rigidBody = new RigidBody(spawnData.getPosX(), spawnData.getPosY(), spawnData.getSin(),
                 spawnData.getCos(), configData.getSizeX(), configData.getSizeY(), configData);

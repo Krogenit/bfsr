@@ -1,11 +1,11 @@
 package net.bfsr.client.particle;
 
 import lombok.Getter;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 
 @Getter
 public class SpawnAccumulator {
-    private final Core core = Core.get();
+    private final Client client = Client.get();
     private double accumulatedTime;
 
     public void resetTime() {
@@ -13,7 +13,7 @@ public class SpawnAccumulator {
     }
 
     public void update() {
-        accumulatedTime += core.getUpdateDeltaTime();
+        accumulatedTime += client.getUpdateDeltaTime();
     }
 
     public void consume(double spawnTime) {

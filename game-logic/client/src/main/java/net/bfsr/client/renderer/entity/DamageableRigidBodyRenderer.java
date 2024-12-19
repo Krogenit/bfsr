@@ -39,6 +39,13 @@ public class DamageableRigidBodyRenderer extends RigidBodyRender {
     }
 
     @Override
+    public void init() {
+        id = spriteRenderer.add(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), rigidBody.getSizeX(),
+                rigidBody.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(), maskTexture.getTextureHandle(),
+                BufferType.ENTITIES_ALPHA);
+    }
+
+    @Override
     public void update() {
         super.update();
         maskTexture.updateEffects();
@@ -49,12 +56,17 @@ public class DamageableRigidBodyRenderer extends RigidBodyRender {
     }
 
     @Override
-    public void renderAlpha() {
-        float sin = rigidBody.getSin();
-        float cos = rigidBody.getCos();
-        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, rigidBody.getX(), rigidBody.getY(), lastSin, lastCos,
-                sin, cos, rigidBody.getSizeX(), rigidBody.getSizeY(), color.x, color.y, color.z, color.w, texture, maskTexture,
-                BufferType.ENTITIES_ALPHA);
+    protected void updateLastRenderValues() {
+        super.updateLastRenderValues();
+        spriteRenderer.setLastFireAmount(id, BufferType.ENTITIES_ALPHA, maskTexture.getFireAmount());
+        spriteRenderer.setLastFireUVAnimation(id, BufferType.ENTITIES_ALPHA, maskTexture.getFireUVAnimation());
+    }
+
+    @Override
+    protected void updateRenderValues() {
+        super.updateRenderValues();
+        spriteRenderer.setFireAmount(id, BufferType.ENTITIES_ALPHA, maskTexture.getFireAmount());
+        spriteRenderer.setFireUVAnimation(id, BufferType.ENTITIES_ALPHA, maskTexture.getFireUVAnimation());
     }
 
     @Override
@@ -104,6 +116,7 @@ public class DamageableRigidBodyRenderer extends RigidBodyRender {
 
     @Override
     public void clear() {
+        super.clear();
         maskTexture.delete();
     }
 }

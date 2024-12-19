@@ -12,12 +12,54 @@ public class InspectionEntryRenderer extends MinimizableGuiObjectRenderer {
     }
 
     @Override
-    protected void renderBase(int lastX, int lastY, int x, int y, int width, int height) {
+    public void update() {
+        super.update();
+
         if (inspectionEntry.isSelected()) {
-            guiRenderer.add(lastX, lastY, x, y, width, inspectionEntry.getBaseHeight(), 35 / 255.0f, 74 / 255.0f, 108 / 255.0f,
-                    hoverColor.w);
+            guiRenderer.setColor(id, 35 / 255.0f, 74 / 255.0f, 108 / 255.0f, hoverColor.w);
         } else if (guiObject.isMouseHover()) {
-            guiRenderer.add(lastX, lastY, x, y, width, height, hoverColor.x, hoverColor.y, hoverColor.z, hoverColor.w);
+            guiRenderer.setColor(id, hoverColor.x, hoverColor.y, hoverColor.z, hoverColor.w);
+        }
+    }
+
+    @Override
+    protected void setLastUpdateValues() {
+        super.setLastUpdateValues();
+        if (inspectionEntry.isSelected()) {
+            guiRenderer.setLastColor(id, 35 / 255.0f, 74 / 255.0f, 108 / 255.0f, hoverColor.w);
+        } else if (guiObject.isMouseHover()) {
+            guiRenderer.setLastColor(id, hoverColor.x, hoverColor.y, hoverColor.z, hoverColor.w);
+        }
+    }
+
+    @Override
+    protected void renderBase() {
+        if (inspectionEntry.isSelected()) {
+            guiRenderer.addDrawCommand(id);
+        } else if (guiObject.isMouseHover()) {
+            guiRenderer.addDrawCommand(id);
+        }
+    }
+
+    @Override
+    public void updatePosition() {
+        super.updatePosition();
+        int x = guiObject.getSceneX();
+        int y = guiObject.getSceneY();
+        if (inspectionEntry.isSelected()) {
+            guiRenderer.setPosition(id, x, y + inspectionEntry.getHeight() - inspectionEntry.getBaseHeight());
+        } else if (guiObject.isMouseHover()) {
+            guiRenderer.setPosition(id, x, y);
+        }
+    }
+
+    @Override
+    public void updateSize() {
+        super.updateSize();
+        if (inspectionEntry.isSelected()) {
+            guiRenderer.setSize(id, guiObject.getWidth(), inspectionEntry.getBaseHeight());
+        } else if (guiObject.isMouseHover()) {
+            guiRenderer.setSize(id, guiObject.getWidth(), guiObject.getHeight());
         }
     }
 }

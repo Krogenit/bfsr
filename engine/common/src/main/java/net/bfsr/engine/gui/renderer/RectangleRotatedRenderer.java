@@ -1,22 +1,21 @@
 package net.bfsr.engine.gui.renderer;
 
 import net.bfsr.engine.gui.component.GuiObject;
+import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 
-public class RectangleRotatedRenderer extends GuiObjectRenderer {
+public class RectangleRotatedRenderer extends SimpleGuiObjectRenderer {
     public RectangleRotatedRenderer(GuiObject guiObject) {
         super(guiObject);
     }
 
     @Override
-    public void render(int lastX, int lastY, int x, int y, int width, int height) {
-        if (guiObject.isMouseHover()) {
-            guiRenderer.addRotated(lastX + width / 2, lastY + height / 2, x + width / 2, y + height / 2, guiObject.getLastRotation(),
-                    guiObject.getRotation(), width, height, hoverColor);
-        } else {
-            guiRenderer.addRotated(lastX + width / 2, lastY + height / 2, x + width / 2, y + height / 2, guiObject.getLastRotation(),
-                    guiObject.getRotation(), width, height, color);
-        }
+    protected void create() {
+        idList.add(id = guiRenderer.addCentered(guiObject.getSceneX(), guiObject.getSceneY(), guiObject.getWidth(), guiObject.getHeight(),
+                guiObject.getColor()));
+    }
 
-        super.render(lastX, lastY, x, y, width, height);
+    @Override
+    protected void renderBody() {
+        guiRenderer.addDrawCommand(id, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX);
     }
 }

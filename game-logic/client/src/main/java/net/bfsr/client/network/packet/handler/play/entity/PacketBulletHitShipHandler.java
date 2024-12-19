@@ -1,7 +1,7 @@
 package net.bfsr.client.network.packet.handler.play.entity;
 
 import io.netty.channel.ChannelHandlerContext;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.particle.effect.GarbageSpawner;
 import net.bfsr.client.particle.effect.WeaponEffects;
@@ -19,8 +19,8 @@ public class PacketBulletHitShipHandler extends PacketHandler<PacketBulletHitShi
     @Override
     public void handle(PacketBulletHitShip packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
-        GameObject bulletGameObject = Core.get().getWorld().getEntityById(packet.getBulletId());
-        GameObject shipGameObject = Core.get().getWorld().getEntityById(packet.getShipId());
+        GameObject bulletGameObject = Client.get().getWorld().getEntityById(packet.getBulletId());
+        GameObject shipGameObject = Client.get().getWorld().getEntityById(packet.getShipId());
         if (bulletGameObject instanceof Bullet bullet && shipGameObject instanceof Ship ship) {
             DamageType damageType = packet.getDamageType();
             if (damageType == DamageType.ARMOR) {

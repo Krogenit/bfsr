@@ -1,7 +1,7 @@
 package net.bfsr.client.network.packet.handler.play.entity.ship;
 
 import io.netty.channel.ChannelHandlerContext;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
@@ -16,7 +16,7 @@ public class PacketWeaponShootHandler extends PacketHandler<PacketWeaponShoot, N
     @Override
     public void handle(PacketWeaponShoot packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
-        World world = Core.get().getWorld();
+        World world = Client.get().getWorld();
         RigidBody obj = world.getEntityById(packet.getId());
         if (obj instanceof Ship ship) {
             WeaponSlot weaponSlot = ship.getWeaponSlot(packet.getSlot());

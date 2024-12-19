@@ -43,7 +43,6 @@ public class PacketCommandHandler extends PacketHandler<PacketCommand, PlayerNet
                 case SAIMON -> shipFactory.createBotSaimonSmall(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, ai);
                 case ENGI -> shipFactory.createBotEngiSmall(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, ai);
             };
-            shipFactory.getShipOutfitter().outfit(ship);
             world.add(ship, false);
             ship.setSpawned();
         }

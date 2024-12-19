@@ -5,17 +5,12 @@ import lombok.Setter;
 import org.joml.Vector4f;
 
 @Getter
-@Setter
 class StringParams {
-    private Vector4f color = new Vector4f();
+    private final Vector4f color = new Vector4f();
+    @Setter
     private float x, y;
-    private int height;
 
-    void addHeight(int height) {
-        this.height += height;
-    }
-
-    void setColor(float r, float g, float b) {
-        color.set(r, g, b);
+    void setColor(float r, float g, float b, float a) {
+        color.set(r, g, b, a);
     }
 }

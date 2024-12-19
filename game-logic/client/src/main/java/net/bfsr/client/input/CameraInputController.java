@@ -1,6 +1,6 @@
 package net.bfsr.client.input;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.Engine;
@@ -33,28 +33,28 @@ public class CameraInputController extends InputController {
     private GuiManager guiManager;
     private final AbstractMouse mouse = Engine.mouse;
     private final AbstractKeyboard keyboard = Engine.keyboard;
-    private Core core;
+    private Client client;
     private @Nullable Ship followShip;
     private PlayerInputController playerInputController;
     private long lastSendTime;
 
     @Override
     public void init() {
-        core = Core.get();
-        guiManager = core.getGuiManager();
-        playerInputController = core.getInputHandler().getPlayerInputController();
-        core.getEventBus().register(this);
+        client = Client.get();
+        guiManager = client.getGuiManager();
+        playerInputController = client.getInputHandler().getPlayerInputController();
+        client.getEventBus().register(this);
     }
 
     @Override
     public void update() {
-        if (!core.isInWorld()) return;
+        if (!client.isInWorld()) return;
 
         if (!guiManager.isActive()) {
             if (ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS.getBoolean()) moveByScreenBorders();
 
             boolean noShip = !playerInputController.isControllingShip();
-            float keyMoveSpeed = ClientSettings.CAMERA_MOVE_BY_KEY_SPEED.getFloat() * core.convertToDeltaTime(60.0f);
+            float keyMoveSpeed = ClientSettings.CAMERA_MOVE_BY_KEY_SPEED.getFloat() * client.convertToDeltaTime(60.0f);
             if (keyboard.isKeyDown(KEY_LEFT) || (noShip && keyboard.isKeyDown(KEY_A))) {
                 camera.move(-keyMoveSpeed, 0);
             } else if (keyboard.isKeyDown(KEY_RIGHT) || (noShip && keyboard.isKeyDown(KEY_D))) {
@@ -75,7 +75,7 @@ public class CameraInputController extends InputController {
         if (position.x != lastPosition.x || position.y != lastPosition.y) {
             long time = System.currentTimeMillis();
             if (time - lastSendTime > 500) {
-                core.sendUDPPacket(new PacketCameraPosition(position.x, position.y));
+                client.sendUDPPacket(new PacketCameraPosition(position.x, position.y));
                 lastSendTime = time;
             }
         }
@@ -92,7 +92,7 @@ public class CameraInputController extends InputController {
             if (dis > minDistance) {
                 float mDx = x - position.x;
                 float mDy = y - position.y;
-                float animationSpeed = core.convertToDeltaTime(3.0f);
+                float animationSpeed = client.convertToDeltaTime(3.0f);
                 camera.move(mDx * animationSpeed, mDy * animationSpeed);
             }
         } else {
@@ -112,7 +112,7 @@ public class CameraInputController extends InputController {
                     if (mDy < -max) mDy = -max;
                     else if (mDy > max) mDy = max;
 
-                    float animationSpeed = core.convertToDeltaTime(3.0f);
+                    float animationSpeed = client.convertToDeltaTime(3.0f);
                     camera.move(mDx * animationSpeed, mDy * animationSpeed);
                 }
             }
@@ -121,7 +121,7 @@ public class CameraInputController extends InputController {
 
     private void findShipToFollow() {
         Ship newShip = null;
-        List<Ship> ships = core.getWorld().getEntitiesByType(Ship.class);
+        List<Ship> ships = client.getWorld().getEntitiesByType(Ship.class);
         if (ships.size() > 0) {
             float minDist = Float.MAX_VALUE;
             for (int i = 0; i < ships.size(); i++) {
@@ -138,7 +138,7 @@ public class CameraInputController extends InputController {
     }
 
     private void moveByScreenBorders() {
-        float moveSpeed = core.convertToDeltaTime(60.0f);
+        float moveSpeed = client.convertToDeltaTime(60.0f);
         float screenMoveSpeed = ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS_SPEED.getFloat() / camera.getZoom() * moveSpeed;
         float offset = ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS_OFFSET.getFloat();
         Vector2f cursorPosition = mouse.getPosition();

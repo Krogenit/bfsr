@@ -1,7 +1,7 @@
 package net.bfsr.client.gui.ingame;
 
 import lombok.Setter;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.settings.ClientSettings;
@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class DebugInfoElement extends MinimizableGuiObject {
-    private static final int MINIMIZABLE_STRING_OFFSET_Y = 3;
     private static final Font FONT_TYPE = Font.CONSOLA_FT;
     private static final int FONT_SIZE = 13;
 
@@ -41,15 +40,15 @@ public class DebugInfoElement extends MinimizableGuiObject {
     @Setter
     private float ping;
 
-    private final Core core = Core.get();
-    private final ParticleRenderer particleRenderer = core.getGlobalRenderer().getParticleRenderer();
-    private final PlayerInputController playerInputController = core.getInputHandler().getPlayerInputController();
+    private final Client client = Client.get();
+    private final ParticleRenderer particleRenderer = client.getGlobalRenderer().getParticleRenderer();
+    private final PlayerInputController playerInputController = client.getInputHandler().getPlayerInputController();
     private final AbstractMouse mouse = Engine.mouse;
     private int sortTimer;
     private final StringBuilder offset = new StringBuilder(32);
     private final StringBuilder fullCategoryName = new StringBuilder(32);
-    private final ScrollPane scrollPane = new ScrollPane(300 - STATIC_STRING_X_OFFSET, 300, 10);
-    private final Label profilerLabel = new Label(FONT_TYPE);
+    private final ScrollPane scrollPane = new ScrollPane(300 - STATIC_STRING_X_OFFSET, 500, 10);
+    private final Label profilerLabel = new Label(FONT_TYPE, "", 0, 0, FONT_SIZE);
 
     public DebugInfoElement(HUD hud) {
         super(300, 20, "Debug info", FONT_TYPE, FONT_SIZE, 0, 0, MINIMIZABLE_STRING_X_OFFSET,
@@ -58,20 +57,19 @@ public class DebugInfoElement extends MinimizableGuiObject {
         setTextColor(205 / 255.0f, 205 / 255.0f, 205 / 255.0f, 1.0f).setHoverColor(0.3f, 0.3f, 0.3f, 0.5f);
 
         add(scrollPane);
+        scrollPane.setScrollColor(0.5f, 0.5f, 0.5f, 0.25f);
+        scrollPane.setScrollHoverColor(0.5f, 0.5f, 0.5f, 0.5f);
 
         int width = 300 - STATIC_STRING_X_OFFSET - 10;
         int height = 20;
-        int y = height;
-        int yOffset = 14;
-        addDebugLabel(y, "BFSR Client " + Core.GAME_VERSION + "\n", label1 -> {});
-        y += yOffset;
-        addDebugLabel(y, "", label1 -> {
+        int y = 0;
+        y -= addDebugLabel(y, "BFSR Client " + Client.GAME_VERSION + "\n", label1 -> {}).getHeight();
+        y -= addDebugLabel(y, "", label1 -> {
             ServerGameLogic server = ServerGameLogic.getInstance();
             int ups = server != null ? server.getUps() : 0;
             label1.setString("FPS " + Engine.renderer.getFps() + ", Local Server UPS " + ups);
-        });
-        y += yOffset;
-        addDebugLabel(y, "", label1 -> {
+        }).getHeight();
+        y -= addDebugLabel(y, "", label1 -> {
             Runtime runtime = Runtime.getRuntime();
             long maxMemory = runtime.maxMemory();
             long totalMemory = runtime.totalMemory();
@@ -81,26 +79,22 @@ public class DebugInfoElement extends MinimizableGuiObject {
             long freeMemoryMB = freeMemory / 1024L / 1024L;
             label1.setString("Memory: " + (totalMemoryMB - freeMemoryMB) + "MB / " + totalMemoryMB +
                     "MB up to " + maxMemoryMB + "MB");
-        });
-        y += yOffset;
-        addDebugLabel(y, "", label1 -> {
+        }).getHeight();
+        y -= addDebugLabel(y, "", label1 -> {
             Vector2f mousePosition = mouse.getPosition();
             label1.setString("Mouse screen pos: " + (int) mousePosition.x + ", " + (int) mousePosition.y);
-        });
-        y += yOffset;
-        addDebugLabel(y, "", label1 -> {
+        }).getHeight();
+        y -= addDebugLabel(y, "", label1 -> {
             AbstractCamera camera = Engine.renderer.camera;
             Vector2f mouseWorldPosition = mouse.getWorldPosition(camera);
             label1.setString("Mouse world pos: " + DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.x) +
                     ", " + DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.y));
-        });
-        y += yOffset;
-        addMinimizableWithLabel(width, height, y, "Profiler", profilerLabel);
-        y += height;
-        addMinimizableWithLabel(width, height, y, "Network", createLabel(0, "",
-                label1 -> label1.setString("Ping: " + DecimalUtils.strictFormatWithToDigits(ping) + "ms")));
-        y += height;
-        addMinimizableWithLabel(width, height, y, "Render", createLabel(0, "",
+        }).getHeight();
+        y -= addMinimizableWithLabel(width, height, y, "Profiler", profilerLabel).getHeight();
+        y -= addMinimizableWithLabel(width, height, y, "Network", createLabel(0, "",
+                label1 -> label1.setString("Ping: " + DecimalUtils.strictFormatWithToDigits(ping) + "ms" +
+                        "\nClient render delay: " + client.getClientRenderDelayInNanos() / 1_000_000 + "ms"))).getHeight();
+        y -= addMinimizableWithLabel(width, height, y, "Render", createLabel(0, "",
                 label1 -> {
                     AbstractCamera camera = Engine.renderer.camera;
                     Vector2f camPos = camera.getPosition();
@@ -112,14 +106,13 @@ public class DebugInfoElement extends MinimizableGuiObject {
                             "\nParticle Renderer: " +
                             (particleRenderer.getTaskCount() > 1 ? particleRenderer.getTaskCount() + " active threads" :
                                     "single-threaded"));
-                }));
-        y += height;
-        addMinimizableWithLabel(width, height, y, "World", createLabel(0, "",
+                })).getHeight();
+        y -= addMinimizableWithLabel(width, height, y, "World", createLabel(0, "",
                 label1 -> {
-                    World world = core.getWorld();
+                    World world = client.getWorld();
                     int bulletsCount = world.getBulletsCount();
                     int shipsCount = world.getEntitiesByType(Ship.class).size();
-                    int particlesCount = core.getParticlesCount();
+                    int particlesCount = client.getParticlesCount();
                     int wreckCount = world.getWreckCount();
                     int shipWreckCount = world.getShipWreckCount();
                     int bodyCount = world.getPhysicWorld().getBodyCount();
@@ -145,9 +138,8 @@ public class DebugInfoElement extends MinimizableGuiObject {
                             "\nParticles count: " + particlesCount +
                             "\nWrecks count: " + wreckCount + "/" + sWrecksCount +
                             "\nShip wrecks count: " + shipWreckCount + "/" + sShipWrecksCount);
-                }));
-        y += height;
-        addMinimizableWithLabel(width, height, y, "Player ship", createLabel(0, "",
+                })).getHeight();
+        y -= addMinimizableWithLabel(width, height, y, "Player ship", createLabel(0, "",
                 label1 -> {
                     Ship playerShip = playerInputController.getShip();
                     if (playerShip != null) {
@@ -168,8 +160,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
                     } else {
                         label1.setString("");
                     }
-                }));
-        y += height;
+                })).getHeight();
         addMinimizableWithLabel(width, height, y, "Selected Ship", createLabel(0, "",
                 label1 -> {
                     Ship ship = hud.getSelectedShip();
@@ -181,8 +172,10 @@ public class DebugInfoElement extends MinimizableGuiObject {
                 }));
     }
 
-    private void addDebugLabel(int y, String text, Consumer<Label> updateConsumer) {
-        scrollPane.add(createLabel(y, text, updateConsumer));
+    private Label addDebugLabel(int y, String text, Consumer<Label> updateConsumer) {
+        Label label = createLabel(y, text, updateConsumer);
+        scrollPane.add(label);
+        return label;
     }
 
     private Label createLabel(int y, String text, Consumer<Label> updateConsumer) {
@@ -195,12 +188,13 @@ public class DebugInfoElement extends MinimizableGuiObject {
         }.atTopLeft(0, y);
     }
 
-    private void addMinimizableWithLabel(int width, int height, int y, String name, Label label) {
+    private MinimizableGuiObject addMinimizableWithLabel(int width, int height, int y, String name, Label label) {
         MinimizableGuiObject minimizableGuiObject = new MinimizableGuiObject(width, height, name, FONT_TYPE, FONT_SIZE,
-                MINIMIZABLE_STRING_X_OFFSET, MINIMIZABLE_STRING_OFFSET_Y, MINIMIZABLE_STRING_X_OFFSET, STATIC_STRING_X_OFFSET);
+                0, 0, MINIMIZABLE_STRING_X_OFFSET, STATIC_STRING_X_OFFSET);
         scrollPane.add(minimizableGuiObject.atTopLeft(0, y).setTextColor(205 / 255.0f, 205 / 255.0f, 205 / 255.0f, 1.0f)
                 .setHoverColor(0.3f, 0.3f, 0.3f, 0.5f));
         minimizableGuiObject.add(label);
+        return minimizableGuiObject;
     }
 
     @Override
@@ -211,7 +205,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
 
         if (((MinimizableGuiObject) profilerLabel.getParent()).isMaximized()) {
             stringBuilder.setLength(0);
-            Profiler profiler = core.getProfiler();
+            Profiler profiler = client.getProfiler();
             offset.setLength(0);
             fullCategoryName.setLength(0);
             fullCategoryName.append("root");
@@ -249,7 +243,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
                 fullCategoryName.delete(fullCategoryName.lastIndexOf("."), fullCategoryName.length());
             });
 
-            profilerLabel.setString(stringBuilder.toString());
+            profilerLabel.setString(stringBuilder.deleteCharAt(stringBuilder.length() - 1).toString());
 
             if (needSort) {
                 sortTimer = 60;
@@ -274,7 +268,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
         for (int i = 0, y = 0; i < guiObjects.size(); i++) {
             GuiObject guiObject = guiObjects.get(i);
             guiObject.atTopLeft(0, y);
-            y += guiObject.getHeight();
+            y -= guiObject.getHeight();
         }
     }
 }

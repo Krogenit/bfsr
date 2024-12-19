@@ -3,15 +3,17 @@ package net.bfsr.engine.renderer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import net.bfsr.engine.renderer.buffer.AbstractLockManager;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
-import net.bfsr.engine.renderer.font.string.AbstractStringGeometryBuilder;
-import net.bfsr.engine.renderer.font.string.AbstractStringRenderer;
+import net.bfsr.engine.renderer.font.StringGeometryBuilder;
+import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.renderer.shader.AbstractShaderProgram;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.AbstractTextureGenerator;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -35,12 +37,12 @@ public abstract class AbstractRenderer {
 
     public final AbstractCamera camera;
     public final AbstractShaderProgram shader;
-    public final AbstractStringGeometryBuilder stringGeometryBuilder;
-    public final AbstractStringRenderer stringRenderer;
+    public final StringGeometryBuilder stringGeometryBuilder;
     public final AbstractSpriteRenderer spriteRenderer;
     public final AbstractGUIRenderer guiRenderer;
     public final AbstractDebugRenderer debugRenderer;
     public final AbstractTextureGenerator textureGenerator;
+    public final AbstractLockManager lockManager;
 
     public void init(long window, int width, int height) {
         this.window = window;
@@ -51,34 +53,26 @@ public abstract class AbstractRenderer {
 
         camera.init(width, height);
         spriteRenderer.init();
-        stringRenderer.init();
         guiRenderer.init();
         debugRenderer.init();
         shader.load();
         shader.init();
-        textureGenerator.init();
     }
 
     public abstract void setupOpenGL();
 
     public abstract void update();
 
-    public void resetDrawCalls() {
-        lastFrameDrawCalls = drawCalls;
-        drawCalls = 0;
-    }
-
-    public void increaseDrawCalls() {
-        drawCalls++;
-    }
-
-    public abstract void setVSync(boolean value);
-    public abstract void setDebugWindow();
     public abstract void resize(int width, int height);
-    public abstract void clear();
 
     public abstract ByteBuffer createByteBuffer(int size);
     public abstract FloatBuffer createFloatBuffer(int size);
+    public abstract IntBuffer createIntBuffer(int size);
+    public abstract void putValue(long address, int value);
+    public abstract void putValue(long address, float value);
+    public abstract void memFree(ByteBuffer byteBuffer);
+    public abstract void memFree(IntBuffer intBuffer);
+    public abstract long getAddress(Buffer buffer);
 
     public abstract void glClear();
     public abstract String glGetString(int name);
@@ -95,4 +89,21 @@ public abstract class AbstractRenderer {
                                        IntBuffer buffer);
     public abstract void uploadFilledTexture(AbstractTexture texture, int internalFormat, int format, ByteBuffer value);
     public abstract void fullTexture(AbstractTexture texture, int internalFormat, int format, ByteBuffer value);
+
+    public abstract GlyphsBuilder createSTBTrueTypeGlyphsBuilder(String fontFile);
+    public abstract GlyphsBuilder createTrueTypeGlyphsBuilder(String fontFile);
+
+    public void resetDrawCalls() {
+        lastFrameDrawCalls = drawCalls;
+        drawCalls = 0;
+    }
+
+    public void increaseDrawCalls() {
+        drawCalls++;
+    }
+
+    public abstract void setVSync(boolean value);
+    public abstract void setDebugWindow();
+
+    public abstract void clear();
 }

@@ -1,7 +1,7 @@
 package net.bfsr.client.network.packet.handler.play.component.shield;
 
 import io.netty.channel.ChannelHandlerContext;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.particle.effect.ShieldEffects;
 import net.bfsr.entity.GameObject;
@@ -17,7 +17,7 @@ public class PacketShieldRemoveHandler extends PacketHandler<PacketShieldRemove,
     @Override
     public void handle(PacketShieldRemove packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
-        GameObject obj = Core.get().getWorld().getEntityById(packet.getId());
+        GameObject obj = Client.get().getWorld().getEntityById(packet.getId());
         if (obj instanceof Ship ship) {
             Shield shield = ship.getModules().getShield();
             if (shield != null) {
