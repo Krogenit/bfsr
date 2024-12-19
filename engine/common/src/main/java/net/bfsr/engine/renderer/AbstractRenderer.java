@@ -102,5 +102,11 @@ public abstract class AbstractRenderer {
     public abstract void setVSync(boolean value);
     public abstract void setDebugWindow();
 
-    public abstract void clear();
+    public void clear() {
+        camera.clear();
+        shader.delete();
+        spriteRenderer.clear();
+        debugRenderer.clear();
+        lockManager.clear();
+    }
 }

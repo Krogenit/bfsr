@@ -288,7 +288,7 @@ public class Renderer extends AbstractRenderer {
 
     @Override
     public void clear() {
-        spriteRenderer.clear();
+        super.clear();
 
         // Free the window callbacks and destroy the window
         Callbacks.glfwFreeCallbacks(window);
