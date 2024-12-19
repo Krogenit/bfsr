@@ -140,7 +140,7 @@ public class GuiRenderer extends AbstractGUIRenderer {
     }
 
     @Override
-    public void setPosition(int id, float x, float y) {
+    public void setPosition(int id, int x, int y) {
         int offset = id * MODEL_DATA_SIZE;
         buffersHolder.putModelData(offset, x);
         buffersHolder.putModelData(offset + SpriteRenderer.Y_OFFSET, y);
@@ -148,13 +148,13 @@ public class GuiRenderer extends AbstractGUIRenderer {
     }
 
     @Override
-    public void setX(int id, float x) {
+    public void setX(int id, int x) {
         buffersHolder.putModelData(id * MODEL_DATA_SIZE, x);
         buffersHolder.setModelBufferDirty(true);
     }
 
     @Override
-    public void setY(int id, float y) {
+    public void setY(int id, int y) {
         buffersHolder.putModelData(id * MODEL_DATA_SIZE + SpriteRenderer.Y_OFFSET, y);
         buffersHolder.setModelBufferDirty(true);
     }
@@ -210,6 +210,11 @@ public class GuiRenderer extends AbstractGUIRenderer {
     public void setTexture(int id, long textureHandle) {
         buffersHolder.putMaterialData(id * MATERIAL_DATA_SIZE_IN_BYTES + SpriteRenderer.TEXTURE_HANDLE_OFFSET, textureHandle);
         buffersHolder.setMaterialBufferDirty(true);
+    }
+
+    @Override
+    public void setLastPosition(int id, int x, int y) {
+        setLastPosition(id, (float) x, (float) y);
     }
 
     @Override

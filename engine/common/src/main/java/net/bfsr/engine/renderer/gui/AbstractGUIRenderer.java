@@ -39,9 +39,9 @@ public abstract class AbstractGUIRenderer {
     public abstract void addDrawCommand(int id, int baseVertex);
     public abstract void setIndexCount(int id, int count);
 
-    public abstract void setPosition(int id, float x, float y);
-    public abstract void setX(int id, float x);
-    public abstract void setY(int id, float y);
+    public abstract void setPosition(int id, int x, int y);
+    public abstract void setX(int id, int x);
+    public abstract void setY(int id, int y);
     public abstract void setRotation(int id, float rotation);
     public abstract void setRotation(int id, float sin, float cos);
     public abstract void setSize(int id, int width, int height);
@@ -52,6 +52,7 @@ public abstract class AbstractGUIRenderer {
     public abstract void setTexture(int id, long textureHandle);
 
     public abstract void setLastPosition(int id, float x, float y);
+    public abstract void setLastPosition(int id, int x, int y);
     public abstract void setLastRotation(int id, float sin, float cos);
     public abstract void setLastSize(int id, int width, int height);
     public abstract void setLastColor(int id, Vector4f color);
