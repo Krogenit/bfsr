@@ -35,9 +35,8 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
     private final Render testRender = new Render(textureObject) {
         @Override
         public void renderAlpha() {
-            if (particleEffect != null && playing && texture != null) {
-                spriteRenderer.add(object.getX(), object.getY(), object.getSizeX(), object.getSizeY(), color.x, color.y, color.z, color.w,
-                        texture, BufferType.ENTITIES_ALPHA);
+            if (particleEffect != null && playing) {
+                spriteRenderer.addDrawCommand(id, BufferType.ENTITIES_ALPHA);
             }
         }
     };
@@ -55,7 +54,7 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
         int y = 0;
         int controlButtonsSize = 28;
 
-        add(new Rectangle(inspectionPanel.getWidth(), 0, width, topPanelHeight).atTopRight(0, 0).setAllColors(BACKGROUND_COLOR.x,
+        add(new Rectangle(width, topPanelHeight).atTopLeft(inspectionPanel.getWidth(), 0).setAllColors(BACKGROUND_COLOR.x,
                         BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w).setWidthFunction((integer, integer2) -> this.width)
                 .setHeightFunction((integer, integer2) -> topPanelHeight));
 
@@ -66,6 +65,7 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
         gameObject.setDefaultValues();
         gameObject.init();
 
+        testRender.init();
         Client.get().getRenderManager().addRender(testRender);
     }
 
@@ -156,8 +156,8 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
     }
 
     @Override
-    public void clear() {
-        super.clear();
+    public void remove() {
+        super.remove();
         textureObject.setDead();
     }
 }

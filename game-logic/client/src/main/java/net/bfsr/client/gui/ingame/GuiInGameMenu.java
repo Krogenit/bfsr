@@ -15,14 +15,11 @@ public class GuiInGameMenu extends Gui {
     private boolean wantCloseGui;
 
     public GuiInGameMenu() {
-        int x = -150;
-        add(new Rectangle().atTopLeft(0, 0).setFillParent().setAllColors(0.0f, 0.0f, 0.0f, 0.5f));
-        add(new Button(Lang.getString("gui.ingamemenu.backtogame"), () -> Client.get().closeGui()).atCenter(x, -30));
-        add(new Button(Lang.getString("gui.ingamemenu.settings"),
-                () -> Client.get().openGui(new GuiSettings(this))).atCenter(x, 30));
-        add(new Button(Lang.getString("gui.ingamemenu.tomainmenu"), () -> Client.get().quitToMainMenu())
-                .atCenter(x, 180));
-        add(new TexturedRectangle(TextureRegister.guiLogoBFSR).atCenter(-128, -328).setSize(256, 256));
+        add(new Rectangle().atBottomLeft(0, 0).setFillParent().setAllColors(0.0f, 0.0f, 0.0f, 0.5f));
+        add(new Button(Lang.getString("gui.ingamemenu.backtogame"), () -> Client.get().closeGui()).atCenter(0, -20));
+        add(new Button(Lang.getString("gui.ingamemenu.settings"), () -> Client.get().openGui(new GuiSettings(this))).atCenter(0, -80));
+        add(new Button(Lang.getString("gui.ingamemenu.tomainmenu"), () -> Client.get().quitToMainMenu()).atCenter(0, -230));
+        add(new TexturedRectangle(TextureRegister.guiLogoBFSR).atCenter(0, 200).setSize(256, 256));
     }
 
     @Override

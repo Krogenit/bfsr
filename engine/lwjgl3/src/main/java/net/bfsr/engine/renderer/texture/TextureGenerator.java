@@ -1,14 +1,16 @@
 package net.bfsr.engine.renderer.texture;
 
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.FrameBuffer;
-import net.bfsr.engine.renderer.primitive.TexturedQuad;
+import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.shader.NebulaShader;
 import net.bfsr.engine.renderer.shader.StarsShader;
 import net.bfsr.engine.util.RandomHelper;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.util.Random;
@@ -18,22 +20,33 @@ import static org.lwjgl.opengl.ARBBindlessTexture.glMakeTextureHandleResidentARB
 import static org.lwjgl.opengl.EXTDirectStateAccess.glBindMultiTextureEXT;
 import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT;
 import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT;
-import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL11C.GL_LINEAR;
+import static org.lwjgl.opengl.GL11C.GL_NEAREST;
+import static org.lwjgl.opengl.GL11C.GL_NEAREST_MIPMAP_NEAREST;
+import static org.lwjgl.opengl.GL11C.GL_REPEAT;
+import static org.lwjgl.opengl.GL11C.GL_RGB;
+import static org.lwjgl.opengl.GL11C.GL_RGB8;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_BINDING_2D;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_T;
+import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL11C.glBindTexture;
+import static org.lwjgl.opengl.GL11C.glGetFloat;
+import static org.lwjgl.opengl.GL11C.glGetInteger;
+import static org.lwjgl.opengl.GL11C.glViewport;
 import static org.lwjgl.opengl.GL13C.GL_TEXTURE1;
 import static org.lwjgl.opengl.GL30C.GL_RG;
 import static org.lwjgl.opengl.GL30C.GL_RG8;
-import static org.lwjgl.opengl.GL45C.*;
-import static org.lwjgl.system.MemoryUtil.memAlloc;
-import static org.lwjgl.system.MemoryUtil.memFree;
+import static org.lwjgl.opengl.GL45C.glGenerateTextureMipmap;
+import static org.lwjgl.opengl.GL45C.glTextureParameterf;
+import static org.lwjgl.opengl.GL45C.glTextureParameteri;
+import static org.lwjgl.opengl.GL45C.glTextureStorage2D;
+import static org.lwjgl.opengl.GL45C.glTextureSubImage2D;
 
 public final class TextureGenerator extends AbstractTextureGenerator {
-    private TexturedQuad counterClockWiseCenteredQuad;
-
-    @Override
-    public void init() {
-        counterClockWiseCenteredQuad = TexturedQuad.createCounterClockWiseCenteredQuad();
-    }
-
     private Texture generateSpaceTexture(int width, int height, float density, float brightness, Random random) {
         int count = Math.round(width * height * density);
 
@@ -50,9 +63,9 @@ public final class TextureGenerator extends AbstractTextureGenerator {
         Texture texture = new Texture(width, height).create();
         glTextureStorage2D(texture.getId(), 1, GL_RGB8, width, height);
 
-        ByteBuffer byteBuffer = memAlloc(width * height * 3);
+        ByteBuffer byteBuffer = MemoryUtil.memAlloc(width * height * 3);
         glTextureSubImage2D(texture.getId(), 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, byteBuffer.put(data).flip());
-        memFree(byteBuffer);
+        MemoryUtil.memFree(byteBuffer);
 
         glGenerateTextureMipmap(texture.getId());
         glTextureParameteri(texture.getId(), GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -75,9 +88,9 @@ public final class TextureGenerator extends AbstractTextureGenerator {
 
         glTextureStorage2D(texture.getId(), 1, GL_RG8, size, size);
 
-        ByteBuffer byteBuffer = memAlloc(l << 1);
+        ByteBuffer byteBuffer = MemoryUtil.memAlloc(l << 1);
         glTextureSubImage2D(texture.getId(), 0, 0, 0, size, size, GL_RG, GL_UNSIGNED_BYTE, byteBuffer.put(data).flip());
-        memFree(byteBuffer);
+        MemoryUtil.memFree(byteBuffer);
 
         glTextureParameteri(texture.getId(), GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTextureParameteri(texture.getId(), GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -89,6 +102,8 @@ public final class TextureGenerator extends AbstractTextureGenerator {
 
     @Override
     public Texture generateNebulaTexture(int width, int height, Random random) {
+        AbstractSpriteRenderer spriteRenderer = Engine.renderer.spriteRenderer;
+        int renderId = spriteRenderer.add(0, 0, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0, BufferType.GUI);
         int currentBindTexture = glGetInteger(GL_TEXTURE_BINDING_2D);
         NebulaShader nebulaShader = new NebulaShader();
         StarsShader starsShader = new StarsShader();
@@ -173,14 +188,16 @@ public final class TextureGenerator extends AbstractTextureGenerator {
                 float cNoisePower = RandomHelper.randomFloat(random, cNoiseMinPower, cNoiseMaxPower);
                 float offsetX = RandomHelper.randomFloat(random, 0.8f, 3.0f);
                 float offsetY = RandomHelper.randomFloat(random, 0.8f, 3.0f);
-                nebulaShader.setPNoiseRepeatVector(new Vector4f(cNoisePower, (float) (random.nextFloat() * Math.PI * 2.0), offsetX, offsetY));
+                nebulaShader.setPNoiseRepeatVector(
+                        new Vector4f(cNoisePower, (float) (random.nextFloat() * Math.PI * 2.0), offsetX, offsetY));
             } else {
                 float cNoiseMinPower = 4.0f / baseScale.x;
                 float cNoiseMaxPower = 5.0f / baseScale.x;
                 float cNoisePower = RandomHelper.randomFloat(random, cNoiseMinPower, cNoiseMaxPower);
                 float offsetX = RandomHelper.randomFloat(random, 0.8f, 3.0f);
                 float offsetY = RandomHelper.randomFloat(random, 0.8f, 3.0f);
-                nebulaShader.setPNoiseRepeatVector(new Vector4f(cNoisePower, (float) (random.nextFloat() * Math.PI * 2.0), offsetX, offsetY));
+                nebulaShader.setPNoiseRepeatVector(
+                        new Vector4f(cNoisePower, (float) (random.nextFloat() * Math.PI * 2.0), offsetX, offsetY));
             }
 
             float scale = RandomHelper.randomFloat(random, scaleMin, scaleMax);
@@ -193,7 +210,8 @@ public final class TextureGenerator extends AbstractTextureGenerator {
 
             activeBuffer = 1 - activeBuffer;
             buffer.drawBuffer(activeBuffer);
-            counterClockWiseCenteredQuad.renderIndexed();
+            spriteRenderer.addDrawCommand(renderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.GUI);
+            spriteRenderer.render(BufferType.GUI);
             nebulaTexture = buffer.getTexture(activeBuffer);
             noise.delete();
         }
@@ -223,7 +241,8 @@ public final class TextureGenerator extends AbstractTextureGenerator {
 
             activeBuffer = 1 - activeBuffer;
             buffer.drawBuffer(activeBuffer);
-            counterClockWiseCenteredQuad.renderIndexed();
+            spriteRenderer.addDrawCommand(renderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.GUI);
+            spriteRenderer.render(BufferType.GUI);
             nebulaTexture = buffer.getTexture(activeBuffer);
         }
 
@@ -248,7 +267,8 @@ public final class TextureGenerator extends AbstractTextureGenerator {
 
             activeBuffer = 1 - activeBuffer;
             buffer.drawBuffer(activeBuffer);
-            counterClockWiseCenteredQuad.renderIndexed();
+            spriteRenderer.addDrawCommand(renderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.GUI);
+            spriteRenderer.render(BufferType.GUI);
             nebulaTexture = buffer.getTexture(activeBuffer);
         }
 
@@ -271,6 +291,7 @@ public final class TextureGenerator extends AbstractTextureGenerator {
         glMakeTextureHandleResidentARB(textureHandle);
         nebulaTexture.setTextureHandle(textureHandle);
         glBindTexture(GL_TEXTURE_2D, currentBindTexture);
+        spriteRenderer.removeObject(renderId, BufferType.GUI);
 
         return nebulaTexture;
     }

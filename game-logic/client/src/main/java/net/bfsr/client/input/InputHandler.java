@@ -70,9 +70,9 @@ public class InputHandler extends AbstractInputHandler {
     }
 
     @Override
-    public void mouseMove(float x, float y) {
-        if (!guiInputController.mouseMove(x, y)) {
-            cameraInputController.mouseMove(x, y);
+    public void mouseMove(float dx, float dy) {
+        if (!guiInputController.mouseMove(dx, dy)) {
+            cameraInputController.mouseMove(dx, dy);
         }
     }
 

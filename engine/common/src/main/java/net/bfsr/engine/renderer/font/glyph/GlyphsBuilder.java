@@ -15,6 +15,8 @@ public abstract class GlyphsBuilder {
 
     public abstract float getHeight(String string, int fontSize);
 
+    public abstract float getLineHeight(int fontSize);
+
     public abstract float getAscent(String string, int fontSize);
 
     public abstract float getDescent(String string, int fontSize);
@@ -32,7 +34,7 @@ public abstract class GlyphsBuilder {
         int height = 0;
         for (int i = 0; i < string.length(); i++) {
             if (string.charAt(i) == NEW_LINE) {
-                height = (int) (height + getHeight("\n", fontSize) * indent);
+                height = (int) (height + getLineHeight(fontSize) * indent);
             }
         }
         return height + getTrimmedStringHeight(string.substring(offset).trim(), fontSize, maxWidth, indent);

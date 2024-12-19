@@ -29,7 +29,7 @@ public class ComboBox<V> extends GuiObject {
         this.stringOffsetY = stringOffsetY;
 
         add(this.label = new Label(font, "", fontSize, StringOffsetType.CENTERED));
-        label.atTopLeft(width / 2, label.getCenteredOffsetY(height));
+        label.atBottomLeft(width / 2, label.getCenteredOffsetY(height));
 
         setRenderer(new ComboBoxRenderer(this));
         setLeftReleaseRunnable(() -> {
@@ -57,24 +57,14 @@ public class ComboBox<V> extends GuiObject {
         this.data.remove(data);
     }
 
-    private void updateDataPositions() {
-        int y = height;
-        for (int i = 0; i < data.size(); i++) {
-            if (i != selectedIndex) {
-                ComboBoxData<V> comboBoxData = data.get(i);
-                comboBoxData.setPosition(getSceneX(), getSceneY() + y);
-                y += height;
-            }
-        }
-    }
-
     private void open() {
         opened = true;
-        updateDataPositions();
         Gui gui = Engine.guiManager.getGui();
+        int y = -height;
         for (int i = 0; i < data.size(); i++) {
             if (i != selectedIndex) {
-                gui.add(data.get(i));
+                gui.add(data.get(i).atBottomLeft(getSceneX(), getSceneY() + y));
+                y -= height;
             }
         }
     }

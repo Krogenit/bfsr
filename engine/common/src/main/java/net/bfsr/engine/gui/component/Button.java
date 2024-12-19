@@ -16,7 +16,7 @@ public class Button extends GuiObject {
         super(x, y, width, height);
         this.leftReleaseRunnable = leftReleaseRunnable;
         this.label = new Label(font, string, stringXOffset, 0, fontSize, stringOffsetType);
-        add(label.atTopLeft(stringXOffset, label.getCenteredOffsetY(height)));
+        add(label.atBottomLeft(stringXOffset, stringYOffset));
         setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
         setRenderer(new RectangleRenderer(this));
     }
@@ -27,7 +27,8 @@ public class Button extends GuiObject {
     }
 
     public Button(int x, int y, int width, int height, String string, Font font, int fontSize, Runnable leftReleaseRunnable) {
-        this(x, y, width, height, string, font, fontSize, 0, leftReleaseRunnable);
+        this(x, y, width, height, string, font, fontSize, font.getGlyphsBuilder().getCenteredOffsetY(string, height, fontSize),
+                leftReleaseRunnable);
     }
 
     public Button(int x, int y, int width, int height, String string, int fontSize, Runnable leftReleaseRunnable) {
@@ -62,7 +63,8 @@ public class Button extends GuiObject {
     }
 
     public Button(int width, int height, String string, int fontSize, Runnable leftReleaseRunnable) {
-        this(width, height, string, Font.XOLONIUM_FT, fontSize, 0, leftReleaseRunnable);
+        this(width, height, string, Font.XOLONIUM_FT, fontSize,
+                Font.XOLONIUM_FT.getGlyphsBuilder().getCenteredOffsetY(string, height, fontSize), leftReleaseRunnable);
     }
 
     public Button(String string, int fontSize, Runnable leftReleaseRunnable) {
@@ -93,8 +95,12 @@ public class Button extends GuiObject {
         this(0, 0, width, height, "", 20, leftReleaseRunnable);
     }
 
+    public Button(int width, int height) {
+        this(0, 0, width, height, "", 20, RunnableUtils.EMPTY_RUNNABLE);
+    }
+
     public Button setStringXOffset(int stringXOffset) {
-        label.atTopLeft(stringXOffset, label.getCenteredOffsetY(height));
+        label.atBottomLeft(stringXOffset, label.getCenteredOffsetY(height));
         updatePositionAndSize();
         return this;
     }

@@ -6,11 +6,10 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
+import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.util.MultithreadingUtils;
 
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -19,14 +18,15 @@ import java.util.concurrent.Future;
 @Log4j2
 public class ParticleRenderer {
     private static final int START_PARTICLE_COUNT = 8192;
+    private static final int MULTITHREADED_THRESHOLD = 16384;
+    private static final int PARTICLES_BY_TASK = 16384;
 
     private final AbstractRenderer renderer = Engine.renderer;
     private final AbstractSpriteRenderer spriteRenderer = renderer.spriteRenderer;
     private final List<ParticleRender>[] particlesByRenderLayer = new List[4];
-    private final ByteBuffer[] materialBuffers = new ByteBuffer[4];
-    private final FloatBuffer[] vertexBuffers = new FloatBuffer[4];
-    private final ParticlesStoreTask[] particlesStoreTasks;
-    private final ParticlesStoreTask[] backgroundParticlesStoreTasks;
+    private final AbstractBuffersHolder[] buffersHolderArray = spriteRenderer.createBuffersHolderArray(4);
+    private final ParticlesStoreRunnable[] particlesStoreRunnables;
+    private final ParticlesStoreRunnable[] backgroundParticlesStoreRunnables;
     private Future<?>[] taskFutures;
     private Future<?>[] backgroundTaskFutures;
     @Getter
@@ -38,21 +38,15 @@ public class ParticleRenderer {
         this.profiler = profiler;
         RenderLayer[] renderLayers = RenderLayer.VALUES;
         for (int i = 0; i < renderLayers.length; i++) {
-            materialBuffers[renderLayers[i].ordinal()] = renderer.createByteBuffer(
-                    START_PARTICLE_COUNT * AbstractSpriteRenderer.MATERIAL_DATA_SIZE_IN_BYTES
-            );
-            vertexBuffers[renderLayers[i].ordinal()] = renderer.createFloatBuffer(
-                    START_PARTICLE_COUNT * AbstractSpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES
-            );
+            buffersHolderArray[renderLayers[i].ordinal()] = spriteRenderer.createBuffersHolder(START_PARTICLE_COUNT);
             particlesByRenderLayer[renderLayers[i].ordinal()] = new ArrayList<>(256);
         }
 
-        particlesStoreTasks = new ParticlesStoreTask[MultithreadingUtils.PARALLELISM];
-        backgroundParticlesStoreTasks = new ParticlesStoreTask[MultithreadingUtils.PARALLELISM];
-        for (int i = 0; i < particlesStoreTasks.length; i++) {
-            particlesStoreTasks[i] = new ParticlesStoreTask(particlesByRenderLayer, RenderLayer.DEFAULT_ALPHA_BLENDED);
-            backgroundParticlesStoreTasks[i] = new ParticlesStoreTask(particlesByRenderLayer,
-                    RenderLayer.BACKGROUND_ALPHA_BLENDED);
+        particlesStoreRunnables = new ParticlesStoreRunnable[MultithreadingUtils.PARALLELISM];
+        backgroundParticlesStoreRunnables = new ParticlesStoreRunnable[MultithreadingUtils.PARALLELISM];
+        for (int i = 0; i < particlesStoreRunnables.length; i++) {
+            particlesStoreRunnables[i] = new ParticlesStoreRunnable(particlesByRenderLayer, RenderLayer.DEFAULT_ALPHA_BLENDED);
+            backgroundParticlesStoreRunnables[i] = new ParticlesStoreRunnable(particlesByRenderLayer, RenderLayer.BACKGROUND_ALPHA_BLENDED);
         }
 
         if (MultithreadingUtils.MULTITHREADING_SUPPORTED) {
@@ -62,71 +56,29 @@ public class ParticleRenderer {
     }
 
     public void init() {
-        for (int i = 0; i < particlesStoreTasks.length; i++) {
-            particlesStoreTasks[i].init(vertexBuffers, materialBuffers);
-            backgroundParticlesStoreTasks[i].init(vertexBuffers, materialBuffers);
-        }
-    }
-
-    private void checkBufferSizeAndClear() {
-        boolean resized = false;
-
-        RenderLayer[] renderLayers = RenderLayer.VALUES;
-        for (int i = 0; i < renderLayers.length; i++) {
-            RenderLayer renderLayer = renderLayers[i];
-            List<ParticleRender> renders = particlesByRenderLayer[renderLayer.ordinal()];
-            int newDataSize = renders.size();
-
-            ByteBuffer materialBuffer = materialBuffers[renderLayer.ordinal()];
-            while (materialBuffer.capacity() < newDataSize * AbstractSpriteRenderer.MATERIAL_DATA_SIZE_IN_BYTES) {
-                materialBuffer = renderer.createByteBuffer(materialBuffer.capacity() << 1);
-                materialBuffers[renderLayer.ordinal()] = materialBuffer;
-                resized = true;
-            }
-
-            materialBuffer.clear();
-
-            FloatBuffer vertexBuffer = vertexBuffers[renderLayer.ordinal()];
-            while (vertexBuffer.capacity() < newDataSize * AbstractSpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES) {
-                vertexBuffer = renderer.createFloatBuffer(vertexBuffer.capacity() << 1);
-                vertexBuffers[renderLayer.ordinal()] = vertexBuffer;
-                resized = true;
-            }
-
-            vertexBuffer.clear();
-        }
-
-        if (resized && MultithreadingUtils.MULTITHREADING_SUPPORTED) {
-            for (int i = 0; i < particlesStoreTasks.length; i++) {
-                particlesStoreTasks[i].initRunnable(vertexBuffers, materialBuffers);
-                backgroundParticlesStoreTasks[i].initRunnable(vertexBuffers, materialBuffers);
-            }
+        for (int i = 0; i < particlesStoreRunnables.length; i++) {
+            particlesStoreRunnables[i].init();
+            backgroundParticlesStoreRunnables[i].init();
         }
     }
 
     public void putBackgroundParticlesToBuffers(int totalParticles) {
-        checkBufferSizeAndClear();
+        spriteRenderer.updateBuffers(buffersHolderArray);
 
-        int multithreadedThreshold = 2048;
-        int particlesByTask = 2048;
-
-        multithreaded = MultithreadingUtils.MULTITHREADING_SUPPORTED && totalParticles >= multithreadedThreshold;
+        multithreaded = MultithreadingUtils.MULTITHREADING_SUPPORTED && totalParticles >= MULTITHREADED_THRESHOLD;
         taskCount = multithreaded ?
-                (int) Math.ceil(Math.min(totalParticles / (float) particlesByTask, MultithreadingUtils.PARALLELISM)) : 1;
+                (int) Math.ceil(Math.min(totalParticles / (float) PARTICLES_BY_TASK, MultithreadingUtils.PARALLELISM)) : 1;
 
         putToBuffers(RenderLayer.BACKGROUND_ALPHA_BLENDED, RenderLayer.BACKGROUND_ADDITIVE, backgroundTaskFutures,
-                backgroundParticlesStoreTasks);
+                backgroundParticlesStoreRunnables);
     }
 
     public void putParticlesToBuffers() {
-        putToBuffers(RenderLayer.DEFAULT_ALPHA_BLENDED, RenderLayer.DEFAULT_ADDITIVE, taskFutures, particlesStoreTasks);
+        putToBuffers(RenderLayer.DEFAULT_ALPHA_BLENDED, RenderLayer.DEFAULT_ADDITIVE, taskFutures, particlesStoreRunnables);
     }
 
     private void putToBuffers(RenderLayer alphaLayer, RenderLayer additiveLayer, Future<?>[] taskFutures,
-                              ParticlesStoreTask[] particlesStoreTasks) {
-        int alphaBufferIndex = 0;
-        int additiveBufferIndex = 0;
-
+                              ParticlesStoreRunnable[] particlesStoreRunnables) {
         int alphaParticlesPerTask = (int) Math.ceil(getParticles(alphaLayer).size() / (float) taskCount);
         int alphaParticlesStartIndex = 0, alphaParticlesEndIndex = alphaParticlesPerTask;
         int additiveParticlesPerTask = (int) Math.ceil(getParticles(additiveLayer).size() / (float) taskCount);
@@ -134,16 +86,12 @@ public class ParticleRenderer {
 
         if (multithreaded) {
             for (int i = 0; i < taskCount; i++) {
-                ParticlesStoreTask particlesStoreTask = particlesStoreTasks[i];
+                ParticlesStoreRunnable particlesStoreRunnable = particlesStoreRunnables[i];
 
-                particlesStoreTask.update(alphaBufferIndex, additiveBufferIndex, alphaParticlesStartIndex, alphaParticlesEndIndex,
-                        additiveParticlesStartIndex,
+                particlesStoreRunnable.update(alphaParticlesStartIndex, alphaParticlesEndIndex, additiveParticlesStartIndex,
                         additiveParticlesEndIndex);
 
-                taskFutures[i] = spriteRenderer.addTask(particlesStoreTasks[i]);
-
-                alphaBufferIndex += alphaParticlesPerTask * AbstractSpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES;
-                additiveBufferIndex += additiveParticlesPerTask * AbstractSpriteRenderer.VERTEX_DATA_SIZE_IN_BYTES;
+                taskFutures[i] = spriteRenderer.addTask(particlesStoreRunnables[i]);
 
                 alphaParticlesStartIndex += alphaParticlesPerTask;
                 alphaParticlesEndIndex = Math.min(alphaParticlesEndIndex + alphaParticlesPerTask,
@@ -154,11 +102,10 @@ public class ParticleRenderer {
                         getParticles(additiveLayer).size());
             }
         } else {
-            ParticlesStoreTask particlesStoreTask = particlesStoreTasks[0];
-            particlesStoreTask.update(alphaBufferIndex, additiveBufferIndex, alphaParticlesStartIndex, alphaParticlesEndIndex,
-                    additiveParticlesStartIndex,
+            ParticlesStoreRunnable particlesStoreRunnable = particlesStoreRunnables[0];
+            particlesStoreRunnable.update(alphaParticlesStartIndex, alphaParticlesEndIndex, additiveParticlesStartIndex,
                     additiveParticlesEndIndex);
-            particlesStoreTask.run();
+            particlesStoreRunnable.run();
         }
     }
 
@@ -202,22 +149,16 @@ public class ParticleRenderer {
     }
 
     private void render(RenderLayer alphaLayer, RenderLayer additiveLayer) {
-        FloatBuffer vertexBuffer = vertexBuffers[alphaLayer.ordinal()];
-        ByteBuffer materialBuffer = materialBuffers[alphaLayer.ordinal()];
         int count = particlesByRenderLayer[alphaLayer.ordinal()].size();
-
         if (count > 0) {
             renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-            spriteRenderer.render(count, vertexBuffer, materialBuffer);
+            spriteRenderer.render(count, buffersHolderArray[alphaLayer.ordinal()]);
         }
 
-        vertexBuffer = vertexBuffers[additiveLayer.ordinal()];
-        materialBuffer = materialBuffers[additiveLayer.ordinal()];
         count = particlesByRenderLayer[additiveLayer.ordinal()].size();
-
         if (count > 0) {
             renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
-            spriteRenderer.render(count, vertexBuffer, materialBuffer);
+            spriteRenderer.render(count, buffersHolderArray[additiveLayer.ordinal()]);
         }
     }
 
@@ -227,6 +168,10 @@ public class ParticleRenderer {
 
     private List<ParticleRender> getParticles(RenderLayer renderLayer) {
         return particlesByRenderLayer[renderLayer.ordinal()];
+    }
+
+    public AbstractBuffersHolder getBuffersHolder(RenderLayer renderLayer) {
+        return buffersHolderArray[renderLayer.ordinal()];
     }
 
     public void clear() {

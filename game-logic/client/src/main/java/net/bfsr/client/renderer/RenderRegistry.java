@@ -44,6 +44,8 @@ class RenderRegistry {
     }
 
     Render createRender(RigidBody rigidBody) {
-        return renderRegistry.get(rigidBody.getClass()).apply(rigidBody);
+        RigidBodyRender render = renderRegistry.get(rigidBody.getClass()).apply(rigidBody);
+        render.init();
+        return render;
     }
 }

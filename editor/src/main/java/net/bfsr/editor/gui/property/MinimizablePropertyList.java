@@ -44,8 +44,8 @@ public class MinimizablePropertyList extends PropertyList<PropertyObject<Propert
                 stringOffsetY, propertiesHolder, fields, new Object[]{propertiesHolder}, valueConsumer);
         propertyObject.setRightClickRunnable(() -> {
             String addString = "Remove";
-            Vector2f mousePos = Engine.mouse.getPosition();
-            Button button = new Button((int) mousePos.x, (int) mousePos.y,
+            Vector2f mousePos = Engine.mouse.getGuiPosition();
+            Button button = new Button((int) mousePos.x, (int) mousePos.y - baseHeight,
                     font.getGlyphsBuilder().getWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight,
                     addString, font, fontSize, 4, stringOffsetY, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
             setupContextMenuButton(button);

@@ -10,7 +10,7 @@ import java.util.List;
 
 public class MinimizableGuiObject extends GuiObject {
     public static final int MINIMIZABLE_STRING_X_OFFSET = 20;
-    public static final int STATIC_STRING_X_OFFSET = 6;
+    protected static final int STATIC_STRING_X_OFFSET = 6;
 
     @Getter
     protected boolean maximized;
@@ -25,7 +25,7 @@ public class MinimizableGuiObject extends GuiObject {
     protected final List<GuiObject> hideableObjects = new ArrayList<>();
     @Getter
     protected final int baseHeight;
-    private int hideableObjectsOffsetX;
+    private final int hideableObjectsOffsetX;
 
     public MinimizableGuiObject(int width, int height, String name, Font font, int fontSize, int stringOffsetX, int stringOffsetY,
                                 int minimizableStringOffsetX, int hideableObjectsOffsetX) {
@@ -34,9 +34,10 @@ public class MinimizableGuiObject extends GuiObject {
         this.font = font;
         this.fontSize = fontSize;
         this.label = new Label(font, name, fontSize);
-        addNonConcealable(label.atTopLeft(minimizableStringOffsetX, label.getCenteredOffsetY(height)));
         this.stringOffsetX = stringOffsetX;
         this.stringOffsetY = stringOffsetY;
+        addNonConcealable(label.atBottomLeft(this::getStringOffsetX,
+                () -> label.getCenteredOffsetY(height) + this.height - baseHeight));
         this.minimizableStringOffsetX = minimizableStringOffsetX;
         this.hideableObjectsOffsetX = hideableObjectsOffsetX;
         setRenderer(new MinimizableGuiObjectRenderer(this));
@@ -66,11 +67,13 @@ public class MinimizableGuiObject extends GuiObject {
     protected void maximize() {
         updateHeight();
         addHideable();
+        updatePositionAndSize();
     }
 
     protected void minimize() {
         updateHeight();
         removeHideable();
+        updatePositionAndSize();
     }
 
     protected void updateHeight() {
@@ -170,16 +173,17 @@ public class MinimizableGuiObject extends GuiObject {
 
     @Override
     public void updatePositionAndSize(int width, int height) {
-        super.updatePositionAndSize(width, height);
         updateConcealableObjectsPositions();
+        super.updatePositionAndSize(width, height);
     }
 
     public void updateConcealableObjectsPositions() {
-        int height = baseHeight;
+        int height = -baseHeight;
+
         for (int i = 0; i < hideableObjects.size(); i++) {
             GuiObject guiObject = hideableObjects.get(i);
             guiObject.atTopLeft(hideableObjectsOffsetX, height);
-            height += guiObject.getHeight();
+            height -= guiObject.getHeight();
         }
 
         updateHeight();
@@ -187,7 +191,6 @@ public class MinimizableGuiObject extends GuiObject {
 
     protected void setCanMaximize(boolean canMaximize) {
         this.canMaximize = canMaximize;
-        label.atTopLeft(getStringOffsetX(), label.getCenteredOffsetY(baseHeight) + stringOffsetY);
         label.updatePositionAndSize();
     }
 

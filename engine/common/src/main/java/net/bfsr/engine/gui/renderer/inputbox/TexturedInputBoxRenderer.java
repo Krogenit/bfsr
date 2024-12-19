@@ -14,11 +14,8 @@ public class TexturedInputBoxRenderer extends InputBoxRenderer {
     }
 
     @Override
-    protected void renderBody(int lastX, int lastY, int x, int y, int width, int height) {
-        if (guiObject.isMouseHover()) {
-            guiRenderer.add(lastX, lastY, x, y, width, height, hoverColor, texture);
-        } else {
-            guiRenderer.add(lastX, lastY, x, y, width, height, color, texture);
-        }
+    protected void createBody() {
+        idList.add(id = guiRenderer.add(guiObject.getSceneX(), guiObject.getSceneY(), guiObject.getWidth(), guiObject.getHeight(),
+                guiObject.getColor(), texture));
     }
 }
