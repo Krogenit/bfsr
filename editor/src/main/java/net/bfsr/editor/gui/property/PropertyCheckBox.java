@@ -16,7 +16,7 @@ public class PropertyCheckBox extends PropertyComponent {
                             Object object, List<Field> fields, Object[] values, BiConsumer<Object, Integer> valueConsumer) {
         super(width, height, name, FONT_TYPE, fontSize, propertyOffsetX, 1, stringOffsetY, object, fields, values, valueConsumer);
         addNonConcealable(checkBox = new CheckBox(height - 2, height - 2, (boolean) values[0]));
-        setup(checkBox).atTopLeft(propertyOffsetX, propertyOffsetY);
+        setup(checkBox).atBottomLeft(propertyOffsetX, propertyOffsetY);
     }
 
     @Override
@@ -26,6 +26,6 @@ public class PropertyCheckBox extends PropertyComponent {
 
     @Override
     public void updateConcealableObjectsPositions() {
-        checkBox.atTopLeft(propertyOffsetX, propertyOffsetY);
+        checkBox.atBottomLeft(propertyOffsetX, propertyOffsetY);
     }
 }

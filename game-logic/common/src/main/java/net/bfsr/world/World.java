@@ -11,6 +11,7 @@ import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
+import net.bfsr.event.world.WorldInitEvent;
 import net.bfsr.physics.CollisionMatrix;
 import net.bfsr.physics.CommonCollisionHandler;
 import net.bfsr.physics.ContactListener;
@@ -70,7 +71,8 @@ public class World {
 
     public void init() {
         initPhysicWorld();
-        this.eventBus.register(entityManager.getDataHistoryManager());
+        eventBus.register(entityManager.getDataHistoryManager());
+        eventBus.publish(new WorldInitEvent(this));
     }
 
     public void update(double timestamp) {
@@ -139,8 +141,8 @@ public class World {
         return entityManager.getEntities();
     }
 
-    public RigidBody getEntityById(int id) {
-        return entityManager.get(id);
+    public <T extends RigidBody> T getEntityById(int id) {
+        return (T) entityManager.get(id);
     }
 
     public <T extends RigidBody> List<T> getEntitiesByType(Class<T> classType) {

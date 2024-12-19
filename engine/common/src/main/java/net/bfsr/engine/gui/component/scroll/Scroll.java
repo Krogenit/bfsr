@@ -12,12 +12,14 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 public class Scroll extends Rectangle {
+    @Getter
     private int scroll;
     private int clickStartScroll;
     private int mouseStartClickY;
     @Getter
     private int totalHeight;
     private int viewHeight;
+    private int firstElementGapHeight;
     @Getter
     private boolean movingByMouse;
     private int scrollHeight;
@@ -38,7 +40,8 @@ public class Scroll extends Rectangle {
         scrollableElements.add(new ScrollableGuiObject(guiObject));
         minObjectY = Math.min(guiObject.getY(), minObjectY);
         maxObjectY = Math.max(guiObject.getY() + guiObject.getHeight(), maxObjectY);
-        totalHeight = maxObjectY - minObjectY + (minObjectY > 0 ? minObjectY : 0);
+        totalHeight = maxObjectY - minObjectY;
+        updateFirstElementGapHeight(minObjectY);
         updateScrollPositionAndSize();
     }
 
@@ -58,12 +61,13 @@ public class Scroll extends Rectangle {
         }
 
         if (movingByMouse) {
-            updateScroll((int) (clickStartScroll + (mouse.getPosition().y - mouseStartClickY) / (scrollHeight / (float) totalHeight)));
+            updateScroll((int) (clickStartScroll - (mouse.getGuiPosition().y - mouseStartClickY) /
+                    (scrollHeight / (float) (totalHeight + firstElementGapHeight))));
         }
     }
 
     private void updateScroll(int newValue) {
-        int heightDiff = totalHeight - viewHeight;
+        int heightDiff = totalHeight - viewHeight + firstElementGapHeight;
         if (heightDiff < 0) heightDiff = 0;
 
         scroll = newValue;
@@ -79,18 +83,31 @@ public class Scroll extends Rectangle {
         for (int i = 0; i < scrollableElements.size(); i++) {
             ScrollableGuiObject scrollableGuiObject = scrollableElements.get(i);
             GuiObject guiObject = scrollableGuiObject.getGuiObject();
-            guiObject.setY(scrollableGuiObject.getY() - scroll);
+            guiObject.setY(scrollableGuiObject.getY() + scroll);
+        }
+    }
+
+    public void updateScrollable(GuiObject guiObject) {
+        for (int i = 0; i < scrollableElements.size(); i++) {
+            ScrollableGuiObject scrollableGuiObject = scrollableElements.get(i);
+            GuiObject guiObject1 = scrollableGuiObject.getGuiObject();
+            if (guiObject == guiObject1) {
+                guiObject.applyPositionFunctions((x, y) -> scrollableGuiObject.setY(y));
+                updateTotalHeight();
+                updateScroll(scroll);
+                return;
+            }
         }
     }
 
     private void updateScrollPositionAndSize() {
-        float scrollValue = viewHeight / (float) totalHeight;
-        float scrollYValue = scrollHeight / (float) totalHeight;
+        float scrollValue = viewHeight / (float) (totalHeight + firstElementGapHeight);
+        float scrollYValue = scrollHeight / (float) (totalHeight + firstElementGapHeight);
         if (scrollValue > 1) scrollValue = 1.0f;
         if (scrollYValue > 1) scrollYValue = 1.0f;
         int height = (int) (scrollHeight * scrollValue);
 
-        super.setPosition(x, (int) (scrollY + scroll * scrollYValue));
+        super.setPosition(x, (int) (viewHeight - height + scrollY - (scroll * scrollYValue)));
         super.setHeight(height);
     }
 
@@ -98,10 +115,6 @@ public class Scroll extends Rectangle {
     public void updatePositionAndSize(int width, int height) {
         super.updatePositionAndSize(width, height);
         viewHeight = viewHeightResizeFunction.apply(width, height);
-        updateTotalHeight();
-        updateScrollableObjectsY();
-        updateScroll(scroll);
-        updateScrollableLastValues();
     }
 
     private void updateTotalHeight() {
@@ -116,25 +129,25 @@ public class Scroll extends Rectangle {
                 minObjectY = Math.min(scrollableGuiObject.getY(), minObjectY);
                 maxObjectY = Math.max(scrollableGuiObject.getY() + guiObject.getHeight(), maxObjectY);
             }
-            totalHeight = maxObjectY - minObjectY + (minObjectY > 0 ? minObjectY : 0);
+
+            totalHeight = maxObjectY - minObjectY;
+            updateFirstElementGapHeight(minObjectY);
         } else {
             totalHeight = 0;
         }
     }
 
-    private void updateScrollableObjectsY() {
-        for (int i = 0; i < scrollableElements.size(); i++) {
-            ScrollableGuiObject scrollableGuiObject = scrollableElements.get(i);
-            GuiObject guiObject = scrollableGuiObject.getGuiObject();
-            guiObject.updatePositionAndSize();
-            scrollableGuiObject.updateY();
+    private void updateFirstElementGapHeight(int minObjectY) {
+        // Fixes not enough scroll ability to last objects
+        if (minObjectY < 0) {
+            firstElementGapHeight = Math.max(0, viewHeight - (totalHeight + minObjectY));
         }
     }
 
     private void updateScrollableLastValues() {
         updateLastValues();
         for (int i = 0; i < scrollableElements.size(); i++) {
-            scrollableElements.get(i).getGuiObject().update();
+            scrollableElements.get(i).getGuiObject().updateLastValues();
         }
     }
 
@@ -143,7 +156,7 @@ public class Scroll extends Rectangle {
         if (!isMouseHover()) return null;
 
         movingByMouse = true;
-        mouseStartClickY = (int) mouse.getPosition().y;
+        mouseStartClickY = (int) (mouse.getGuiPosition().y);
         clickStartScroll = scroll;
 
         return this;
@@ -153,7 +166,13 @@ public class Scroll extends Rectangle {
     public GuiObject mouseLeftRelease() {
         GuiObject guiObject = super.mouseLeftRelease();
 
-        movingByMouse = false;
+        if (movingByMouse) {
+            movingByMouse = false;
+
+            if (guiObject == null) {
+                return this;
+            }
+        }
 
         return guiObject;
     }
@@ -167,7 +186,7 @@ public class Scroll extends Rectangle {
 
     public void scrollBottom() {
         updateScroll(Integer.MAX_VALUE);
-        updatePositionAndSize();
+        updateScrollableLastValues();
     }
 
     @Override

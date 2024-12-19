@@ -19,7 +19,7 @@ public class ComboBoxData<V> extends GuiObject {
         this.value = value;
 
         add(this.label = new Label(font, name, fontSize, StringOffsetType.CENTERED));
-        label.atTopLeft(width / 2, label.getCenteredOffsetY(height));
+        label.atBottomLeft(width / 2, label.getCenteredOffsetY(height));
         setRenderer(new RectangleOutlinedRenderer(this));
     }
 
@@ -31,7 +31,7 @@ public class ComboBoxData<V> extends GuiObject {
 
     @Override
     public GuiObject setWidth(int width) {
-        label.atTopLeft(width / 2, label.getCenteredOffsetY(height));
+        label.atBottomLeft(width / 2, label.getCenteredOffsetY(height));
         return super.setWidth(width);
     }
 }

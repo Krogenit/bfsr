@@ -30,7 +30,7 @@ public class Armor extends ModuleWithCells<ArmorPlate> {
     public void update() {
         ArmorPlate cell = getMostDamagedCell();
         if (cell != null) {
-            if (cell.getValue() < cell.getMaxValue()) {
+            if (cell.getValue() > 0 && cell.getValue() < cell.getMaxValue()) {
                 cell.setValue(cell.getValue() + repairSpeed);
 
                 if (cell.getValue() > cell.getMaxValue()) {

@@ -1,28 +1,33 @@
 package net.bfsr.engine.gui.renderer;
 
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.GuiObject;
+import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
-import net.bfsr.engine.renderer.texture.TextureRegister;
 
-public class RectangleTexturedRotatedRenderer extends GuiObjectRenderer {
-    private final AbstractTexture texture;
-
-    public RectangleTexturedRotatedRenderer(GuiObject guiObject, TextureRegister texture) {
-        super(guiObject);
-        this.texture = Engine.assetsManager.getTexture(texture);
+public class RectangleTexturedRotatedRenderer extends RectangleTexturedRenderer {
+    public RectangleTexturedRotatedRenderer(GuiObject guiObject, AbstractTexture texture) {
+        super(guiObject, texture);
     }
 
     @Override
-    public void render(int lastX, int lastY, int x, int y, int width, int height) {
-        if (guiObject.isMouseHover()) {
-            guiRenderer.addRotated(lastX + width / 2, lastY + height / 2, x + width / 2, y + height / 2, guiObject.getLastRotation(),
-                    guiObject.getRotation(), width, height, hoverColor, texture);
-        } else {
-            guiRenderer.addRotated(lastX + width / 2, lastY + height / 2, x + width / 2, y + height / 2, guiObject.getLastRotation(),
-                    guiObject.getRotation(), width, height, color, texture);
-        }
+    public void create() {
+        idList.add(id = guiRenderer.addCentered(guiObject.getSceneX(), guiObject.getSceneY(), guiObject.getRotation(), guiObject.getWidth(),
+                guiObject.getHeight(), guiObject.getColor(), texture));
+    }
 
-        super.render(lastX, lastY, x, y, width, height);
+    @Override
+    protected void setBodyLastValues() {
+        guiRenderer.setLastPosition(id, lastX + guiObject.getWidth() * 0.5f, lastY + guiObject.getHeight() * 0.5f);
+    }
+
+    @Override
+    public void updatePosition() {
+        guiRenderer.setPosition(id, guiObject.getSceneX() + guiObject.getWidth() * 0.5f,
+                guiObject.getSceneY() + guiObject.getHeight() * 0.5f);
+    }
+
+    @Override
+    protected void renderBody() {
+        guiRenderer.addDrawCommand(id, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX);
     }
 }

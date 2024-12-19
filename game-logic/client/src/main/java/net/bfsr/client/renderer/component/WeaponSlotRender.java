@@ -5,6 +5,7 @@ import net.bfsr.client.renderer.Render;
 import net.bfsr.config.SoundData;
 import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
@@ -24,25 +25,31 @@ public class WeaponSlotRender extends Render {
     }
 
     @Override
-    public void update() {
-        lastPosition.set(object.getX(), object.getY());
+    public void init() {
+        id = spriteRenderer.add(weaponSlot.getX(), weaponSlot.getY(), weaponSlot.getSin(), weaponSlot.getCos(), object.getSizeX(),
+                object.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
     }
 
-    public void renderAlpha(float lastSin, float lastCos, float sin, float cos) {
-        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, object.getX(), object.getY(), lastSin, lastCos, sin,
-                cos, object.getSizeX(), object.getSizeY(), color.x, color.y, color.z, color.w, texture, BufferType.ENTITIES_ALPHA);
+    @Override
+    public void postWorldUpdate() {
+        updateRenderValues();
     }
 
-    public void renderAdditive(float lastSin, float lastCos, float sin, float cos) {}
+    @Override
+    protected void updateLastRenderValues() {
+        spriteRenderer.setLastPosition(id, BufferType.ENTITIES_ALPHA, weaponSlot.getX(), weaponSlot.getY());
+        spriteRenderer.setLastRotation(id, BufferType.ENTITIES_ALPHA, weaponSlot.getSin(), weaponSlot.getCos());
+    }
+
+    @Override
+    protected void updateRenderValues() {
+        spriteRenderer.setPosition(id, BufferType.ENTITIES_ALPHA, weaponSlot.getX(), weaponSlot.getY());
+        spriteRenderer.setRotation(id, BufferType.ENTITIES_ALPHA, weaponSlot.getSin(), weaponSlot.getCos());
+    }
 
     @Override
     public void renderAlpha() {
-        throw new UnsupportedOperationException("Use renderAlpha with params instead");
-    }
-
-    @Override
-    public void renderAdditive() {
-        throw new UnsupportedOperationException("Use renderAdditive with params instead");
+        spriteRenderer.addDrawCommand(id, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ALPHA);
     }
 
     public void onShot() {
@@ -55,8 +62,7 @@ public class WeaponSlotRender extends Render {
         RotationHelper.rotate(sin, cos, 1.0f, 0, rotationHelper);
         WeaponEffects.spawnWeaponShoot(x, y, rotationHelper.x, rotationHelper.y, sin, cos, 8.0f, color.x,
                 color.y, color.z, color.w, particle -> {
-                    particle.setSin(ship.getSin());
-                    particle.setCos(ship.getCos());
+                    particle.setRotation(ship.getSin(), ship.getCos());
                     particle.setPosition(object.getX() + rotationHelper.x, object.getY() + rotationHelper.y);
                 });
         playSounds(weaponSlot.getGunData(), ship.getWorld().getRand(), x, y);

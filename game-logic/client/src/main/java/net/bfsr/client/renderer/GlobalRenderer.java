@@ -41,14 +41,14 @@ public class GlobalRenderer {
 
     public void render(float interpolation) {
         profiler.start("prepareRender");
-        worldRenderer.prepareRender(particleManager.getParticlesCount(), interpolation);
+        worldRenderer.prepareRender(particleManager.getParticlesCount());
+        spriteRenderer.updateBuffers();
 
         profiler.endStart("setup");
         renderer.resetDrawCalls();
         renderer.glClear();
         camera.calculateInterpolatedViewMatrix(interpolation);
-        camera.bindInterpolatedWorldViewMatrix();
-        spriteRenderer.bind();
+        camera.bindWorldViewMatrix();
         shader.enable();
 
         profiler.endStart("worldRenderer");
@@ -58,17 +58,16 @@ public class GlobalRenderer {
 
         profiler.endStart("gui");
         camera.bindGUI();
+        shader.enable();
         guiManager.render();
         spriteRenderer.render(BufferType.GUI);
         profiler.end();
     }
 
     private void renderDebug() {
-        debugRenderer.bind();
         renderManager.renderDebug();
         debugRenderer.render(GL.GL_LINE_LOOP);
-        debugRenderer.clear();
-        spriteRenderer.bind();
+        debugRenderer.reset();
         shader.enable();
     }
 
@@ -76,10 +75,7 @@ public class GlobalRenderer {
         shader.delete();
         shader.load();
         shader.init();
-    }
-
-    public void createBackgroundTexture(long seed) {
-        worldRenderer.createBackgroundTexture(seed);
+        debugRenderer.reload();
     }
 
     public void setDebugBoxesEnabled(boolean value) {
