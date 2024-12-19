@@ -7,6 +7,7 @@ import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
+import net.bfsr.engine.renderer.buffer.AbstractLockManager;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
@@ -22,6 +23,7 @@ public class GlobalRenderer {
     private final AbstractCamera camera = renderer.camera;
     private final AbstractSpriteRenderer spriteRenderer = renderer.spriteRenderer;
     private final AbstractDebugRenderer debugRenderer = renderer.debugRenderer;
+    private final AbstractLockManager lockManager = renderer.lockManager;
 
     private final GuiManager guiManager;
     private final Profiler profiler;

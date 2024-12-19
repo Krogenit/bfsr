@@ -5,8 +5,6 @@ import net.bfsr.engine.renderer.primitive.Primitive;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import org.joml.Vector4f;
 
-import java.nio.IntBuffer;
-
 public abstract class AbstractGUIRenderer {
     public abstract void init();
 
@@ -34,7 +32,6 @@ public abstract class AbstractGUIRenderer {
     public abstract int addCentered(int x, int y, float sin, float cos, int width, int height, float r, float g, float b, float a,
                                     long textureHandle);
 
-    public abstract void addDrawCommand(IntBuffer commandBuffer, int count);
     public abstract void addDrawCommand(int id);
     public abstract void addDrawCommand(int id, int baseVertex);
     public abstract void setIndexCount(int id, int count);
