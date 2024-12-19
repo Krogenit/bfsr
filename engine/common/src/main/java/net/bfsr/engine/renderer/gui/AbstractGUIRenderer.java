@@ -40,6 +40,7 @@ public abstract class AbstractGUIRenderer {
     public abstract void setIndexCount(int id, int count);
 
     public abstract void setPosition(int id, int x, int y);
+    public abstract void setPosition(int id, float x, float y);
     public abstract void setX(int id, int x);
     public abstract void setY(int id, int y);
     public abstract void setRotation(int id, float rotation);
