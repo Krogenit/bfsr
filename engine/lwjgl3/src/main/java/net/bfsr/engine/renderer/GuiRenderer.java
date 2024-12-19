@@ -141,6 +141,11 @@ public class GuiRenderer extends AbstractGUIRenderer {
 
     @Override
     public void setPosition(int id, int x, int y) {
+        setPosition(id, (float) x, (float) y);
+    }
+
+    @Override
+    public void setPosition(int id, float x, float y) {
         int offset = id * MODEL_DATA_SIZE;
         buffersHolder.putModelData(offset, x);
         buffersHolder.putModelData(offset + SpriteRenderer.Y_OFFSET, y);
