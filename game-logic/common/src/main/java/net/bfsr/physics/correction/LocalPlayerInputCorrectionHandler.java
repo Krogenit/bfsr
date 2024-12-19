@@ -8,7 +8,7 @@ import org.joml.Vector2f;
 
 public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
     private static final float MIN_VALUE_TO_CORRECTION = 0.1f;
-    private static final float MIN_ANGLE_VALUE_TO_CORRECTION = 0.2f;
+    private static final float MIN_ANGLE_VALUE_TO_CORRECTION = 0.33f;
 
     private final PositionHistory positionHistory;
     private final double clientRenderDelayInNanos;
@@ -42,7 +42,9 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
             float dy = serverPosition.y - localPosition.y;
             float dxAbs = Math.abs(dx);
 
-            if (dxAbs > MIN_VALUE_TO_CORRECTION) {
+            if (dxAbs > 10) {
+                rigidBody.setPosition(serverPosition.x, rigidBody.getY());
+            } else if (dxAbs > MIN_VALUE_TO_CORRECTION) {
                 float xCorrectionAmount = (dxAbs - MIN_VALUE_TO_CORRECTION) * 0.1f * correctionAmount;
                 correctionX = dx * xCorrectionAmount;
                 rigidBody.setPosition(rigidBody.getX() + correctionX, rigidBody.getY());
@@ -50,7 +52,9 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
             }
 
             float dyAbs = Math.abs(dy);
-            if (dyAbs > MIN_VALUE_TO_CORRECTION) {
+            if (dyAbs > 10) {
+                rigidBody.setPosition(rigidBody.getX(), serverPosition.y);
+            } else if (dyAbs > MIN_VALUE_TO_CORRECTION) {
                 float yCorrectionAmount = (dyAbs - MIN_VALUE_TO_CORRECTION) * 0.1f * correctionAmount;
                 correctionY = dy * yCorrectionAmount;
                 rigidBody.setPosition(rigidBody.getX(), rigidBody.getY() + correctionY);
