@@ -107,6 +107,5 @@ public abstract class AbstractRenderer {
         shader.delete();
         spriteRenderer.clear();
         debugRenderer.clear();
-        lockManager.clear();
     }
 }
