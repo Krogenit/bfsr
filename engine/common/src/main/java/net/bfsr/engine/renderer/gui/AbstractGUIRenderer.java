@@ -15,16 +15,16 @@ public abstract class AbstractGUIRenderer {
     public abstract void render();
     public abstract void render(int mode);
 
-    public abstract int add(float x, float y, float width, float height, Vector4f color);
-    public abstract int add(float x, float y, float width, float height, float r, float g, float b, float a);
+    public abstract int add(int x, int y, int width, int height, Vector4f color);
+    public abstract int add(int x, int y, int width, int height, float r, float g, float b, float a);
     public abstract int add(int x, int y, float sin, float cos, int width, int height, float r, float g, float b, float a);
-    public abstract int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+    public abstract int add(int x, int y, float sin, float cos, int width, int height, float r, float g, float b, float a,
                             AbstractTexture texture);
 
-    public abstract int add(float x, float y, float width, float height, Vector4f color, AbstractTexture texture);
-    public abstract void add(float x, float y, float width, float height, float r, float g, float b, float a, AbstractTexture texture);
-    public abstract int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle);
-    public abstract int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+    public abstract int add(int x, int y, int width, int height, Vector4f color, AbstractTexture texture);
+    public abstract void add(int x, int y, int width, int height, float r, float g, float b, float a, AbstractTexture texture);
+    public abstract int add(int x, int y, int width, int height, float r, float g, float b, float a, long textureHandle);
+    public abstract int add(int x, int y, float sin, float cos, int width, int height, float r, float g, float b, float a,
                             long textureHandle, int font);
 
     public abstract int addCentered(int x, int y, int width, int height, Vector4f color);
