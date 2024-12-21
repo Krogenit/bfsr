@@ -120,12 +120,16 @@ public class Camera implements AbstractCamera {
         position.y += movingAccumulator.y;
 
         if (movingAccumulator.x != 0 || movingAccumulator.y != 0 || zoomAccumulator != 0) {
-            setBoundingBox(position.x + origin.x / zoom, position.y + origin.y / zoom, position.x - origin.x / zoom,
-                    position.y - origin.y / zoom);
+            updateBoundingBox();
         }
 
         movingAccumulator.set(0, 0);
         zoomAccumulator = 0;
+    }
+
+    private void updateBoundingBox() {
+        setBoundingBox(position.x + origin.x / zoom, position.y + origin.y / zoom, position.x - origin.x / zoom,
+                position.y - origin.y / zoom);
     }
 
     private void updateZoom() {
@@ -159,6 +163,8 @@ public class Camera implements AbstractCamera {
 
         origin.x = -width / 2.0f;
         origin.y = -height / 2.0f;
+
+        updateBoundingBox();
 
         GL45.glNamedBufferSubData(GUIProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(0.0f, width, 0.0f, height, Z_NEAR, Z_FAR)
                 .get(MatrixBufferUtils.MATRIX_BUFFER));
