@@ -1,0 +1,9 @@
+jar {
+    archiveBaseName = 'run-benchmark'
+    archiveVersion = '0.0.1-SNAPSHOT'
+}
+
+dependencies {
+    implementation project(':run:client')
+    implementation project(':benchmark')
+}
