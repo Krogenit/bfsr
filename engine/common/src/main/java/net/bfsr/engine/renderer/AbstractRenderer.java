@@ -3,7 +3,6 @@ package net.bfsr.engine.renderer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import net.bfsr.engine.renderer.buffer.AbstractLockManager;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
 import net.bfsr.engine.renderer.font.StringGeometryBuilder;
@@ -42,7 +41,6 @@ public abstract class AbstractRenderer {
     public final AbstractGUIRenderer guiRenderer;
     public final AbstractDebugRenderer debugRenderer;
     public final AbstractTextureGenerator textureGenerator;
-    public final AbstractLockManager lockManager;
 
     public void init(long window, int width, int height) {
         this.window = window;

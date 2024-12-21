@@ -24,6 +24,7 @@ public interface AbstractBuffersHolder {
     void setLastUpdateModelBufferDirty(boolean value);
     void setLastUpdateMaterialBufferDirty(boolean value);
 
+    void updateCommandBuffer(int count);
     void bindCommandBuffer();
 
     void lockRange();
