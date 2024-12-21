@@ -74,7 +74,7 @@ public class Client extends ClientGameLogic {
     @Getter
     private double renderTime, serverTime;
     @Getter
-    private final double clientRenderDelayInNanos = Engine.getClientRenderDelayInMills() * 1_000_000;
+    private final double clientRenderDelayInNanos = Engine.getClientRenderDelayInMills() * 1_000_000.0;
 
     public Client(Profiler profiler) {
         super(profiler);
@@ -177,6 +177,7 @@ public class Client extends ClientGameLogic {
             try {
                 Thread.sleep(1);
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 return;
             }
         }
