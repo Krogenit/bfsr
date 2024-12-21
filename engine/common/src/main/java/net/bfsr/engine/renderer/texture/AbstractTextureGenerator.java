@@ -1,7 +1,7 @@
 package net.bfsr.engine.renderer.texture;
 
-import java.util.Random;
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 
 public abstract class AbstractTextureGenerator {
-    public abstract AbstractTexture generateNebulaTexture(int width, int height, Random random);
+    public abstract AbstractTexture generateNebulaTexture(int width, int height, XoRoShiRo128PlusRandom random);
 }

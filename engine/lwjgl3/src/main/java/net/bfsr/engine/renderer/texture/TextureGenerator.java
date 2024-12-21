@@ -1,5 +1,6 @@
 package net.bfsr.engine.renderer.texture;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.FrameBuffer;
@@ -13,7 +14,6 @@ import org.joml.Vector4f;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
-import java.util.Random;
 
 import static org.lwjgl.opengl.ARBBindlessTexture.glGetTextureHandleARB;
 import static org.lwjgl.opengl.ARBBindlessTexture.glMakeTextureHandleResidentARB;
@@ -47,7 +47,7 @@ import static org.lwjgl.opengl.GL45C.glTextureStorage2D;
 import static org.lwjgl.opengl.GL45C.glTextureSubImage2D;
 
 public final class TextureGenerator extends AbstractTextureGenerator {
-    private Texture generateSpaceTexture(int width, int height, float density, float brightness, Random random) {
+    private Texture generateSpaceTexture(int width, int height, float density, float brightness, XoRoShiRo128PlusRandom random) {
         int count = Math.round(width * height * density);
 
         byte[] data = new byte[width * height * 3];
@@ -77,7 +77,7 @@ public final class TextureGenerator extends AbstractTextureGenerator {
         return texture;
     }
 
-    private Texture generateNoiseTexture(Random random, int size) {
+    private Texture generateNoiseTexture(XoRoShiRo128PlusRandom random, int size) {
         Texture texture = new Texture(size, size).create();
         int l = size * size;
         byte[] data = new byte[(l << 1)];
@@ -101,7 +101,7 @@ public final class TextureGenerator extends AbstractTextureGenerator {
     }
 
     @Override
-    public Texture generateNebulaTexture(int width, int height, Random random) {
+    public Texture generateNebulaTexture(int width, int height, XoRoShiRo128PlusRandom random) {
         AbstractSpriteRenderer spriteRenderer = Engine.renderer.spriteRenderer;
         int renderId = spriteRenderer.add(0, 0, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0, BufferType.GUI);
         int currentBindTexture = glGetInteger(GL_TEXTURE_BINDING_2D);
@@ -152,7 +152,8 @@ public final class TextureGenerator extends AbstractTextureGenerator {
             float falloff = RandomHelper.randomFloat(random, falloffMin, falloffMax);
             Vector2f offset = new Vector2f(random.nextFloat() * 10.0f, random.nextFloat() * 10.0f);
             int noiseType = random.nextInt(maxNoiseType);
-            Vector3f color = new Vector3f(random.nextFloat() * colorMax, random.nextFloat() * colorMax, random.nextFloat() * colorMax);
+            Vector3f color = new Vector3f(random.nextFloat() * colorMax, random.nextFloat() * colorMax,
+                    random.nextFloat() * colorMax);
 
             float scaleMin = 0.000025f / baseScale.x;
             float scaleMax = 0.002f / baseScale.x;

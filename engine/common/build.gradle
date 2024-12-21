@@ -24,6 +24,7 @@ dependencies {
     api 'org.agrona:agrona:2.0.0'
     api 'org.locationtech.jts:jts-core:1.19.0'
     api 'org.locationtech.jts:jts:1.19.0'
+    api 'it.unimi.dsi:dsiutils:2.7.3'
     implementation 'org.slf4j:slf4j-nop:2.0.13'
 }
 

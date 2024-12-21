@@ -44,7 +44,7 @@ public class WeaponSlotBeamRender extends WeaponSlotRender {
     @Override
     public void onShot() {
         damageSpawnAccumulator.resetTime();
-        playSounds(weaponSlotBeam.getGunData(), weaponSlotBeam.getShip().getWorld().getRand(), object.getX(), object.getY());
+        playSounds(weaponSlotBeam.getGunData(), object.getX(), object.getY());
         beamParticles.onShot();
         particlesUpdateRunnable = () -> {
             beamParticles.update();

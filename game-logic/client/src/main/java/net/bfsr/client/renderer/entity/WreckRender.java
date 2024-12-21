@@ -1,5 +1,6 @@
 package net.bfsr.client.renderer.entity;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import lombok.Getter;
 import net.bfsr.client.Client;
 import net.bfsr.client.particle.SpawnAccumulator;
@@ -35,6 +36,7 @@ public class WreckRender extends RigidBodyRender {
     private final SpawnAccumulator spawnAccumulator = new SpawnAccumulator();
     private final float fireAnimationSpeed = Client.get().convertToDeltaTime(0.18f);
     private final float lightAnimationSpeed = Client.get().convertToDeltaTime(12.0f);
+    private final XoRoShiRo128PlusPlusRandom random = new XoRoShiRo128PlusPlusRandom();
 
     private int fireId = -1;
     private int lightId = -1;
@@ -56,7 +58,7 @@ public class WreckRender extends RigidBodyRender {
         this.colorLight.set(1.0f, 1.0f, 1.0f, 0.0f);
         this.lastColorLight.set(colorLight);
         this.sparkleActivationTimerInTicks = object.isLight() ?
-                Client.get().convertToTicks(200.0f + object.getWorld().getRand().nextInt(200)) : 0;
+                Client.get().convertToTicks(200.0f + random.nextInt(200)) : 0;
         this.fire = object.isFire();
         this.light = object.isLight();
 
@@ -203,7 +205,7 @@ public class WreckRender extends RigidBodyRender {
             }
 
             if (sparkleBlinkTimer >= 100.0f) {
-                sparkleActivationTimerInTicks = Client.get().convertToTicks(200.0f + wreck.getWorld().getRand().nextInt(200));
+                sparkleActivationTimerInTicks = Client.get().convertToTicks(200.0f + random.nextInt(200));
                 sparkleBlinkTimer = 0.0f;
             }
 

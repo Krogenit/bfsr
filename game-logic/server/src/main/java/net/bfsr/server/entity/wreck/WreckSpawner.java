@@ -1,5 +1,6 @@
 package net.bfsr.server.entity.wreck;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.config.entity.wreck.WreckRegistry;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
@@ -11,10 +12,8 @@ import net.bfsr.world.World;
 import org.jbox2d.common.Vector2;
 import org.joml.Vector2f;
 
-import java.util.Random;
-
 public final class WreckSpawner {
-    private static final Random RAND = ServerGameLogic.getInstance().getWorld().getRand();
+    private static final XoRoShiRo128PlusRandom RAND = new XoRoShiRo128PlusRandom();
     private static final Vector2f ANGLE_TO_VELOCITY = new Vector2f();
     private static final WreckRegistry WRECK_REGISTRY = ServerGameLogic.getInstance().getConfigConverterManager()
             .getConverter(WreckRegistry.class);
@@ -24,9 +23,8 @@ public final class WreckSpawner {
         float y = ship.getY();
         Vector2 linearVelocity = ship.getLinearVelocity();
         World w = ship.getWorld();
-        Random rand = w.getRand();
-        spawnDamageDebris(w, rand.nextInt(3), x, y, linearVelocity.x * 0.025f, linearVelocity.y * 0.025f, 1.0f);
-        spawnDamageWrecks(w, rand.nextInt(2), x, y, linearVelocity.x * 0.25f, linearVelocity.y * 0.25f);
+        spawnDamageDebris(w, RAND.nextInt(3), x, y, linearVelocity.x * 0.025f, linearVelocity.y * 0.025f, 1.0f);
+        spawnDamageWrecks(w, RAND.nextInt(2), x, y, linearVelocity.x * 0.25f, linearVelocity.y * 0.25f);
     }
 
     public static void spawnDamageDebris(World world, int count, float x, float y, float velocityX, float velocityY, float size) {
