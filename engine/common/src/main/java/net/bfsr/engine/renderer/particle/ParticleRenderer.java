@@ -38,7 +38,7 @@ public class ParticleRenderer {
         this.profiler = profiler;
         RenderLayer[] renderLayers = RenderLayer.VALUES;
         for (int i = 0; i < renderLayers.length; i++) {
-            buffersHolderArray[renderLayers[i].ordinal()] = spriteRenderer.createBuffersHolder(START_PARTICLE_COUNT);
+            buffersHolderArray[renderLayers[i].ordinal()] = spriteRenderer.createBuffersHolder(START_PARTICLE_COUNT, true);
             particlesByRenderLayer[renderLayers[i].ordinal()] = new ArrayList<>(256);
         }
 
@@ -46,7 +46,8 @@ public class ParticleRenderer {
         backgroundParticlesStoreRunnables = new ParticlesStoreRunnable[MultithreadingUtils.PARALLELISM];
         for (int i = 0; i < particlesStoreRunnables.length; i++) {
             particlesStoreRunnables[i] = new ParticlesStoreRunnable(particlesByRenderLayer, RenderLayer.DEFAULT_ALPHA_BLENDED);
-            backgroundParticlesStoreRunnables[i] = new ParticlesStoreRunnable(particlesByRenderLayer, RenderLayer.BACKGROUND_ALPHA_BLENDED);
+            backgroundParticlesStoreRunnables[i] = new ParticlesStoreRunnable(particlesByRenderLayer,
+                    RenderLayer.BACKGROUND_ALPHA_BLENDED);
         }
 
         if (MultithreadingUtils.MULTITHREADING_SUPPORTED) {
@@ -66,6 +67,7 @@ public class ParticleRenderer {
         checkBufferSize();
 
         spriteRenderer.updateBuffers(buffersHolderArray);
+        spriteRenderer.waitForLockedRange(buffersHolderArray);
 
         multithreaded = MultithreadingUtils.MULTITHREADING_SUPPORTED && totalParticles >= MULTITHREADED_THRESHOLD;
         taskCount = multithreaded ?

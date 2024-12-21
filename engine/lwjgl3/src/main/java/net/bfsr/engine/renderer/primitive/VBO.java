@@ -74,7 +74,7 @@ public final class VBO {
         }
     }
 
-    private void storeData(long address, long newDataSize, int flags) {
+    public void storeData(long address, long newDataSize, int flags) {
         storeData(address, newDataSize, 0, newDataSize, flags);
     }
 

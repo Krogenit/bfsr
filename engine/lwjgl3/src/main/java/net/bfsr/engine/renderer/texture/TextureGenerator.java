@@ -4,7 +4,7 @@ import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.FrameBuffer;
-import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.renderer.shader.NebulaShader;
 import net.bfsr.engine.renderer.shader.StarsShader;
 import net.bfsr.engine.util.RandomHelper;

@@ -72,7 +72,7 @@ public class BuffersHolder implements AbstractBuffersHolder {
     private int maxBufferCapacity;
     private final UnorderedArrayList<Integer> freeIndices = new UnorderedArrayList<>();
 
-    public BuffersHolder(VAO vao, int initialObjectCount) {
+    public BuffersHolder(VAO vao, int initialObjectCount, boolean persistent) {
         this.vao = vao;
 
         modelDataBufferResizeCapacity = initialObjectCount * AbstractSpriteRenderer.MODEL_DATA_SIZE;
@@ -93,7 +93,7 @@ public class BuffersHolder implements AbstractBuffersHolder {
 
         commandBufferResizeCapacityInBytes = initialObjectCount * COMMAND_SIZE_IN_BYTES;
 
-        commandBuffer = new CircularBuffer(BUFFERING);
+        commandBuffer = new CircularBuffer(persistent ? BUFFERING : 1);
         commandBuffer.create(commandBufferResizeCapacityInBytes);
         fillCommandBuffer(commandBuffer);
 
@@ -228,6 +228,11 @@ public class BuffersHolder implements AbstractBuffersHolder {
 
     public void putCommandData(long address, int offset, int value) {
         MemoryUtil.memPutInt(address + (offset & 0xFFFF_FFFFL), value);
+    }
+
+    @Override
+    public void updateCommandBuffer(int count) {
+        commandBuffer.updateBuffer(count);
     }
 
     @Override

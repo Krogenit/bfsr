@@ -37,10 +37,12 @@ public interface AbstractSpriteRenderer extends GeometryBuffer {
     AbstractVAO createVAO();
 
     AbstractBuffersHolder[] createBuffersHolderArray(int length);
-    AbstractBuffersHolder createBuffersHolder(int capacity);
+    AbstractBuffersHolder createBuffersHolder(int capacity, boolean persistent);
 
     void updateBuffers();
     void updateBuffers(AbstractBuffersHolder[] buffersHolderArray);
+    void waitForLockedRange();
+    void waitForLockedRange(AbstractBuffersHolder[] buffersHolderArray);
 
     void addTask(Runnable runnable, BufferType bufferType);
     Future<?> addTask(Runnable runnable);
