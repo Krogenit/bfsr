@@ -67,12 +67,13 @@ public class Particle extends GameObject {
     public Particle init(long textureHandle, float worldX, float worldY, float localX, float localY, float velocityX,
                          float velocityY, float sin, float cos, float angularVelocity, float scaleX, float scaleY,
                          float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero,
-                         RenderLayer renderLayer, Consumer<Particle> updateLogic, Consumer<ParticleRender> lastValuesUpdateConsumer) {
+                         RenderLayer renderLayer, Consumer<Particle> updateLogic,
+                         Consumer<ParticleRender> lastValuesUpdateConsumer) {
         this.renderLayer = renderLayer;
         Client client = Client.get();
-        render = RENDER_POOL[renderLayer.ordinal()].get().init(this, worldX, worldY, sin, cos, scaleX, scaleY, textureHandle, r, g, b, a,
-                isAlphaFromZero, client.convertToDeltaTime(alphaVelocity), PARTICLE_RENDERER.getBuffersHolder(renderLayer),
-                lastValuesUpdateConsumer);
+        render = RENDER_POOL[renderLayer.ordinal()].get().init(this, worldX, worldY, sin, cos, scaleX, scaleY, textureHandle,
+                r, g, b, a, isAlphaFromZero, client.convertToDeltaTime(alphaVelocity),
+                PARTICLE_RENDERER.getBuffersHolder(renderLayer), lastValuesUpdateConsumer);
         super.setPosition(worldX, worldY);
         this.localPosition.set(localX, localY);
         this.velocity.set(client.convertToDeltaTime(velocityX), client.convertToDeltaTime(velocityY));
@@ -174,7 +175,7 @@ public class Particle extends GameObject {
         render.setSize(x, y);
     }
 
-    public void onRemoved() {
+    public void clear() {
         ParticleManager.PARTICLE_POOL.returnBack(this);
         RENDER_POOL[renderLayer.ordinal()].returnBack(render);
     }
