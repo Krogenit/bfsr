@@ -1,6 +1,8 @@
-package net.bfsr.server;
+package net.bfsr.server.dedicated;
 
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.server.Server;
+import net.bfsr.server.ServerGameLogic;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -135,9 +135,9 @@ public class PlayerNetworkHandler extends NetworkHandler {
 
         try {
             if (singlePlayer) {
-                player = playerManager.getPlayerService().authUser(username, "test");
+                player = playerManager.login(username, "test");
             } else {
-                player = playerManager.getPlayerService().authUser(username, "password");
+                player = playerManager.login(username, "password");
             }
         } catch (Exception e) {
             log.error("Couldn't auth user {}", username, e);

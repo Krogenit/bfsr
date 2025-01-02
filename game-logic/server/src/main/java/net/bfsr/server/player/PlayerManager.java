@@ -16,27 +16,24 @@ import net.bfsr.faction.Faction;
 import net.bfsr.network.GuiType;
 import net.bfsr.network.packet.server.gui.PacketOpenGui;
 import net.bfsr.server.ServerGameLogic;
-import net.bfsr.server.dto.PlayerModel;
-import net.bfsr.server.rsocket.RSocketClient;
-import net.bfsr.server.service.PlayerService;
+import net.bfsr.server.config.ServerSettings;
 import net.bfsr.world.World;
-import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlayerManager {
+public abstract class PlayerManager {
     @Getter
-    private final List<Player> players = new ArrayList<>();
+    protected final List<Player> players = new ArrayList<>();
     private final TMap<String, Player> playerMap = new THashMap<>();
-    private final RSocketClient databaseRSocketClient = new RSocketClient();
-    @Getter
-    private final PlayerService playerService = new PlayerService(databaseRSocketClient);
+
     private final Object2ObjectMap<Ship, Player> playerByShipMap = new Object2ObjectOpenHashMap<>();
 
-    public void connect(String host, int port) {
-        databaseRSocketClient.connect(host, port);
-    }
+    public void init(ServerSettings settings) {}
+
+    public abstract Player login(String username, String password);
+    public abstract void save(Player player);
+    public abstract void saveAllSync();
 
     public void update() {
         for (int i = 0; i < players.size(); i++) {
@@ -116,37 +113,6 @@ public class PlayerManager {
         }
     }
 
-    private List<Mono<PlayerModel>> saveUsers() {
-        List<Mono<PlayerModel>> monos = new ArrayList<>(players.size());
-        for (int i = 0; i < players.size(); i++) {
-            Player player = players.get(i);
-            monos.add(playerService.save(player));
-        }
-
-        return monos;
-    }
-
-    public void clear() {
-        players.clear();
-        playerMap.clear();
-        databaseRSocketClient.clear();
-    }
-
-    public void save(Player player) {
-        playerService.save(player);
-    }
-
-    public void saveAllSync() {
-        List<Mono<PlayerModel>> monos = saveUsers();
-        for (int i = 0; i < monos.size(); i++) {
-            monos.get(i).block();
-        }
-    }
-
-    public List<Mono<PlayerModel>> save() {
-        return saveUsers();
-    }
-
     public static PlayerManager get() {
         return ServerGameLogic.getInstance().getPlayerManager();
     }
@@ -161,5 +127,10 @@ public class PlayerManager {
 
     public Player getPlayerControllingShip(Ship ship) {
         return playerByShipMap.get(ship);
+    }
+
+    public void clear() {
+        players.clear();
+        playerMap.clear();
     }
 }
