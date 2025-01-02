@@ -625,5 +625,5 @@ void main() {
     float n = noise(gl_FragCoord.xy * scale * 1.0);
     n = pow(n + density, falloff);
 
-    fragColor = vec4(mix(s, color, n), 1f);
+    fragColor = vec4(mix(s, color, n), 1.0);
 }
