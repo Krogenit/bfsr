@@ -15,7 +15,7 @@ in Data {
     flat bool font;
 } in_Data;
 
-sampler2D fireTexture;
+layout(binding = 0) uniform sampler2D fireTexture;
 
 vec2 rotateUV(vec2 uv, float rotation) {
     float mid = 0.5;
