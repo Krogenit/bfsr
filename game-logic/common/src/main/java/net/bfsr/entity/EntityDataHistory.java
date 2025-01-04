@@ -1,9 +1,10 @@
 package net.bfsr.entity;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EntityDataHistory<T extends ChronologicalEntityData> {
-    final LinkedList<T> dataList = new LinkedList<>();
+    final List<T> dataList = new ArrayList<>();
     final double historyLengthMillis;
 
     EntityDataHistory(double historyLengthMillis) {
