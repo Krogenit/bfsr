@@ -42,8 +42,8 @@ public class PlayerInputController {
                 ship.shoot(weaponSlot -> {
                     weaponSlot.createBullet((float) (Engine.getClientRenderDelayInMills() +
                             player.getNetworkHandler().getPing()));
-                    trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketWeaponShoot(ship.getId(),
-                            weaponSlot.getId(), ship.getWorld().getTimestamp()), player);
+                    trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), player1 -> new PacketWeaponShoot(
+                            ship.getId(), weaponSlot.getId(), player1.getClientTime(ship.getWorld().getTimestamp())), player);
                 });
             }
         }

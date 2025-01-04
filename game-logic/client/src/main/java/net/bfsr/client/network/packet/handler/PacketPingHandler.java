@@ -13,13 +13,14 @@ import java.net.InetSocketAddress;
 public class PacketPingHandler extends PacketHandler<PacketPing, NetworkSystem> {
     @Override
     public void handle(PacketPing packet, NetworkSystem netHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+        long nanoTime = System.nanoTime();
         if (packet.getSide() == Side.CLIENT) {
-            long rtt = System.nanoTime() - packet.getOriginalSentTime();
+            long rtt = nanoTime - packet.getOriginalSentTime();
             Client client = Client.get();
             client.getEventBus().publish(new PingEvent(rtt / 2000000.0f));
             client.setClientToServerDiffTime(rtt / 2.0);
         } else {
-            netHandler.sendPacketUDP(new PacketPing(packet.getSide()));
+            netHandler.sendPacketUDP(new PacketPing(packet.getOriginalSentTime(), nanoTime, packet.getSide()));
         }
     }
 }

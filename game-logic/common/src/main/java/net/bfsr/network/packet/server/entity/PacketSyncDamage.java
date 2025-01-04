@@ -30,8 +30,8 @@ public class PacketSyncDamage extends PacketScheduled {
     private int width, height;
     private List<Fixture> fixtures;
 
-    public PacketSyncDamage(DamageableRigidBody damageable) {
-        super(damageable.getWorld().getTimestamp());
+    public PacketSyncDamage(DamageableRigidBody damageable, double timestamp) {
+        super(timestamp);
         this.damageable = damageable;
         DamageMask damageMask = damageable.getMask();
         x = damageMask.getX();

@@ -52,8 +52,6 @@ public class PlayerNetworkHandler extends NetworkHandler {
 
     @Setter
     private long loginStartTime;
-    @Setter
-    private long handshakeClientTime;
     private long lastPingCheckTime;
     private String terminationReason;
 
@@ -66,6 +64,8 @@ public class PlayerNetworkHandler extends NetworkHandler {
     @Setter
     private double ping;
     private final ShipOutfitter shipOutfitter = new ShipOutfitter(ServerGameLogic.getInstance().getConfigConverterManager());
+    @Setter
+    private double deltaTime;
 
     public void update() {
         if (connectionState != ConnectionState.DISCONNECTED) {

@@ -30,11 +30,11 @@ public class ShipEventListener {
             Ship ship = event.ship();
             if (ship.isControlledByPlayer()) {
                 Player player = ServerGameLogic.getInstance().getPlayerManager().getPlayerControllingShip(ship);
-                trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketSyncMoveDirection(ship.getId(),
-                        event.direction().ordinal(), false, ship.getWorld().getTimestamp()), player);
+                trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), player1 -> new PacketSyncMoveDirection(
+                        ship.getId(), event.direction().ordinal(), false, player1.getClientTime(ship.getWorld().getTimestamp())), player);
             } else {
-                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketSyncMoveDirection(ship.getId(),
-                        event.direction().ordinal(), false, ship.getWorld().getTimestamp()));
+                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), player -> new PacketSyncMoveDirection(ship.getId(),
+                        event.direction().ordinal(), false, player.getClientTime(ship.getWorld().getTimestamp())));
             }
         };
     }
@@ -45,11 +45,11 @@ public class ShipEventListener {
             Ship ship = event.ship();
             if (ship.isControlledByPlayer()) {
                 Player player = ServerGameLogic.getInstance().getPlayerManager().getPlayerControllingShip(ship);
-                trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketSyncMoveDirection(ship.getId(),
-                        event.direction().ordinal(), true, ship.getWorld().getTimestamp()), player);
+                trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), player1 -> new PacketSyncMoveDirection(
+                        ship.getId(), event.direction().ordinal(), true, player1.getClientTime(ship.getWorld().getTimestamp())), player);
             } else {
-                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketSyncMoveDirection(ship.getId(),
-                        event.direction().ordinal(), true, ship.getWorld().getTimestamp()));
+                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), player -> new PacketSyncMoveDirection(ship.getId(),
+                        event.direction().ordinal(), true, player.getClientTime(ship.getWorld().getTimestamp())));
             }
         };
     }
@@ -58,8 +58,8 @@ public class ShipEventListener {
     public EventListener<ShipPostPhysicsUpdate> shipPostPhysicsUpdateEvent() {
         return event -> {
             Ship ship = event.ship();
-            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(),
-                    new PacketShipInfo(ship, ship.getWorld().getTimestamp()));
+            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), player -> new PacketShipInfo(
+                    ship, player.getClientTime(ship.getWorld().getTimestamp())));
         };
     }
 
@@ -67,8 +67,8 @@ public class ShipEventListener {
     public EventListener<ShipDestroyingEvent> shipDestroyingEvent() {
         return event -> {
             Ship ship = event.ship();
-            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketDestroyingShip(ship,
-                    ship.getWorld().getTimestamp()));
+            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), player -> new PacketDestroyingShip(ship,
+                    player.getClientTime(ship.getWorld().getTimestamp())));
         };
     }
 

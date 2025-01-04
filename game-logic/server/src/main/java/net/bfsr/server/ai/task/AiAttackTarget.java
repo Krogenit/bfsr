@@ -117,8 +117,8 @@ public class AiAttackTarget extends AiTask {
                     if (Math.abs(rigidBodyUtils.getRotationDifference(ship, targetFinalPos)) <= 0.05f) {
                         slot.tryShoot(weaponSlot -> {
                             weaponSlot.createBullet(0);
-                            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketWeaponShoot(ship.getId(),
-                                    weaponSlot.getId(), ship.getWorld().getTimestamp()));
+                            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), player -> new PacketWeaponShoot(
+                                    ship.getId(), weaponSlot.getId(), player.getClientTime(ship.getWorld().getTimestamp())));
                         }, modules.getReactor());
                     }
                 }

@@ -13,7 +13,6 @@ public class PacketHandshakeHandler extends PacketHandler<PacketHandshake, Playe
     public void handle(PacketHandshake packet, PlayerNetworkHandler networkHandler, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
         networkHandler.setConnectionState(ConnectionState.LOGIN);
-        networkHandler.setHandshakeClientTime(packet.getHandshakeClientTime());
         networkHandler.setLoginStartTime(System.currentTimeMillis());
     }
 }

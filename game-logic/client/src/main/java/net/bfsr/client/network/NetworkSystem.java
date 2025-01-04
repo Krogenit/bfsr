@@ -37,9 +37,6 @@ public class NetworkSystem extends NetworkHandler {
     @Setter
     private ConnectionState connectionState = ConnectionState.DISCONNECTED;
 
-    @Setter
-    @Getter
-    private long handshakeTime;
     private long lastPingCheck;
     @Setter
     @Getter
@@ -62,7 +59,7 @@ public class NetworkSystem extends NetworkHandler {
     }
 
     public void onChannelsRegistered() {
-        sendPacketTCP(new PacketHandshake(handshakeTime = System.nanoTime()));
+        sendPacketTCP(new PacketHandshake());
         sendPacketTCP(new PacketLogin(login));
     }
 
