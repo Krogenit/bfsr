@@ -18,6 +18,7 @@ import net.bfsr.event.module.weapon.beam.BeamDamageShipHullEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageShipShieldEvent;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.physics.CommonCollisionHandler;
+import net.bfsr.physics.correction.CorrectionHandler;
 import net.bfsr.physics.correction.DynamicCorrectionHandler;
 import net.bfsr.world.World;
 import org.jbox2d.common.Vector2;
@@ -167,8 +168,13 @@ public class CollisionHandler extends CommonCollisionHandler {
     }
 
     private void setDynamicCorrection(RigidBody rigidBody) {
-        rigidBody.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), rigidBody.getCorrectionHandler(),
-                rigidBody.getCorrectionHandler()));
+        CorrectionHandler correctionHandler = rigidBody.getCorrectionHandler();
+        if (correctionHandler.getClass() == DynamicCorrectionHandler.class) {
+            ((DynamicCorrectionHandler) correctionHandler).setCorrectionAmount(0.0f);
+        } else {
+            rigidBody.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f),
+                    correctionHandler, correctionHandler));
+        }
     }
 
     private boolean isShieldAlive(Shield shield) {
