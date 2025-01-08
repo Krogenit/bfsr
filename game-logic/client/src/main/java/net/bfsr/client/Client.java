@@ -74,7 +74,7 @@ public class Client extends ClientGameLogic {
     @Getter
     private double renderTime;
     @Getter
-    private final double clientRenderDelayInNanos = Engine.getClientRenderDelayInMills() * 1_000_000.0;
+    private final double clientRenderDelay = Engine.getClientRenderDelayInMills() * 1_000_000.0;
 
     public Client(Profiler profiler) {
         super(profiler);
@@ -126,7 +126,7 @@ public class Client extends ClientGameLogic {
         soundManager.updateGain(ClientSettings.SOUND_VOLUME.getFloat());
         profiler.end();
 
-        renderTime = time - clientToServerTimeDiff - clientRenderDelayInNanos;
+        renderTime = time - clientToServerTimeDiff - clientRenderDelay;
 
         profiler.start("network");
         networkSystem.update(renderTime);

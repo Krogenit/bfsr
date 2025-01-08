@@ -93,7 +93,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
         y -= addMinimizableWithLabel(width, height, y, "Profiler", profilerLabel).getHeight();
         y -= addMinimizableWithLabel(width, height, y, "Network", createLabel(0, "",
                 label1 -> label1.setString("Ping: " + DecimalUtils.strictFormatWithToDigits(ping) + "ms" +
-                        "\nClient render delay: " + client.getClientRenderDelayInNanos() / 1_000_000 + "ms"))).getHeight();
+                        "\nClient render delay: " + client.getClientRenderDelay() / 1_000_000 + "ms"))).getHeight();
         y -= addMinimizableWithLabel(width, height, y, "Render", createLabel(0, "",
                 label1 -> {
                     AbstractCamera camera = Engine.renderer.camera;
