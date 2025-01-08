@@ -11,8 +11,6 @@ import net.bfsr.engine.renderer.texture.AbstractTexture;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11C;
 
-import java.nio.IntBuffer;
-
 import static net.bfsr.engine.renderer.AbstractSpriteRenderer.LAST_UPDATE_MATERIAL_DATA_SIZE_IN_BYTES;
 import static net.bfsr.engine.renderer.SpriteRenderer.COLOR_A_OFFSET;
 import static net.bfsr.engine.renderer.SpriteRenderer.COLOR_B_OFFSET;
@@ -67,11 +65,6 @@ public class GuiRenderer extends AbstractGUIRenderer {
 
             buffersHolder.setRenderObjects(0);
         }
-    }
-
-    @Override
-    public void addDrawCommand(IntBuffer commandBuffer, int count) {
-        spriteRenderer.addDrawCommand(commandBuffer, count, buffersHolder);
     }
 
     @Override
