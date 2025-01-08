@@ -78,7 +78,8 @@ public class NetworkSystem extends NetworkHandler {
     }
 
     private void processReceivedPackets(double time) {
-        for (int i = 0; !inboundPacketQueue.isEmpty() && i < 1000; i++) {
+        int size = inboundPacketQueue.size();
+        for (int i = 0; !inboundPacketQueue.isEmpty() && i < size; i++) {
             Packet packet = inboundPacketQueue.poll();
             if (packet.canProcess(time)) {
                 processPacket(packet);
