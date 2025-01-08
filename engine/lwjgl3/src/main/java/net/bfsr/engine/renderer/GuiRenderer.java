@@ -231,6 +231,11 @@ public class GuiRenderer extends AbstractGUIRenderer {
     }
 
     @Override
+    public void setLastRotation(int id, float rotation) {
+        setLastRotation(id, LUT.sin(rotation), LUT.cos(rotation));
+    }
+
+    @Override
     public void setLastRotation(int id, float sin, float cos) {
         int offset = id * MODEL_DATA_SIZE;
         buffersHolder.putLastUpdateModelData(offset + SIN_OFFSET, sin);

@@ -54,6 +54,7 @@ public abstract class AbstractGUIRenderer {
 
     public abstract void setLastPosition(int id, float x, float y);
     public abstract void setLastPosition(int id, int x, int y);
+    public abstract void setLastRotation(int id, float rotation);
     public abstract void setLastRotation(int id, float sin, float cos);
     public abstract void setLastSize(int id, int width, int height);
     public abstract void setLastColor(int id, Vector4f color);
