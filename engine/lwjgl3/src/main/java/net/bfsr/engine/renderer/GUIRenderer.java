@@ -163,6 +163,7 @@ public final class GUIRenderer extends AbstractGUIRenderer {
     private void addRotated(float lastX, float lastY, float x, float y, float lastSin, float lastCos, float sin, float cos, float width,
                             float height, float r, float g, float b, float a, long textureHandle) {
         float interpolation = renderer.getInterpolation();
+        buffersHolder.checkBuffersSize(1);
         spriteRenderer.putVerticesCenteredClockWise(lastX + (x - lastX) * interpolation, lastY + (y - lastY) * interpolation,
                 lastSin + (sin - lastSin) * interpolation, lastCos + (cos - lastCos) * interpolation, width * 0.5f, height * 0.5f,
                 buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex());

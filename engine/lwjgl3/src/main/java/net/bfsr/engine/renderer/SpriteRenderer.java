@@ -163,6 +163,7 @@ public class SpriteRenderer extends AbstractSpriteRenderer {
                                           float scaleX, float scaleY, Vector4f lastColor, Vector4f color, AbstractTexture texture,
                                           BufferType bufferType) {
         BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
+        buffersHolder.checkBuffersSize(1);
         addToRenderPipeLineSinCos(lastX, lastY, x, y, lastSin, lastCos, sin, cos, scaleX, scaleY, lastColor, color, texture,
                 renderer.getInterpolation(), buffersHolder.getVertexBuffer(), buffersHolder.getVertexBufferIndex(),
                 buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
@@ -184,6 +185,7 @@ public class SpriteRenderer extends AbstractSpriteRenderer {
     public void add(float lastX, float lastY, float x, float y, float scaleX, float scaleY, float r, float g, float b, float a,
                     AbstractTexture texture, BufferType bufferType) {
         BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
+        buffersHolder.checkBuffersSize(1);
         add(lastX, lastY, x, y, scaleX, scaleY, r, g, b, a, texture, renderer.getInterpolation(), buffersHolder.getVertexBuffer(),
                 buffersHolder.getVertexBufferIndex(), buffersHolder.getMaterialBuffer(), buffersHolder.getMaterialBufferIndex());
         buffersHolder.incrementObjectCount();
