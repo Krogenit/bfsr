@@ -1,5 +1,6 @@
 package net.bfsr.damage;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.engine.math.LUT;
@@ -26,7 +27,6 @@ import org.locationtech.jts.simplify.VWSimplifier;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Consumer;
 
 @Log4j2
@@ -41,6 +41,7 @@ public final class DamageSystem {
             BufferParameters.JOIN_MITRE, 0.1);
 
     private final Vector2f rotatedLocalCenter = new Vector2f();
+    private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
     public void damage(DamageableRigidBody damageable, float contactX, float contactY, org.locationtech.jts.geom.Polygon clip, float radius,
                        float x, float y, float sin, float cos, Runnable onDamageSuccessRunnable) {
@@ -53,7 +54,7 @@ public final class DamageSystem {
         mask.reset();
         damageable.clearFixturesToAdd();
 
-        clipTexture(contactX, contactY, -sin, cos, damageable, radius, mask, world.getRand(), damageable.getLocalOffsetX(),
+        clipTexture(contactX, contactY, -sin, cos, damageable, radius, mask, damageable.getLocalOffsetX(),
                 damageable.getLocalOffsetY());
 
         org.locationtech.jts.geom.Polygon polygon = damageable.getPolygon();
@@ -337,7 +338,7 @@ public final class DamageSystem {
     }
 
     private void clipTexture(float x, float y, float sin, float cos, DamageableRigidBody damageable, float clipRadius,
-                             DamageMask mask, Random random, float localOffsetX, float localOffsetY) {
+                             DamageMask mask, float localOffsetX, float localOffsetY) {
         float sizeX = damageable.getSizeX();
         float sizeY = damageable.getSizeY();
         float halfSizeX = sizeX / 2.0f;

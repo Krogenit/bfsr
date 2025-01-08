@@ -1,5 +1,6 @@
 package net.bfsr.server.ai.task;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.ai.task.AiTask;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.RigidBody;
@@ -12,6 +13,7 @@ public class AiFlyingAround extends AiTask {
     private RigidBody obj;
     private final float size;
     private final Vector2f angleToVelocity = new Vector2f();
+    private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
     private static final float UPDATE_LENGTH = 25;
 
@@ -39,7 +41,7 @@ public class AiFlyingAround extends AiTask {
     }
 
     private void calculateNewPoint(float x, float y) {
-        RotationHelper.angleToVelocity(MathUtils.TWO_PI * obj.getWorld().getRand().nextFloat(), size, angleToVelocity);
+        RotationHelper.angleToVelocity(MathUtils.TWO_PI * random.nextFloat(), size, angleToVelocity);
         currentPoint = new Vector2f(x + angleToVelocity.x, y + angleToVelocity.y);
     }
 

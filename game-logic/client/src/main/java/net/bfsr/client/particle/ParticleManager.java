@@ -9,10 +9,8 @@ import org.joml.Vector2f;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class ParticleManager {
-    public static final Random RAND = new Random();
     public static final ObjectPool<Particle> PARTICLE_POOL = new ObjectPool<>(Particle::new);
     public static final Vector2f CACHED_VECTOR = new Vector2f();
 

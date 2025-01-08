@@ -5,6 +5,7 @@ import gnu.trove.map.hash.THashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.Getter;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.engine.math.MathUtils;
@@ -28,6 +29,7 @@ public abstract class PlayerManager {
     private final TMap<String, Player> playerMap = new THashMap<>();
 
     private final Object2ObjectMap<Ship, Player> playerByShipMap = new Object2ObjectOpenHashMap<>();
+    private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
     public void init(ServerSettings settings) {}
 
@@ -69,13 +71,11 @@ public abstract class PlayerManager {
 
         Ship playerShip;
         if (faction == Faction.HUMAN) {
-            playerShip = shipFactory.createPlayerShipHumanSmall(world, x, y,
-                    world.getRand().nextFloat() * MathUtils.TWO_PI);
+            playerShip = shipFactory.createPlayerShipHumanSmall(world, x, y, random.nextFloat() * MathUtils.TWO_PI);
         } else if (faction == Faction.SAIMON) {
-            playerShip = shipFactory.createPlayerShipSaimonSmall(world, x, y,
-                    world.getRand().nextFloat() * MathUtils.TWO_PI);
+            playerShip = shipFactory.createPlayerShipSaimonSmall(world, x, y, random.nextFloat() * MathUtils.TWO_PI);
         } else {
-            playerShip = shipFactory.createPlayerShipEngiSmall(world, x, y, world.getRand().nextFloat() * MathUtils.TWO_PI);
+            playerShip = shipFactory.createPlayerShipEngiSmall(world, x, y, random.nextFloat() * MathUtils.TWO_PI);
         }
 
         shipFactory.getShipOutfitter().outfit(playerShip);

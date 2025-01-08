@@ -1,5 +1,6 @@
 package net.bfsr.client.particle.effect;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.client.config.particle.ParticleEffect;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.particle.Particle;
@@ -12,6 +13,8 @@ import org.joml.Vector2f;
 import java.util.function.Consumer;
 
 public final class WeaponEffects {
+    private static final XoRoShiRo128PlusRandom RANDOM = new XoRoShiRo128PlusRandom();
+
     private static final ParticleEffect smallWeapon = ParticleEffectsRegistry.INSTANCE.get("weapon/small");
     private static final ParticleEffect bulletHit = ParticleEffectsRegistry.INSTANCE.get("weapon/bullet_hit");
     private static final ParticleEffect lightingIon = ParticleEffectsRegistry.INSTANCE.get("weapon/lighting_ion");
@@ -28,9 +31,9 @@ public final class WeaponEffects {
     }
 
     public static void lightingIon(Vector2f pos, float size) {
-        int count = ParticleManager.RAND.nextInt(3) + 1;
+        int count = RANDOM.nextInt(3) + 1;
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(MathUtils.TWO_PI * ParticleManager.RAND.nextFloat(), size / 4.0f,
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * RANDOM.nextFloat(), size / 4.0f,
                     ParticleManager.CACHED_VECTOR);
             lightingIon.play(pos.x + ParticleManager.CACHED_VECTOR.x, pos.y + ParticleManager.CACHED_VECTOR.y, size, size);
         }

@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'org.springframework.boot' version '3.3.5'
-    id 'io.spring.dependency-management' version '1.1.6'
+    id 'io.spring.dependency-management' version '1.1.7'
     id 'me.champeau.jmh' version '0.7.2'
 }
 
@@ -38,9 +38,9 @@ subprojects {
         testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'
 
         testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.3'
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
         testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.11.3'
-        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.3'
+        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
         testImplementation 'org.junit.platform:junit-platform-commons:1.11.3'
         testImplementation 'org.junit.platform:junit-platform-engine:1.11.3'
         testImplementation 'org.mockito:mockito-core:5.14.2'

@@ -1,5 +1,6 @@
 package net.bfsr.server.event.listener.entity;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.entity.ship.Ship;
@@ -19,10 +20,9 @@ import net.bfsr.server.player.Player;
 import net.bfsr.world.World;
 import org.jbox2d.common.Vector2;
 
-import java.util.Random;
-
 public class ShipEventListener {
     private final EntityTrackingManager trackingManager = ServerGameLogic.getInstance().getEntityTrackingManager();
+    private final XoRoShiRo128PlusPlusRandom random = new XoRoShiRo128PlusPlusRandom();
 
     @EventHandler
     public EventListener<ShipNewMoveDirectionEvent> shipNewMoveDirectionEvent() {
@@ -75,12 +75,12 @@ public class ShipEventListener {
         return event -> {
             Ship ship = event.ship();
             World world = ship.getWorld();
-            Random rand = world.getRand();
             Vector2 linearVelocity = ship.getLinearVelocity();
             float sizeX = ship.getSizeX();
             float sizeY = ship.getSizeY();
-            WreckSpawner.spawnDamageDebris(world, 1, ship.getX() - sizeX / 2.5f + rand.nextInt((int) (sizeX / 1.25f)),
-                    ship.getY() - sizeY / 2.5f + rand.nextInt((int) (sizeY / 1.25f)), linearVelocity.x * 0.1f, linearVelocity.y * 0.1f,
+            WreckSpawner.spawnDamageDebris(world, 1, ship.getX() - sizeX / 2.5f + random.nextInt((int) (sizeX / 1.25f)),
+                    ship.getY() - sizeY / 2.5f + random.nextInt((int) (sizeY / 1.25f)), linearVelocity.x * 0.1f,
+                    linearVelocity.y * 0.1f,
                     1.0f);
         };
     }

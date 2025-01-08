@@ -50,6 +50,7 @@ public abstract class AbstractRenderer {
         setupOpenGL();
 
         camera.init(width, height);
+        spriteRenderer.init();
         guiRenderer.init();
         debugRenderer.init();
         shader.load();

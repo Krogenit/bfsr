@@ -1,5 +1,6 @@
 package net.bfsr.server.physics;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.event.EventBus;
@@ -31,12 +32,11 @@ import org.joml.Math;
 import org.joml.Vector2f;
 import org.locationtech.jts.geom.Polygon;
 
-import java.util.Random;
-
 public class CollisionHandler extends CommonCollisionHandler {
     private final DamageSystem damageSystem = ServerGameLogic.getInstance().getDamageSystem();
     private final EntityTrackingManager trackingManager = ServerGameLogic.getInstance().getEntityTrackingManager();
     private final Vector2f angleToVelocity = new Vector2f();
+    private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
     public CollisionHandler(EventBus eventBus) {
         super(eventBus);
@@ -61,13 +61,13 @@ public class CollisionHandler extends CommonCollisionHandler {
             bullet.reflect(normalX, normalY);
         }, bullet::setDead, () -> {
             World world = ship.getWorld();
-            Random rand = world.getRand();
-            if (rand.nextInt(2) == 0) {
-                RotationHelper.angleToVelocity(net.bfsr.engine.math.MathUtils.TWO_PI * rand.nextFloat(), 1.5f, angleToVelocity);
+            if (random.nextInt(2) == 0) {
+                RotationHelper.angleToVelocity(net.bfsr.engine.math.MathUtils.TWO_PI * random.nextFloat(), 1.5f, angleToVelocity);
                 float velocityX = ship.getLinearVelocity().x * 0.005f;
                 float velocityY = ship.getLinearVelocity().y * 0.005f;
-                world.getGameLogic().addFutureTask(() -> WreckSpawner.spawnDamageDebris(world, rand.nextInt(2), contactX, contactY,
-                        velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f));
+                world.getGameLogic()
+                        .addFutureTask(() -> WreckSpawner.spawnDamageDebris(world, random.nextInt(2), contactX, contactY,
+                                velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f));
             }
             bullet.setDead();
         });

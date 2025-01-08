@@ -1,9 +1,9 @@
 package net.bfsr.engine.util;
 
-import java.util.Random;
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 
 public final class RandomHelper {
-    public static float randomFloat(Random r, float min, float max) {
-        return min + r.nextFloat() * (max - min);
+    public static float randomFloat(XoRoShiRo128PlusRandom random, float min, float max) {
+        return min + random.nextFloat() * (max - min);
     }
 }

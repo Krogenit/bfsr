@@ -15,32 +15,20 @@ import org.dyn4j.geometry.Geometry;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.dynamics.Fixture;
 
-import java.util.Random;
-
+@Getter
 public class Wreck extends RigidBody {
-    @Getter
     private int wreckIndex;
 
-    @Getter
     protected boolean fire;
-    @Getter
     protected boolean light;
-    @Getter
     protected boolean emitFire;
 
-    @Getter
     protected float explosionTimer;
 
-    protected Random random;
-
-    @Getter
     private int destroyedShipId;
 
-    @Getter
     private WreckType wreckType;
-    @Getter
     private final EventBus wreckEventBus = new EventBus();
-    @Getter
     private WreckData wreckData;
 
     public Wreck() {
@@ -66,7 +54,6 @@ public class Wreck extends RigidBody {
         this.light = light;
         this.health = hull;
         this.destroyedShipId = destroyedShipId;
-        this.random = world.getRand();
         this.lifeTime = 0;
         this.wreckType = wreckType;
         this.configData = wreckData;

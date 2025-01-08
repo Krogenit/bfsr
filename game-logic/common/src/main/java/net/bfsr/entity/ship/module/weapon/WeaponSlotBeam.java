@@ -1,5 +1,6 @@
 package net.bfsr.entity.ship.module.weapon;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.Getter;
 import net.bfsr.config.component.weapon.beam.BeamData;
 import net.bfsr.damage.ConnectedObjectType;
@@ -33,6 +34,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     @Getter
     private float aliveTimerInTicks;
     private final float maxAliveTimerInTicks;
+    private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
     public WeaponSlotBeam(BeamData beamData) {
         super(beamData, WeaponType.BEAM);
@@ -52,7 +54,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
                     beamPower = 1.0f;
                 }
             } else {
-                beamPower = world.getRand().nextFloat() / 3.0f + 0.66f;
+                beamPower = random.nextFloat() / 3.0f + 0.66f;
             }
         } else {
             if (beamPower > 0.0f) {

@@ -62,7 +62,7 @@ public class PlayerInputController extends InputController {
     public void init() {
         client = Client.get();
         localPlayerInputCorrectionHandler = new LocalPlayerInputCorrectionHandler(positionHistory,
-                Client.get().getClientRenderDelayInNanos());
+                Client.get().getClientRenderDelay());
         guiManager = client.getGuiManager();
         eventBus = client.getEventBus();
         eventBus.register(this);

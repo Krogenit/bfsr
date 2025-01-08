@@ -18,6 +18,7 @@ public class RectangleTexturedRotatedRenderer extends RectangleTexturedRenderer 
     @Override
     protected void setBodyLastValues() {
         guiRenderer.setLastPosition(id, lastX + guiObject.getWidth() * 0.5f, lastY + guiObject.getHeight() * 0.5f);
+        guiRenderer.setLastRotation(id, guiObject.getRotation());
     }
 
     @Override

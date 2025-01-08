@@ -34,4 +34,8 @@ public class DynamicCorrectionHandler extends CorrectionHandler {
         interpolatedCorrectionHandler.setRigidBody(rigidBody);
         return super.setRigidBody(rigidBody);
     }
+
+    public void setCorrectionAmount(float value) {
+        correctionAmount = value;
+    }
 }

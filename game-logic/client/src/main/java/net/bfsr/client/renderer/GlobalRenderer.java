@@ -7,9 +7,9 @@ import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
-import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
+import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.shader.AbstractShaderProgram;
@@ -21,6 +21,7 @@ public class GlobalRenderer {
     private final AbstractShaderProgram shader = renderer.shader;
     private final AbstractCamera camera = renderer.camera;
     private final AbstractSpriteRenderer spriteRenderer = renderer.spriteRenderer;
+    private final AbstractGUIRenderer guiRenderer = renderer.guiRenderer;
     private final AbstractDebugRenderer debugRenderer = renderer.debugRenderer;
 
     private final GuiManager guiManager;
@@ -41,6 +42,7 @@ public class GlobalRenderer {
 
     public void render(float interpolation) {
         profiler.start("prepareRender");
+        spriteRenderer.waitForLockedRange();
         worldRenderer.prepareRender(particleManager.getParticlesCount());
         spriteRenderer.updateBuffers();
 
@@ -60,7 +62,7 @@ public class GlobalRenderer {
         camera.bindGUI();
         shader.enable();
         guiManager.render();
-        spriteRenderer.render(BufferType.GUI);
+        guiRenderer.render();
         profiler.end();
     }
 

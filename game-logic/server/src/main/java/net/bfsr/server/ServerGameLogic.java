@@ -1,5 +1,6 @@
 package net.bfsr.server;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.config.ConfigConverterManager;
@@ -28,7 +29,6 @@ import net.bfsr.world.World;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
-import java.util.Random;
 
 @Log4j2
 public abstract class ServerGameLogic extends GameLogic {
@@ -61,8 +61,8 @@ public abstract class ServerGameLogic extends GameLogic {
 
     @Override
     public void init() {
-        world = new World(profiler, Side.SERVER, new Random().nextLong(), eventBus, new EntityManager(), new EntityIdManager(),
-                this, new CollisionHandler(eventBus));
+        world = new World(profiler, Side.SERVER, new XoRoShiRo128PlusPlusRandom().nextLong(), eventBus, new EntityManager(),
+                new EntityIdManager(), this, new CollisionHandler(eventBus));
         world.init();
         profiler.setEnable(true);
         networkSystem.init();

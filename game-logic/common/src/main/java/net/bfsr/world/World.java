@@ -19,7 +19,6 @@ import net.bfsr.physics.filter.ContactFilter;
 import org.jbox2d.common.Vector2;
 
 import java.util.List;
-import java.util.Random;
 
 public class World {
     private static final int VELOCITY_ITERATIONS = 1;
@@ -32,8 +31,6 @@ public class World {
     @Getter
     private final long seed;
     private final Profiler profiler;
-    @Getter
-    protected final Random rand = new Random();
     @Getter
     private final CommonEntityManager entityManager;
     @Getter

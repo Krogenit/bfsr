@@ -1,6 +1,7 @@
 package net.bfsr.server.network.packet.handler.play;
 
 import io.netty.channel.ChannelHandlerContext;
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.ai.Ai;
 import net.bfsr.command.Command;
 import net.bfsr.config.entity.ship.ShipRegistry;
@@ -17,21 +18,20 @@ import net.bfsr.world.World;
 import org.joml.Vector2f;
 
 import java.net.InetSocketAddress;
-import java.util.Random;
 
 public class PacketCommandHandler extends PacketHandler<PacketCommand, PlayerNetworkHandler> {
     private final Command[] commands = Command.values();
+    private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
     @Override
     public void handle(PacketCommand packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
         Command cmd = commands[packet.getCommand()];
         World world = playerNetworkHandler.getWorld();
-        Random rand = world.getRand();
         if (cmd == Command.SPAWN_SHIP) {
             String[] args = packet.getArgs();
             Vector2f pos = new Vector2f(Float.parseFloat(args[0]), Float.parseFloat(args[1]));
-            Faction fact = Faction.values()[rand.nextInt(Faction.values().length)];
+            Faction fact = Faction.values()[random.nextInt(Faction.values().length)];
             Ai ai = Ai.NO_AI;
 
             ShipRegistry shipRegistry = ServerGameLogic.getInstance().getConfigConverterManager().getConverter(ShipRegistry.class);
@@ -39,9 +39,9 @@ public class PacketCommandHandler extends PacketHandler<PacketCommand, PlayerNet
                     new ShipOutfitter(ServerGameLogic.getInstance().getConfigConverterManager()));
 
             Ship ship = switch (fact) {
-                case HUMAN -> shipFactory.createBotHumanSmall(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, ai);
-                case SAIMON -> shipFactory.createBotSaimonSmall(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, ai);
-                case ENGI -> shipFactory.createBotEngiSmall(world, pos.x, pos.y, rand.nextFloat() * MathUtils.TWO_PI, ai);
+                case HUMAN -> shipFactory.createBotHumanSmall(world, pos.x, pos.y, random.nextFloat() * MathUtils.TWO_PI, ai);
+                case SAIMON -> shipFactory.createBotSaimonSmall(world, pos.x, pos.y, random.nextFloat() * MathUtils.TWO_PI, ai);
+                case ENGI -> shipFactory.createBotEngiSmall(world, pos.x, pos.y, random.nextFloat() * MathUtils.TWO_PI, ai);
             };
             world.add(ship, false);
             ship.setSpawned();
