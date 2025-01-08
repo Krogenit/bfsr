@@ -20,7 +20,7 @@ import java.util.Set;
 
 @Log4j2
 public class EventBus {
-    private static final Object2ShortOpenHashMap<Class<? extends Event>> EVENT_CLASS_TO_INDEX_MAP = new Object2ShortOpenHashMap<>();
+    private static final Object2ShortOpenHashMap<Class<?>> EVENT_CLASS_TO_INDEX_MAP = new Object2ShortOpenHashMap<>();
     private static final Object2ObjectOpenHashMap<Class<?>, List<EventHandlerData>> HANDLER_METHODS_BY_CLASS_MAP = new Object2ObjectOpenHashMap<>();
 
     static {
@@ -29,8 +29,7 @@ public class EventBus {
         Set<Class<?>> classes = reflections.get(Scanners.SubTypes.of(Event.class).asClass());
         short registryIndex = 0;
         for (Class<?> aClass : classes) {
-            Class<? extends Event> eventClass = (Class<? extends Event>) aClass;
-            EVENT_CLASS_TO_INDEX_MAP.put(eventClass, registryIndex);
+            EVENT_CLASS_TO_INDEX_MAP.put(aClass, registryIndex);
             registryIndex++;
         }
 
@@ -59,7 +58,7 @@ public class EventBus {
     public EventBus() {
         EVENT_CLASS_TO_INDEX_MAP.object2ShortEntrySet().fastForEach(classEntry -> {
             Listeners<Event> listeners = new Listeners<>();
-            Class<? extends Event> key = classEntry.getKey();
+            Class<?> key = classEntry.getKey();
             short i = classEntry.getShortValue();
             this.listeners[i] = listeners;
             eventBusMap.put(key, listeners);
@@ -78,24 +77,26 @@ public class EventBus {
             List<EventListenerData> listeners = new ArrayList<>(handlers.size());
             for (int i = 0; i < handlers.size(); i++) {
                 EventHandlerData handlerData = handlers.get(i);
-                Listeners<? extends Event> eventBus = eventBusMap.get(handlerData.eventClass());
+                Listeners<Event> eventBus = eventBusMap.get(handlerData.eventClass());
 
                 if (eventBus == null) {
                     continue;
                 }
 
-                try {
-                    listeners.add(new EventListenerData(eventBus, (EventListener<?>) handlerData.method().invoke(eventHandler)));
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException("Can't register event listener " + eventHandler.getClass(), e);
-                }
+                listeners.add(new EventListenerData(eventBus, (eventHandler1) -> {
+                    try {
+                        return (EventListener<Event>) handlerData.method().invoke(eventHandler1);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        throw new RuntimeException("Can't register event listener " + eventHandler1.getClass(), e);
+                    }
+                }));
             }
 
             return listeners;
         });
 
         for (int i = 0; i < eventListeners.size(); i++) {
-            eventListeners.get(i).addListener();
+            eventListeners.get(i).addListener(eventHandler);
         }
     }
 

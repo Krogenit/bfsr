@@ -22,19 +22,18 @@ public class GuiConnect extends Gui {
     public GuiConnect(Gui parentGui) {
         super(parentGui);
 
-        int buttonOffsetX = -150;
         int fontSize = 20;
         int offsetX = 24;
 
         InputBox hostInputBox = new InputBox(TextureRegister.guiButtonBase, Lang.getString("gui.connect.host"),
                 fontSize, offsetX, 0).setString("192.168.2.2:34000");
-        add(hostInputBox.atCenter(buttonOffsetX, -100));
+        add(hostInputBox.atCenter(0, 50));
         InputBox usernameInputBox = new InputBox(TextureRegister.guiButtonBase, Lang.getString("gui.connect.username"),
                 fontSize, offsetX, 0).setString("Krogenit");
-        add(usernameInputBox.atCenter(buttonOffsetX, -50));
+        add(usernameInputBox.atCenter(0, 0));
         InputBox passwordInputBox = new InputBox(TextureRegister.guiButtonBase, Lang.getString("gui.connect.password"),
                 fontSize, offsetX, 0).setString("test");
-        add(passwordInputBox.atCenter(buttonOffsetX, 0));
+        add(passwordInputBox.atCenter(0, -50));
 
         add(new Button(Lang.getString("gui.connect.connect"), () -> {
             if (connectingText.getColor().w <= 0.01f) {
@@ -93,12 +92,12 @@ public class GuiConnect extends Gui {
                 });
                 t.start();
             }
-        }).atCenter(buttonOffsetX, 50));
+        }).atCenter(0, -100));
         add(new Button(Lang.getString("gui.back"), () -> {
             Client.get().clearNetwork();
             Client.get().openGui(parentGui);
-        }).atCenter(buttonOffsetX, 200));
-        add(connectingText.atCenter(0, 150));
+        }).atCenter(0, -250));
+        add(connectingText.atCenter(0, -150));
     }
 
     @Override

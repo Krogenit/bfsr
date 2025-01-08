@@ -39,7 +39,7 @@ public class Hull extends ModuleWithCells<HullCell> {
     public void repair(float repairAmount) {
         HullCell cell = getMostDamagedCell();
         if (cell != null) {
-            if (cell.value < cell.maxValue) {
+            if (cell.value > 0 && cell.value < cell.maxValue) {
                 cell.value += repairSpeed + repairAmount;
 
                 if (cell.value > cell.maxValue) {

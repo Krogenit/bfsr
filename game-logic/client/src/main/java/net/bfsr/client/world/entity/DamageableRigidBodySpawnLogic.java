@@ -5,6 +5,7 @@ import net.bfsr.client.damage.DamageHandler;
 import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.DamageableRigidBody;
+import net.bfsr.engine.Engine;
 import net.bfsr.network.packet.common.entity.spawn.DamageableRigidBodySpawnData;
 import net.bfsr.network.packet.common.entity.spawn.connectedobject.ConnectedObjectSpawnData;
 
@@ -16,6 +17,7 @@ abstract class DamageableRigidBodySpawnLogic<T extends DamageableRigidBodySpawnD
     void updateDamage(DamageableRigidBody rigidBody, T spawnData) {
         damageHandler.updateDamage(rigidBody, 0, 0, rigidBody.getMask().getWidth(), rigidBody.getMask().getHeight(),
                 spawnData.getDamageMaskByteBuffer());
+        Engine.renderer.memFree(spawnData.getDamageMaskByteBuffer());
     }
 
     void addFixturesAndConnectedObjects(DamageableRigidBody rigidBody, T spawnData) {

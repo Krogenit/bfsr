@@ -4,7 +4,14 @@ import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.renderer.texture.dds.DDSFile;
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.ARBBindlessTexture;
+import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL11C;
+import org.lwjgl.opengl.GL12C;
+import org.lwjgl.opengl.GL14C;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL45C;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 
@@ -97,7 +104,7 @@ public final class TextureLoader extends AbstractTextureLoader {
             IntBuffer h = stack.mallocInt(1);
             IntBuffer comp = stack.mallocInt(1);
 
-            STBImage.stbi_set_flip_vertically_on_load(false);
+            STBImage.stbi_set_flip_vertically_on_load(true);
             image = STBImage.stbi_load(path.toString(), w, h, comp, 0);
             if (image == null) {
                 log.error("Failed to load a texture file {}!{}{}", path, System.lineSeparator(), STBImage.stbi_failure_reason());

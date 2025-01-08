@@ -1,22 +1,26 @@
 package net.bfsr.engine.renderer.font;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.bfsr.engine.renderer.font.glyph.Glyph;
+import net.bfsr.engine.renderer.font.glyph.GlyphData;
 import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
 import net.bfsr.engine.renderer.font.glyph.GlyphsData;
-import net.bfsr.engine.renderer.font.string.AbstractGLString;
-import net.bfsr.engine.renderer.font.string.AbstractStringGeometryBuilder;
+import net.bfsr.engine.renderer.font.string.StringGeometry;
+import net.bfsr.engine.renderer.primitive.GeometryBuffer;
+import net.bfsr.engine.renderer.primitive.Primitive;
+import org.joml.Vector4f;
 
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.util.List;
 
-public class StringGeometryBuilder extends AbstractStringGeometryBuilder {
-    private static final String NEW_LINE_STRING = "\n";
+public class StringGeometryBuilder {
     private static final char NEW_LINE_CHAR = '\n';
     private static final int DEFAULT_INDENT = 0;
 
     private final StringXOffsetSupplier[] offsetFunctions = new StringXOffsetSupplier[3];
     private final StringParams stringParams = new StringParams();
+    private final GlyphKey glyphKey = new GlyphKey();
+    private final Object2ObjectMap<GlyphKey, Primitive> glyphPrimitiveMap = new Object2ObjectOpenHashMap<>();
 
     public StringGeometryBuilder() {
         offsetFunctions[StringOffsetType.DEFAULT.ordinal()] = (string, glyphsBuilder, fontSize) -> 0;
@@ -25,42 +29,32 @@ public class StringGeometryBuilder extends AbstractStringGeometryBuilder {
         offsetFunctions[StringOffsetType.RIGHT.ordinal()] = (string, glyphsBuilder, fontSize) -> -glyphsBuilder.getWidth(string, fontSize);
     }
 
-    private void begin(AbstractGLString glString) {
-        glString.clearBuffers();
+    public void createString(StringGeometry stringGeometry, GlyphsBuilder glyphsBuilder, String string, float x, float y, int fontSize,
+                             float r, float g, float b, float a, int maxWidth, int indent, GeometryBuffer geometryBuffer) {
+        createString(stringGeometry, glyphsBuilder, string, x, y, fontSize, r, g, b, a, maxWidth, StringOffsetType.DEFAULT, indent,
+                geometryBuffer);
     }
 
-    private void end(AbstractGLString glString) {
-        glString.flipBuffers();
+    private void createString(StringGeometry stringGeometry, GlyphsBuilder glyphsBuilder, String string, float x, float y, int fontSize,
+                              float r, float g, float b, float a, int maxWidth, StringOffsetType offsetType, int indent,
+                              GeometryBuffer geometryBuffer) {
+        createString(stringGeometry, glyphsBuilder, string, x, y, fontSize, r, g, b, a, maxWidth, offsetType, indent, false, 0, 0,
+                geometryBuffer);
     }
 
-    @Override
-    public void createString(AbstractGLString glString, GlyphsBuilder glyphsBuilder, String string, int x, int y, int fontSize, float r,
-                             float g, float b, float a, int maxWidth, int indent) {
-        createString(glString, glyphsBuilder, string, x, y, fontSize, r, g, b, a, maxWidth, StringOffsetType.DEFAULT, indent);
-    }
-
-    private void createString(AbstractGLString glString, GlyphsBuilder glyphsBuilder, String string, int x, int y, int fontSize,
-                              float r, float g, float b, float a, int maxWidth, StringOffsetType offsetType, int indent) {
-        createString(glString, glyphsBuilder, string, x, y, fontSize, r, g, b, a, maxWidth, offsetType, indent, false, 0, 0);
-    }
-
-    @Override
-    public void createString(AbstractGLString glString, GlyphsBuilder glyphsBuilder, String string, int x, int y, int fontSize,
-                             float r, float g, float b, float a, int maxWidth, StringOffsetType offsetType, int indent,
-                             boolean shadow, int shadowOffsetX, int shadowOffsetY) {
-        stringParams.getColor().set(r, g, b, a);
+    public void createString(StringGeometry stringGeometry, GlyphsBuilder glyphsBuilder, String string, float x, float y, int fontSize,
+                             float r, float g, float b, float a, int maxWidth, StringOffsetType offsetType, int indent, boolean shadow,
+                             int shadowOffsetX, int shadowOffsetY, GeometryBuffer geometryBuffer) {
+        stringParams.setColor(r, g, b, a);
         stringParams.setY(y);
-        stringParams.setHeight(0);
-        begin(glString);
-        trimAndCreateString(glString, glyphsBuilder, string, x, fontSize, stringParams, maxWidth, r, g, b, a, offsetType, indent,
-                shadow, shadowOffsetX, shadowOffsetY);
-        end(glString);
-        glString.setHeight(stringParams.getHeight());
+        trimAndCreateString(stringGeometry, glyphsBuilder, string, x, fontSize, stringParams, maxWidth, r, g, b, a, offsetType, indent,
+                shadow, shadowOffsetX, shadowOffsetY, geometryBuffer);
     }
 
-    private void trimAndCreateString(AbstractGLString glString, GlyphsBuilder glyphsBuilder, String string, int startX,
+    private void trimAndCreateString(StringGeometry stringGeometry, GlyphsBuilder glyphsBuilder, String string, float startX,
                                      int fontSize, StringParams stringParams, int maxWidth, float r, float g, float b, float a,
-                                     StringOffsetType offsetType, int indent, boolean shadow, int shadowOffsetX, int shadowOffsetY) {
+                                     StringOffsetType offsetType, int indent, boolean shadow, int shadowOffsetX, int shadowOffsetY,
+                                     GeometryBuffer geometryBuffer) {
         do {
             int trimSize = glyphsBuilder.getWidth(string, fontSize, maxWidth, true);
             String subString = string.substring(0, trimSize);
@@ -69,115 +63,90 @@ public class StringGeometryBuilder extends AbstractStringGeometryBuilder {
             if (shadow) {
                 float prevX = stringParams.getX();
                 float prevY = stringParams.getY();
-                int prevHeight = stringParams.getHeight();
                 stringParams.setX(prevX + shadowOffsetX / 2.0f);
                 stringParams.setY(prevY + shadowOffsetY / 2.0f);
                 stringParams.getColor().set(0.0f, 0.0f, 0.0f, a);
-                createString(glString, glyphsBuilder, subString, fontSize, stringParams, indent);
+                createString(stringGeometry, glyphsBuilder, subString, fontSize, stringParams, indent, geometryBuffer);
                 stringParams.setX(prevX);
                 stringParams.setY(prevY);
-                stringParams.setHeight(prevHeight);
             }
 
             stringParams.getColor().set(r, g, b, a);
-            createString(glString, glyphsBuilder, subString, fontSize, stringParams, indent);
+            createString(stringGeometry, glyphsBuilder, subString, fontSize, stringParams, indent, geometryBuffer);
             string = string.substring(trimSize);
         } while (!string.isEmpty());
     }
 
-    @Override
-    public void createString(AbstractGLString glString, GlyphsBuilder glyphsBuilder, String string, int x, int y, int fontSize,
-                             float r, float g, float b, float a, StringOffsetType offsetType, boolean shadow,
-                             int shadowOffsetX, int shadowOffsetY) {
-        createString(glString, glyphsBuilder, string, x, y, fontSize, r, g, b, a, offsetType, DEFAULT_INDENT, shadow,
-                shadowOffsetX, shadowOffsetY);
+    public void createString(StringGeometry stringGeometry, GlyphsBuilder glyphsBuilder, String string, float x, float y, int fontSize,
+                             float r, float g, float b, float a, StringOffsetType offsetType, boolean shadow, int shadowOffsetX,
+                             int shadowOffsetY, GeometryBuffer geometryBuffer) {
+        createString(stringGeometry, glyphsBuilder, string, x, y, fontSize, r, g, b, a, offsetType, DEFAULT_INDENT, shadow,
+                shadowOffsetX, shadowOffsetY, geometryBuffer);
     }
 
-    private void createString(AbstractGLString glString, GlyphsBuilder glyphsBuilder, String string, int x, int y, int fontSize,
+    private void createString(StringGeometry stringGeometry, GlyphsBuilder glyphsBuilder, String string, float x, float y, int fontSize,
                               float r, float g, float b, float a, StringOffsetType offsetType, int indent, boolean shadow,
-                              int shadowOffsetX, int shadowOffsetY) {
-        begin(glString);
-
+                              int shadowOffsetX, int shadowOffsetY, GeometryBuffer geometryBuffer) {
         if (shadow) {
-            createString(glString, glyphsBuilder, string, x + shadowOffsetX / 2.0f, y + shadowOffsetY / 2.0f, fontSize, 0.0f, 0.0f, 0.0f, a,
-                    offsetType, indent);
+            createString(stringGeometry, glyphsBuilder, string, x + shadowOffsetX / 2.0f, y + shadowOffsetY / 2.0f, fontSize, 0.0f, 0.0f,
+                    0.0f, a, offsetType, indent, geometryBuffer);
         }
 
-        createString(glString, glyphsBuilder, string, x, y, fontSize, r, g, b, a, offsetType, indent);
-        end(glString);
-        glString.setHeight(stringParams.getHeight());
+        createString(stringGeometry, glyphsBuilder, string, x, y, fontSize, r, g, b, a, offsetType, indent, geometryBuffer);
     }
 
-    private void createString(AbstractGLString glString, GlyphsBuilder glyphsBuilder, String string, float x, float y, int fontSize,
-                              float r, float g, float b, float a, StringOffsetType offsetType, int indent) {
+    private void createString(StringGeometry stringGeometry, GlyphsBuilder glyphsBuilder, String string, float x, float y, int fontSize,
+                              float r, float g, float b, float a, StringOffsetType offsetType, int indent, GeometryBuffer geometryBuffer) {
         stringParams.getColor().set(r, g, b, a);
-        stringParams.setX(x + offsetFunctions[offsetType.ordinal()].get(string, glyphsBuilder, fontSize));
+        float startX = x + offsetFunctions[offsetType.ordinal()].get(string, glyphsBuilder, fontSize);
+        stringParams.setX(startX);
         stringParams.setY(y);
-        stringParams.setHeight(0);
 
         int offset = 0;
         for (int i = 0; i < string.length(); i++) {
             if (string.charAt(i) == NEW_LINE_CHAR) {
                 String substring = string.substring(offset, i);
-                createString(glString, glyphsBuilder, substring, fontSize, stringParams, indent);
+                createString(stringGeometry, glyphsBuilder, substring, fontSize, stringParams, indent, geometryBuffer);
+                stringParams.setX(startX);
                 offset = i + 1;
             }
         }
-        createString(glString, glyphsBuilder, string.substring(offset), fontSize, stringParams, indent);
+        createString(stringGeometry, glyphsBuilder, string.substring(offset), fontSize, stringParams, indent, geometryBuffer);
     }
 
-    private void createString(AbstractGLString glString, GlyphsBuilder glyphsBuilder, String string, int fontSize,
-                              StringParams stringParams, int indent) {
+    private void createString(StringGeometry stringGeometry, GlyphsBuilder glyphsBuilder, String string, int fontSize,
+                              StringParams stringParams, int indent, GeometryBuffer geometryBuffer) {
         GlyphsData glyphsData = glyphsBuilder.getGlyphsData(string, fontSize);
         List<Glyph> glyphs = glyphsData.getGlyphs();
-        int height = (int) (glyphsBuilder.getHeight(NEW_LINE_STRING, fontSize)) + indent;
-
-        glString.checkBuffers(glyphs.size());
+        int height = (int) (glyphsBuilder.getLineHeight(fontSize)) + indent;
 
         for (int glyphIndex = 0; glyphIndex < glyphs.size(); glyphIndex++) {
             Glyph glyph = glyphs.get(glyphIndex);
-            addGlyph(glyph, stringParams.getX(), stringParams.getY(), stringParams.getColor().x, stringParams.getColor().y,
-                    stringParams.getColor().z, stringParams.getColor().w, glString);
+            if (glyph.isEmpty()) {
+                stringParams.setX(stringParams.getX() + glyph.getAdvance());
+                continue;
+            }
+
+            glyphKey.setGlyphsBuilder(glyphsBuilder);
+            glyphKey.setFontSize(fontSize);
+            glyphKey.setCodepoint(glyph.getCodepoint());
+            Primitive primitive = glyphPrimitiveMap.get(glyphKey);
+            if (primitive == null) {
+                Primitive addGlyphPrimitive = new Primitive(glyph.getX1(), -glyph.getY1(), glyph.getU1(), glyph.getV1(),
+                        glyph.getX1(), -glyph.getY2(), glyph.getU1(), glyph.getV2(), glyph.getX2(), -glyph.getY2(), glyph.getU2(),
+                        glyph.getV2(), glyph.getX2(), -glyph.getY1(), glyph.getU2(), glyph.getV1());
+                geometryBuffer.addPrimitive(addGlyphPrimitive);
+                glyphPrimitiveMap.put(new GlyphKey(glyphsBuilder, fontSize, glyph.getCodepoint()), addGlyphPrimitive);
+                primitive = addGlyphPrimitive;
+            }
+
+            Vector4f color = stringParams.getColor();
+            stringGeometry.addGlyphData(new GlyphData(primitive.getBaseVertex(), stringParams.getX(), stringParams.getY(), color.x, color.y,
+                    color.z, color.w, glyph.getTextureHandle()));
+            stringParams.setX(stringParams.getX() + glyph.getAdvance());
         }
 
-        glString.setWidth(glyphsData.getWidth());
-        stringParams.addHeight(height);
-        stringParams.setY(stringParams.getY() + height);
-    }
-
-    private void addGlyph(Glyph glyph, float x, float y, float r, float g, float b, float a, AbstractGLString glString) {
-        float x1 = x + glyph.getX1();
-        float x2 = x + glyph.getX2();
-        float y1 = y + glyph.getY1();
-        float y2 = y + glyph.getY2();
-        addVertex(x1, y1, glyph.getU1(), glyph.getV1(), glString.getVertexBuffer());
-        addVertex(x1, y2, glyph.getU1(), glyph.getV2(), glString.getVertexBuffer());
-        addVertex(x2, y2, glyph.getU2(), glyph.getV2(), glString.getVertexBuffer());
-        addVertex(x2, y1, glyph.getU2(), glyph.getV1(), glString.getVertexBuffer());
-        addMaterial(r, g, b, a, glyph.getTextureHandle(), glString.getMaterialBuffer());
-    }
-
-    private void addVertex(float x, float y, float u, float v, FloatBuffer vertexBuffer) {
-        vertexBuffer.put(x);
-        vertexBuffer.put(y);
-        vertexBuffer.put(u);
-        vertexBuffer.put(v);
-    }
-
-    private void addMaterial(float r, float g, float b, float a, long textureHandle, ByteBuffer materialBuffer) {
-        materialBuffer.putFloat(r);
-        materialBuffer.putFloat(g);
-        materialBuffer.putFloat(b);
-        materialBuffer.putFloat(a);
-        materialBuffer.putLong(textureHandle);
-        materialBuffer.putInt(textureHandle != 0 ? 1 : 0);
-        materialBuffer.putInt(0);
-        materialBuffer.putLong(0);
-        materialBuffer.putFloat(0.0f);
-        materialBuffer.putFloat(0.0f);
-        materialBuffer.putInt(1);
-        materialBuffer.putInt(0);
-        materialBuffer.putInt(0);
-        materialBuffer.putInt(0);
+        stringGeometry.setWidth(glyphsData.getWidth());
+        stringParams.setY(stringParams.getY() - height);
     }
 }

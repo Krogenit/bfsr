@@ -18,13 +18,12 @@ public class Slider extends TexturedRectangle {
         this.value = value;
         this.indent = 28;
 
-        add(slider);
-        slider.setX(calculateSliderXPos());
+        add(slider.atBottomLeft(this::calculateSliderXPos, () -> 0));
         setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
 
         Font font = Font.XOLONIUM_FT;
         this.label = new Label(font, string, fontSize, StringOffsetType.CENTERED);
-        add(label.atTopLeft(width / 2, label.getCenteredOffsetY(height)));
+        add(label.atBottomLeft(width / 2, label.getCenteredOffsetY(height)));
     }
 
     @Override

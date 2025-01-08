@@ -37,7 +37,7 @@ public final class EditorTheme {
     public static final float TEXT_COLOR_GRAY = 205 / 255.0f;
     public static final Vector4f TEXT_COLOR = new Vector4f(TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, 1.0f);
 
-    private static final Vector4f MINIMIZABLE_COLOR = new Vector4f(0.3f, 0.3f, 0.3f, 0.5f);
+    private static final Vector4f MINIMIZABLE_HOVER_COLOR = new Vector4f(0.3f, 0.3f, 0.3f, 0.5f);
 
     public static final Vector4f SELECTION_BLUE_COLOR = new Vector4f(35 / 255.0f, 74 / 255.0f, 108 / 255.0f, 1.0f);
 
@@ -47,7 +47,7 @@ public final class EditorTheme {
     public static final Font FONT_TYPE = Font.Segoe_UI_FT;
 
     public static MinimizableGuiObject setup(MinimizableGuiObject object) {
-        object.setTextColor(TEXT_COLOR).setHoverColor(MINIMIZABLE_COLOR);
+        object.setTextColor(TEXT_COLOR).setHoverColor(MINIMIZABLE_HOVER_COLOR);
         return object;
     }
 

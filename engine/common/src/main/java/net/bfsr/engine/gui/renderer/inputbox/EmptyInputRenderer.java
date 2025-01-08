@@ -8,5 +8,5 @@ public class EmptyInputRenderer extends InputBoxRenderer {
     }
 
     @Override
-    protected void renderBody(int lastX, int lastY, int x, int y, int width, int height) {}
+    protected void renderBody() {}
 }

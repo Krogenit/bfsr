@@ -37,9 +37,9 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
         setRenderer(new InspectionEntryRenderer(this));
         setup(this);
         setLeftClickRunnable(() -> {
-            Vector2f mousePosition = Engine.mouse.getPosition();
+            Vector2f mousePosition = Engine.mouse.getGuiPosition();
             int mouseX = (int) mousePosition.x;
-            selectPosition.set(mouseX, (int) mousePosition.y);
+            selectPosition.set(mouseX, (int) (mousePosition.y));
             clicked = true;
 
             if (!selected && inputBox == null) {
@@ -69,6 +69,7 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
                         inputBox = new InputBox(width - selectOffsetX, height, "", font, fontSize, 3,
                                 this.stringOffsetY, 300);
                         inputBox.setX(selectOffsetX);
+                        inputBox.setY(getHeight() - getBaseHeight());
                         inputBox.setOnUnselectedRunnable(() -> {
                             removeNonConcealable(inputBox);
                             onNameChanged(inputBox.getString());
@@ -134,8 +135,8 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
     }
 
     @Override
-    public void onRemoved() {
-        super.onRemoved();
+    public void remove() {
+        super.remove();
         selected = false;
     }
 
@@ -149,9 +150,10 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
         super.update();
 
         if (clicked && Engine.mouse.isLeftDown() && selectPosition.lengthSquared() > 0) {
-            Vector2f mousePosition = Engine.mouse.getPosition();
+            Vector2f mousePosition = Engine.mouse.getGuiPosition();
             float moveThreshold = 40;
-            if (mousePosition.distanceSquared(selectPosition.x, selectPosition.y) > moveThreshold) {
+            if (selectPosition.distanceSquared((int) mousePosition.x, (int) mousePosition.y) >
+                    moveThreshold) {
                 onStartMoving();
             }
         }

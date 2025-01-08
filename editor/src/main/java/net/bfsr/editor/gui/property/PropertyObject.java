@@ -65,12 +65,12 @@ public class PropertyObject<PROPERTY_TYPE extends PropertyComponent> extends Pro
         }
 
         int propertyOffsetX = maxStringWidth;
-        int height = baseHeight;
+        int height = -baseHeight;
         for (int i = 0; i < properties.size(); i++) {
             PropertyComponent propertyComponent = properties.get(i);
             propertyComponent.atTopLeft(MINIMIZABLE_STRING_X_OFFSET, height + propertyOffsetY);
             propertyComponent.setPropertyOffsetX(propertyOffsetX);
-            height += propertyComponent.getHeight();
+            height -= propertyComponent.getHeight();
         }
 
         updateHeight();

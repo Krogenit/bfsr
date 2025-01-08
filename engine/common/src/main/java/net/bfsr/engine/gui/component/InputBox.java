@@ -70,15 +70,16 @@ public class InputBox extends GuiObject {
     public InputBox(int width, int height, String string, Font font, int fontSize, int stringOffsetX, int stringOffsetY,
                     int maxLineSize) {
         super(width, height);
-        this.stringOffset = new Vector2i(stringOffsetX, font.getGlyphsBuilder().getCenteredOffsetY(string, height, fontSize));
+        this.stringOffset = new Vector2i(stringOffsetX, font.getGlyphsBuilder().getCenteredOffsetY(string, height, fontSize) +
+                stringOffsetY);
         this.maxStringOffsetX = stringOffset.x;
         this.glyphsBuilder = font.getGlyphsBuilder();
 
         int stringX = stringOffset.x;
         int stringY = stringOffset.y;
-        this.label = new Label(font, fontSize, textColor.x, textColor.y, textColor.z, textColor.w).atTopLeft(stringX,
+        this.label = new Label(font, fontSize, textColor.x, textColor.y, textColor.z, textColor.w).atBottomLeft(stringX,
                 stringY);
-        add(this.emptyLabel = new Label(font, string, fontSize, textColor.x, textColor.y, textColor.z, textColor.w).atTopLeft(
+        add(this.emptyLabel = new Label(font, string, fontSize, textColor.x, textColor.y, textColor.z, textColor.w).atBottomLeft(
                 stringX, stringY));
 
         this.maxLineSize = maxLineSize;
@@ -264,6 +265,8 @@ public class InputBox extends GuiObject {
             disableTyping();
         }
 
+        renderer.onCursorChanged();
+
         return true;
     }
 
@@ -304,17 +307,19 @@ public class InputBox extends GuiObject {
             }
         }
 
-        label.atTopLeft(stringOffset.x, stringOffset.y);
+        label.atBottomLeft(stringOffset.x, stringOffset.y);
         label.updatePositionAndSize();
     }
 
     private void selectAll() {
         cursorPosition = 0;
         cursorPositionEnd = label.getString().length();
+        renderer.onCursorChanged();
     }
 
     private void setCursorPositionByMouse() {
         cursorPosition = cursorPositionEnd = label.getCursorPositionInLine(mouse.getPosition().x - getSceneX() - stringOffset.x);
+        renderer.onCursorChanged();
     }
 
     @Override
@@ -357,6 +362,8 @@ public class InputBox extends GuiObject {
                 onStringChanged();
             }
         }
+
+        renderer.onCursorChanged();
     }
 
     @Override
@@ -367,12 +374,13 @@ public class InputBox extends GuiObject {
 
     @Override
     public void onMouseStopHover() {
+        super.onMouseStopHover();
         mouse.changeCursor(mouse.getDefaultCursor());
     }
 
     @Override
-    public void onRemoved() {
-        super.onRemoved();
+    public void remove() {
+        super.remove();
         mouse.changeCursor(mouse.getDefaultCursor());
     }
 
@@ -385,6 +393,7 @@ public class InputBox extends GuiObject {
                 float selectionPositionX = mouse.getPosition().x - getSceneX() - stringOffset.x;
                 cursorPositionEnd = label.getCursorPositionInLine(selectionPositionX);
                 checkCursorOutOfBoundsPosition((int) selectionPositionX, 10);
+                renderer.onCursorChanged();
             }
 
             if (cursorPositionEnd == cursorPosition) {

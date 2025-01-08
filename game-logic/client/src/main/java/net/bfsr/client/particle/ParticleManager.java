@@ -27,7 +27,7 @@ public class ParticleManager {
             Particle particle = particles.get(i);
             if (particle.isDead()) {
                 particles.remove(i--);
-                particle.onRemoved();
+                particle.clear();
             } else {
                 particle.update();
             }
@@ -53,7 +53,7 @@ public class ParticleManager {
 
     public void clear() {
         for (int i = 0; i < particles.size(); i++) {
-            particles.get(i).onRemoved();
+            particles.get(i).clear();
         }
 
         particles.clear();

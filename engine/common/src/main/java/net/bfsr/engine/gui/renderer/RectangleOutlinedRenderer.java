@@ -2,21 +2,54 @@ package net.bfsr.engine.gui.renderer;
 
 import net.bfsr.engine.gui.component.GuiObject;
 
-public class RectangleOutlinedRenderer extends GuiObjectRenderer {
+public class RectangleOutlinedRenderer extends RectangleRenderer {
+    private int bodyId;
+
     public RectangleOutlinedRenderer(GuiObject guiObject) {
         super(guiObject);
     }
 
     @Override
-    public void render(int lastX, int lastY, int x, int y, int width, int height) {
-        if (guiObject.isMouseHover()) {
-            guiRenderer.add(lastX, lastY, x, y, width, height, outlineHoverColor);
-            guiRenderer.add(lastX + 1, lastY + 1, x + 1, y + 1, width - 2, height - 2, hoverColor);
-        } else {
-            guiRenderer.add(lastX, lastY, x, y, width, height, outlineColor);
-            guiRenderer.add(lastX + 1, lastY + 1, x + 1, y + 1, width - 2, height - 2, color);
-        }
+    protected void create() {
+        super.create();
+        guiRenderer.setColor(id, outlineColor);
+        idList.add(bodyId = guiRenderer.add(guiObject.getSceneX() + 1, guiObject.getSceneY() + 1, guiObject.getWidth() - 2,
+                guiObject.getHeight() - 2, color));
+    }
 
-        super.render(lastX, lastY, x, y, width, height);
+    @Override
+    protected void setLastUpdateValues() {
+        super.setLastUpdateValues();
+        guiRenderer.setLastPosition(bodyId, guiObject.getSceneX() + 1, guiObject.getSceneY() + 1);
+    }
+
+    @Override
+    protected void renderBody() {
+        super.renderBody();
+        guiRenderer.addDrawCommand(bodyId);
+    }
+
+    @Override
+    public void onMouseHover() {
+        guiRenderer.setColor(id, outlineHoverColor);
+        guiRenderer.setColor(bodyId, hoverColor);
+    }
+
+    @Override
+    public void onMouseStopHover() {
+        guiRenderer.setColor(id, outlineColor);
+        guiRenderer.setColor(bodyId, color);
+    }
+
+    @Override
+    public void updatePosition() {
+        super.updatePosition();
+        guiRenderer.setPosition(bodyId, guiObject.getSceneX() + 1, guiObject.getSceneY() + 1);
+    }
+
+    @Override
+    public void updateSize() {
+        super.updateSize();
+        guiRenderer.setSize(bodyId, guiObject.getWidth() - 2, guiObject.getHeight() - 2);
     }
 }
