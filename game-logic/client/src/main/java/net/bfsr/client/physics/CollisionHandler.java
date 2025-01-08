@@ -167,8 +167,8 @@ public class CollisionHandler extends CommonCollisionHandler {
     }
 
     private void setDynamicCorrection(RigidBody rigidBody) {
-        rigidBody.setCorrectionHandler(
-                new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), rigidBody.getCorrectionHandler()));
+        rigidBody.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), rigidBody.getCorrectionHandler(),
+                rigidBody.getCorrectionHandler()));
     }
 
     private boolean isShieldAlive(Shield shield) {

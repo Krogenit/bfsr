@@ -25,6 +25,7 @@ import net.bfsr.network.packet.input.PacketMouseLeftRelease;
 import net.bfsr.network.packet.input.PacketShipMove;
 import net.bfsr.network.packet.input.PacketShipStopMove;
 import net.bfsr.network.packet.input.PacketSyncPlayerMousePosition;
+import net.bfsr.physics.correction.CorrectionHandler;
 import net.bfsr.physics.correction.DynamicCorrectionHandler;
 import net.bfsr.physics.correction.HistoryCorrectionHandler;
 import net.bfsr.physics.correction.LocalPlayerInputCorrectionHandler;
@@ -233,16 +234,16 @@ public class PlayerInputController extends InputController {
 
     public void setShip(Ship ship) {
         if (this.ship != null) {
-            this.ship.setCorrectionHandler(
-                    new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), new HistoryCorrectionHandler()));
+            this.ship.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), new CorrectionHandler(),
+                    new HistoryCorrectionHandler()));
             this.ship.setControlledByPlayer(false);
         }
 
         this.ship = ship;
 
         if (ship != null) {
-            ship.setCorrectionHandler(
-                    new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), localPlayerInputCorrectionHandler));
+            ship.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), localPlayerInputCorrectionHandler,
+                    localPlayerInputCorrectionHandler));
             ship.setControlledByPlayer(true);
         }
     }
