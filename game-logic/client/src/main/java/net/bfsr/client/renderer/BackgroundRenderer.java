@@ -1,5 +1,6 @@
 package net.bfsr.client.renderer;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.client.Client;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventHandler;
@@ -10,8 +11,6 @@ import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.AbstractTextureLoader;
 import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.event.world.WorldInitEvent;
-
-import java.util.Random;
 
 public class BackgroundRenderer {
     private final AbstractSpriteRenderer spriteRenderer = Engine.renderer.spriteRenderer;
@@ -30,7 +29,7 @@ public class BackgroundRenderer {
     }
 
     void createBackgroundTexture(long seed) {
-        texture = Engine.renderer.textureGenerator.generateNebulaTexture(4096, 4096, new Random(seed));
+        texture = Engine.renderer.textureGenerator.generateNebulaTexture(4096, 4096, new XoRoShiRo128PlusRandom(seed));
         renderRunnable = this::renderBackground;
 
         float zoomFactor = 0.005f;

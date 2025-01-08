@@ -1,5 +1,6 @@
 package net.bfsr.client.physics;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.client.particle.effect.GarbageSpawner;
 import net.bfsr.client.particle.effect.WeaponEffects;
 import net.bfsr.engine.Engine;
@@ -20,20 +21,18 @@ import net.bfsr.math.RotationHelper;
 import net.bfsr.physics.CommonCollisionHandler;
 import net.bfsr.physics.correction.CorrectionHandler;
 import net.bfsr.physics.correction.DynamicCorrectionHandler;
-import net.bfsr.world.World;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Fixture;
 import org.joml.Math;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-import java.util.Random;
-
 public class CollisionHandler extends CommonCollisionHandler {
     private final Vector2f angleToVelocity = new Vector2f();
     private final BeamDamageShipShieldEvent beamDamageShipShieldEvent = new BeamDamageShipShieldEvent();
     private final BeamDamageShipArmorEvent beamDamageShipArmorEvent = new BeamDamageShipArmorEvent();
     private final BeamDamageShipHullEvent beamDamageShipHullEvent = new BeamDamageShipHullEvent();
+    private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
     public CollisionHandler(EventBus eventBus) {
         super(eventBus);
@@ -157,14 +156,12 @@ public class CollisionHandler extends CommonCollisionHandler {
             return;
         }
 
-        World world = ship.getWorld();
-        Random rand = world.getRand();
         Vector2 velocity = ship.getLinearVelocity();
         WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f,
                 1.0f, 1.0f, 1.0f);
-        RotationHelper.angleToVelocity(MathUtils.TWO_PI * rand.nextFloat(), 0.15f, angleToVelocity);
-        GarbageSpawner.smallGarbage(rand.nextInt(4), contactX, contactY,
-                velocity.x * 0.25f + angleToVelocity.x, velocity.y * 0.25f + angleToVelocity.y, 2.0f * rand.nextFloat());
+        RotationHelper.angleToVelocity(MathUtils.TWO_PI * random.nextFloat(), 0.15f, angleToVelocity);
+        GarbageSpawner.smallGarbage(random.nextInt(4), contactX, contactY,
+                velocity.x * 0.25f + angleToVelocity.x, velocity.y * 0.25f + angleToVelocity.y, 2.0f * random.nextFloat());
     }
 
     private void setDynamicCorrection(RigidBody rigidBody) {

@@ -1,5 +1,6 @@
 package net.bfsr.client.renderer.component;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.client.particle.effect.WeaponEffects;
 import net.bfsr.client.renderer.Render;
 import net.bfsr.config.SoundData;
@@ -13,11 +14,10 @@ import net.bfsr.math.RotationHelper;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
-import java.util.Random;
-
 public class WeaponSlotRender extends Render {
     private final Vector2f rotationHelper = new Vector2f();
     private final WeaponSlot weaponSlot;
+    private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
     WeaponSlotRender(WeaponSlot object) {
         super(Engine.assetsManager.getTexture(object.getGunData().getTexture()), object);
@@ -65,10 +65,10 @@ public class WeaponSlotRender extends Render {
                     particle.setRotation(ship.getSin(), ship.getCos());
                     particle.setPosition(object.getX() + rotationHelper.x, object.getY() + rotationHelper.y);
                 });
-        playSounds(weaponSlot.getGunData(), ship.getWorld().getRand(), x, y);
+        playSounds(weaponSlot.getGunData(), x, y);
     }
 
-    void playSounds(GunData gunData, Random random, float x, float y) {
+    void playSounds(GunData gunData, float x, float y) {
         SoundData[] sounds = gunData.getSounds();
         if (sounds.length > 0) {
             SoundData sound = sounds[random.nextInt(sounds.length)];

@@ -1,5 +1,6 @@
 package net.bfsr.client.renderer;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.Getter;
 import net.bfsr.client.Client;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
