@@ -7,8 +7,8 @@ import net.bfsr.entity.TransformData;
 import org.joml.Vector2f;
 
 public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
-    private static final float MIN_VALUE_TO_CORRECTION = 0.1f;
-    private static final float MIN_ANGLE_VALUE_TO_CORRECTION = 0.2f;
+    private static final float MIN_VALUE_TO_CORRECTION = 0.0f;
+    private static final float MIN_ANGLE_VALUE_TO_CORRECTION = 0.0f;
 
     private final PositionHistory positionHistory;
     private final double clientRenderDelayInNanos;
@@ -20,24 +20,22 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
 
     @Override
     public void updateTransform(double timestamp) {
-        double time = timestamp + clientRenderDelayInNanos;
-        positionHistory.addPositionData(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), time);
+        positionHistory.addPositionData(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(),
+                timestamp + clientRenderDelayInNanos);
 
-        TransformData serverTransformData = dataHistoryManager.getTransformData(rigidBody.getId(), timestamp);
-
+        TransformData serverTransformData = dataHistoryManager.getFirstTransformData(rigidBody.getId());
         if (serverTransformData == null) {
             return;
         }
 
-        TransformData localTransformData = positionHistory.get(timestamp);
+        TransformData localTransformData = positionHistory.getNonInterpolated(serverTransformData.getTime());
         if (localTransformData != null) {
             Vector2f serverPosition = serverTransformData.getPosition();
             Vector2f localPosition = localTransformData.getPosition();
 
-            boolean needHistoryCorrection = false;
-            float correctionX = 0.0f;
-            float correctionY = 0.0f;
-            float angleCorrectionAmount = 0.0f;
+            float correctionX;
+            float correctionY;
+            float angleCorrectionAmount;
             float dx = serverPosition.x - localPosition.x;
             float dy = serverPosition.y - localPosition.y;
             float dxAbs = Math.abs(dx);
@@ -46,7 +44,6 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
                 float xCorrectionAmount = (dxAbs - MIN_VALUE_TO_CORRECTION) * 0.1f * correctionAmount;
                 correctionX = dx * xCorrectionAmount;
                 rigidBody.setPosition(rigidBody.getX() + correctionX, rigidBody.getY());
-                needHistoryCorrection = true;
             }
 
             float dyAbs = Math.abs(dy);
@@ -54,7 +51,6 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
                 float yCorrectionAmount = (dyAbs - MIN_VALUE_TO_CORRECTION) * 0.1f * correctionAmount;
                 correctionY = dy * yCorrectionAmount;
                 rigidBody.setPosition(rigidBody.getX(), rigidBody.getY() + correctionY);
-                needHistoryCorrection = true;
             }
 
             float serverCos = serverTransformData.getCos();
@@ -66,15 +62,10 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
             float angleDiff = MathUtils.lerpAngle(localAngle, serverAngle);
 
             if (angleDiff > MIN_ANGLE_VALUE_TO_CORRECTION) {
-                float angleCorrection = angleDiff - MIN_ANGLE_VALUE_TO_CORRECTION;
+                float angleCorrection = (angleDiff - MIN_ANGLE_VALUE_TO_CORRECTION) * 0.1f;
                 angleCorrectionAmount = angleCorrection * correctionAmount;
                 float newAngle = localAngle + angleCorrectionAmount;
                 rigidBody.setRotation(LUT.sin(newAngle), LUT.cos(newAngle));
-                needHistoryCorrection = true;
-            }
-
-            if (needHistoryCorrection) {
-                positionHistory.correction(correctionX, correctionY, angleCorrectionAmount);
             }
         }
     }

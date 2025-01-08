@@ -19,8 +19,8 @@ public class WeaponEventListener {
         return event -> {
             WeaponSlot weaponSlot = event.getWeaponSlot();
             Ship ship = weaponSlot.getShip();
-            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), player -> new PacketRemoveWeaponSlot(ship.getId(),
-                    weaponSlot.getId(), player.getClientTime(world.getTimestamp())));
+            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketRemoveWeaponSlot(ship.getId(), weaponSlot.getId(),
+                    world.getTimestamp()));
         };
     }
 }

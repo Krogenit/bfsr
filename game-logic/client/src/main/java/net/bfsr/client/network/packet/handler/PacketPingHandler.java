@@ -15,10 +15,10 @@ public class PacketPingHandler extends PacketHandler<PacketPing, NetworkSystem> 
     public void handle(PacketPing packet, NetworkSystem netHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
         long nanoTime = System.nanoTime();
         if (packet.getSide() == Side.CLIENT) {
-            long rtt = nanoTime - packet.getOriginalSentTime();
+            long roundTripTimeNanos = packet.getRoundTripTime();
             Client client = Client.get();
-            client.getEventBus().publish(new PingEvent(rtt / 2000000.0f));
-            client.setClientToServerDiffTime(rtt / 2.0);
+            client.getEventBus().publish(new PingEvent(roundTripTimeNanos / 2_000_000.0f));
+            client.setClientToServerTimeDiff(nanoTime - packet.getOtherSideHandleTime());
         } else {
             netHandler.sendPacketUDP(new PacketPing(packet.getOriginalSentTime(), nanoTime, packet.getSide()));
         }
