@@ -1,7 +1,7 @@
 package net.bfsr.client.network.packet.handler.play;
 
 import io.netty.channel.ChannelHandlerContext;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.gui.faction.GuiFactionSelect;
 import net.bfsr.client.gui.state.GuiDestroyed;
 import net.bfsr.client.network.NetworkSystem;
@@ -17,9 +17,9 @@ public class PacketOpenGuiHandler extends PacketHandler<PacketOpenGui, NetworkSy
                        InetSocketAddress remoteAddress) {
         GuiType guiType = GuiType.values()[packet.getGui()];
         if (guiType == GuiType.SELECT_FACTION) {
-            Core.get().openGui(new GuiFactionSelect());
+            Client.get().openGui(new GuiFactionSelect());
         } else if (guiType == GuiType.DESTROYED) {
-            Core.get().openGui(new GuiDestroyed(packet.getDestroyer()));
+            Client.get().openGui(new GuiDestroyed(packet.getDestroyer()));
         }
     }
 }

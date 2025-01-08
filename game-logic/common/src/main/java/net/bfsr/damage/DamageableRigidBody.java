@@ -23,18 +23,20 @@ public class DamageableRigidBody extends RigidBody {
     private final List<Fixture> fixturesToRemove = new ArrayList<>();
     @Getter
     private final List<ConnectedObject<?>> connectedObjects = new ArrayList<>();
+    @Getter
+    private final float localOffsetX, localOffsetY;
 
     protected DamageableRigidBody(float sizeX, float sizeY, GameObjectConfigData configData, DamageMask mask, Polygon polygon) {
-        super(0, 0, 0, 1, sizeX, sizeY, configData);
-        this.mask = mask;
-        this.polygon = polygon;
+        this(0, 0, 0, 1, sizeX, sizeY, configData, mask, polygon, 0.0f, 0.0f);
     }
 
     protected DamageableRigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, GameObjectConfigData configData,
-                                  DamageMask mask, Polygon polygon) {
+                                  DamageMask mask, Polygon polygon, float localOffsetX, float localOffsetY) {
         super(x, y, sin, cos, sizeX, sizeY, configData);
         this.mask = mask;
         this.polygon = polygon;
+        this.localOffsetX = localOffsetX;
+        this.localOffsetY = localOffsetY;
     }
 
     @Override

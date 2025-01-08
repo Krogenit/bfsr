@@ -2,7 +2,7 @@ package net.bfsr.editor.gui.inspection;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.editor.gui.component.receive.DragTarget;
 import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.engine.Engine;
@@ -16,17 +16,14 @@ import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.font.Font;
-import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.util.MutableInt;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector2f;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static net.bfsr.editor.gui.EditorTheme.SELECTION_BLUE_COLOR;
 import static net.bfsr.editor.gui.EditorTheme.TEXT_COLOR;
 import static net.bfsr.editor.gui.EditorTheme.setupButton;
 import static net.bfsr.editor.gui.EditorTheme.setupScrollPane;
@@ -35,16 +32,16 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
     private static final long HOVER_TIME_FOR_MAXIMIZE = 500L;
 
     private final AbstractRenderer renderer = Engine.renderer;
-    private final AbstractGUIRenderer guiRenderer = renderer.guiRenderer;
-    private final GuiManager guiManager = Core.get().getGuiManager();
+    private final GuiManager guiManager = Client.get().getGuiManager();
     private final Gui gui;
-    private final String name;
     @Getter
     private final ScrollPane scrollPane;
     private final Font font;
     private final int fontSize;
     private final int stringOffsetY;
+    @Getter
     private final int elementHeight = 20;
+    @Getter
     private final int exactObjectSelectionOffsetY = 6;
     @Setter
     private @Nullable InspectionEntry<PROPERTIES_TYPE> wantSelectObject;
@@ -61,22 +58,24 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
     public InspectionPanel(Gui gui, String name, int width, int height, Font font, int fontSize, int stringOffsetY) {
         super(width, height);
         this.gui = gui;
-        this.name = name;
         this.scrollPane = setupScrollPane(new ScrollPane(width, height - elementHeight, 16));
         this.font = font;
         this.fontSize = fontSize;
         this.stringOffsetY = stringOffsetY;
         setWidthFunction((width1, height1) -> getPanelWidth()).updatePositionAndSize();
         Label label = new Label(font, name, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w);
-        add(label.atTopLeft(0, label.getCenteredOffsetY(elementHeight)));
-        add(scrollPane.atTopLeft(0, elementHeight).setWidthFunction((width1, height1) -> getPanelWidth())
+        add(label.atBottomLeft(0, height - elementHeight + label.getCenteredOffsetY(elementHeight)));
+        add(scrollPane.atBottomLeft(0, 0).setWidthFunction((width1, height1) -> getPanelWidth())
                 .setHeightFunction((width1, height1) -> this.height - elementHeight));
+        setRenderer(new InspectionPanelRenderer<>(this));
     }
 
     public void addBottomButton(int x, int y, String name, Runnable runnable) {
         Button button = new Button(scrollPane.getWidth(), elementHeight, name, font, fontSize, stringOffsetY, runnable);
         add(setupButton(button).atBottomLeft(x, y).setWidthFunction((width1, height1) -> getPanelWidth()));
         bottomButtons.add(button);
+
+        scrollPane.atBottomLeft(0, bottomButtons.size() * elementHeight);
         scrollPane.setHeight(renderer.getScreenHeight() - elementHeight - bottomButtons.size() * elementHeight);
         scrollPane.setHeightFunction(
                 (width1, height1) -> renderer.getScreenHeight() - elementHeight - bottomButtons.size() * elementHeight);
@@ -129,20 +128,24 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
     private void onEntryMoved(InspectionEntry<PROPERTIES_TYPE> entry) {
         GuiObject guiObject = guiManager.getHoveredGuiObject();
         if (guiObject instanceof InspectionEntry<?> inspectionEntry) {
-            int mouseY = (int) Engine.mouse.getPosition().y;
+            int mouseY = (int) gui.getMousePosition().y;
             if (mouseY < inspectionEntry.getSceneY() + exactObjectSelectionOffsetY) {
                 GuiObject parent = inspectionEntry.getParent();
                 List<GuiObject> guiObjects = parent.getGuiObjects();
-                int index = guiObjects.indexOf(inspectionEntry);
+                int index = guiObjects.indexOf(inspectionEntry) + 1;
                 entry.getParent().remove(entry);
-                parent.addAt(index, entry);
+                if (index >= guiObjects.size()) {
+                    parent.add(entry);
+                } else {
+                    parent.addAt(index, entry);
+                }
 
                 if (parent == scrollPane) {
                     entry.setParent(scrollPane);
                 }
 
                 updatePositionAndSize();
-            } else if (mouseY >= inspectionEntry.getSceneY() + elementHeight - exactObjectSelectionOffsetY) {
+            } else if (mouseY >= inspectionEntry.getSceneY() + inspectionEntry.getBaseHeight() - exactObjectSelectionOffsetY) {
                 GuiObject parent;
                 if (inspectionEntry.isMaximized()) {
                     parent = inspectionEntry;
@@ -151,14 +154,9 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
                 }
 
                 List<GuiObject> guiObjects = parent.getGuiObjects();
-                int index = guiObjects.indexOf(inspectionEntry) + 1;
+                int index = guiObjects.indexOf(inspectionEntry);
                 entry.getParent().remove(entry);
-
-                if (index >= guiObjects.size()) {
-                    parent.add(entry);
-                } else {
-                    parent.addAt(index, entry);
-                }
+                parent.addAt(index, entry);
 
                 if (parent == scrollPane) {
                     entry.setParent(scrollPane);
@@ -270,7 +268,7 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
         for (int i = 0, y = 0; i < guiObjects.size(); i++) {
             GuiObject guiObject = guiObjects.get(i);
             guiObject.atTopLeft(0, y);
-            y += guiObject.getHeight();
+            y -= guiObject.getHeight();
         }
 
         int panelWidth = getPanelWidth();
@@ -295,71 +293,6 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
         }
     }
 
-    @Override
-    public void render(AbstractGUIRenderer guiRenderer, int lastX, int lastY, int x, int y) {
-        super.render(guiRenderer, lastX, lastY, x, y);
-        renderMovableObject();
-    }
-
-    private void renderMovableObject() {
-        if (movableObject == null) return;
-
-        Vector2f position = Engine.mouse.getPosition();
-        int mouseX = (int) position.x;
-        int mouseY = (int) position.y;
-
-        if (isIntersectsWithMouse()) {
-            renderInsertingPreview(mouseY);
-        }
-
-        movableObject.getRenderer().render(mouseX, mouseY, mouseX, mouseY, movableObject.getWidth(), movableObject.getHeight());
-    }
-
-    private void renderInsertingPreview(int mouseY) {
-        GuiObject guiObject = guiManager.getHoveredGuiObject();
-        if (guiObject instanceof InspectionEntry<?> inspectionEntry) {
-            int sceneX = inspectionEntry.getSceneX();
-            int sceneY = inspectionEntry.getSceneY();
-            int betweenObjectsLineHeight = 4;
-            if (mouseY < sceneY + exactObjectSelectionOffsetY) {
-                renderSelection(sceneX, sceneY - betweenObjectsLineHeight / 2, inspectionEntry.getWidth(), betweenObjectsLineHeight);
-            } else if (mouseY >= sceneY + elementHeight - exactObjectSelectionOffsetY) {
-                if (inspectionEntry.isMaximized() && inspectionEntry.getGuiObjects().size() > 0) {
-                    GuiObject guiObject1 = inspectionEntry.getGuiObjects().get(0);
-                    renderSelection(guiObject1.getSceneX(), sceneY + elementHeight - betweenObjectsLineHeight / 2, guiObject1.getWidth(),
-                            betweenObjectsLineHeight);
-                } else {
-                    renderSelection(sceneX, sceneY + elementHeight - betweenObjectsLineHeight / 2, inspectionEntry.getWidth(),
-                            betweenObjectsLineHeight);
-                }
-            } else if (inspectionEntry != movableObject &&
-                    !isInHierarchy(movableObject, (InspectionEntry<PROPERTIES_TYPE>) inspectionEntry)) {
-                renderSelection(sceneX, sceneY, inspectionEntry.getWidth());
-                inspectionEntry.getRenderer()
-                        .render(sceneX, sceneY, sceneX, sceneY, inspectionEntry.getWidth(), inspectionEntry.getHeight());
-            }
-        } else {
-            int height = 0;
-            List<GuiObject> subObjects = scrollPane.getGuiObjects();
-            for (int i = 0; i < subObjects.size(); i++) {
-                height += subObjects.get(i).getHeight();
-            }
-
-            int x1 = scrollPane.getSceneX();
-            int y1 = scrollPane.getSceneY() + height;
-            movableObject.getRenderer().render(x1, y1, x1, y1, movableObject.getWidth(), movableObject.getHeight());
-        }
-    }
-
-    private void renderSelection(int x, int y, int width) {
-        renderSelection(x, y, width, elementHeight);
-    }
-
-    private void renderSelection(int x, int y, int width, int height) {
-        guiRenderer.add(x, y, width, height, SELECTION_BLUE_COLOR.x, SELECTION_BLUE_COLOR.y,
-                SELECTION_BLUE_COLOR.z, SELECTION_BLUE_COLOR.w);
-    }
-
     public InspectionEntry<PROPERTIES_TYPE> findEntry(String path) {
         return findEntry(scrollPane, path);
     }
@@ -378,7 +311,7 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
         return null;
     }
 
-    private boolean isInHierarchy(GuiObject hierarchy, InspectionEntry<PROPERTIES_TYPE> guiObject) {
+    boolean isInHierarchy(GuiObject hierarchy, InspectionEntry<PROPERTIES_TYPE> guiObject) {
         GuiObject parent = guiObject.getParent();
         while (parent != null) {
             if (parent == hierarchy) return true;

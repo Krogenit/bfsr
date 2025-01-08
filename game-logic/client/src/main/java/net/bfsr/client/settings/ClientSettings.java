@@ -1,7 +1,7 @@
 package net.bfsr.client.settings;
 
 import lombok.Getter;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.language.Lang;
 import net.bfsr.engine.Engine;
 import net.bfsr.settings.SettingsCategory;
@@ -35,10 +35,10 @@ public enum ClientSettings {
     MAX_FPS(SettingsCategory.GRAPHICS, 10, 240, new IntegerOption(60), ConsumerUtils.INTEGER_DEFAULT_CONSUMER),
 
     IS_DEBUG(SettingsCategory.DEBUG, new BooleanOption(false), ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
-    IS_PROFILING(SettingsCategory.DEBUG, new BooleanOption(false).addListener(value -> Core.get().getProfiler().setEnable(value)),
+    IS_PROFILING(SettingsCategory.DEBUG, new BooleanOption(false).addListener(value -> Client.get().getProfiler().setEnable(value)),
             (option, value) -> option.option.setValue(!(Boolean) option.option.getValue())),
     SHOW_DEBUG_BOXES(SettingsCategory.DEBUG,
-            new BooleanOption(false).addListener(value -> Core.get().getGlobalRenderer().setDebugBoxesEnabled(value)),
+            new BooleanOption(false).addListener(value -> Client.get().getGlobalRenderer().setDebugBoxesEnabled(value)),
             (option, value) -> option.invertBooleanValue());
 
     @Getter

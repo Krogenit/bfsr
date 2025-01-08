@@ -39,7 +39,7 @@ public class Player {
 
     public void setShip(Ship ship) {
         playerInputController.setShip(ship);
-        networkHandler.sendTCPPacket(new PacketSetPlayerShip(ship.getId(), ship.getWorld().getTimestamp()));
+        networkHandler.sendTCPPacket(new PacketSetPlayerShip(ship.getId(), getClientTime(ship.getWorld().getTimestamp())));
     }
 
     public void setPosition(float x, float y) {
@@ -70,5 +70,9 @@ public class Player {
     public boolean canTrackEntity(RigidBody rigidBody) {
         Ship ship = playerInputController.getShip();
         return ship == null || !(rigidBody instanceof Bullet bullet) || bullet.getOwner() != ship;
+    }
+
+    public double getClientTime(double serverTime) {
+        return serverTime + networkHandler.getDeltaTime();
     }
 }

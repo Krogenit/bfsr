@@ -1,6 +1,6 @@
 package net.bfsr.editor.gui.property;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.Button;
@@ -44,13 +44,13 @@ public class MinimizablePropertyList extends PropertyList<PropertyObject<Propert
                 stringOffsetY, propertiesHolder, fields, new Object[]{propertiesHolder}, valueConsumer);
         propertyObject.setRightClickRunnable(() -> {
             String addString = "Remove";
-            Vector2f mousePos = Engine.mouse.getPosition();
-            Button button = new Button((int) mousePos.x, (int) mousePos.y,
+            Vector2f mousePos = Engine.mouse.getGuiPosition();
+            Button button = new Button((int) mousePos.x, (int) mousePos.y - baseHeight,
                     font.getGlyphsBuilder().getWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight,
                     addString, font, fontSize, 4, stringOffsetY, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
             setupContextMenuButton(button);
             button.setLeftReleaseRunnable(() -> removeProperty(propertyObject));
-            Core.get().getGuiManager().openContextMenu(button);
+            Client.get().getGuiManager().openContextMenu(button);
         });
         propertiesHolder.addChangeNameEventListener(propertyObject::setName);
 

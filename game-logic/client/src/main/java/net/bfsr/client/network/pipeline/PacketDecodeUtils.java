@@ -1,7 +1,7 @@
 package net.bfsr.client.network.pipeline;
 
 import io.netty.buffer.ByteBuf;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.network.packet.Packet;
 
 import java.io.IOException;
@@ -11,7 +11,7 @@ public final class PacketDecodeUtils {
         int packetId = buffer.readByte();
 
         try {
-            Packet packet = Core.get().getNetworkSystem().createPacket(packetId);
+            Packet packet = Client.get().getNetworkSystem().createPacket(packetId);
             packet.read(buffer);
             return packet;
         } catch (IOException e) {

@@ -7,11 +7,25 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
-import static org.lwjgl.opengl.GL45C.*;
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
+import static org.lwjgl.opengl.GL11C.GL_FLOAT;
+import static org.lwjgl.opengl.GL45C.glBindBuffer;
+import static org.lwjgl.opengl.GL45C.glBindBufferBase;
+import static org.lwjgl.opengl.GL45C.glBindVertexArray;
+import static org.lwjgl.opengl.GL45C.glCreateVertexArrays;
+import static org.lwjgl.opengl.GL45C.glDeleteVertexArrays;
+import static org.lwjgl.opengl.GL45C.glEnableVertexArrayAttrib;
+import static org.lwjgl.opengl.GL45C.glVertexArrayAttribBinding;
+import static org.lwjgl.opengl.GL45C.glVertexArrayAttribFormat;
+import static org.lwjgl.opengl.GL45C.glVertexArrayAttribIFormat;
+import static org.lwjgl.opengl.GL45C.glVertexArrayBindingDivisor;
+import static org.lwjgl.opengl.GL45C.glVertexArrayElementBuffer;
+import static org.lwjgl.opengl.GL45C.glVertexArrayVertexBuffer;
 
-public final class VAO {
+public final class VAO implements AbstractVAO {
     @Getter
     private final int id;
+    @Getter
     private final VBO[] VBOs;
 
     private VAO(int id, int vboCount) {
@@ -30,17 +44,37 @@ public final class VAO {
         }
     }
 
+    public void vertexArrayVertexBuffer(int index, int bindingIndex, int stride) {
+        vertexArrayVertexBufferInternal(bindingIndex, VBOs[index].getId(), stride);
+    }
+
+    public void vertexArrayVertexBufferInternal(int bindingIndex, int bufferId, int stride) {
+        glVertexArrayVertexBuffer(id, bindingIndex, bufferId, 0, stride);
+    }
+
     public void vertexArrayVertexBuffer(int index, int stride) {
-        glVertexArrayVertexBuffer(id, index, VBOs[index].getId(), 0, stride);
+        vertexArrayVertexBuffer(index, index, stride);
     }
 
     public void vertexArrayElementBuffer(int index) {
-        glVertexArrayElementBuffer(id, VBOs[index].getId());
+        vertexArrayElementBufferInternal(VBOs[index].getId());
     }
 
-    public void attributeBindingAndFormat(int attribute, int attributeSize, int bufferIndex, int relativeOffset) {
-        glVertexArrayAttribBinding(id, attribute, bufferIndex);
-        glVertexArrayAttribFormat(id, attribute, attributeSize, GL_FLOAT, false, relativeOffset);
+    public void vertexArrayElementBufferInternal(int bufferId) {
+        glVertexArrayElementBuffer(id, bufferId);
+    }
+
+    public void attributeBindingAndFormat(int attribute, int attributeSize, int bindingIndex, int relativeOffset) {
+        attributeBindingAndFormat(attribute, attributeSize, bindingIndex, GL_FLOAT, relativeOffset);
+    }
+
+    public void attributeBindingAndFormat(int attribute, int attributeSize, int bindingIndex, int type, int relativeOffset) {
+        glVertexArrayAttribBinding(id, attribute, bindingIndex);
+        if (type == GL_UNSIGNED_INT) {
+            glVertexArrayAttribIFormat(id, attribute, attributeSize, type, relativeOffset);
+        } else {
+            glVertexArrayAttribFormat(id, attribute, attributeSize, type, false, relativeOffset);
+        }
     }
 
     public void attributeDivisor(int attribute, int divisor) {
@@ -51,6 +85,14 @@ public final class VAO {
         VBOs[index].storeData(data, flags, () -> vertexArrayVertexBuffer(index, stride));
     }
 
+    public void updateVertexBuffer(int index, IntBuffer data, int flags, int stride) {
+        VBOs[index].storeData(data, flags, () -> vertexArrayVertexBuffer(index, stride));
+    }
+
+    public void updateVertexBuffer(int index, int bindingIndex, IntBuffer data, int flags, int stride) {
+        VBOs[index].storeData(data, flags, () -> vertexArrayVertexBuffer(index, bindingIndex, stride));
+    }
+
     public void updateVertexBuffer(int index, ByteBuffer data, int flags, int stride) {
         VBOs[index].storeData(data, flags, () -> vertexArrayVertexBuffer(index, stride));
     }
@@ -59,22 +101,47 @@ public final class VAO {
         VBOs[index].storeData(data, flags, () -> vertexArrayElementBuffer(index));
     }
 
+    @Override
     public void updateBuffer(int index, ByteBuffer data, int flags) {
         VBOs[index].storeData(data, flags);
     }
 
-    public void updateBuffer(int index, FloatBuffer data, int flags) {
-        VBOs[index].storeData(data, flags);
+    public void updateBuffer(int index, ByteBuffer data, int flags, Runnable onResizeRunnable) {
+        VBOs[index].storeData(data, flags, onResizeRunnable);
+    }
+
+    @Override
+    public void updateBuffer(int index, IntBuffer buffer, int flags) {
+        VBOs[index].storeData(buffer, flags);
+    }
+
+    public void updateBuffer(int index, IntBuffer buffer, int flags, Runnable onResizeRunnable) {
+        VBOs[index].storeData(buffer, flags, onResizeRunnable);
+    }
+
+    @Override
+    public void updateBuffer(int index, FloatBuffer buffer, int flags) {
+        VBOs[index].storeData(buffer, flags);
+    }
+
+    public void updateBuffer(int index, FloatBuffer buffer, int flags, Runnable onResizeRunnable) {
+        VBOs[index].storeData(buffer, flags, onResizeRunnable);
+    }
+
+    public void updateBuffer(int index, long address, long fullDataSize, long offset, long newDataSize, int flags) {
+        VBOs[index].storeData(address, fullDataSize, offset, newDataSize, flags);
     }
 
     public void updateBuffer(int index, LongBuffer data, int flags) {
         VBOs[index].storeData(data, flags);
     }
 
+    @Override
     public void bindBuffer(int target, int bufferIndex) {
         glBindBuffer(target, VBOs[bufferIndex].getId());
     }
 
+    @Override
     public void bindBufferBase(int target, int index, int bufferIndex) {
         glBindBufferBase(target, index, VBOs[bufferIndex].getId());
     }

@@ -1,6 +1,5 @@
 package net.bfsr.entity.wreck;
 
-import lombok.Getter;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageableRigidBody;
@@ -9,15 +8,10 @@ import net.bfsr.network.packet.common.entity.spawn.ShipWreckSpawnData;
 import net.bfsr.physics.CollisionMatrixType;
 import org.locationtech.jts.geom.Polygon;
 
-@Getter
 public class ShipWreck extends DamageableRigidBody {
-    private final float localOffsetX, localOffsetY;
-
     public ShipWreck(float x, float y, float sin, float cos, float sizeX, float sizeY, ShipData shipData,
                      DamageMask mask, Polygon polygon, float localOffsetX, float localOffsetY) {
-        super(x, y, sin, cos, sizeX, sizeY, shipData, mask, polygon);
-        this.localOffsetX = localOffsetX;
-        this.localOffsetY = localOffsetY;
+        super(x, y, sin, cos, sizeX, sizeY, shipData, mask, polygon, localOffsetX, localOffsetY);
     }
 
     @Override

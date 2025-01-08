@@ -113,7 +113,6 @@ public class StringCache {
          * added to stringCache and added to weakRefCache.
          */
         Key key;
-        fontSize = fontSize << 1;
 
         /* Re-use existing lookupKey to avoid allocation overhead on the critical rendering path */
         lookupKey.str = str;
@@ -311,11 +310,14 @@ public class StringCache {
          */
         Glyph glyph = null;
         int numGlyphs = vector.getNumGlyphs();
+        int width = 0;
+        int lastGlyphX = 0;
         for (int index = 0; index < numGlyphs; index++) {
             Point position = vector.getGlyphPixelBounds(index, null, advance, 0).getLocation();
             /* Compute horizontal advance for the previous glyph based on this glyph's position */
             if (glyph != null) {
-                glyph.advance = position.x - glyph.x;
+                glyph.advance = position.x - lastGlyphX;
+                width += glyph.advance;
             }
 
             /*
@@ -325,16 +327,17 @@ public class StringCache {
             glyph = new Glyph();
             glyph.stringIndex = start + vector.getGlyphCharIndex(index);
             glyph.texture = glyphCache.lookupGlyph(font, vector.getGlyphCode(index));
-            glyph.x = position.x;
+            glyph.x = position.x - width;
             glyph.y = position.y;
             glyphList.add(glyph);
+            lastGlyphX = position.x;
         }
 
         /* Compute the advance position of the last glyph (or only glyph) since it can't be done by the above loop */
-        advance += vector.getGlyphPosition(numGlyphs).getX();
+        advance = (int) (advance + vector.getGlyphPosition(numGlyphs).getX());
 
         if (glyph != null) {
-            glyph.advance = advance - glyph.x;
+            glyph.advance = advance - lastGlyphX;
         }
 
         /* Return the overall horizontal advance in pixels from the start of string */
@@ -358,7 +361,7 @@ public class StringCache {
         Entry entry = cacheString(str, fontSize);
 
         /* Return total horizontal advance (slightly wider than the bounding box, but close enough for centering strings) */
-        return entry.advance / 2;
+        return entry.advance;
     }
 
     public int getCursorPositionInLine(String str, float mouseX, int fontSize) {
@@ -494,7 +497,7 @@ public class StringCache {
         int height = 0;
         for (int i = 0; i < text.length(); i++) {
             if (text.charAt(i) == NEW_LINE) {
-                height += getHeight("\n", fontSize) * indent;
+                height = (int) (height + getHeight("\n", fontSize) * indent);
             }
         }
         return height + getTrimmedStringHeight(text.substring(offset).trim(), fontSize, maxWidth, indent);
@@ -521,7 +524,7 @@ public class StringCache {
         do {
             String temp = trimStringToWidthSaveWords(string, fontSize, maxWidth);
             string = string.replace(temp, "").trim();
-            height += getHeight(temp, fontSize) + indent;
+            height = (int) (height + (getHeight(temp, fontSize) + indent));
         } while (!string.isEmpty());
 
         return height;

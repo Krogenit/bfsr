@@ -13,9 +13,7 @@ public class MutableInt {
     }
 
     public int getAndIncrement() {
-        int oldValue = value;
-        value++;
-        return oldValue;
+        return value++;
     }
 
     public int getAndAdd(int i) {

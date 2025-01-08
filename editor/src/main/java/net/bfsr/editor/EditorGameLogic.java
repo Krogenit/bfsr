@@ -1,13 +1,13 @@
 package net.bfsr.editor;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.editor.hud.EditorHUD;
 import net.bfsr.engine.profiler.Profiler;
 import net.engio.mbassy.listener.Listener;
 
 @Listener
-public class EditorGameLogic extends Core {
+public class EditorGameLogic extends Client {
     public EditorGameLogic(Profiler profiler) {
         super(profiler);
     }

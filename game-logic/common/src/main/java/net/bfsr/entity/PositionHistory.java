@@ -1,6 +1,7 @@
 package net.bfsr.entity;
 
 import net.bfsr.engine.util.ObjectPool;
+import org.jetbrains.annotations.Nullable;
 
 public class PositionHistory extends EntityDataHistory<TransformData> {
     private final ObjectPool<TransformData> cache = new ObjectPool<>(TransformData::new);
@@ -21,10 +22,10 @@ public class PositionHistory extends EntityDataHistory<TransformData> {
 
     @Override
     public TransformData get(double time) {
-        if (dataList.size() == 0) return null;
+        if (dataList.isEmpty()) return null;
 
         if (dataList.getFirst().getTime() < time) {
-            return dataList.getFirst();
+            return null;// Extrapolation
         } else if (dataList.getLast().getTime() > time) {
             return dataList.getLast();
         }
@@ -45,6 +46,37 @@ public class PositionHistory extends EntityDataHistory<TransformData> {
         return null;
     }
 
+    public TransformData getNonInterpolated(double time) {
+        if (dataList.isEmpty()) {
+            return null;
+        }
+
+        if (dataList.getFirst().getTime() <= time) {
+            return dataList.getFirst();
+        }
+
+        for (int i = 1, positionDataSize = dataList.size(); i < positionDataSize; i++) {
+            TransformData older = dataList.get(i);
+            if (older.getTime() <= time) {
+                TransformData newer = dataList.get(i - 1);
+                double olderTime = Math.abs(time - older.time);
+                double newerTime = Math.abs(time - newer.time);
+                if (newerTime <= olderTime) {
+                    return older;
+                } else {
+                    return newer;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public TransformData getFirst() {
+        return dataList.isEmpty() ? null : dataList.getFirst();
+    }
+
     @Override
     protected void removeOld(double timeOfEntryAdded) {
         double thresh = timeOfEntryAdded - historyLengthMillis;
@@ -61,12 +93,5 @@ public class PositionHistory extends EntityDataHistory<TransformData> {
     public void clear() {
         dataList.clear();
         cache.clear();
-    }
-
-    public void correction(float dx, float dy) {
-        for (int i = 0; i < dataList.size(); i++) {
-            TransformData transformData = dataList.get(i);
-            transformData.getPosition().add(dx, dy);
-        }
     }
 }

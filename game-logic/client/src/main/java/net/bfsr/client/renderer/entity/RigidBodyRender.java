@@ -3,6 +3,7 @@ package net.bfsr.client.renderer.entity;
 import net.bfsr.client.renderer.Render;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.MathUtils;
+import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.entity.RigidBody;
@@ -25,7 +26,7 @@ public class RigidBodyRender extends Render {
     private static final Vector4f BODY_AABB_COLOR = new Vector4f(1.0f, 1.0f, 1.0f, 0.1f);
     private static final Vector4f RENDER_AABB_COLOR = new Vector4f(0.5f, 1.0f, 0.5f, 0.1f);
 
-    private final AABB geometryAABB = new AABB();
+    protected final AABB geometryAABB = new AABB();
     private final AABB cache = new AABB();
 
     protected final RigidBody rigidBody;
@@ -44,11 +45,23 @@ public class RigidBodyRender extends Render {
                 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    @Override
-    public void update() {
+    public void init() {
+        id = spriteRenderer.add(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), rigidBody.getSizeX(),
+                rigidBody.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
+    }
+
+    protected void updateLastRenderValues() {
+        super.updateLastRenderValues();
         lastPosition.set(rigidBody.getX(), rigidBody.getY());
         lastSin = rigidBody.getSin();
         lastCos = rigidBody.getCos();
+        spriteRenderer.setLastRotation(id, BufferType.ENTITIES_ALPHA, rigidBody.getSin(), rigidBody.getCos());
+    }
+
+    @Override
+    protected void updateRenderValues() {
+        super.updateRenderValues();
+        spriteRenderer.setRotation(id, BufferType.ENTITIES_ALPHA, rigidBody.getSin(), rigidBody.getCos());
     }
 
     @Override
@@ -59,10 +72,7 @@ public class RigidBodyRender extends Render {
 
     @Override
     public void renderAlpha() {
-        float sin = rigidBody.getSin();
-        float cos = rigidBody.getCos();
-        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, rigidBody.getX(), rigidBody.getY(), lastSin, lastCos, sin,
-                cos, rigidBody.getSizeX(), rigidBody.getSizeY(), 1.0f, 1.0f, 1.0f, 1.0f, texture, BufferType.ENTITIES_ALPHA);
+        spriteRenderer.addDrawCommand(id, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ALPHA);
     }
 
     @Override
@@ -72,10 +82,7 @@ public class RigidBodyRender extends Render {
         debugRenderer.renderAABB(AABB, BODY_AABB_COLOR);
         debugRenderer.renderAABB(aabb, RENDER_AABB_COLOR);
 
-        renderDebug(body, lastPosition.x + (object.getX() - lastPosition.x) * renderer.getInterpolation(),
-                lastPosition.y + (object.getY() - lastPosition.y) * renderer.getInterpolation(),
-                lastSin + (rigidBody.getSin() - lastSin) * renderer.getInterpolation(),
-                lastCos + (rigidBody.getCos() - lastCos) * renderer.getInterpolation());
+        renderDebug(body, object.getX(), object.getY(), rigidBody.getSin(), rigidBody.getCos());
     }
 
     private void renderDebug(Body body, float x, float y, float sin, float cos) {

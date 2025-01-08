@@ -52,8 +52,6 @@ public class PlayerNetworkHandler extends NetworkHandler {
 
     @Setter
     private long loginStartTime;
-    @Setter
-    private long handshakeClientTime;
     private long lastPingCheckTime;
     private String terminationReason;
 
@@ -66,6 +64,8 @@ public class PlayerNetworkHandler extends NetworkHandler {
     @Setter
     private double ping;
     private final ShipOutfitter shipOutfitter = new ShipOutfitter(ServerGameLogic.getInstance().getConfigConverterManager());
+    @Setter
+    private double deltaTime;
 
     public void update() {
         if (connectionState != ConnectionState.DISCONNECTED) {
@@ -74,7 +74,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
             if (connectionState == ConnectionState.CONNECTED) {
                 long now = System.currentTimeMillis();
                 if (now - lastPingCheckTime > PING_PERIOD_IN_MILLS) {
-                    sendUDPPacket(new PacketPing(Side.SERVER, System.nanoTime()));
+                    sendUDPPacket(new PacketPing(Side.SERVER));
                     lastPingCheckTime = now;
                 }
             } else if (connectionState == ConnectionState.LOGIN) {
@@ -135,9 +135,9 @@ public class PlayerNetworkHandler extends NetworkHandler {
 
         try {
             if (singlePlayer) {
-                player = playerManager.getPlayerService().authUser(username, "test");
+                player = playerManager.login(username, "test");
             } else {
-                player = playerManager.getPlayerService().authUser(username, "password");
+                player = playerManager.login(username, "password");
             }
         } catch (Exception e) {
             log.error("Couldn't auth user {}", username, e);
@@ -202,9 +202,12 @@ public class PlayerNetworkHandler extends NetworkHandler {
     public void onDisconnected() {
         if (connectionStateBeforeDisconnect == ConnectionState.CONNECTED) {
             log.info("{} lost connection: {}", player.getUsername(), terminationReason);
-            server.onPlayerDisconnected(player);
         } else {
             log.info("{} lost connection: {}", socketChannel.remoteAddress(), terminationReason);
+        }
+
+        if (player != null) {
+            server.onPlayerDisconnected(player);
         }
     }
 

@@ -21,8 +21,8 @@ public class ShieldLogic extends CommonShieldLogic {
                 shield.rebuildShield();
 
                 Ship ship = shield.getShip();
-                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRebuild(ship.getId(),
-                        ship.getWorld().getTimestamp()));
+                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), player -> new PacketShieldRebuild(ship.getId(),
+                        player.getClientTime(ship.getWorld().getTimestamp())));
             }
         }
     }

@@ -37,7 +37,7 @@ public class Profiler {
     }
 
     public void end() {
-        if (enable) {
+        if (enable && currentCategory != null) {
             long startTime = this.startTime.getLong(fullCategory);
             results.put(fullCategory, (System.nanoTime() - startTime) / 1_000_000.0f);
             fullCategory = fullCategory.substring(0, fullCategory.length() - (currentCategory.length() + 1));
@@ -50,7 +50,8 @@ public class Profiler {
     }
 
     public Node getResults(boolean sort) {
-        results.object2FloatEntrySet().fastForEach(entry -> resultTree.getOrCreateCategory(entry.getKey()).addTime(entry.getFloatValue()));
+        results.object2FloatEntrySet().fastForEach(entry -> resultTree.getOrCreateCategory(entry.getKey())
+                .addTime(entry.getFloatValue()));
 
         if (sort) {
             resultTree.sort();

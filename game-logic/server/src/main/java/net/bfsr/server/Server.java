@@ -6,7 +6,7 @@ import net.bfsr.engine.profiler.Profiler;
 
 @Log4j2
 public abstract class Server extends AbstractGameLoop {
-    final ServerGameLogic gameLogic;
+    protected final ServerGameLogic gameLogic;
     private final Profiler profiler;
 
     protected Server(ServerGameLogic gameLogic) {

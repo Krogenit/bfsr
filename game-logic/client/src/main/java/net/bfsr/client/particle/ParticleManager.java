@@ -1,6 +1,6 @@
 package net.bfsr.client.particle;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
@@ -19,7 +19,7 @@ public class ParticleManager {
     private final List<Particle> particles = new ArrayList<>();
 
     public void init() {
-        Core.get().getEventBus().register(this);
+        Client.get().getEventBus().register(this);
     }
 
     public void update() {
@@ -27,7 +27,7 @@ public class ParticleManager {
             Particle particle = particles.get(i);
             if (particle.isDead()) {
                 particles.remove(i--);
-                particle.onRemoved();
+                particle.clear();
             } else {
                 particle.update();
             }
@@ -53,7 +53,7 @@ public class ParticleManager {
 
     public void clear() {
         for (int i = 0; i < particles.size(); i++) {
-            particles.get(i).onRemoved();
+            particles.get(i).clear();
         }
 
         particles.clear();

@@ -76,6 +76,7 @@ public class PropertyInputBox extends PropertyComponent {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public void setSetting() {
         for (int i = 0; i < inputBoxes.size(); i++) {
             Class<?> type = fields.get(i).getType();
@@ -87,11 +88,12 @@ public class PropertyInputBox extends PropertyComponent {
     @Override
     public void updateConcealableObjectsPositions() {
         int inputBoxWidth = (width - propertyOffsetX) / inputBoxes.size();
+        int addWidthForLastInputBox = width - propertyOffsetX - inputBoxWidth * inputBoxes.size();
         int offsetX = propertyOffsetX;
         for (int i = 0; i < inputBoxes.size(); i++) {
             InputBox inputBox = inputBoxes.get(i);
             inputBox.atTopLeft(offsetX, propertyOffsetY);
-            inputBox.setWidth(inputBoxWidth);
+            inputBox.setWidth(inputBoxWidth + (i == inputBoxes.size() - 1 ? addWidthForLastInputBox : 0));
             offsetX += inputBox.getWidth();
         }
     }

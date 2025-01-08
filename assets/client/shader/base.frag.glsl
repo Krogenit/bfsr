@@ -1,7 +1,7 @@
 #version 450
-#extension GL_ARB_bindless_texture : enable
+#extension GL_ARB_bindless_texture: enable
 
-layout(location = 0) out vec4 out_Color;
+layout (location = 0) out vec4 out_Color;
 
 in Data {
     vec2 textureCoords;
@@ -15,7 +15,7 @@ in Data {
     flat bool font;
 } in_Data;
 
-sampler2D fireTexture;
+layout(binding = 0) uniform sampler2D fireTexture;
 
 vec2 rotateUV(vec2 uv, float rotation) {
     float mid = 0.5;

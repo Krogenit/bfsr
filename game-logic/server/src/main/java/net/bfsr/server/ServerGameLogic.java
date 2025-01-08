@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Random;
 
 @Log4j2
-public class ServerGameLogic extends GameLogic {
+public abstract class ServerGameLogic extends GameLogic {
     @Getter
     private static ServerGameLogic instance;
 
@@ -44,7 +44,7 @@ public class ServerGameLogic extends GameLogic {
     @Getter
     private final ConfigConverterManager configConverterManager = new ConfigConverterManager();
     @Getter
-    private final PlayerManager playerManager = new PlayerManager();
+    private final PlayerManager playerManager = createPlayerManager();
     @Getter
     private final NetworkSystem networkSystem = new NetworkSystem(playerManager);
     private ServerSettings settings;
@@ -68,6 +68,7 @@ public class ServerGameLogic extends GameLogic {
         networkSystem.init();
         configConverterManager.init();
         settings = createSettings();
+        playerManager.init(settings);
         startupNetworkSystem(settings);
         initListeners();
         registerLogic(LogicType.SHIELD_UPDATE.ordinal(), new ShieldLogic());
@@ -85,6 +86,8 @@ public class ServerGameLogic extends GameLogic {
         return new ServerSettings();
     }
 
+    protected abstract PlayerManager createPlayerManager();
+
     private void startupNetworkSystem(ServerSettings serverSettings) {
         InetAddress inetaddress;
         try {
@@ -95,8 +98,6 @@ public class ServerGameLogic extends GameLogic {
             throw new IllegalStateException(
                     "Can't start server on address " + serverSettings.getHostName() + ":" + serverSettings.getPort(), e);
         }
-
-        playerManager.connect(serverSettings.getDataBaseServiceHost(), serverSettings.getDatabaseServicePort());
     }
 
     @Override

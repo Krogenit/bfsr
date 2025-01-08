@@ -19,7 +19,6 @@ import java.util.List;
 
 import static org.lwjgl.stb.STBTruetype.stbtt_FindGlyphIndex;
 import static org.lwjgl.stb.STBTruetype.stbtt_GetCodepointHMetrics;
-import static org.lwjgl.stb.STBTruetype.stbtt_GetCodepointKernAdvance;
 import static org.lwjgl.stb.STBTruetype.stbtt_GetFontVMetrics;
 import static org.lwjgl.stb.STBTruetype.stbtt_InitFont;
 import static org.lwjgl.stb.STBTruetype.stbtt_ScaleForMappingEmToPixels;
@@ -60,7 +59,8 @@ public class STBTrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<STBTrueTypeFo
     public GlyphsData getGlyphsData(String text, int fontSize) {
         STBTrueTypeFontPacker stbTrueTypeFontPacker = getFontBySize(fontSize);
         stbTrueTypeFontPacker.packNewChars(text);
-        float scale = scale(fontSize);
+        scale(fontSize);
+        int width = 0;
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer x = stack.floats(0.0f);
@@ -76,19 +76,20 @@ public class STBTrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<STBTrueTypeFo
                 }
 
                 int advance = (int) x.get(0);
-                x.put(0, x.get(0));
-
-                if (i + 1 < to) {
-                    x.put(0, x.get(0) + stbtt_GetCodepointKernAdvance(fontInfo, charCode, text.charAt(i + 1)) * scale);
-                }
-
                 if (quad.x1() - quad.x0() > 0.0f) {
                     glyphs.add(new Glyph(quad.x0(), quad.y0(), quad.x1(), quad.y1(), quad.s0(), quad.t0(), quad.s1(), quad.t1(),
-                            textureBuffer.get(0), advance));
+                            textureBuffer.get(0), advance, charCode, false));
+                } else {
+                    glyphs.add(new Glyph(quad.x0(), quad.y0(), quad.x1(), quad.y1(), quad.s0(), quad.t0(), quad.s1(), quad.t1(),
+                            textureBuffer.get(0), advance, charCode, true));
                 }
+
+                x.put(0, 0);
+
+                width += advance;
             }
 
-            return new GlyphsData(glyphs, (int) x.get(0));
+            return new GlyphsData(glyphs, width);
         }
     }
 
@@ -157,19 +158,17 @@ public class STBTrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<STBTrueTypeFo
             }
         }
 
-        /* Avoid splitting individual words if breakAtSpaces set; same test condition as in Minecraft's FontRenderer */
         if (index < string.length() && lastIndex >= 0) {
             index = lastIndex;
         }
 
-        /* The string index of the last glyph that wouldn't fit gives the total desired length of the string in characters */
         return index < string.length() ? index : string.length();
     }
 
     @Override
     public int getWidth(String string, int fontSize) {
         STBTrueTypeFontPacker stbTrueTypeFontPacker = getFontBySize(fontSize);
-        float scale = stbtt_ScaleForMappingEmToPixels(fontInfo, fontSize);
+        scale(fontSize);
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer x = stack.floats(0.0f);
@@ -180,10 +179,6 @@ public class STBTrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<STBTrueTypeFo
             for (int i = 0; i < string.length(); i++) {
                 char cp = string.charAt(i);
                 getPackedQuad(stbTrueTypeFontPacker, cp, fontSize, x, y, quad, textureBuffer);
-
-                if (i + 1 < string.length()) {
-                    x.put(0, x.get(0) + stbtt_GetCodepointKernAdvance(fontInfo, cp, string.charAt(i + 1)) * scale);
-                }
             }
 
             return (int) x.get(0);
@@ -192,6 +187,19 @@ public class STBTrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<STBTrueTypeFo
 
     @Override
     public float getHeight(String string, int fontSize) {
+        float lineHeight = getLineHeight(fontSize);
+        float totalHeight = lineHeight;
+        for (int i = 0; i < string.length(); i++) {
+            if (string.charAt(i) == NEW_LINE) {
+                totalHeight += lineHeight;
+            }
+        }
+
+        return totalHeight;
+    }
+
+    @Override
+    public float getLineHeight(int fontSize) {
         float scale = scale(fontSize);
         return (int) ((ascent - descent) * scale);
     }

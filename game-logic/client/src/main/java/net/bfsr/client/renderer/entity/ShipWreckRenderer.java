@@ -28,6 +28,22 @@ public class ShipWreckRenderer extends DamageableRigidBodyRenderer {
     }
 
     @Override
+    public void init() {
+        float sin = rigidBody.getSin();
+        float cos = rigidBody.getCos();
+        float localOffsetX = wreck.getLocalOffsetX();
+        float localOffsetY = wreck.getLocalOffsetY();
+        RotationHelper.rotate(sin, cos, localOffsetX, localOffsetY, localOffsetRotated);
+        id = spriteRenderer.add(rigidBody.getX() - localOffsetRotated.x, rigidBody.getY() - localOffsetRotated.y, sin, cos,
+                object.getSizeX(), object.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(),
+                maskTexture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
+
+        for (int i = 0; i < connectedObjectRenders.size(); i++) {
+            connectedObjectRenders.get(i).init();
+        }
+    }
+
+    @Override
     public void update() {
         super.update();
 
@@ -46,18 +62,46 @@ public class ShipWreckRenderer extends DamageableRigidBodyRenderer {
     }
 
     @Override
-    public void renderAlpha() {
+    protected void updateLastRenderValues() {
+        super.updateLastRenderValues();
         float sin = rigidBody.getSin();
         float cos = rigidBody.getCos();
         float localOffsetX = wreck.getLocalOffsetX();
         float localOffsetY = wreck.getLocalOffsetY();
         RotationHelper.rotate(sin, cos, localOffsetX, localOffsetY, localOffsetRotated);
-        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x - localOffsetRotated.x, lastPosition.y - localOffsetRotated.y,
-                rigidBody.getX() - localOffsetRotated.x, rigidBody.getY() - localOffsetRotated.y, lastSin, lastCos, sin, cos,
-                object.getSizeX(), object.getSizeY(), color.x, color.y, color.z, color.w, texture, maskTexture, BufferType.ENTITIES_ALPHA);
+        spriteRenderer.setLastPosition(id, BufferType.ENTITIES_ALPHA, rigidBody.getX() - localOffsetRotated.x,
+                rigidBody.getY() - localOffsetRotated.y);
+        spriteRenderer.setLastRotation(id, BufferType.ENTITIES_ALPHA, sin, cos);
+    }
+
+    @Override
+    protected void updateRenderValues() {
+        super.updateRenderValues();
+        float sin = rigidBody.getSin();
+        float cos = rigidBody.getCos();
+        float localOffsetX = wreck.getLocalOffsetX();
+        float localOffsetY = wreck.getLocalOffsetY();
+        RotationHelper.rotate(sin, cos, localOffsetX, localOffsetY, localOffsetRotated);
+        spriteRenderer.setPosition(id, BufferType.ENTITIES_ALPHA, rigidBody.getX() - localOffsetRotated.x,
+                rigidBody.getY() - localOffsetRotated.y);
+        spriteRenderer.setRotation(id, BufferType.ENTITIES_ALPHA, sin, cos);
+    }
+
+    @Override
+    public void renderAlpha() {
+        super.renderAlpha();
 
         for (int i = 0; i < connectedObjectRenders.size(); i++) {
             connectedObjectRenders.get(i).renderAlpha();
+        }
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+
+        for (int i = 0; i < connectedObjectRenders.size(); i++) {
+            connectedObjectRenders.get(i).clear();
         }
     }
 }

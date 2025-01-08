@@ -1,7 +1,7 @@
 package net.bfsr.client.world.entity;
 
 import lombok.RequiredArgsConstructor;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.damage.DamageMask;
@@ -22,7 +22,7 @@ public class ShipWreckSpawnLogic extends DamageableRigidBodySpawnLogic<ShipWreck
                 new DamageMask(spawnData.getMaskWidth(), spawnData.getMaskHeight(), null), spawnData.getPolygon(),
                 spawnData.getLocalOffsetX(), spawnData.getLocalOffsetY());
 
-        World world = Core.get().getWorld();
+        World world = Client.get().getWorld();
         wreck.init(world, spawnData.getEntityId());
         Body body = wreck.getBody();
         body.setLinearVelocity(spawnData.getVelocityX(), spawnData.getVelocityY());

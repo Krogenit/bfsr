@@ -1,8 +1,7 @@
 package net.bfsr.client.particle;
 
 import lombok.Getter;
-import lombok.Setter;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.renderer.particle.ParticleRender;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.LUT;
@@ -17,16 +16,23 @@ import org.joml.Vector2f;
 import java.util.function.Consumer;
 
 public class Particle extends GameObject {
-    private static final ObjectPool<ParticleRender> RENDER_POOL = new ObjectPool<>(ParticleRender::new);
-    private static final ParticleManager PARTICLE_MANAGER = Core.get().getParticleManager();
-    private static final ParticleRenderer PARTICLE_RENDERER = Core.get().getGlobalRenderer().getParticleRenderer();
+    private static final ObjectPool<ParticleRender>[] RENDER_POOL = new ObjectPool[4];
+
+    static {
+        RENDER_POOL[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()] = new ObjectPool<>(ParticleRender::new);
+        RENDER_POOL[RenderLayer.BACKGROUND_ADDITIVE.ordinal()] = new ObjectPool<>(ParticleRender::new);
+        RENDER_POOL[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()] = new ObjectPool<>(ParticleRender::new);
+        RENDER_POOL[RenderLayer.DEFAULT_ADDITIVE.ordinal()] = new ObjectPool<>(ParticleRender::new);
+    }
+
+    private static final ParticleManager PARTICLE_MANAGER = Client.get().getParticleManager();
+    private static final ParticleRenderer PARTICLE_RENDERER = Client.get().getGlobalRenderer().getParticleRenderer();
 
     @Getter
-    @Setter
     protected float sin, cos;
     private float localSin, localCos;
     @Getter
-    protected float sizeVelocity, alphaVelocity;
+    protected float sizeVelocity;
     private float angularVelocitySin, angularVelocityCos;
     @Getter
     protected boolean zeroVelocity;
@@ -37,6 +43,8 @@ public class Particle extends GameObject {
     @Getter
     private final Vector2f localPosition = new Vector2f();
     private Consumer<Particle> updateLogic;
+    @Getter
+    private RenderLayer renderLayer;
 
     public Particle init(TextureRegister texture, float worldX, float worldY, float velocityX,
                          float velocityY, float sin, float cos, float angularVelocity, float scaleX, float scaleY,
@@ -44,7 +52,7 @@ public class Particle extends GameObject {
                          RenderLayer renderLayer) {
         return init(Engine.assetsManager.getTexture(texture).getTextureHandle(), worldX, worldY, 0, 0, velocityX,
                 velocityY, sin, cos, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, isAlphaFromZero,
-                renderLayer, Particle::defaultUpdateLogic);
+                renderLayer, Particle::defaultUpdateLogic, ParticleRender::defaultUpdateLastValues);
     }
 
     public Particle init(long textureHandle, float worldX, float worldY, float localX, float localY, float velocityX,
@@ -52,51 +60,53 @@ public class Particle extends GameObject {
                          float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero,
                          RenderLayer renderLayer) {
         return init(textureHandle, worldX, worldY, localX, localY, velocityX, velocityY, sin, cos, angularVelocity, scaleX,
-                scaleY, sizeVelocity, r, g, b, a, alphaVelocity, isAlphaFromZero, renderLayer, Particle::defaultUpdateLogic);
+                scaleY, sizeVelocity, r, g, b, a, alphaVelocity, isAlphaFromZero, renderLayer, Particle::defaultUpdateLogic,
+                ParticleRender::defaultUpdateLastValues);
     }
 
     public Particle init(long textureHandle, float worldX, float worldY, float localX, float localY, float velocityX,
                          float velocityY, float sin, float cos, float angularVelocity, float scaleX, float scaleY,
                          float sizeVelocity, float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero,
-                         RenderLayer renderLayer, Consumer<Particle> updateLogic) {
-        setPosition(worldX, worldY);
+                         RenderLayer renderLayer, Consumer<Particle> updateLogic,
+                         Consumer<ParticleRender> lastValuesUpdateConsumer) {
+        this.renderLayer = renderLayer;
+        Client client = Client.get();
+        render = RENDER_POOL[renderLayer.ordinal()].get().init(this, worldX, worldY, sin, cos, scaleX, scaleY, textureHandle,
+                r, g, b, a, isAlphaFromZero, client.convertToDeltaTime(alphaVelocity),
+                PARTICLE_RENDERER.getBuffersHolder(renderLayer), lastValuesUpdateConsumer);
+        super.setPosition(worldX, worldY);
         this.localPosition.set(localX, localY);
-        Core core = Core.get();
-        this.velocity.set(core.convertToDeltaTime(velocityX), core.convertToDeltaTime(velocityY));
+        this.velocity.set(client.convertToDeltaTime(velocityX), client.convertToDeltaTime(velocityY));
         this.sin = sin;
         this.cos = cos;
         this.localSin = 0;
         this.localCos = 1;
-        float angularVelocityInTick = core.convertToDeltaTime(angularVelocity);
+        float angularVelocityInTick = client.convertToDeltaTime(angularVelocity);
         this.angularVelocitySin = LUT.sin(angularVelocityInTick);
         this.angularVelocityCos = LUT.cos(angularVelocityInTick);
-        setSize(scaleX, scaleY);
-        this.sizeVelocity = core.convertToDeltaTime(sizeVelocity);
-        this.alphaVelocity = core.convertToDeltaTime(alphaVelocity);
+        super.setSize(scaleX, scaleY);
+        this.sizeVelocity = client.convertToDeltaTime(sizeVelocity);
         this.zeroVelocity = velocity.lengthSquared() <= 0.01f;
         this.isDead = false;
         this.updateLogic = updateLogic;
-        addParticle(textureHandle, r, g, b, a, isAlphaFromZero, renderLayer);
+        addParticle();
         return this;
     }
 
-    protected void addParticle(long textureHandle, float r, float g, float b, float a, boolean isAlphaFromZero,
-                               RenderLayer renderLayer) {
+    protected void addParticle() {
         PARTICLE_MANAGER.addParticle(this);
-        render = RENDER_POOL.get().init(this, textureHandle, r, g, b, a, isAlphaFromZero);
         PARTICLE_RENDERER.addParticleToRenderLayer(render, renderLayer);
     }
 
     @Override
     public void update() {
         updateLogic.accept(this);
+        render.postWorldUpdate();
     }
 
     public void defaultUpdateLogic() {
-        float cos = this.cos * angularVelocityCos - this.sin * angularVelocitySin;
-        float sin = this.cos * angularVelocitySin + this.sin * angularVelocityCos;
-        this.cos = cos;
-        this.sin = sin;
+        setRotation(this.cos * angularVelocitySin + this.sin * angularVelocityCos,
+                this.cos * angularVelocityCos - this.sin * angularVelocitySin);
 
         if (!zeroVelocity) {
             addPosition(velocity.x, velocity.y);
@@ -135,8 +145,38 @@ public class Particle extends GameObject {
         addPosition(localPosition.x, localPosition.y);
     }
 
-    public void onRemoved() {
+    @Override
+    protected void addPosition(float x, float y) {
+        super.addPosition(x, y);
+        render.setPosition(getX(), getY());
+    }
+
+    @Override
+    public void setPosition(float x, float y) {
+        super.setPosition(x, y);
+        render.setPosition(x, y);
+    }
+
+    public void setRotation(float sin, float cos) {
+        this.sin = sin;
+        this.cos = cos;
+        render.setRotation(sin, cos);
+    }
+
+    @Override
+    public void addSize(float x, float y) {
+        super.addSize(x, y);
+        render.setSize(getSizeX(), getSizeY());
+    }
+
+    @Override
+    public void setSize(float x, float y) {
+        super.setSize(x, y);
+        render.setSize(x, y);
+    }
+
+    public void clear() {
         ParticleManager.PARTICLE_POOL.returnBack(this);
-        RENDER_POOL.returnBack(render);
+        RENDER_POOL[renderLayer.ordinal()].returnBack(render);
     }
 }

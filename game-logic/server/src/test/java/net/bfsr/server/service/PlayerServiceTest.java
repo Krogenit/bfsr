@@ -3,7 +3,7 @@ package net.bfsr.server.service;
 import net.bfsr.database.Main;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.faction.Faction;
-import net.bfsr.server.DedicatedServerGameLogic;
+import net.bfsr.server.dedicated.DedicatedServerGameLogic;
 import net.bfsr.server.dto.PlayerModel;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.rsocket.RSocketClient;

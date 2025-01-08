@@ -32,11 +32,14 @@ public class BeamParticles {
         Ship ship = slot.getShip();
         particles.add(PARTICLE_POOL.get().init(Engine.assetsManager.getTexture(TextureRegister.particleLight).getTextureHandle(),
                 slot.getX(), slot.getY(), 0, 0, 0, 0, slot.getSin(), slot.getCos(), 0.0f, slot.getSizeX() * 2.5f, slot.getSizeY() * 2.5f, 0,
-                color.x, color.y, color.z, color.w, 0, false, RenderLayer.DEFAULT_ADDITIVE, particle -> {
-                    particle.setSin(ship.getSin());
-                    particle.setCos(ship.getCos());
-                    particle.setPosition(slot.getX(), slot.getY());
-                    particle.getRender().getColor().w = slot.getBeamPower() * 0.6f;
+                color.x, color.y, color.z, color.w, 0, false, RenderLayer.DEFAULT_ADDITIVE, particle1 -> {
+                    particle1.setPosition(slot.getX(), slot.getY());
+                    particle1.setRotation(ship.getSin(), ship.getCos());
+                    particle1.getRender().setColorAlpha(slot.getBeamPower() * 0.6f);
+                }, particleRender -> {
+                    particleRender.setLastPosition();
+                    particleRender.setLastRotation();
+                    particleRender.setLastColorAlpha();
                 }));
 
         spawnBeam(1.0f, 0.3333f);
@@ -63,12 +66,10 @@ public class BeamParticles {
 
         particles.add(PARTICLE_POOL.get().init(Engine.assetsManager.getTexture(TextureRegister.particleBeam).getTextureHandle(),
                 worldX, worldY, 0, 0, 0, 0, sin, cos, 0.0f, 0.0f, slotSizeY * sizeYMultiplayer, 0,
-                color.x, color.y, color.z, color.w * colorMultiplayer, 0, false, RenderLayer.DEFAULT_ADDITIVE, particle -> {
+                color.x, color.y, color.z, color.w * colorMultiplayer, 0, false, RenderLayer.DEFAULT_ADDITIVE, particle1 -> {
                     float cos1 = ship.getCos();
                     float sin1 = ship.getSin();
-
-                    particle.setSin(sin1);
-                    particle.setCos(cos1);
+                    particle1.setRotation(sin1, cos1);
 
                     float startRange1 = -slotSizeX;
 
@@ -78,16 +79,18 @@ public class BeamParticles {
                     float localX1 = startX1 + cos1 * slot.getCurrentBeamRange();
                     float localY1 = startY1 + sin1 * slot.getCurrentBeamRange();
 
-                    particle.setPosition(slot.getX() + localX1 * 0.5f, slot.getY() + localY1 * 0.5f);
+                    particle1.setPosition(slot.getX() + localX1 * 0.5f, slot.getY() + localY1 * 0.5f);
 
-                    particle.getRender().getLastSize().set(particle.getSizeX(), particle.getSizeY());
-                    particle.setSize(
+                    particle1.setSize(
                             (float) Math.sqrt((localX1 - startX1) * (localX1 - startX1) + (localY1 - startY1) * (localY1 - startY1)),
                             slotSizeY * sizeYMultiplayer);
 
-                    Vector4f particleColor = particle.getRender().getColor();
-                    particle.getRender().getLastColor().w = particleColor.w;
-                    particleColor.w = slot.getBeamPower() * colorMultiplayer;
+                    particle1.getRender().setColorAlpha(slot.getBeamPower() * colorMultiplayer);
+                }, particleRender -> {
+                    particleRender.setLastPosition();
+                    particleRender.setLastRotation();
+                    particleRender.setLastSize();
+                    particleRender.setLastColorAlpha();
                 }));
     }
 
@@ -105,9 +108,12 @@ public class BeamParticles {
                     velocity.y *= 0.99f;
 
                     particle.addSize(particle.getSizeVelocity(), particle.getSizeVelocity());
-                    particle.setSin(ship.getSin());
-                    particle.setCos(ship.getCos());
+                    particle.setRotation(ship.getSin(), ship.getCos());
                     particle.setPosition(slot.getX() + localPosition.x, slot.getY() + localPosition.y);
+                }, render -> {
+                    render.setLastPosition();
+                    render.setLastRotation();
+                    render.setLastSize();
                 });
 
         while (lightingParticles.size() < slot.getCurrentBeamRange() / 10.0f) {

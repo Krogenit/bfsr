@@ -15,5 +15,6 @@ public abstract class AbstractMouse {
     public abstract boolean isRightDown();
 
     public abstract Vector2f getPosition();
+    public abstract Vector2f getGuiPosition();
     public abstract Vector2f getWorldPosition(AbstractCamera camera);
 }

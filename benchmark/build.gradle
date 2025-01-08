@@ -1,0 +1,8 @@
+jar {
+    archiveBaseName = 'bfsr-benchmark'
+    archiveVersion = '0.0.1-SNAPSHOT'
+}
+
+dependencies {
+    implementation project(':game-logic:client')
+}

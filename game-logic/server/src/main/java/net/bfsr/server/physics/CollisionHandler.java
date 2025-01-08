@@ -207,8 +207,8 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         shield.resetRebuildingTime();
         Ship ship = shield.getShip();
-        trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRebuildingTime(ship.getId(), 0,
-                ship.getWorld().getTimestamp()));
+        trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRebuildingTime(
+                ship.getId(), 0, ship.getWorld().getTimestamp()));
         return false;
     }
 
@@ -234,6 +234,7 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         Polygon clip = damageSystem.createCirclePath(contactX - x, contactY - y, -sin, cos, 12, polygonRadius);
         rigidBody.getWorld().getGameLogic().addFutureTask(() -> damageSystem.damage(rigidBody, contactX, contactY, clip, radius, x, y, sin,
-                cos, () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(), new PacketSyncDamage(rigidBody))));
+                cos, () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(), new PacketSyncDamage(rigidBody,
+                        rigidBody.getWorld().getTimestamp()))));
     }
 }

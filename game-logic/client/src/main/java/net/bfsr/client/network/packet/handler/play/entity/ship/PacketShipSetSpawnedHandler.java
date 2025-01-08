@@ -1,7 +1,7 @@
 package net.bfsr.client.network.packet.handler.play.entity.ship;
 
 import io.netty.channel.ChannelHandlerContext;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.entity.GameObject;
 import net.bfsr.entity.ship.Ship;
@@ -14,7 +14,7 @@ public class PacketShipSetSpawnedHandler extends PacketHandler<PacketShipSetSpaw
     @Override
     public void handle(PacketShipSetSpawned packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
-        GameObject gameObject = Core.get().getWorld().getEntityById(packet.getId());
+        GameObject gameObject = Client.get().getWorld().getEntityById(packet.getId());
         if (gameObject instanceof Ship ship) {
             ship.setSpawned();
         }

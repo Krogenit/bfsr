@@ -20,12 +20,12 @@ public class LegacyGlyphsBuilder extends GlyphsBuilder {
         ArrayList<net.bfsr.engine.renderer.font.glyph.Glyph> glyphArrayList = new ArrayList<>(glyphs.length);
         for (int i = 0; i < glyphs.length; i++) {
             Glyph glyph = glyphs[i];
-            glyphArrayList.add(new net.bfsr.engine.renderer.font.glyph.Glyph(glyph.x / 2, glyph.y / 2, (glyph.x + glyph.texture.width) / 2,
-                    (glyph.y + glyph.texture.height) / 2, glyph.texture.u1, glyph.texture.v1, glyph.texture.u2, glyph.texture.v2,
-                    glyph.texture.textureHandle, glyph.advance));
+            glyphArrayList.add(new net.bfsr.engine.renderer.font.glyph.Glyph(glyph.x, glyph.y, (glyph.x + glyph.texture.width),
+                    (glyph.y + glyph.texture.height), glyph.texture.u1, glyph.texture.v1, glyph.texture.u2, glyph.texture.v2,
+                    glyph.texture.textureHandle, glyph.advance, text.charAt(glyph.stringIndex), false));
         }
 
-        return new GlyphsData(glyphArrayList, entry.advance / 2);
+        return new GlyphsData(glyphArrayList, entry.advance);
     }
 
     @Override
@@ -35,7 +35,20 @@ public class LegacyGlyphsBuilder extends GlyphsBuilder {
 
     @Override
     public float getHeight(String string, int fontSize) {
-        return stringCache.getHeight(string, fontSize);
+        float lineHeight = getLineHeight(fontSize);
+        float totalHeight = lineHeight;
+        for (int i = 0; i < string.length(); i++) {
+            if (string.charAt(i) == NEW_LINE) {
+                totalHeight += lineHeight;
+            }
+        }
+
+        return totalHeight;
+    }
+
+    @Override
+    public float getLineHeight(int fontSize) {
+        return stringCache.getHeight("\n", fontSize);
     }
 
     @Override

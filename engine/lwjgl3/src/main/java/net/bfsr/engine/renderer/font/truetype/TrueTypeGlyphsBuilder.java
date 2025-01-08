@@ -8,8 +8,6 @@ import net.bfsr.engine.util.IOUtils;
 import net.bfsr.engine.util.PathHelper;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.util.freetype.FT_Face;
-import org.lwjgl.util.freetype.FT_GlyphSlot;
-import org.lwjgl.util.freetype.FreeType;
 
 import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
@@ -20,9 +18,7 @@ import static org.lwjgl.util.freetype.FreeType.FT_Err_Ok;
 import static org.lwjgl.util.freetype.FreeType.FT_Err_Unknown_File_Format;
 import static org.lwjgl.util.freetype.FreeType.FT_Get_Char_Index;
 import static org.lwjgl.util.freetype.FreeType.FT_Init_FreeType;
-import static org.lwjgl.util.freetype.FreeType.FT_Load_Char;
 import static org.lwjgl.util.freetype.FreeType.FT_New_Memory_Face;
-import static org.lwjgl.util.freetype.FreeType.FT_Set_Pixel_Sizes;
 
 @Log4j2
 public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPacker> {
@@ -38,9 +34,9 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
         library = libraryPointerBuffer.get(0);
     }
 
-    //This should be keep in memory
+    // This should be keep in memory
     private final ByteBuffer byteBuffer;
-    //This should be keep in memory
+    // This should be keep in memory
     private final PointerBuffer ftFacePointerBuffer;
     private final FT_Face ftFace;
 
@@ -66,7 +62,7 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
         trueTypeFontPacker.packNewChars(text);
 
         List<Glyph> glyphs = new ArrayList<>(32);
-        int x = 0;
+        int width = 0;
 
         for (int i = 0, to = text.length(); i < to; i++) {
             char charCode = text.charAt(i);
@@ -75,13 +71,13 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
                 continue;
             }
 
-            glyphs.add(new Glyph(glyph.getX1() + x, glyph.getY1(), glyph.getX2() + x, glyph.getY2(), glyph.getU1(), glyph.getV1(),
-                    glyph.getU2(), glyph.getV2(), glyph.getTextureHandle(), glyph.getAdvance()));
+            glyphs.add(new Glyph(glyph.getX1(), glyph.getY1(), glyph.getX2(), glyph.getY2(), glyph.getU1(), glyph.getV1(),
+                    glyph.getU2(), glyph.getV2(), glyph.getTextureHandle(), glyph.getAdvance(), glyph.getCodepoint(), glyph.isEmpty()));
 
-            x += glyph.getAdvance();
+            width += glyph.getAdvance();
         }
 
-        return new GlyphsData(glyphs, x);
+        return new GlyphsData(glyphs, width);
     }
 
     @Override
@@ -118,8 +114,6 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
             return 0;
         }
 
-        FT_Set_Pixel_Sizes(ftFace, 0, fontSize);
-
         int lastIndex = -1;
         int index = 0, advance = 0;
         while (index < string.length() && advance <= maxWidth) {
@@ -134,11 +128,12 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
                 }
             }
 
-            if (FT_Load_Char(ftFace, cp, FreeType.FT_LOAD_DEFAULT) != FT_Err_Ok) {
+            Glyph glyph = getGlyph(cp, fontSize);
+            if (glyph == null) {
                 continue;
             }
 
-            int nextAdvance = advance + (int) (ftFace.glyph().advance().x() >> 6);
+            int nextAdvance = advance + glyph.getAdvance();
             if (nextAdvance <= maxWidth) {
                 advance = nextAdvance;
                 index++;
@@ -156,16 +151,14 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
 
     @Override
     public int getWidth(String string, int fontSize) {
-        FT_Set_Pixel_Sizes(ftFace, 0, fontSize);
         int width = 0;
         for (int i = 0; i < string.length(); i++) {
-            char cp = string.charAt(i);
-            if (FT_Load_Char(ftFace, cp, FreeType.FT_LOAD_DEFAULT) != FT_Err_Ok) {
+            Glyph glyph = getGlyph(string.charAt(i), fontSize);
+            if (glyph == null) {
                 continue;
             }
 
-            FT_GlyphSlot glyph = ftFace.glyph();
-            width += (int) (glyph.advance().x() >> 6);
+            width += glyph.getAdvance();
         }
 
         return width;
@@ -173,7 +166,20 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
 
     @Override
     public float getHeight(String string, int fontSize) {
-        return getAscent(string, fontSize) - getDescent(string, fontSize);
+        float lineHeight = getLineHeight(fontSize);
+        float totalHeight = lineHeight;
+        for (int i = 0; i < string.length(); i++) {
+            if (string.charAt(i) == NEW_LINE) {
+                totalHeight += lineHeight;
+            }
+        }
+
+        return totalHeight;
+    }
+
+    @Override
+    public float getLineHeight(int fontSize) {
+        return getAscent("\n", fontSize) - getDescent("\n", fontSize);
     }
 
     @Override
@@ -183,8 +189,7 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
 
     @Override
     public float getDescent(String string, int fontSize) {
-        FT_Set_Pixel_Sizes(ftFace, 0, fontSize);
-        return (int) (ftFace.size().metrics().descender() >> 6);
+        return getFontBySize(fontSize).getDescender();
     }
 
     @Override
@@ -194,7 +199,7 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
 
     @Override
     public int getCenteredOffsetY(String string, int height, int fontSize) {
-        return Math.round((height - getAscent(string, fontSize) + getDescent(string, fontSize)) / 2.0f);
+        return (int) ((height - getAscent(string, fontSize) + getDescent(string, fontSize)) / 2.0f);
     }
 
     @Override
@@ -203,15 +208,15 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
             return 0;
         }
 
-        FT_Set_Pixel_Sizes(ftFace, 0, fontSize);
         float advance = 0.0f;
         int index = 0;
         while (index < string.length() && advance <= mouseX) {
-            if (FT_Load_Char(ftFace, string.charAt(index), FreeType.FT_LOAD_DEFAULT) != FT_Err_Ok) {
+            Glyph glyph = getGlyph(string.charAt(index), fontSize);
+            if (glyph == null) {
                 continue;
             }
 
-            float charHalfAdvance = ftFace.glyph().advance().x() / 64.0f * 0.5f;
+            float charHalfAdvance = (glyph.getAdvance() << 6) / 64.0f * 0.5f;
             float nextAdvance = advance + charHalfAdvance;
             if (nextAdvance <= mouseX) {
                 advance = nextAdvance + charHalfAdvance;

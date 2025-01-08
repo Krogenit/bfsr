@@ -1,7 +1,7 @@
 package net.bfsr.client.gui.connect;
 
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.language.Lang;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
@@ -22,19 +22,18 @@ public class GuiConnect extends Gui {
     public GuiConnect(Gui parentGui) {
         super(parentGui);
 
-        int buttonOffsetX = -150;
         int fontSize = 20;
         int offsetX = 24;
 
         InputBox hostInputBox = new InputBox(TextureRegister.guiButtonBase, Lang.getString("gui.connect.host"),
                 fontSize, offsetX, 0).setString("192.168.2.2:34000");
-        add(hostInputBox.atCenter(buttonOffsetX, -100));
+        add(hostInputBox.atCenter(0, 50));
         InputBox usernameInputBox = new InputBox(TextureRegister.guiButtonBase, Lang.getString("gui.connect.username"),
                 fontSize, offsetX, 0).setString("Krogenit");
-        add(usernameInputBox.atCenter(buttonOffsetX, -50));
+        add(usernameInputBox.atCenter(0, 0));
         InputBox passwordInputBox = new InputBox(TextureRegister.guiButtonBase, Lang.getString("gui.connect.password"),
                 fontSize, offsetX, 0).setString("test");
-        add(passwordInputBox.atCenter(buttonOffsetX, 0));
+        add(passwordInputBox.atCenter(0, -50));
 
         add(new Button(Lang.getString("gui.connect.connect"), () -> {
             if (connectingText.getColor().w <= 0.01f) {
@@ -49,31 +48,31 @@ public class GuiConnect extends Gui {
                         try {
                             port = Integer.parseInt(inputString[1]);
                         } catch (NumberFormatException e) {
-                            Core.get().addFutureTask(() -> setErrorMessage("Wrong port number"));
+                            Client.get().addFutureTask(() -> setErrorMessage("Wrong port number"));
                             return;
                         }
 
                         String playerName = usernameInputBox.getString();
 
                         if (playerName.length() < 3) {
-                            Core.get().addFutureTask(() -> setErrorMessage("Username must be at least 3 characters"));
+                            Client.get().addFutureTask(() -> setErrorMessage("Username must be at least 3 characters"));
                             return;
                         }
 
                         String password = passwordInputBox.getString();
 
                         if (password.length() < 3) {
-                            Core.get().addFutureTask(() -> setErrorMessage("Password must be at least 3 characters"));
+                            Client.get().addFutureTask(() -> setErrorMessage("Password must be at least 3 characters"));
                             return;
                         }
 
                         try {
                             inetaddress = InetAddress.getByName(host);
-                            Core.get().connectToServer(inetaddress, port, playerName);
+                            Client.get().connectToServer(inetaddress, port, playerName);
                         } catch (UnknownHostException unknownhostexception) {
                             log.error("Couldn't connect to server", unknownhostexception);
-                            Core.get().addFutureTask(() -> setErrorMessage(Lang.getString("connect.failed") + " Unknown Host"));
-                            Core.get().clearNetwork();
+                            Client.get().addFutureTask(() -> setErrorMessage(Lang.getString("connect.failed") + " Unknown Host"));
+                            Client.get().clearNetwork();
                         } catch (Exception e) {
                             log.error("Couldn't connect to server", e);
                             String s = e.toString();
@@ -84,21 +83,21 @@ public class GuiConnect extends Gui {
                             }
 
                             String finalS = s;
-                            Core.get().addFutureTask(() -> setErrorMessage(Lang.getString("connect.failed") + " " + finalS));
-                            Core.get().clearNetwork();
+                            Client.get().addFutureTask(() -> setErrorMessage(Lang.getString("connect.failed") + " " + finalS));
+                            Client.get().clearNetwork();
                         }
                     } else {
-                        Core.get().addFutureTask(() -> setErrorMessage("Incorrect Host Name"));
+                        Client.get().addFutureTask(() -> setErrorMessage("Incorrect Host Name"));
                     }
                 });
                 t.start();
             }
-        }).atCenter(buttonOffsetX, 50));
+        }).atCenter(0, -100));
         add(new Button(Lang.getString("gui.back"), () -> {
-            Core.get().clearNetwork();
-            Core.get().openGui(parentGui);
-        }).atCenter(buttonOffsetX, 200));
-        add(connectingText.atCenter(0, 150));
+            Client.get().clearNetwork();
+            Client.get().openGui(parentGui);
+        }).atCenter(0, -250));
+        add(connectingText.atCenter(0, -150));
     }
 
     @Override

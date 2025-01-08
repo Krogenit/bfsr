@@ -1,15 +1,17 @@
 package net.bfsr.client.input;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.gui.component.GuiObject;
+
+import java.util.List;
 
 class GuiInputController extends InputController {
     private GuiManager guiManager;
 
     @Override
     public void init() {
-        guiManager = Core.get().getGuiManager();
+        guiManager = Client.get().getGuiManager();
     }
 
     @Override
@@ -44,8 +46,17 @@ class GuiInputController extends InputController {
     @Override
     public boolean mouseLeftRelease() {
         GuiObject hoveredGuiObject = guiManager.findHoveredGuiObject();
-        guiManager.forEach(GuiObject::mouseLeftRelease);
-        if (hoveredGuiObject == null) return false;
+        List<GuiObject> guiStack = guiManager.getGuiStack();
+
+        GuiObject guiObject = null;
+        for (int i = 0; i < guiStack.size(); i++) {
+            guiObject = guiStack.get(i).mouseLeftRelease();
+        }
+
+        if (hoveredGuiObject == null || guiObject != hoveredGuiObject) {
+            return false;
+        }
+
         hoveredGuiObject.getLeftReleaseRunnable().run();
         return true;
     }

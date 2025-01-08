@@ -1,8 +1,11 @@
 package net.bfsr.editor.gui.property;
 
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.Button;
-import net.bfsr.engine.gui.renderer.GuiObjectRenderer;
+import net.bfsr.engine.gui.renderer.RectangleOutlinedRenderer;
+import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.font.Font;
+import net.bfsr.engine.renderer.primitive.Primitive;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -13,7 +16,7 @@ import static net.bfsr.editor.gui.EditorTheme.TEXT_COLOR_GRAY;
 import static net.bfsr.editor.gui.EditorTheme.setupButton;
 
 abstract class PropertyList<T extends PropertyComponent, O> extends PropertyObject<T> {
-    final Button addButton;
+    private final Button addButton;
     final Supplier<O> supplier;
     final int contextMenuStringXOffset = 8;
 
@@ -24,30 +27,91 @@ abstract class PropertyList<T extends PropertyComponent, O> extends PropertyObje
         int addButtonSize = 20;
         add(addButton = new Button(width - addButtonSize, height - baseHeight, addButtonSize, addButtonSize, "", font,
                 fontSize, stringOffsetY, () -> addProperty(createObject())));
-        setupButton(addButton).atBottomRight(-addButton.getWidth(), -addButton.getHeight());
-        addButton.setRenderer(new GuiObjectRenderer(addButton) {
+        setupButton(addButton).atBottomRight(0, 0);
+        addButton.setRenderer(new RectangleOutlinedRenderer(addButton) {
+            private static final Primitive PLUS_1_PRIMITIVE = new Primitive(-0.0833f, 0.5f, 0.0f, 1.0f, -0.0833f, -0.5f, 1.0f, 1.0f,
+                    0.0833f, -0.5f, 1.0f, 0.0f, 0.0833f, 0.5f, 0.0f, 0.0f);
+            private static final Primitive PLUS_2_PRIMITIVE = new Primitive(-0.5f, 0.0833f, 0.0f, 1.0f, -0.5f, -0.0833f, 1.0f, 1.0f,
+                    0.5f, -0.0833f, 1.0f, 0.0f, 0.5f, 0.0833f, 0.0f, 0.0f);
+
+            private int plus1Id, plus2Id;
+
             @Override
-            public void render(int lastX, int lastY, int x, int y, int width, int height) {
-                if (guiObject.isMouseHover()) {
-                    guiRenderer.add(lastX, lastY, x, y, width, height, outlineHoverColor);
-                    guiRenderer.add(lastX + 1, lastY + 1, x + 1, y + 1, width - 2, height - 2, hoverColor);
-                } else {
-                    guiRenderer.add(lastX, lastY, x, y, width, height, outlineColor);
-                    guiRenderer.add(lastX + 1, lastY + 1, x + 1, y + 1, width - 2, height - 2, color);
-                }
+            protected void create() {
+                super.create();
+                Engine.renderer.spriteRenderer.addPrimitive(PLUS_1_PRIMITIVE);
+                Engine.renderer.spriteRenderer.addPrimitive(PLUS_2_PRIMITIVE);
 
-                int centerX = x + width / 2;
-                int centerY = y + height / 2;
-                int offsetX = 1;
-                int offsetY = 6;
-                guiRenderer.addPrimitive(centerX - offsetX, centerY - offsetY, centerX - offsetX, centerY + offsetY,
-                        centerX + offsetX, centerY + offsetY, centerX + offsetX, centerY - offsetY,
-                        TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, 1.0f, 0);
-                guiRenderer.addPrimitive(centerX - offsetY, centerY - offsetX, centerX - offsetY, centerY + offsetX,
-                        centerX + offsetY, centerY + offsetX, centerX + offsetY, centerY - offsetX,
-                        TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, 1.0f, 0);
+                int x = guiObject.getSceneX() + guiObject.getWidth() / 2;
+                int y = guiObject.getSceneY() + guiObject.getHeight() / 2;
+                idList.add(plus1Id = guiRenderer.add(x, y, 8, 8, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, 1.0f));
+                idList.add(plus2Id = guiRenderer.add(x, y, 8, 8, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, 1.0f));
+            }
 
-                super.render(lastX, lastY, x, y, width, height);
+            @Override
+            protected void renderBody() {
+                super.renderBody();
+                guiRenderer.addDrawCommand(plus1Id, PLUS_1_PRIMITIVE.getBaseVertex());
+                guiRenderer.addDrawCommand(plus2Id, PLUS_2_PRIMITIVE.getBaseVertex());
+            }
+
+            @Override
+            protected void setBodyLastValues() {
+                super.setBodyLastValues();
+                int x = lastX + guiObject.getWidth() / 2;
+                int y = lastY + guiObject.getHeight() / 2;
+                guiRenderer.setLastPosition(plus1Id, x, y);
+                guiRenderer.setLastPosition(plus2Id, x, y);
+            }
+
+            @Override
+            public void updatePosition() {
+                super.updatePosition();
+                int x = guiObject.getSceneX() + guiObject.getWidth() / 2;
+                int y = guiObject.getSceneY() + guiObject.getHeight() / 2;
+                guiRenderer.setPosition(plus1Id, x, y);
+                guiRenderer.setPosition(plus2Id, x, y);
+            }
+        });
+
+        Button removeButton = new Button(0, 0, 20, 20, "", font, fontSize, stringOffsetY, () -> {
+            if (properties.size() > 0) {
+                removeProperty(properties.get(properties.size() - 1));
+            }
+        });
+        add(setupButton(removeButton).atBottomRight(-20, 0));
+        removeButton.setRenderer(new RectangleOutlinedRenderer(removeButton) {
+            private int minusId;
+
+            @Override
+            protected void create() {
+                super.create();
+
+                int x = guiObject.getSceneX() + guiObject.getWidth() / 2;
+                int y = guiObject.getSceneY() + guiObject.getHeight() / 2;
+                idList.add(minusId = guiRenderer.add(x, y, 6, 2, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, TEXT_COLOR_GRAY, 1.0f));
+            }
+
+            @Override
+            protected void renderBody() {
+                super.renderBody();
+                guiRenderer.addDrawCommand(minusId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX);
+            }
+
+            @Override
+            protected void setBodyLastValues() {
+                super.setBodyLastValues();
+                int x = lastX + guiObject.getWidth() / 2;
+                int y = lastY + guiObject.getHeight() / 2;
+                guiRenderer.setLastPosition(minusId, x, y);
+            }
+
+            @Override
+            public void updatePosition() {
+                super.updatePosition();
+                int x = guiObject.getSceneX() + guiObject.getWidth() / 2;
+                int y = guiObject.getSceneY() + guiObject.getHeight() / 2;
+                guiRenderer.setPosition(minusId, x, y);
             }
         });
     }

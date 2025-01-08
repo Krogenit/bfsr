@@ -1,7 +1,7 @@
 package net.bfsr.client.renderer.entity;
 
 import lombok.Getter;
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.particle.effect.ExplosionEffects;
 import net.bfsr.client.particle.effect.FireEffects;
@@ -9,6 +9,7 @@ import net.bfsr.config.entity.wreck.WreckData;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
+import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.entity.wreck.Wreck;
@@ -32,8 +33,11 @@ public class WreckRender extends RigidBodyRender {
     private float sparkleBlinkTimer;
 
     private final SpawnAccumulator spawnAccumulator = new SpawnAccumulator();
-    private final float fireAnimationSpeed = Core.get().convertToDeltaTime(0.18f);
-    private final float lightAnimationSpeed = Core.get().convertToDeltaTime(12.0f);
+    private final float fireAnimationSpeed = Client.get().convertToDeltaTime(0.18f);
+    private final float lightAnimationSpeed = Client.get().convertToDeltaTime(12.0f);
+
+    private int fireId = -1;
+    private int lightId = -1;
 
     public WreckRender(Wreck object) {
         super(Engine.assetsManager.getTexture(object.getConfigData().getTexture()), object, 0.5f, 0.5f, 0.5f, 1.0f);
@@ -52,7 +56,7 @@ public class WreckRender extends RigidBodyRender {
         this.colorLight.set(1.0f, 1.0f, 1.0f, 0.0f);
         this.lastColorLight.set(colorLight);
         this.sparkleActivationTimerInTicks = object.isLight() ?
-                Core.get().convertToTicks(200.0f + object.getWorld().getRand().nextInt(200)) : 0;
+                Client.get().convertToTicks(200.0f + object.getWorld().getRand().nextInt(200)) : 0;
         this.fire = object.isFire();
         this.light = object.isLight();
 
@@ -60,17 +64,63 @@ public class WreckRender extends RigidBodyRender {
     }
 
     @Override
+    public void init() {
+        super.init();
+        if (fire) {
+            fireId = spriteRenderer.add(wreck.getX(), wreck.getY(), wreck.getSin(), wreck.getCos(), wreck.getSizeX(), wreck.getSizeY(),
+                    colorFire.x, colorFire.y, colorFire.z, colorFire.w, textureFire.getTextureHandle(), BufferType.ENTITIES_ADDITIVE);
+        }
+
+        if (light) {
+            lightId = spriteRenderer.add(wreck.getX(), wreck.getY(), wreck.getSin(), wreck.getCos(), wreck.getSizeX(), wreck.getSizeY(),
+                    colorLight.x, colorLight.y, colorLight.z, colorLight.w, textureLight.getTextureHandle(), BufferType.ENTITIES_ADDITIVE);
+        }
+    }
+
+    @Override
     public void update() {
-        lastColor.w = color.w;
-        lastColorFire.set(colorFire);
-        lastColorLight.set(colorLight);
-        lastSin = wreck.getSin();
-        lastCos = wreck.getCos();
-        lastPosition.set(object.getX(), object.getY());
+        super.update();
 
         updateLifeTime();
         updateFireAndExplosion();
         updateSparkle();
+    }
+
+    @Override
+    protected void updateLastRenderValues() {
+        super.updateLastRenderValues();
+        lastColor.w = color.w;
+        lastColorFire.set(colorFire);
+        lastColorLight.set(colorLight);
+        spriteRenderer.setLastColorAlpha(id, BufferType.ENTITIES_ALPHA, color.w);
+
+        if (fire) {
+            spriteRenderer.setLastPosition(fireId, BufferType.ENTITIES_ADDITIVE, object.getX(), object.getY());
+            spriteRenderer.setLastRotation(fireId, BufferType.ENTITIES_ADDITIVE, rigidBody.getSin(), rigidBody.getCos());
+            spriteRenderer.setLastColor(fireId, BufferType.ENTITIES_ADDITIVE, colorFire);
+        }
+
+        if (light) {
+            spriteRenderer.setLastPosition(lightId, BufferType.ENTITIES_ADDITIVE, object.getX(), object.getY());
+            spriteRenderer.setLastRotation(lightId, BufferType.ENTITIES_ADDITIVE, rigidBody.getSin(), rigidBody.getCos());
+            spriteRenderer.setLastColor(lightId, BufferType.ENTITIES_ADDITIVE, colorLight);
+        }
+    }
+
+    @Override
+    protected void updateRenderValues() {
+        super.updateRenderValues();
+        spriteRenderer.setColorAlpha(id, BufferType.ENTITIES_ALPHA, color.w);
+
+        if (fire) {
+            spriteRenderer.setPosition(fireId, BufferType.ENTITIES_ADDITIVE, object.getX(), object.getY());
+            spriteRenderer.setRotation(fireId, BufferType.ENTITIES_ADDITIVE, rigidBody.getSin(), rigidBody.getCos());
+        }
+
+        if (light) {
+            spriteRenderer.setPosition(lightId, BufferType.ENTITIES_ADDITIVE, object.getX(), object.getY());
+            spriteRenderer.setRotation(lightId, BufferType.ENTITIES_ADDITIVE, rigidBody.getSin(), rigidBody.getCos());
+        }
     }
 
     private void updateLifeTime() {
@@ -109,6 +159,8 @@ public class WreckRender extends RigidBodyRender {
                     fireFadingOut = true;
                 }
             }
+
+            spriteRenderer.setColor(fireId, BufferType.ENTITIES_ADDITIVE, colorFire);
         }
 
         if (color.w <= 0.5f) {
@@ -120,6 +172,8 @@ public class WreckRender extends RigidBodyRender {
                 if (colorFire.w < 0.0f) {
                     colorFire.w = 0.0f;
                 }
+
+                spriteRenderer.setColor(fireId, BufferType.ENTITIES_ADDITIVE, colorFire);
             }
         }
     }
@@ -149,9 +203,11 @@ public class WreckRender extends RigidBodyRender {
             }
 
             if (sparkleBlinkTimer >= 100.0f) {
-                sparkleActivationTimerInTicks = Core.get().convertToTicks(200.0f + wreck.getWorld().getRand().nextInt(200));
+                sparkleActivationTimerInTicks = Client.get().convertToTicks(200.0f + wreck.getWorld().getRand().nextInt(200));
                 sparkleBlinkTimer = 0.0f;
             }
+
+            spriteRenderer.setColor(lightId, BufferType.ENTITIES_ADDITIVE, colorLight);
         }
 
         updateSparkleFading();
@@ -165,29 +221,20 @@ public class WreckRender extends RigidBodyRender {
                 if (colorLight.w < 0.0f) {
                     colorLight.w = 0.0f;
                 }
+
+                spriteRenderer.setColor(lightId, BufferType.ENTITIES_ADDITIVE, colorLight);
             }
         }
     }
 
     @Override
-    public void renderAlpha() {
-        spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, wreck.getX(), wreck.getY(), lastSin, lastCos,
-                wreck.getSin(), wreck.getCos(), wreck.getSizeX(), wreck.getSizeY(), color.x, color.y, color.z, color.w, texture,
-                BufferType.ENTITIES_ALPHA);
-    }
-
-    @Override
     public void renderAdditive() {
         if (colorFire.w > 0) {
-            spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, wreck.getX(), wreck.getY(), lastSin, lastCos,
-                    wreck.getSin(), wreck.getCos(), wreck.getSizeX(), wreck.getSizeY(), lastColorFire, colorFire, textureFire,
-                    BufferType.ENTITIES_ADDITIVE);
+            spriteRenderer.addDrawCommand(fireId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ADDITIVE);
         }
 
         if (colorLight.w > 0) {
-            spriteRenderer.addToRenderPipeLineSinCos(lastPosition.x, lastPosition.y, wreck.getX(), wreck.getY(), lastSin, lastCos,
-                    wreck.getSin(), wreck.getCos(), wreck.getSizeX(), wreck.getSizeY(), lastColorLight, colorLight, textureLight,
-                    BufferType.ENTITIES_ADDITIVE);
+            spriteRenderer.addDrawCommand(lightId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ADDITIVE);
         }
     }
 
@@ -199,5 +246,18 @@ public class WreckRender extends RigidBodyRender {
                 ExplosionEffects.spawnSmallExplosion(wreck.getX(), wreck.getY(), wreck.getSizeX());
             }
         };
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+
+        if (fireId != -1) {
+            spriteRenderer.removeObject(fireId, BufferType.ENTITIES_ADDITIVE);
+        }
+
+        if (lightId != -1) {
+            spriteRenderer.removeObject(lightId, BufferType.ENTITIES_ADDITIVE);
+        }
     }
 }

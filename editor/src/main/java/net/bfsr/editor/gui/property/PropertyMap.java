@@ -1,6 +1,6 @@
 package net.bfsr.editor.gui.property;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.editor.property.converter.ConverterUtils;
 import net.bfsr.editor.property.converter.PropertyConverter;
 import net.bfsr.editor.property.holder.PropertiesHolder;
@@ -59,12 +59,12 @@ public class PropertyMap<KEY> extends PropertyList<PropertyObject<PropertyCompon
         component.setRightClickRunnable(() -> {
             String addString = "Remove";
             Vector2f mousePos = Engine.mouse.getPosition();
-            Button button = new Button((int) mousePos.x, (int) mousePos.y,
+            Button button = new Button((int) mousePos.x, (int) (Engine.renderer.getScreenHeight() - mousePos.y) - baseHeight,
                     font.getGlyphsBuilder().getWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight,
                     addString, font, fontSize, 4, stringOffsetY, StringOffsetType.DEFAULT, RunnableUtils.EMPTY_RUNNABLE);
             setupContextMenuButton(button);
             button.setLeftReleaseRunnable(() -> remove(component));
-            Core.get().getGuiManager().openContextMenu(button);
+            Client.get().getGuiManager().openContextMenu(button);
         });
 
         properties.add(component);
@@ -72,6 +72,7 @@ public class PropertyMap<KEY> extends PropertyList<PropertyObject<PropertyCompon
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void setSetting() throws IllegalAccessException {
         Map<KEY, Object> propertiesHolderMap = new HashMap<>();
         for (int i = 0; i < properties.size(); i++) {

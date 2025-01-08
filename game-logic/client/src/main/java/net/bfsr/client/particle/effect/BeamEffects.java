@@ -5,6 +5,7 @@ import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.particle.Particle;
 import net.bfsr.client.particle.ParticleManager;
 import net.bfsr.client.particle.SpawnAccumulator;
+import net.bfsr.client.renderer.particle.ParticleRender;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
@@ -33,9 +34,9 @@ public final class BeamEffects {
 
     public static void beam(float x, float y, float localX, float localY, float size, float sin, float cos, float velocityX,
                             float velocityY, float r, float g, float b, float a, SpawnAccumulator spawnAccumulator,
-                            Consumer<Particle> updateLogic) {
+                            Consumer<Particle> updateLogic, Consumer<ParticleRender> lastValuesUpdateConsumer) {
         smallBeam.emit(x, y, localX, localY, size, size, sin, cos, velocityX, velocityY, r, g, b, a, spawnAccumulator,
-                updateLogic);
+                updateLogic, lastValuesUpdateConsumer);
     }
 
     public static Particle beamEffect(WeaponSlotBeam slot, Vector4f color) {
@@ -64,9 +65,11 @@ public final class BeamEffects {
 
                     float offsetX = beamRange1 * localX + (rand.nextFloat() * 2.0f - 1.0f);
 
-                    particle.setSin(sin1);
-                    particle.setCos(cos1);
+                    particle.setRotation(sin1, cos1);
                     particle.setPosition(cos1 * offsetX - sin1 * localY + slot.getX(), sin1 * offsetX + cos1 * localY + slot.getY());
+                }, particleRender -> {
+                    particleRender.setLastPosition();
+                    particleRender.setLastRotation();
                 });
     }
 }

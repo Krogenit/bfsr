@@ -40,14 +40,15 @@ public class GuiManager {
         this.hud = hud;
         guiStack.add(0, hud);
         eventBus.publish(new ShowHUDEvent(hud));
+        hud.addToScene();
     }
 
     public void closeHUD() {
         if (hud != NoHUD.get()) {
             eventBus.publish(new CloseHUDEvent(hud));
-            hud.clear();
-            hud = NoHUD.get();
             guiStack.remove(0);
+            hud.remove();
+            hud = NoHUD.get();
         }
     }
 
@@ -59,13 +60,14 @@ public class GuiManager {
         this.gui = gui;
         guiStack.add(gui);
         eventBus.publish(new OpenGuiEvent(gui));
+        gui.addToScene();
     }
 
     public void closeGui() {
         if (gui != NoGui.get()) {
             eventBus.publish(new CloseGuiEvent(gui));
-            gui.clear();
             guiStack.remove(gui);
+            gui.remove();
             gui = NoGui.get();
         }
     }
@@ -74,7 +76,7 @@ public class GuiManager {
         GuiObject hoveredObject = findHoveredGuiObject();
 
         if (hoveredObject != hoveredGuiObject) {
-            if (hoveredGuiObject != null) {
+            if (hoveredGuiObject != null && hoveredGuiObject.isMouseHover()) {
                 hoveredGuiObject.setMouseHover(false);
                 hoveredGuiObject.onMouseStopHover();
             }
@@ -100,7 +102,7 @@ public class GuiManager {
 
     public void render() {
         for (int i = 0; i < guiStack.size(); i++) {
-            guiStack.get(i).render();
+            guiStack.get(i).getRenderer().render();
         }
     }
 

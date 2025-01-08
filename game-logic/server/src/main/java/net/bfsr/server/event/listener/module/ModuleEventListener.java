@@ -17,8 +17,8 @@ public class ModuleEventListener {
         return event -> {
             DamageableModule module = event.getModule();
             Ship ship = module.getShip();
-            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketDestroyModule(ship.getId(), module.getId(),
-                    module.getType(), ship.getWorld().getTimestamp()));
+            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), player -> new PacketDestroyModule(ship.getId(), module.getId(),
+                    module.getType(), player.getClientTime(ship.getWorld().getTimestamp())));
         };
     }
 }

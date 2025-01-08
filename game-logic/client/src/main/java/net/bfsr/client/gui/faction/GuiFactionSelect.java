@@ -1,11 +1,9 @@
 package net.bfsr.client.gui.faction;
 
-import net.bfsr.client.Core;
+import net.bfsr.client.Client;
 import net.bfsr.client.language.Lang;
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
-import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.TexturedRectangle;
 import net.bfsr.engine.gui.component.TexturedRotatedRectangle;
@@ -14,89 +12,77 @@ import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.packet.client.PacketFactionSelect;
-import org.joml.Vector2f;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class GuiFactionSelect extends Gui {
-    private final List<GuiObject> ships = new ArrayList<>(3);
-
     public GuiFactionSelect() {
-        add(new TexturedRectangle(TextureRegister.guiFactionSelect).atCenter(-1024 / 2, -600 / 2)
+        add(new TexturedRectangle(TextureRegister.guiFactionSelect).atCenter(-1024 / 2, 0)
                 .setSize(1024, 600));
-        add(new TexturedRectangle(TextureRegister.guiLogoBFSR).atCenter(-216 / 2, -200 - 216 / 2)
+        add(new TexturedRectangle(TextureRegister.guiLogoBFSR).atCenter(-216 / 2, 200)
                 .setSize(216, 216));
-        add(new TexturedRectangle(TextureRegister.guiBfsrText2, 860, 80).atCenter(-860 / 2, -200 - 80 / 2));
+        add(new TexturedRectangle(TextureRegister.guiBfsrText2, 860, 80).atCenter(-860 / 2, 200));
         add(new Button(Lang.getString("gui.selectFaction.human"), () -> {
-            Core.get().sendTCPPacket(new PacketFactionSelect(Faction.HUMAN));
-            Core.get().closeGui();
-        }).atCenter(-309 - 300 / 2, 230 - 50 / 2));
+            Client.get().sendTCPPacket(new PacketFactionSelect(Faction.HUMAN));
+            Client.get().closeGui();
+        }).atCenter(-309 - 300 / 2, -230));
         add(new Button(Lang.getString("gui.selectFaction.saimon"), () -> {
-            Core.get().sendTCPPacket(new PacketFactionSelect(Faction.SAIMON));
-            Core.get().closeGui();
-        }).atCenter(-1 - 300 / 2, 230 - 50 / 2));
+            Client.get().sendTCPPacket(new PacketFactionSelect(Faction.SAIMON));
+            Client.get().closeGui();
+        }).atCenter(-1 - 300 / 2, -230));
         add(new Button(Lang.getString("gui.selectFaction.engi"), () -> {
-            Core.get().sendTCPPacket(new PacketFactionSelect(Faction.ENGI));
-            Core.get().closeGui();
-        }).atCenter(309 - 300 / 2, 230 - 50 / 2));
+            Client.get().sendTCPPacket(new PacketFactionSelect(Faction.ENGI));
+            Client.get().closeGui();
+        }).atCenter(309 - 300 / 2, -230));
 
-        ships.add(new TexturedRotatedRectangle(TextureRegister.shipHumanSmall0, 120, 120).atCenter(-309 - 60, 70 - 60));
-        ships.add(new TexturedRotatedRectangle(TextureRegister.shipSaimonSmall0, 170, 170).atCenter(-85, 70 - 85));
-        ships.add(new TexturedRotatedRectangle(TextureRegister.shipEngiSmall0, 180, 180).atCenter(309 - 90, 70 - 90));
-
-        for (int i = 0; i < ships.size(); i++) {
-            add(ships.get(i));
-        }
+        add(new GuiShip(TextureRegister.shipHumanSmall0, 120, 120).atCenter(-309 - 60, -70));
+        add(new GuiShip(TextureRegister.shipSaimonSmall0, 170, 170).atCenter(-85, -70));
+        add(new GuiShip(TextureRegister.shipEngiSmall0, 180, 180).atCenter(309 - 90, -70));
 
         Label label = new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.maintext"), 24);
-        add(label.atCenter(-label.getWidth() / 2, -96));
+        add(label.atCenter(-label.getWidth() / 2, 108));
 
         int discFontSize = 16;
-        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.humanDisc"), discFontSize).atCenter(-450, -64));
-        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.saimonDisc"), discFontSize).atCenter(-142, -64));
-        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.engiDisc"), discFontSize).atCenter(166, -64));
+        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.humanDisc"), discFontSize).atCenter(-450, 72));
+        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.saimonDisc"), discFontSize).atCenter(-142, 72));
+        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.engiDisc"), discFontSize).atCenter(166, 72));
     }
 
-    private void updateRot(GuiObject guiObject, Vector2f mousePosition) {
-        float rotSpeed = 0.04f;
+    private static class GuiShip extends TexturedRotatedRectangle {
+        GuiShip(TextureRegister textureRegister, int width, int height) {
+            super(textureRegister, width, height);
+        }
 
-        if (guiObject.isIntersects(mousePosition)) {
-            guiObject.setRotation(guiObject.getRotation() + rotSpeed);
+        @Override
+        public void update() {
+            super.update();
 
-            if (guiObject.getRotation() > MathUtils.TWO_PI) {
-                guiObject.setRotation(guiObject.getRotation() - MathUtils.TWO_PI);
-            }
-        } else {
-            if (guiObject.getRotation() > 0) {
-                if (guiObject.getRotation() > Math.PI) {
-                    float dif = MathUtils.TWO_PI - guiObject.getRotation();
-                    if (dif < 0.01f) dif = 0.01f;
-                    guiObject.setRotation(guiObject.getRotation() + rotSpeed * dif);
+            float rotSpeed = 0.04f;
+            if (mouseHover) {
+                setRotation(getRotation() + rotSpeed);
 
-                    if (guiObject.getRotation() > MathUtils.TWO_PI) {
-                        guiObject.setRotation(0);
-                    }
-                } else {
-                    float dif = guiObject.getRotation() - 0;
-                    if (dif < 0.01f) dif = 0.01f;
-                    guiObject.setRotation(guiObject.getRotation() - rotSpeed * dif);
+                if (getRotation() > MathUtils.TWO_PI) {
+                    setRotation(getRotation() - MathUtils.TWO_PI);
+                }
+            } else {
+                if (getRotation() > 0) {
+                    if (getRotation() > Math.PI) {
+                        float dif = MathUtils.TWO_PI - getRotation();
+                        if (dif < 0.01f) dif = 0.01f;
+                        setRotation(getRotation() + rotSpeed * dif);
 
-                    if (guiObject.getRotation() < 0) {
-                        guiObject.setRotation(0);
+                        if (getRotation() > MathUtils.TWO_PI) {
+                            setRotation(0);
+                        }
+                    } else {
+                        float dif = getRotation() - 0;
+                        if (dif < 0.01f) dif = 0.01f;
+                        setRotation(getRotation() - rotSpeed * dif);
+
+                        if (getRotation() < 0) {
+                            setRotation(0);
+                        }
                     }
                 }
             }
-        }
-    }
-
-    @Override
-    public void update() {
-        super.update();
-
-        Vector2f position = Engine.mouse.getPosition();
-        for (int i = 0; i < ships.size(); i++) {
-            updateRot(ships.get(i), position);
         }
     }
 }

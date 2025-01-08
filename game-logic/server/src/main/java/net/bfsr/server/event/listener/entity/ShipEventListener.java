@@ -58,8 +58,7 @@ public class ShipEventListener {
     public EventListener<ShipPostPhysicsUpdate> shipPostPhysicsUpdateEvent() {
         return event -> {
             Ship ship = event.ship();
-            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(),
-                    new PacketShipInfo(ship, ship.getWorld().getTimestamp()));
+            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShipInfo(ship, ship.getWorld().getTimestamp()));
         };
     }
 
@@ -67,8 +66,7 @@ public class ShipEventListener {
     public EventListener<ShipDestroyingEvent> shipDestroyingEvent() {
         return event -> {
             Ship ship = event.ship();
-            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketDestroyingShip(ship,
-                    ship.getWorld().getTimestamp()));
+            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketDestroyingShip(ship, ship.getWorld().getTimestamp()));
         };
     }
 
