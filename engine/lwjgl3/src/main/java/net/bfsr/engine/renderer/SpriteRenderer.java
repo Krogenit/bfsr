@@ -591,6 +591,7 @@ public class SpriteRenderer extends AbstractSpriteRenderer {
         buffersHolder.setModelBufferDirty(true);
     }
 
+    @Override
     public void setColor(int id, BufferType bufferType, Vector4f color) {
         setColor(id, buffersHolders[bufferType.ordinal()], color.x, color.y, color.z, color.w);
     }
@@ -767,6 +768,7 @@ public class SpriteRenderer extends AbstractSpriteRenderer {
         return new BuffersHolder[length];
     }
 
+    @Override
     public void removeObject(int id, BufferType bufferType) {
         buffersHolders[bufferType.ordinal()].removeObject(id);
     }

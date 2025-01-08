@@ -142,6 +142,7 @@ public class BuffersHolder extends AbstractBuffersHolder {
         }
     }
 
+    @Override
     public void updateBuffers(int modelBufferIndex, int materialBufferIndex, int lastUpdateModelBufferIndex,
                               int lastUpdateMaterialBufferIndex) {
         if (modelBufferDirty) {
@@ -165,6 +166,7 @@ public class BuffersHolder extends AbstractBuffersHolder {
         }
     }
 
+    @Override
     public void markAllBuffersDirty() {
         modelBufferDirty = true;
         materialBufferDirty = true;
@@ -177,27 +179,32 @@ public class BuffersHolder extends AbstractBuffersHolder {
         MemoryUtil.memPutFloat(modelBufferAddress + ((offset & 0xFFFF_FFFFL) << FOUR_BYTES_ELEMENT_SHIFT), value);
     }
 
+    @Override
     public void putLastUpdateModelData(int offset, float value) {
         MemoryUtil.memPutFloat(lastUpdateModelBufferAddress + ((offset & 0xFFFF_FFFFL) << FOUR_BYTES_ELEMENT_SHIFT), value);
     }
 
+    @Override
     public void putMaterialData(int offset, float value) {
-
         MemoryUtil.memPutFloat(materialBufferAddress + (offset & 0xFFFF_FFFFL), value);
     }
 
+    @Override
     public void putMaterialData(int offset, int value) {
         MemoryUtil.memPutInt(materialBufferAddress + (offset & 0xFFFF_FFFFL), value);
     }
 
+    @Override
     public void putMaterialData(int offset, long value) {
         MemoryUtil.memPutLong(materialBufferAddress + (offset & 0xFFFF_FFFFL), value);
     }
 
+    @Override
     public void putLastUpdateMaterialData(int offset, float value) {
         MemoryUtil.memPutFloat(lastUpdateMaterialBufferAddress + (offset & 0xFFFF_FFFFL), value);
     }
 
+    @Override
     public void putLastUpdateMaterialData(int offset, int value) {
         MemoryUtil.memPutInt(lastUpdateMaterialBufferAddress + (offset & 0xFFFF_FFFFL), value);
     }
@@ -207,10 +214,12 @@ public class BuffersHolder extends AbstractBuffersHolder {
         MemoryUtil.memPutInt(commandBufferAddress + ((offset & 0xFFFF_FFFFL) << FOUR_BYTES_ELEMENT_SHIFT), value);
     }
 
+    @Override
     public void incrementRenderObjects() {
         renderObjects++;
     }
 
+    @Override
     public void addRenderObjectsCount(int count) {
         renderObjects += count;
     }
@@ -227,6 +236,7 @@ public class BuffersHolder extends AbstractBuffersHolder {
         return baseInstance++;
     }
 
+    @Override
     public int getNextBaseInstanceId() {
         if (freeIndices.size() > 0) {
             incrementBufferUsage();

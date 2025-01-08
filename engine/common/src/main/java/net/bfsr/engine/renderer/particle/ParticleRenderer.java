@@ -63,6 +63,8 @@ public class ParticleRenderer {
     }
 
     public void putBackgroundParticlesToBuffers(int totalParticles) {
+        checkBufferSize();
+
         spriteRenderer.updateBuffers(buffersHolderArray);
 
         multithreaded = MultithreadingUtils.MULTITHREADING_SUPPORTED && totalParticles >= MULTITHREADED_THRESHOLD;
@@ -71,6 +73,12 @@ public class ParticleRenderer {
 
         putToBuffers(RenderLayer.BACKGROUND_ALPHA_BLENDED, RenderLayer.BACKGROUND_ADDITIVE, backgroundTaskFutures,
                 backgroundParticlesStoreRunnables);
+    }
+
+    private void checkBufferSize() {
+        for (int i = 0; i < RenderLayer.VALUES.length; i++) {
+            buffersHolderArray[i].checkBuffersSize(particlesByRenderLayer[i].size());
+        }
     }
 
     public void putParticlesToBuffers() {
