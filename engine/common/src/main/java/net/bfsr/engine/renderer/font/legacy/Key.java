@@ -42,7 +42,7 @@ public class Key {
          * equals() method. Presumably it happens between computing a hash code for the weakly referenced Key object
          * while it still exists and calling its equals() method after it was garbage collected.
          */
-        if (o == null) {
+        if (o == null || o.getClass() != Key.class) {
             return false;
         }
 
