@@ -119,6 +119,10 @@ public enum ClientSettings {
         for (int i = 1; i < chars.length; i++) {
             if (chars[i] == '_') {
                 i++;
+                if (i == chars.length) {
+                    break;
+                }
+
                 stringBuilder.append(chars[i]);
             } else {
                 stringBuilder.append(Character.toLowerCase(chars[i]));
