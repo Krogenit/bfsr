@@ -9,28 +9,13 @@ import org.lwjgl.system.Platform;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Log4j2
 @Setter
 public class FileManager {
-    private final List<IncludeEntry> includes = new ArrayList<>();
     private boolean lineMarkers = true;
     private boolean handleIncludePasting = true;
-
-    private String getIncludeContent(IncludeID idx, FoundFile foundFile) {
-        IncludeEntry entry = includes.get(idx.getValue());
-        foundFile.setFilename(entry.getFilename());
-
-        if (!entry.getContent().isEmpty()) {
-            return entry.getContent();
-        }
-
-        String content = loadFile(entry.getFilename());
-        return content.isEmpty() ? entry.getContent() : content;
-    }
 
     public String manualInclude(String filename, FoundFile foundFile, String prepend, AtomicBoolean foundVersion) {
         String source = getContent(filename, foundFile);
@@ -113,24 +98,8 @@ public class FileManager {
             return "";
         }
 
-        IncludeID idx = findInclude(filename);
-
-        if (idx.isValid()) {
-            return getIncludeContent(idx, foundFile);
-        }
-
         foundFile.setFilename(filename);
         return loadFile(filename);
-    }
-
-    private IncludeID findInclude(String filename) {
-        for (int i = 0; i < includes.size(); ++i) {
-            if (includes.get(i).getFilename().equals(filename)) {
-                return new IncludeID(i);
-            }
-        }
-
-        return new IncludeID();
     }
 
     private String markerString(int line, String filename, int fileId) {
