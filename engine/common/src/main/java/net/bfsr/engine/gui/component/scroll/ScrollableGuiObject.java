@@ -19,4 +19,9 @@ final class ScrollableGuiObject {
     public boolean equals(Object obj) {
         return ((ScrollableGuiObject) obj).guiObject.equals(guiObject);
     }
+
+    @Override
+    public int hashCode() {
+        return guiObject.hashCode();
+    }
 }
