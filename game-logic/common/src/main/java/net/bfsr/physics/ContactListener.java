@@ -15,6 +15,8 @@ import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.Fixture;
 import org.jbox2d.dynamics.contacts.Contact;
 
+import java.util.Objects;
+
 @RequiredArgsConstructor
 public class ContactListener implements org.jbox2d.callbacks.ContactListener {
     private final CollisionMatrix collisionMatrix;
@@ -36,8 +38,8 @@ public class ContactListener implements org.jbox2d.callbacks.ContactListener {
 
         @Override
         public boolean equals(Object obj) {
-            return java.util.Objects.equals((rigidBody1), ((Pair) obj).rigidBody1) &&
-                    java.util.Objects.equals((rigidBody2), ((Pair) obj).rigidBody2);
+            return Objects.equals((rigidBody1), ((Pair) obj).rigidBody1) &&
+                    Objects.equals((rigidBody2), ((Pair) obj).rigidBody2);
         }
 
         @Override
