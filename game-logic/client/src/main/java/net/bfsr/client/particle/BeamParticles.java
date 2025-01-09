@@ -116,7 +116,7 @@ public class BeamParticles {
                     render.setLastSize();
                 });
 
-        while (lightingParticles.size() < slot.getCurrentBeamRange() / 10.0f) {
+        while (lightingParticles.size() < (int) (slot.getCurrentBeamRange() / 10)) {
             lightingParticles.add(BeamEffects.beamEffect(slot, color));
         }
 
