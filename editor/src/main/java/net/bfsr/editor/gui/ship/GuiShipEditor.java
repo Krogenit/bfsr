@@ -62,6 +62,8 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
                 }
             }
         });
+
+        addInspectionPanel();
     }
 
     @Override

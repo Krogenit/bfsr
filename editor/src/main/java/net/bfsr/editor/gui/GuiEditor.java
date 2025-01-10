@@ -83,15 +83,13 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
         Vector2f position = renderer.camera.getPosition();
         renderer.camera.move(-position.x, -position.y);
 
-        addInspectionPanel();
-
         propertiesPanel.setAllColors(BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w)
                 .setHeightFunction((width, height) -> height).atTopRight(0, 0);
 
         load();
     }
 
-    private void addInspectionPanel() {
+    protected void addInspectionPanel() {
         add(inspectionPanel.setOnSelectConsumer(this::selectEntry)
                 .setAllColors(BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w)
                 .setHeightFunction((integer, integer2) -> Engine.renderer.getScreenHeight())
