@@ -199,6 +199,7 @@ public class Scroll extends Rectangle {
     @Override
     public Scroll setHeight(int height) {
         this.scrollHeight = height;
+        updateScrollPositionAndSize();
         return this;
     }
 
