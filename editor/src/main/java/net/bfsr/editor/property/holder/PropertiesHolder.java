@@ -12,8 +12,6 @@ import java.util.List;
 
 public interface PropertiesHolder {
     void setDefaultValues();
-    void setName(String name);
-    String getName();
     void addChangeNameEventListener(ChangeNameEventListener listener);
     void clearListeners();
     default PropertiesHolder copy() {

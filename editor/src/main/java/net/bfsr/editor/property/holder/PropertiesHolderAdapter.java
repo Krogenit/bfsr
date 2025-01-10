@@ -7,14 +7,6 @@ public class PropertiesHolderAdapter implements PropertiesHolder {
     public void setDefaultValues() {}
 
     @Override
-    public void setName(String name) {}
-
-    @Override
-    public String getName() {
-        return "";
-    }
-
-    @Override
     public void addChangeNameEventListener(ChangeNameEventListener listener) {}
 
     @Override

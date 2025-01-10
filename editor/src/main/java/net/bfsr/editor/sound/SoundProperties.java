@@ -23,9 +23,4 @@ public class SoundProperties extends PropertiesHolderAdapter {
         path = "sound/gui/buttonClick.ogg";
         volume = 1.0f;
     }
-
-    @Override
-    public String getName() {
-        return path.substring(path.lastIndexOf("/") + 1);
-    }
 }
