@@ -154,16 +154,20 @@ public class MinimizableGuiObject extends GuiObject {
     @Override
     public void add(GuiObject guiObject) {
         addHideable(guiObject);
+        guiObject.setParent(this);
     }
 
     @Override
     public void addAt(int index, GuiObject guiObject) {
         addHideableAt(index, guiObject);
+        guiObject.setParent(this);
     }
 
     @Override
     public int addBefore(GuiObject guiObject, GuiObject beforeObject) {
-        return addHideableBefore(guiObject, beforeObject);
+        int index = addHideableBefore(guiObject, beforeObject);
+        guiObject.setParent(this);
+        return index;
     }
 
     @Override
