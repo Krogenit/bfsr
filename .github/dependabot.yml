@@ -9,6 +9,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    target-branch: "dev"
     groups:
       actions-deps:
         patterns:
