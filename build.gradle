@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
-    id 'org.springframework.boot' version '3.3.5'
+    id 'org.springframework.boot' version '3.4.1'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'me.champeau.jmh' version '0.7.2'
 }
@@ -37,15 +37,15 @@ subprojects {
         testCompileOnly 'org.projectlombok:lombok:1.18.36'
         testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'
 
-        testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
-        testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.11.3'
+        testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
-        testImplementation 'org.junit.platform:junit-platform-commons:1.11.3'
-        testImplementation 'org.junit.platform:junit-platform-engine:1.11.3'
-        testImplementation 'org.mockito:mockito-core:5.14.2'
-        testImplementation 'org.mockito:mockito-junit-jupiter:5.14.2'
-        testImplementation 'org.assertj:assertj-core:3.26.3'
+        testImplementation 'org.junit.platform:junit-platform-commons:1.11.4'
+        testImplementation 'org.junit.platform:junit-platform-engine:1.11.4'
+        testImplementation 'org.mockito:mockito-core:5.15.2'
+        testImplementation 'org.mockito:mockito-junit-jupiter:5.15.2'
+        testImplementation 'org.assertj:assertj-core:3.27.2'
 
         jmh 'org.openjdk.jmh:jmh-core:1.37'
         jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
