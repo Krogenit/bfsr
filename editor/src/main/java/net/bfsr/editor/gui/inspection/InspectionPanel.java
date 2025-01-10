@@ -236,21 +236,6 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
         }
     }
 
-    private void calculateMinWidth(MutableInt width, GuiObject guiObject) {
-        List<GuiObject> guiObjects = guiObject.getGuiObjects();
-        for (int i = 0; i < guiObjects.size(); i++) {
-            GuiObject guiObject1 = guiObjects.get(i);
-
-            if (guiObject1 instanceof InspectionEntry<?> inspectionEntry) {
-                width.set(Math.max(width.get(), inspectionEntry.getLabel().getSceneX() +
-                        inspectionEntry.getLabel().getWidth() - scrollPane.getSceneX()));
-                if (inspectionEntry.isMaximized()) {
-                    calculateMinWidth(width, inspectionEntry);
-                }
-            }
-        }
-    }
-
     @Override
     protected void onChildSizeChanged(GuiObject guiObject, int width, int height) {
         super.onChildSizeChanged(guiObject, width, height);
@@ -341,9 +326,23 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
     private int getPanelWidth() {
         int minWidth = 100;
         MutableInt width = new MutableInt(minWidth);
-        calculateMinWidth(width, scrollPane);
+        calculateMinWidth(width, scrollPane, 0);
 
         int smallOffsetX = 10;
         return width.get() + scrollPane.getScrollWidth() + smallOffsetX;
+    }
+
+    private void calculateMinWidth(MutableInt width, GuiObject guiObject, int offsetX) {
+        List<GuiObject> guiObjects = guiObject.getGuiObjects();
+        for (int i = 0; i < guiObjects.size(); i++) {
+            GuiObject guiObject1 = guiObjects.get(i);
+
+            if (guiObject1 instanceof InspectionEntry<?> inspectionEntry) {
+                width.set(Math.max(width.get(), offsetX + inspectionEntry.getLabel().getWidth() - scrollPane.getSceneX()));
+                if (inspectionEntry.isMaximized()) {
+                    calculateMinWidth(width, inspectionEntry, offsetX + 20);
+                }
+            }
+        }
     }
 }
