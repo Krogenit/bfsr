@@ -24,7 +24,15 @@ dependencies {
     api 'org.agrona:agrona:2.0.0'
     api 'org.locationtech.jts:jts-core:1.19.0'
     api 'org.locationtech.jts:jts:1.19.0'
-    api 'it.unimi.dsi:dsiutils:2.7.3'
+    api('it.unimi.dsi:dsiutils:2.7.3') {
+        exclude group: "org.slf4j", module: "slf4j-api"
+        exclude group: "it.unimi.dsi", module: "fastutil"
+        exclude group: "org.apache.commons", module: "commons-configuration2"
+        exclude group: "com.google.guava", module: "guava"
+        exclude group: "it.unimi.di", module: "jsap"
+        exclude group: "ch.qos.logback", module: "logback-core"
+        exclude group: "ch.qos.logback", module: "logback-classic"
+    }
     implementation 'org.slf4j:slf4j-nop:2.0.13'
 }
 
