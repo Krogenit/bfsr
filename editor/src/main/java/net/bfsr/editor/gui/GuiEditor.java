@@ -372,15 +372,15 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
         }
 
         selectedEntry = entry;
+        remove(propertiesPanel);
 
         if (entry == null) {
-            remove(propertiesPanel);
             onEntryDeselected();
             return;
         }
 
         propertiesPanel.open(() -> save(entry), () -> remove(entry));
-        addIfAbsent(propertiesPanel);
+        add(propertiesPanel);
 
         onEntrySelected(entry);
     }
