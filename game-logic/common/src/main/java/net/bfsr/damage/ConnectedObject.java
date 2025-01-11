@@ -3,7 +3,6 @@ package net.bfsr.damage;
 import io.netty.buffer.ByteBuf;
 import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.entity.RigidBody;
-import org.jbox2d.dynamics.Body;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Polygon;
 
@@ -19,7 +18,7 @@ public interface ConnectedObject<CONFIG_DATA extends GameObjectConfigData> {
     float getConnectPointX();
     float getConnectPointY();
     void writeData(ByteBuf data);
-    void addFixtures(Body body);
+    void addFixtures(DamageableRigidBody rigidBody);
     ConnectedObjectType getConnectedObjectType();
     int getRegistryId();
     int getDataId();

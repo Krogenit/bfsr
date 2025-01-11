@@ -10,7 +10,6 @@ import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
-import org.jbox2d.dynamics.Body;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -120,7 +119,7 @@ public class Modules {
         for (int i = 0; i < weaponSlots.size(); i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
             if (weaponSlot.getId() == id) {
-                ship.addFixtureToRemove(weaponSlot.getFixture());
+                ship.removeFixture(weaponSlot.getFixture());
                 weaponSlots.remove(i);
                 weaponSlot.onRemoved();
                 return;
@@ -129,10 +128,9 @@ public class Modules {
     }
 
     public void addFixturesToBody() {
-        Body body = ship.getBody();
-        reactor.addFixtureToBody(body);
-        shield.addFixtureToBody(body);
-        engines.addFixtureToBody(body);
+        reactor.addFixtureToBody(ship);
+        shield.addFixtureToBody(ship);
+        engines.addFixtureToBody(ship);
     }
 
     public void destroyModule(int id, ModuleType type) {

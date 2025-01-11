@@ -264,6 +264,39 @@ public class Body {
         resetMassData();
     }
 
+    public void addFixtures(List<Fixture> fixtures) {
+        if (world.isLocked()) {
+            throw new RuntimeException("Can't remove fixture when world is locked");
+        }
+
+        for (int i = 0; i < fixtures.size(); i++) {
+            Fixture fixture = fixtures.get(i);
+
+            if (fixture.body == this) {
+                throw new RuntimeException("Can't add same fixture");
+            }
+
+            if (fixture.body != null) {
+                throw new RuntimeException("Can't add other's fixture");
+            }
+
+            if ((flags & E_ACTIVE_FLAG) == E_ACTIVE_FLAG) {
+                BroadPhase broadPhase = world.contactManager.broadPhase;
+                fixture.createProxies(broadPhase, transform);
+            }
+
+            this.fixtures.add(fixture);
+
+            fixture.body = this;
+        }
+
+        resetMassData();
+
+        // Let the world know we have a new fixture. This will cause new contacts
+        // to be created at the beginning of the next time step.
+        world.flags |= World.NEW_FIXTURE;
+    }
+
     public void setFixtures(List<Fixture> fixtures) {
         if (world.isLocked()) {
             throw new RuntimeException("Can't remove fixture when world is locked");

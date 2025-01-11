@@ -45,11 +45,13 @@ public class RigidBodyRender extends Render {
                 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
+    @Override
     public void init() {
         id = spriteRenderer.add(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), rigidBody.getSizeX(),
                 rigidBody.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
     }
 
+    @Override
     protected void updateLastRenderValues() {
         super.updateLastRenderValues();
         lastPosition.set(rigidBody.getX(), rigidBody.getY());

@@ -29,14 +29,14 @@ public class Engine extends DamageableModule {
 
     @Override
     protected void createFixture(RigidBody rigidBody) {
-        rigidBody.getBody().addFixture(fixture = new Fixture(polygon, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
+        rigidBody.addFixture(fixture = new Fixture(polygon, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
     }
 
     @Override
     protected void destroy() {
         super.destroy();
         if (ship.getWorld().isServer()) {
-            ship.addFixtureToRemove(fixture);
+            ship.removeFixture(fixture);
         }
 
         if (!ship.getModules().getEngines().isSomeEngineAlive()) {

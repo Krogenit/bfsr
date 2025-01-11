@@ -12,7 +12,6 @@ import org.dyn4j.geometry.decompose.SweepLine;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Vector2;
-import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.Fixture;
 import org.joml.Vector2f;
 import org.locationtech.jts.algorithm.Area;
@@ -49,10 +48,9 @@ public final class DamageSystem {
             return;
         }
 
-        World world = damageable.getWorld();
         DamageMask mask = damageable.getMask();
         mask.reset();
-        damageable.clearFixturesToAdd();
+        damageable.removeHullFixtures();
 
         clipTexture(contactX, contactY, -sin, cos, damageable, radius, mask, damageable.getLocalOffsetX(),
                 damageable.getLocalOffsetY());
@@ -71,7 +69,7 @@ public final class DamageSystem {
                     clipTextureOutside(polygon2, mask, damageable.getSizeX(), damageable.getSizeY(), damageable.getLocalOffsetX(),
                             damageable.getLocalOffsetY());
                     damageable.setPolygon(polygon2);
-                    decompose(polygon2, polygon3 -> damageable.addFixtureToAdd(damageable.setupFixture(new Fixture(polygon3))));
+                    decompose(polygon2, polygon3 -> damageable.addHullFixture(damageable.setupFixture(new Fixture(polygon3))));
 
                     List<ConnectedObject<?>> connectedObjects = damageable.getConnectedObjects();
                     for (int i = 0; i < connectedObjects.size(); i++) {
@@ -162,7 +160,7 @@ public final class DamageSystem {
         List<ConnectedObject<?>> removedConnectedObjects = new ArrayList<>();
         if (newHull != null) {
             damageable.setPolygon(newHull);
-            decompose(newHull, polygon1 -> damageable.addFixtureToAdd(damageable
+            decompose(newHull, polygon1 -> damageable.addHullFixture(damageable
                     .setupFixture(new Fixture(polygon1))));
 
             List<ConnectedObject<?>> connectedObjects = damageable.getConnectedObjects();
@@ -191,7 +189,6 @@ public final class DamageSystem {
                     damageMask, (ShipData) damageable.getConfigData());
             wreck.setLinearVelocity(damageable.getLinearVelocity());
             wreck.setAngularVelocity(damageable.getAngularVelocity());
-            world.getGameLogic().addFutureTask(() -> world.add(wreck));
 
             for (int j = 0; j < removedConnectedObjects.size(); j++) {
                 ConnectedObject<?> connectedObject = removedConnectedObjects.get(j);
@@ -201,6 +198,8 @@ public final class DamageSystem {
                     connectedObject.spawn();
                 }
             }
+
+            world.add(wreck);
         }
 
         if (!damageable.isDead()) {
@@ -407,9 +406,8 @@ public final class DamageSystem {
             Coordinate p0 = coordinateSequence.getCoordinate(0);
             Coordinate p1 = coordinateSequence.getCoordinate(1);
             Coordinate p2 = coordinateSequence.getCoordinate(2);
-            polygonConsumer.accept(
-                    new Polygon(new Vector2[]{new Vector2((float) p0.x, (float) p0.y), new Vector2((float) p1.x, (float) p1.y),
-                            new Vector2((float) p2.x, (float) p2.y)}));
+            polygonConsumer.accept(new Polygon(new Vector2[]{new Vector2((float) p0.x, (float) p0.y),
+                    new Vector2((float) p1.x, (float) p1.y), new Vector2((float) p2.x, (float) p2.y)}));
         }
     }
 
@@ -453,10 +451,8 @@ public final class DamageSystem {
         ShipWreck wreck = new ShipWreck((float) x, (float) y, (float) sin, (float) cos, scaleX, scaleY, shipData, damageMask,
                 polygon, localOffsetX, localOffsetY);
         wreck.init(world, world.getNextId());
-        Body body = wreck.getBody();
-
         for (int i = 0; i < convexes.size(); i++) {
-            body.addFixture(wreck.setupFixture(new Fixture(convexes.get(i))));
+            wreck.addHullFixture(wreck.setupFixture(new Fixture(convexes.get(i))));
         }
 
         return wreck;

@@ -47,7 +47,7 @@ public class Bullet extends RigidBody {
     @Override
     protected void initBody() {
         super.initBody();
-        this.body.addFixture(new Fixture(polygon, Filters.BULLET_FILTER, this, 0.0f));
+        addFixture(new Fixture(polygon, Filters.BULLET_FILTER, this, 0.0f));
     }
 
     @Override

@@ -65,9 +65,8 @@ public class CollisionHandler extends CommonCollisionHandler {
                 RotationHelper.angleToVelocity(net.bfsr.engine.math.MathUtils.TWO_PI * random.nextFloat(), 1.5f, angleToVelocity);
                 float velocityX = ship.getLinearVelocity().x * 0.005f;
                 float velocityY = ship.getLinearVelocity().y * 0.005f;
-                world.getGameLogic()
-                        .addFutureTask(() -> WreckSpawner.spawnDamageDebris(world, random.nextInt(2), contactX, contactY,
-                                velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f));
+                WreckSpawner.spawnDamageDebris(world, random.nextInt(2), contactX, contactY,
+                        velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f);
             }
             bullet.setDead();
         });
@@ -233,8 +232,8 @@ public class CollisionHandler extends CommonCollisionHandler {
         float radius = 1.0f;
 
         Polygon clip = damageSystem.createCirclePath(contactX - x, contactY - y, -sin, cos, 12, polygonRadius);
-        rigidBody.getWorld().getGameLogic().addFutureTask(() -> damageSystem.damage(rigidBody, contactX, contactY, clip, radius, x, y, sin,
-                cos, () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(), new PacketSyncDamage(rigidBody,
-                        rigidBody.getWorld().getTimestamp()))));
+        damageSystem.damage(rigidBody, contactX, contactY, clip, radius, x, y, sin, cos,
+                () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
+                        new PacketSyncDamage(rigidBody, rigidBody.getWorld().getTimestamp())));
     }
 }

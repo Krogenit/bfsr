@@ -89,12 +89,16 @@ public class World {
     }
 
     public void add(RigidBody entity, boolean addToPhysicWorld) {
-        entityManager.add(entity);
-
         if (addToPhysicWorld) {
-            physicWorld.addBody(entity.getBody());
+            if (physicWorld.isLocked()) {
+                gameLogic.addFutureTask(() -> add(entity, true));
+                return;
+            } else {
+                physicWorld.addBody(entity.getBody());
+            }
         }
 
+        entityManager.add(entity);
         entity.onAddedToWorld();
     }
 

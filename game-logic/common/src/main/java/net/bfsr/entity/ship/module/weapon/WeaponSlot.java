@@ -7,6 +7,7 @@ import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.damage.DamageSystem;
+import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
@@ -88,7 +89,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
         rigidBody.init(world, world.getNextId());
         Body body = rigidBody.getBody();
 
-        body.addFixture(new Fixture(new Polygon(gunData.getPolygon().getVertices()), Filters.SHIP_FILTER, this,
+        rigidBody.addFixture(new Fixture(new Polygon(gunData.getPolygon().getVertices()), Filters.SHIP_FILTER, this,
                 PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
         body.setLinearDamping(0.05f);
         body.setAngularDamping(0.005f);
@@ -100,12 +101,12 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
 
     @Override
     protected void createFixture(RigidBody rigidBody) {
-        rigidBody.getBody().addFixture(fixture = new Fixture(polygon, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
+        rigidBody.addFixture(fixture = new Fixture(polygon, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
     }
 
     @Override
-    public void addFixtures(Body body) {
-        body.addFixture(fixture);
+    public void addFixtures(DamageableRigidBody rigidBody) {
+        rigidBody.addFixture(fixture);
     }
 
     public void tryShoot(Consumer<WeaponSlot> onShotConsumer, Reactor reactor) {
@@ -168,7 +169,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
     protected void destroy() {
         super.destroy();
         ship.removeConnectedObject(this);
-        world.getGameLogic().addFutureTask(this::spawn);
+        spawn();
     }
 
     public void removeFixture() {

@@ -19,7 +19,9 @@ public class LocalServerGameLogic extends ServerGameLogic {
 
     @Override
     protected void updateWorld(double time) {
-        if (!isPaused()) super.updateWorld(time);
+        if (!isPaused()) {
+            super.updateWorld(time);
+        }
     }
 
     @Override

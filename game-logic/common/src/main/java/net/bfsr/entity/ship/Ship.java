@@ -118,7 +118,7 @@ public class Ship extends DamageableRigidBody {
 
         List<Shape> convexes = configData.getShapeList();
         for (int i = 0; i < convexes.size(); i++) {
-            body.addFixture(setupFixture(new Fixture(convexes.get(i))));
+            addHullFixture(setupFixture(new Fixture(convexes.get(i))));
         }
 
         body.setUserData(this);
@@ -199,7 +199,6 @@ public class Ship extends DamageableRigidBody {
     @Override
     public void update() {
         if (spawned) {
-            updateFixtures();
             updateConnectedObjects();
             updateRunnable.run();
             updateLifeTime();

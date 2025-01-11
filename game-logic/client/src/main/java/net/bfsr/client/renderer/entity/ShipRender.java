@@ -97,7 +97,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         }
 
         Shield shield = ship.getModules().getShield();
-        if (shield != null && shield.isAlive()) {
+        if (shield != null) {
             Vector2f diameter = shield.getDiameter();
             float shieldSizeX = shield.getSizeX();
             Vector4f color = ship.getShipData().getEffectsColor();
@@ -302,7 +302,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
             label.updateLastPosition(object.getX(), object.getY());
 
             Shield shield = ship.getModules().getShield();
-            if (shieldId != -1 && shield != null && shield.isAlive()) {
+            if (shieldId != -1 && shield != null) {
                 spriteRenderer.setLastPosition(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getX(), ship.getY());
                 spriteRenderer.setLastRotation(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getSin(), ship.getCos());
                 Vector2f diameter = shield.getDiameter();
@@ -323,7 +323,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
             spriteRenderer.setColorAlpha(spawnEffectId, BufferType.ENTITIES_ADDITIVE, jumpDelta);
         } else {
             Shield shield = ship.getModules().getShield();
-            if (shieldId != -1 && shield != null && shield.isAlive()) {
+            if (shieldId != -1 && shield != null) {
                 spriteRenderer.setPosition(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getX(), ship.getY());
                 spriteRenderer.setRotation(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getSin(), ship.getCos());
                 Vector2f diameter = shield.getDiameter();
@@ -365,7 +365,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
             renderGunSlotsAdditive();
             Shield shield = ship.getModules().getShield();
             if (shieldId != -1 && shield != null && shield.isAlive()) {
-                renderShield();
+                spriteRenderer.addDrawCommand(shieldId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ADDITIVE);
             }
         } else {
             spriteRenderer.addDrawCommand(spawnEffectId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ADDITIVE);
@@ -389,10 +389,6 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         for (int i = 0, size = weaponRenders.size(); i < size; i++) {
             weaponRenders.get(i).renderAdditive();
         }
-    }
-
-    private void renderShield() {
-        spriteRenderer.addDrawCommand(shieldId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ADDITIVE);
     }
 
     private void createName() {

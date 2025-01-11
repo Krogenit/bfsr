@@ -25,13 +25,13 @@ public class WeaponSlotBeamRender extends WeaponSlotRender {
     private final Vector4f effectsColor = new Vector4f();
     private Runnable particlesUpdateRunnable = RunnableUtils.EMPTY_RUNNABLE;
 
-    WeaponSlotBeamRender(WeaponSlotBeam object) {
-        super(object);
-        this.weaponSlotBeam = object;
-        this.effectsColor.set(object.getGunData().getColor());
+    WeaponSlotBeamRender(WeaponSlotBeam weaponSlotBeam) {
+        super(weaponSlotBeam);
+        this.weaponSlotBeam = weaponSlotBeam;
+        this.effectsColor.set(weaponSlotBeam.getGunData().getColor());
         this.effectsColor.w = 0.0f;
-        this.beamParticles = new BeamParticles(object, effectsColor);
-        object.getWeaponSlotEventBus().register(this);
+        this.beamParticles = new BeamParticles(weaponSlotBeam, effectsColor);
+        weaponSlotBeam.getWeaponSlotEventBus().register(this);
     }
 
     @Override

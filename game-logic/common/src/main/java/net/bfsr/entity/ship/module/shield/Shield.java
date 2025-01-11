@@ -12,7 +12,6 @@ import net.bfsr.physics.filter.Filters;
 import org.dyn4j.geometry.Geometry;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.collision.shapes.Shape;
-import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.Fixture;
 import org.joml.Vector2f;
 import org.locationtech.jts.geom.Coordinate;
@@ -53,14 +52,13 @@ public class Shield extends DamageableModule {
 
     @Override
     public void createFixture(RigidBody rigidBody) {
-        rigidBody.getBody().addFixture(fixture = new Fixture(shieldShape, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
+        rigidBody.addFixture(fixture = new Fixture(shieldShape, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
         createShieldFixture();
     }
 
     private void createShieldFixture() {
-        Body body = ship.getBody();
         if (shieldFixture != null) {
-            body.removeFixture(shieldFixture);
+            ship.removeFixture(shieldFixture);
         }
 
         org.locationtech.jts.geom.Polygon polygon = ship.getPolygon();
@@ -97,8 +95,8 @@ public class Shield extends DamageableModule {
         shieldFixture.setDensity(PhysicsUtils.ZERO_FIXTURE_DENSITY);
         shieldFixture.setFriction(0.0f);
         shieldFixture.setRestitution(0.1f);
-        shieldFixture.setFilter(body.fixtures.get(0).getFilter());
-        body.addFixture(shieldFixture);
+        shieldFixture.setFilter(ship.getBody().fixtures.get(0).getFilter());
+        ship.addFixture(shieldFixture);
         diameter.x += 0.1f;
         diameter.y += 0.1f;
         alive = true;
@@ -123,10 +121,10 @@ public class Shield extends DamageableModule {
     }
 
     @Override
-    public void addFixtureToBody(Body body) {
-        super.addFixtureToBody(body);
+    public void addFixtureToBody(RigidBody rigidBody) {
+        super.addFixtureToBody(rigidBody);
         if (shieldFixture != null) {
-            body.addFixture(shieldFixture);
+            rigidBody.addFixture(shieldFixture);
         }
     }
 
@@ -140,7 +138,7 @@ public class Shield extends DamageableModule {
     protected void destroy() {
         super.destroy();
         removeShield();
-        ship.addFixtureToRemove(fixture);
+        ship.removeFixture(fixture);
     }
 
     public void resetRebuildingTime() {
@@ -149,7 +147,7 @@ public class Shield extends DamageableModule {
 
     public void removeShield() {
         if (shieldFixture != null) {
-            ship.addFixtureToRemove(shieldFixture);
+            ship.removeFixture(shieldFixture);
             shieldFixture = null;
         }
 

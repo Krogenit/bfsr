@@ -72,13 +72,13 @@ public class Wreck extends RigidBody {
     @Override
     protected void initBody() {
         super.initBody();
-        body.removeAllFixtures();
+        removeHullFixtures();
         createFixture();
     }
 
     private void createFixture() {
         Polygon p = Geometry.scale(wreckData.getPolygon(), getSizeX());
-        body.addFixture(new Fixture(p, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
+        addFixture(new Fixture(p, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
     }
 
     @Override
