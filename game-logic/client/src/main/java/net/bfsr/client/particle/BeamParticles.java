@@ -8,6 +8,7 @@ import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.math.RotationHelper;
+import org.joml.Math;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -16,10 +17,10 @@ import static net.bfsr.client.particle.ParticleManager.PARTICLE_POOL;
 public class BeamParticles {
     private final WeaponSlotBeam slot;
     private final Vector4f color;
-    private final UnorderedArrayList<Particle> particles = new UnorderedArrayList<>();
     private final UnorderedArrayList<Particle> lightingParticles = new UnorderedArrayList<>();
     private final Vector2f angleToVelocity = new Vector2f();
     private final SpawnAccumulator weaponSpawnAccumulator = new SpawnAccumulator();
+    private boolean isDead;
 
     public BeamParticles(WeaponSlotBeam slot, Vector4f color) {
         this.slot = slot;
@@ -27,20 +28,25 @@ public class BeamParticles {
     }
 
     public void onShot() {
+        isDead = false;
         weaponSpawnAccumulator.resetTime();
 
         Ship ship = slot.getShip();
-        particles.add(PARTICLE_POOL.get().init(Engine.assetsManager.getTexture(TextureRegister.particleLight).getTextureHandle(),
+        PARTICLE_POOL.get().init(Engine.assetsManager.getTexture(TextureRegister.particleLight).getTextureHandle(),
                 slot.getX(), slot.getY(), 0, 0, 0, 0, slot.getSin(), slot.getCos(), 0.0f, slot.getSizeX() * 2.5f, slot.getSizeY() * 2.5f, 0,
                 color.x, color.y, color.z, color.w, 0, false, RenderLayer.DEFAULT_ADDITIVE, particle1 -> {
                     particle1.setPosition(slot.getX(), slot.getY());
                     particle1.setRotation(ship.getSin(), ship.getCos());
                     particle1.getRender().setColorAlpha(slot.getBeamPower() * 0.6f);
+
+                    if (isDead) {
+                        particle1.setDead();
+                    }
                 }, particleRender -> {
                     particleRender.setLastPosition();
                     particleRender.setLastRotation();
                     particleRender.setLastColorAlpha();
-                }));
+                });
 
         spawnBeam(1.0f, 0.3333f);
         spawnBeam(0.3333f, 1.0f);
@@ -64,7 +70,7 @@ public class BeamParticles {
         float worldX = slot.getX() + localX * 0.5f;
         float worldY = slot.getY() + localY * 0.5f;
 
-        particles.add(PARTICLE_POOL.get().init(Engine.assetsManager.getTexture(TextureRegister.particleBeam).getTextureHandle(),
+        PARTICLE_POOL.get().init(Engine.assetsManager.getTexture(TextureRegister.particleBeam).getTextureHandle(),
                 worldX, worldY, 0, 0, 0, 0, sin, cos, 0.0f, 0.0f, slotSizeY * sizeYMultiplayer, 0,
                 color.x, color.y, color.z, color.w * colorMultiplayer, 0, false, RenderLayer.DEFAULT_ADDITIVE, particle1 -> {
                     float cos1 = ship.getCos();
@@ -72,26 +78,24 @@ public class BeamParticles {
                     particle1.setRotation(sin1, cos1);
 
                     float startRange1 = -slotSizeX;
-
                     float startX1 = cos1 * startRange1;
                     float startY1 = sin1 * startRange1;
-
                     float localX1 = startX1 + cos1 * slot.getCurrentBeamRange();
                     float localY1 = startY1 + sin1 * slot.getCurrentBeamRange();
-
                     particle1.setPosition(slot.getX() + localX1 * 0.5f, slot.getY() + localY1 * 0.5f);
-
-                    particle1.setSize(
-                            (float) Math.sqrt((localX1 - startX1) * (localX1 - startX1) + (localY1 - startY1) * (localY1 - startY1)),
+                    particle1.setSize(Math.sqrt((localX1 - startX1) * (localX1 - startX1) + (localY1 - startY1) * (localY1 - startY1)),
                             slotSizeY * sizeYMultiplayer);
-
                     particle1.getRender().setColorAlpha(slot.getBeamPower() * colorMultiplayer);
+
+                    if (isDead) {
+                        particle1.setDead();
+                    }
                 }, particleRender -> {
                     particleRender.setLastPosition();
                     particleRender.setLastRotation();
                     particleRender.setLastSize();
                     particleRender.setLastColorAlpha();
-                }));
+                });
     }
 
     public void update() {
@@ -110,6 +114,10 @@ public class BeamParticles {
                     particle.addSize(particle.getSizeVelocity(), particle.getSizeVelocity());
                     particle.setRotation(ship.getSin(), ship.getCos());
                     particle.setPosition(slot.getX() + localPosition.x, slot.getY() + localPosition.y);
+
+                    if (isDead) {
+                        particle.setDead();
+                    }
                 }, render -> {
                     render.setLastPosition();
                     render.setLastRotation();
@@ -129,15 +137,11 @@ public class BeamParticles {
     }
 
     public void clear() {
-        for (int i = 0; i < particles.size(); i++) {
-            particles.get(i).setDead();
-        }
-
+        isDead = true;
         for (int i = 0; i < lightingParticles.size(); i++) {
             lightingParticles.get(i).setDead();
         }
 
-        particles.clear();
         lightingParticles.clear();
     }
 }

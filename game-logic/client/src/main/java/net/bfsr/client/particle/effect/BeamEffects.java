@@ -58,7 +58,7 @@ public final class BeamEffects {
         long textureHandle = Engine.assetsManager.getTexture(TextureRegister.particleBeamEffect).getTextureHandle();
         return ParticleManager.PARTICLE_POOL.get().init(textureHandle, worldX, worldY, localX, localY, 0.0f, 0.0f, sin, cos, 0.0f,
                 5.0f + 2.8f * rand.nextFloat(), slot.getSizeY() / 2.0f + 0.4f * rand.nextFloat(), 0.0f, color.x, color.y,
-                color.z, color.w, 0.5f, false, RenderLayer.DEFAULT_ADDITIVE, (particle) -> {
+                color.z, color.w, 0.5f, false, RenderLayer.DEFAULT_ADDITIVE, particle -> {
                     float sin1 = ship.getSin();
                     float cos1 = ship.getCos();
                     float beamRange1 = slot.getCurrentBeamRange();
