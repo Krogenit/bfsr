@@ -68,6 +68,7 @@ public class Client extends ClientGameLogic {
     private World world = BlankWorld.get();
     private String playerName;
     private LocalServer localServer;
+    private ThreadLocalServer threadLocalServer;
 
     @Setter
     private double clientToServerTimeDiff;
@@ -165,7 +166,7 @@ public class Client extends ClientGameLogic {
     private void startLocalServer() {
         playerName = "Local Player";
         localServer = new LocalServer(new LocalServerGameLogic(new Profiler()));
-        ThreadLocalServer threadLocalServer = new ThreadLocalServer(localServer);
+        threadLocalServer = new ThreadLocalServer(localServer);
         threadLocalServer.setName("Local Server");
         threadLocalServer.start();
         waitServerStart();
@@ -206,6 +207,7 @@ public class Client extends ClientGameLogic {
         eventBus.publish(new ExitToMainMenuEvent());
         clearNetwork();
         stopLocalServer();
+        waitServerStop();
         setBlankWorld();
 
         openGui(new GuiMainMenu());
@@ -215,6 +217,19 @@ public class Client extends ClientGameLogic {
         networkSystem.closeChannels();
         networkSystem.shutdown();
         networkSystem.clear();
+    }
+
+    private void waitServerStop() {
+        if (threadLocalServer != null) {
+            while (threadLocalServer.isAlive()) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        }
     }
 
     @Override
