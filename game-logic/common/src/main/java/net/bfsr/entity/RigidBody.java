@@ -103,13 +103,6 @@ public class RigidBody extends GameObject {
 
     void processFixturesToRemove() {
         if (fixturesToRemove.size() > 0) {
-            for (int i = 0; i < fixturesToRemove.size(); i++) {
-                Fixture fixture = fixturesToRemove.get(i);
-                if (fixture.body == null) {
-                    fixturesToRemove.remove(i--);
-                }
-            }
-
             body.removeFixtures(fixturesToRemove);
             fixturesToRemove.clear();
         }

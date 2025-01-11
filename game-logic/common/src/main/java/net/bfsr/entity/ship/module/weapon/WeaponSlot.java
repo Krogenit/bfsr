@@ -17,7 +17,6 @@ import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.event.module.weapon.WeaponShotEvent;
 import net.bfsr.event.module.weapon.WeaponSlotRemovedEvent;
-import net.bfsr.network.util.ByteBufUtils;
 import net.bfsr.physics.PhysicsUtils;
 import net.bfsr.physics.filter.Filters;
 import net.bfsr.world.World;
@@ -36,6 +35,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
     @Getter
     @Setter
     protected Vector2f localPosition;
+    private final Vector2f connectionOffset = new Vector2f();
     private final Polygon polygon;
     @Getter
     private final GunData gunData;
@@ -193,12 +193,18 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
     @Override
     public void writeData(ByteBuf data) {
         data.writeInt(id);
-        ByteBufUtils.writeVector(data, localPosition);
+        data.writeFloat(connectionOffset.x + localPosition.x);
+        data.writeFloat(connectionOffset.y + localPosition.y);
     }
 
     @Override
-    public boolean isInside(org.locationtech.jts.geom.Polygon polygon) {
-        return DamageSystem.isPolygonConnectedToContour(this.polygon.getVertices(), polygon);
+    public void addPositionOffset(float x, float y) {
+        connectionOffset.set(x, y);
+    }
+
+    @Override
+    public boolean isInside(org.locationtech.jts.geom.Polygon polygon, float offsetX, float offsetY) {
+        return DamageSystem.isPolygonConnectedToContour(this.polygon.getVertices(), polygon, offsetX, offsetY);
     }
 
     @Override

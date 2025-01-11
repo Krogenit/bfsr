@@ -185,15 +185,17 @@ public final class DamageSystem {
         for (int i = 0; i < removedPaths.size(); i++) {
             org.locationtech.jts.geom.Polygon removedPath = removedPaths.get(i);
             DamageMask damageMask = createInvertedDamageMask(removedPath, mask, sizeX, sizeY);
+            Coordinate localCenter = removedPath.getCentroid().getCoordinate();
             ShipWreck wreck = createWreck(world, x, y, sin, cos, sizeX, sizeY, removedPath,
-                    damageMask, (ShipData) damageable.getConfigData());
+                    damageMask, (ShipData) damageable.getConfigData(), localCenter);
             wreck.setLinearVelocity(damageable.getLinearVelocity());
             wreck.setAngularVelocity(damageable.getAngularVelocity());
 
             for (int j = 0; j < removedConnectedObjects.size(); j++) {
                 ConnectedObject<?> connectedObject = removedConnectedObjects.get(j);
-                if (connectedObject.isInside(removedPath)) {
+                if (connectedObject.isInside(removedPath, (float) -localCenter.x, (float) -localCenter.y)) {
                     wreck.addConnectedObject(connectedObject);
+                    connectedObject.addPositionOffset((float) -localCenter.x, (float) -localCenter.y);
                 } else {
                     connectedObject.spawn();
                 }
@@ -430,8 +432,8 @@ public final class DamageSystem {
     }
 
     private ShipWreck createWreck(World world, double x, double y, double sin, double cos, float scaleX, float scaleY,
-                                  org.locationtech.jts.geom.Polygon polygon, DamageMask damageMask, ShipData shipData) {
-        Coordinate localCenter = polygon.getCentroid().getCoordinate();
+                                  org.locationtech.jts.geom.Polygon polygon, DamageMask damageMask, ShipData shipData,
+                                  Coordinate localCenter) {
         RotationHelper.rotate((float) sin, (float) cos, (float) localCenter.x, (float) localCenter.y, rotatedLocalCenter);
         x += rotatedLocalCenter.x;
         y += rotatedLocalCenter.y;
@@ -485,9 +487,14 @@ public final class DamageSystem {
     }
 
     public static boolean isPolygonConnectedToContour(Vector2[] vertices, org.locationtech.jts.geom.Polygon polygon) {
+        return isPolygonConnectedToContour(vertices, polygon, 0, 0);
+    }
+
+    public static boolean isPolygonConnectedToContour(Vector2[] vertices, org.locationtech.jts.geom.Polygon polygon, float offsetX,
+                                                      float offsetY) {
         for (int i = 0; i < vertices.length; i++) {
             Vector2 vertex = vertices[i];
-            if (polygon.contains(GEOMETRY_FACTORY.createPoint(new Coordinate(vertex.x, vertex.y)))) {
+            if (polygon.contains(GEOMETRY_FACTORY.createPoint(new Coordinate(vertex.x + offsetX, vertex.y + offsetY)))) {
                 return true;
             }
         }
