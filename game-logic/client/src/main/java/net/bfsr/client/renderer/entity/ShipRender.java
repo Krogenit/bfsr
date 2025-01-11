@@ -242,7 +242,10 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
     private void addModuleRenderer(DamageableModule module, ModuleRenderer moduleRenderer) {
         moduleRenders.add(moduleRenderer);
-        module.getModuleEventBus().addOneTimeListener(ModuleDestroyEvent.class, event -> moduleRenders.remove(moduleRenderer));
+        module.getModuleEventBus().addOneTimeListener(ModuleDestroyEvent.class, event -> {
+            moduleRenderer.clear();
+            moduleRenders.remove(moduleRenderer);
+        });
     }
 
     @Override
