@@ -28,7 +28,11 @@ import static org.lwjgl.opengl.GL44C.GL_DYNAMIC_STORAGE_BIT;
 
 @Getter
 public class BuffersHolder implements AbstractBuffersHolder {
-    public static final int BUFFERING = 3;
+    /**
+     * OpenGL fence sync toggle
+     */
+    private static final boolean SYNC = false;
+    private static final int BUFFERING = 3;
 
     private final VAO vao;
 
@@ -60,7 +64,7 @@ public class BuffersHolder implements AbstractBuffersHolder {
 
     private final CircularBuffer commandBuffer;
     private final int commandBufferResizeCapacityInBytes;
-    private final LockManager lockManager = new LockManager();
+    private final LockManager lockManager = SYNC ? new LockManager() : new DisableSyncLockManager();
     @Getter
     private int bufferingIndex;
 
