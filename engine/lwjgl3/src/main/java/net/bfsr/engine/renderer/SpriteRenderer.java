@@ -318,7 +318,8 @@ public class SpriteRenderer extends AbstractSpriteRenderer {
     public void render(int mode, int objectCount, AbstractBuffersHolder buffersHolder) {
         AbstractVAO vao = buffersHolder.getVao();
         vao.bind();
-        vao.updateBuffer(COMMAND_BUFFER_INDEX, buffersHolder.getCommandBuffer(), GL_DYNAMIC_STORAGE_BIT);
+        vao.getBuffer(COMMAND_BUFFER_INDEX).storeData(buffersHolder.getCommandBufferAddress(), (long) objectCount * COMMAND_SIZE * 4L,
+                GL_DYNAMIC_STORAGE_BIT);
 
         vao.bindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, MODEL_BUFFER_INDEX);
         vao.bindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, MATERIAL_BUFFER_INDEX);

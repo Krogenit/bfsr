@@ -11,4 +11,5 @@ public interface AbstractVAO {
     void updateBuffer(int index, FloatBuffer buffer, int flags);
     void bindBufferBase(int target, int index, int bufferIndex);
     void bindBuffer(int target, int bufferIndex);
+    AbstractVBO getBuffer(int index);
 }

@@ -156,6 +156,11 @@ public final class VAO implements AbstractVAO {
         }
     }
 
+    @Override
+    public AbstractVBO getBuffer(int index) {
+        return VBOs[index];
+    }
+
     public void clear() {
         glDeleteVertexArrays(id);
         for (int i = 0; i < VBOs.length; i++) {

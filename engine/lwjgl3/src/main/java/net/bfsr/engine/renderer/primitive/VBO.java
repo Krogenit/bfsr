@@ -14,7 +14,7 @@ import static org.lwjgl.opengl.GL45C.nglNamedBufferStorage;
 import static org.lwjgl.opengl.GL45C.nglNamedBufferSubData;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 
-public final class VBO {
+public final class VBO implements AbstractVBO {
     @Getter
     private int id;
     private long maxDataSize;
@@ -74,7 +74,8 @@ public final class VBO {
         }
     }
 
-    private void storeData(long address, long newDataSize, int flags) {
+    @Override
+    public void storeData(long address, long newDataSize, int flags) {
         storeData(address, newDataSize, 0, newDataSize, flags);
     }
 
