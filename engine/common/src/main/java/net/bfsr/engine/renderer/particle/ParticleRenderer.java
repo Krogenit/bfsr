@@ -18,8 +18,7 @@ import java.util.concurrent.Future;
 @Log4j2
 public class ParticleRenderer {
     private static final int START_PARTICLE_COUNT = 8192;
-    private static final int MULTITHREADED_THRESHOLD = 16384;
-    private static final int PARTICLES_BY_TASK = 16384;
+    private static final int MULTITHREADED_THRESHOLD = 20000;
 
     private final AbstractRenderer renderer = Engine.renderer;
     private final AbstractSpriteRenderer spriteRenderer = renderer.spriteRenderer;
@@ -69,7 +68,7 @@ public class ParticleRenderer {
 
         multithreaded = MultithreadingUtils.MULTITHREADING_SUPPORTED && totalParticles >= MULTITHREADED_THRESHOLD;
         taskCount = multithreaded ?
-                (int) Math.ceil(Math.min(totalParticles / (float) PARTICLES_BY_TASK, MultithreadingUtils.PARALLELISM)) : 1;
+                (int) Math.ceil(Math.min(totalParticles / (float) MULTITHREADED_THRESHOLD, MultithreadingUtils.PARALLELISM)) : 1;
 
         putToBuffers(RenderLayer.BACKGROUND_ALPHA_BLENDED, RenderLayer.BACKGROUND_ADDITIVE, backgroundTaskFutures,
                 backgroundParticlesStoreRunnables);
