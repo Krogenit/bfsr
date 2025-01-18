@@ -11,11 +11,8 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 
-import static net.bfsr.engine.renderer.AbstractSpriteRenderer.COMMAND_SIZE_IN_BYTES;
-import static net.bfsr.engine.renderer.SpriteRenderer.COMMAND_BUFFER_INDEX;
 import static net.bfsr.engine.renderer.SpriteRenderer.MATERIAL_BUFFER_INDEX;
 import static net.bfsr.engine.renderer.SpriteRenderer.MODEL_BUFFER_INDEX;
-import static org.lwjgl.opengl.ARBBufferStorage.GL_DYNAMIC_STORAGE_BIT;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL42.glMemoryBarrier;
 import static org.lwjgl.opengl.GL43.GL_SHADER_STORAGE_BARRIER_BIT;
@@ -42,24 +39,22 @@ public class OcclusionCullingSystem implements AbstractOcclusionCullingSystem {
         occlusionCullingShader.init();
     }
 
+    @Override
     public void renderOcclusionCulled(int count, AbstractBuffersHolder buffersHolder) {
         AbstractVAO vao = buffersHolder.getVao();
-        AbstractVBO drawCommandsVBO = vao.getBuffer(COMMAND_BUFFER_INDEX);
-        drawCommandsVBO.storeData(buffersHolder.getCommandBufferAddress(), (long) buffersHolder.getCommandBuffer().capacity() << 2, 0L,
-                (long) count * COMMAND_SIZE_IN_BYTES, GL_DYNAMIC_STORAGE_BIT);
 
-        testAABB(count, vao.getBuffer(MODEL_BUFFER_INDEX), vao.getBuffer(MATERIAL_BUFFER_INDEX), drawCommandsVBO);
+        testAABB(count, buffersHolder, vao.getBuffer(MODEL_BUFFER_INDEX), vao.getBuffer(MATERIAL_BUFFER_INDEX));
 
         shader.enable();
         spriteRenderer.render(GL_TRIANGLES, count, buffersHolder);
     }
 
-    private void testAABB(int renderObjects, AbstractVBO modelData, AbstractVBO materialData, AbstractVBO drawCommandsData) {
+    private void testAABB(int renderObjects, AbstractBuffersHolder buffersHolder, AbstractVBO modelData, AbstractVBO materialData) {
         occlusionCullingShader.enable();
 
         modelData.bindBufferBase(GL_SHADER_STORAGE_BUFFER, OCC_CULL_SSBO_MODEL_DATA);
         materialData.bindBufferBase(GL_SHADER_STORAGE_BUFFER, OCC_CULL_SSBO_MATERIAL_DATA);
-        drawCommandsData.bindBufferBase(GL_SHADER_STORAGE_BUFFER, OCC_CULL_SSBO_DRAW_COMMANDS);
+        buffersHolder.bindCommandBufferBase(GL_SHADER_STORAGE_BUFFER, OCC_CULL_SSBO_DRAW_COMMANDS);
 
         /*
          * https://www.khronos.org/opengl/wiki/Memory_Model#Incoherent_memory_access

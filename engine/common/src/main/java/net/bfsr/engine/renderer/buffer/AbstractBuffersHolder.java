@@ -26,6 +26,8 @@ public interface AbstractBuffersHolder {
 
     void updateCommandBuffer(int count);
     void bindCommandBuffer();
+    void bindCommandBufferBase(int target, int index);
+    long getCommandBufferAddress();
 
     void lockRange();
     void waitForLockedRange();
@@ -37,8 +39,6 @@ public interface AbstractBuffersHolder {
     int getRenderObjects();
     AbstractVAO getVao();
     int getNextBaseInstanceId();
-
-    long getCommandBufferAddress();
 
     void clear();
 }

@@ -56,7 +56,6 @@ public interface AbstractSpriteRenderer extends GeometryBuffer {
 
     void syncAndRender(BufferType bufferType);
     void render(BufferType bufferType);
-    void updateCommandBufferAndRender(int mode, int objectCount, AbstractBuffersHolder buffersHolder);
     void render(int objectCount, AbstractBuffersHolder buffersHolder);
     void render(int mode, int objectCount, AbstractBuffersHolder buffersHolder);
 

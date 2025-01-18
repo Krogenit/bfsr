@@ -5,7 +5,6 @@ import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
-import net.bfsr.engine.renderer.primitive.AbstractVAO;
 import net.bfsr.engine.renderer.primitive.Primitive;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import org.joml.Vector4f;
@@ -17,17 +16,10 @@ import static net.bfsr.engine.renderer.SpriteRenderer.COLOR_B_OFFSET;
 import static net.bfsr.engine.renderer.SpriteRenderer.COLOR_G_OFFSET;
 import static net.bfsr.engine.renderer.SpriteRenderer.COS_OFFSET;
 import static net.bfsr.engine.renderer.SpriteRenderer.HEIGHT_OFFSET;
-import static net.bfsr.engine.renderer.SpriteRenderer.LAST_UPDATE_MATERIAL_BUFFER_INDEX;
-import static net.bfsr.engine.renderer.SpriteRenderer.LAST_UPDATE_MODEL_BUFFER_INDEX;
-import static net.bfsr.engine.renderer.SpriteRenderer.MATERIAL_BUFFER_INDEX;
 import static net.bfsr.engine.renderer.SpriteRenderer.MATERIAL_DATA_SIZE_IN_BYTES;
-import static net.bfsr.engine.renderer.SpriteRenderer.MODEL_BUFFER_INDEX;
 import static net.bfsr.engine.renderer.SpriteRenderer.MODEL_DATA_SIZE;
 import static net.bfsr.engine.renderer.SpriteRenderer.SIN_OFFSET;
 import static net.bfsr.engine.renderer.SpriteRenderer.WIDTH_OFFSET;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
-import static org.lwjgl.opengl.GL43.glMultiDrawElementsIndirect;
-import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BUFFER;
 
 public class GuiRenderer extends AbstractGUIRenderer {
     private AbstractSpriteRenderer spriteRenderer;
@@ -52,17 +44,8 @@ public class GuiRenderer extends AbstractGUIRenderer {
     @Override
     public void render(int mode) {
         if (buffersHolder.getRenderObjects() > 0) {
-            AbstractVAO vao = buffersHolder.getVao();
-            vao.bind();
-            vao.bindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, MODEL_BUFFER_INDEX);
-            vao.bindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, MATERIAL_BUFFER_INDEX);
-            vao.bindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, LAST_UPDATE_MODEL_BUFFER_INDEX);
-            vao.bindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, LAST_UPDATE_MATERIAL_BUFFER_INDEX);
             buffersHolder.updateCommandBuffer(buffersHolder.getRenderObjects());
-            buffersHolder.bindCommandBuffer();
-            glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, 0, buffersHolder.getRenderObjects(), 0);
-            Engine.renderer.increaseDrawCalls();
-
+            spriteRenderer.render(mode, buffersHolder.getRenderObjects(), buffersHolder);
             buffersHolder.setRenderObjects(0);
         }
     }

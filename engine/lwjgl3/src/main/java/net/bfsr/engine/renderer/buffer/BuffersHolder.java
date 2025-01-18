@@ -23,6 +23,7 @@ import static net.bfsr.engine.renderer.AbstractSpriteRenderer.MATERIAL_DATA_SIZE
 import static net.bfsr.engine.renderer.AbstractSpriteRenderer.MODEL_DATA_SIZE;
 import static net.bfsr.engine.renderer.AbstractSpriteRenderer.QUAD_INDEX_COUNT;
 import static org.lwjgl.opengl.GL15C.glBindBuffer;
+import static org.lwjgl.opengl.GL30C.glBindBufferBase;
 import static org.lwjgl.opengl.GL40C.GL_DRAW_INDIRECT_BUFFER;
 import static org.lwjgl.opengl.GL44C.GL_DYNAMIC_STORAGE_BIT;
 
@@ -242,6 +243,11 @@ public class BuffersHolder implements AbstractBuffersHolder {
     @Override
     public void bindCommandBuffer() {
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, commandBuffer.getBufferId(bufferingIndex));
+    }
+
+    @Override
+    public void bindCommandBufferBase(int target, int index) {
+        glBindBufferBase(target, index, commandBuffer.getBufferId(bufferingIndex));
     }
 
     @Override

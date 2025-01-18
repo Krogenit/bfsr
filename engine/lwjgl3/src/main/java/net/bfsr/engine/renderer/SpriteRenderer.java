@@ -29,18 +29,16 @@ import java.util.function.BiConsumer;
 
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL11C.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL40C.GL_DRAW_INDIRECT_BUFFER;
 import static org.lwjgl.opengl.GL43.glMultiDrawElementsIndirect;
 import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BUFFER;
 
 public class SpriteRenderer implements AbstractSpriteRenderer {
     private static final int VERTEX_STRIDE = 16;
 
-    static final int MODEL_BUFFER_INDEX = 0;
-    static final int MATERIAL_BUFFER_INDEX = 1;
+    public static final int MODEL_BUFFER_INDEX = 0;
+    public static final int MATERIAL_BUFFER_INDEX = 1;
     static final int LAST_UPDATE_MODEL_BUFFER_INDEX = 2;
     static final int LAST_UPDATE_MATERIAL_BUFFER_INDEX = 3;
-    private static final int COMMAND_BUFFER_INDEX = 4;
 
     private static final int SSBO_MODEL_DATA = 0;
     private static final int SSBO_LAST_UPDATE_MODEL_DATA = 1;
@@ -314,7 +312,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
         }
 
         if (buffersHolder.getRenderObjects() > 0) {
-            updateCommandBufferAndRender(type, buffersHolder.getRenderObjects(), buffersHolder);
+            render(type, buffersHolder.getRenderObjects(), buffersHolder);
             buffersHolder.setRenderObjects(0);
         }
     }
@@ -327,21 +325,14 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     void render(int mode, BufferType bufferType) {
         BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
         if (buffersHolder.getRenderObjects() > 0) {
-            updateCommandBufferAndRender(mode, buffersHolder.getRenderObjects(), buffersHolder);
+            render(mode, buffersHolder.getRenderObjects(), buffersHolder);
             buffersHolder.setRenderObjects(0);
         }
     }
 
     @Override
     public void render(int objectCount, AbstractBuffersHolder buffersHolder) {
-        updateCommandBufferAndRender(GL_TRIANGLES, objectCount, buffersHolder);
-    }
-
-    @Override
-    public void updateCommandBufferAndRender(int mode, int objectCount, AbstractBuffersHolder buffersHolder) {
-        buffersHolder.getVao().getBuffer(COMMAND_BUFFER_INDEX).storeData(buffersHolder.getCommandBufferAddress(),
-                (long) objectCount * COMMAND_SIZE_IN_BYTES, GL_DYNAMIC_STORAGE_BIT);
-        render(mode, objectCount, buffersHolder);
+        render(GL_TRIANGLES, objectCount, buffersHolder);
     }
 
     @Override
