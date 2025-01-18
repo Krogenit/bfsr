@@ -8,7 +8,7 @@ import org.lwjgl.system.Platform;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static net.bfsr.engine.renderer.shader.ShaderManager.GL_ARB_SHADING_LANGUAGE_INCLUDE;
+import static net.bfsr.engine.renderer.shader.ShaderLoader.GL_ARB_SHADING_LANGUAGE_INCLUDE;
 
 @Log4j2
 @Setter

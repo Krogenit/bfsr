@@ -29,7 +29,7 @@ public class ShaderProgram extends AbstractShaderProgram {
 
     @Override
     public void load() {
-        ShaderManager.INSTANCE.createProgram(this);
+        new ShaderLoader().createProgram(this);
     }
 
     @Override

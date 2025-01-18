@@ -42,6 +42,7 @@ public class OcclusionCullingSystem implements AbstractOcclusionCullingSystem {
         occlusionCullingShader.init();
     }
 
+    @Override
     public void renderOcclusionCulled(int count, AbstractBuffersHolder buffersHolder) {
         AbstractVAO vao = buffersHolder.getVao();
         AbstractVBO drawCommandsVBO = vao.getBuffer(COMMAND_BUFFER_INDEX);
