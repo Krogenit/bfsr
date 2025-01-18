@@ -3,7 +3,7 @@
 #include "/common/common.glsl"
 #include "/common/occlusion-culling-common.glsl"
 
-layout (local_size_x = 1) in;
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 layout (std140, binding = UBO_VIEW_DATA) uniform viewDataBuffer {
     ViewData viewData;
@@ -30,7 +30,8 @@ layout (std430, binding = OCC_CULL_SSBO_DRAW_COMMANDS) buffer drawCommandBuffer 
 
 void main() {
     uint globalThreadID = gl_GlobalInvocationID.x;
-    int instanceId = drawCommands[globalThreadID * COMMANDSTRIDE + 4];
+    uint commandIndex = globalThreadID * COMMANDSTRIDE;
+    int instanceId = drawCommands[commandIndex + 4];
 
     float zoom = viewData.zoom;
 
@@ -40,9 +41,9 @@ void main() {
     float x = modelData.x + viewData.x;
     float y = modelData.y + viewData.y;
 
-    float halfZoom = 1.0 / zoom * 0.5;
-    float viewHalfWidth = viewData.width * halfZoom;
-    float viewHalfHeight = viewData.height * halfZoom;
+    float invertedHalfZoom = 1.0 / zoom * 0.5;
+    float viewHalfWidth = viewData.width * invertedHalfZoom;
+    float viewHalfHeight = viewData.height * invertedHalfZoom;
 
     if (material.font) {
         float glyphWidth = modelData.width * zoom;
@@ -56,11 +57,11 @@ void main() {
     } else {
         float halfModelWidth = modelData.width * 0.5;
         float halfModelHeight = modelData.height * 0.5;
-        if (x - halfModelWidth <= viewHalfWidth && y - halfModelHeight <= viewHalfHeight
+        if (x - halfModelWidth < viewHalfWidth && y - halfModelHeight < viewHalfHeight
         && x + halfModelWidth >= -viewHalfWidth && y + halfModelHeight >= -viewHalfHeight) {
-            drawCommands[globalThreadID * COMMANDSTRIDE + 1] = 1;
+            drawCommands[commandIndex + 1] = 1;
         } else {
-            drawCommands[globalThreadID * COMMANDSTRIDE + 1] = 0;
+            drawCommands[commandIndex + 1] = 0;
         }
     }
 }

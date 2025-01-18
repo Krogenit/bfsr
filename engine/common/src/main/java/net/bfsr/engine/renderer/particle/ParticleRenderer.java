@@ -167,14 +167,16 @@ public class ParticleRenderer {
 
     private void render(int bufferIndex, int sFactor, int dFactor) {
         int count = particlesByRenderLayer[bufferIndex].size();
-        if (count > 0) {
-            renderer.glBlendFunc(sFactor, dFactor);
-            AbstractBuffersHolder buffersHolder = buffersHolderArray[bufferIndex];
-            if (count > OCCLUSION_CULLING_THRESHOLD) {
-                cullingSystem.renderOcclusionCulled(count, buffersHolder);
-            } else {
-                spriteRenderer.render(count, buffersHolder);
-            }
+        if (count == 0) {
+            return;
+        }
+
+        renderer.glBlendFunc(sFactor, dFactor);
+        AbstractBuffersHolder buffersHolder = buffersHolderArray[bufferIndex];
+        if (count > OCCLUSION_CULLING_THRESHOLD) {
+            cullingSystem.renderOcclusionCulled(count, buffersHolder);
+        } else {
+            spriteRenderer.render(count, buffersHolder);
         }
     }
 

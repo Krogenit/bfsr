@@ -14,10 +14,10 @@ import java.nio.ByteBuffer;
 import static net.bfsr.engine.renderer.SpriteRenderer.MATERIAL_BUFFER_INDEX;
 import static net.bfsr.engine.renderer.SpriteRenderer.MODEL_BUFFER_INDEX;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL42.glMemoryBarrier;
-import static org.lwjgl.opengl.GL43.GL_SHADER_STORAGE_BARRIER_BIT;
+import static org.lwjgl.opengl.GL42C.glMemoryBarrier;
 import static org.lwjgl.opengl.GL43.GL_SHADER_STORAGE_BUFFER;
-import static org.lwjgl.opengl.GL43.glDispatchCompute;
+import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BARRIER_BIT;
+import static org.lwjgl.opengl.GL43C.glDispatchCompute;
 
 public class OcclusionCullingSystem implements AbstractOcclusionCullingSystem {
     public static final ByteBuffer BYTE_BUFFER = MemoryUtil.memCalloc(4);
