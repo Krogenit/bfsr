@@ -76,8 +76,13 @@ public class WorldRenderer {
     @EventHandler
     public EventListener<ExitToMainMenuEvent> exitToMainMenuEvent() {
         return event -> {
-            particleRenderer.clear();
+            particleRenderer.removeAllRenders();
             backgroundRenderer.clear();
         };
+    }
+
+    public void clear() {
+        particleRenderer.clear();
+        backgroundRenderer.clear();
     }
 }

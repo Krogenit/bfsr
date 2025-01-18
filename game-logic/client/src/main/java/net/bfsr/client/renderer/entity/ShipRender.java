@@ -347,7 +347,9 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
     @Override
     public void renderAlpha() {
-        if (!ship.isSpawned()) return;
+        if (!ship.isSpawned()) {
+            return;
+        }
 
         for (int i = 0; i < moduleRenders.size(); i++) {
             moduleRenders.get(i).renderAlpha();

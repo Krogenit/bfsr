@@ -102,6 +102,14 @@ public abstract class AbstractRenderer {
     public abstract void setVSync(boolean value);
     public abstract void setDebugWindow();
 
+    public void reloadShaders() {
+        shader.delete();
+        shader.load();
+        shader.init();
+        cullingSystem.reloadShaders();
+        debugRenderer.reloadShaders();
+    }
+
     public void clear() {
         camera.clear();
         shader.delete();

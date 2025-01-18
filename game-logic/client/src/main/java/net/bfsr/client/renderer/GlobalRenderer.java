@@ -71,13 +71,6 @@ public class GlobalRenderer {
         shader.enable();
     }
 
-    public void reloadShaders() {
-        shader.delete();
-        shader.load();
-        shader.init();
-        debugRenderer.reload();
-    }
-
     public void setDebugBoxesEnabled(boolean value) {
         if (value) {
             debugBoxesRenderRunnable = () -> {

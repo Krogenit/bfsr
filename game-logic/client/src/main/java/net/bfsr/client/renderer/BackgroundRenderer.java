@@ -17,7 +17,7 @@ public class BackgroundRenderer {
     private AbstractTexture texture = AbstractTextureLoader.dummyTexture;
     private Runnable renderRunnable = RunnableUtils.EMPTY_RUNNABLE;
 
-    private int id;
+    private int id = -1;
 
     public void init() {
         Client.get().getEventBus().register(this);
@@ -53,6 +53,10 @@ public class BackgroundRenderer {
         texture.delete();
         texture = AbstractTextureLoader.dummyTexture;
         renderRunnable = RunnableUtils.EMPTY_RUNNABLE;
-        spriteRenderer.removeObject(id, BufferType.BACKGROUND);
+
+        if (id != -1) {
+            spriteRenderer.removeObject(id, BufferType.BACKGROUND);
+            id = -1;
+        }
     }
 }

@@ -76,6 +76,7 @@ public class ShaderProgram extends AbstractShaderProgram {
             Definition definition = definitions[i];
             glDetachShader(program, definition.getShader());
         }
+
         glDeleteProgram(program);
     }
 }
