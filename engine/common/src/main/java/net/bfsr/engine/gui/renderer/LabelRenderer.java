@@ -97,7 +97,7 @@ public class LabelRenderer extends GuiObjectRenderer {
     @Override
     public void render() {
         if (idList.size() > 0) {
-            spriteRenderer.addDrawCommand(commandBuffer, stringGeometry.getGlyphsCount(), bufferType);
+            spriteRenderer.addDrawCommand(commandBufferAddress, stringGeometry.getGlyphsCount(), bufferType);
         }
     }
 

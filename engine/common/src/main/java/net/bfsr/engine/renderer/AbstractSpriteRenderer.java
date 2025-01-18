@@ -6,7 +6,6 @@ import net.bfsr.engine.renderer.primitive.AbstractVAO;
 import net.bfsr.engine.renderer.primitive.GeometryBuffer;
 import org.joml.Vector4f;
 
-import java.nio.ByteBuffer;
 import java.util.concurrent.Future;
 
 public interface AbstractSpriteRenderer extends GeometryBuffer {
@@ -47,8 +46,8 @@ public interface AbstractSpriteRenderer extends GeometryBuffer {
     void addTask(Runnable runnable, BufferType bufferType);
     Future<?> addTask(Runnable runnable);
 
-    void addDrawCommand(ByteBuffer commandBuffer, int count, BufferType bufferType);
-    void addDrawCommand(ByteBuffer commandBuffer, int count, AbstractBuffersHolder buffersHolder);
+    void addDrawCommand(long commandBufferAddress, int count, BufferType bufferType);
+    void addDrawCommand(long commandBufferAddress, int count, AbstractBuffersHolder buffersHolder);
     void addDrawCommand(int id, BufferType bufferType);
     void addDrawCommand(int id, int baseVertex, BufferType bufferType);
     void addDrawCommand(int id, int baseVertex, AbstractBuffersHolder buffersHolder);

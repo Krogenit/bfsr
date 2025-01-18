@@ -17,7 +17,6 @@ import net.bfsr.engine.util.MutableInt;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryUtil;
 
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.concurrent.ExecutionException;
@@ -246,14 +245,14 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     }
 
     @Override
-    public void addDrawCommand(ByteBuffer commandBuffer, int count, BufferType bufferType) {
-        addDrawCommand(commandBuffer, count, buffersHolders[bufferType.ordinal()]);
+    public void addDrawCommand(long commandBufferAddress, int count, BufferType bufferType) {
+        addDrawCommand(commandBufferAddress, count, buffersHolders[bufferType.ordinal()]);
     }
 
     @Override
-    public void addDrawCommand(ByteBuffer commandBuffer, int count, AbstractBuffersHolder buffersHolder) {
+    public void addDrawCommand(long commandBufferAddress, int count, AbstractBuffersHolder buffersHolder) {
         int offset = buffersHolder.getAndIncrementRenderObjects(count) * COMMAND_SIZE_IN_BYTES;
-        MemoryUtil.memCopy(MemoryUtil.memAddress(commandBuffer), buffersHolder.getCommandBufferAddress() +
+        MemoryUtil.memCopy(commandBufferAddress, buffersHolder.getCommandBufferAddress() +
                 (offset & 0xFFFF_FFFFL), (long) count * COMMAND_SIZE_IN_BYTES);
     }
 
