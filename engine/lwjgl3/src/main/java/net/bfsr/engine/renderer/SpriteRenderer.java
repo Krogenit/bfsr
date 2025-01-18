@@ -254,8 +254,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     public void addDrawCommand(ByteBuffer commandBuffer, int count, AbstractBuffersHolder buffersHolder) {
         int offset = buffersHolder.getAndIncrementRenderObjects(count) * COMMAND_SIZE_IN_BYTES;
         MemoryUtil.memCopy(MemoryUtil.memAddress(commandBuffer), buffersHolder.getCommandBufferAddress() +
-                        (((long) offset & 0xFFFF_FFFFL)),
-                (long) count * COMMAND_SIZE_IN_BYTES);
+                (offset & 0xFFFF_FFFFL), (long) count * COMMAND_SIZE_IN_BYTES);
     }
 
     @Override

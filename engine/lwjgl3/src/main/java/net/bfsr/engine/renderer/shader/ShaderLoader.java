@@ -10,8 +10,6 @@ import org.lwjgl.opengl.GL;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.lwjgl.opengl.GL20C.glCompileShader;
@@ -35,9 +33,7 @@ import static org.lwjgl.opengl.GL45C.glShaderSource;
 import static org.lwjgl.opengl.GL45C.glValidateProgram;
 
 @Log4j2
-public class ShaderManager {
-    static final ShaderManager INSTANCE = new ShaderManager();
-
+public class ShaderLoader {
     public static final boolean GL_ARB_SHADING_LANGUAGE_INCLUDE = GL.getCapabilities().GL_ARB_shading_language_include;
 
     static {
@@ -57,19 +53,9 @@ public class ShaderManager {
     }
 
     private final FileManager fileManager = new FileManager();
-    private final List<ShaderProgram> programs = new ArrayList<>();
 
     void createProgram(ShaderProgram program) {
         setupProgram(program);
-
-        for (int i = 0; i < programs.size(); i++) {
-            if (programs.get(i).getDefinitions() == null) {
-                programs.set(i, program);
-                return;
-            }
-        }
-
-        programs.add(program);
     }
 
     private void setupProgram(ShaderProgram program) {
