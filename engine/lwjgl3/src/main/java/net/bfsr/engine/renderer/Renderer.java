@@ -62,7 +62,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 @Log4j2
 public class Renderer extends AbstractRenderer {
     public static final int UBO_PROJECTION_MATRIX = 0;
-    public static final int UBO_INTERPOLATION = 1;
+    private static final int UBO_INTERPOLATION = 1;
     public static final int UBO_VIEW_DATA = 2;
 
     private int interpolationUBO;

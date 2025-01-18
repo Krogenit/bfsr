@@ -2,20 +2,19 @@ package net.bfsr.engine.renderer.shader.loader;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.engine.util.IOUtils;
 import net.bfsr.engine.util.PathHelper;
-import org.lwjgl.opengl.GL;
 import org.lwjgl.system.Platform;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static net.bfsr.engine.renderer.shader.ShaderManager.GL_ARB_SHADING_LANGUAGE_INCLUDE;
 
 @Log4j2
 @Setter
 public class FileManager {
     private boolean lineMarkers = true;
-    private boolean handleIncludePasting = true;
+    private boolean handleIncludePasting = !GL_ARB_SHADING_LANGUAGE_INCLUDE;
 
     public String manualInclude(String filename, FoundFile foundFile, String prepend, AtomicBoolean foundVersion) {
         String source = getContent(filename, foundFile);
@@ -44,8 +43,9 @@ public class FileManager {
             int offset = line.indexOf("#version");
             if (offset != -1) {
                 int commentOffset = line.indexOf("//");
-                if (commentOffset != -1 && commentOffset < offset)
+                if (commentOffset != -1 && commentOffset < offset) {
                     continue;
+                }
 
                 if (foundVersion.get()) {
                     // someone else already set the version, so just comment out
@@ -57,6 +57,7 @@ public class FileManager {
                     text.append(line).append("\n").append(prevText).append("//").append(line).append("\n");
                     foundVersion.set(true);
                 }
+
                 continue;
             }
 
@@ -66,13 +67,14 @@ public class FileManager {
                 offset = line.indexOf("#include");
                 if (offset != -1) {
                     int commentOffset = line.indexOf("//");
-                    if (commentOffset != -1 && commentOffset < offset)
+                    if (commentOffset != -1 && commentOffset < offset) {
                         continue;
+                    }
 
                     int firstQuote = line.indexOf('"', offset);
                     int secondQuote = line.indexOf('"', firstQuote + 1);
 
-                    String include = line.substring(firstQuote + 1, secondQuote);
+                    String include = line.substring(firstQuote + 2, secondQuote);
 
                     FoundFile includeFound = new FoundFile();
                     String includeContent = manualInclude(include, includeFound, "", foundVersion);
@@ -83,6 +85,7 @@ public class FileManager {
                             text.append("\n").append(markerString(lineCount + 1, textFilename, 0));
                         }
                     }
+
                     continue; // Skip adding the original #include line.
                 }
             }
@@ -99,11 +102,11 @@ public class FileManager {
         }
 
         foundFile.setFilename(filename);
-        return loadFile(filename);
+        return IOUtils.readFile(PathHelper.SHADER.resolve(filename));
     }
 
     private String markerString(int line, String filename, int fileId) {
-        if (GL.getCapabilities().GL_ARB_shading_language_include) {
+        if (GL_ARB_SHADING_LANGUAGE_INCLUDE) {
             StringBuilder fixedName = new StringBuilder(64);
             if (Platform.get() == Platform.WINDOWS) {
                 for (int i = 0; i < filename.length(); i++) {
@@ -120,14 +123,6 @@ public class FileManager {
             return String.format("#line %d \"", line) + fixedName + "\"\n";
         } else {
             return String.format("#line %d %d\n", line, fileId);
-        }
-    }
-
-    private String loadFile(String fileName) {
-        try {
-            return Files.readString(PathHelper.SHADER.resolve(fileName), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not load shader " + fileName, e);
         }
     }
 }

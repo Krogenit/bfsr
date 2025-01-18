@@ -7,7 +7,15 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL20.glDeleteProgram;
+import static org.lwjgl.opengl.GL20.glDetachShader;
+import static org.lwjgl.opengl.GL20.glGetUniformLocation;
+import static org.lwjgl.opengl.GL20.glUniform1f;
+import static org.lwjgl.opengl.GL20.glUniform1i;
+import static org.lwjgl.opengl.GL20.glUniform2f;
+import static org.lwjgl.opengl.GL20.glUniform3f;
+import static org.lwjgl.opengl.GL20.glUniform4f;
+import static org.lwjgl.opengl.GL20.glUseProgram;
 
 @Getter
 public class ShaderProgram extends AbstractShaderProgram {
@@ -15,7 +23,7 @@ public class ShaderProgram extends AbstractShaderProgram {
     private int program;
     private final Definition[] definitions;
 
-    ShaderProgram(Definition... definitions) {
+    protected ShaderProgram(Definition... definitions) {
         this.definitions = definitions;
     }
 
@@ -71,12 +79,13 @@ public class ShaderProgram extends AbstractShaderProgram {
 
     @Override
     public void delete() {
-        int length = definitions.length;
-        for (int i = 0; i < length; i++) {
-            Definition definition = definitions[i];
-            glDetachShader(program, definition.getShader());
-        }
+        if (program != 0) {
+            for (int i = 0, length = definitions.length; i < length; i++) {
+                Definition definition = definitions[i];
+                glDetachShader(program, definition.getShader());
+            }
 
-        glDeleteProgram(program);
+            glDeleteProgram(program);
+        }
     }
 }

@@ -3,16 +3,59 @@ package net.bfsr.engine.renderer.shader;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.renderer.shader.loader.Definition;
 import net.bfsr.engine.renderer.shader.loader.FileManager;
+import net.bfsr.engine.util.IOUtils;
+import net.bfsr.engine.util.PathHelper;
+import org.lwjgl.opengl.ARBShadingLanguageInclude;
+import org.lwjgl.opengl.GL;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.lwjgl.opengl.GL45C.*;
+import static org.lwjgl.opengl.GL20C.glCompileShader;
+import static org.lwjgl.opengl.GL45C.GL_COMPILE_STATUS;
+import static org.lwjgl.opengl.GL45C.GL_FALSE;
+import static org.lwjgl.opengl.GL45C.GL_INFO_LOG_LENGTH;
+import static org.lwjgl.opengl.GL45C.GL_LINK_STATUS;
+import static org.lwjgl.opengl.GL45C.GL_TRUE;
+import static org.lwjgl.opengl.GL45C.GL_VALIDATE_STATUS;
+import static org.lwjgl.opengl.GL45C.glAttachShader;
+import static org.lwjgl.opengl.GL45C.glCreateProgram;
+import static org.lwjgl.opengl.GL45C.glCreateShader;
+import static org.lwjgl.opengl.GL45C.glDeleteProgram;
+import static org.lwjgl.opengl.GL45C.glDeleteShader;
+import static org.lwjgl.opengl.GL45C.glGetProgramInfoLog;
+import static org.lwjgl.opengl.GL45C.glGetProgrami;
+import static org.lwjgl.opengl.GL45C.glGetShaderInfoLog;
+import static org.lwjgl.opengl.GL45C.glGetShaderi;
+import static org.lwjgl.opengl.GL45C.glLinkProgram;
+import static org.lwjgl.opengl.GL45C.glShaderSource;
+import static org.lwjgl.opengl.GL45C.glValidateProgram;
 
 @Log4j2
-class ShaderManager {
+public class ShaderManager {
     static final ShaderManager INSTANCE = new ShaderManager();
+
+    public static final boolean GL_ARB_SHADING_LANGUAGE_INCLUDE = GL.getCapabilities().GL_ARB_shading_language_include;
+
+    static {
+        if (GL_ARB_SHADING_LANGUAGE_INCLUDE) {
+            Path commonPath = PathHelper.SHADER.resolve("common");
+            File commonFolder = commonPath.toFile();
+            File[] files = commonFolder.listFiles();
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    File file = files[i];
+                    String name = file.getName();
+                    ARBShadingLanguageInclude.glNamedStringARB(ARBShadingLanguageInclude.GL_SHADER_INCLUDE_ARB, "/common/" + name,
+                            IOUtils.readFile(commonPath.resolve(name)));
+                }
+            }
+        }
+    }
+
     private final FileManager fileManager = new FileManager();
     private final List<ShaderProgram> programs = new ArrayList<>();
 
@@ -36,18 +79,8 @@ class ShaderManager {
         Definition[] definitions = program.getDefinitions();
         for (int i = 0; i < definitions.length; i++) {
             Definition definition = definitions[i];
-            String strDefine = switch (definition.getType()) {
-                case GL_VERTEX_SHADER -> "#define _VERTEX_SHADER_ 1\n";
-                case GL_FRAGMENT_SHADER -> "#define _FRAGMENT_SHADER_ 1\n";
-                case GL_COMPUTE_SHADER -> "#define _COMPUTE_SHADER_ 1\n";
-                case GL_GEOMETRY_SHADER -> "#define _GEOMETRY_SHADER_ 1\n";
-                case GL_TESS_CONTROL_SHADER -> "#define _TESS_CONTROL_SHADER_ 1\n";
-                case GL_TESS_EVALUATION_SHADER -> "#define _TESS_EVALUATION_SHADER_ 1\n";
-                default -> "";
-            };
-
             definition.setContent(fileManager.manualInclude(definition.getFilename(), definition.getFoundFile(),
-                    definition.getPrepend() + strDefine, new AtomicBoolean(false)));
+                    definition.getPrepend(), new AtomicBoolean(false)));
 
             allFound = allFound && !definition.getContent().isEmpty();
         }
@@ -89,8 +122,11 @@ class ShaderManager {
         int infoLogLength = glGetProgrami(program, GL_INFO_LOG_LENGTH);
         if (infoLogLength > 1) {
             String infoLog = glGetProgramInfoLog(program, GL_INFO_LOG_LENGTH);
-            if (linkResult == GL_FALSE) log.error("Could not link program {}, log: {}", filename, infoLog);
-            else log.info("Program {} link log: {}", filename, infoLog);
+            if (linkResult == GL_FALSE) {
+                log.error("Could not link program {}, log: {}", filename, infoLog);
+            } else {
+                log.info("Program {} link log: {}", filename, infoLog);
+            }
         }
 
         glValidateProgram(program);
@@ -98,8 +134,11 @@ class ShaderManager {
         infoLogLength = glGetProgrami(program, GL_INFO_LOG_LENGTH);
         if (infoLogLength > 1) {
             String infoLog = glGetProgramInfoLog(program, GL_INFO_LOG_LENGTH);
-            if (validateResult == GL_FALSE) log.error("Could not validate program {}, log: {}", filename, infoLog);
-            else log.info("Program {} validate log: {}", filename, infoLog);
+            if (validateResult == GL_FALSE) {
+                log.error("Could not validate program {}, log: {}", filename, infoLog);
+            } else {
+                log.info("Program {} validate log: {}", filename, infoLog);
+            }
         }
 
         return linkResult == GL_TRUE && validateResult == GL_TRUE;
@@ -111,8 +150,11 @@ class ShaderManager {
         int infoLogLength = glGetShaderi(shader, GL_INFO_LOG_LENGTH);
         if (infoLogLength > 1) {
             String infoLog = glGetShaderInfoLog(shader, infoLogLength);
-            if (result == GL_FALSE) log.error("Could not compile shader {}, log: {}", filename, infoLog);
-            else log.info("Shader {} compile log: {}", filename, infoLog);
+            if (result == GL_FALSE) {
+                log.error("Could not compile shader {}, log: {}", filename, infoLog);
+            } else {
+                log.info("Shader {} compile log: {}", filename, infoLog);
+            }
         }
 
         return result == GL_TRUE;

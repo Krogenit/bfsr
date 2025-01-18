@@ -1,11 +1,11 @@
-#version 450
+#version 460
+
+layout (location = 0) in colorData {
+    vec4 color;
+};
 
 layout (location = 0) out vec4 out_Color;
 
-in Data {
-    vec4 color;
-} in_Data;
-
 void main() {
-    out_Color = in_Data.color;
+    out_Color = color;
 }

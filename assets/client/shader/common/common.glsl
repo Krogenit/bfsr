@@ -1,9 +1,14 @@
-#define UBO_PROJECTION_MATRIX 0
-#define UBO_INTERPOLATION 1
-#define UBO_VIEW_DATA 2
+#define UBO_PROJECTION_MATRIX          0
+#define UBO_INTERPOLATION              1
+#define UBO_VIEW_DATA                  2
 
-#define MIN_CAMERA_ZOOM 2.0
-#define MAX_CAMERA_ZOOM 30.0
+#define SSBO_MODEL_DATA                0
+#define SSBO_LAST_UPDATE_MODEL_DATA    1
+#define SSBO_MATERIAL_DATA             2
+#define SSBO_LAST_UPDATE_MATERIAL_DATA 3
+
+#define MIN_CAMERA_ZOOM                2.0
+#define MAX_CAMERA_ZOOM                30.0
 
 struct Material {
     vec4 color;
@@ -40,4 +45,6 @@ struct ViewData {
     float x;
     float y;
     float zoom;
+    int width;
+    int height;
 };
