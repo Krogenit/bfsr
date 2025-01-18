@@ -12,16 +12,11 @@ import java.nio.FloatBuffer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
-import static net.bfsr.engine.renderer.AbstractSpriteRenderer.BASE_INSTANCE_OFFSET;
-import static net.bfsr.engine.renderer.AbstractSpriteRenderer.BASE_VERTEX_OFFSET;
 import static net.bfsr.engine.renderer.AbstractSpriteRenderer.COMMAND_SIZE_IN_BYTES;
-import static net.bfsr.engine.renderer.AbstractSpriteRenderer.FIRST_INDEX_OFFSET;
 import static net.bfsr.engine.renderer.AbstractSpriteRenderer.FOUR_BYTES_ELEMENT_SHIFT;
-import static net.bfsr.engine.renderer.AbstractSpriteRenderer.INSTANCE_COUNT_OFFSET;
 import static net.bfsr.engine.renderer.AbstractSpriteRenderer.LAST_UPDATE_MATERIAL_DATA_SIZE_IN_BYTES;
 import static net.bfsr.engine.renderer.AbstractSpriteRenderer.MATERIAL_DATA_SIZE_IN_BYTES;
 import static net.bfsr.engine.renderer.AbstractSpriteRenderer.MODEL_DATA_SIZE;
-import static net.bfsr.engine.renderer.AbstractSpriteRenderer.QUAD_INDEX_COUNT;
 import static org.lwjgl.opengl.GL15C.glBindBuffer;
 import static org.lwjgl.opengl.GL30C.glBindBufferBase;
 import static org.lwjgl.opengl.GL40C.GL_DRAW_INDIRECT_BUFFER;
@@ -29,12 +24,6 @@ import static org.lwjgl.opengl.GL44C.GL_DYNAMIC_STORAGE_BIT;
 
 @Getter
 public class BuffersHolder implements AbstractBuffersHolder {
-    /**
-     * OpenGL fence sync toggle
-     */
-    private static final boolean SYNC = false;
-    private static final int BUFFERING = 3;
-
     private final VAO vao;
 
     @Setter
@@ -63,11 +52,9 @@ public class BuffersHolder implements AbstractBuffersHolder {
     @Setter
     private boolean lastUpdateMaterialBufferDirty;
 
-    private final CircularBuffer commandBuffer;
+    private final DrawCommandBuffer commandBuffer;
     private final int commandBufferResizeCapacityInBytes;
-    private final LockManager lockManager = SYNC ? new LockManager() : new DisableSyncLockManager();
-    @Getter
-    private int bufferingIndex;
+    private long commandBufferAddress;
 
     @Setter
     private int renderObjects;
@@ -98,28 +85,12 @@ public class BuffersHolder implements AbstractBuffersHolder {
 
         commandBufferResizeCapacityInBytes = initialObjectCount * COMMAND_SIZE_IN_BYTES;
 
-        commandBuffer = new CircularBuffer(persistent ? BUFFERING : 1);
+        commandBuffer = persistent ? new PersistentDrawCommandBuffer() : new DrawCommandBuffer();
         commandBuffer.create(commandBufferResizeCapacityInBytes);
-        fillCommandBuffer(commandBuffer);
+        commandBuffer.fill();
+        commandBufferAddress = commandBuffer.getAddress();
 
         maxBufferCapacity = initialObjectCount;
-    }
-
-    private void fillCommandBuffer(CircularBuffer commandBuffer) {
-        ByteBuffer[] buffers = commandBuffer.getBuffers();
-        int size = (int) commandBuffer.getCapacity();
-
-        for (int i = 0; i < buffers.length; i++) {
-            long address = commandBuffer.getBufferAddresses()[i];
-
-            for (int j = 0; j < size; j += COMMAND_SIZE_IN_BYTES) {
-                putCommandData(address, j, QUAD_INDEX_COUNT);
-                putCommandData(address, j + INSTANCE_COUNT_OFFSET, 1);
-                putCommandData(address, j + FIRST_INDEX_OFFSET, 0);
-                putCommandData(address, j + BASE_VERTEX_OFFSET, 0);
-                putCommandData(address, j + BASE_INSTANCE_OFFSET, 0);
-            }
-        }
     }
 
     @Override
@@ -155,7 +126,8 @@ public class BuffersHolder implements AbstractBuffersHolder {
         if (remainingBufferCapacity < requiredBufferCapacity) {
             int resizeAmount = Math.max(commandBufferResizeCapacityInBytes, requiredBufferCapacity);
             commandBuffer.resize(capacity + resizeAmount);
-            fillCommandBuffer(commandBuffer);
+            commandBuffer.fill();
+            commandBufferAddress = commandBuffer.getAddress();
         }
     }
 
@@ -228,11 +200,12 @@ public class BuffersHolder implements AbstractBuffersHolder {
 
     @Override
     public void putCommandData(int offset, int value) {
-        MemoryUtil.memPutInt(commandBuffer.getAddress(bufferingIndex) + (offset & 0xFFFF_FFFFL), value);
+        MemoryUtil.memPutInt(commandBufferAddress + (offset & 0xFFFF_FFFFL), value);
     }
 
-    public void putCommandData(long address, int offset, int value) {
-        MemoryUtil.memPutInt(address + (offset & 0xFFFF_FFFFL), value);
+    @Override
+    public void putCommandData(long address, int value) {
+        MemoryUtil.memPutInt(address, value);
     }
 
     @Override
@@ -242,32 +215,33 @@ public class BuffersHolder implements AbstractBuffersHolder {
 
     @Override
     public void bindCommandBuffer() {
-        glBindBuffer(GL_DRAW_INDIRECT_BUFFER, commandBuffer.getBufferId(bufferingIndex));
+        glBindBuffer(GL_DRAW_INDIRECT_BUFFER, commandBuffer.getBufferId());
     }
 
     @Override
     public void bindCommandBufferBase(int target, int index) {
-        glBindBufferBase(target, index, commandBuffer.getBufferId(bufferingIndex));
+        glBindBufferBase(target, index, commandBuffer.getBufferId());
     }
 
     @Override
     public void lockRange() {
-        lockManager.lockRange(bufferingIndex);
+        commandBuffer.lockRange();
     }
 
     @Override
     public void waitForLockedRange() {
-        lockManager.waitForLockedRange(bufferingIndex);
+        commandBuffer.waitForLockedRange();
     }
 
     @Override
     public void switchRenderingIndex() {
-        bufferingIndex = (bufferingIndex + 1) % BUFFERING;
+        commandBuffer.switchBufferingIndex();
+        commandBufferAddress = commandBuffer.getAddress();
     }
 
     @Override
     public long getCommandBufferAddress() {
-        return commandBuffer.getAddress(bufferingIndex);
+        return commandBufferAddress;
     }
 
     @Override

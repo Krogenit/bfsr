@@ -15,6 +15,7 @@ public interface AbstractBuffersHolder {
     void putMaterialData(int offset, int value);
     void putMaterialData(int offset, long value);
     void putCommandData(int offset, int value);
+    void putCommandData(long address, int value);
     void putLastUpdateModelData(int offset, float value);
     void putLastUpdateMaterialData(int offset, float value);
     void putLastUpdateMaterialData(int offset, int value);
