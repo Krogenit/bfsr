@@ -14,6 +14,7 @@ public abstract class AbstractSpriteRenderer implements GeometryBuffer {
     public static final int MODEL_DATA_SIZE = 6;
     public static final int MODEL_DATA_SIZE_IN_BYTES = MODEL_DATA_SIZE << 2;
     public static final int COMMAND_SIZE = 5;
+    public static final int COMMAND_SIZE_IN_BYTES = COMMAND_SIZE << 2;
     public static final int MATERIAL_DATA_SIZE = 16;
     public static final int LAST_UPDATE_MATERIAL_DATA_SIZE = 8;
     public static final int MATERIAL_DATA_SIZE_IN_BYTES = MATERIAL_DATA_SIZE << 2;
@@ -51,8 +52,9 @@ public abstract class AbstractSpriteRenderer implements GeometryBuffer {
 
     public abstract void syncAndRender(BufferType bufferType);
     public abstract void render(BufferType bufferType);
-    public abstract void render(int mode, int objectCount, AbstractBuffersHolder buffersHolder);
+    public abstract void updateCommandBufferAndRender(int mode, int objectCount, AbstractBuffersHolder buffersHolder);
     public abstract void render(int objectCount, AbstractBuffersHolder buffersHolder);
+    public abstract void render(int mode, int objectCount, AbstractBuffersHolder buffersHolder);
 
     public abstract int add(float x, float y, float width, float height, float r, float g, float b, float a,
                             long textureHandle, BufferType bufferType);

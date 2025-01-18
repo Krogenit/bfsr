@@ -2,6 +2,7 @@ package net.bfsr.engine.renderer;
 
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.renderer.camera.Camera;
+import net.bfsr.engine.renderer.culling.OcclusionCullingSystem;
 import net.bfsr.engine.renderer.debug.DebugRenderer;
 import net.bfsr.engine.renderer.debug.OpenGLDebugUtils;
 import net.bfsr.engine.renderer.font.StringGeometryBuilder;
@@ -71,7 +72,7 @@ public class Renderer extends AbstractRenderer {
 
     public Renderer() {
         super(new Camera(), new BaseShader(), new StringGeometryBuilder(), new SpriteRenderer(), new GuiRenderer(), new DebugRenderer(),
-                new TextureGenerator());
+                new TextureGenerator(), new OcclusionCullingSystem());
     }
 
     @Override

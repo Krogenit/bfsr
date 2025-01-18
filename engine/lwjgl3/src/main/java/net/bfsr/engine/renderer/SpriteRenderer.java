@@ -15,7 +15,6 @@ import net.bfsr.engine.renderer.primitive.VBO;
 import net.bfsr.engine.util.MultithreadingUtils;
 import net.bfsr.engine.util.MutableInt;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.GL40C;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
@@ -29,6 +28,7 @@ import java.util.function.BiConsumer;
 
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL11C.GL_TRIANGLES;
+import static org.lwjgl.opengl.GL40C.GL_DRAW_INDIRECT_BUFFER;
 import static org.lwjgl.opengl.GL43.glMultiDrawElementsIndirect;
 import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BUFFER;
 import static org.lwjgl.opengl.GL44C.GL_DYNAMIC_STORAGE_BIT;
@@ -36,11 +36,16 @@ import static org.lwjgl.opengl.GL44C.GL_DYNAMIC_STORAGE_BIT;
 public class SpriteRenderer extends AbstractSpriteRenderer {
     private static final int VERTEX_STRIDE = 16;
 
-    private static final int MODEL_BUFFER_INDEX = 0;
-    private static final int MATERIAL_BUFFER_INDEX = 1;
+    public static final int MODEL_BUFFER_INDEX = 0;
+    public static final int MATERIAL_BUFFER_INDEX = 1;
     private static final int LAST_UPDATE_MODEL_BUFFER_INDEX = 2;
     private static final int LAST_UPDATE_MATERIAL_BUFFER_INDEX = 3;
-    private static final int COMMAND_BUFFER_INDEX = 4;
+    public static final int COMMAND_BUFFER_INDEX = 4;
+
+    private static final int SSBO_MODEL_DATA = 0;
+    private static final int SSBO_LAST_UPDATE_MODEL_DATA = 1;
+    private static final int SSBO_MATERIAL_DATA = 2;
+    private static final int SSBO_LAST_UPDATE_MATERIAL_DATA = 3;
 
     public static final int Y_OFFSET = 1;
     public static final int SIN_OFFSET = 2;
@@ -230,10 +235,9 @@ public class SpriteRenderer extends AbstractSpriteRenderer {
 
     @Override
     public void addDrawCommand(IntBuffer commandBuffer, int count, AbstractBuffersHolder buffersHolder) {
+        int offset = buffersHolder.getAndIncrementRenderObjects(count) * COMMAND_SIZE;
         MemoryUtil.memCopy(MemoryUtil.memAddress(commandBuffer), buffersHolder.getCommandBufferAddress() +
-                        (((long) buffersHolder.getRenderObjects() * COMMAND_SIZE & 0xFFFF_FFFFL) << FOUR_BYTES_ELEMENT_SHIFT),
-                (long) count * COMMAND_SIZE * 4);
-        buffersHolder.addRenderObjectsCount(count);
+                (((long) offset & 0xFFFF_FFFFL) << FOUR_BYTES_ELEMENT_SHIFT), (long) count * COMMAND_SIZE_IN_BYTES);
     }
 
     @Override
@@ -260,10 +264,9 @@ public class SpriteRenderer extends AbstractSpriteRenderer {
 
     @Override
     public void addDrawCommand(int id, int baseVertex, AbstractBuffersHolder buffersHolder) {
-        int offset = buffersHolder.getRenderObjects() * COMMAND_SIZE;
+        int offset = buffersHolder.getAndIncrementRenderObjects() * COMMAND_SIZE;
         buffersHolder.putCommandData(offset + BASE_VERTEX_OFFSET, baseVertex);
         buffersHolder.putCommandData(offset + BASE_INSTANCE_OFFSET, id);
-        buffersHolder.incrementRenderObjects();
     }
 
     public void setIndexCount(int id, int count, BufferType bufferType) {
@@ -291,7 +294,7 @@ public class SpriteRenderer extends AbstractSpriteRenderer {
         }
 
         if (buffersHolder.getRenderObjects() > 0) {
-            render(type, buffersHolder.getRenderObjects(), buffersHolder);
+            updateCommandBufferAndRender(type, buffersHolder.getRenderObjects(), buffersHolder);
             buffersHolder.setRenderObjects(0);
         }
     }
@@ -304,29 +307,34 @@ public class SpriteRenderer extends AbstractSpriteRenderer {
     void render(int mode, BufferType bufferType) {
         BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
         if (buffersHolder.getRenderObjects() > 0) {
-            render(mode, buffersHolder.getRenderObjects(), buffersHolder);
+            updateCommandBufferAndRender(mode, buffersHolder.getRenderObjects(), buffersHolder);
             buffersHolder.setRenderObjects(0);
         }
     }
 
     @Override
     public void render(int objectCount, AbstractBuffersHolder buffersHolder) {
-        render(GL_TRIANGLES, objectCount, buffersHolder);
+        updateCommandBufferAndRender(GL_TRIANGLES, objectCount, buffersHolder);
+    }
+
+    @Override
+    public void updateCommandBufferAndRender(int mode, int objectCount, AbstractBuffersHolder buffersHolder) {
+        buffersHolder.getVao().getBuffer(COMMAND_BUFFER_INDEX).storeData(buffersHolder.getCommandBufferAddress(),
+                (long) objectCount * COMMAND_SIZE_IN_BYTES, GL_DYNAMIC_STORAGE_BIT);
+        render(mode, objectCount, buffersHolder);
     }
 
     @Override
     public void render(int mode, int objectCount, AbstractBuffersHolder buffersHolder) {
         AbstractVAO vao = buffersHolder.getVao();
         vao.bind();
-        vao.getBuffer(COMMAND_BUFFER_INDEX).storeData(buffersHolder.getCommandBufferAddress(), (long) objectCount * COMMAND_SIZE * 4L,
-                GL_DYNAMIC_STORAGE_BIT);
 
-        vao.bindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, MODEL_BUFFER_INDEX);
-        vao.bindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, MATERIAL_BUFFER_INDEX);
-        vao.bindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, LAST_UPDATE_MODEL_BUFFER_INDEX);
-        vao.bindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, LAST_UPDATE_MATERIAL_BUFFER_INDEX);
+        vao.bindBufferBase(GL_SHADER_STORAGE_BUFFER, SSBO_MODEL_DATA, MODEL_BUFFER_INDEX);
+        vao.bindBufferBase(GL_SHADER_STORAGE_BUFFER, SSBO_LAST_UPDATE_MODEL_DATA, LAST_UPDATE_MODEL_BUFFER_INDEX);
+        vao.bindBufferBase(GL_SHADER_STORAGE_BUFFER, SSBO_MATERIAL_DATA, MATERIAL_BUFFER_INDEX);
+        vao.bindBufferBase(GL_SHADER_STORAGE_BUFFER, SSBO_LAST_UPDATE_MATERIAL_DATA, LAST_UPDATE_MATERIAL_BUFFER_INDEX);
 
-        vao.bindBuffer(GL40C.GL_DRAW_INDIRECT_BUFFER, COMMAND_BUFFER_INDEX);
+        vao.bindBuffer(GL_DRAW_INDIRECT_BUFFER, COMMAND_BUFFER_INDEX);
 
         glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, 0, objectCount, 0);
         Engine.renderer.increaseDrawCalls();

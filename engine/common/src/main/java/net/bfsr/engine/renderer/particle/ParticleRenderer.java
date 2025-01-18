@@ -7,6 +7,7 @@ import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
+import net.bfsr.engine.renderer.culling.AbstractOcclusionCullingSystem;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.util.MultithreadingUtils;
 
@@ -19,11 +20,13 @@ import java.util.concurrent.Future;
 public class ParticleRenderer {
     private static final int START_PARTICLE_COUNT = 8192;
     private static final int MULTITHREADED_THRESHOLD = 20000;
+    private static final int OCCLUSION_CULLING_THRESHOLD = 2000;
 
     private final AbstractRenderer renderer = Engine.renderer;
     private final AbstractSpriteRenderer spriteRenderer = renderer.spriteRenderer;
-    private final List<ParticleRender>[] particlesByRenderLayer = new List[4];
-    private final AbstractBuffersHolder[] buffersHolderArray = spriteRenderer.createBuffersHolderArray(4);
+    private final AbstractOcclusionCullingSystem cullingSystem = renderer.cullingSystem;
+    private final List<ParticleRender>[] particlesByRenderLayer = new List[RenderLayer.VALUES.length];
+    private final AbstractBuffersHolder[] buffersHolderArray = spriteRenderer.createBuffersHolderArray(RenderLayer.VALUES.length);
     private final ParticlesStoreRunnable[] particlesStoreRunnables;
     private final ParticlesStoreRunnable[] backgroundParticlesStoreRunnables;
     private Future<?>[] taskFutures;
@@ -156,16 +159,20 @@ public class ParticleRenderer {
     }
 
     private void render(RenderLayer alphaLayer, RenderLayer additiveLayer) {
-        int count = particlesByRenderLayer[alphaLayer.ordinal()].size();
-        if (count > 0) {
-            renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-            spriteRenderer.render(count, buffersHolderArray[alphaLayer.ordinal()]);
-        }
+        render(alphaLayer.ordinal(), GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+        render(additiveLayer.ordinal(), GL.GL_SRC_ALPHA, GL.GL_ONE);
+    }
 
-        count = particlesByRenderLayer[additiveLayer.ordinal()].size();
+    private void render(int bufferIndex, int sFactor, int dFactor) {
+        int count = particlesByRenderLayer[bufferIndex].size();
         if (count > 0) {
-            renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
-            spriteRenderer.render(count, buffersHolderArray[additiveLayer.ordinal()]);
+            renderer.glBlendFunc(sFactor, dFactor);
+            AbstractBuffersHolder buffersHolder = buffersHolderArray[bufferIndex];
+            if (count > OCCLUSION_CULLING_THRESHOLD) {
+                cullingSystem.renderOcclusionCulled(count, buffersHolder);
+            } else {
+                spriteRenderer.render(count, buffersHolder);
+            }
         }
     }
 
@@ -181,9 +188,17 @@ public class ParticleRenderer {
         return buffersHolderArray[renderLayer.ordinal()];
     }
 
-    public void clear() {
+    public void removeAllRenders() {
         for (int i = 0; i < particlesByRenderLayer.length; i++) {
             particlesByRenderLayer[i].clear();
+        }
+    }
+
+    public void clear() {
+        removeAllRenders();
+
+        for (int i = 0; i < buffersHolderArray.length; i++) {
+            buffersHolderArray[i].clear();
         }
     }
 }

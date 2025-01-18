@@ -30,9 +30,9 @@ public abstract class AbstractBuffersHolder {
 
     public abstract long getCommandBufferAddress();
 
-    public abstract void addRenderObjectsCount(int count);
     public abstract void setRenderObjects(int count);
-    public abstract void incrementRenderObjects();
+    public abstract int getAndIncrementRenderObjects();
+    public abstract int getAndIncrementRenderObjects(int count);
     public abstract int getRenderObjects();
     public abstract AbstractVAO getVao();
     public abstract int getNextBaseInstanceId();

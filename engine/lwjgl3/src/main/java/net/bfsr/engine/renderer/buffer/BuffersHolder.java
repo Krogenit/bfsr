@@ -215,20 +215,22 @@ public class BuffersHolder extends AbstractBuffersHolder {
     }
 
     @Override
-    public void incrementRenderObjects() {
-        renderObjects++;
+    public int getAndIncrementRenderObjects() {
+        return renderObjects++;
     }
 
     @Override
-    public void addRenderObjectsCount(int count) {
+    public int getAndIncrementRenderObjects(int count) {
+        int lastRenderObjects = renderObjects;
         renderObjects += count;
+        return lastRenderObjects;
     }
 
-    public void incrementBufferUsage() {
+    private void incrementBufferUsage() {
         bufferUsage++;
     }
 
-    public void decrementBufferUsage() {
+    private void decrementBufferUsage() {
         bufferUsage--;
     }
 

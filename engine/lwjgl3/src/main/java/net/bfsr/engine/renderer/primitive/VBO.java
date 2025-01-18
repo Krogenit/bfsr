@@ -2,12 +2,17 @@ package net.bfsr.engine.renderer.primitive;
 
 import lombok.Getter;
 import net.bfsr.engine.util.RunnableUtils;
+import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
+import static net.bfsr.engine.renderer.culling.OcclusionCullingSystem.BYTE_BUFFER;
+import static org.lwjgl.opengl.GL15C.glBindBuffer;
+import static org.lwjgl.opengl.GL30.glBindBufferBase;
+import static org.lwjgl.opengl.GL43C.glClearBufferSubData;
 import static org.lwjgl.opengl.GL45C.glCreateBuffers;
 import static org.lwjgl.opengl.GL45C.glDeleteBuffers;
 import static org.lwjgl.opengl.GL45C.nglNamedBufferStorage;
@@ -26,6 +31,12 @@ public final class VBO implements AbstractVBO {
     public static VBO create() {
         int id = glCreateBuffers();
         return new VBO(id);
+    }
+
+    public static VBO create(long size, int flags) {
+        VBO vbo = create();
+        vbo.storeData(MemoryUtil.NULL, size, flags);
+        return vbo;
     }
 
     void storeData(ByteBuffer data, int flags) {
@@ -79,8 +90,23 @@ public final class VBO implements AbstractVBO {
         storeData(address, newDataSize, 0, newDataSize, flags);
     }
 
-    void storeData(long address, long fullDataSize, long offset, long newDataSize, int flags) {
+    @Override
+    public void storeData(long address, long fullDataSize, long offset, long newDataSize, int flags) {
         storeData(address, fullDataSize, offset, newDataSize, flags, RunnableUtils.EMPTY_RUNNABLE);
+    }
+
+    @Override
+    public void bindBuffer(int target) {
+        glBindBuffer(target, id);
+    }
+
+    @Override
+    public void bindBufferBase(int target, int index) {
+        glBindBufferBase(target, index, id);
+    }
+
+    public void clearBufferSubData(int target, int internalFormat, long size, int format, int type) {
+        glClearBufferSubData(target, internalFormat, 0, size, format, type, BYTE_BUFFER);
     }
 
     public void clear() {

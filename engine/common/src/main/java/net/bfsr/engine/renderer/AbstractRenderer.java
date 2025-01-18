@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
+import net.bfsr.engine.renderer.culling.AbstractOcclusionCullingSystem;
 import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
 import net.bfsr.engine.renderer.font.StringGeometryBuilder;
 import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
@@ -41,6 +42,7 @@ public abstract class AbstractRenderer {
     public final AbstractGUIRenderer guiRenderer;
     public final AbstractDebugRenderer debugRenderer;
     public final AbstractTextureGenerator textureGenerator;
+    public final AbstractOcclusionCullingSystem cullingSystem;
 
     public void init(long window, int width, int height) {
         this.window = window;
@@ -54,6 +56,7 @@ public abstract class AbstractRenderer {
         debugRenderer.init();
         shader.load();
         shader.init();
+        cullingSystem.init(shader);
     }
 
     public abstract void setupOpenGL();
@@ -115,5 +118,6 @@ public abstract class AbstractRenderer {
         shader.delete();
         spriteRenderer.clear();
         debugRenderer.clear();
+        cullingSystem.clear();
     }
 }
