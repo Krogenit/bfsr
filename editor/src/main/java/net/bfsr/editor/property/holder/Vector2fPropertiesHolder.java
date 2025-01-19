@@ -14,9 +14,4 @@ import net.bfsr.editor.property.Property;
 public class Vector2fPropertiesHolder extends PropertiesHolderAdapter {
     @Property(elementType = PropertyGuiElementType.INPUT_BOX, fieldsAmount = 2, name = "vector")
     private float x, y;
-
-    @Override
-    public String getName() {
-        return "vector";
-    }
 }

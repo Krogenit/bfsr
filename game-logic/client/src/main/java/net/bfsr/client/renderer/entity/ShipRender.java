@@ -97,7 +97,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         }
 
         Shield shield = ship.getModules().getShield();
-        if (shield != null && shield.isAlive()) {
+        if (shield != null) {
             Vector2f diameter = shield.getDiameter();
             float shieldSizeX = shield.getSizeX();
             Vector4f color = ship.getShipData().getEffectsColor();
@@ -110,7 +110,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     private void createWeaponSlotsRenders(Ship ship) {
         Modules modules = ship.getModules();
         List<WeaponSlot> weaponSlots = modules.getWeaponSlots();
-        WeaponRenderRegistry weaponRenderRegistry = Client.get().getRenderManager().getWeaponRenderRegistry();
+        WeaponRenderRegistry weaponRenderRegistry = Client.get().getEntityRenderer().getWeaponRenderRegistry();
         for (int i = 0; i < weaponSlots.size(); i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
             WeaponSlotRender render = weaponRenderRegistry.createRender(weaponSlot);
@@ -242,7 +242,10 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
     private void addModuleRenderer(DamageableModule module, ModuleRenderer moduleRenderer) {
         moduleRenders.add(moduleRenderer);
-        module.getModuleEventBus().addOneTimeListener(ModuleDestroyEvent.class, event -> moduleRenders.remove(moduleRenderer));
+        module.getModuleEventBus().addOneTimeListener(ModuleDestroyEvent.class, event -> {
+            moduleRenderer.clear();
+            moduleRenders.remove(moduleRenderer);
+        });
     }
 
     @Override
@@ -299,7 +302,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
             label.updateLastPosition(object.getX(), object.getY());
 
             Shield shield = ship.getModules().getShield();
-            if (shieldId != -1 && shield != null && shield.isAlive()) {
+            if (shieldId != -1 && shield != null) {
                 spriteRenderer.setLastPosition(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getX(), ship.getY());
                 spriteRenderer.setLastRotation(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getSin(), ship.getCos());
                 Vector2f diameter = shield.getDiameter();
@@ -320,7 +323,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
             spriteRenderer.setColorAlpha(spawnEffectId, BufferType.ENTITIES_ADDITIVE, jumpDelta);
         } else {
             Shield shield = ship.getModules().getShield();
-            if (shieldId != -1 && shield != null && shield.isAlive()) {
+            if (shieldId != -1 && shield != null) {
                 spriteRenderer.setPosition(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getX(), ship.getY());
                 spriteRenderer.setRotation(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getSin(), ship.getCos());
                 Vector2f diameter = shield.getDiameter();
@@ -344,7 +347,9 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
     @Override
     public void renderAlpha() {
-        if (!ship.isSpawned()) return;
+        if (!ship.isSpawned()) {
+            return;
+        }
 
         for (int i = 0; i < moduleRenders.size(); i++) {
             moduleRenders.get(i).renderAlpha();
@@ -362,7 +367,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
             renderGunSlotsAdditive();
             Shield shield = ship.getModules().getShield();
             if (shieldId != -1 && shield != null && shield.isAlive()) {
-                renderShield();
+                spriteRenderer.addDrawCommand(shieldId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ADDITIVE);
             }
         } else {
             spriteRenderer.addDrawCommand(spawnEffectId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ADDITIVE);
@@ -386,10 +391,6 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         for (int i = 0, size = weaponRenders.size(); i < size; i++) {
             weaponRenders.get(i).renderAdditive();
         }
-    }
-
-    private void renderShield() {
-        spriteRenderer.addDrawCommand(shieldId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ADDITIVE);
     }
 
     private void createName() {

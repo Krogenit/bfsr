@@ -16,6 +16,7 @@ public class SimpleGuiObjectRenderer extends GuiObjectRenderer {
                 guiObject.getColor()));
     }
 
+    @Override
     protected void setLastUpdateValues() {
         setBodyLastValues();
     }
@@ -35,14 +36,17 @@ public class SimpleGuiObjectRenderer extends GuiObjectRenderer {
         guiRenderer.addDrawCommand(id);
     }
 
+    @Override
     public void onMouseHover() {
         guiRenderer.setColor(id, hoverColor);
     }
 
+    @Override
     public void onMouseStopHover() {
         guiRenderer.setColor(id, color);
     }
 
+    @Override
     public void updatePosition() {
         guiRenderer.setPosition(id, guiObject.getSceneX(), guiObject.getSceneY());
     }
@@ -52,10 +56,12 @@ public class SimpleGuiObjectRenderer extends GuiObjectRenderer {
         guiRenderer.setPosition(id, x, y);
     }
 
+    @Override
     public void updateRotation() {
         guiRenderer.setRotation(id, guiObject.getRotation());
     }
 
+    @Override
     public void updateSize() {
         guiRenderer.setSize(id, guiObject.getWidth(), guiObject.getHeight());
     }

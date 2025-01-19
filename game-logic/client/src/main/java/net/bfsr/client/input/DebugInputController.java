@@ -38,7 +38,7 @@ public class DebugInputController extends InputController {
                 client.sendTCPPacket(new PacketPauseGame());
                 return true;
             } else if (key == KEY_R) {
-                client.getGlobalRenderer().reloadShaders();
+                Engine.renderer.reloadShaders();
                 return true;
             } else if (key == KEY_B) {
                 ClientSettings.SHOW_DEBUG_BOXES.setValue(!ClientSettings.SHOW_DEBUG_BOXES.getBoolean());

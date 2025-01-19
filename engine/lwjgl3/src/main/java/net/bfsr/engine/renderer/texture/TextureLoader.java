@@ -17,7 +17,6 @@ import org.lwjgl.system.MemoryStack;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
@@ -81,16 +80,13 @@ public final class TextureLoader extends AbstractTextureLoader {
             return;
         }
 
-        DDSFile dds = null;
+        DDSFile dds;
 
         try {
-            InputStream in = new FileInputStream(path);
-            dds = new DDSFile(in);
+            dds = new DDSFile(new FileInputStream(path));
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Failed to load a texture file " + path, e);
         }
-
-        if (dds == null) throw new RuntimeException("Failed to load a texture file " + path);
 
         Texture texture = generateTexture(dds);
         LOADED_TEXTURES.put(path, texture);
@@ -178,7 +174,7 @@ public final class TextureLoader extends AbstractTextureLoader {
             internalFormat = GL11.GL_RGBA8;
             format = GL11.GL_RGBA;
         } else {
-            throw new RuntimeException("Unsupported image channels " + channels);
+            throw new IllegalStateException("Unsupported image channels " + channels);
         }
 
         GL45C.glTextureStorage2D(texture.getId(), 1, internalFormat, width, height);

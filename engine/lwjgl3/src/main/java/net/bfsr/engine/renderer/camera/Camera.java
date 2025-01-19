@@ -76,21 +76,25 @@ public class Camera implements AbstractCamera {
                         -height / 2.0f, height / 2.0f, Z_NEAR, Z_FAR)
                 .get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
 
-        viewBuffer = MemoryUtil.memAllocFloat(3);
+        viewBuffer = MemoryUtil.memAllocFloat(5);
         viewBufferAddress = MemoryUtil.memAddress(viewBuffer);
         Engine.renderer.putValue(viewBufferAddress, 0);
         Engine.renderer.putValue(viewBufferAddress + 4, 0);
         Engine.renderer.putValue(viewBufferAddress + 8, zoom);
+        Engine.renderer.putValue(viewBufferAddress + 12, width);
+        Engine.renderer.putValue(viewBufferAddress + 16, height);
 
-        GL45C.nglNamedBufferStorage(viewUBO, 12L, viewBufferAddress, GL44.GL_DYNAMIC_STORAGE_BIT);
+        GL45C.nglNamedBufferStorage(viewUBO, (long) viewBuffer.capacity() << 2, viewBufferAddress, GL44.GL_DYNAMIC_STORAGE_BIT);
 
-        guiViewBuffer = MemoryUtil.memAllocFloat(3);
+        guiViewBuffer = MemoryUtil.memAllocFloat(5);
         guiViewBufferAddress = MemoryUtil.memAddress(guiViewBuffer);
         Engine.renderer.putValue(guiViewBufferAddress, 0);
         Engine.renderer.putValue(guiViewBufferAddress + 4, 0);
         Engine.renderer.putValue(guiViewBufferAddress + 8, 1.0f);
+        Engine.renderer.putValue(guiViewBufferAddress + 12, width);
+        Engine.renderer.putValue(guiViewBufferAddress + 16, height);
 
-        GL45C.nglNamedBufferStorage(guiViewUBO, 12L, guiViewBufferAddress, GL44.GL_DYNAMIC_STORAGE_BIT);
+        GL45C.nglNamedBufferStorage(guiViewUBO, (long) guiViewBuffer.capacity() << 2, guiViewBufferAddress, GL44.GL_DYNAMIC_STORAGE_BIT);
     }
 
     @Override
@@ -166,9 +170,17 @@ public class Camera implements AbstractCamera {
 
         updateBoundingBox();
 
-        GL45.glNamedBufferSubData(GUIProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(0.0f, width, 0.0f, height, Z_NEAR, Z_FAR)
+        Engine.renderer.putValue(viewBufferAddress + 12L, width);
+        Engine.renderer.putValue(viewBufferAddress + 16L, height);
+        GL45C.nglNamedBufferSubData(viewUBO, 12L, 8L, viewBufferAddress + 12L);
+
+        Engine.renderer.putValue(guiViewBufferAddress + 12L, width);
+        Engine.renderer.putValue(guiViewBufferAddress + 16L, height);
+        GL45C.nglNamedBufferSubData(guiViewUBO, 12L, 8L, guiViewBufferAddress + 12L);
+
+        GL45C.glNamedBufferSubData(GUIProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(0.0f, width, 0.0f, height, Z_NEAR, Z_FAR)
                 .get(MatrixBufferUtils.MATRIX_BUFFER));
-        GL45.glNamedBufferSubData(worldProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(-width / 2.0f, width / 2.0f,
+        GL45C.glNamedBufferSubData(worldProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(-width / 2.0f, width / 2.0f,
                 -height / 2.0f, height / 2.0f, Z_NEAR, Z_FAR).get(MatrixBufferUtils.MATRIX_BUFFER));
     }
 

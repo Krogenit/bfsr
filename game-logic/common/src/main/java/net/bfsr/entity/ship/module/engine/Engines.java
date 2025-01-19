@@ -9,7 +9,6 @@ import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.Module;
 import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.math.Direction;
-import org.jbox2d.dynamics.Body;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -69,9 +68,9 @@ public class Engines extends DamageableModule {
     }
 
     @Override
-    public void addFixtureToBody(Body body) {
+    public void addFixtureToBody(RigidBody rigidBody) {
         for (int i = 0; i < engines.size(); i++) {
-            engines.get(i).addFixtureToBody(body);
+            engines.get(i).addFixtureToBody(rigidBody);
         }
     }
 

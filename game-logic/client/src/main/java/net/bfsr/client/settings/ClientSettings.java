@@ -31,15 +31,24 @@ public enum ClientSettings {
     }),
 
     V_SYNC(SettingsCategory.GRAPHICS, new BooleanOption(true).addListener(value -> Engine.renderer.setVSync(value)),
-            (option, value) -> option.option.setValue(!(Boolean) option.option.getValue())),
+            ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
     MAX_FPS(SettingsCategory.GRAPHICS, 10, 240, new IntegerOption(60), ConsumerUtils.INTEGER_DEFAULT_CONSUMER),
+    PERSISTENT_MAPPED_BUFFERS(SettingsCategory.GRAPHICS, new BooleanOption(true)
+            .addListener(value -> Engine.renderer.setPersistentMappedBuffers(value)),
+            ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
+    ENTITIES_GPU_FRUSTUM_CULLING(SettingsCategory.GRAPHICS, new BooleanOption(false)
+            .addListener(value -> Engine.renderer.setEntitiesGPUFrustumCulling(value)),
+            ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
+    PARTICLES_GPU_FRUSTUM_CULLING(SettingsCategory.GRAPHICS, new BooleanOption(true)
+            .addListener(value -> Engine.renderer.setParticlesGPUFrustumCulling(value)),
+            ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
 
     IS_DEBUG(SettingsCategory.DEBUG, new BooleanOption(false), ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
     IS_PROFILING(SettingsCategory.DEBUG, new BooleanOption(false).addListener(value -> Client.get().getProfiler().setEnable(value)),
-            (option, value) -> option.option.setValue(!(Boolean) option.option.getValue())),
-    SHOW_DEBUG_BOXES(SettingsCategory.DEBUG,
-            new BooleanOption(false).addListener(value -> Client.get().getGlobalRenderer().setDebugBoxesEnabled(value)),
-            (option, value) -> option.invertBooleanValue());
+            ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
+    SHOW_DEBUG_BOXES(SettingsCategory.DEBUG, new BooleanOption(false)
+            .addListener(value -> Client.get().getGlobalRenderer().setDebugBoxesEnabled(value)),
+            ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER);
 
     @Getter
     private final SettingsCategory category;
@@ -76,7 +85,7 @@ public enum ClientSettings {
     }
 
     void invertBooleanValue() {
-        option.setValue(!((Boolean) option.getValue()).booleanValue());
+        option.setValue(!(Boolean) option.getValue());
     }
 
     public void setInteger(float value) {

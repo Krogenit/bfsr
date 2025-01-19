@@ -7,7 +7,6 @@ import net.bfsr.engine.event.EventBus;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.module.ModuleDestroyEvent;
-import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.Fixture;
 
 @NoArgsConstructor
@@ -42,10 +41,12 @@ public abstract class DamageableModule extends Module {
 
     protected abstract void createFixture(RigidBody rigidBody);
 
-    public void addFixtureToBody(Body body) {
-        if (isDead) return;
+    public void addFixtureToBody(RigidBody rigidBody) {
+        if (isDead) {
+            return;
+        }
 
-        body.addFixture(fixture);
+        rigidBody.addFixture(fixture);
     }
 
     public boolean damage(float amount) {

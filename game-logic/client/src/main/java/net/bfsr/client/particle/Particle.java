@@ -93,7 +93,7 @@ public class Particle extends GameObject {
         return this;
     }
 
-    protected void addParticle() {
+    private void addParticle() {
         PARTICLE_MANAGER.addParticle(this);
         PARTICLE_RENDERER.addParticleToRenderLayer(render, renderLayer);
     }

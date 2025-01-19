@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@AllArgsConstructor(onConstructor_ = {@Default})
+@AllArgsConstructor(onConstructor_ = @Default)
 @NoArgsConstructor
 public class ParticleEffectProperties extends ObjectProperties {
     @Property(elementType = PropertyGuiElementType.SIMPLE_LIST, arrayElementType = PropertyGuiElementType.FILE_SELECTOR,

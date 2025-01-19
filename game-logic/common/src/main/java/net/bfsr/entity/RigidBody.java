@@ -16,10 +16,12 @@ import net.bfsr.physics.correction.CorrectionHandler;
 import net.bfsr.physics.correction.HistoryCorrectionHandler;
 import net.bfsr.physics.filter.Filters;
 import net.bfsr.world.World;
-import org.jbox2d.common.Transform;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.Fixture;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor
 public class RigidBody extends GameObject {
@@ -34,7 +36,6 @@ public class RigidBody extends GameObject {
     protected int id;
     @Getter
     protected int lifeTime, maxLifeTime = DEFAULT_MAX_LIFE_TIME_IN_TICKS;
-    private final Transform savedTransform = new Transform();
     protected EventBus eventBus;
     @Setter
     @Getter
@@ -42,9 +43,13 @@ public class RigidBody extends GameObject {
     @Setter
     @Getter
     protected float health;
-    protected final RigidBodyPostPhysicsUpdateEvent postPhysicsUpdateEvent = new RigidBodyPostPhysicsUpdateEvent(this);
+    private final RigidBodyPostPhysicsUpdateEvent postPhysicsUpdateEvent = new RigidBodyPostPhysicsUpdateEvent(this);
     @Getter
     private CorrectionHandler correctionHandler = new HistoryCorrectionHandler();
+    private final List<Fixture> fixturesToAdd = new ArrayList<>();
+    private final List<Fixture> fixturesToRemove = new ArrayList<>();
+    private final List<Fixture> hullFixturesToAdd = new ArrayList<>();
+    private final List<Fixture> hullFixtures = new ArrayList<>();
 
     public RigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, GameObjectConfigData configData) {
         super(x, y, sizeX, sizeY);
@@ -96,6 +101,30 @@ public class RigidBody extends GameObject {
         lifeTime++;
     }
 
+    void processFixturesToRemove() {
+        if (fixturesToRemove.size() > 0) {
+            body.removeFixtures(fixturesToRemove);
+            fixturesToRemove.clear();
+        }
+    }
+
+    void processFixturesToAdd() {
+        if (hullFixturesToAdd.size() > 0) {
+            for (int i = 0; i < hullFixturesToAdd.size(); i++) {
+                Fixture fixture = hullFixturesToAdd.get(i);
+                fixturesToAdd.add(fixture);
+                hullFixtures.add(fixture);
+            }
+
+            hullFixturesToAdd.clear();
+        }
+
+        if (fixturesToAdd.size() > 0) {
+            body.addFixtures(fixturesToAdd);
+            fixturesToAdd.clear();
+        }
+    }
+
     @Override
     public void postPhysicsUpdate() {
         eventBus.publishOptimized(postPhysicsUpdateEvent);
@@ -109,16 +138,47 @@ public class RigidBody extends GameObject {
         eventBus.publish(new RigidBodyRemovedFromWorldEvent(this));
     }
 
+    public void addFixture(Fixture fixture) {
+        if (world.getPhysicWorld().isLocked()) {
+            fixturesToAdd.add(fixture);
+        } else {
+            body.addFixture(fixture);
+        }
+    }
+
+    public void addHullFixture(Fixture fixture) {
+        if (world.getPhysicWorld().isLocked()) {
+            hullFixturesToAdd.add(fixture);
+        } else {
+            hullFixtures.add(fixture);
+            body.addFixture(fixture);
+        }
+    }
+
+    public void removeFixture(Fixture fixture) {
+        if (world.getPhysicWorld().isLocked()) {
+            fixturesToRemove.add(fixture);
+        } else {
+            body.removeFixture(fixture);
+        }
+    }
+
+    public void removeHullFixtures() {
+        hullFixturesToAdd.clear();
+
+        if (world.getPhysicWorld().isLocked()) {
+            for (int i = 0; i < hullFixtures.size(); i++) {
+                fixturesToRemove.add(hullFixtures.get(i));
+            }
+        } else {
+            body.removeFixtures(hullFixtures);
+        }
+
+        hullFixtures.clear();
+    }
+
     public EntityPacketSpawnData createSpawnData() {
         return new RigidBodySpawnData(this);
-    }
-
-    public void saveTransform(Transform transform) {
-        savedTransform.set(transform);
-    }
-
-    public void restoreTransform() {
-        body.getTransform().set(savedTransform);
     }
 
     @Override
@@ -147,10 +207,12 @@ public class RigidBody extends GameObject {
         correctionHandler.setRigidBody(this);
     }
 
+    @Override
     public float getX() {
         return body.getTransform().getX();
     }
 
+    @Override
     public float getY() {
         return body.getTransform().getY();
     }

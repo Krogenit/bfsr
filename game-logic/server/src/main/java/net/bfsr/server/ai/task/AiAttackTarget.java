@@ -1,5 +1,6 @@
 package net.bfsr.server.ai.task;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.ai.task.AiTask;
 import net.bfsr.config.component.weapon.gun.GunData;
@@ -23,7 +24,6 @@ import org.joml.Vector2f;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @RequiredArgsConstructor
 public class AiAttackTarget extends AiTask {
@@ -41,6 +41,7 @@ public class AiAttackTarget extends AiTask {
     private final Vector2f rotatedVector = new Vector2f();
     private final Vector2f pointToRotate = new Vector2f();
     private final AABB cache = new AABB();
+    private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
     @Override
     public void execute() {
@@ -179,14 +180,13 @@ public class AiAttackTarget extends AiTask {
                     if (changeDirTimer > 0 && sideDirection != null) {
                         changeDirTimer -= 1;
                     } else {
-                        Random rand = ship.getWorld().getRand();
-                        if (rand.nextInt(2) == 0) {
+                        if (random.nextInt(2) == 0) {
                             sideDirection = Direction.LEFT;
                         } else {
                             sideDirection = Direction.RIGHT;
                         }
 
-                        changeDirTimer = Engine.convertToTicks(1 + rand.nextFloat() * 2);
+                        changeDirTimer = Engine.convertToTicks(1 + random.nextFloat() * 2);
                     }
                 } else {
                     if (isLeftEnginesAlive) {
@@ -203,14 +203,13 @@ public class AiAttackTarget extends AiTask {
                     if (changeDirTimer > 0 && sideDirection != null) {
                         changeDirTimer -= 1;
                     } else {
-                        Random rand = ship.getWorld().getRand();
-                        if (rand.nextInt(2) == 0) {
+                        if (random.nextInt(2) == 0) {
                             sideDirection = Direction.LEFT;
                         } else {
                             sideDirection = Direction.RIGHT;
                         }
 
-                        changeDirTimer = Engine.convertToTicks(1 + rand.nextFloat() * 2);
+                        changeDirTimer = Engine.convertToTicks(1 + random.nextFloat() * 2);
                     }
                 } else {
                     if (isLeftEnginesAlive) {

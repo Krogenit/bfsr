@@ -45,11 +45,13 @@ public class RigidBodyRender extends Render {
                 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
+    @Override
     public void init() {
         id = spriteRenderer.add(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), rigidBody.getSizeX(),
                 rigidBody.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
     }
 
+    @Override
     protected void updateLastRenderValues() {
         super.updateLastRenderValues();
         lastPosition.set(rigidBody.getX(), rigidBody.getY());
@@ -82,7 +84,8 @@ public class RigidBodyRender extends Render {
         debugRenderer.renderAABB(AABB, BODY_AABB_COLOR);
         debugRenderer.renderAABB(aabb, RENDER_AABB_COLOR);
 
-        renderDebug(body, object.getX(), object.getY(), rigidBody.getSin(), rigidBody.getCos());
+        renderDebug(body, lastPosition.x + (object.getX() - lastPosition.x) * renderer.getInterpolation(),
+                lastPosition.y + (object.getY() - lastPosition.y) * renderer.getInterpolation(), rigidBody.getSin(), rigidBody.getCos());
     }
 
     private void renderDebug(Body body, float x, float y, float sin, float cos) {

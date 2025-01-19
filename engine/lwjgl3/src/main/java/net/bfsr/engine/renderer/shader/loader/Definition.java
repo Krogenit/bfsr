@@ -1,6 +1,5 @@
 package net.bfsr.engine.renderer.shader.loader;
 
-
 import lombok.Getter;
 import lombok.Setter;
 

@@ -19,13 +19,13 @@ import net.bfsr.entity.wreck.Wreck;
 
 import java.util.function.Function;
 
-class RenderRegistry {
+class EntityRenderRegistry {
     private final TMap<Class<? extends RigidBody>, Function<RigidBody, RigidBodyRender>> renderRegistry = new THashMap<>();
 
     private ConfigConverterManager configConverterManager;
     private ShipRegistry shipRegistry;
 
-    RenderRegistry() {
+    EntityRenderRegistry() {
         put(RigidBody.class, rigidBody -> new RigidBodyRender(rigidBody, ((GameObjectConfigData) configConverterManager
                 .getConverter(rigidBody.getRegistryId()).get(rigidBody.getDataId())).getTexture()));
         put(Ship.class, ShipRender::new);

@@ -33,7 +33,7 @@ public class Reactor extends DamageableModule {
 
     @Override
     protected void createFixture(RigidBody rigidBody) {
-        rigidBody.getBody().addFixture(fixture = new Fixture(shape, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
+        rigidBody.addFixture(fixture = new Fixture(shape, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
     }
 
     @Override
@@ -62,7 +62,7 @@ public class Reactor extends DamageableModule {
     @Override
     protected void destroy() {
         super.destroy();
-        ship.addFixtureToRemove(fixture);
+        ship.removeFixture(fixture);
         ship.setDestroying();
     }
 

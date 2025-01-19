@@ -66,7 +66,9 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
         gameObject.init();
 
         testRender.init();
-        Client.get().getRenderManager().addRender(testRender);
+        Client.get().getEntityRenderer().addRender(testRender);
+
+        addInspectionPanel();
     }
 
     @Override

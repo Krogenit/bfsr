@@ -1,5 +1,6 @@
 package net.bfsr.client.particle.effect;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.client.config.particle.ParticleEffect;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.particle.Particle;
@@ -15,10 +16,10 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import org.joml.Vector4f;
 
-import java.util.Random;
 import java.util.function.Consumer;
 
 public final class BeamEffects {
+    private static final XoRoShiRo128PlusRandom rand = new XoRoShiRo128PlusRandom();
     private static final ParticleEffect smallBeam = ParticleEffectsRegistry.INSTANCE.get("weapon/beam/small");
 
     public static void beamDamage(float x, float y, float normalX, float normalY, float size, Vector4f color,
@@ -41,7 +42,6 @@ public final class BeamEffects {
 
     public static Particle beamEffect(WeaponSlotBeam slot, Vector4f color) {
         Ship ship = slot.getShip();
-        Random rand = ship.getWorld().getRand();
         float localX = rand.nextFloat();
         float localY = (rand.nextFloat() * 2.0f - 1.0f) * slot.getSizeY() / 2.0f;
 
@@ -58,7 +58,7 @@ public final class BeamEffects {
         long textureHandle = Engine.assetsManager.getTexture(TextureRegister.particleBeamEffect).getTextureHandle();
         return ParticleManager.PARTICLE_POOL.get().init(textureHandle, worldX, worldY, localX, localY, 0.0f, 0.0f, sin, cos, 0.0f,
                 5.0f + 2.8f * rand.nextFloat(), slot.getSizeY() / 2.0f + 0.4f * rand.nextFloat(), 0.0f, color.x, color.y,
-                color.z, color.w, 0.5f, false, RenderLayer.DEFAULT_ADDITIVE, (particle) -> {
+                color.z, color.w, 0.5f, false, RenderLayer.DEFAULT_ADDITIVE, particle -> {
                     float sin1 = ship.getSin();
                     float cos1 = ship.getCos();
                     float beamRange1 = slot.getCurrentBeamRange();

@@ -1,9 +1,11 @@
-#version 330
+#version 460
+
+layout (location = 0) in vec2 textureCoords0;
 
 layout (location = 0) out vec4 fragColor;
-in vec2 textureCoords0;
 
-uniform sampler2D textureOpaque, textureNoise;
+layout (binding = 0) uniform sampler2D textureOpaque;
+layout (binding = 1) uniform sampler2D textureNoise;
 
 uniform vec3 color;
 uniform vec2 offset;
@@ -20,18 +22,17 @@ vec2 mod289(vec2 x) {
 }
 
 vec3 permute(vec3 x) {
-    return mod289(((x*34.0)+1.0)*x);
+    return mod289(((x * 34.0) + 1.0) * x);
 }
 
-float snoise(vec2 v)
-{
+float snoise(vec2 v) {
     const vec4 C = vec4(0.211324865405187, // (3.0-sqrt(3.0))/6.0
     0.366025403784439, // 0.5*(sqrt(3.0)-1.0)
     -0.577350269189626, // -1.0 + 2.0 * C.x
     0.024390243902439);// 1.0 / 41.0
     // First corner
-    vec2 i  = floor(v + dot(v, C.yy));
-    vec2 x0 = v -   i + dot(i, C.xx);
+    vec2 i = floor(v + dot(v, C.yy));
+    vec2 x0 = v - i + dot(i, C.xx);
 
     // Other corners
     vec2 i1;
@@ -47,11 +48,11 @@ float snoise(vec2 v)
     // Permutations
     i = mod289(i);// Avoid truncation effects in permutation
     vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0))
-    + i.x + vec3(0.0, i1.x, 1.0));
+                     + i.x + vec3(0.0, i1.x, 1.0));
 
     vec3 m = max(0.5 - vec3(dot(x0, x0), dot(x12.xy, x12.xy), dot(x12.zw, x12.zw)), 0.0);
-    m = m*m;
-    m = m*m;
+    m = m * m;
+    m = m * m;
 
     // Gradients: 41 points uniformly over a line, mapped onto a diamond.
     // The ring size 17*17 = 289 is close to a multiple of 41 (41*7 = 287)
@@ -63,37 +64,33 @@ float snoise(vec2 v)
 
     // Normalise gradients implicitly by scaling m
     // Approximation of: m *= inversesqrt( a0*a0 + h*h );
-    m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+    m *= 1.79284291400159 - 0.85373472095314 * (a0 * a0 + h * h);
 
     // Compute final noise value at P
     vec3 g;
-    g.x  = a0.x  * x0.x  + h.x  * x0.y;
+    g.x = a0.x * x0.x + h.x * x0.y;
     g.yz = a0.yz * x12.xz + h.yz * x12.yw;
     return pNoiseRepeatVector.x * dot(m, g);
 }
 
-vec4 mod289(vec4 x)
-{
+vec4 mod289(vec4 x) {
     return x - floor(x * (1.0 / 289.0)) * 289.0;
 }
 
-vec4 permute(vec4 x)
-{
-    return mod289(((x*34.0)+1.0)*x);
+vec4 permute(vec4 x) {
+    return mod289(((x * 34.0) + 1.0) * x);
 }
 
-vec4 taylorInvSqrt(vec4 r)
-{
+vec4 taylorInvSqrt(vec4 r) {
     return 1.79284291400159 - 0.85373472095314 * r;
 }
 
 vec2 fade(vec2 t) {
-    return t*t*t*(t*(t*6.0-15.0)+10.0);
+    return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
 }
 
 // Classic Perlin noise
-float cnoise(vec2 P)
-{
+float cnoise(vec2 P) {
     vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
     vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
     Pi = mod289(Pi);// To avoid truncation effects in permutation
@@ -132,8 +129,7 @@ float cnoise(vec2 P)
 }
 
 // Classic Perlin noise, periodic variant
-float pnoise(vec2 P, vec2 rep)
-{
+float pnoise(vec2 P, vec2 rep) {
     vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
     vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
     Pi = mod(Pi, rep.xyxy);// To create noise with explicit period
@@ -183,10 +179,10 @@ float perlin_2d(vec2 p) {
     vec2 p1 = p0 + vec2(1, 0);
     vec2 p2 = p0 + vec2(1, 1);
     vec2 p3 = p0 + vec2(0, 1);
-    vec2 d0 = texture(textureNoise, p0/textureNoiseSize).ba;
-    vec2 d1 = texture(textureNoise, p1/textureNoiseSize).ba;
-    vec2 d2 = texture(textureNoise, p2/textureNoiseSize).ba;
-    vec2 d3 = texture(textureNoise, p3/textureNoiseSize).ba;
+    vec2 d0 = texture(textureNoise, p0 / textureNoiseSize).ba;
+    vec2 d1 = texture(textureNoise, p1 / textureNoiseSize).ba;
+    vec2 d2 = texture(textureNoise, p2 / textureNoiseSize).ba;
+    vec2 d3 = texture(textureNoise, p3 / textureNoiseSize).ba;
     d0 = 2.0 * d0 - 1.0;
     d1 = 2.0 * d1 - 1.0;
     d2 = 2.0 * d2 - 1.0;
@@ -213,7 +209,7 @@ float mod289(float x) {
 
 // Permutation polynomial (ring size 289 = 17*17)
 float permute(float x) {
-    return mod289(((x*34.0)+1.0)*x);
+    return mod289(((x * 34.0) + 1.0) * x);
 }
 
 // Hashed 2-D gradients with an extra rotation.
@@ -224,7 +220,7 @@ vec2 rgrad2(vec2 p, float rot) {
     float u = permute(permute(p.x) + p.y) * 0.0243902439 + rot;// Rotate by shift
     u = 4.0 * fract(u) - 2.0;
     // (This vector could be normalized, exactly or approximately.)
-    return vec2(abs(u)-1.0, abs(abs(u+1.0)-2.0)-1.0);
+    return vec2(abs(u) - 1.0, abs(abs(u + 1.0) - 2.0) - 1.0);
     #else
     // For more isotropic gradients, sin/cos can be used instead.
     float u = permute(permute(p.x) + p.y) * 0.0243902439 + rot;// Rotate by shift
@@ -242,7 +238,7 @@ vec3 psrdnoise(vec2 pos, vec2 per, float rot) {
     // Hack: offset y slightly to hide some rare artifacts
     pos.y += 0.01;
     // Skew to hexagonal grid
-    vec2 uv = vec2(pos.x + pos.y*0.5, pos.y);
+    vec2 uv = vec2(pos.x + pos.y * 0.5, pos.y);
 
     vec2 i0 = floor(uv);
     vec2 f0 = fract(uv);
@@ -323,7 +319,7 @@ vec3 psrdnoise(vec2 pos, vec2 per, float rot) {
     vec2 dt2 = vec2(dtdx.z, dtdy.z) * 4.0 * t3.z;
     vec2 dn2 = t4.z * g2 + dt2 * w.z;
 
-    return pNoiseRepeatVector.x*vec3(n, dn0 + dn1 + dn2);
+    return pNoiseRepeatVector.x * vec3(n, dn0 + dn1 + dn2);
 }
 
 //
@@ -344,7 +340,7 @@ float psrnoise(vec2 pos, vec2 per, float rot) {
     // Offset y slightly to hide some rare artifacts
     pos.y += 0.001;
     // Skew to hexagonal grid
-    vec2 uv = vec2(pos.x + pos.y*0.5, pos.y);
+    vec2 uv = vec2(pos.x + pos.y * 0.5, pos.y);
 
     vec2 i0 = floor(uv);
     vec2 f0 = fract(uv);
@@ -399,7 +395,7 @@ float psrnoise(vec2 pos, vec2 per, float rot) {
     float n = dot(t4, w);
 
     // Rescale to cover the range [-1,1] reasonably well
-    return pNoiseRepeatVector.x*n;
+    return pNoiseRepeatVector.x * n;
 }
 
 //
@@ -421,7 +417,7 @@ vec3 srdnoise(vec2 pos, float rot) {
     // Offset y slightly to hide some rare artifacts
     pos.y += 0.001;
     // Skew to hexagonal grid
-    vec2 uv = vec2(pos.x + pos.y*0.5, pos.y);
+    vec2 uv = vec2(pos.x + pos.y * 0.5, pos.y);
 
     vec2 i0 = floor(uv);
     vec2 f0 = fract(uv);
@@ -504,7 +500,7 @@ vec3 srdnoise(vec2 pos, float rot) {
     vec2 dt2 = vec2(dtdx.z, dtdy.z) * 4.0 * t3.z;
     vec2 dn2 = t4.z * g2 + dt2 * w.z;
 
-    return pNoiseRepeatVector.x*vec3(n, dn0 + dn1 + dn2);
+    return pNoiseRepeatVector.x * vec3(n, dn0 + dn1 + dn2);
 }
 
 //
@@ -524,7 +520,7 @@ float srnoise(vec2 pos, float rot) {
     // Offset y slightly to hide some rare artifacts
     pos.y += 0.001;
     // Skew to hexagonal grid
-    vec2 uv = vec2(pos.x + pos.y*0.5, pos.y);
+    vec2 uv = vec2(pos.x + pos.y * 0.5, pos.y);
 
     vec2 i0 = floor(uv);
     vec2 f0 = fract(uv);
@@ -583,7 +579,7 @@ float srnoise(vec2 pos, float rot) {
     float n = dot(t4, w);
 
     // Rescale to cover the range [-1,1] reasonably well
-    return pNoiseRepeatVector.x*n;
+    return pNoiseRepeatVector.x * n;
 }
 
 float normalnoise(vec2 p) {

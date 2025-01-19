@@ -128,8 +128,9 @@ public class ParticleRender extends Render implements net.bfsr.engine.renderer.p
 
     @Override
     public void putToBuffer(int index) {
-        int offset = index * AbstractSpriteRenderer.COMMAND_SIZE;
-        buffersHolder.putCommandData(offset + AbstractSpriteRenderer.BASE_VERTEX_OFFSET, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX);
+        int offset = index * AbstractSpriteRenderer.COMMAND_SIZE_IN_BYTES;
+        buffersHolder.putCommandData(offset + AbstractSpriteRenderer.BASE_VERTEX_OFFSET,
+                AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX);
         buffersHolder.putCommandData(offset + AbstractSpriteRenderer.BASE_INSTANCE_OFFSET, id);
     }
 }

@@ -1,5 +1,6 @@
 package net.bfsr.server.entity.ship;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.util.RandomHelper;
@@ -14,9 +15,9 @@ import net.bfsr.world.World;
 import org.joml.Vector2f;
 
 import java.util.List;
-import java.util.Random;
 
 public class ShipSpawner {
+    private final XoRoShiRo128PlusRandom rand = new XoRoShiRo128PlusRandom();
     private float timer;
     private final Vector2f angleToVelocity = new Vector2f();
     private ShipFactory shipFactory;
@@ -33,7 +34,6 @@ public class ShipSpawner {
         int botCount = 0;
         Faction lastFaction = null;
         List<Ship> ships = world.getEntitiesByType(Ship.class);
-        Random rand = world.getRand();
         for (int i = 0, shipsSize = ships.size(); i < shipsSize; i++) {
             Ship s = ships.get(i);
             if (s.isBot()) botCount++;
@@ -105,7 +105,6 @@ public class ShipSpawner {
         float padding = 10;
         float startSpawnX = -500;
         float startSpawnY = -500;
-        Random rand = world.getRand();
         Faction firstFaction = Faction.get((byte) rand.nextInt(3));
         for (int i = 0; i < count; i++) {
             if (firstFaction == Faction.HUMAN)

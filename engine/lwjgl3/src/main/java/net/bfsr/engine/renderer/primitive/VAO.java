@@ -9,8 +9,6 @@ import java.nio.LongBuffer;
 
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL11C.GL_FLOAT;
-import static org.lwjgl.opengl.GL45C.glBindBuffer;
-import static org.lwjgl.opengl.GL45C.glBindBufferBase;
 import static org.lwjgl.opengl.GL45C.glBindVertexArray;
 import static org.lwjgl.opengl.GL45C.glCreateVertexArrays;
 import static org.lwjgl.opengl.GL45C.glDeleteVertexArrays;
@@ -138,12 +136,12 @@ public final class VAO implements AbstractVAO {
 
     @Override
     public void bindBuffer(int target, int bufferIndex) {
-        glBindBuffer(target, VBOs[bufferIndex].getId());
+        VBOs[bufferIndex].bindBuffer(target);
     }
 
     @Override
     public void bindBufferBase(int target, int index, int bufferIndex) {
-        glBindBufferBase(target, index, VBOs[bufferIndex].getId());
+        VBOs[bufferIndex].bindBufferBase(target, index);
     }
 
     public void bind() {
@@ -154,6 +152,11 @@ public final class VAO implements AbstractVAO {
         for (int i = 0; i < count; i++) {
             glEnableVertexArrayAttrib(id, i);
         }
+    }
+
+    @Override
+    public AbstractVBO getBuffer(int index) {
+        return VBOs[index];
     }
 
     public void clear() {

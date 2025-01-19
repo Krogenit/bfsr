@@ -3,8 +3,8 @@ package net.bfsr.client.gui.ingame;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.Client;
+import net.bfsr.client.renderer.EntityRenderer;
 import net.bfsr.client.renderer.Render;
-import net.bfsr.client.renderer.RenderManager;
 import net.bfsr.client.renderer.entity.ShipRender;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.Rectangle;
@@ -35,7 +35,7 @@ import java.util.List;
  */
 public abstract class CommonShipOverlay extends TexturedRectangle {
     protected final Client client = Client.get();
-    private final RenderManager renderManager = client.getRenderManager();
+    private final EntityRenderer entityRenderer = client.getEntityRenderer();
     private final Vector2f rotationVector = new Vector2f();
 
     private final Label textShield = new Label(Font.CONSOLA_FT);
@@ -67,7 +67,7 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
         int width = (int) (ship.getSizeX() / shipGuiObject.getTexture().getWidth() * 60);
         int height = (int) (ship.getSizeY() / shipGuiObject.getTexture().getHeight() * 60);
         add(shipGuiObject.setSize(width, height).atCenter(0, 0).setAllColors(0.1f, 0.1f, 0.1f, 0.6f).setRotation(MathUtils.HALF_PI));
-        shipGuiObject.setTexture(client.getRenderManager().getRender(ship.getId()).getTexture());
+        shipGuiObject.setTexture(client.getEntityRenderer().getRender(ship.getId()).getTexture());
     }
 
     void addHullCells() {
@@ -166,7 +166,7 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
             RotationHelper.rotate(MathUtils.HALF_PI, pos.x, pos.y, rotationVector);
             int slotWidth = (int) (slot.getSizeX() * shipSize);
             int slothHeight = (int) (slot.getSizeY() * shipSize);
-            Render render = renderManager.getRender(ship.getId());
+            Render render = entityRenderer.getRender(ship.getId());
             if (render instanceof ShipRender shipRender) {
                 AbstractTexture texture = shipRender.getWeaponSlotTexture(i);
 

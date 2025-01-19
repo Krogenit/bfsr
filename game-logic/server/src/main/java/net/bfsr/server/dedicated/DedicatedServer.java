@@ -28,7 +28,7 @@ public class DedicatedServer extends Server {
     }
 
     private void startConsoleInputThread() {
-        Thread t = new Thread(() -> {
+        Thread t = Thread.ofVirtual().start(() -> {
             while (!isRunning()) {
                 try {
                     Thread.sleep(1L);
@@ -53,6 +53,5 @@ public class DedicatedServer extends Server {
             }
         });
         t.setName("Console Input");
-        t.start();
     }
 }

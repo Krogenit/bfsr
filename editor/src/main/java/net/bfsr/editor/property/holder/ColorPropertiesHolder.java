@@ -14,9 +14,4 @@ import net.bfsr.editor.property.Property;
 public class ColorPropertiesHolder extends PropertiesHolderAdapter {
     @Property(elementType = PropertyGuiElementType.INPUT_BOX, fieldsAmount = 4, name = "color")
     private float r, g, b, a;
-
-    @Override
-    public String getName() {
-        return "color";
-    }
 }

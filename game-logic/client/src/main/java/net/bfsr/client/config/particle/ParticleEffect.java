@@ -1,5 +1,6 @@
 package net.bfsr.client.config.particle;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.Getter;
 import net.bfsr.client.Client;
 import net.bfsr.client.particle.Particle;
@@ -22,7 +23,6 @@ import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -30,8 +30,6 @@ import static net.bfsr.client.particle.ParticleManager.PARTICLE_POOL;
 
 @Getter
 public class ParticleEffect extends ConfigData {
-    private static final Random rand = new Random();
-
     private AbstractTexture[] textures;
     private float spawnOverTime;
     private int minSpawnCount, maxSpawnCount;
@@ -57,6 +55,7 @@ public class ParticleEffect extends ConfigData {
 
     private final List<ParticleEffectSpawnRunnable> spawnRunnables = new ArrayList<>();
     private final List<ParticleEffect> childEffectsInstances = new ArrayList<>();
+    private final XoRoShiRo128PlusRandom rand = new XoRoShiRo128PlusRandom();
 
     @FunctionalInterface
     private interface ParticleEffectSpawnRunnable {

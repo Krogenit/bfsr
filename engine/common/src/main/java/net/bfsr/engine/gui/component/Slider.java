@@ -13,8 +13,8 @@ public class Slider extends TexturedRectangle {
     protected final Label label;
     private final TexturedRectangle slider = new TexturedRectangle(TextureRegister.guiSlider, 0, 0, 29, 50);
 
-    public Slider(int x, int y, int width, int height, int fontSize, float value, String string) {
-        super(TextureRegister.guiButtonBase, x, y, width, height);
+    public Slider(int width, int height, int fontSize, float value, String string) {
+        super(TextureRegister.guiButtonBase, width, height);
         this.value = value;
         this.indent = 28;
 

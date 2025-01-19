@@ -18,8 +18,8 @@ import net.bfsr.client.module.ShieldLogic;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.particle.ParticleManager;
 import net.bfsr.client.physics.CollisionHandler;
+import net.bfsr.client.renderer.EntityRenderer;
 import net.bfsr.client.renderer.GlobalRenderer;
-import net.bfsr.client.renderer.RenderManager;
 import net.bfsr.client.renderer.WorldRenderer;
 import net.bfsr.client.server.LocalServer;
 import net.bfsr.client.server.LocalServerGameLogic;
@@ -48,7 +48,7 @@ import java.net.InetAddress;
 @Log4j2
 @Getter
 public class Client extends ClientGameLogic {
-    public static final String GAME_VERSION = "Dev 0.1.5";
+    public static final String GAME_VERSION = "Dev 0.1.6";
     private static Client instance;
 
     private final ConfigConverterManager configConverterManager = new ConfigConverterManager();
@@ -58,23 +58,24 @@ public class Client extends ClientGameLogic {
     private final GuiManager guiManager = Engine.guiManager;
     private final InputHandler inputHandler = new InputHandler();
     private final ParticleManager particleManager = new ParticleManager();
-    private final RenderManager renderManager = new RenderManager();
-    private final DamageHandler damageHandler = new DamageHandler(renderManager);
+    private final EntityRenderer entityRenderer = new EntityRenderer();
+    private final DamageHandler damageHandler = new DamageHandler(entityRenderer);
     private final ConfigSettings settings = new ConfigSettings();
     private final GlobalRenderer globalRenderer = new GlobalRenderer(
-            guiManager, profiler, renderManager, particleManager, new WorldRenderer(profiler, renderManager)
+            guiManager, profiler, entityRenderer, particleManager, new WorldRenderer(profiler, entityRenderer)
     );
 
     private World world = BlankWorld.get();
     private String playerName;
     private LocalServer localServer;
+    private ThreadLocalServer threadLocalServer;
 
     @Setter
     private double clientToServerTimeDiff;
     @Getter
     private double renderTime;
     @Getter
-    private final double clientRenderDelayInNanos = Engine.getClientRenderDelayInMills() * 1_000_000.0;
+    private final double clientRenderDelay = Engine.getClientRenderDelayInMills() * 1_000_000.0;
 
     public Client(Profiler profiler) {
         super(profiler);
@@ -91,7 +92,7 @@ public class Client extends ClientGameLogic {
         networkSystem.init();
         entitySpawnLoginRegistry.init(configConverterManager);
         globalRenderer.init();
-        renderManager.init();
+        entityRenderer.init();
         guiManager.init(eventBus);
         profiler.setEnable(ClientSettings.IS_PROFILING.getBoolean());
         soundManager.setGain(ClientSettings.SOUND_VOLUME.getFloat());
@@ -112,11 +113,10 @@ public class Client extends ClientGameLogic {
     @Override
     public void update(double time) {
         super.update(time);
-        profiler.start("renderer");
+        profiler.start("renderManager");
 
         if (!isPaused()) {
-            renderManager.update();
-            globalRenderer.update();
+            entityRenderer.update();
         }
 
         profiler.endStart("inputHandler");
@@ -126,7 +126,7 @@ public class Client extends ClientGameLogic {
         soundManager.updateGain(ClientSettings.SOUND_VOLUME.getFloat());
         profiler.end();
 
-        renderTime = time - clientToServerTimeDiff - clientRenderDelayInNanos;
+        renderTime = time - clientToServerTimeDiff - clientRenderDelay;
 
         profiler.start("network");
         networkSystem.update(renderTime);
@@ -143,7 +143,7 @@ public class Client extends ClientGameLogic {
         profiler.endStart("renderManager.postUpdate");
 
         if (!isPaused()) {
-            renderManager.postWorldUpdate();
+            entityRenderer.postWorldUpdate();
         }
 
         profiler.end();
@@ -165,7 +165,7 @@ public class Client extends ClientGameLogic {
     private void startLocalServer() {
         playerName = "Local Player";
         localServer = new LocalServer(new LocalServerGameLogic(new Profiler()));
-        ThreadLocalServer threadLocalServer = new ThreadLocalServer(localServer);
+        threadLocalServer = new ThreadLocalServer(localServer);
         threadLocalServer.setName("Local Server");
         threadLocalServer.start();
         waitServerStart();
@@ -206,6 +206,7 @@ public class Client extends ClientGameLogic {
         eventBus.publish(new ExitToMainMenuEvent());
         clearNetwork();
         stopLocalServer();
+        waitServerStop();
         setBlankWorld();
 
         openGui(new GuiMainMenu());
@@ -215,6 +216,19 @@ public class Client extends ClientGameLogic {
         networkSystem.closeChannels();
         networkSystem.shutdown();
         networkSystem.clear();
+    }
+
+    private void waitServerStop() {
+        if (threadLocalServer != null) {
+            while (threadLocalServer.isAlive()) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        }
     }
 
     @Override

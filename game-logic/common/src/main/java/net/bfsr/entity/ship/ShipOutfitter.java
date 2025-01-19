@@ -1,6 +1,7 @@
 package net.bfsr.entity.ship;
 
 import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
+import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.component.armor.ArmorPlateRegistry;
 import net.bfsr.config.component.cargo.CargoRegistry;
@@ -36,6 +37,8 @@ public class ShipOutfitter {
     private final CargoRegistry cargoRegistry;
     private final GunRegistry gunRegistry;
     private final BeamRegistry beamRegistry;
+
+    private final XoRoShiRo128PlusPlusRandom random = new XoRoShiRo128PlusPlusRandom();
 
     public ShipOutfitter(ConfigConverterManager configConverterManager) {
         this.engineRegistry = configConverterManager.getConverter(EngineRegistry.class);
@@ -112,7 +115,7 @@ public class ShipOutfitter {
     }
 
     private void addRandomWeapons(Ship ship, String gunName) {
-        if (ship.getWorld().getRand().nextInt(3) == 0) {
+        if (random.nextInt(3) == 0) {
             initAndAddWeaponToShip(ship, WeaponFactory.createBeam("beam_small", beamRegistry), 0);
             initAndAddWeaponToShip(ship, WeaponFactory.createBeam("beam_small", beamRegistry), 1);
         } else {

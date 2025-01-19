@@ -43,6 +43,14 @@ public class CommonEntityManager {
 
     public void postPhysicsUpdate() {
         for (int i = 0; i < entities.size(); i++) {
+            entities.get(i).processFixturesToRemove();
+        }
+
+        for (int i = 0; i < entities.size(); i++) {
+            entities.get(i).processFixturesToAdd();
+        }
+
+        for (int i = 0; i < entities.size(); i++) {
             entities.get(i).postPhysicsUpdate();
         }
     }

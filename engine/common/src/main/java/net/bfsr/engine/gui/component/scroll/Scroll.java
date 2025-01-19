@@ -191,7 +191,7 @@ public class Scroll extends Rectangle {
 
     @Override
     public Scroll setPosition(int x, int y) {
-        this.x = x;
+        setX(x);
         this.scrollY = y;
         return this;
     }
@@ -199,6 +199,7 @@ public class Scroll extends Rectangle {
     @Override
     public Scroll setHeight(int height) {
         this.scrollHeight = height;
+        updateScrollPositionAndSize();
         return this;
     }
 

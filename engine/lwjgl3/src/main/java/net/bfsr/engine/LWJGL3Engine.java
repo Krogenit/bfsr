@@ -35,10 +35,9 @@ public class LWJGL3Engine extends AbstractGameLoop implements EngineConfiguratio
     private long window;
     private GLFWVidMode vidMode;
     private final FPSSync fpsSync = new FPSSync();
-
+    private final Profiler profiler = new Profiler();
     private final Class<? extends ClientGameLogic> gameLogicClass;
     private ClientGameLogic gameLogic;
-    private Profiler profiler;
     private AbstractRenderer renderer;
 
     @Override
@@ -59,7 +58,6 @@ public class LWJGL3Engine extends AbstractGameLoop implements EngineConfiguratio
         Engine.keyboard.init(window);
         fpsSync.init();
         renderer = Engine.renderer;
-        profiler = Engine.profiler;
 
         try {
             gameLogic = gameLogicClass.getConstructor(Profiler.class).newInstance(profiler);
@@ -183,7 +181,7 @@ public class LWJGL3Engine extends AbstractGameLoop implements EngineConfiguratio
 
     @Override
     public AbstractRenderer createRenderer() {
-        return new Renderer();
+        return new Renderer(profiler);
     }
 
     @Override

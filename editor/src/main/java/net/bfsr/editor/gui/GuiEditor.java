@@ -21,6 +21,7 @@ import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.util.PathHelper;
 import net.bfsr.engine.util.RunnableUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 
@@ -82,15 +83,13 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
         Vector2f position = renderer.camera.getPosition();
         renderer.camera.move(-position.x, -position.y);
 
-        addInspectionPanel();
-
         propertiesPanel.setAllColors(BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w)
                 .setHeightFunction((width, height) -> height).atTopRight(0, 0);
 
         load();
     }
 
-    private void addInspectionPanel() {
+    protected void addInspectionPanel() {
         add(inspectionPanel.setOnSelectConsumer(this::selectEntry)
                 .setAllColors(BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w)
                 .setHeightFunction((integer, integer2) -> Engine.renderer.getScreenHeight())
@@ -302,11 +301,11 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
         try {
             Files.walkFileTree(configRegistry.getFolder(), new SimpleFileVisitor<>() {
                 @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                public @NotNull FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attrs) throws IOException {
                     String filePath = PathHelper.convertToLocalPath(configRegistry.getFolder(), file);
                     if (entries.stream().noneMatch(inspectionHolder -> {
                         PROPERTIES_TYPE properties = inspectionHolder.getComponentByType(propertiesClass);
-                        return filePath.equals(properties.getFullPath());
+                        return filePath.equals(properties.getFullPath() + ".json");
                     })) {
                         Files.delete(file);
                         configRegistry.remove(filePath);
@@ -315,7 +314,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
                 }
 
                 @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                public @NotNull FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
                     File[] listFiles = dir.toFile().listFiles();
                     if (listFiles == null || listFiles.length == 0) {
                         Files.delete(dir);
@@ -373,15 +372,15 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
         }
 
         selectedEntry = entry;
+        remove(propertiesPanel);
 
         if (entry == null) {
-            remove(propertiesPanel);
             onEntryDeselected();
             return;
         }
 
         propertiesPanel.open(() -> save(entry), () -> remove(entry));
-        addIfAbsent(propertiesPanel);
+        add(propertiesPanel);
 
         onEntrySelected(entry);
     }

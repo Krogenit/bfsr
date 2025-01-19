@@ -15,8 +15,10 @@ public class ScrollPane extends GuiObject {
         this.scroll = new Scroll(scrollWidth, height);
 
         super.add(pane.setCanBeHovered(false).setFillParent());
-        super.add(scroll.setViewHeightResizeFunction((width1, height1) -> this.height).atBottomRight(0, 0)
-                .setWidthFunction((width1, height1) -> scrollWidth).setHeightFunction((width1, height1) -> this.height));
+        super.add(scroll.setViewHeightResizeFunction((width1, height1) -> this.height)
+                .atBottomRight(0, 0)
+                .setWidthFunction((width1, height1) -> scrollWidth)
+                .setHeightFunction((width1, height1) -> this.height));
         setRenderer(new ScrollPaneRenderer(this, scroll));
     }
 

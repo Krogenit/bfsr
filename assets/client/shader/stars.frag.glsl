@@ -1,9 +1,10 @@
-#version 330
+#version 460
+
+layout (location = 0) in vec2 textureCoords0;
 
 layout (location = 0) out vec4 fragColor;
-in vec2 textureCoords0;
 
-uniform sampler2D textureOpaque;
+layout (binding = 0) uniform sampler2D textureOpaque;
 uniform vec3 coreColor, haloColor;
 uniform vec2 center, resolution;
 uniform float coreRadius, haloFalloff, scale;

@@ -10,8 +10,6 @@ import net.bfsr.engine.renderer.texture.AbstractTexture;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11C;
 
-import java.nio.IntBuffer;
-
 import static net.bfsr.engine.renderer.AbstractSpriteRenderer.LAST_UPDATE_MATERIAL_DATA_SIZE_IN_BYTES;
 import static net.bfsr.engine.renderer.SpriteRenderer.COLOR_A_OFFSET;
 import static net.bfsr.engine.renderer.SpriteRenderer.COLOR_B_OFFSET;
@@ -46,14 +44,9 @@ public class GuiRenderer extends AbstractGUIRenderer {
     @Override
     public void render(int mode) {
         if (buffersHolder.getRenderObjects() > 0) {
-            spriteRenderer.render(mode, buffersHolder.getRenderObjects(), buffersHolder);
+            spriteRenderer.updateCommandBufferAndRender(mode, buffersHolder.getRenderObjects(), buffersHolder);
             buffersHolder.setRenderObjects(0);
         }
-    }
-
-    @Override
-    public void addDrawCommand(IntBuffer commandBuffer, int count) {
-        spriteRenderer.addDrawCommand(commandBuffer, count, buffersHolder);
     }
 
     @Override
@@ -123,6 +116,7 @@ public class GuiRenderer extends AbstractGUIRenderer {
         return addCentered(x, y, 0, 1, width, height, r, g, b, a, 0);
     }
 
+    @Override
     public int addCentered(int x, int y, float rotation, int width, int height, Vector4f color, AbstractTexture texture) {
         return addCentered(x, y, LUT.sin(rotation), LUT.cos(rotation), width, height, color, texture);
     }
@@ -228,6 +222,11 @@ public class GuiRenderer extends AbstractGUIRenderer {
         buffersHolder.putLastUpdateModelData(offset, x);
         buffersHolder.putLastUpdateModelData(offset + SpriteRenderer.Y_OFFSET, y);
         buffersHolder.setLastUpdateModelBufferDirty(true);
+    }
+
+    @Override
+    public void setLastRotation(int id, float rotation) {
+        setLastRotation(id, LUT.sin(rotation), LUT.cos(rotation));
     }
 
     @Override

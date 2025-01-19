@@ -1,5 +1,6 @@
 package net.bfsr.benchmark;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import net.bfsr.ai.Ai;
 import net.bfsr.client.Client;
 import net.bfsr.client.gui.hud.HUD;
@@ -23,10 +24,9 @@ import net.bfsr.network.packet.Packet;
 import net.bfsr.world.World;
 
 import java.util.List;
-import java.util.Random;
 
 public class BenchmarkGameLogic extends Client {
-    private final Random random = new Random();
+    private final XoRoShiRo128PlusPlusRandom random = new XoRoShiRo128PlusPlusRandom();
     private int pauseAfterTicks = 10;
 
     public BenchmarkGameLogic(Profiler profiler) {
