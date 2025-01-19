@@ -83,6 +83,10 @@ public class Button extends GuiObject {
         this(TextureRegister.guiButtonBase, 0, 0, 300, 50, string, 20, leftReleaseRunnable);
     }
 
+    public Button(TextureRegister texture, int width, int height, String string) {
+        this(texture, 0, 0, width, height, string, 20, RunnableUtils.EMPTY_RUNNABLE);
+    }
+
     public Button(TextureRegister texture, int width, int height, Runnable leftReleaseRunnable) {
         this(texture, 0, 0, width, height, "", 20, leftReleaseRunnable);
     }

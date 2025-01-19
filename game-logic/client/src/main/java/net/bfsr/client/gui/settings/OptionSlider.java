@@ -8,8 +8,8 @@ import net.bfsr.util.DecimalUtils;
 public class OptionSlider extends Slider {
     private final ClientSettings option;
 
-    OptionSlider(int x, int y, int width, int height, ClientSettings option) {
-        super(x, y, width, height, 20, (option.getFloat() - option.getMinValue()) / (option.getMaxValue() - option.getMinValue()),
+    OptionSlider(int width, int height, ClientSettings option) {
+        super(width, height, 20, (option.getFloat() - option.getMinValue()) / (option.getMaxValue() - option.getMinValue()),
                 Lang.getString("settings." + option.getOptionName()) + ": " +
                         DecimalUtils.strictFormatWithToDigits(option.getFloat()));
         this.option = option;

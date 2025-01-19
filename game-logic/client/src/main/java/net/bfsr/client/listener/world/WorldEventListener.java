@@ -1,7 +1,7 @@
 package net.bfsr.client.listener.world;
 
 import net.bfsr.client.Client;
-import net.bfsr.client.renderer.RenderManager;
+import net.bfsr.client.renderer.EntityRenderer;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.event.entity.RigidBodyAddToWorldEvent;
@@ -9,11 +9,11 @@ import net.bfsr.event.entity.RigidBodyPostPhysicsUpdateEvent;
 
 public class WorldEventListener {
     private final Client client = Client.get();
-    private final RenderManager renderManager = client.getRenderManager();
+    private final EntityRenderer entityRenderer = client.getEntityRenderer();
 
     @EventHandler
     public EventListener<RigidBodyAddToWorldEvent> addToWorldEvent() {
-        return event -> renderManager.createRender(event.getRigidBody());
+        return event -> entityRenderer.createRender(event.getRigidBody());
     }
 
     @EventHandler

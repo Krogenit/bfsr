@@ -52,7 +52,8 @@ public class Shield extends DamageableModule {
 
     @Override
     public void createFixture(RigidBody rigidBody) {
-        rigidBody.addFixture(fixture = new Fixture(shieldShape, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
+        fixture = new Fixture(shieldShape, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
+        rigidBody.addFixture(fixture);
         createShieldFixture();
     }
 

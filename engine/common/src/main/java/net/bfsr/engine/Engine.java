@@ -4,7 +4,6 @@ import net.bfsr.engine.dialog.AbstractSystemDialogs;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
-import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.sound.AbstractSoundManager;
 
@@ -16,7 +15,6 @@ public final class Engine {
     public static AbstractMouse mouse;
     public static AbstractSystemDialogs systemDialogs;
     public static GuiManager guiManager;
-    public static Profiler profiler = new Profiler();
 
     private static final int updatesPerSecond = 60;
     private static final float updateDeltaTime = 1.0f / 60.0f;

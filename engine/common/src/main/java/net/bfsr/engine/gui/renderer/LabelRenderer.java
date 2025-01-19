@@ -11,11 +11,10 @@ import net.bfsr.engine.renderer.font.glyph.GlyphData;
 import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
 import net.bfsr.engine.renderer.font.string.StringGeometry;
 
-import java.nio.IntBuffer;
+import java.nio.ByteBuffer;
 import java.util.List;
 
-import static net.bfsr.engine.renderer.AbstractSpriteRenderer.COMMAND_SIZE;
-import static net.bfsr.engine.renderer.AbstractSpriteRenderer.FOUR_BYTES_ELEMENT_SHIFT;
+import static net.bfsr.engine.renderer.AbstractSpriteRenderer.COMMAND_SIZE_IN_BYTES;
 
 public class LabelRenderer extends GuiObjectRenderer {
     private final AbstractSpriteRenderer spriteRenderer = Engine.renderer.spriteRenderer;
@@ -25,7 +24,7 @@ public class LabelRenderer extends GuiObjectRenderer {
     private final Label label;
     private final GlyphsBuilder glyphsBuilder;
 
-    private IntBuffer commandBuffer;
+    private ByteBuffer commandBuffer;
     private long commandBufferAddress;
 
     private final BufferType bufferType;
@@ -53,7 +52,7 @@ public class LabelRenderer extends GuiObjectRenderer {
     }
 
     private void putCommandData(int offset, int value) {
-        Engine.renderer.putValue(commandBufferAddress + ((offset & 0xFFFF_FFFFL) << FOUR_BYTES_ELEMENT_SHIFT), value);
+        Engine.renderer.putValue(commandBufferAddress + (offset & 0xFFFF_FFFFL), value);
     }
 
     @Override
@@ -76,10 +75,10 @@ public class LabelRenderer extends GuiObjectRenderer {
     public void create(AbstractBuffersHolder buffersHolder, float x, float y) {
         List<GlyphData> glyphsData = stringGeometry.getGlyphsData();
         if (glyphsData.size() > 0) {
-            commandBuffer = Engine.renderer.createIntBuffer(glyphsData.size() * COMMAND_SIZE);
+            commandBuffer = Engine.renderer.createByteBuffer(glyphsData.size() * COMMAND_SIZE_IN_BYTES);
             commandBufferAddress = Engine.renderer.getAddress(commandBuffer);
 
-            for (int i = 0, commandDataOffset = 0; i < glyphsData.size(); i++, commandDataOffset += COMMAND_SIZE) {
+            for (int i = 0, commandDataOffset = 0; i < glyphsData.size(); i++, commandDataOffset += COMMAND_SIZE_IN_BYTES) {
                 GlyphData glyphData = glyphsData.get(i);
                 int id = spriteRenderer.add(x + glyphData.getX(), y + glyphData.getY(), glyphData.getWidth(),
                         glyphData.getHeight(), glyphData.getR(), glyphData.getG(), glyphData.getB(), glyphData.getA(),
@@ -98,7 +97,7 @@ public class LabelRenderer extends GuiObjectRenderer {
     @Override
     public void render() {
         if (idList.size() > 0) {
-            spriteRenderer.addDrawCommand(commandBuffer, stringGeometry.getGlyphsCount(), bufferType);
+            spriteRenderer.addDrawCommand(commandBufferAddress, stringGeometry.getGlyphsCount(), bufferType);
         }
     }
 

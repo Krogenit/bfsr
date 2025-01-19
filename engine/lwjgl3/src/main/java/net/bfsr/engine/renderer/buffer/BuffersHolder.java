@@ -7,26 +7,24 @@ import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.primitive.VAO;
 import org.lwjgl.system.MemoryUtil;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
-import static net.bfsr.engine.renderer.AbstractSpriteRenderer.BASE_INSTANCE_OFFSET;
-import static net.bfsr.engine.renderer.AbstractSpriteRenderer.BASE_VERTEX_OFFSET;
-import static net.bfsr.engine.renderer.AbstractSpriteRenderer.COMMAND_SIZE;
-import static net.bfsr.engine.renderer.AbstractSpriteRenderer.FIRST_INDEX_OFFSET;
+import static net.bfsr.engine.renderer.AbstractSpriteRenderer.COMMAND_SIZE_IN_BYTES;
 import static net.bfsr.engine.renderer.AbstractSpriteRenderer.FOUR_BYTES_ELEMENT_SHIFT;
-import static net.bfsr.engine.renderer.AbstractSpriteRenderer.INSTANCE_COUNT_OFFSET;
 import static net.bfsr.engine.renderer.AbstractSpriteRenderer.LAST_UPDATE_MATERIAL_DATA_SIZE_IN_BYTES;
 import static net.bfsr.engine.renderer.AbstractSpriteRenderer.MATERIAL_DATA_SIZE_IN_BYTES;
 import static net.bfsr.engine.renderer.AbstractSpriteRenderer.MODEL_DATA_SIZE;
-import static net.bfsr.engine.renderer.AbstractSpriteRenderer.QUAD_INDEX_COUNT;
+import static org.lwjgl.opengl.GL15C.glBindBuffer;
+import static org.lwjgl.opengl.GL30C.glBindBufferBase;
+import static org.lwjgl.opengl.GL40C.GL_DRAW_INDIRECT_BUFFER;
 import static org.lwjgl.opengl.GL44C.GL_DYNAMIC_STORAGE_BIT;
 
 @Getter
-public class BuffersHolder extends AbstractBuffersHolder {
+public class BuffersHolder implements AbstractBuffersHolder {
     private final VAO vao;
 
     @Setter
@@ -55,8 +53,8 @@ public class BuffersHolder extends AbstractBuffersHolder {
     @Setter
     private boolean lastUpdateMaterialBufferDirty;
 
-    private IntBuffer commandBuffer;
-    private final int commandBufferResizeCapacity;
+    private DrawCommandBuffer commandBuffer;
+    private final int commandBufferResizeCapacityInBytes;
     private long commandBufferAddress;
 
     @Setter
@@ -66,9 +64,11 @@ public class BuffersHolder extends AbstractBuffersHolder {
     private int baseInstance;
     private int maxBufferCapacity;
     private final UnorderedArrayList<Integer> freeIndices = new UnorderedArrayList<>();
+    private final boolean persistent;
 
-    public BuffersHolder(VAO vao, int initialObjectCount) {
+    public BuffersHolder(VAO vao, int initialObjectCount, boolean persistent) {
         this.vao = vao;
+        this.persistent = persistent;
 
         modelDataBufferResizeCapacity = initialObjectCount * AbstractSpriteRenderer.MODEL_DATA_SIZE;
         materialBufferResizeCapacity = initialObjectCount * MATERIAL_DATA_SIZE_IN_BYTES;
@@ -86,22 +86,14 @@ public class BuffersHolder extends AbstractBuffersHolder {
         lastUpdateMaterialBuffer = MemoryUtil.memAlloc(lastUpdateMaterialBufferResizeCapacity);
         lastUpdateMaterialBufferAddress = MemoryUtil.memAddress(lastUpdateMaterialBuffer);
 
-        commandBufferResizeCapacity = initialObjectCount * COMMAND_SIZE;
-        commandBuffer = MemoryUtil.memAllocInt(commandBufferResizeCapacity);
-        commandBufferAddress = MemoryUtil.memAddress(commandBuffer);
-        fillCommandBuffer(commandBuffer, 0);
+        commandBufferResizeCapacityInBytes = initialObjectCount * COMMAND_SIZE_IN_BYTES;
+
+        commandBuffer = persistent ? new PersistentDrawCommandBuffer() :
+                new DrawCommandBuffer();
+        commandBuffer.create(commandBufferResizeCapacityInBytes);
+        initCommandBuffer();
 
         maxBufferCapacity = initialObjectCount;
-    }
-
-    private void fillCommandBuffer(IntBuffer commandBuffer, int offset) {
-        for (int i = offset; i < commandBuffer.capacity(); i += COMMAND_SIZE) {
-            putCommandData(i, QUAD_INDEX_COUNT);
-            putCommandData(i + INSTANCE_COUNT_OFFSET, 1);
-            putCommandData(i + FIRST_INDEX_OFFSET, 0);
-            putCommandData(i + BASE_VERTEX_OFFSET, 0);
-            putCommandData(i + BASE_INSTANCE_OFFSET, 0);
-        }
     }
 
     @Override
@@ -131,14 +123,13 @@ public class BuffersHolder extends AbstractBuffersHolder {
             lastUpdateMaterialBufferAddress = MemoryUtil.memAddress(lastUpdateMaterialBuffer);
         }
 
-        int capacity = commandBuffer.capacity();
-        remainingBufferCapacity = capacity - bufferUsage * COMMAND_SIZE;
-        requiredBufferCapacity = objectCount * COMMAND_SIZE;
+        int capacity = (int) commandBuffer.getCapacity();
+        remainingBufferCapacity = capacity - bufferUsage * COMMAND_SIZE_IN_BYTES;
+        requiredBufferCapacity = objectCount * COMMAND_SIZE_IN_BYTES;
         if (remainingBufferCapacity < requiredBufferCapacity) {
-            int resizeAmount = Math.max(commandBufferResizeCapacity, requiredBufferCapacity);
-            commandBuffer = MemoryUtil.memRealloc(commandBuffer, capacity + resizeAmount);
-            commandBufferAddress = MemoryUtil.memAddress(commandBuffer);
-            fillCommandBuffer(commandBuffer, capacity);
+            int resizeAmount = Math.max(commandBufferResizeCapacityInBytes, requiredBufferCapacity);
+            commandBuffer.resize(capacity + resizeAmount);
+            initCommandBuffer();
         }
     }
 
@@ -172,6 +163,36 @@ public class BuffersHolder extends AbstractBuffersHolder {
         materialBufferDirty = true;
         lastUpdateModelBufferDirty = true;
         lastUpdateMaterialBufferDirty = true;
+    }
+
+    private void initCommandBuffer() {
+        commandBuffer.fill();
+        commandBufferAddress = commandBuffer.getAddress();
+    }
+
+    @Override
+    public void disablePersistentMapping() {
+        recreateCommandBuffer(PersistentDrawCommandBuffer.class, DrawCommandBuffer.class);
+    }
+
+    @Override
+    public void enablePersistentMapping() {
+        recreateCommandBuffer(DrawCommandBuffer.class, PersistentDrawCommandBuffer.class);
+    }
+
+    private void recreateCommandBuffer(Class<? extends DrawCommandBuffer> currentClass, Class<? extends DrawCommandBuffer> targetClass) {
+        if (persistent && commandBuffer.getClass() == currentClass) {
+            commandBuffer.clear();
+
+            try {
+                commandBuffer = targetClass.getConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new IllegalStateException(e);
+            }
+
+            commandBuffer.create(maxBufferCapacity * COMMAND_SIZE_IN_BYTES);
+            initCommandBuffer();
+        }
     }
 
     @Override
@@ -211,24 +232,74 @@ public class BuffersHolder extends AbstractBuffersHolder {
 
     @Override
     public void putCommandData(int offset, int value) {
-        MemoryUtil.memPutInt(commandBufferAddress + ((offset & 0xFFFF_FFFFL) << FOUR_BYTES_ELEMENT_SHIFT), value);
+        MemoryUtil.memPutInt(commandBufferAddress + (offset & 0xFFFF_FFFFL), value);
     }
 
     @Override
-    public void incrementRenderObjects() {
-        renderObjects++;
+    public void putCommandData(long address, int value) {
+        MemoryUtil.memPutInt(address, value);
     }
 
     @Override
-    public void addRenderObjectsCount(int count) {
+    public void fillCommandBufferWithDefaultValues() {
+        commandBuffer.clear();
+        commandBuffer.create(maxBufferCapacity * COMMAND_SIZE_IN_BYTES);
+        initCommandBuffer();
+    }
+
+    @Override
+    public void updateCommandBuffer(int count) {
+        commandBuffer.updateBuffer(count);
+    }
+
+    @Override
+    public void bindCommandBuffer() {
+        glBindBuffer(GL_DRAW_INDIRECT_BUFFER, commandBuffer.getBufferId());
+    }
+
+    @Override
+    public void bindCommandBufferBase(int target, int index) {
+        glBindBufferBase(target, index, commandBuffer.getBufferId());
+    }
+
+    @Override
+    public void lockRange() {
+        commandBuffer.lockRange();
+    }
+
+    @Override
+    public void waitForLockedRange() {
+        commandBuffer.waitForLockedRange();
+    }
+
+    @Override
+    public void switchRenderingIndex() {
+        commandBuffer.switchBufferingIndex();
+        commandBufferAddress = commandBuffer.getAddress();
+    }
+
+    @Override
+    public long getCommandBufferAddress() {
+        return commandBufferAddress;
+    }
+
+    @Override
+    public int getAndIncrementRenderObjects() {
+        return renderObjects++;
+    }
+
+    @Override
+    public int getAndIncrementRenderObjects(int count) {
+        int lastRenderObjects = renderObjects;
         renderObjects += count;
+        return lastRenderObjects;
     }
 
-    public void incrementBufferUsage() {
+    private void incrementBufferUsage() {
         bufferUsage++;
     }
 
-    public void decrementBufferUsage() {
+    private void decrementBufferUsage() {
         bufferUsage--;
     }
 
@@ -263,7 +334,7 @@ public class BuffersHolder extends AbstractBuffersHolder {
         MemoryUtil.memFree(materialBuffer);
         MemoryUtil.memFree(lastUpdateModelBuffer);
         MemoryUtil.memFree(lastUpdateMaterialBuffer);
-        MemoryUtil.memFree(commandBuffer);
+        commandBuffer.clear();
         vao.clear();
     }
 }

@@ -40,7 +40,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
     public GuiShipEditor() {
         super("Ships", Client.get().getConfigConverterManager().getConverter(ShipRegistry.class), Mappers.getMapper(ShipConverter.class),
                 ShipConfig.class, ShipProperties.class);
-        Client.get().getRenderManager().addRender(new Render(polygonObject) {
+        Client.get().getEntityRenderer().addRender(new Render(polygonObject) {
             @Override
             public void update() {}
 
@@ -75,7 +75,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
 
             if (testShip != null) {
                 testShip.setDead();
-                Client.get().getRenderManager().removeRenderById(testShip.getId());
+                Client.get().getEntityRenderer().removeRenderById(testShip.getId());
             }
 
             try {
@@ -98,7 +98,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
                     }
                 };
                 render.init();
-                Client.get().getRenderManager().addRender(render);
+                Client.get().getEntityRenderer().addRender(render);
                 render.getMaskTexture().createEmpty();
             } catch (Exception e) {
                 log.error("Can't create ship for selected entry", e);

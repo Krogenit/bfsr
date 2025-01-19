@@ -9,7 +9,7 @@ public interface AbstractDebugRenderer {
     void addVertex(float x, float y, Vector4f color);
     void render(int mode);
     void renderAABB(AABB aabb, Vector4f color);
-    void reload();
+    void reloadShaders();
     void clear();
     void reset();
 }

@@ -5,6 +5,7 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.FrameBuffer;
 import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.renderer.shader.NebulaShader;
 import net.bfsr.engine.renderer.shader.StarsShader;
 import net.bfsr.engine.util.RandomHelper;
@@ -102,8 +103,8 @@ public final class TextureGenerator extends AbstractTextureGenerator {
 
     @Override
     public Texture generateNebulaTexture(int width, int height, XoRoShiRo128PlusRandom random) {
-        AbstractSpriteRenderer spriteRenderer = Engine.renderer.spriteRenderer;
-        int renderId = spriteRenderer.add(0, 0, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0, BufferType.GUI);
+        AbstractGUIRenderer guiRenderer = Engine.renderer.guiRenderer;
+        int renderId = guiRenderer.add(0, 0, 1, 1, 1.0f, 1.0f, 1.0f, 1.0f);
         int currentBindTexture = glGetInteger(GL_TEXTURE_BINDING_2D);
         NebulaShader nebulaShader = new NebulaShader();
         StarsShader starsShader = new StarsShader();
@@ -211,8 +212,8 @@ public final class TextureGenerator extends AbstractTextureGenerator {
 
             activeBuffer = 1 - activeBuffer;
             buffer.drawBuffer(activeBuffer);
-            spriteRenderer.addDrawCommand(renderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.GUI);
-            spriteRenderer.render(BufferType.GUI);
+            guiRenderer.addDrawCommand(renderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX);
+            guiRenderer.render();
             nebulaTexture = buffer.getTexture(activeBuffer);
             noise.delete();
         }
@@ -242,8 +243,8 @@ public final class TextureGenerator extends AbstractTextureGenerator {
 
             activeBuffer = 1 - activeBuffer;
             buffer.drawBuffer(activeBuffer);
-            spriteRenderer.addDrawCommand(renderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.GUI);
-            spriteRenderer.render(BufferType.GUI);
+            guiRenderer.addDrawCommand(renderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX);
+            guiRenderer.render();
             nebulaTexture = buffer.getTexture(activeBuffer);
         }
 
@@ -268,8 +269,8 @@ public final class TextureGenerator extends AbstractTextureGenerator {
 
             activeBuffer = 1 - activeBuffer;
             buffer.drawBuffer(activeBuffer);
-            spriteRenderer.addDrawCommand(renderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.GUI);
-            spriteRenderer.render(BufferType.GUI);
+            guiRenderer.addDrawCommand(renderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX);
+            guiRenderer.render();
             nebulaTexture = buffer.getTexture(activeBuffer);
         }
 
@@ -292,7 +293,7 @@ public final class TextureGenerator extends AbstractTextureGenerator {
         glMakeTextureHandleResidentARB(textureHandle);
         nebulaTexture.setTextureHandle(textureHandle);
         glBindTexture(GL_TEXTURE_2D, currentBindTexture);
-        spriteRenderer.removeObject(renderId, BufferType.GUI);
+        guiRenderer.removeObject(renderId, BufferType.GUI);
 
         return nebulaTexture;
     }

@@ -7,7 +7,6 @@ import net.bfsr.engine.event.EventListener;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.entity.ship.ShipDestroyEvent;
 import net.bfsr.event.entity.ship.ShipDestroyingExplosionEvent;
-import net.bfsr.world.World;
 
 public class ShipEventListener {
     private final XoRoShiRo128PlusRandom rand = new XoRoShiRo128PlusRandom();
@@ -21,7 +20,6 @@ public class ShipEventListener {
     public EventListener<ShipDestroyingExplosionEvent> shipDestroyingExplosionEvent() {
         return event -> {
             Ship ship = event.ship();
-            World world = ship.getWorld();
             float sizeX = ship.getSizeX();
             float sizeY = ship.getSizeY();
             float randomVectorX = -sizeX * 0.4f + sizeX * 0.8f * rand.nextFloat();

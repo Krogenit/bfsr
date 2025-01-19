@@ -85,7 +85,7 @@ public final class TextureLoader extends AbstractTextureLoader {
         try {
             dds = new DDSFile(new FileInputStream(path));
         } catch (FileNotFoundException e) {
-            throw new RuntimeException("Failed to load a texture file " + path, e);
+            throw new IllegalStateException("Failed to load a texture file " + path, e);
         }
 
         Texture texture = generateTexture(dds);
@@ -174,7 +174,7 @@ public final class TextureLoader extends AbstractTextureLoader {
             internalFormat = GL11.GL_RGBA8;
             format = GL11.GL_RGBA;
         } else {
-            throw new RuntimeException("Unsupported image channels " + channels);
+            throw new IllegalStateException("Unsupported image channels " + channels);
         }
 
         GL45C.glTextureStorage2D(texture.getId(), 1, internalFormat, width, height);

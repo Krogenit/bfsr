@@ -111,7 +111,7 @@ public class DebugRenderer implements AbstractDebugRenderer {
     }
 
     @Override
-    public void reload() {
+    public void reloadShaders() {
         debugShader.delete();
         debugShader.load();
         debugShader.init();

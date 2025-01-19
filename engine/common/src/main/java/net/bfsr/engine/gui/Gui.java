@@ -25,6 +25,10 @@ public abstract class Gui extends GuiObject {
         for (int i = 0, size = guiObjects.size(); i < size; i++) {
             guiObjects.get(i).onScreenResize(width, height);
         }
+
+        if (parentGui != null) {
+            parentGui.onScreenResize(width, height);
+        }
     }
 
     public Vector2f getMousePosition() {

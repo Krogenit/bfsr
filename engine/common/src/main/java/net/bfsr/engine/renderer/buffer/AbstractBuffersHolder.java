@@ -2,40 +2,48 @@ package net.bfsr.engine.renderer.buffer;
 
 import net.bfsr.engine.renderer.primitive.AbstractVAO;
 
-import java.nio.IntBuffer;
+public interface AbstractBuffersHolder {
+    void checkBuffersSize(int objectCount);
 
-public abstract class AbstractBuffersHolder {
-    public abstract void checkBuffersSize(int objectCount);
+    void updateBuffers(int modelBufferIndex, int materialBufferIndex, int lastUpdateModelBufferIndex,
+                       int lastUpdateMaterialBufferIndex);
 
-    public abstract void updateBuffers(int modelBufferIndex, int materialBufferIndex, int lastUpdateModelBufferIndex,
-                                       int lastUpdateMaterialBufferIndex);
+    void markAllBuffersDirty();
 
-    public abstract void markAllBuffersDirty();
+    void disablePersistentMapping();
+    void enablePersistentMapping();
 
-    public abstract void putModelData(int offset, float value);
-    public abstract void putMaterialData(int offset, float value);
-    public abstract void putMaterialData(int offset, int value);
-    public abstract void putMaterialData(int offset, long value);
-    public abstract void putCommandData(int offset, int value);
-    public abstract void putLastUpdateModelData(int offset, float value);
-    public abstract void putLastUpdateMaterialData(int offset, float value);
-    public abstract void putLastUpdateMaterialData(int offset, int value);
+    void putModelData(int offset, float value);
+    void putMaterialData(int offset, float value);
+    void putMaterialData(int offset, int value);
+    void putMaterialData(int offset, long value);
+    void putCommandData(int offset, int value);
+    void putCommandData(long address, int value);
+    void putLastUpdateModelData(int offset, float value);
+    void putLastUpdateMaterialData(int offset, float value);
+    void putLastUpdateMaterialData(int offset, int value);
 
-    public abstract void setModelBufferDirty(boolean value);
-    public abstract void setMaterialBufferDirty(boolean value);
-    public abstract void setLastUpdateModelBufferDirty(boolean value);
-    public abstract void setLastUpdateMaterialBufferDirty(boolean value);
+    void setModelBufferDirty(boolean value);
+    void setMaterialBufferDirty(boolean value);
+    void setLastUpdateModelBufferDirty(boolean value);
+    void setLastUpdateMaterialBufferDirty(boolean value);
 
-    public abstract IntBuffer getCommandBuffer();
+    void fillCommandBufferWithDefaultValues();
+    void updateCommandBuffer(int count);
+    void bindCommandBuffer();
+    void bindCommandBufferBase(int target, int index);
+    long getCommandBufferAddress();
 
-    public abstract long getCommandBufferAddress();
+    void lockRange();
+    void waitForLockedRange();
+    void switchRenderingIndex();
 
-    public abstract void addRenderObjectsCount(int count);
-    public abstract void setRenderObjects(int count);
-    public abstract void incrementRenderObjects();
-    public abstract int getRenderObjects();
-    public abstract AbstractVAO getVao();
-    public abstract int getNextBaseInstanceId();
+    void setRenderObjects(int count);
+    int getAndIncrementRenderObjects();
+    int getAndIncrementRenderObjects(int count);
+    int getRenderObjects();
+    AbstractVAO getVao();
+    int getNextBaseInstanceId();
 
-    public abstract void clear();
+    void clear();
 }

@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -42,7 +43,15 @@ public final class IOUtils {
             byte[] bytes = Files.readAllBytes(path);
             return ByteBuffer.allocateDirect(bytes.length).order(ByteOrder.nativeOrder()).put(bytes).flip();
         } catch (IOException e) {
-            throw new RuntimeException("Could not load file " + path, e);
+            throw new FileLoadException("Could not load file " + path, e);
+        }
+    }
+
+    public static String readFile(Path path) {
+        try {
+            return Files.readString(path, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new FileLoadException("Could not read file with path " + path, e);
         }
     }
 }

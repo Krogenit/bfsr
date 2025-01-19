@@ -84,7 +84,8 @@ public class RigidBodyRender extends Render {
         debugRenderer.renderAABB(AABB, BODY_AABB_COLOR);
         debugRenderer.renderAABB(aabb, RENDER_AABB_COLOR);
 
-        renderDebug(body, object.getX(), object.getY(), rigidBody.getSin(), rigidBody.getCos());
+        renderDebug(body, lastPosition.x + (object.getX() - lastPosition.x) * renderer.getInterpolation(),
+                lastPosition.y + (object.getY() - lastPosition.y) * renderer.getInterpolation(), rigidBody.getSin(), rigidBody.getCos());
     }
 
     private void renderDebug(Body body, float x, float y, float sin, float cos) {
