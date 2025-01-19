@@ -14,6 +14,7 @@ import java.nio.ByteBuffer;
 import static net.bfsr.engine.renderer.SpriteRenderer.MATERIAL_BUFFER_INDEX;
 import static net.bfsr.engine.renderer.SpriteRenderer.MODEL_BUFFER_INDEX;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
+import static org.lwjgl.opengl.GL42C.GL_COMMAND_BARRIER_BIT;
 import static org.lwjgl.opengl.GL42C.glMemoryBarrier;
 import static org.lwjgl.opengl.GL43.GL_SHADER_STORAGE_BUFFER;
 import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BARRIER_BIT;
@@ -50,6 +51,9 @@ public class GPUFrustumCullingSystem implements AbstractGPUFrustumCullingSystem 
         frustumTest(count, buffersHolder, vao.getBuffer(MODEL_BUFFER_INDEX), vao.getBuffer(MATERIAL_BUFFER_INDEX));
 
         shader.enable();
+
+        glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
+
         spriteRenderer.render(GL_TRIANGLES, count, buffersHolder);
     }
 
