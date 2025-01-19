@@ -9,7 +9,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
-import static net.bfsr.engine.renderer.culling.OcclusionCullingSystem.BYTE_BUFFER;
+import static net.bfsr.engine.renderer.culling.GPUFrustumCullingSystem.BYTE_BUFFER;
 import static org.lwjgl.opengl.GL15C.glBindBuffer;
 import static org.lwjgl.opengl.GL30.glBindBufferBase;
 import static org.lwjgl.opengl.GL43C.glClearBufferSubData;

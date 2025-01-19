@@ -5,7 +5,7 @@ import net.bfsr.engine.renderer.shader.AbstractShaderProgram;
 
 public interface AbstractOcclusionCullingSystem {
     void init(AbstractShaderProgram shaderProgram);
-    void renderOcclusionCulled(int count, AbstractBuffersHolder buffersHolder);
+    void renderFrustumCulled(int count, AbstractBuffersHolder buffersHolder);
     void reloadShaders();
     void clear();
 }

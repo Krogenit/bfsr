@@ -3,7 +3,6 @@ package net.bfsr.engine.renderer.particle;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
@@ -22,11 +21,12 @@ public class ParticleRenderer {
     private static final int MULTITHREADED_THRESHOLD = 20000;
     private static final int OCCLUSION_CULLING_THRESHOLD = 2000;
 
-    private final AbstractRenderer renderer = Engine.renderer;
-    private final AbstractSpriteRenderer spriteRenderer = renderer.spriteRenderer;
-    private final AbstractOcclusionCullingSystem cullingSystem = renderer.cullingSystem;
+    private AbstractRenderer renderer;
+    private AbstractSpriteRenderer spriteRenderer;
+    private AbstractOcclusionCullingSystem cullingSystem;
+    private AbstractBuffersHolder[] buffersHolderArray;
+
     private final List<ParticleRender>[] particlesByRenderLayer = new List[RenderLayer.VALUES.length];
-    private final AbstractBuffersHolder[] buffersHolderArray = spriteRenderer.createBuffersHolderArray(RenderLayer.VALUES.length);
     private final ParticlesStoreRunnable[] particlesStoreRunnables;
     private final ParticlesStoreRunnable[] backgroundParticlesStoreRunnables;
     private Future<?>[] taskFutures;
@@ -34,13 +34,10 @@ public class ParticleRenderer {
     @Getter
     private int taskCount;
     private boolean multithreaded;
-    private final Profiler profiler;
 
-    public ParticleRenderer(Profiler profiler) {
-        this.profiler = profiler;
+    public ParticleRenderer() {
         RenderLayer[] renderLayers = RenderLayer.VALUES;
         for (int i = 0; i < renderLayers.length; i++) {
-            buffersHolderArray[renderLayers[i].ordinal()] = spriteRenderer.createBuffersHolder(START_PARTICLE_COUNT, true);
             particlesByRenderLayer[renderLayers[i].ordinal()] = new ArrayList<>(256);
         }
 
@@ -59,6 +56,16 @@ public class ParticleRenderer {
     }
 
     public void init() {
+        renderer = Engine.renderer;
+        spriteRenderer = renderer.spriteRenderer;
+        cullingSystem = renderer.cullingSystem;
+        buffersHolderArray = spriteRenderer.createBuffersHolderArray(RenderLayer.VALUES.length);
+
+        RenderLayer[] renderLayers = RenderLayer.VALUES;
+        for (int i = 0; i < renderLayers.length; i++) {
+            buffersHolderArray[renderLayers[i].ordinal()] = spriteRenderer.createBuffersHolder(START_PARTICLE_COUNT, true);
+        }
+
         for (int i = 0; i < particlesStoreRunnables.length; i++) {
             particlesStoreRunnables[i].init();
             backgroundParticlesStoreRunnables[i].init();
@@ -146,17 +153,19 @@ public class ParticleRenderer {
         }
     }
 
-    public void renderBackground() {
-        profiler.start("waitTasks");
+    public void waitBackgroundTasks() {
         waitTasks(backgroundTaskFutures);
-        profiler.end();
+    }
+
+    public void renderBackground() {
         render(RenderLayer.BACKGROUND_ALPHA_BLENDED, RenderLayer.BACKGROUND_ADDITIVE);
     }
 
-    public void render() {
-        profiler.start("waitTasks");
+    public void waitTasks() {
         waitTasks(taskFutures);
-        profiler.end();
+    }
+
+    public void render() {
         render(RenderLayer.DEFAULT_ALPHA_BLENDED, RenderLayer.DEFAULT_ADDITIVE);
     }
 
@@ -173,10 +182,28 @@ public class ParticleRenderer {
 
         renderer.glBlendFunc(sFactor, dFactor);
         AbstractBuffersHolder buffersHolder = buffersHolderArray[bufferIndex];
-        if (count > OCCLUSION_CULLING_THRESHOLD) {
-            cullingSystem.renderOcclusionCulled(count, buffersHolder);
+        if (renderer.isParticlesGPUFrustumCulling() && count > OCCLUSION_CULLING_THRESHOLD) {
+            cullingSystem.renderFrustumCulled(count, buffersHolder);
         } else {
             spriteRenderer.render(count, buffersHolder);
+        }
+    }
+
+    public void setPersistentMappedBuffers(boolean value) {
+        if (value) {
+            for (int i = 0; i < buffersHolderArray.length; i++) {
+                buffersHolderArray[i].enablePersistentMapping();
+            }
+        } else {
+            for (int i = 0; i < buffersHolderArray.length; i++) {
+                buffersHolderArray[i].disablePersistentMapping();
+            }
+        }
+    }
+
+    public void onParticlesGPUOcclusionCullingChangeValue() {
+        for (int i = 0; i < buffersHolderArray.length; i++) {
+            buffersHolderArray[i].fillCommandBufferWithDefaultValues();
         }
     }
 

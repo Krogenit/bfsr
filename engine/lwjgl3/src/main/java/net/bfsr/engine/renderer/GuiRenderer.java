@@ -44,8 +44,7 @@ public class GuiRenderer extends AbstractGUIRenderer {
     @Override
     public void render(int mode) {
         if (buffersHolder.getRenderObjects() > 0) {
-            buffersHolder.updateCommandBuffer(buffersHolder.getRenderObjects());
-            spriteRenderer.render(mode, buffersHolder.getRenderObjects(), buffersHolder);
+            spriteRenderer.updateCommandBufferAndRender(mode, buffersHolder.getRenderObjects(), buffersHolder);
             buffersHolder.setRenderObjects(0);
         }
     }

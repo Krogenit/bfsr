@@ -56,6 +56,7 @@ public interface AbstractSpriteRenderer extends GeometryBuffer {
     void syncAndRender(BufferType bufferType);
     void render(BufferType bufferType);
     void render(int objectCount, AbstractBuffersHolder buffersHolder);
+    void updateCommandBufferAndRender(int mode, int renderObjects, AbstractBuffersHolder buffersHolder);
     void render(int mode, int objectCount, AbstractBuffersHolder buffersHolder);
 
     int add(float x, float y, float width, float height, float r, float g, float b, float a,
@@ -106,6 +107,8 @@ public interface AbstractSpriteRenderer extends GeometryBuffer {
     void setLastColorAlpha(int id, AbstractBuffersHolder buffersHolder, float a);
     void setLastFireAmount(int id, BufferType bufferType, float value);
     void setLastFireUVAnimation(int id, BufferType bufferType, float value);
+
+    void setPersistentMappedBuffers(boolean value);
 
     AbstractBuffersHolder getBuffersHolder(BufferType bufferType);
 

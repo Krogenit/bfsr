@@ -26,7 +26,7 @@ public class GlobalRenderer {
 
     private final GuiManager guiManager;
     private final Profiler profiler;
-    private final RenderManager renderManager;
+    private final EntityRenderer entityRenderer;
     private final ParticleManager particleManager;
     private final WorldRenderer worldRenderer;
 
@@ -34,10 +34,6 @@ public class GlobalRenderer {
 
     public void init() {
         worldRenderer.init();
-    }
-
-    public void update() {
-        worldRenderer.update();
     }
 
     public void render(float interpolation) {
@@ -67,7 +63,7 @@ public class GlobalRenderer {
     }
 
     private void renderDebug() {
-        renderManager.renderDebug();
+        entityRenderer.renderDebug();
         debugRenderer.render(GL.GL_LINE_LOOP);
         debugRenderer.reset();
         shader.enable();

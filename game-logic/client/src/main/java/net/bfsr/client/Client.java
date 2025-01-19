@@ -18,8 +18,8 @@ import net.bfsr.client.module.ShieldLogic;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.particle.ParticleManager;
 import net.bfsr.client.physics.CollisionHandler;
+import net.bfsr.client.renderer.EntityRenderer;
 import net.bfsr.client.renderer.GlobalRenderer;
-import net.bfsr.client.renderer.RenderManager;
 import net.bfsr.client.renderer.WorldRenderer;
 import net.bfsr.client.server.LocalServer;
 import net.bfsr.client.server.LocalServerGameLogic;
@@ -58,11 +58,11 @@ public class Client extends ClientGameLogic {
     private final GuiManager guiManager = Engine.guiManager;
     private final InputHandler inputHandler = new InputHandler();
     private final ParticleManager particleManager = new ParticleManager();
-    private final RenderManager renderManager = new RenderManager();
-    private final DamageHandler damageHandler = new DamageHandler(renderManager);
+    private final EntityRenderer entityRenderer = new EntityRenderer();
+    private final DamageHandler damageHandler = new DamageHandler(entityRenderer);
     private final ConfigSettings settings = new ConfigSettings();
     private final GlobalRenderer globalRenderer = new GlobalRenderer(
-            guiManager, profiler, renderManager, particleManager, new WorldRenderer(profiler, renderManager)
+            guiManager, profiler, entityRenderer, particleManager, new WorldRenderer(profiler, entityRenderer)
     );
 
     private World world = BlankWorld.get();
@@ -92,7 +92,7 @@ public class Client extends ClientGameLogic {
         networkSystem.init();
         entitySpawnLoginRegistry.init(configConverterManager);
         globalRenderer.init();
-        renderManager.init();
+        entityRenderer.init();
         guiManager.init(eventBus);
         profiler.setEnable(ClientSettings.IS_PROFILING.getBoolean());
         soundManager.setGain(ClientSettings.SOUND_VOLUME.getFloat());
@@ -113,11 +113,10 @@ public class Client extends ClientGameLogic {
     @Override
     public void update(double time) {
         super.update(time);
-        profiler.start("renderer");
+        profiler.start("renderManager");
 
         if (!isPaused()) {
-            renderManager.update();
-            globalRenderer.update();
+            entityRenderer.update();
         }
 
         profiler.endStart("inputHandler");
@@ -144,7 +143,7 @@ public class Client extends ClientGameLogic {
         profiler.endStart("renderManager.postUpdate");
 
         if (!isPaused()) {
-            renderManager.postWorldUpdate();
+            entityRenderer.postWorldUpdate();
         }
 
         profiler.end();

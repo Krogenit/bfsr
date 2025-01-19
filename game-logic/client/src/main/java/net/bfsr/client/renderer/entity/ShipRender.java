@@ -110,7 +110,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     private void createWeaponSlotsRenders(Ship ship) {
         Modules modules = ship.getModules();
         List<WeaponSlot> weaponSlots = modules.getWeaponSlots();
-        WeaponRenderRegistry weaponRenderRegistry = Client.get().getRenderManager().getWeaponRenderRegistry();
+        WeaponRenderRegistry weaponRenderRegistry = Client.get().getEntityRenderer().getWeaponRenderRegistry();
         for (int i = 0; i < weaponSlots.size(); i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
             WeaponSlotRender render = weaponRenderRegistry.createRender(weaponSlot);

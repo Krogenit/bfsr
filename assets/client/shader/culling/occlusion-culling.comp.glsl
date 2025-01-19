@@ -9,13 +9,13 @@ layout (std140, binding = UBO_VIEW_DATA) uniform viewDataBuffer {
     ViewData viewData;
 };
 
-layout (std430, binding = OCC_CULL_SSBO_MODEL_DATA) readonly buffer modelDataBuffer {
+layout (std430, binding = FRUSTUM_CULL_SSBO_MODEL_DATA) readonly buffer modelDataBuffer {
     ModelData modelData[];
 };
-layout (std430, binding = OCC_CULL_SSBO_MATERIAL_DATA) readonly buffer materialBuffer {
+layout (std430, binding = FRUSTUM_CULL_SSBO_MATERIAL_DATA) readonly buffer materialBuffer {
     Material materials[];
 };
-layout (std430, binding = OCC_CULL_SSBO_DRAW_COMMANDS) buffer drawCommandBuffer {
+layout (std430, binding = FRUSTUM_CULL_SSBO_DRAW_COMMANDS) buffer drawCommandBuffer {
     int drawCommands[];
 };
 

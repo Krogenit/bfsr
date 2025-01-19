@@ -9,6 +9,7 @@ import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
 import net.bfsr.engine.renderer.font.StringGeometryBuilder;
 import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
+import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.shader.AbstractShaderProgram;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.AbstractTextureGenerator;
@@ -34,6 +35,13 @@ public abstract class AbstractRenderer {
     @Getter
     @Setter
     protected float interpolation;
+    @Getter
+    protected boolean persistentMappedBuffers;
+    @Getter
+    protected boolean particlesGPUFrustumCulling;
+    @Setter
+    @Getter
+    protected boolean entitiesGPUFrustumCulling;
 
     public final AbstractCamera camera;
     public final AbstractShaderProgram shader;
@@ -43,6 +51,7 @@ public abstract class AbstractRenderer {
     public final AbstractDebugRenderer debugRenderer;
     public final AbstractTextureGenerator textureGenerator;
     public final AbstractOcclusionCullingSystem cullingSystem;
+    public final ParticleRenderer particleRenderer;
 
     public void init(long window, int width, int height) {
         this.window = window;
@@ -55,6 +64,7 @@ public abstract class AbstractRenderer {
         spriteRenderer.init();
         guiRenderer.init();
         debugRenderer.init();
+        particleRenderer.init();
         shader.load();
         shader.init();
         cullingSystem.init(shader);
@@ -105,6 +115,17 @@ public abstract class AbstractRenderer {
 
     public abstract void setVSync(boolean value);
     public abstract void setDebugWindow();
+
+    public void setPersistentMappedBuffers(boolean value) {
+        persistentMappedBuffers = value;
+        spriteRenderer.setPersistentMappedBuffers(value);
+        particleRenderer.setPersistentMappedBuffers(value);
+    }
+
+    public void setParticlesGPUFrustumCulling(boolean value) {
+        particlesGPUFrustumCulling = value;
+        particleRenderer.onParticlesGPUOcclusionCullingChangeValue();
+    }
 
     public void reloadShaders() {
         shader.delete();

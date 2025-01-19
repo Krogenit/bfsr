@@ -10,6 +10,9 @@ public interface AbstractBuffersHolder {
 
     void markAllBuffersDirty();
 
+    void disablePersistentMapping();
+    void enablePersistentMapping();
+
     void putModelData(int offset, float value);
     void putMaterialData(int offset, float value);
     void putMaterialData(int offset, int value);
@@ -25,6 +28,7 @@ public interface AbstractBuffersHolder {
     void setLastUpdateModelBufferDirty(boolean value);
     void setLastUpdateMaterialBufferDirty(boolean value);
 
+    void fillCommandBufferWithDefaultValues();
     void updateCommandBuffer(int count);
     void bindCommandBuffer();
     void bindCommandBufferBase(int target, int index);

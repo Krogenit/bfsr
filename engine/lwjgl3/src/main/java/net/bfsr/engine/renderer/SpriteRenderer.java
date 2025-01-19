@@ -85,6 +85,8 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     final BuffersHolder[] buffersHolders = createBuffersHolderArray(BufferType.values().length);
     private final BiConsumer<Runnable, BufferType> addTaskConsumer;
 
+    private boolean persistentMappedBuffers = true;
+
     public SpriteRenderer() {
         float[] positionsUvs = {
                 // Centered quad
@@ -113,8 +115,8 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
         indexVBO.storeData(indexBuffer, 0);
 
         buffersHolders[BufferType.BACKGROUND.ordinal()] = createBuffersHolder(1, true);
-        buffersHolders[BufferType.ENTITIES_ALPHA.ordinal()] = createBuffersHolder(16384 * 2, true);
-        buffersHolders[BufferType.ENTITIES_ADDITIVE.ordinal()] = createBuffersHolder(16384 * 2, true);
+        buffersHolders[BufferType.ENTITIES_ALPHA.ordinal()] = createBuffersHolder(512, true);
+        buffersHolders[BufferType.ENTITIES_ADDITIVE.ordinal()] = createBuffersHolder(512, true);
         buffersHolders[BufferType.GUI.ordinal()] = createBuffersHolder(512, false);
 
         if (MultithreadingUtils.MULTITHREADING_SUPPORTED) {
@@ -163,6 +165,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
                 LAST_UPDATE_MATERIAL_BUFFER_INDEX);
     }
 
+    @Override
     public void waitForLockedRange() {
         for (int i = 0; i < buffersHolders.length; i++) {
             BuffersHolder buffersHolder = buffersHolders[i];
@@ -172,6 +175,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
         }
     }
 
+    @Override
     public void waitForLockedRange(AbstractBuffersHolder[] buffersHolderArray) {
         for (int i = 0; i < buffersHolderArray.length; i++) {
             buffersHolderArray[i].waitForLockedRange();
@@ -320,17 +324,31 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
         render(GL_TRIANGLES, bufferType);
     }
 
-    void render(int mode, BufferType bufferType) {
+    private void render(int mode, BufferType bufferType) {
         BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
         if (buffersHolder.getRenderObjects() > 0) {
-            render(mode, buffersHolder.getRenderObjects(), buffersHolder);
+            if (persistentMappedBuffers) {
+                render(mode, buffersHolder.getRenderObjects(), buffersHolder);
+            } else {
+                updateCommandBufferAndRender(mode, buffersHolder.getRenderObjects(), buffersHolder);
+            }
             buffersHolder.setRenderObjects(0);
         }
     }
 
     @Override
     public void render(int objectCount, AbstractBuffersHolder buffersHolder) {
-        render(GL_TRIANGLES, objectCount, buffersHolder);
+        if (persistentMappedBuffers) {
+            render(GL_TRIANGLES, objectCount, buffersHolder);
+        } else {
+            updateCommandBufferAndRender(GL_TRIANGLES, objectCount, buffersHolder);
+        }
+    }
+
+    @Override
+    public void updateCommandBufferAndRender(int mode, int objectCount, AbstractBuffersHolder buffersHolder) {
+        buffersHolder.updateCommandBuffer(objectCount);
+        render(mode, objectCount, buffersHolder);
     }
 
     @Override
@@ -785,6 +803,21 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     @Override
     public BuffersHolder[] createBuffersHolderArray(int length) {
         return new BuffersHolder[length];
+    }
+
+    @Override
+    public void setPersistentMappedBuffers(boolean value) {
+        persistentMappedBuffers = value;
+
+        if (value) {
+            for (int i = 0; i < buffersHolders.length; i++) {
+                buffersHolders[i].enablePersistentMapping();
+            }
+        } else {
+            for (int i = 0; i < buffersHolders.length; i++) {
+                buffersHolders[i].disablePersistentMapping();
+            }
+        }
     }
 
     @Override

@@ -7,6 +7,7 @@ import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.primitive.VAO;
 import org.lwjgl.system.MemoryUtil;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.concurrent.CompletableFuture;
@@ -52,7 +53,7 @@ public class BuffersHolder implements AbstractBuffersHolder {
     @Setter
     private boolean lastUpdateMaterialBufferDirty;
 
-    private final DrawCommandBuffer commandBuffer;
+    private DrawCommandBuffer commandBuffer;
     private final int commandBufferResizeCapacityInBytes;
     private long commandBufferAddress;
 
@@ -63,9 +64,11 @@ public class BuffersHolder implements AbstractBuffersHolder {
     private int baseInstance;
     private int maxBufferCapacity;
     private final UnorderedArrayList<Integer> freeIndices = new UnorderedArrayList<>();
+    private final boolean persistent;
 
     public BuffersHolder(VAO vao, int initialObjectCount, boolean persistent) {
         this.vao = vao;
+        this.persistent = persistent;
 
         modelDataBufferResizeCapacity = initialObjectCount * AbstractSpriteRenderer.MODEL_DATA_SIZE;
         materialBufferResizeCapacity = initialObjectCount * MATERIAL_DATA_SIZE_IN_BYTES;
@@ -85,10 +88,10 @@ public class BuffersHolder implements AbstractBuffersHolder {
 
         commandBufferResizeCapacityInBytes = initialObjectCount * COMMAND_SIZE_IN_BYTES;
 
-        commandBuffer = persistent ? new PersistentDrawCommandBuffer() : new DrawCommandBuffer();
+        commandBuffer = persistent ? new PersistentDrawCommandBuffer() :
+                new DrawCommandBuffer();
         commandBuffer.create(commandBufferResizeCapacityInBytes);
-        commandBuffer.fill();
-        commandBufferAddress = commandBuffer.getAddress();
+        initCommandBuffer();
 
         maxBufferCapacity = initialObjectCount;
     }
@@ -126,8 +129,7 @@ public class BuffersHolder implements AbstractBuffersHolder {
         if (remainingBufferCapacity < requiredBufferCapacity) {
             int resizeAmount = Math.max(commandBufferResizeCapacityInBytes, requiredBufferCapacity);
             commandBuffer.resize(capacity + resizeAmount);
-            commandBuffer.fill();
-            commandBufferAddress = commandBuffer.getAddress();
+            initCommandBuffer();
         }
     }
 
@@ -161,6 +163,36 @@ public class BuffersHolder implements AbstractBuffersHolder {
         materialBufferDirty = true;
         lastUpdateModelBufferDirty = true;
         lastUpdateMaterialBufferDirty = true;
+    }
+
+    private void initCommandBuffer() {
+        commandBuffer.fill();
+        commandBufferAddress = commandBuffer.getAddress();
+    }
+
+    @Override
+    public void disablePersistentMapping() {
+        recreateCommandBuffer(PersistentDrawCommandBuffer.class, DrawCommandBuffer.class);
+    }
+
+    @Override
+    public void enablePersistentMapping() {
+        recreateCommandBuffer(DrawCommandBuffer.class, PersistentDrawCommandBuffer.class);
+    }
+
+    private void recreateCommandBuffer(Class<? extends DrawCommandBuffer> currentClass, Class<? extends DrawCommandBuffer> targetClass) {
+        if (persistent && commandBuffer.getClass() == currentClass) {
+            commandBuffer.clear();
+
+            try {
+                commandBuffer = targetClass.getConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+
+            commandBuffer.create(maxBufferCapacity * COMMAND_SIZE_IN_BYTES);
+            initCommandBuffer();
+        }
     }
 
     @Override
@@ -206,6 +238,13 @@ public class BuffersHolder implements AbstractBuffersHolder {
     @Override
     public void putCommandData(long address, int value) {
         MemoryUtil.memPutInt(address, value);
+    }
+
+    @Override
+    public void fillCommandBufferWithDefaultValues() {
+        commandBuffer.clear();
+        commandBuffer.create(maxBufferCapacity * COMMAND_SIZE_IN_BYTES);
+        initCommandBuffer();
     }
 
     @Override

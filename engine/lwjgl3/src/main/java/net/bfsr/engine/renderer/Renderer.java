@@ -1,14 +1,16 @@
 package net.bfsr.engine.renderer;
 
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.camera.Camera;
-import net.bfsr.engine.renderer.culling.OcclusionCullingSystem;
+import net.bfsr.engine.renderer.culling.GPUFrustumCullingSystem;
 import net.bfsr.engine.renderer.debug.DebugRenderer;
 import net.bfsr.engine.renderer.debug.OpenGLDebugUtils;
 import net.bfsr.engine.renderer.font.StringGeometryBuilder;
 import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
 import net.bfsr.engine.renderer.font.stb.STBTrueTypeGlyphsBuilder;
 import net.bfsr.engine.renderer.font.truetype.TrueTypeGlyphsBuilder;
+import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.shader.BaseShader;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureGenerator;
@@ -66,13 +68,16 @@ public class Renderer extends AbstractRenderer {
     private static final int UBO_INTERPOLATION = 1;
     public static final int UBO_VIEW_DATA = 2;
 
+    private final Profiler profiler;
+
     private int interpolationUBO;
     private FloatBuffer interpolationBuffer;
     private long interpolationBufferAddress;
 
-    public Renderer() {
-        super(new Camera(), new BaseShader(), new StringGeometryBuilder(), new SpriteRenderer(), new GuiRenderer(), new DebugRenderer(),
-                new TextureGenerator(), new OcclusionCullingSystem());
+    public Renderer(Profiler profiler) {
+        super(new Camera(), new BaseShader(), new StringGeometryBuilder(), new SpriteRenderer(), new GuiRenderer(),
+                new DebugRenderer(), new TextureGenerator(), new GPUFrustumCullingSystem(), new ParticleRenderer());
+        this.profiler = profiler;
     }
 
     @Override
@@ -113,7 +118,11 @@ public class Renderer extends AbstractRenderer {
 
     @Override
     public void update() {
+        profiler.start("camera");
         camera.update();
+        profiler.endStart("particleRenderer");
+        particleRenderer.update();
+        profiler.end();
     }
 
     @Override
