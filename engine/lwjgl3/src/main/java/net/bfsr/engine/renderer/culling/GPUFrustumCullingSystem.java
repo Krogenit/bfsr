@@ -19,7 +19,7 @@ import static org.lwjgl.opengl.GL43.GL_SHADER_STORAGE_BUFFER;
 import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BARRIER_BIT;
 import static org.lwjgl.opengl.GL43C.glDispatchCompute;
 
-public class GPUFrustumCullingSystem implements AbstractOcclusionCullingSystem {
+public class GPUFrustumCullingSystem implements AbstractGPUFrustumCullingSystem {
     public static final ByteBuffer BYTE_BUFFER = MemoryUtil.memCalloc(4);
 
     private static final int FRUSTUM_CULL_SSBO_MODEL_DATA = 0;

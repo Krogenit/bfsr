@@ -6,7 +6,7 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
-import net.bfsr.engine.renderer.culling.AbstractOcclusionCullingSystem;
+import net.bfsr.engine.renderer.culling.AbstractGPUFrustumCullingSystem;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.util.MultithreadingUtils;
 
@@ -19,11 +19,10 @@ import java.util.concurrent.Future;
 public class ParticleRenderer {
     private static final int START_PARTICLE_COUNT = 8192;
     private static final int MULTITHREADED_THRESHOLD = 20000;
-    private static final int OCCLUSION_CULLING_THRESHOLD = 2000;
 
     private AbstractRenderer renderer;
     private AbstractSpriteRenderer spriteRenderer;
-    private AbstractOcclusionCullingSystem cullingSystem;
+    private AbstractGPUFrustumCullingSystem cullingSystem;
     private AbstractBuffersHolder[] buffersHolderArray;
 
     private final List<ParticleRender>[] particlesByRenderLayer = new List[RenderLayer.VALUES.length];
@@ -182,7 +181,7 @@ public class ParticleRenderer {
 
         renderer.glBlendFunc(sFactor, dFactor);
         AbstractBuffersHolder buffersHolder = buffersHolderArray[bufferIndex];
-        if (renderer.isParticlesGPUFrustumCulling() && count > OCCLUSION_CULLING_THRESHOLD) {
+        if (renderer.isParticlesGPUFrustumCulling()) {
             cullingSystem.renderFrustumCulled(count, buffersHolder);
         } else {
             spriteRenderer.render(count, buffersHolder);

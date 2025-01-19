@@ -12,7 +12,7 @@ import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
-import net.bfsr.engine.renderer.culling.AbstractOcclusionCullingSystem;
+import net.bfsr.engine.renderer.culling.AbstractGPUFrustumCullingSystem;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.texture.TextureRegister;
@@ -26,7 +26,7 @@ public class WorldRenderer {
     @Getter
     private final ParticleRenderer particleRenderer = renderer.particleRenderer;
     private final BackgroundRenderer backgroundRenderer = new BackgroundRenderer();
-    private final AbstractOcclusionCullingSystem cullingSystem = renderer.cullingSystem;
+    private final AbstractGPUFrustumCullingSystem cullingSystem = renderer.cullingSystem;
 
     public WorldRenderer(Profiler profiler, EntityRenderer entityRenderer) {
         this.profiler = profiler;

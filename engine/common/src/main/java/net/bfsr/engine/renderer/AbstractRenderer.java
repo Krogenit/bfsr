@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
-import net.bfsr.engine.renderer.culling.AbstractOcclusionCullingSystem;
+import net.bfsr.engine.renderer.culling.AbstractGPUFrustumCullingSystem;
 import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
 import net.bfsr.engine.renderer.font.StringGeometryBuilder;
 import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
@@ -50,7 +50,7 @@ public abstract class AbstractRenderer {
     public final AbstractGUIRenderer guiRenderer;
     public final AbstractDebugRenderer debugRenderer;
     public final AbstractTextureGenerator textureGenerator;
-    public final AbstractOcclusionCullingSystem cullingSystem;
+    public final AbstractGPUFrustumCullingSystem cullingSystem;
     public final ParticleRenderer particleRenderer;
 
     public void init(long window, int width, int height) {
