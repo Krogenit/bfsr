@@ -36,6 +36,12 @@ public class BulletRender extends RigidBodyRender {
     }
 
     @Override
+    protected void updateAABB() {
+        super.updateAABB();
+        aabb.combine(-3.0f, -3.0f, 3.0f, 3.0f);
+    }
+
+    @Override
     protected void updateLastRenderValues() {
         spriteRenderer.setLastPosition(id, BufferType.ENTITIES_ADDITIVE, object.getX(), object.getY());
         spriteRenderer.setLastRotation(id, BufferType.ENTITIES_ADDITIVE, rigidBody.getSin(), rigidBody.getCos());
