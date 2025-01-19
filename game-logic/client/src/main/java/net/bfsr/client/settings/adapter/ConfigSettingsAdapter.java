@@ -11,7 +11,7 @@ import net.bfsr.client.settings.ClientSettings;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 public class ConfigSettingsAdapter extends JsonAdapter<Map<ClientSettings, Object>> {
@@ -39,7 +39,7 @@ public class ConfigSettingsAdapter extends JsonAdapter<Map<ClientSettings, Objec
     @FromJson
     @Override
     public Map<ClientSettings, Object> fromJson(JsonReader reader) throws IOException {
-        Map<ClientSettings, Object> result = new HashMap<>();
+        Map<ClientSettings, Object> result = new EnumMap<>(ClientSettings.class);
         reader.beginObject();
         while (reader.hasNext()) {
             reader.promoteNameToValue();

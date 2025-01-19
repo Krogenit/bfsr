@@ -47,7 +47,7 @@ public class LockManager implements AbstractLockManager {
             if (waitRet == GL_ALREADY_SIGNALED || waitRet == GL_CONDITION_SATISFIED) {
                 return;
             } else if (waitRet == GL_WAIT_FAILED) {
-                throw new RuntimeException("GL Client Wait Sync error");
+                throw new IllegalStateException("GL Client Wait Sync error");
             }
 
             waitFlags = GL_SYNC_FLUSH_COMMANDS_BIT;
