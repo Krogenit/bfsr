@@ -61,7 +61,7 @@ public class PersistentDrawCommandBuffer extends DrawCommandBuffer {
         for (int i = 0; i < buffers.length; i++) {
             long address = bufferAddresses[i];
 
-            for (int j = 0; j < capacity; j += COMMAND_SIZE_IN_BYTES) {
+            for (long j = 0; j < capacity; j += COMMAND_SIZE_IN_BYTES) {
                 putCommandData(address, j, QUAD_INDEX_COUNT);
                 putCommandData(address, j + INSTANCE_COUNT_OFFSET, 1);
                 putCommandData(address, j + FIRST_INDEX_OFFSET, 0);

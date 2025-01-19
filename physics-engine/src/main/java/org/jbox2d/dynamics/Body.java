@@ -55,6 +55,8 @@ public class Body {
     public static final int E_ACTIVE_FLAG = 0x0020;
     public static final int E_TOI_FLAG = 0x0040;
 
+    private static final String CANT_ADD_SAME_FIXTURE_ERROR_MESSAGE = "Can't add same fixture";
+
     @Getter
     public BodyType type = BodyType.DYNAMIC;
 
@@ -114,7 +116,7 @@ public class Body {
 
     public void addFixture(Fixture fixture) {
         if (fixture.body == this) {
-            throw new IllegalArgumentException("Can't add same fixture");
+            throw new IllegalArgumentException();
         }
 
         if (fixture.body != null) {
@@ -273,7 +275,7 @@ public class Body {
             Fixture fixture = fixtures.get(i);
 
             if (fixture.body == this) {
-                throw new IllegalArgumentException("Can't add same fixture");
+                throw new IllegalArgumentException(CANT_ADD_SAME_FIXTURE_ERROR_MESSAGE);
             }
 
             if (fixture.body != null) {
@@ -323,7 +325,7 @@ public class Body {
             Fixture fixture = fixtures.get(i);
 
             if (fixture.body == this) {
-                throw new IllegalArgumentException("Can't add same fixture");
+                throw new IllegalArgumentException(CANT_ADD_SAME_FIXTURE_ERROR_MESSAGE);
             }
 
             if (fixture.body != null) {

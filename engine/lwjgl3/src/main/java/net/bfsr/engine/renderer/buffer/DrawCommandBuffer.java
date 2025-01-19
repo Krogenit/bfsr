@@ -36,7 +36,7 @@ public class DrawCommandBuffer {
     }
 
     public void fill() {
-        for (int j = 0; j < capacity; j += COMMAND_SIZE_IN_BYTES) {
+        for (long j = 0; j < capacity; j += COMMAND_SIZE_IN_BYTES) {
             putCommandData(address, j, QUAD_INDEX_COUNT);
             putCommandData(address, j + INSTANCE_COUNT_OFFSET, 1);
             putCommandData(address, j + FIRST_INDEX_OFFSET, 0);
@@ -45,7 +45,7 @@ public class DrawCommandBuffer {
         }
     }
 
-    void putCommandData(long address, int offset, int value) {
+    void putCommandData(long address, long offset, int value) {
         MemoryUtil.memPutInt(address + (offset & 0xFFFF_FFFFL), value);
     }
 
@@ -53,11 +53,17 @@ public class DrawCommandBuffer {
         vbo.storeData(address, (long) count * COMMAND_SIZE_IN_BYTES, GL_DYNAMIC_STORAGE_BIT);
     }
 
-    public void switchBufferingIndex() {}
+    public void switchBufferingIndex() {
+        // We don't need to switch index for single buffer
+    }
 
-    public void lockRange() {}
+    public void lockRange() {
+        // We don't need to lock range for single buffer
+    }
 
-    public void waitForLockedRange() {}
+    public void waitForLockedRange() {
+        // We don't need to wait for locked range for single buffer
+    }
 
     long getAddress() {
         return address;
