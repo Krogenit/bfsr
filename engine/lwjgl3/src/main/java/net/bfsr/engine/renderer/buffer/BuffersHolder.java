@@ -187,7 +187,7 @@ public class BuffersHolder implements AbstractBuffersHolder {
             try {
                 commandBuffer = targetClass.getConstructor().newInstance();
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
 
             commandBuffer.create(maxBufferCapacity * COMMAND_SIZE_IN_BYTES);
