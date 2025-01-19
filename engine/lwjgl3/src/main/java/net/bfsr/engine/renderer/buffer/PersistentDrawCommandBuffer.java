@@ -72,7 +72,9 @@ public class PersistentDrawCommandBuffer extends DrawCommandBuffer {
     }
 
     @Override
-    void updateBuffer(int count) {}
+    void updateBuffer(int count) {
+        // No need to update persistent buffer
+    }
 
     @Override
     public void switchBufferingIndex() {

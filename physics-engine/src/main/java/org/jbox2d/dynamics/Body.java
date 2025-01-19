@@ -53,9 +53,10 @@ public class Body {
     public static final int E_BULLET_FLAG = 0x0008;
     public static final int E_FIXED_ROTATION_FLAG = 0x0010;
     public static final int E_ACTIVE_FLAG = 0x0020;
-    public static final int E_TOI_FLAG = 0x0040;
 
     private static final String CANT_ADD_SAME_FIXTURE_ERROR_MESSAGE = "Can't add same fixture";
+    private static final String CANT_ADD_OTHERS_FIXTURE_ERROR_MESSAGE = "Can't add other's fixture";
+    private static final String CANT_REMOVE_FIXTURE_WHEN_WORLD_IS_LOCKED_ERROR_MESSAGE = "Can't remove fixture when world is locked";
 
     @Getter
     public BodyType type = BodyType.DYNAMIC;
@@ -120,7 +121,7 @@ public class Body {
         }
 
         if (fixture.body != null) {
-            throw new IllegalArgumentException("Can't add other's fixture");
+            throw new IllegalArgumentException(CANT_ADD_OTHERS_FIXTURE_ERROR_MESSAGE);
         }
 
         if (world.isLocked()) {
@@ -157,7 +158,7 @@ public class Body {
      */
     public final void removeFixture(Fixture fixture) {
         if (world.isLocked()) {
-            throw new IllegalStateException("Can't remove fixture when world is locked");
+            throw new IllegalStateException(CANT_REMOVE_FIXTURE_WHEN_WORLD_IS_LOCKED_ERROR_MESSAGE);
         }
 
         if (fixture.body != this) {
@@ -196,7 +197,7 @@ public class Body {
 
     public final void removeFixtures(List<Fixture> fixtures) {
         if (world.isLocked()) {
-            throw new IllegalStateException("Can't remove fixture when world is locked");
+            throw new IllegalStateException(CANT_REMOVE_FIXTURE_WHEN_WORLD_IS_LOCKED_ERROR_MESSAGE);
         }
 
         for (int i = 0; i < fixtures.size(); i++) {
@@ -239,7 +240,7 @@ public class Body {
 
     public void removeAllFixtures() {
         if (world.isLocked()) {
-            throw new IllegalStateException("Can't remove fixture when world is locked");
+            throw new IllegalStateException(CANT_REMOVE_FIXTURE_WHEN_WORLD_IS_LOCKED_ERROR_MESSAGE);
         }
 
         if (fixtures.isEmpty()) {
@@ -268,7 +269,7 @@ public class Body {
 
     public void addFixtures(List<Fixture> fixtures) {
         if (world.isLocked()) {
-            throw new IllegalStateException("Can't remove fixture when world is locked");
+            throw new IllegalStateException(CANT_REMOVE_FIXTURE_WHEN_WORLD_IS_LOCKED_ERROR_MESSAGE);
         }
 
         for (int i = 0; i < fixtures.size(); i++) {
@@ -279,7 +280,7 @@ public class Body {
             }
 
             if (fixture.body != null) {
-                throw new IllegalArgumentException("Can't add other's fixture");
+                throw new IllegalArgumentException(CANT_ADD_OTHERS_FIXTURE_ERROR_MESSAGE);
             }
 
             if ((flags & E_ACTIVE_FLAG) == E_ACTIVE_FLAG) {
@@ -301,7 +302,7 @@ public class Body {
 
     public void setFixtures(List<Fixture> fixtures) {
         if (world.isLocked()) {
-            throw new IllegalStateException("Can't remove fixture when world is locked");
+            throw new IllegalStateException(CANT_REMOVE_FIXTURE_WHEN_WORLD_IS_LOCKED_ERROR_MESSAGE);
         }
 
         while (contacts.size() > 0) {
@@ -329,7 +330,7 @@ public class Body {
             }
 
             if (fixture.body != null) {
-                throw new IllegalArgumentException("Can't add other's fixture");
+                throw new IllegalArgumentException(CANT_ADD_OTHERS_FIXTURE_ERROR_MESSAGE);
             }
 
             if ((flags & E_ACTIVE_FLAG) == E_ACTIVE_FLAG) {
