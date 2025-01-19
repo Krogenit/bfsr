@@ -38,7 +38,9 @@ public class BulletRender extends RigidBodyRender {
     @Override
     protected void updateAABB() {
         super.updateAABB();
-        aabb.combine(-3.0f, -3.0f, 3.0f, 3.0f);
+        float x = rigidBody.getX();
+        float y = rigidBody.getY();
+        aabb.combine(-3.0f + x, -3.0f + y, 3.0f + x, 3.0f + y);
     }
 
     @Override
