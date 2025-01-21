@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="Server" type="Application" factoryName="Application">
+        <option name="MAIN_CLASS_NAME" value="net.bfsr.server.launch.DedicatedServerMain"/>
+        <module name="BFSR.run.server.main"/>
+        <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test/server"/>
+        <method v="2">
+            <option name="Make" enabled="true"/>
+        </method>
+    </configuration>
+</component>

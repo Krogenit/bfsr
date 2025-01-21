@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="MongoDBService" type="Application" factoryName="Application">
+        <option name="MAIN_CLASS_NAME" value="net.bfsr.database.Main"/>
+        <module name="BFSR.mongodb-service.main"/>
+        <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test/mongodb-service"/>
+        <method v="2">
+            <option name="Make" enabled="true"/>
+        </method>
+    </configuration>
+</component>
