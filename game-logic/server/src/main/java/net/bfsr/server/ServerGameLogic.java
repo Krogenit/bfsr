@@ -123,7 +123,10 @@ public abstract class ServerGameLogic extends GameLogic {
         playerManager.save(player);
         List<Ship> ships = player.getShips();
         for (int i = 0, shipsSize = ships.size(); i < shipsSize; i++) {
-            ships.get(i).setDead();
+            Ship ship = ships.get(i);
+            if (ship.getWorld() != null) {
+                ship.setDead();
+            }
         }
 
         eventBus.publish(new PlayerDisconnectEvent(player));
