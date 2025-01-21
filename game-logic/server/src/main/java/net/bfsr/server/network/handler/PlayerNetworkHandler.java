@@ -153,8 +153,6 @@ public class PlayerNetworkHandler extends NetworkHandler {
 
     public void joinGame() {
         connectionState = ConnectionState.CONNECTED;
-        player.setNetworkHandler(this);
-        playerManager.addPlayer(player);
         sendTCPPacket(new PacketJoinGame(world.getSeed()));
         if (player.getFaction() != null) {
             List<Ship> ships = player.getShips();
