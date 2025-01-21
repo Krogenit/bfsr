@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public final class PathHelper {
-    public static final Path CLIENT_CONTENT = Path.of("../../assets/client");
-    private static final Path CONTENT = Path.of("../../assets/common");
+    private static final String ROOT_PATH = System.getProperty("assets.path", ".");
+
+    public static final Path CLIENT_CONTENT = Path.of(ROOT_PATH + "assets/client");
+    private static final Path CONTENT = Path.of(ROOT_PATH + "assets/common");
     public static final Path CONFIG = CONTENT.resolve("config");
     public static final Path SHADER = CLIENT_CONTENT.resolve("shader");
     public static final Path FONT = CLIENT_CONTENT.resolve("font");
