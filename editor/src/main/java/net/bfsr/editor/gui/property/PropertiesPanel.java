@@ -49,9 +49,8 @@ public class PropertiesPanel extends Rectangle {
         this.stringYOffset = stringYOffset;
         this.contextMenuStringXOffset = contextMenuStringXOffset;
 
-        String string = "Properties";
-        Label label = new Label(font, string, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w);
-        add(label.atBottomLeft(0, height + label.getCenteredOffsetY(elementHeight)));
+        Label label = new Label(font, "Properties", fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w);
+        add(label.atBottomLeft(() -> 0, () -> this.height + label.getCenteredOffsetY(elementHeight)));
 
         add(scrollPane.atBottomRight(0, elementHeight).setHeightFunction((screenWidth, screenHeight) -> screenHeight -
                 (elementHeight << 1)));

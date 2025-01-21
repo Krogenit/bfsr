@@ -64,7 +64,7 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
         this.stringOffsetY = stringOffsetY;
         setWidthFunction((width1, height1) -> getPanelWidth()).updatePositionAndSize();
         Label label = new Label(font, name, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w);
-        add(label.atBottomLeft(0, height - elementHeight + label.getCenteredOffsetY(elementHeight)));
+        add(label.atBottomLeft(() -> 0, () -> this.height - elementHeight + label.getCenteredOffsetY(elementHeight)));
         add(scrollPane.atBottomLeft(0, 0).setWidthFunction((width1, height1) -> getPanelWidth())
                 .setHeightFunction((width1, height1) -> this.height - elementHeight));
         setRenderer(new InspectionPanelRenderer<>(this));
