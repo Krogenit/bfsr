@@ -65,6 +65,14 @@ subprojects {
     }
 }
 
+tasks.register('createTestDirectories') {
+    mkdir 'test/client'
+    mkdir 'test/server'
+    mkdir 'test/mongodb-service'
+    mkdir 'test/editor'
+    mkdir 'test/benchmark'
+}
+
 import com.github.jengelman.gradle.plugins.shadow.transformers.PropertiesFileTransformer
 
 shadowJar {
