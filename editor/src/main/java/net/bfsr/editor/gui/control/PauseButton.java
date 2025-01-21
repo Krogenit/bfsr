@@ -96,6 +96,25 @@ public class PauseButton extends Button {
         }
 
         @Override
+        public void updateLastValues() {
+            super.updateLastValues();
+            int x = guiObject.getSceneX();
+            int y = guiObject.getSceneY();
+            int width = guiObject.getWidth();
+            int height = guiObject.getHeight();
+            int centerX = x + width / 2;
+            int centerY = y + height / 2;
+            int xOffset = 3;
+            int yOffset = 10;
+            int lineWidth = 4;
+
+            guiRenderer.setLastPosition(outlineId, x, y);
+            guiRenderer.setLastPosition(bodyId, x + 1, y + 1);
+            guiRenderer.setLastPosition(pauseId1, centerX - xOffset - lineWidth, centerY - yOffset);
+            guiRenderer.setLastPosition(pauseId2, centerX + xOffset, centerY - yOffset);
+        }
+
+        @Override
         public void updatePosition() {
             int x = guiObject.getSceneX();
             int y = guiObject.getSceneY();

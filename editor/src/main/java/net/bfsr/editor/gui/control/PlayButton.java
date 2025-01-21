@@ -94,6 +94,20 @@ public class PlayButton extends Button {
         }
 
         @Override
+        public void updateLastValues() {
+            super.updateLastValues();
+            int x = guiObject.getSceneX();
+            int y = guiObject.getSceneY();
+            int width = guiObject.getWidth();
+            int height = guiObject.getHeight();
+            int centerX = x + width / 2;
+            int centerY = y + height / 2;
+            guiRenderer.setLastPosition(outlineId, x, y);
+            guiRenderer.setLastPosition(bodyId, x + 1, y + 1);
+            guiRenderer.setLastPosition(playId, centerX, centerY);
+        }
+
+        @Override
         public void updatePosition() {
             int x = guiObject.getSceneX();
             int y = guiObject.getSceneY();
