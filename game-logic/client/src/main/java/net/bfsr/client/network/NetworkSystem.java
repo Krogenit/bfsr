@@ -8,6 +8,7 @@ import net.bfsr.client.gui.connect.GuiDisconnected;
 import net.bfsr.client.gui.main.GuiMainMenu;
 import net.bfsr.client.network.manager.NetworkManagerTCP;
 import net.bfsr.client.network.manager.NetworkManagerUDP;
+import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.util.Side;
 import net.bfsr.network.ConnectionState;
 import net.bfsr.network.NetworkHandler;
@@ -106,15 +107,18 @@ public class NetworkSystem extends NetworkHandler {
     }
 
     public void onDisconnect(String reason) {
+        Gui currentGui = Client.get().getGuiManager().getGui();
+        Gui parentGui = currentGui != null ? currentGui : new GuiMainMenu();
+
         if (connectionState == ConnectionState.CONNECTED) {
             Client.get().addFutureTask(() -> {
                 Client.get().quitToMainMenu();
-                Client.get().openGui(new GuiDisconnected(new GuiMainMenu(), "disconnect.lost", reason));
+                Client.get().openGui(new GuiDisconnected(parentGui, "disconnect.lost", reason));
             });
         } else if (connectionState == ConnectionState.LOGIN) {
-            Client.get().addFutureTask(() -> Client.get().openGui(new GuiDisconnected(new GuiMainMenu(), "login.failed", reason)));
+            Client.get().addFutureTask(() -> Client.get().openGui(new GuiDisconnected(parentGui, "login.failed", reason)));
         } else {
-            Client.get().addFutureTask(() -> Client.get().openGui(new GuiDisconnected(new GuiMainMenu(), "other", reason)));
+            Client.get().addFutureTask(() -> Client.get().openGui(new GuiDisconnected(parentGui, "other", reason)));
         }
 
         connectionState = ConnectionState.DISCONNECTED;
