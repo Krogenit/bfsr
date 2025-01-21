@@ -72,7 +72,7 @@ public class Label extends GuiObject {
 
     protected Label(Font font, String string, int x, int y, int fontSize, float r, float g, float b, float a,
                     StringOffsetType offsetType, BufferType bufferType) {
-        super(x, y, font.getGlyphsBuilder().getWidth(string, fontSize), Math.round(font.getGlyphsBuilder().getHeight(string, fontSize)));
+        super(x, y, font.getGlyphsBuilder().getWidth(string, fontSize), Math.round(font.getGlyphsBuilder().getHeight(string, fontSize, 0)));
         this.glyphsBuilder = font.getGlyphsBuilder();
         this.string = string;
         this.fontSize = fontSize;
@@ -107,6 +107,11 @@ public class Label extends GuiObject {
         labelRenderer.updateLastPosition(x, y);
     }
 
+    private void updateSize() {
+        setWidth(glyphsBuilder.getWidth(string, fontSize));
+        setHeight(Math.round(glyphsBuilder.getHeight(string, fontSize, maxWidth)));
+    }
+
     public void scale(float x, float y) {
         labelRenderer.scale(x, y);
     }
@@ -133,14 +138,13 @@ public class Label extends GuiObject {
 
     public Label setString(String string, float x, float y) {
         this.string = string;
-        setWidth(glyphsBuilder.getWidth(string, fontSize));
-        setHeight(Math.round(glyphsBuilder.getHeight(string, fontSize)));
+        updateSize();
         return packGlyphs(x, y);
     }
 
     public Label setFontSize(int fontSize) {
         this.fontSize = fontSize;
-        setWidth(glyphsBuilder.getWidth(string, fontSize));
+        updateSize();
         return this;
     }
 
@@ -189,6 +193,7 @@ public class Label extends GuiObject {
 
     public Label setMaxWidth(int maxWidth) {
         this.maxWidth = maxWidth;
+        updateSize();
         packGlyphs();
         return this;
     }

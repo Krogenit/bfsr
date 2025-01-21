@@ -40,15 +40,9 @@ public class LabelRenderer extends GuiObjectRenderer {
         stringGeometry.clear();
 
         int topOffset = Math.round(glyphsBuilder.getTopOffset(label.getString(), label.getFontSize()));
-        if (label.getMaxWidth() > 0) {
-            stringGeometryBuilder.createString(stringGeometry, glyphsBuilder, label.getString(), x, y + label.getHeight() - topOffset,
-                    label.getFontSize(), color.x, color.y, color.z, color.w, label.getMaxWidth(), label.getOffsetType(), 0,
-                    label.isShadow(), label.getShadowOffsetX(), label.getShadowOffsetY(), spriteRenderer);
-        } else {
-            stringGeometryBuilder.createString(stringGeometry, glyphsBuilder, label.getString(), x, y + label.getHeight() - topOffset,
-                    label.getFontSize(), color.x, color.y, color.z, color.w, label.getOffsetType(), label.isShadow(),
-                    label.getShadowOffsetX(), label.getShadowOffsetY(), spriteRenderer);
-        }
+        stringGeometryBuilder.createString(stringGeometry, glyphsBuilder, label.getString(), x, y + label.getHeight() - topOffset,
+                label.getFontSize(), color.x, color.y, color.z, color.w, label.getMaxWidth(), label.getOffsetType(),
+                label.isShadow(), label.getShadowOffsetX(), label.getShadowOffsetY(), spriteRenderer);
     }
 
     private void putCommandData(int offset, int value) {
@@ -97,7 +91,7 @@ public class LabelRenderer extends GuiObjectRenderer {
     @Override
     public void render() {
         if (idList.size() > 0) {
-            spriteRenderer.addDrawCommand(commandBufferAddress, stringGeometry.getGlyphsCount(), bufferType);
+            spriteRenderer.addDrawCommand(commandBufferAddress, idList.size(), bufferType);
         }
     }
 

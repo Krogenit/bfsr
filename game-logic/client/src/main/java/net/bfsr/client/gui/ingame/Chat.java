@@ -21,7 +21,7 @@ public class Chat extends TexturedRectangle {
     }
 
     public void addChatMessage(String message) {
-        scrollPane.add(new Label(Font.NOTOSANS_REGULAR_FT, message, 0, 0, chatInput.getFontSize()).setMaxWidth(chatInput.getWidth() - 20)
+        scrollPane.add(new Label(Font.NOTOSANS_REGULAR_FT, message, chatInput.getFontSize()).setMaxWidth(chatInput.getWidth() - 20)
                 .atTopLeft(0, -scrollPane.getTotalHeight() - chatMessagesOffsetY));
         scrollPane.scrollBottom();
     }

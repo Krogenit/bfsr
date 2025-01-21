@@ -4,8 +4,8 @@ import lombok.Setter;
 
 @Setter
 public abstract class GlyphsBuilder {
+    public static final char NEW_LINE = '\n';
     protected static final char SPACE = ' ';
-    protected static final char NEW_LINE = '\n';
 
     public abstract GlyphsData getGlyphsData(String text, int fontSize);
 
@@ -13,7 +13,31 @@ public abstract class GlyphsBuilder {
 
     public abstract int getWidth(String string, int fontSize);
 
-    public abstract float getHeight(String string, int fontSize);
+    protected abstract float getHeight(String string, int fontSize);
+
+    public float getHeight(String string, int fontSize, int maxWidth) {
+        if (maxWidth > 0) {
+            return getTrimmedStringHeight(string, fontSize, maxWidth);
+        } else {
+            return getHeight(string, fontSize);
+        }
+    }
+
+    private float getTrimmedStringHeight(String string, int fontSize, int maxWidth) {
+        float height = 0.0f;
+
+        do {
+            String temp = trimStringToWidthSaveWords(string, fontSize, maxWidth);
+            string = string.replace(temp, "").trim();
+            height += getHeight(temp, fontSize);
+        } while (!string.isEmpty());
+
+        return height;
+    }
+
+    private String trimStringToWidthSaveWords(String string, int fontSize, int width) {
+        return string.substring(0, getWidth(string, fontSize, width, true));
+    }
 
     public abstract float getLineHeight(int fontSize);
 
@@ -28,30 +52,4 @@ public abstract class GlyphsBuilder {
     public abstract int getCursorPositionInLine(String string, float mouseX, int fontSize);
 
     public abstract float getTopOffset(String string, int fontSize);
-
-    public int getHeight(String string, int fontSize, int maxWidth, int indent) {
-        int offset = 0;
-        int height = 0;
-        for (int i = 0; i < string.length(); i++) {
-            if (string.charAt(i) == NEW_LINE) {
-                height = (int) (height + getLineHeight(fontSize) * indent);
-            }
-        }
-        return height + getTrimmedStringHeight(string.substring(offset).trim(), fontSize, maxWidth, indent);
-    }
-
-    private int getTrimmedStringHeight(String string, int fontSize, int maxWidth, int indent) {
-        int height = 0;
-        do {
-            String temp = trimStringToWidthSaveWords(string, fontSize, maxWidth);
-            string = string.replace(temp, "").trim();
-            height = (int) (height + (getHeight(temp, fontSize) + indent));
-        } while (!string.isEmpty());
-
-        return height;
-    }
-
-    String trimStringToWidthSaveWords(String string, int fontSize, int width) {
-        return string.substring(0, getWidth(string, fontSize, width, true));
-    }
 }

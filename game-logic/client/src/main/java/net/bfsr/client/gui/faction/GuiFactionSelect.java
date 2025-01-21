@@ -41,9 +41,9 @@ public class GuiFactionSelect extends Gui {
         add(label.atCenter(0, 108));
 
         int discFontSize = 16;
-        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.humanDisc"), discFontSize).setMaxWidth(300).atCenter(-248, 72));
-        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.saimonDisc"), discFontSize).setMaxWidth(300).atCenter(69, 72));
-        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.engiDisc"), discFontSize).setMaxWidth(300).atCenter(378, 72));
+        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.humanDisc"), discFontSize).setMaxWidth(300).atCenter(-248, 64));
+        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.saimonDisc"), discFontSize).setMaxWidth(300).atCenter(69, 64));
+        add(new Label(Font.XOLONIUM_FT, Lang.getString("gui.selectFaction.engiDisc"), discFontSize).setMaxWidth(300).atCenter(378, 64));
     }
 
     private static class GuiShip extends TexturedRotatedRectangle {
