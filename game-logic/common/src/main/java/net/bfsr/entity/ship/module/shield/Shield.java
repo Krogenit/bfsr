@@ -87,8 +87,22 @@ public class Shield extends DamageableModule {
             }
         }
 
-        float offset = 1.4f;
-        diameter.set(maxX - minX + offset, maxY - minY + offset);
+        float offset = 1.0f;
+        float positiveMaxX = Math.abs(maxX);
+        float positiveMinX = Math.abs(minX);
+        if (positiveMaxX > positiveMinX) {
+            diameter.x = positiveMaxX * 2 + offset;
+        } else {
+            diameter.x = positiveMinX * 2 + offset;
+        }
+
+        float positiveMaxY = Math.abs(maxY);
+        float positiveMinY = Math.abs(minY);
+        if (positiveMaxY > positiveMinY) {
+            diameter.y = positiveMaxY * 2 + offset;
+        } else {
+            diameter.y = positiveMinY * 2 + offset;
+        }
 
         Polygon ellipse = Geometry.createPolygonalEllipse(12, diameter.x, diameter.y);
         shieldFixture = new Fixture(ellipse);
