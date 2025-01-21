@@ -145,6 +145,9 @@ public class PlayerNetworkHandler extends NetworkHandler {
             return;
         }
 
+        player.setNetworkHandler(this);
+        playerManager.addPlayer(player);
+
         sendTCPPacket(new PacketLoginSuccess());
     }
 
