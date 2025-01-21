@@ -112,12 +112,12 @@ public class PlayerInputController extends InputController {
             ship.addMoveDirection(Direction.BACKWARD);
         }
 
-        if (key == KEY_A && engines.isEngineAlive(Direction.LEFT)) {
+        if (key == KEY_A && engines.isEngineAlive(Direction.RIGHT)) {
             client.sendUDPPacket(new PacketShipMove(Direction.RIGHT));
             ship.addMoveDirection(Direction.RIGHT);
         }
 
-        if (key == KEY_D && engines.isEngineAlive(Direction.RIGHT)) {
+        if (key == KEY_D && engines.isEngineAlive(Direction.LEFT)) {
             client.sendUDPPacket(new PacketShipMove(Direction.LEFT));
             ship.addMoveDirection(Direction.LEFT);
         }
