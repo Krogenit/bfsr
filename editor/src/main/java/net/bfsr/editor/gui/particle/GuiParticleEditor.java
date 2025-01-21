@@ -4,7 +4,6 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.Client;
 import net.bfsr.client.config.particle.ParticleEffect;
 import net.bfsr.client.config.particle.ParticleEffectConfig;
-import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.renderer.Render;
 import net.bfsr.editor.ConfigurableGameObject;
@@ -47,7 +46,7 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
     private final ParticleEffectConverter converter = Mappers.getMapper(ParticleEffectConverter.class);
 
     public GuiParticleEditor() {
-        super("Particle Effects", ParticleEffectsRegistry.INSTANCE, Mappers.getMapper(ParticleEffectConverter.class),
+        super("Particle Effects", Client.get().getParticleEffectsRegistry(), Mappers.getMapper(ParticleEffectConverter.class),
                 ParticleEffectConfig.class, ParticleEffectProperties.class);
 
         int x = 0;

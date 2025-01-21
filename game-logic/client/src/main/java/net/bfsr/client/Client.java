@@ -3,6 +3,7 @@ package net.bfsr.client;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.client.config.particle.ParticleEffect;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.damage.DamageHandler;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
@@ -52,6 +53,7 @@ public class Client extends ClientGameLogic {
     private static Client instance;
 
     private final ConfigConverterManager configConverterManager = new ConfigConverterManager();
+    private final ParticleEffectsRegistry particleEffectsRegistry = new ParticleEffectsRegistry();
     private final AbstractSoundManager soundManager = Engine.soundManager;
     private final NetworkSystem networkSystem = new NetworkSystem();
     private final EntitySpawnLoginRegistry entitySpawnLoginRegistry = new EntitySpawnLoginRegistry();
@@ -88,7 +90,7 @@ public class Client extends ClientGameLogic {
         inputHandler.init();
         settings.load();
         configConverterManager.init();
-        configConverterManager.registerConfigRegistry(ParticleEffectsRegistry.INSTANCE);
+        configConverterManager.registerConfigRegistry(particleEffectsRegistry);
         networkSystem.init();
         entitySpawnLoginRegistry.init(configConverterManager);
         globalRenderer.init();
@@ -299,5 +301,9 @@ public class Client extends ClientGameLogic {
 
     public boolean isInWorld() {
         return world != BlankWorld.get();
+    }
+
+    public ParticleEffect getParticleEffect(String path) {
+        return particleEffectsRegistry.get(path);
     }
 }

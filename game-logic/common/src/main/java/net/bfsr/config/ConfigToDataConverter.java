@@ -25,7 +25,12 @@ public class ConfigToDataConverter<CONFIG_TYPE, DATA_TYPE extends ConfigData> {
 
     public ConfigToDataConverter(String folder, Class<CONFIG_TYPE> configClass, BiFunction<String, CONFIG_TYPE, String> nameFunction,
                                  ConfigToDataFunction<CONFIG_TYPE, DATA_TYPE> mapFunction) {
-        this.folder = PathHelper.CONFIG.resolve(folder);
+        this(PathHelper.CONFIG.resolve(folder), configClass, nameFunction, mapFunction);
+    }
+
+    public ConfigToDataConverter(Path folder, Class<CONFIG_TYPE> configClass, BiFunction<String, CONFIG_TYPE, String> nameFunction,
+                                 ConfigToDataFunction<CONFIG_TYPE, DATA_TYPE> mapFunction) {
+        this.folder = folder;
         this.configClass = configClass;
         this.nameFunction = nameFunction;
         this.mapFunction = mapFunction;

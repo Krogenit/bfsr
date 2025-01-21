@@ -1,14 +1,13 @@
 package net.bfsr.client.config.particle;
 
 import net.bfsr.config.ConfigToDataConverter;
+import net.bfsr.engine.util.PathHelper;
 
 import java.util.List;
 
 public class ParticleEffectsRegistry extends ConfigToDataConverter<ParticleEffectConfig, ParticleEffect> {
-    public static final ParticleEffectsRegistry INSTANCE = new ParticleEffectsRegistry();
-
     public ParticleEffectsRegistry() {
-        super("particle-effect", ParticleEffectConfig.class,
+        super(PathHelper.CLIENT_CONFIG.resolve("particle-effect"), ParticleEffectConfig.class,
                 (fileName, particleEffectConfig) -> particleEffectConfig.getFullPath(), (config, fileName, index, registryId) -> {
                     config.processDeprecated();
                     return new ParticleEffect(config, fileName, index, registryId);

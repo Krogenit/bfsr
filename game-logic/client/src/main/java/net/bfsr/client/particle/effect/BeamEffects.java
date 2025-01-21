@@ -1,8 +1,8 @@
 package net.bfsr.client.particle.effect;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
+import net.bfsr.client.Client;
 import net.bfsr.client.config.particle.ParticleEffect;
-import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.particle.Particle;
 import net.bfsr.client.particle.ParticleManager;
 import net.bfsr.client.particle.SpawnAccumulator;
@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 
 public final class BeamEffects {
     private static final XoRoShiRo128PlusRandom rand = new XoRoShiRo128PlusRandom();
-    private static final ParticleEffect smallBeam = ParticleEffectsRegistry.INSTANCE.get("weapon/beam/small");
+    private static final ParticleEffect smallBeam = Client.get().getParticleEffect("weapon/beam/small");
 
     public static void beamDamage(float x, float y, float normalX, float normalY, float size, Vector4f color,
                                   SpawnAccumulator spawnAccumulator) {

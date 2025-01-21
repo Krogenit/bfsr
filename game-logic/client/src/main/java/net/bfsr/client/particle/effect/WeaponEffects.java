@@ -1,8 +1,8 @@
 package net.bfsr.client.particle.effect;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
+import net.bfsr.client.Client;
 import net.bfsr.client.config.particle.ParticleEffect;
-import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.particle.Particle;
 import net.bfsr.client.particle.ParticleManager;
 import net.bfsr.engine.math.LUT;
@@ -15,9 +15,9 @@ import java.util.function.Consumer;
 public final class WeaponEffects {
     private static final XoRoShiRo128PlusRandom RANDOM = new XoRoShiRo128PlusRandom();
 
-    private static final ParticleEffect smallWeapon = ParticleEffectsRegistry.INSTANCE.get("weapon/small");
-    private static final ParticleEffect bulletHit = ParticleEffectsRegistry.INSTANCE.get("weapon/bullet_hit");
-    private static final ParticleEffect lightingIon = ParticleEffectsRegistry.INSTANCE.get("weapon/lighting_ion");
+    private static final ParticleEffect smallWeapon = Client.get().getParticleEffect("weapon/small");
+    private static final ParticleEffect bulletHit = Client.get().getParticleEffect("weapon/bullet_hit");
+    private static final ParticleEffect lightingIon = Client.get().getParticleEffect("weapon/lighting_ion");
 
     public static void spawnWeaponShoot(float worldX, float worldY, float localX, float localY, float sin, float cos, float size,
                                         float r, float g, float b, float a, Consumer<Particle> updateLogic) {

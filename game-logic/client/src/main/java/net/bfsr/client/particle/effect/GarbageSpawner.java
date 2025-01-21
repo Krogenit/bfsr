@@ -1,8 +1,8 @@
 package net.bfsr.client.particle.effect;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
+import net.bfsr.client.Client;
 import net.bfsr.client.config.particle.ParticleEffect;
-import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.particle.ParticleManager;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
@@ -18,7 +18,7 @@ import static net.bfsr.client.particle.ParticleManager.CACHED_VECTOR;
 
 public final class GarbageSpawner {
     private static final XoRoShiRo128PlusRandom RAND = new XoRoShiRo128PlusRandom();
-    private static final ParticleEffect ost = ParticleEffectsRegistry.INSTANCE.get("garbage/ost");
+    private static final ParticleEffect ost = Client.get().getParticleEffect("garbage/ost");
 
     public static void bulletArmorDamage(float x, float y, float velocityX, float velocityY, float normalX, float normalY) {
         smallGarbage(1 + RAND.nextInt(3), x, y, velocityX + normalX, velocityY + normalY, 1.1f * (RAND.nextFloat() + 0.5f), 3.0f,
