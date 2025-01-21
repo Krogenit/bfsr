@@ -8,7 +8,6 @@ import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.InputBox;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.renderer.font.Font;
-import net.bfsr.engine.renderer.font.StringOffsetType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 
 import java.net.InetAddress;
@@ -16,7 +15,7 @@ import java.net.UnknownHostException;
 
 @Log4j2
 public class GuiConnect extends Gui {
-    private final Label connectingText = new Label(Font.XOLONIUM_FT, 20, StringOffsetType.CENTERED).setColor(1.0f, 1.0f,
+    private final Label connectingText = new Label(Font.XOLONIUM_FT, 20).setColor(1.0f, 1.0f,
             1.0f, 0.0f);
 
     public GuiConnect(Gui parentGui) {

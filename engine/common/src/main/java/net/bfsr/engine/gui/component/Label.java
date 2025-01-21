@@ -26,7 +26,7 @@ public class Label extends GuiObject {
         this(font, string, 0, 0, 14);
     }
 
-    protected Label(Font font, int fontSize) {
+    public Label(Font font, int fontSize) {
         this(font, "", 0, 0, fontSize);
     }
 
