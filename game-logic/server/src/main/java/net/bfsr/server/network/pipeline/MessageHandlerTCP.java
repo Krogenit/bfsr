@@ -10,6 +10,8 @@ import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.SocketException;
+
 @AllArgsConstructor
 @Log4j2
 public class MessageHandlerTCP extends SimpleChannelInboundHandler<Packet> {
@@ -27,8 +29,20 @@ public class MessageHandlerTCP extends SimpleChannelInboundHandler<Packet> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("Error during handling TCP packet on server", cause);
+        if (shouldLogException(ctx, cause)) {
+            log.error("Error during handling TCP packet on server", cause);
+        }
+
         playerNetworkHandler.closeChannel("Channel exception");
+    }
+
+    private boolean shouldLogException(ChannelHandlerContext ctx, Throwable cause) {
+        if (cause instanceof SocketException socketException && socketException.getMessage().equals("Connection reset")) {
+            log.debug("{} from {}", cause.getMessage(), ctx.channel().remoteAddress());
+            return false;
+        }
+
+        return true;
     }
 
     @Override
