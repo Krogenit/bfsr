@@ -32,7 +32,7 @@ import net.bfsr.faction.Faction;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
-import net.bfsr.network.packet.common.entity.spawn.ShipSpawnData;
+import net.bfsr.network.packet.common.entity.spawn.ship.ShipSpawnData;
 import net.bfsr.physics.CollisionMatrixType;
 import net.bfsr.world.World;
 import org.jbox2d.collision.shapes.Shape;

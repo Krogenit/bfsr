@@ -31,7 +31,7 @@ public abstract class DamageableRigidBodySpawnData extends RigidBodySpawnData {
     protected List<ConnectedObject<?>> connectedObjects;
     private List<ConnectedObjectSpawnData> connectedObjectSpawnData;
 
-    DamageableRigidBodySpawnData(DamageableRigidBody damageableRigidBody) {
+    protected DamageableRigidBodySpawnData(DamageableRigidBody damageableRigidBody) {
         super(damageableRigidBody);
         this.polygon = (Polygon) damageableRigidBody.getPolygon().copy();
         DamageMask damageMask = damageableRigidBody.getMask();

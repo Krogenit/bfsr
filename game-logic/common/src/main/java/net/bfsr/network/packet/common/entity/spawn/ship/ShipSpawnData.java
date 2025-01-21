@@ -1,7 +1,6 @@
-package net.bfsr.network.packet.common.entity.spawn;
+package net.bfsr.network.packet.common.entity.spawn.ship;
 
 import io.netty.buffer.ByteBuf;
-import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.entity.ship.Ship;
@@ -10,8 +9,11 @@ import net.bfsr.entity.ship.module.engine.Engine;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.math.Direction;
+import net.bfsr.network.packet.common.entity.spawn.DamageableRigidBodySpawnData;
+import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnType;
 import net.bfsr.network.util.ByteBufUtils;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 
@@ -23,7 +25,7 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData {
     private byte faction;
     private int reactorDataId;
     private int enginesDataId;
-    private final EnumMap<Direction, BooleanArrayList> enginesMap = new EnumMap<>(Direction.class);
+    private final EnumMap<Direction, List<EngineSpawnData>> enginesMap = new EnumMap<>(Direction.class);
     private boolean hasShield;
     private int shieldDataId;
     private int shieldRebuildingTime;
@@ -48,11 +50,11 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData {
 
         EnumMap<Direction, List<Engine>> enginesByDirection = engines.getEnginesByDirection();
         enginesByDirection.forEach((direction, engines1) -> {
-            BooleanArrayList dataList = new BooleanArrayList(engines1.size());
-            enginesMap.put(direction, dataList);
+            List<EngineSpawnData> engineSpawnData = new ArrayList<>(engines1.size());
+            enginesMap.put(direction, engineSpawnData);
             for (int i = 0; i < engines1.size(); i++) {
                 Engine engine = engines1.get(i);
-                dataList.add(engine.isDead());
+                engineSpawnData.add(new EngineSpawnData(engine.getId(), engine.isDead()));
             }
         });
 
@@ -87,7 +89,9 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData {
             data.writeByte(direction.ordinal());
             data.writeByte(engineData.size());
             for (int i = 0; i < engineData.size(); i++) {
-                data.writeBoolean(engineData.getBoolean(i));
+                EngineSpawnData engineSpawnData = engineData.get(i);
+                data.writeByte(engineSpawnData.id());
+                data.writeBoolean(engineSpawnData.isDead());
             }
         });
 
@@ -121,10 +125,10 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData {
         for (int i = 0; i < count; i++) {
             Direction direction = Direction.get(data.readByte());
             byte size = data.readByte();
-            BooleanArrayList booleans = new BooleanArrayList(size);
-            enginesMap.put(direction, booleans);
+            List<EngineSpawnData> engineSpawnData = new ArrayList<>(size);
+            enginesMap.put(direction, engineSpawnData);
             for (int j = 0; j < size; j++) {
-                booleans.add(data.readBoolean());
+                engineSpawnData.add(new EngineSpawnData(data.readByte(), data.readBoolean()));
             }
         }
 

@@ -1,6 +1,5 @@
 package net.bfsr.entity.ship;
 
-import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.component.armor.ArmorPlateRegistry;
@@ -23,9 +22,6 @@ import net.bfsr.entity.ship.module.weapon.WeaponFactory;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.faction.Faction;
 import net.bfsr.logic.LogicType;
-import net.bfsr.math.Direction;
-
-import java.util.EnumMap;
 
 public class ShipOutfitter {
     private final EngineRegistry engineRegistry;
@@ -86,8 +82,8 @@ public class ShipOutfitter {
         addWeapons(ship);
     }
 
-    public void outfit(Ship ship, int reactorDataId, int enginesDataId, EnumMap<Direction, BooleanArrayList> enginesMap,
-                       int hullDataId, int armorDataId, int crewDataId, int cargoDataId, int shieldDataId) {
+    public void outfit(Ship ship, int reactorDataId, int enginesDataId, int hullDataId, int armorDataId, int crewDataId, int cargoDataId,
+                       int shieldDataId) {
         ship.setReactor(new Reactor(reactorRegistry.get(reactorDataId),
                 ship.getShipData().getReactorPolygon()));
         Engines engines = new Engines(engineRegistry.get(enginesDataId), ship);

@@ -1,6 +1,7 @@
 package net.bfsr.network.packet.common.entity.spawn;
 
 import lombok.AllArgsConstructor;
+import net.bfsr.network.packet.common.entity.spawn.ship.ShipSpawnData;
 
 import java.util.function.Supplier;
 

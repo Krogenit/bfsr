@@ -1,6 +1,5 @@
 package net.bfsr.client.world.entity;
 
-import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.client.Client;
 import net.bfsr.damage.DamageMask;
@@ -11,7 +10,8 @@ import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.Direction;
-import net.bfsr.network.packet.common.entity.spawn.ShipSpawnData;
+import net.bfsr.network.packet.common.entity.spawn.ship.EngineSpawnData;
+import net.bfsr.network.packet.common.entity.spawn.ship.ShipSpawnData;
 import net.bfsr.world.World;
 
 import java.util.EnumMap;
@@ -47,18 +47,22 @@ public class ShipSpawnLogic extends DamageableRigidBodySpawnLogic<ShipSpawnData>
     }
 
     private void outfit(Ship ship, ShipSpawnData shipSpawnData, ShipFactory shipFactory) {
-        EnumMap<Direction, BooleanArrayList> enginesMap = shipSpawnData.getEnginesMap();
+        EnumMap<Direction, List<EngineSpawnData>> enginesMap = shipSpawnData.getEnginesMap();
 
-        shipFactory.getShipOutfitter().outfit(ship, shipSpawnData.getReactorDataId(), shipSpawnData.getEnginesDataId(), enginesMap,
+        shipFactory.getShipOutfitter().outfit(ship, shipSpawnData.getReactorDataId(), shipSpawnData.getEnginesDataId(),
                 shipSpawnData.getHullDataId(), shipSpawnData.getArmorDataId(), shipSpawnData.getCrewDataId(),
                 shipSpawnData.getCargoDataId(), shipSpawnData.getShieldDataId());
 
         Engines engines = ship.getModules().getEngines();
-        enginesMap.forEach((direction, booleans) -> {
+        enginesMap.forEach((direction, engineSpawnDataList) -> {
             List<Engine> engineList = engines.getEngines(direction);
             for (int i = 0; i < engineList.size(); i++) {
-                if (booleans.getBoolean(i))
-                    engineList.get(i).setDead();
+                EngineSpawnData engineSpawnData = engineSpawnDataList.get(i);
+                Engine engine = engineList.get(i);
+                engine.setId(engineSpawnData.id());
+                if (engineSpawnData.isDead()) {
+                    engine.setDead();
+                }
             }
         });
 
