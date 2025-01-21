@@ -1,9 +1,9 @@
-package net.bfsr.client.server;
+package net.bfsr.server.dedicated;
 
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
 
-class LocalPlayerManager extends PlayerManager {
+public class NoDatabasePlayerManager extends PlayerManager {
     @Override
     public Player login(String username, String password) {
         return new Player(username);

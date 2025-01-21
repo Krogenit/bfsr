@@ -3,6 +3,7 @@ package net.bfsr.client.server;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.server.ServerGameLogic;
+import net.bfsr.server.dedicated.NoDatabasePlayerManager;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
 
@@ -14,7 +15,7 @@ public class LocalServerGameLogic extends ServerGameLogic {
 
     @Override
     protected PlayerManager createPlayerManager() {
-        return new LocalPlayerManager();
+        return new NoDatabasePlayerManager();
     }
 
     @Override
