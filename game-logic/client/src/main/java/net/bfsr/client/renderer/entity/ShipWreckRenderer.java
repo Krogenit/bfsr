@@ -88,6 +88,14 @@ public class ShipWreckRenderer extends DamageableRigidBodyRenderer {
     }
 
     @Override
+    protected void updateAABB() {
+        super.updateAABB();
+        float offset = 0.5f;
+        aabb.lowerBound.addLocal(-offset, -offset);
+        aabb.upperBound.addLocal(offset, offset);
+    }
+
+    @Override
     public void renderAlpha() {
         super.renderAlpha();
 
