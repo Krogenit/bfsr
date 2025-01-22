@@ -37,7 +37,11 @@ public class PlayerInputController {
     public void update() {
         if (ship != null) {
             rigidBodyUtils.rotateToVector(ship, mousePosition, ship.getModules().getEngines().getAngularVelocity());
-            ship.getMoveDirections().forEach(ship::move);
+            ship.getMoveDirections().forEach(direction -> {
+                if (ship.getModules().getEngines().isEngineAlive(direction)) {
+                    ship.move(direction);
+                }
+            });
             if (mouseLeftDown) {
                 ship.shoot(weaponSlot -> {
                     weaponSlot.createBullet((float) (Engine.getClientRenderDelayInMills() +
@@ -63,7 +67,7 @@ public class PlayerInputController {
 
     public void setShip(Ship ship) {
         if (this.ship != null) {
-            Ai ai = AiFactory.createAi();
+            Ai ai = aiFactory.createAi();
             ai.init(this.ship);
             this.ship.setAi(ai);
             this.ship.removeAllMoveDirections();
