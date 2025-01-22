@@ -28,7 +28,6 @@ import lombok.Setter;
 import org.jbox2d.callbacks.ContactFilter;
 import org.jbox2d.callbacks.ContactListener;
 import org.jbox2d.callbacks.DestructionListener;
-import org.jbox2d.callbacks.ParticleDestructionListener;
 import org.jbox2d.callbacks.ParticleQueryCallback;
 import org.jbox2d.callbacks.ParticleRaycastCallback;
 import org.jbox2d.callbacks.QueryCallback;
@@ -43,13 +42,11 @@ import org.jbox2d.collision.broadphase.BroadPhase;
 import org.jbox2d.collision.broadphase.BroadPhaseStrategy;
 import org.jbox2d.collision.broadphase.DefaultBroadPhaseBuffer;
 import org.jbox2d.collision.broadphase.DynamicTree;
-import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.collision.shapes.ShapeType;
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Settings;
 import org.jbox2d.common.Sweep;
 import org.jbox2d.common.Timer;
-import org.jbox2d.common.Transform;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.contacts.Contact;
 import org.jbox2d.dynamics.contacts.ContactEdge;
@@ -57,12 +54,6 @@ import org.jbox2d.dynamics.contacts.ContactRegister;
 import org.jbox2d.dynamics.joints.Joint;
 import org.jbox2d.dynamics.joints.JointDef;
 import org.jbox2d.dynamics.joints.JointEdge;
-import org.jbox2d.particle.ParticleBodyContact;
-import org.jbox2d.particle.ParticleContact;
-import org.jbox2d.particle.ParticleDef;
-import org.jbox2d.particle.ParticleGroup;
-import org.jbox2d.particle.ParticleGroupDef;
-import org.jbox2d.particle.ParticleSystem;
 import org.jbox2d.pooling.IDynamicStack;
 import org.jbox2d.pooling.IWorldPool;
 import org.jbox2d.pooling.normal.DefaultWorldPool;
@@ -77,12 +68,12 @@ import java.util.List;
  * @author Daniel Murphy
  */
 public class World {
-    public static final int WORLD_POOL_SIZE = 100;
-    public static final int WORLD_POOL_CONTAINER_SIZE = 10;
+    private static final int WORLD_POOL_SIZE = 100;
+    private static final int WORLD_POOL_CONTAINER_SIZE = 10;
 
-    public static final int NEW_FIXTURE = 0x0001;
-    public static final int LOCKED = 0x0002;
-    public static final int CLEAR_FORCES = 0x0004;
+    static final int NEW_FIXTURE = 0x0001;
+    private static final int LOCKED = 0x0002;
+    private static final int CLEAR_FORCES = 0x0004;
 
     protected int flags;
 
@@ -112,9 +103,6 @@ public class World {
     @Getter
     @Setter
     private DestructionListener destructionListener;
-    @Setter
-    @Getter
-    private ParticleDestructionListener particleDestructionListener;
 
     @Getter
     private final IWorldPool pool;
@@ -139,8 +127,6 @@ public class World {
 
     @Getter
     private final Profile profile;
-
-    private final ParticleSystem particleSystem;
 
     private final ContactRegister[][] contactStacks =
             new ContactRegister[ShapeType.values().length][ShapeType.values().length];
@@ -184,8 +170,6 @@ public class World {
 
         contactManager = new ContactManager(this, broadPhase);
         profile = new Profile();
-
-        particleSystem = new ParticleSystem(this);
 
         initializeRegisters();
     }
@@ -548,7 +532,6 @@ public class World {
         // Integrate velocities, solve velocity constraints, and integrate positions.
         if (stepComplete && step.dt > 0.0f) {
             tempTimer.reset();
-            particleSystem.solve(step); // Particle Simulation
             profile.solveParticleSystem.record(tempTimer.getMilliseconds());
             tempTimer.reset();
             solve(step);
@@ -614,17 +597,6 @@ public class World {
         wqwrapper.broadPhase = contactManager.broadPhase;
         wqwrapper.callback = callback;
         contactManager.broadPhase.query(wqwrapper, aabb);
-        particleSystem.queryAABB(particleCallback, aabb);
-    }
-
-    /**
-     * Query the world for all particles that potentially overlap the provided AABB.
-     *
-     * @param particleCallback callback for particles.
-     * @param aabb             the query box.
-     */
-    public void queryAABB(ParticleQueryCallback particleCallback, AABB aabb) {
-        particleSystem.queryAABB(particleCallback, aabb);
     }
 
     private final WorldRayCastWrapper wrcwrapper = new WorldRayCastWrapper();
@@ -666,19 +638,6 @@ public class World {
         input.p1.set(point1);
         input.p2.set(point2);
         contactManager.broadPhase.raycast(wrcwrapper, input);
-        particleSystem.raycast(particleCallback, point1, point2);
-    }
-
-    /**
-     * Ray-cast the world for all particles in the path of the ray. Your callback controls whether you
-     * get the closest point, any point, or n-points.
-     *
-     * @param particleCallback the particle callback class.
-     * @param point1           the ray starting point
-     * @param point2           the ray ending point
-     */
-    public void raycast(ParticleRaycastCallback particleCallback, Vector2 point1, Vector2 point2) {
-        particleSystem.raycast(particleCallback, point1, point2);
     }
 
     /**
@@ -1247,305 +1206,12 @@ public class World {
             }
         }
     }
-
-    /**
-     * Create a particle whose properties have been defined. No reference to the definition is
-     * retained. A simulation step must occur before it's possible to interact with a newly created
-     * particle. For example, DestroyParticleInShape() will not destroy a particle until Step() has
-     * been called.
-     *
-     * @return the index of the particle.
-     * @warning This function is locked during callbacks.
-     */
-    public int createParticle(ParticleDef def) {
-        assert (!isLocked());
-        if (isLocked()) {
-            return 0;
-        }
-        return particleSystem.createParticle(def);
-    }
-
-    /**
-     * Destroy a particle. The particle is removed after the next step.
-     */
-    public void destroyParticle(int index) {
-        destroyParticle(index, false);
-    }
-
-    /**
-     * Destroy a particle. The particle is removed after the next step.
-     *
-     * @param index                   of the particle to destroy.
-     * @param callDestructionListener to call the destruction listener just before the particle is destroyed.
-     */
-    public void destroyParticle(int index, boolean callDestructionListener) {
-        particleSystem.destroyParticle(index, callDestructionListener);
-    }
-
-    /**
-     * Destroy particles inside a shape without enabling the destruction callback for destroyed
-     * particles. This function is locked during callbacks. For more information see
-     * DestroyParticleInShape(Shape&, Transform&,bool).
-     *
-     * @param shape which encloses particles that should be destroyed.
-     * @param xf    applied to the shape.
-     * @return Number of particles destroyed.
-     * @warning This function is locked during callbacks.
-     */
-    public int destroyParticlesInShape(Shape shape, Transform xf) {
-        return destroyParticlesInShape(shape, xf, false);
-    }
-
-    /**
-     * Destroy particles inside a shape. This function is locked during callbacks. In addition, this
-     * function immediately destroys particles in the shape in contrast to DestroyParticle() which
-     * defers the destruction until the next simulation step.
-     *
-     * @param shape                   which encloses particles that should be destroyed.
-     * @param xf                      applied to the shape.
-     * @param callDestructionListener to call the world b2DestructionListener for each particle destroyed.
-     * @return Number of particles destroyed.
-     * @warning This function is locked during callbacks.
-     */
-    public int destroyParticlesInShape(Shape shape, Transform xf, boolean callDestructionListener) {
-        assert (!isLocked());
-        if (isLocked()) {
-            return 0;
-        }
-        return particleSystem.destroyParticlesInShape(shape, xf, callDestructionListener);
-    }
-
-    /**
-     * Create a particle group whose properties have been defined. No reference to the definition is
-     * retained.
-     *
-     * @warning This function is locked during callbacks.
-     */
-    public ParticleGroup createParticleGroup(ParticleGroupDef def) {
-        assert (!isLocked());
-        if (isLocked()) {
-            return null;
-        }
-        return particleSystem.createParticleGroup(def);
-    }
-
-    /**
-     * Join two particle groups.
-     *
-     * @param groupA the first group. Expands to encompass the second group.
-     * @param groupB the second group. It is destroyed.
-     * @warning This function is locked during callbacks.
-     */
-    public void joinParticleGroups(ParticleGroup groupA, ParticleGroup groupB) {
-        assert (!isLocked());
-        if (isLocked()) {
-            return;
-        }
-        particleSystem.joinParticleGroups(groupA, groupB);
-    }
-
-    /**
-     * Destroy particles in a group. This function is locked during callbacks.
-     *
-     * @param group                   the particle group to destroy.
-     * @param callDestructionListener whether to call the world b2DestructionListener for each particle is destroyed.
-     * @warning This function is locked during callbacks.
-     */
-    public void destroyParticlesInGroup(ParticleGroup group, boolean callDestructionListener) {
-        assert (!isLocked());
-        if (isLocked()) {
-            return;
-        }
-        particleSystem.destroyParticlesInGroup(group, callDestructionListener);
-    }
-
-    /**
-     * Destroy particles in a group without enabling the destruction callback for destroyed particles.
-     * This function is locked during callbacks.
-     *
-     * @param group the particle group to destroy.
-     * @warning This function is locked during callbacks.
-     */
-    public void destroyParticlesInGroup(ParticleGroup group) {
-        destroyParticlesInGroup(group, false);
-    }
-
-    /**
-     * Get the world particle group list. With the returned group, use ParticleGroup::GetNext to get
-     * the next group in the world list. A NULL group indicates the end of the list.
-     *
-     * @return the head of the world particle group list.
-     */
-    public ParticleGroup[] getParticleGroupList() {
-        return particleSystem.getParticleGroupList();
-    }
-
-    /**
-     * Get the number of particle groups.
-     */
-    public int getParticleGroupCount() {
-        return particleSystem.getParticleGroupCount();
-    }
-
-    /**
-     * Get the number of particles.
-     */
-    public int getParticleCount() {
-        return particleSystem.getParticleCount();
-    }
-
-    /**
-     * Get the maximum number of particles.
-     */
-    public int getParticleMaxCount() {
-        return particleSystem.getParticleMaxCount();
-    }
-
-    /**
-     * Set the maximum number of particles.
-     */
-    public void setParticleMaxCount(int count) {
-        particleSystem.setParticleMaxCount(count);
-    }
-
-    /**
-     * Change the particle density.
-     */
-    public void setParticleDensity(float density) {
-        particleSystem.setParticleDensity(density);
-    }
-
-    /**
-     * Get the particle density.
-     */
-    public float getParticleDensity() {
-        return particleSystem.getParticleDensity();
-    }
-
-    /**
-     * Change the particle gravity scale. Adjusts the effect of the global gravity vector on
-     * particles. Default value is 1.0f.
-     */
-    public void setParticleGravityScale(float gravityScale) {
-        particleSystem.setParticleGravityScale(gravityScale);
-    }
-
-    /**
-     * Get the particle gravity scale.
-     */
-    public float getParticleGravityScale() {
-        return particleSystem.getParticleGravityScale();
-    }
-
-    /**
-     * Damping is used to reduce the velocity of particles. The damping parameter can be larger than
-     * 1.0f but the damping effect becomes sensitive to the time step when the damping parameter is
-     * large.
-     */
-    public void setParticleDamping(float damping) {
-        particleSystem.setParticleDamping(damping);
-    }
-
-    /**
-     * Get damping for particles
-     */
-    public float getParticleDamping() {
-        return particleSystem.getParticleDamping();
-    }
-
-    /**
-     * Change the particle radius. You should set this only once, on world start. If you change the
-     * radius during execution, existing particles may explode, shrink, or behave unexpectedly.
-     */
-    public void setParticleRadius(float radius) {
-        particleSystem.setParticleRadius(radius);
-    }
-
-    /**
-     * Get the particle radius.
-     */
-    public float getParticleRadius() {
-        return particleSystem.getParticleRadius();
-    }
-
-    /**
-     * Get the particle data. @return the pointer to the head of the particle data.
-     */
-    public int[] getParticleFlagsBuffer() {
-        return particleSystem.getParticleFlagsBuffer();
-    }
-
-    public Vector2[] getParticlePositionBuffer() {
-        return particleSystem.getParticlePositionBuffer();
-    }
-
-    public Vector2[] getParticleVelocityBuffer() {
-        return particleSystem.getParticleVelocityBuffer();
-    }
-
-    public ParticleGroup[] getParticleGroupBuffer() {
-        return particleSystem.getParticleGroupBuffer();
-    }
-
-    public Object[] getParticleUserDataBuffer() {
-        return particleSystem.getParticleUserDataBuffer();
-    }
-
-    /**
-     * Set a buffer for particle data.
-     *
-     * @param buffer   is a pointer to a block of memory.
-     * @param capacity is the number of values in the block.
-     */
-    public void setParticleFlagsBuffer(int[] buffer, int capacity) {
-        particleSystem.setParticleFlagsBuffer(buffer, capacity);
-    }
-
-    public void setParticlePositionBuffer(Vector2[] buffer, int capacity) {
-        particleSystem.setParticlePositionBuffer(buffer, capacity);
-    }
-
-    public void setParticleVelocityBuffer(Vector2[] buffer, int capacity) {
-        particleSystem.setParticleVelocityBuffer(buffer, capacity);
-    }
-
-    public void setParticleUserDataBuffer(Object[] buffer, int capacity) {
-        particleSystem.setParticleUserDataBuffer(buffer, capacity);
-    }
-
-    /**
-     * Get contacts between particles
-     */
-    public ParticleContact[] getParticleContacts() {
-        return particleSystem.m_contactBuffer;
-    }
-
-    public int getParticleContactCount() {
-        return particleSystem.m_contactCount;
-    }
-
-    /**
-     * Get contacts between particles and bodies
-     */
-    public ParticleBodyContact[] getParticleBodyContacts() {
-        return particleSystem.m_bodyContactBuffer;
-    }
-
-    public int getParticleBodyContactCount() {
-        return particleSystem.m_bodyContactCount;
-    }
-
-    /**
-     * Compute the kinetic energy that can be lost by damping force
-     */
-    public float computeParticleCollisionEnergy() {
-        return particleSystem.computeParticleCollisionEnergy();
-    }
 }
 
 class WorldQueryWrapper implements TreeCallback {
-    public boolean treeCallback(int nodeId) {
-        FixtureProxy proxy = (FixtureProxy) broadPhase.getUserData(nodeId);
+    @Override
+    public boolean treeCallback(int proxyId) {
+        FixtureProxy proxy = (FixtureProxy) broadPhase.getUserData(proxyId);
         return callback.reportFixture(proxy.fixture);
     }
 
@@ -1560,6 +1226,7 @@ class WorldRayCastWrapper implements TreeRayCastCallback {
     private final Vector2 temp = new Vector2();
     private final Vector2 point = new Vector2();
 
+    @Override
     public float raycastCallback(RayCastInput input, int nodeId) {
         Object userData = broadPhase.getUserData(nodeId);
         FixtureProxy proxy = (FixtureProxy) userData;
