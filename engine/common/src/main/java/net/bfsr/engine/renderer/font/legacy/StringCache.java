@@ -245,8 +245,6 @@ public class StringCache {
      * @param advance     the horizontal advance (i.e. X position) returned by previous call to layoutString()
      * @param style       combination of Font.PLAIN, Font.BOLD, and Font.ITALIC to select a fonts with some specific style
      * @return the advance (horizontal distance) of this string plus the advance passed in as an argument
-     * todo Correctly handling RTL font selection requires scanning the sctring from RTL as well.
-     * todo Use bitmap fonts as a fallback if no OpenType font could be found
      */
     private int layoutString(List<Glyph> glyphList, char[] text, int start, int limit, int layoutFlags, int advance, int style,
                              int fontSize) {
@@ -288,7 +286,6 @@ public class StringCache {
      * @param advance     the horizontal advance (i.e. X position) returned by previous call to layoutString()
      * @param font        the Font used to layout a GlyphVector for the string
      * @return the advance (horizontal distance) of this string plus the advance passed in as an argument
-     * todo need to ajust position of all glyphs if digits are present, by assuming every digit should be 0 in length
      */
     private int layoutFont(List<Glyph> glyphList, char[] text, int start, int limit, int layoutFlags, int advance, Font font) {
         /*

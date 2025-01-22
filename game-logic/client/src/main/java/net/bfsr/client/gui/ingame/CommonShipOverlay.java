@@ -30,9 +30,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * TODO: use renderer instead of overriding render method
- */
 public abstract class CommonShipOverlay extends TexturedRectangle {
     protected final Client client = Client.get();
     private final EntityRenderer entityRenderer = client.getEntityRenderer();
