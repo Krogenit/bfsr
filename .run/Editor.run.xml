@@ -2,7 +2,8 @@
     <configuration default="false" name="Editor" type="Application" factoryName="Application">
         <option name="MAIN_CLASS_NAME" value="net.bfsr.client.launch.EditorMain"/>
         <module name="BFSR.run.editor.main"/>
-        <option name="VM_PARAMETERS" value="-Dassets.path=../../"/>
+        <option name="VM_PARAMETERS"
+                value="--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED -Dio.netty.tryReflectionSetAccessible=true -Djoml.fastmath=true -Djoml.sinLookup=true -Dassets.path=../../"/>
         <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test/editor"/>
         <method v="2">
             <option name="Make" enabled="true"/>
