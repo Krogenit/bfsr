@@ -1,8 +1,11 @@
 package net.bfsr.server.service;
 
 import net.bfsr.database.Main;
+import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.faction.Faction;
 import net.bfsr.server.database.RemotePlayerRepository;
+import net.bfsr.server.dedicated.DedicatedServerGameLogic;
 import net.bfsr.server.dto.PlayerModel;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.rsocket.RSocketClient;
@@ -46,6 +49,8 @@ public class RemotePlayerRepositoryTest {
     static void setup(@Autowired RSocketRequester.Builder builder, @LocalRSocketServerPort Integer port,
                       @Autowired RSocketStrategies strategies) {
         rSocketClient.connect("localhost", port);
+        System.setProperty("assets.path", "../../");
+        new DedicatedServerGameLogic(new Profiler(), new EventBus());
     }
 
     @BeforeEach
