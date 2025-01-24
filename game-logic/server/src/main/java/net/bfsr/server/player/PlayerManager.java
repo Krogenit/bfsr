@@ -30,7 +30,11 @@ public class PlayerManager {
     private final Object2ObjectMap<Ship, Player> playerByShipMap = new Object2ObjectOpenHashMap<>();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
     private final ShipFactory shipFactory;
-    private final PlayerRepository playerRepository;
+    private PlayerRepository playerRepository;
+
+    public void init(PlayerRepository playerRepository) {
+        this.playerRepository = playerRepository;
+    }
 
     public Player get(String username) {
         return playerRepository.load(username);

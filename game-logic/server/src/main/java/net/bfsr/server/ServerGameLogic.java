@@ -57,7 +57,7 @@ public abstract class ServerGameLogic extends GameLogic {
     private final ShipFactory shipFactory = new ShipFactory(configConverterManager.getConverter(ShipRegistry.class),
             new ShipOutfitter(configConverterManager));
     @Getter
-    private final PlayerManager playerManager = new PlayerManager(shipFactory, createPlayerRepository(settings));
+    private final PlayerManager playerManager = new PlayerManager(shipFactory);
     @Getter
     private final NetworkSystem networkSystem = new NetworkSystem(playerManager);
     @Getter
@@ -75,6 +75,7 @@ public abstract class ServerGameLogic extends GameLogic {
     }
 
     public void init() {
+        playerManager.init(createPlayerRepository(settings));
         world = new World(profiler, new XoRoShiRo128PlusPlusRandom().nextLong(), eventBus, new EntityManager(),
                 new EntityIdManager(), this, new CollisionHandler(eventBus, damageSystem, entityTrackingManager, wreckSpawner));
         world.init();
