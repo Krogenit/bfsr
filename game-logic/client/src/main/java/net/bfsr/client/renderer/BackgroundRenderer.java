@@ -16,9 +16,9 @@ public class BackgroundRenderer {
     private AbstractTexture texture;
     private Runnable renderRunnable = RunnableUtils.EMPTY_RUNNABLE;
 
-    private int id = -1;
+    private int renderId = -1;
 
-    public BackgroundRenderer(AbstractRenderer renderer) {
+    BackgroundRenderer(AbstractRenderer renderer) {
         this.renderer = renderer;
         this.spriteRenderer = renderer.getSpriteRenderer();
         this.texture = renderer.getDummyTexture();
@@ -26,7 +26,7 @@ public class BackgroundRenderer {
 
     @EventHandler
     public EventListener<WorldInitEvent> event() {
-        return (event) -> createBackgroundTexture(event.getWorld().getSeed());
+        return event -> createBackgroundTexture(event.getWorld().getSeed());
     }
 
     void createBackgroundTexture(long seed) {
@@ -34,12 +34,8 @@ public class BackgroundRenderer {
         renderRunnable = this::renderBackground;
 
         float zoomFactor = 0.005f;
-        id = spriteRenderer.add(0, 0, texture.getWidth() * 0.5f, texture.getHeight() * 0.5f, 1.0f, 1.0f, 1.0f, 1.0f,
-                texture.getTextureHandle(),
-                zoomFactor, BufferType.BACKGROUND);
-    }
-
-    public void update() {
+        renderId = spriteRenderer.add(0, 0, texture.getWidth() * 0.5f, texture.getHeight() * 0.5f, 1.0f, 1.0f, 1.0f, 1.0f,
+                texture.getTextureHandle(), zoomFactor, BufferType.BACKGROUND);
     }
 
     public void render() {
@@ -47,7 +43,7 @@ public class BackgroundRenderer {
     }
 
     private void renderBackground() {
-        spriteRenderer.addDrawCommand(id, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.BACKGROUND);
+        spriteRenderer.addDrawCommand(renderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.BACKGROUND);
     }
 
     public void clear() {
@@ -55,9 +51,9 @@ public class BackgroundRenderer {
         texture = renderer.getDummyTexture();
         renderRunnable = RunnableUtils.EMPTY_RUNNABLE;
 
-        if (id != -1) {
-            spriteRenderer.removeObject(id, BufferType.BACKGROUND);
-            id = -1;
+        if (renderId != -1) {
+            spriteRenderer.removeObject(renderId, BufferType.BACKGROUND);
+            renderId = -1;
         }
     }
 }
