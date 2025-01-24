@@ -1,11 +1,11 @@
 package net.bfsr.engine.renderer.font.legacy;
 
-import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.font.glyph.GlyphsData;
 
 import java.util.ArrayList;
 
-public class LegacyGlyphsBuilder extends GlyphsBuilder {
+public class LegacyGlyphsBuilder extends Font {
     private final StringCache stringCache;
 
     public LegacyGlyphsBuilder(String fontFile, boolean antialias) {
@@ -84,5 +84,10 @@ public class LegacyGlyphsBuilder extends GlyphsBuilder {
     @Override
     public float getTopOffset(String string, int fontSize) {
         return getAscent(string, fontSize) - getDescent(string, fontSize) + getLeading(string, fontSize);
+    }
+
+    @Override
+    public void clear() {
+        stringCache.clear();
     }
 }

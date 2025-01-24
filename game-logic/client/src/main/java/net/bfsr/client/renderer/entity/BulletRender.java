@@ -8,15 +8,16 @@ import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.bullet.Bullet;
 
 public class BulletRender extends RigidBodyRender {
-    private static final AbstractTexture LIGHT_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.particleLight);
+    private static final AbstractTexture LIGHT_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.particleLight);
 
     private final Bullet bullet;
 
     private int lightId = -1;
 
     public BulletRender(Bullet bullet) {
-        super(Engine.assetsManager.getTexture(bullet.getGunData().getBulletTexture()), bullet, bullet.getGunData().getColor().x,
-                bullet.getGunData().getColor().y, bullet.getGunData().getColor().z, bullet.getGunData().getColor().w);
+        super(Engine.getAssetsManager().getTexture(bullet.getGunData().getBulletTexture()), bullet,
+                bullet.getGunData().getColor().x, bullet.getGunData().getColor().y, bullet.getGunData().getColor().z,
+                bullet.getGunData().getColor().w);
         this.bullet = bullet;
     }
 
@@ -45,7 +46,10 @@ public class BulletRender extends RigidBodyRender {
 
     @Override
     protected void updateLastRenderValues() {
-        spriteRenderer.setLastPosition(id, BufferType.ENTITIES_ADDITIVE, object.getX(), object.getY());
+        lastPosition.set(rigidBody.getX(), rigidBody.getY());
+        lastSin = rigidBody.getSin();
+        lastCos = rigidBody.getCos();
+        spriteRenderer.setLastPosition(id, BufferType.ENTITIES_ADDITIVE, rigidBody.getX(), rigidBody.getY());
         spriteRenderer.setLastRotation(id, BufferType.ENTITIES_ADDITIVE, rigidBody.getSin(), rigidBody.getCos());
         spriteRenderer.setLastColorAlpha(id, BufferType.ENTITIES_ADDITIVE, color.w);
         spriteRenderer.setLastPosition(lightId, BufferType.ENTITIES_ADDITIVE, object.getX(), object.getY());

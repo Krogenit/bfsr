@@ -1,6 +1,6 @@
 package net.bfsr.engine.renderer.culling;
 
-import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.primitive.AbstractVAO;
@@ -29,12 +29,14 @@ public class GPUFrustumCullingSystem implements AbstractGPUFrustumCullingSystem 
 
     private final FrustumCullingShader frustumCullingShader = new FrustumCullingShader();
     private AbstractShaderProgram shader;
+    private AbstractRenderer renderer;
     private AbstractSpriteRenderer spriteRenderer;
 
     @Override
-    public void init(AbstractShaderProgram shaderProgram) {
+    public void init(AbstractShaderProgram shaderProgram, AbstractRenderer renderer) {
+        this.renderer = renderer;
         shader = shaderProgram;
-        spriteRenderer = Engine.renderer.spriteRenderer;
+        spriteRenderer = renderer.getSpriteRenderer();
 
         frustumCullingShader.load();
         frustumCullingShader.init();
@@ -44,7 +46,7 @@ public class GPUFrustumCullingSystem implements AbstractGPUFrustumCullingSystem 
     public void renderFrustumCulled(int count, AbstractBuffersHolder buffersHolder) {
         AbstractVAO vao = buffersHolder.getVao();
 
-        if (!Engine.renderer.isPersistentMappedBuffers()) {
+        if (!renderer.isPersistentMappedBuffers()) {
             buffersHolder.updateCommandBuffer(count);
         }
 
@@ -71,7 +73,7 @@ public class GPUFrustumCullingSystem implements AbstractGPUFrustumCullingSystem 
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
         glDispatchCompute(renderObjects, 1, 1);
-        Engine.renderer.increaseDrawCalls();
+        renderer.increaseDrawCalls();
     }
 
     @Override

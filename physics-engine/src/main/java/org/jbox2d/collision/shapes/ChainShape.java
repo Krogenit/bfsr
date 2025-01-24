@@ -27,7 +27,6 @@ import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.RayCastInput;
 import org.jbox2d.collision.RayCastOutput;
 import org.jbox2d.common.MathUtils;
-import org.jbox2d.common.Rotation;
 import org.jbox2d.common.Settings;
 import org.jbox2d.common.Transform;
 import org.jbox2d.common.Vector2;
@@ -135,7 +134,7 @@ public class ChainShape extends Shape {
     }
 
     @Override
-    public void computeAABB(AABB aabb, Transform transform, int childIndex) {
+    public void computeAABB(AABB aabb, float x, float y, float sin, float cos, int childIndex) {
         assert (childIndex < m_count);
         Vector2 lower = aabb.lowerBound;
         Vector2 upper = aabb.upperBound;
@@ -147,12 +146,10 @@ public class ChainShape extends Shape {
 
         Vector2 vi1 = m_vertices[childIndex];
         Vector2 vi2 = m_vertices[i2];
-        Rotation xfq = transform.rotation;
-        Vector2 xfp = transform.position;
-        float v1x = (xfq.cos * vi1.x - xfq.sin * vi1.y) + xfp.x;
-        float v1y = (xfq.sin * vi1.x + xfq.cos * vi1.y) + xfp.y;
-        float v2x = (xfq.cos * vi2.x - xfq.sin * vi2.y) + xfp.x;
-        float v2y = (xfq.sin * vi2.x + xfq.cos * vi2.y) + xfp.y;
+        float v1x = (cos * vi1.x - sin * vi1.y) + x;
+        float v1y = (sin * vi1.x + cos * vi1.y) + y;
+        float v2x = (cos * vi2.x - sin * vi2.y) + x;
+        float v2y = (sin * vi2.x + cos * vi2.y) + y;
 
         lower.x = v1x < v2x ? v1x : v2x;
         lower.y = v1y < v2y ? v1y : v2y;

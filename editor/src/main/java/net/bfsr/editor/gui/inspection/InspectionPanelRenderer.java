@@ -1,21 +1,16 @@
 package net.bfsr.editor.gui.inspection;
 
-import net.bfsr.client.Client;
 import net.bfsr.editor.property.holder.PropertiesHolder;
-import net.bfsr.engine.Engine;
-import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.gui.component.BlankGuiObject;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.gui.renderer.RectangleRenderer;
-import org.joml.Vector2f;
 
 import java.util.List;
 
 import static net.bfsr.editor.gui.EditorTheme.SELECTION_BLUE_COLOR;
 
 public class InspectionPanelRenderer<PROPERTIES_TYPE extends PropertiesHolder> extends RectangleRenderer {
-    private final GuiManager guiManager = Client.get().getGuiManager();
     private final InspectionPanel<PROPERTIES_TYPE> inspectionPanel;
     private final int elementHeight;
     private final int exactObjectSelectionOffsetY;
@@ -36,23 +31,23 @@ public class InspectionPanelRenderer<PROPERTIES_TYPE extends PropertiesHolder> e
     }
 
     @Override
-    public void update() {
-        super.update();
-        updateMovableObject();
+    public void update(int mouseX, int mouseY) {
+        super.update(mouseX, mouseY);
+        updateMovableObject(mouseX, mouseY);
     }
 
-    private void updateMovableObject() {
+    private void updateMovableObject(int mouseX, int mouseY) {
         InspectionEntry<?> movableObject = inspectionPanel.getMovableObject();
         if (movableObject == null) return;
 
-        if (inspectionPanel.isIntersectsWithMouse()) {
-            updateInsertingPreview((int) Engine.mouse.getGuiPosition().y);
+        if (inspectionPanel.isIntersectsWithMouse(mouseX, mouseY)) {
+            updateInsertingPreview(mouseY);
         }
     }
 
     private void updateInsertingPreview(int mouseY) {
         InspectionEntry<?> movableObject = inspectionPanel.getMovableObject();
-        GuiObject guiObject = guiManager.getHoveredGuiObject();
+        GuiObject guiObject = inspectionPanel.getGuiManager().getHoveredGuiObject();
         if (guiObject instanceof InspectionEntry<?> inspectionEntry) {
             int sceneX = inspectionEntry.getSceneX();
             int sceneY = inspectionEntry.getSceneY();
@@ -90,21 +85,18 @@ public class InspectionPanelRenderer<PROPERTIES_TYPE extends PropertiesHolder> e
     }
 
     @Override
-    public void render() {
-        super.render();
+    public void render(int mouseX, int mouseY) {
+        super.render(mouseX, mouseY);
 
         InspectionEntry<?> movableObject = inspectionPanel.getMovableObject();
         if (movableObject == null) return;
 
         guiRenderer.addDrawCommand(selectionId);
 
-        if (inspectionPanel.isIntersectsWithMouse()) {
-            renderInsertingPreview();
+        if (inspectionPanel.isIntersectsWithMouse(mouseX, mouseY)) {
+            renderInsertingPreview(mouseX, mouseY);
         }
 
-        Vector2f position = Engine.mouse.getGuiPosition();
-        int mouseX = (int) position.x;
-        int mouseY = (int) position.y;
         renderObject(movableObject, mouseX, mouseY - movableObject.getHeight());
     }
 
@@ -115,20 +107,20 @@ public class InspectionPanelRenderer<PROPERTIES_TYPE extends PropertiesHolder> e
         guiObject.setParent(BlankGuiObject.INSTANCE);
         guiObject.setPosition(x, y);
         guiObject.updateLastValues();
-        guiObject.getRenderer().render();
+        guiObject.getRenderer().render(x, y);
         guiRenderer.render();
         guiObject.setParent(parent);
         guiObject.setPosition(lastX, lastY);
         guiObject.updateLastValues();
     }
 
-    private void renderInsertingPreview() {
+    private void renderInsertingPreview(int mouseX, int mouseY) {
         InspectionEntry<?> movableObject = inspectionPanel.getMovableObject();
-        GuiObject guiObject = guiManager.getHoveredGuiObject();
+        GuiObject guiObject = inspectionPanel.getGuiManager().getHoveredGuiObject();
         if (guiObject instanceof InspectionEntry<?> inspectionEntry) {
             if (inspectionEntry != movableObject &&
                     !inspectionPanel.isInHierarchy(movableObject, (InspectionEntry<PROPERTIES_TYPE>) inspectionEntry)) {
-                inspectionEntry.getRenderer().render();
+                inspectionEntry.getRenderer().render(mouseX, mouseY);
             }
         } else {
             ScrollPane scrollPane = inspectionPanel.getScrollPane();

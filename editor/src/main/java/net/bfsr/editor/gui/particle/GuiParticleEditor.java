@@ -4,7 +4,6 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.Client;
 import net.bfsr.client.config.particle.ParticleEffect;
 import net.bfsr.client.config.particle.ParticleEffectConfig;
-import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.renderer.Render;
 import net.bfsr.editor.ConfigurableGameObject;
 import net.bfsr.editor.gui.GuiEditor;
@@ -15,10 +14,11 @@ import net.bfsr.editor.gui.control.Playble;
 import net.bfsr.editor.gui.inspection.InspectionEntry;
 import net.bfsr.editor.object.particle.ParticleEffectConverter;
 import net.bfsr.editor.object.particle.ParticleEffectProperties;
+import net.bfsr.engine.entity.GameObject;
+import net.bfsr.engine.entity.SpawnAccumulator;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.renderer.buffer.BufferType;
-import net.bfsr.entity.GameObject;
 import org.jetbrains.annotations.Nullable;
 import org.mapstruct.factory.Mappers;
 
@@ -65,7 +65,7 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
         gameObject.init();
 
         testRender.init();
-        Client.get().getEntityRenderer().addRender(testRender);
+        client.getEntityRenderer().addRender(testRender);
 
         addInspectionPanel();
     }
@@ -78,7 +78,8 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
         if (particleEffectProperties != null) {
             propertiesPanel.add(particleEffectProperties, "Particle Effect");
             spawnAccumulator.resetTime();
-            particleEffect = new ParticleEffect(converter.from(particleEffectProperties), "particle_effect", 0, 0);
+            particleEffect = new ParticleEffect(converter.from(particleEffectProperties), "particle_effect", 0, 0,
+                    client.getParticleManager());
             findChild(particleEffect, selectedEntry);
         } else {
             particleEffect = null;
@@ -92,7 +93,8 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
             InspectionEntry<ParticleEffectProperties> childEntry = (InspectionEntry<ParticleEffectProperties>) guiObjects.get(i);
             ParticleEffectProperties componentByType = childEntry.getComponentByType(ParticleEffectProperties.class);
             if (componentByType != null) {
-                ParticleEffect childParticleEffect = new ParticleEffect(converter.from(componentByType), "particle_effect", 0, 0);
+                ParticleEffect childParticleEffect = new ParticleEffect(converter.from(componentByType), "particle_effect", 0, 0,
+                        client.getParticleManager());
                 childParticleEffect.init();
                 particleEffect.addChild(childParticleEffect);
                 findChild(childParticleEffect, childEntry);
@@ -101,8 +103,8 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void update(int mouseX, int mouseY) {
+        super.update(mouseX, mouseY);
 
         if (selectedEntry != null && playing && !client.isPaused()) {
             gameObject.init();

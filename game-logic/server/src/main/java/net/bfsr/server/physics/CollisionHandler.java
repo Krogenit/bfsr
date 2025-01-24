@@ -3,6 +3,7 @@ package net.bfsr.server.physics;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.entity.RigidBody;
@@ -22,7 +23,6 @@ import net.bfsr.network.packet.server.component.PacketShieldRebuildingTime;
 import net.bfsr.network.packet.server.component.PacketShieldRemove;
 import net.bfsr.network.packet.server.entity.PacketSyncDamage;
 import net.bfsr.physics.CommonCollisionHandler;
-import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.world.World;
@@ -33,13 +33,18 @@ import org.joml.Vector2f;
 import org.locationtech.jts.geom.Polygon;
 
 public class CollisionHandler extends CommonCollisionHandler {
-    private final DamageSystem damageSystem = ServerGameLogic.getInstance().getDamageSystem();
-    private final EntityTrackingManager trackingManager = ServerGameLogic.getInstance().getEntityTrackingManager();
+    private final DamageSystem damageSystem;
+    private final EntityTrackingManager trackingManager;
+    private final WreckSpawner wreckSpawner;
     private final Vector2f angleToVelocity = new Vector2f();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
-    public CollisionHandler(EventBus eventBus) {
+    public CollisionHandler(EventBus eventBus, DamageSystem damageSystem, EntityTrackingManager trackingManager,
+                            WreckSpawner wreckSpawner) {
         super(eventBus);
+        this.damageSystem = damageSystem;
+        this.trackingManager = trackingManager;
+        this.wreckSpawner = wreckSpawner;
     }
 
     @Override
@@ -65,7 +70,7 @@ public class CollisionHandler extends CommonCollisionHandler {
                 RotationHelper.angleToVelocity(net.bfsr.engine.math.MathUtils.TWO_PI * random.nextFloat(), 1.5f, angleToVelocity);
                 float velocityX = ship.getLinearVelocity().x * 0.005f;
                 float velocityY = ship.getLinearVelocity().y * 0.005f;
-                WreckSpawner.spawnDamageDebris(world, random.nextInt(2), contactX, contactY,
+                wreckSpawner.spawnDamageDebris(world, random.nextInt(2), contactX, contactY,
                         velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f);
             }
             bullet.setDead();
@@ -99,13 +104,13 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         if (impactPower > 0.25f) {
             if (ship1.getCollisionTimer() <= 0) {
-                ship1.setCollisionTimer(ship1.getWorld().convertToTicks(0.5f));
+                ship1.setCollisionTimer(Engine.convertToTicks(0.5f));
                 ship1.setLastAttacker(ship2);
                 damageShipByCollision(ship1, ship1Fixture, impactPower, contactX, contactY);
             }
 
             if (ship2.getCollisionTimer() <= 0) {
-                ship2.setCollisionTimer(ship2.getWorld().convertToTicks(0.5f));
+                ship2.setCollisionTimer(Engine.convertToTicks(0.5f));
                 ship2.setLastAttacker(ship1);
                 damageShipByCollision(ship2, ship2Fixture, impactPower, contactX, contactY);
             }
@@ -115,16 +120,16 @@ public class CollisionHandler extends CommonCollisionHandler {
     @Override
     public void weaponSlotBeamShip(WeaponSlotBeam weaponSlot, Ship ship, Fixture fixture, float contactX, float contactY,
                                    float normalX, float normalY) {
-        damageShip(ship, weaponSlot.getDamage(), weaponSlot.getBeamPower() * ship.getWorld().getUpdateDeltaTime(), contactX,
-                contactY, fixture, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE);
+        damageShip(ship, weaponSlot.getDamage(), weaponSlot.getBeamPower() * Engine.getUpdateDeltaTime(), contactX, contactY,
+                fixture,
+                RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE);
     }
 
     @Override
     public void weaponSlotBeamWreck(WeaponSlotBeam weaponSlotBeam, Wreck wreck, Fixture wreckFixture, float contactX,
                                     float contactY, float normalX, float normalY) {
         super.weaponSlotBeamWreck(weaponSlotBeam, wreck, wreckFixture, contactX, contactY, normalX, normalY);
-        damageWreck(wreck, weaponSlotBeam.getDamage().getHull() * weaponSlotBeam.getBeamPower() *
-                wreck.getWorld().getUpdateDeltaTime());
+        damageWreck(wreck, weaponSlotBeam.getDamage().getHull() * weaponSlotBeam.getBeamPower() * Engine.getUpdateDeltaTime());
     }
 
     private void damageShip(Ship ship, BulletDamage damage, float multiplayer, float contactX, float contactY,

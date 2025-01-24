@@ -7,35 +7,42 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.Getter;
-import net.bfsr.config.entity.ship.ShipRegistry;
+import lombok.RequiredArgsConstructor;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
-import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.GuiType;
 import net.bfsr.network.packet.server.gui.PacketOpenGui;
-import net.bfsr.server.ServerGameLogic;
-import net.bfsr.server.config.ServerSettings;
+import net.bfsr.server.database.PlayerRepository;
 import net.bfsr.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class PlayerManager {
+@RequiredArgsConstructor
+public class PlayerManager {
     @Getter
     protected final List<Player> players = new ArrayList<>();
     private final TMap<String, Player> playerMap = new THashMap<>();
 
     private final Object2ObjectMap<Ship, Player> playerByShipMap = new Object2ObjectOpenHashMap<>();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
+    private final ShipFactory shipFactory;
+    private final PlayerRepository playerRepository;
 
-    public void init(ServerSettings settings) {}
+    public Player get(String username) {
+        return playerRepository.load(username);
+    }
 
-    public abstract Player login(String username, String password);
-    public abstract void save(Player player);
-    public abstract void saveAllSync();
+    public void save(Player player) {
+        playerRepository.save(player);
+    }
+
+    public void saveAllSync() {
+        playerRepository.saveAllSync(players);
+    }
 
     public void update() {
         for (int i = 0; i < players.size(); i++) {
@@ -64,9 +71,6 @@ public abstract class PlayerManager {
     }
 
     public void respawnPlayer(World world, Player player, float x, float y) {
-        ShipFactory shipFactory = new ShipFactory(ServerGameLogic.getInstance().getConfigConverterManager().getConverter(
-                ShipRegistry.class), new ShipOutfitter(ServerGameLogic.getInstance().getConfigConverterManager()));
-
         Faction faction = player.getFaction();
 
         Ship playerShip;
@@ -113,10 +117,6 @@ public abstract class PlayerManager {
         }
     }
 
-    public static PlayerManager get() {
-        return ServerGameLogic.getInstance().getPlayerManager();
-    }
-
     public void setPlayerControlledShip(Player player, Ship ship) {
         playerByShipMap.put(ship, player);
     }
@@ -132,5 +132,6 @@ public abstract class PlayerManager {
     public void clear() {
         players.clear();
         playerMap.clear();
+        playerRepository.clear();
     }
 }

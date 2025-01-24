@@ -1,9 +1,8 @@
-package net.bfsr.engine.renderer.font;
+package net.bfsr.engine.renderer.font.glyph;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
 
 import java.util.Objects;
 
@@ -11,7 +10,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GlyphKey {
-    private GlyphsBuilder glyphsBuilder;
+    private Font font;
     private int fontSize;
     private char codepoint;
 
@@ -21,11 +20,11 @@ public class GlyphKey {
         if (o == null || getClass() != o.getClass()) return false;
         GlyphKey glyphKey = (GlyphKey) o;
         return fontSize == glyphKey.fontSize && codepoint == glyphKey.codepoint &&
-                Objects.equals(glyphsBuilder, glyphKey.glyphsBuilder);
+                Objects.equals(font, glyphKey.font);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(glyphsBuilder, fontSize, codepoint);
+        return Objects.hash(font, fontSize, codepoint);
     }
 }

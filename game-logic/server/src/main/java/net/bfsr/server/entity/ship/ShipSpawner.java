@@ -1,31 +1,26 @@
 package net.bfsr.server.entity.ship;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
-import net.bfsr.config.entity.ship.ShipRegistry;
+import lombok.RequiredArgsConstructor;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.util.RandomHelper;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
-import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.RotationHelper;
-import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.ai.AiFactory;
 import net.bfsr.world.World;
 import org.joml.Vector2f;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 public class ShipSpawner {
     private final XoRoShiRo128PlusRandom rand = new XoRoShiRo128PlusRandom();
     private float timer;
     private final Vector2f angleToVelocity = new Vector2f();
-    private ShipFactory shipFactory;
-
-    public void init() {
-        shipFactory = new ShipFactory(ServerGameLogic.getInstance().getConfigConverterManager().getConverter(
-                ShipRegistry.class), new ShipOutfitter(ServerGameLogic.getInstance().getConfigConverterManager()));
-    }
+    private final ShipFactory shipFactory;
+    private final AiFactory aiFactory;
 
     private void spawnShips(World world) {
         if (timer-- > 0) return;
@@ -45,7 +40,7 @@ public class ShipSpawner {
             lastFaction = s.getFaction();
         }
 
-        if (botCount < 150 || sameFaction) {
+        if (botCount < 50 || sameFaction) {
             timer = 40;
             int maxCount = 1;
             int count = maxCount;
@@ -58,7 +53,7 @@ public class ShipSpawner {
                 float addX = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 float addY = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 world.add(shipFactory.createBotHumanSmall(world, angleToVelocity.x + addX, angleToVelocity.y + addY,
-                        rand.nextFloat() * MathUtils.TWO_PI, AiFactory.createAi()), false);
+                        rand.nextFloat() * MathUtils.TWO_PI, aiFactory.createAi()), false);
             }
 
             RotationHelper.rotate(rotation, angleToVelocity.x, angleToVelocity.y, angleToVelocity);
@@ -68,7 +63,7 @@ public class ShipSpawner {
                 float addX = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 float addY = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 world.add(shipFactory.createBotSaimonSmall(world, angleToVelocity.x + addX, angleToVelocity.y + addY,
-                        rand.nextFloat() * MathUtils.TWO_PI, AiFactory.createAi()), false);
+                        rand.nextFloat() * MathUtils.TWO_PI, aiFactory.createAi()), false);
             }
 
             RotationHelper.rotate(rotation, angleToVelocity.x, angleToVelocity.y, angleToVelocity);
@@ -78,7 +73,7 @@ public class ShipSpawner {
                 float addX = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 float addY = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
                 world.add(shipFactory.createBotEngiSmall(world, angleToVelocity.x + addX, angleToVelocity.y + addY,
-                        rand.nextFloat() * MathUtils.TWO_PI, AiFactory.createAi()), false);
+                        rand.nextFloat() * MathUtils.TWO_PI, aiFactory.createAi()), false);
             }
         }
     }
@@ -108,12 +103,12 @@ public class ShipSpawner {
         Faction firstFaction = Faction.get((byte) rand.nextInt(3));
         for (int i = 0; i < count; i++) {
             if (firstFaction == Faction.HUMAN)
-                world.add(shipFactory.createBotHumanSmall(world, startSpawnX, startSpawnY, 0, AiFactory.createAi()), false);
+                world.add(shipFactory.createBotHumanSmall(world, startSpawnX, startSpawnY, 0, aiFactory.createAi()), false);
             else if (firstFaction == Faction.SAIMON)
-                world.add(shipFactory.createBotSaimonSmall(world, startSpawnX, startSpawnY, 0, AiFactory.createAi()),
+                world.add(shipFactory.createBotSaimonSmall(world, startSpawnX, startSpawnY, 0, aiFactory.createAi()),
                         false);
             else
-                world.add(shipFactory.createBotEngiSmall(world, startSpawnX, startSpawnY, 0, AiFactory.createAi()), false);
+                world.add(shipFactory.createBotEngiSmall(world, startSpawnX, startSpawnY, 0, aiFactory.createAi()), false);
             startSpawnY += padding;
         }
 
@@ -126,12 +121,12 @@ public class ShipSpawner {
 
         for (int i = 0; i < count; i++) {
             if (secondFaction == Faction.HUMAN)
-                world.add(shipFactory.createBotHumanSmall(world, startSpawnX, startSpawnY, 0, AiFactory.createAi()), false);
+                world.add(shipFactory.createBotHumanSmall(world, startSpawnX, startSpawnY, 0, aiFactory.createAi()), false);
             else if (secondFaction == Faction.SAIMON)
-                world.add(shipFactory.createBotSaimonSmall(world, startSpawnX, startSpawnY, 0, AiFactory.createAi()),
+                world.add(shipFactory.createBotSaimonSmall(world, startSpawnX, startSpawnY, 0, aiFactory.createAi()),
                         false);
             else
-                world.add(shipFactory.createBotEngiSmall(world, startSpawnX, startSpawnY, 0, AiFactory.createAi()), false);
+                world.add(shipFactory.createBotEngiSmall(world, startSpawnX, startSpawnY, 0, aiFactory.createAi()), false);
 
             startSpawnY += padding;
         }

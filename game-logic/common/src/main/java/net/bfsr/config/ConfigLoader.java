@@ -15,7 +15,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 @Log4j2
 public final class ConfigLoader {
     private static final Moshi MOSHI = new Moshi.Builder().build();
-    private static final String INDENT = "    ";
+    private static final String INDENT = "  ";
     private static final String FORMAT = ".json";
 
     public static <T> T load(Path file, Class<T> type) {
@@ -53,8 +53,8 @@ public final class ConfigLoader {
         }
     }
 
-    public static <T> void save(Path file, T object, Class<T> objectClass) {
-        String json = MOSHI.adapter(objectClass).indent(INDENT).toJson(object);
+    public static <T> void save(Path file, T object) {
+        String json = MOSHI.adapter((Class<T>) object.getClass()).indent(INDENT).toJson(object);
 
         try {
             Files.writeString(file, json);

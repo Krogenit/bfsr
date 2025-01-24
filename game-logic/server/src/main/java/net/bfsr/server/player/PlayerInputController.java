@@ -8,7 +8,6 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.math.Direction;
 import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.network.packet.server.component.PacketWeaponShoot;
-import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.ai.AiFactory;
 import net.bfsr.server.entity.EntityTrackingManager;
 import org.joml.Vector2f;
@@ -21,8 +20,9 @@ public class PlayerInputController {
     @Getter
     private Ship ship;
     private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
-    private final EntityTrackingManager trackingManager = ServerGameLogic.getInstance().getEntityTrackingManager();
-    private final PlayerManager playerManager = ServerGameLogic.getInstance().getPlayerManager();
+    private final EntityTrackingManager trackingManager;
+    private final PlayerManager playerManager;
+    private final AiFactory aiFactory;
 
     public void move(Direction direction) {
         if (ship.getModules().getEngines().isEngineAlive(direction)) {
@@ -46,8 +46,8 @@ public class PlayerInputController {
                 ship.shoot(weaponSlot -> {
                     weaponSlot.createBullet((float) (Engine.getClientRenderDelayInMills() +
                             player.getNetworkHandler().getPing()));
-                    trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), player1 -> new PacketWeaponShoot(
-                            ship.getId(), weaponSlot.getId(), player1.getClientTime(ship.getWorld().getTimestamp())), player);
+                    trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketWeaponShoot(
+                            ship.getId(), weaponSlot.getId(), ship.getWorld().getTimestamp()), player);
                 });
             }
         }

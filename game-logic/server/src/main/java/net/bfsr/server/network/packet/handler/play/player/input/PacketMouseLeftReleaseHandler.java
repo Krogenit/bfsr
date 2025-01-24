@@ -9,7 +9,8 @@ import java.net.InetSocketAddress;
 
 public class PacketMouseLeftReleaseHandler extends PacketHandler<PacketMouseLeftRelease, PlayerNetworkHandler> {
     @Override
-    public void handle(PacketMouseLeftRelease packet, PlayerNetworkHandler netHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketMouseLeftRelease packet, PlayerNetworkHandler netHandler, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         netHandler.getPlayer().getPlayerInputController().mouseLeftRelease();
     }
 }

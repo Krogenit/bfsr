@@ -1,23 +1,16 @@
-package net.bfsr.client.particle;
+package net.bfsr.engine.entity;
 
-import net.bfsr.client.Client;
-import net.bfsr.client.event.gui.ExitToMainMenuEvent;
-import net.bfsr.engine.event.EventHandler;
-import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.util.ObjectPool;
-import org.joml.Vector2f;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ParticleManager {
-    public static final ObjectPool<Particle> PARTICLE_POOL = new ObjectPool<>(Particle::new);
-    public static final Vector2f CACHED_VECTOR = new Vector2f();
-
+    private final ObjectPool<Particle> particlePool;
     private final List<Particle> particles = new ArrayList<>();
 
-    public void init() {
-        Client.get().getEventBus().register(this);
+    public ParticleManager() {
+        particlePool = new ObjectPool<>(() -> new Particle(this));
     }
 
     public void update() {
@@ -32,8 +25,16 @@ public class ParticleManager {
         }
     }
 
+    public Particle createParticle() {
+        return particlePool.get();
+    }
+
     void addParticle(Particle particle) {
         particles.add(particle);
+    }
+
+    public void remove(Particle particle) {
+        particlePool.returnBack(particle);
     }
 
     public int getParticlesCount() {
@@ -42,11 +43,6 @@ public class ParticleManager {
 
     public Particle getParticle(int index) {
         return particles.get(index);
-    }
-
-    @EventHandler
-    public EventListener<ExitToMainMenuEvent> exitToMainMenuEvent() {
-        return event -> clear();
     }
 
     public void clear() {

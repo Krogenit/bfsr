@@ -1,22 +1,21 @@
 package net.bfsr.client.input;
 
 import lombok.Getter;
+import net.bfsr.client.Client;
 import net.bfsr.engine.input.AbstractInputHandler;
 
 public class InputHandler extends AbstractInputHandler {
-    private final GuiInputController guiInputController = new GuiInputController();
+    private final GuiInputController guiInputController;
     @Getter
-    private final PlayerInputController playerInputController = new PlayerInputController();
-    private final CameraInputController cameraInputController = new CameraInputController();
-    private final DebugInputController debugInputController = new DebugInputController();
+    private final PlayerInputController playerInputController;
+    private final CameraInputController cameraInputController;
+    private final DebugInputController debugInputController;
 
-    @Override
-    public void init() {
-        super.init();
-        guiInputController.init();
-        playerInputController.init();
-        cameraInputController.init();
-        debugInputController.init();
+    public InputHandler(Client client) {
+        guiInputController = new GuiInputController();
+        playerInputController = new PlayerInputController(client);
+        cameraInputController = new CameraInputController(client, playerInputController);
+        debugInputController = new DebugInputController(client);
     }
 
     public void update() {

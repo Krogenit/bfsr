@@ -1,26 +1,27 @@
 package net.bfsr.client.renderer;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
-import net.bfsr.client.Client;
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
+import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
-import net.bfsr.engine.renderer.texture.AbstractTextureLoader;
 import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.event.world.WorldInitEvent;
 
 public class BackgroundRenderer {
-    private final AbstractSpriteRenderer spriteRenderer = Engine.renderer.spriteRenderer;
-    private AbstractTexture texture = AbstractTextureLoader.dummyTexture;
+    private final AbstractRenderer renderer;
+    private final AbstractSpriteRenderer spriteRenderer;
+    private AbstractTexture texture;
     private Runnable renderRunnable = RunnableUtils.EMPTY_RUNNABLE;
 
     private int id = -1;
 
-    public void init() {
-        Client.get().getEventBus().register(this);
+    public BackgroundRenderer(AbstractRenderer renderer) {
+        this.renderer = renderer;
+        this.spriteRenderer = renderer.getSpriteRenderer();
+        this.texture = renderer.getDummyTexture();
     }
 
     @EventHandler
@@ -29,7 +30,7 @@ public class BackgroundRenderer {
     }
 
     void createBackgroundTexture(long seed) {
-        texture = Engine.renderer.textureGenerator.generateNebulaTexture(4096, 4096, new XoRoShiRo128PlusRandom(seed));
+        texture = renderer.getTextureGenerator().generateNebulaTexture(4096, 4096, new XoRoShiRo128PlusRandom(seed), renderer);
         renderRunnable = this::renderBackground;
 
         float zoomFactor = 0.005f;
@@ -51,7 +52,7 @@ public class BackgroundRenderer {
 
     public void clear() {
         texture.delete();
-        texture = AbstractTextureLoader.dummyTexture;
+        texture = renderer.getDummyTexture();
         renderRunnable = RunnableUtils.EMPTY_RUNNABLE;
 
         if (id != -1) {

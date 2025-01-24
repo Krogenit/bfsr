@@ -12,7 +12,7 @@ import java.net.InetSocketAddress;
 
 @Log4j2
 public class PacketRegisterUDPHandler extends PacketHandler<PacketRegisterUDP, PlayerNetworkHandler> {
-    private final NetworkSystem networkSystem = ServerGameLogic.getNetwork();
+    private final NetworkSystem networkSystem = ServerGameLogic.get().getNetworkSystem();
 
     @Override
     public void handle(PacketRegisterUDP packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx,

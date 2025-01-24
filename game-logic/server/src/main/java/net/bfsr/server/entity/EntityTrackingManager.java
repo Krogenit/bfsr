@@ -21,7 +21,6 @@ import net.bfsr.server.player.Player;
 import org.joml.Vector2f;
 
 import java.util.List;
-import java.util.function.Function;
 
 public class EntityTrackingManager {
     private static final float TRACKING_DISTANCE = 600;
@@ -58,7 +57,6 @@ public class EntityTrackingManager {
             Player player = entry.getKey();
             Vector2f position = player.getPosition();
             IntOpenHashSet entitiesInRange = entry.getValue();
-            double clientTime = player.getClientTime(time);
 
             for (int i = 0, size = entities.size(); i < size; i++) {
                 RigidBody rigidBody = entities.get(i);
@@ -71,9 +69,9 @@ public class EntityTrackingManager {
                     if (distSq > TRACKING_DISTANCE_SQ) {
                         entitiesInRange.remove(id);
                         entityTrackingByPlayersMap.get(id).remove(player);
-                        network.sendTCPPacketTo(new PacketRemoveObject(id, clientTime), player);
+                        network.sendTCPPacketTo(new PacketRemoveObject(id, time), player);
                     } else {
-                        entitySyncManager.addToSyncQueue(rigidBody, clientTime, player);
+                        entitySyncManager.addToSyncQueue(rigidBody, time, player);
                     }
                 } else {
                     if (!rigidBody.isDead() && player.canTrackEntity(rigidBody) && distSq <= TRACKING_DISTANCE_SQ) {
@@ -81,12 +79,12 @@ public class EntityTrackingManager {
                         ObjectOpenHashSet<Player> playersSet = entityTrackingByPlayersMap.computeIfAbsent(id,
                                 key -> new ObjectOpenHashSet<>(16));
                         playersSet.add(player);
-                        network.sendTCPPacketTo(new PacketSpawnEntity(rigidBody.createSpawnData(), clientTime), player);
+                        network.sendTCPPacketTo(new PacketSpawnEntity(rigidBody.createSpawnData(), time), player);
                     }
                 }
             }
 
-            entitySyncManager.flush(player, clientTime);
+            entitySyncManager.flush(player, time);
         });
     }
 
@@ -94,8 +92,8 @@ public class EntityTrackingManager {
     public EventListener<RigidBodyRemovedFromWorldEvent> rigidBodyDeathEvent() {
         return event -> {
             RigidBody rigidBody = event.rigidBody();
-            sendPacketToPlayersTrackingEntity(rigidBody.getId(), player -> new PacketRemoveObject(rigidBody.getId(),
-                    player.getClientTime(rigidBody.getWorld().getTimestamp())));
+            sendPacketToPlayersTrackingEntity(rigidBody.getId(), new PacketRemoveObject(rigidBody.getId(),
+                    rigidBody.getWorld().getTimestamp()));
             entityTrackingByPlayersMap.remove(rigidBody.getId());
             playerEntitiesInRangeMap.values().forEach(set -> set.remove(rigidBody.getId()));
         };
@@ -118,27 +116,11 @@ public class EntityTrackingManager {
         }
     }
 
-    public void sendPacketToPlayersTrackingEntity(int id, Function<Player, Packet> playerToPacketFunction) {
-        ObjectOpenHashSet<Player> players = entityTrackingByPlayersMap.get(id);
-        if (players != null) {
-            players.forEach(player -> network.sendUDPPacketTo(playerToPacketFunction.apply(player), player));
-        }
-    }
-
     public void sendPacketToPlayersTrackingEntityExcept(int id, Packet packet, Player except) {
         ObjectOpenHashSet<Player> players = entityTrackingByPlayersMap.get(id);
         if (players != null) {
             players.forEach(player -> {
                 if (player != except) network.sendUDPPacketTo(packet, player);
-            });
-        }
-    }
-
-    public void sendPacketToPlayersTrackingEntityExcept(int id, Function<Player, Packet> playerToPacketFunction, Player except) {
-        ObjectOpenHashSet<Player> players = entityTrackingByPlayersMap.get(id);
-        if (players != null) {
-            players.forEach(player -> {
-                if (player != except) network.sendUDPPacketTo(playerToPacketFunction.apply(player), player);
             });
         }
     }

@@ -18,7 +18,7 @@ public class ShipWreckRenderer extends DamageableRigidBodyRenderer {
     private final Vector2f localOffsetRotated = new Vector2f();
 
     public ShipWreckRenderer(ShipWreck wreck, Path texturePath) {
-        super(Engine.assetsManager.getTexture(texturePath), wreck, 0.25f, 0.25f, 0.25f, 1.0f);
+        super(Engine.getAssetsManager().getTexture(texturePath), wreck, 0.25f, 0.25f, 0.25f, 1.0f);
         this.wreck = wreck;
 
         List<ConnectedObject<?>> connectedObjects = wreck.getConnectedObjects();

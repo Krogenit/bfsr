@@ -6,8 +6,8 @@ public final class BlankGuiObject extends GuiObject {
     public static final BlankGuiObject INSTANCE = new BlankGuiObject();
 
     private BlankGuiObject() {
-        setWidthFunction((width, height) -> Engine.renderer.getScreenWidth());
-        setHeightFunction((width, height) -> Engine.renderer.getScreenHeight());
+        setWidthFunction((width, height) -> Engine.getRenderer().getScreenWidth());
+        setHeightFunction((width, height) -> Engine.getRenderer().getScreenHeight());
     }
 
     @Override

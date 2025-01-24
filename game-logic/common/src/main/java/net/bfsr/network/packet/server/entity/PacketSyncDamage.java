@@ -72,7 +72,7 @@ public class PacketSyncDamage extends PacketScheduled {
         height = maxY - y + 1;
 
         int size = width * height;
-        byteBuffer = Engine.renderer.createByteBuffer(size);
+        byteBuffer = Engine.getRenderer().createByteBuffer(size);
         data.readBytes(byteBuffer);
         byteBuffer.position(0);
         fixtures = new ArrayList<>(32);

@@ -1,14 +1,14 @@
 package net.bfsr.client.gui.settings;
 
 import net.bfsr.client.Client;
-import net.bfsr.client.language.Lang;
+import net.bfsr.client.font.FontType;
+import net.bfsr.client.language.LanguageManager;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.gui.component.ScrollPane;
-import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.settings.SettingsCategory;
 import net.bfsr.settings.option.SettingsOption;
@@ -21,6 +21,7 @@ import java.util.Map;
 import static net.bfsr.engine.input.Keys.KEY_ESCAPE;
 
 public class GuiSettings extends Gui {
+    private final Client client = Client.get();
     private final ClientSettings[] options = ClientSettings.values();
     private final SettingsOption<?>[] lastOptions = new SettingsOption[options.length];
 
@@ -31,7 +32,7 @@ public class GuiSettings extends Gui {
             lastOptions[i] = new SettingsOption<>(options[i].getValue());
         }
 
-        if (Client.get().isInWorld()) {
+        if (client.isInWorld()) {
             add(new Rectangle(0, 0, width, height).setAllColors(0.0f, 0.0f, 0.0f, 0.5f));
         }
 
@@ -55,11 +56,12 @@ public class GuiSettings extends Gui {
         ScrollPane scrollPane = new ScrollPane(width, height - 120, 25);
         scrollPane.setScrollColor(0.5f, 0.5f, 0.5f, 1.0f).setScrollHoverColor(0.7f, 0.7f, 0.7f, 1.0f);
         add(scrollPane.atBottomLeft(0, 60).setHeightFunction((width, height) -> height - 120).setWidthFunction((width, height) -> width));
+        LanguageManager languageManager = client.getLanguageManager();
 
         for (Map.Entry<SettingsCategory, List<ClientSettings>> entry : optionsByCategory.entrySet()) {
             List<ClientSettings> options = entry.getValue();
 
-            Label sectionText = new Label(Font.XOLONIUM_FT, Lang.getString("settings.section." +
+            Label sectionText = new Label(FontType.XOLONIUM.getFontName(), languageManager.getString("settings.section." +
                     entry.getKey().getCategoryName()), fontSectionSize);
             scrollPane.add(sectionText.atTop(0, y - 20));
 
@@ -77,10 +79,10 @@ public class GuiSettings extends Gui {
                     scrollPane.add(new OptionSlider(buttonWidth, buttonHeight, option).atTop(x, y - 5));
                 } else {
                     Button button = new Button(TextureRegister.guiButtonBase, buttonWidth, buttonHeight,
-                            Lang.getString("settings." + option.getOptionName()) + ": " + option.getValue());
-                    button.setLeftReleaseRunnable(() -> {
-                        option.changeValue();
-                        button.setString(Lang.getString("settings." + option.getOptionName()) + ": " + option.getValue());
+                            languageManager.getString("settings." + option.getOptionName()) + ": " + option.getValue());
+                    button.setLeftReleaseConsumer((mouseX, mouseY) -> {
+                        option.changeValue(client);
+                        button.setString(languageManager.getString("settings." + option.getOptionName()) + ": " + option.getValue());
                     });
                     scrollPane.add(button.atTop(x, y - 5));
                 }
@@ -95,13 +97,12 @@ public class GuiSettings extends Gui {
         add(new Rectangle(width, backgroundHeight).setWidthFunction((width, height) -> width).atTopLeft(0, 0)
                 .setAllColors(0.1f, 0.2f, 0.4f, 1.0f));
 
-        String string = Lang.getString("gui.settings.mainText");
-        Label label = new Label(Font.XOLONIUM_FT, string, 24);
+        Label label = new Label(FontType.XOLONIUM.getFontName(), languageManager.getString("gui.settings.mainText"), 24);
         add(label.atTop(0, label.getCenteredOffsetY(backgroundHeight) - 36));
 
-        add(new Button(Lang.getString("gui.settings.save"), 20, () -> {
-            Client.get().getSettings().save();
-            Client.get().openGui(parentGui);
+        add(new Button(languageManager.getString("gui.settings.save"), 20, (mouseX, mouseY) -> {
+            client.getSettings().save();
+            client.openGui(parentGui);
         }).atBottom(0, 6));
     }
 
@@ -111,7 +112,7 @@ public class GuiSettings extends Gui {
 
         if (!input && key == KEY_ESCAPE) {
             restoreSettings();
-            Client.get().openGui(parentGui);
+            client.openGui(parentGui);
             return true;
         }
 

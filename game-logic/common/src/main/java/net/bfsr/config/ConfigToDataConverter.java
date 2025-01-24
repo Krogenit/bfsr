@@ -51,9 +51,10 @@ public class ConfigToDataConverter<CONFIG_TYPE, DATA_TYPE extends ConfigData> {
     }
 
     protected void add(DATA_TYPE data, String name) {
-        if (registry.containsKey(name))
-            throw new IllegalStateException("Key name " + name + " already taken in config registry "
-                    + this.getClass().getSimpleName());
+        if (registry.containsKey(name)) {
+            throw new IllegalStateException("Key name " + name + " already taken in config registry " + this.getClass().getSimpleName());
+        }
+        
         dataTypeList.add(data);
         registry.put(name, data);
     }

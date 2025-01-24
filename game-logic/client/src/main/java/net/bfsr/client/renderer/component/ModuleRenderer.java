@@ -12,8 +12,6 @@ import net.bfsr.entity.ship.module.engine.Engine;
 import net.bfsr.math.Direction;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.shapes.Polygon;
-import org.jbox2d.common.Rotation;
-import org.jbox2d.common.Transform;
 import org.jbox2d.common.Vector2;
 
 public class ModuleRenderer extends Render {
@@ -28,7 +26,7 @@ public class ModuleRenderer extends Render {
         Polygon polygon = (Polygon) module.getFixture().getShape();
         Vector2 center = polygon.centroid;
         AABB aabb1 = new AABB();
-        polygon.computeAABB(aabb1, new Transform(new Vector2(), new Rotation(0)), 0);
+        polygon.computeAABB(aabb1, 0, 0, 0, 1, 0);
         float dx = aabb1.getWidth();
         float dy = aabb1.getHeight();
 
@@ -60,13 +58,13 @@ public class ModuleRenderer extends Render {
         }
     }
 
-    public ModuleRenderer(Ship ship, Engine engine, AbstractTexture engineTexture, Direction direction) {
-        super(engineTexture, engine);
+    public ModuleRenderer(Ship ship, Engine engine, AbstractTexture texture, Direction direction) {
+        super(texture, engine);
 
         Polygon shape = (Polygon) engine.getFixture().getShape();
         Vector2 center = shape.centroid;
         AABB aabb1 = new AABB();
-        shape.computeAABB(aabb1, new Transform(new Vector2(), new Rotation(0)), 0);
+        shape.computeAABB(aabb1, 0, 0, 0, 1, 0);
         float dx = aabb1.getWidth();
         float dy = aabb1.getHeight();
 

@@ -9,9 +9,8 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.InputBox;
 import net.bfsr.engine.gui.component.MinimizableGuiObject;
-import net.bfsr.engine.renderer.font.Font;
+import net.bfsr.engine.input.AbstractMouse;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector2f;
 import org.joml.Vector2i;
 
 import java.util.ArrayList;
@@ -20,6 +19,8 @@ import java.util.List;
 import static net.bfsr.editor.gui.EditorTheme.setup;
 
 public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiObject implements ComponentHolder {
+    private final AbstractMouse mouse = Engine.getMouse();
+
     private final InspectionPanel<T> inspectionPanel;
     private final List<T> components = new ArrayList<>();
     private boolean clicked;
@@ -29,17 +30,15 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
     private final Vector2i selectPosition = new Vector2i();
     private @Nullable InputBox inputBox;
 
-    public InspectionEntry(InspectionPanel<T> inspectionPanel, int width, int height, String name, Font font, int fontSize,
+    public InspectionEntry(InspectionPanel<T> inspectionPanel, int width, int height, String name, String fontName, int fontSize,
                            int stringOffsetY) {
-        super(width, height, name, font, fontSize, stringOffsetY);
+        super(width, height, name, fontName, fontSize, stringOffsetY);
         this.inspectionPanel = inspectionPanel;
         setCanMaximize(false);
         setRenderer(new InspectionEntryRenderer(this));
         setup(this);
-        setLeftClickRunnable(() -> {
-            Vector2f mousePosition = Engine.mouse.getGuiPosition();
-            int mouseX = (int) mousePosition.x;
-            selectPosition.set(mouseX, (int) (mousePosition.y));
+        setLeftClickConsumer((mouseX, mouseY) -> {
+            selectPosition.set(mouseX, mouseY);
             clicked = true;
 
             if (!selected && inputBox == null) {
@@ -50,9 +49,7 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
                 }
             }
         });
-        setLeftReleaseRunnable(() -> {
-            Vector2f mousePosition = Engine.mouse.getPosition();
-            int mouseX = (int) mousePosition.x;
+        setLeftReleaseConsumer((mouseX, mouseY) -> {
             int selectOffsetX = canMaximize ? MINIMIZABLE_STRING_X_OFFSET : 0;
             int sceneX = getSceneX();
             if (canMaximize && mouseX >= sceneX && mouseX < sceneX + MINIMIZABLE_STRING_X_OFFSET) {
@@ -66,8 +63,7 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
             } else if (selected) {
                 if (mouseX >= sceneX + selectOffsetX && mouseX < sceneX + width) {
                     if (wasSelected) {
-                        inputBox = new InputBox(width - selectOffsetX, height, "", font, fontSize, 3,
-                                this.stringOffsetY, 300);
+                        inputBox = new InputBox(width - selectOffsetX, height, "", fontName, fontSize, 3, this.stringOffsetY, 300);
                         inputBox.setX(selectOffsetX);
                         inputBox.setY(getHeight() - getBaseHeight());
                         inputBox.setOnUnselectedRunnable(() -> {
@@ -90,32 +86,29 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
 
     @Nullable
     @Override
-    public GuiObject mouseLeftClick() {
+    public GuiObject mouseLeftClick(int mouseX, int mouseY) {
         wasSelected = selected;
 
-        GuiObject hovered = inspectionPanel.getHovered(null);
+        GuiObject hovered = inspectionPanel.getHovered(null, mouseX, mouseY);
         if (!isMouseHover() && selected && (hovered == inspectionPanel.getScrollPane() || hovered instanceof InspectionEntry)) {
             unselect();
         }
 
-        return super.mouseLeftClick();
+        return super.mouseLeftClick(mouseX, mouseY);
     }
 
     @Override
-    public GuiObject mouseRightClick() {
-        GuiObject guiObject = super.mouseRightClick();
+    public GuiObject mouseRightClick(int mouseX, int mouseY) {
+        GuiObject guiObject = super.mouseRightClick(mouseX, mouseY);
         wasSelected = selected;
 
-        if (!isMouseHover() && (inputBox == null || !inputBox.isIntersectsWithMouse())) {
+        if (!isMouseHover() && (inputBox == null || !inputBox.isIntersectsWithMouse(mouseX, mouseY))) {
             if (selected) {
                 unselect();
             }
 
             return guiObject;
         }
-
-        Vector2f mousePosition = Engine.mouse.getPosition();
-        int mouseX = (int) mousePosition.x;
 
         if (!selected && inputBox == null) {
             int selectOffsetX = canMaximize ? MINIMIZABLE_STRING_X_OFFSET : 0;
@@ -129,9 +122,9 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
     }
 
     @Override
-    public GuiObject mouseLeftRelease() {
+    public GuiObject mouseLeftRelease(int mouseX, int mouseY) {
         clicked = false;
-        return super.mouseLeftRelease();
+        return super.mouseLeftRelease(mouseX, mouseY);
     }
 
     @Override
@@ -146,14 +139,12 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void update(int mouseX, int mouseY) {
+        super.update(mouseX, mouseY);
 
-        if (clicked && Engine.mouse.isLeftDown() && selectPosition.lengthSquared() > 0) {
-            Vector2f mousePosition = Engine.mouse.getGuiPosition();
+        if (clicked && mouse.isLeftDown() && selectPosition.lengthSquared() > 0) {
             float moveThreshold = 40;
-            if (selectPosition.distanceSquared((int) mousePosition.x, (int) mousePosition.y) >
-                    moveThreshold) {
+            if (selectPosition.distanceSquared(mouseX, mouseY) > moveThreshold) {
                 onStartMoving();
             }
         }

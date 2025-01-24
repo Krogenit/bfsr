@@ -12,8 +12,8 @@ public class InspectionEntryRenderer extends MinimizableGuiObjectRenderer {
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void update(int mouseX, int mouseY) {
+        super.update(mouseX, mouseY);
 
         if (inspectionEntry.isSelected()) {
             guiRenderer.setColor(id, 35 / 255.0f, 74 / 255.0f, 108 / 255.0f, hoverColor.w);

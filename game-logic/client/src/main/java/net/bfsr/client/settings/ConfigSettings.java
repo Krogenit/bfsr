@@ -32,7 +32,7 @@ public class ConfigSettings implements Serializable {
             options.put(option, option.getValue());
         }
 
-        ConfigLoader.save(getFile(), this, ConfigSettings.class);
+        ConfigLoader.save(getFile(), this);
     }
 
     public void load() {

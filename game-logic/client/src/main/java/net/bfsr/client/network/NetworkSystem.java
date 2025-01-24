@@ -1,7 +1,9 @@
 package net.bfsr.client.network;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.bfsr.client.Client;
 import net.bfsr.client.gui.connect.GuiDisconnected;
@@ -19,13 +21,16 @@ import net.bfsr.network.packet.client.PacketLogin;
 import net.bfsr.network.packet.common.PacketPing;
 import net.bfsr.network.packet.common.PacketRegisterTCP;
 
-import java.lang.reflect.InvocationTargetException;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+@RequiredArgsConstructor
 public class NetworkSystem extends NetworkHandler {
     private static final long PING_CHECK_INTERVAL = 5000;
+
+    private final Client client;
 
     private final NetworkManagerTCP networkManagerTCP = new NetworkManagerTCP();
     private final NetworkManagerUDP networkManagerUDP = new NetworkManagerUDP();
@@ -107,25 +112,25 @@ public class NetworkSystem extends NetworkHandler {
     }
 
     public void onDisconnect(String reason) {
-        Gui currentGui = Client.get().getGuiManager().getGui();
+        Gui currentGui = client.getGuiManager().getGui();
         Gui parentGui = currentGui != null ? currentGui : new GuiMainMenu();
 
         if (connectionState == ConnectionState.CONNECTED) {
-            Client.get().addFutureTask(() -> {
-                Client.get().quitToMainMenu();
-                Client.get().openGui(new GuiDisconnected(parentGui, "disconnect.lost", reason));
+            client.addFutureTask(() -> {
+                client.quitToMainMenu();
+                client.openGui(new GuiDisconnected(parentGui, "disconnect.lost", reason));
             });
         } else if (connectionState == ConnectionState.LOGIN) {
-            Client.get().addFutureTask(() -> Client.get().openGui(new GuiDisconnected(parentGui, "login.failed", reason)));
+            client.addFutureTask(() -> client.openGui(new GuiDisconnected(parentGui, "login.failed", reason)));
         } else {
-            Client.get().addFutureTask(() -> Client.get().openGui(new GuiDisconnected(parentGui, "other", reason)));
+            client.addFutureTask(() -> client.openGui(new GuiDisconnected(parentGui, "other", reason)));
         }
 
         connectionState = ConnectionState.DISCONNECTED;
 
         shutdown();
         clear();
-        Client.get().addFutureTask(() -> Client.get().stopLocalServer());
+        client.addFutureTask(client::stopLocalServer);
     }
 
     @Override
@@ -133,9 +138,18 @@ public class NetworkSystem extends NetworkHandler {
         inboundPacketQueue.add(packet);
     }
 
-    public Packet createPacket(int packetId)
-            throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        return packetRegistry.createPacket(packetId);
+    public Packet decodePacket(ByteBuf buffer) throws IOException {
+        int packetId = buffer.readByte();
+
+        try {
+            Packet packet = packetRegistry.createPacket(packetId);
+            packet.read(buffer);
+            return packet;
+        } catch (IOException e) {
+            throw new IOException("Can't read packet with id " + packetId, e);
+        } catch (Exception e) {
+            throw new IOException("Can't create packet with id " + packetId, e);
+        }
     }
 
     public int getPacketId(Packet packet) {

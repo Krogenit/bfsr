@@ -3,13 +3,12 @@ package net.bfsr.client.renderer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.entity.GameObject;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
-import net.bfsr.engine.renderer.texture.AbstractTextureLoader;
-import net.bfsr.entity.GameObject;
 import org.jbox2d.collision.AABB;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -17,18 +16,24 @@ import org.joml.Vector4f;
 @Getter
 @NoArgsConstructor
 public class Render {
+    protected final AbstractRenderer renderer = Engine.getRenderer();
+    protected final AbstractSpriteRenderer spriteRenderer = renderer.getSpriteRenderer();
+    protected final AbstractDebugRenderer debugRenderer = renderer.getDebugRenderer();
+
     protected GameObject object;
     protected AbstractTexture texture;
+    protected final Vector4f color = new Vector4f();
+
+    protected final AABB aabb = new AABB();
+
     protected final Vector2f lastSize = new Vector2f();
     protected final Vector2f lastPosition = new Vector2f();
-    protected final Vector4f color = new Vector4f();
     protected final Vector4f lastColor = new Vector4f();
     @Getter
     protected float lastSin, lastCos;
-    protected final AABB aabb = new AABB();
-    protected final AbstractRenderer renderer = Engine.renderer;
-    protected final AbstractSpriteRenderer spriteRenderer = renderer.spriteRenderer;
-    protected final AbstractDebugRenderer debugRenderer = renderer.debugRenderer;
+    protected final AABB lastUpdateAABB = new AABB();
+    protected final AABB debugRenderAABB = new AABB();
+
     protected int id = -1;
 
     public Render(AbstractTexture texture, GameObject object, float r, float g, float b, float a) {
@@ -45,7 +50,7 @@ public class Render {
     }
 
     public Render(GameObject object) {
-        this(AbstractTextureLoader.dummyTexture, object);
+        this(Engine.getRenderer().getDummyTexture(), object);
     }
 
     public void init() {
@@ -54,6 +59,7 @@ public class Render {
     }
 
     public void update() {
+        updateLastAABB();
         updateLastRenderValues();
     }
 
@@ -75,6 +81,10 @@ public class Render {
     public void renderAdditive() {}
 
     public void renderDebug() {}
+
+    private void updateLastAABB() {
+        lastUpdateAABB.set(aabb);
+    }
 
     protected void updateAABB() {
         float x = object.getX();

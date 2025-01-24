@@ -3,17 +3,17 @@ package net.bfsr.client.gui.ingame;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.Client;
+import net.bfsr.client.font.FontType;
 import net.bfsr.client.renderer.EntityRenderer;
 import net.bfsr.client.renderer.Render;
 import net.bfsr.client.renderer.entity.ShipRender;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.gui.component.TexturedRectangle;
 import net.bfsr.engine.gui.component.TexturedRotatedRectangle;
 import net.bfsr.engine.math.MathUtils;
-import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
-import net.bfsr.engine.renderer.texture.AbstractTextureLoader;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.armor.Armor;
@@ -35,8 +35,8 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
     private final EntityRenderer entityRenderer = client.getEntityRenderer();
     private final Vector2f rotationVector = new Vector2f();
 
-    private final Label textShield = new Label(Font.CONSOLA_FT);
-    private final TexturedRotatedRectangle shipGuiObject = new TexturedRotatedRectangle(AbstractTextureLoader.dummyTexture, 100, 100);
+    private final Label textShield = new Label(FontType.CONSOLA.getFontName());
+    private final TexturedRotatedRectangle shipGuiObject = new TexturedRotatedRectangle(Engine.getRenderer().getDummyTexture(), 100, 100);
 
     private final List<Rectangle> hullCells = new ArrayList<>();
     private final List<Rectangle> armorCells = new ArrayList<>();
@@ -209,8 +209,8 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void update(int mouseX, int mouseY) {
+        super.update(mouseX, mouseY);
 
         if (ship != null) {
             if (ship.isDead()) {

@@ -9,13 +9,13 @@ import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.cargo.Cargo;
 import net.bfsr.entity.ship.module.crew.Crew;
-import net.bfsr.entity.ship.module.engine.Engine;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.entity.ship.module.reactor.Reactor;
@@ -62,7 +62,7 @@ public class Ship extends DamageableRigidBody {
     @Getter
     protected boolean spawned;
     @Getter
-    private final int jumpTimeInTicks = net.bfsr.engine.Engine.convertToTicks(0.6f);
+    private final int jumpTimeInTicks = Engine.convertToTicks(0.6f);
     @Getter
     private int jumpTimer;
     @Getter
@@ -273,9 +273,9 @@ public class Ship extends DamageableRigidBody {
             return;
         }
 
-        List<Engine> engines = modules.getEngines().getEngines();
+        List<net.bfsr.entity.ship.module.engine.Engine> engines = modules.getEngines().getEngines();
         for (int i = 0; i < engines.size(); i++) {
-            Engine engine = engines.get(i);
+            net.bfsr.entity.ship.module.engine.Engine engine = engines.get(i);
             Vector2[] vertices = ((org.jbox2d.collision.shapes.Polygon) engine.getFixture().getShape()).getVertices();
             if (!DamageSystem.isPolygonConnectedToContour(vertices, polygon)) {
                 engine.setDead();

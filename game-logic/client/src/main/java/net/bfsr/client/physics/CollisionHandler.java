@@ -1,6 +1,7 @@
 package net.bfsr.client.physics;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
+import net.bfsr.client.Client;
 import net.bfsr.client.particle.effect.GarbageSpawner;
 import net.bfsr.client.particle.effect.WeaponEffects;
 import net.bfsr.engine.Engine;
@@ -33,12 +34,16 @@ public class CollisionHandler extends CommonCollisionHandler {
     private final BeamDamageShipArmorEvent beamDamageShipArmorEvent = new BeamDamageShipArmorEvent();
     private final BeamDamageShipHullEvent beamDamageShipHullEvent = new BeamDamageShipHullEvent();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
+    private final WeaponEffects weaponEffects;
+    private final GarbageSpawner garbageSpawner;
 
-    public CollisionHandler(EventBus eventBus) {
-        super(eventBus);
+    public CollisionHandler(Client client) {
+        super(client.getEventBus());
         eventBus.optimizeEvent(beamDamageShipShieldEvent);
         eventBus.optimizeEvent(beamDamageShipArmorEvent);
         eventBus.optimizeEvent(beamDamageShipHullEvent);
+        weaponEffects = client.getParticleEffects().getWeaponEffects();
+        garbageSpawner = client.getParticleEffects().getGarbageSpawner();
     }
 
     @Override
@@ -52,17 +57,17 @@ public class CollisionHandler extends CommonCollisionHandler {
         float colorAlpha = (1.0f - bullet.getLifeTime() / (float) bullet.getMaxLifeTime()) * 1.5f;
         damageShip(ship, contactX, contactY, () -> {
             bullet.reflect(normalX, normalY);
-            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
+            weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
                     color.z, colorAlpha);
         }, () -> {
-            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
+            weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
                     color.z, colorAlpha);
-            GarbageSpawner.bulletArmorDamage(contactX, contactY, ship.getLinearVelocity().x, ship.getLinearVelocity().y, normalX, normalY);
+            garbageSpawner.bulletArmorDamage(contactX, contactY, ship.getLinearVelocity().x, ship.getLinearVelocity().y, normalX, normalY);
             bullet.setDead();
         }, () -> {
-            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
+            weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
                     color.z, colorAlpha);
-            GarbageSpawner.bulletHullDamage(contactX, contactY, ship.getLinearVelocity().x, ship.getLinearVelocity().y, normalX, normalY);
+            garbageSpawner.bulletHullDamage(contactX, contactY, ship.getLinearVelocity().x, ship.getLinearVelocity().y, normalX, normalY);
             bullet.setDead();
         });
     }
@@ -80,13 +85,13 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         if (impactPower > 0.25f) {
             if (ship1.getCollisionTimer() <= 0) {
-                ship1.setCollisionTimer(ship1.getWorld().convertToTicks(0.5f));
+                ship1.setCollisionTimer(Engine.convertToTicks(0.5f));
                 ship1.setLastAttacker(ship2);
                 damageShipByCollision(ship1, contactX, contactY, -normalX, -normalY);
             }
 
             if (ship2.getCollisionTimer() <= 0) {
-                ship2.setCollisionTimer(ship2.getWorld().convertToTicks(0.5f));
+                ship2.setCollisionTimer(Engine.convertToTicks(0.5f));
                 ship2.setLastAttacker(ship1);
                 damageShipByCollision(ship2, contactX, contactY, normalX, normalY);
             }
@@ -103,13 +108,13 @@ public class CollisionHandler extends CommonCollisionHandler {
     public void shipWreck(Ship ship, Wreck wreck, Fixture shipFixture, Fixture wreckFixture, float contactX,
                           float contactY, float normalX, float normalY) {
         if (ship.getCollisionTimer() <= 0) {
-            ship.setCollisionTimer(ship.getWorld().convertToTicks(0.5f));
+            ship.setCollisionTimer(Engine.convertToTicks(0.5f));
             Shield shield = ship.getModules().getShield();
             if (shield != null && isShieldAlive(shield)) {
                 Vector4f color = ship.getShipData().getEffectsColor();
-                WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
+                weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
             } else {
-                WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
+                weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
             }
         }
 
@@ -152,15 +157,15 @@ public class CollisionHandler extends CommonCollisionHandler {
         Shield shield = modules.getShield();
         if (shield != null && isShieldAlive(shield)) {
             Vector4f color = ship.getShipData().getEffectsColor();
-            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
+            weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
             return;
         }
 
         Vector2 velocity = ship.getLinearVelocity();
-        WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f,
+        weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f,
                 1.0f, 1.0f, 1.0f);
         RotationHelper.angleToVelocity(MathUtils.TWO_PI * random.nextFloat(), 0.15f, angleToVelocity);
-        GarbageSpawner.smallGarbage(random.nextInt(4), contactX, contactY,
+        garbageSpawner.smallGarbage(random.nextInt(4), contactX, contactY,
                 velocity.x * 0.25f + angleToVelocity.x, velocity.y * 0.25f + angleToVelocity.y, 2.0f * random.nextFloat());
     }
 

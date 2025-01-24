@@ -1,7 +1,12 @@
 package net.bfsr.client.network.manager;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
@@ -28,7 +33,7 @@ public class NetworkManagerUDP {
         bootstrap.handler(new ChannelInitializer<DatagramChannel>() {
             @Override
             protected void initChannel(@NotNull DatagramChannel datagramChannel) {
-                datagramChannel.pipeline().addLast("decoder", new MessageDecoderUDP());
+                datagramChannel.pipeline().addLast("decoder", new MessageDecoderUDP(networkSystem));
                 datagramChannel.pipeline().addLast("encoder", new PacketEncoder(networkSystem));
                 datagramChannel.pipeline().addLast("handler", new MessageHandlerUDP(networkSystem));
             }

@@ -1,6 +1,7 @@
 package net.bfsr.server.event.listener.entity;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
+import lombok.RequiredArgsConstructor;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.entity.ship.Ship;
@@ -13,15 +14,18 @@ import net.bfsr.event.entity.ship.ShipRemoveMoveDirectionEvent;
 import net.bfsr.network.packet.server.entity.ship.PacketDestroyingShip;
 import net.bfsr.network.packet.server.entity.ship.PacketShipInfo;
 import net.bfsr.network.packet.server.entity.ship.PacketSyncMoveDirection;
-import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.player.Player;
+import net.bfsr.server.player.PlayerManager;
 import net.bfsr.world.World;
 import org.jbox2d.common.Vector2;
 
+@RequiredArgsConstructor
 public class ShipEventListener {
-    private final EntityTrackingManager trackingManager = ServerGameLogic.getInstance().getEntityTrackingManager();
+    private final WreckSpawner wreckSpawner;
+    private final EntityTrackingManager trackingManager;
+    private final PlayerManager playerManager;
     private final XoRoShiRo128PlusPlusRandom random = new XoRoShiRo128PlusPlusRandom();
 
     @EventHandler
@@ -29,7 +33,7 @@ public class ShipEventListener {
         return event -> {
             Ship ship = event.ship();
             if (ship.isControlledByPlayer()) {
-                Player player = ServerGameLogic.getInstance().getPlayerManager().getPlayerControllingShip(ship);
+                Player player = playerManager.getPlayerControllingShip(ship);
                 trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketSyncMoveDirection(ship.getId(),
                         event.direction().ordinal(), false, ship.getWorld().getTimestamp()), player);
             } else {
@@ -44,7 +48,7 @@ public class ShipEventListener {
         return event -> {
             Ship ship = event.ship();
             if (ship.isControlledByPlayer()) {
-                Player player = ServerGameLogic.getInstance().getPlayerManager().getPlayerControllingShip(ship);
+                Player player = playerManager.getPlayerControllingShip(ship);
                 trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketSyncMoveDirection(ship.getId(),
                         event.direction().ordinal(), true, ship.getWorld().getTimestamp()), player);
             } else {
@@ -78,7 +82,7 @@ public class ShipEventListener {
             Vector2 linearVelocity = ship.getLinearVelocity();
             float sizeX = ship.getSizeX();
             float sizeY = ship.getSizeY();
-            WreckSpawner.spawnDamageDebris(world, 1, ship.getX() - sizeX / 2.5f + random.nextInt((int) (sizeX / 1.25f)),
+            wreckSpawner.spawnDamageDebris(world, 1, ship.getX() - sizeX / 2.5f + random.nextInt((int) (sizeX / 1.25f)),
                     ship.getY() - sizeY / 2.5f + random.nextInt((int) (sizeY / 1.25f)), linearVelocity.x * 0.1f,
                     linearVelocity.y * 0.1f,
                     1.0f);
@@ -89,7 +93,7 @@ public class ShipEventListener {
     public EventListener<ShipDestroyEvent> shipDestroyEvent() {
         return event -> {
             Ship ship = event.ship();
-            WreckSpawner.spawnDestroyShipSmall(ship);
+            wreckSpawner.spawnDestroyShipSmall(ship);
         };
     }
 }

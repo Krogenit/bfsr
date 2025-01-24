@@ -1,7 +1,7 @@
 package net.bfsr.engine.renderer.font.stb;
 
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.engine.renderer.font.DynamicGlyphsBuilder;
+import net.bfsr.engine.renderer.font.glyph.DynamicFont;
 import net.bfsr.engine.renderer.font.glyph.Glyph;
 import net.bfsr.engine.renderer.font.glyph.GlyphsData;
 import net.bfsr.engine.util.IOUtils;
@@ -25,16 +25,17 @@ import static org.lwjgl.stb.STBTruetype.stbtt_ScaleForMappingEmToPixels;
 import static org.lwjgl.stb.STBTruetype.stbtt_ScaleForPixelHeight;
 
 @Log4j2
-public class STBTrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<STBTrueTypeFontPacker> {
+public class STBTrueTypeFont extends DynamicFont<STBTrueTypeFontPacker> {
     private final STBTTFontinfo fontInfo;
     private final ByteBuffer fontByteBuffer;
     private final int ascent;
     private final int descent;
 
-    public STBTrueTypeGlyphsBuilder(String fontFile) {
+    public STBTrueTypeFont(String fontFile) {
         super(fontFile);
         this.fontByteBuffer = IOUtils.fileToByteBuffer(PathHelper.FONT.resolve(fontFile));
         this.fontInfo = STBTTFontinfo.create();
+
         if (!stbtt_InitFont(fontInfo, fontByteBuffer)) {
             throw new IllegalStateException("Failed to initialize font information.");
         }
@@ -51,13 +52,13 @@ public class STBTrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<STBTrueTypeFo
     }
 
     @Override
-    protected STBTrueTypeFontPacker createNewFont(int fontSize) {
+    protected STBTrueTypeFontPacker createNewFontPacker(int fontSize) {
         return new STBTrueTypeFontPacker(fontFile, this, fontInfo, fontByteBuffer, bitmapWidth, bitmapHeight, fontSize);
     }
 
     @Override
     public GlyphsData getGlyphsData(String text, int fontSize) {
-        STBTrueTypeFontPacker stbTrueTypeFontPacker = getFontBySize(fontSize);
+        STBTrueTypeFontPacker stbTrueTypeFontPacker = getFontPackerBySize(fontSize);
         stbTrueTypeFontPacker.packNewChars(text);
         scale(fontSize);
         int width = 0;
@@ -97,10 +98,10 @@ public class STBTrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<STBTrueTypeFo
                                   STBTTAlignedQuad quad, LongBuffer textureBuffer) {
         STBBitMap bitMap = stbTrueTypeFontPacker.getBitMapByChar(charCode);
         if (bitMap == null) {
-            STBTrueTypeGlyphsBuilder trueTypeGlyphsBuilder = findFontSupportedChar(charCode,
-                    glyphsBuilder -> glyphsBuilder instanceof STBTrueTypeGlyphsBuilder);
+            STBTrueTypeFont trueTypeGlyphsBuilder = findFontSupportedChar(charCode,
+                    glyphsBuilder -> glyphsBuilder instanceof STBTrueTypeFont);
             if (trueTypeGlyphsBuilder == null) return false;
-            STBTrueTypeFontPacker stbTrueTypeFontPacker1 = trueTypeGlyphsBuilder.getFontBySize(fontSize);
+            STBTrueTypeFontPacker stbTrueTypeFontPacker1 = trueTypeGlyphsBuilder.getFontPackerBySize(fontSize);
             stbTrueTypeFontPacker1.packNewChars("" + charCode);
             bitMap = stbTrueTypeFontPacker1.getBitMapByChar(charCode);
 
@@ -167,7 +168,7 @@ public class STBTrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<STBTrueTypeFo
 
     @Override
     public int getWidth(String string, int fontSize) {
-        STBTrueTypeFontPacker stbTrueTypeFontPacker = getFontBySize(fontSize);
+        STBTrueTypeFontPacker stbTrueTypeFontPacker = getFontPackerBySize(fontSize);
         scale(fontSize);
 
         try (MemoryStack stack = MemoryStack.stackPush()) {

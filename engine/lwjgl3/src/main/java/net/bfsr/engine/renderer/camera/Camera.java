@@ -1,7 +1,7 @@
 package net.bfsr.engine.renderer.camera;
 
 import lombok.Getter;
-import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.util.MatrixBufferUtils;
 import org.jbox2d.collision.AABB;
 import org.joml.Matrix4f;
@@ -57,10 +57,13 @@ public class Camera implements AbstractCamera {
     private long guiViewBufferAddress;
     private int guiViewUBO;
 
+    private AbstractRenderer renderer;
+
     @Override
-    public void init(int width, int height) {
+    public void init(int width, int height, AbstractRenderer renderer) {
         this.width = width;
         this.height = height;
+        this.renderer = renderer;
 
         origin.set(-width / 2.0f, -height / 2.0f);
         boundingBox.set(position.x + origin.x, position.y + origin.y, position.x - origin.x, position.y - origin.y);
@@ -78,21 +81,21 @@ public class Camera implements AbstractCamera {
 
         viewBuffer = MemoryUtil.memAllocFloat(5);
         viewBufferAddress = MemoryUtil.memAddress(viewBuffer);
-        Engine.renderer.putValue(viewBufferAddress, 0);
-        Engine.renderer.putValue(viewBufferAddress + 4, 0);
-        Engine.renderer.putValue(viewBufferAddress + 8, zoom);
-        Engine.renderer.putValue(viewBufferAddress + 12, width);
-        Engine.renderer.putValue(viewBufferAddress + 16, height);
+        renderer.putValue(viewBufferAddress, 0);
+        renderer.putValue(viewBufferAddress + 4, 0);
+        renderer.putValue(viewBufferAddress + 8, zoom);
+        renderer.putValue(viewBufferAddress + 12, width);
+        renderer.putValue(viewBufferAddress + 16, height);
 
         GL45C.nglNamedBufferStorage(viewUBO, (long) viewBuffer.capacity() << 2, viewBufferAddress, GL44.GL_DYNAMIC_STORAGE_BIT);
 
         guiViewBuffer = MemoryUtil.memAllocFloat(5);
         guiViewBufferAddress = MemoryUtil.memAddress(guiViewBuffer);
-        Engine.renderer.putValue(guiViewBufferAddress, 0);
-        Engine.renderer.putValue(guiViewBufferAddress + 4, 0);
-        Engine.renderer.putValue(guiViewBufferAddress + 8, 1.0f);
-        Engine.renderer.putValue(guiViewBufferAddress + 12, width);
-        Engine.renderer.putValue(guiViewBufferAddress + 16, height);
+        renderer.putValue(guiViewBufferAddress, 0);
+        renderer.putValue(guiViewBufferAddress + 4, 0);
+        renderer.putValue(guiViewBufferAddress + 8, 1.0f);
+        renderer.putValue(guiViewBufferAddress + 12, width);
+        renderer.putValue(guiViewBufferAddress + 16, height);
 
         GL45C.nglNamedBufferStorage(guiViewUBO, (long) guiViewBuffer.capacity() << 2, guiViewBufferAddress, GL44.GL_DYNAMIC_STORAGE_BIT);
     }
@@ -170,12 +173,12 @@ public class Camera implements AbstractCamera {
 
         updateBoundingBox();
 
-        Engine.renderer.putValue(viewBufferAddress + 12L, width);
-        Engine.renderer.putValue(viewBufferAddress + 16L, height);
+        renderer.putValue(viewBufferAddress + 12L, width);
+        renderer.putValue(viewBufferAddress + 16L, height);
         GL45C.nglNamedBufferSubData(viewUBO, 12L, 8L, viewBufferAddress + 12L);
 
-        Engine.renderer.putValue(guiViewBufferAddress + 12L, width);
-        Engine.renderer.putValue(guiViewBufferAddress + 16L, height);
+        renderer.putValue(guiViewBufferAddress + 12L, width);
+        renderer.putValue(guiViewBufferAddress + 16L, height);
         GL45C.nglNamedBufferSubData(guiViewUBO, 12L, 8L, guiViewBufferAddress + 12L);
 
         GL45C.glNamedBufferSubData(GUIProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(0.0f, width, 0.0f, height, Z_NEAR, Z_FAR)
@@ -201,9 +204,9 @@ public class Camera implements AbstractCamera {
         float interpolatedPositionY = lastPosition.y + (position.y - lastPosition.y) * interpolation;
         float interpolatedZoom = lastZoom + (zoom - lastZoom) * interpolation;
 
-        Engine.renderer.putValue(viewBufferAddress, -interpolatedPositionX);
-        Engine.renderer.putValue(viewBufferAddress + 4, -interpolatedPositionY);
-        Engine.renderer.putValue(viewBufferAddress + 8, interpolatedZoom);
+        renderer.putValue(viewBufferAddress, -interpolatedPositionX);
+        renderer.putValue(viewBufferAddress + 4, -interpolatedPositionY);
+        renderer.putValue(viewBufferAddress + 8, interpolatedZoom);
 
         GL45C.nglNamedBufferSubData(viewUBO, 0, 12L, viewBufferAddress);
     }

@@ -1,10 +1,10 @@
 package net.bfsr.world;
 
 import lombok.Getter;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.logic.GameLogic;
 import net.bfsr.engine.profiler.Profiler;
-import net.bfsr.engine.util.Side;
 import net.bfsr.entity.CommonEntityManager;
 import net.bfsr.entity.EntityIdManager;
 import net.bfsr.entity.RigidBody;
@@ -27,8 +27,6 @@ public class World {
     @Getter
     private org.jbox2d.dynamics.World physicWorld;
     @Getter
-    protected final Side side;
-    @Getter
     private final long seed;
     private final Profiler profiler;
     @Getter
@@ -47,10 +45,9 @@ public class World {
     @Getter
     private final ObjectPools objectPools = new ObjectPools();
 
-    public World(Profiler profiler, Side side, long seed, EventBus eventBus, CommonEntityManager entityManager,
+    public World(Profiler profiler, long seed, EventBus eventBus, CommonEntityManager entityManager,
                  EntityIdManager entityIdManager, GameLogic gameLogic, CommonCollisionHandler collisionHandler) {
         this.profiler = profiler;
-        this.side = side;
         this.seed = seed;
         this.eventBus = eventBus;
         this.entityManager = entityManager;
@@ -78,7 +75,7 @@ public class World {
         profiler.start("entityManager");
         entityManager.update();
         profiler.endStart("physics");
-        physicWorld.step(gameLogic.getUpdateDeltaTime(), VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+        physicWorld.step(Engine.getUpdateDeltaTime(), VELOCITY_ITERATIONS, POSITION_ITERATIONS);
         profiler.endStart("postPhysicsUpdate");
         entityManager.postPhysicsUpdate();
         profiler.end();
@@ -106,18 +103,6 @@ public class World {
         entityManager.remove(index, entity);
         physicWorld.removeBody(entity.getBody());
         entity.onRemovedFromWorld();
-    }
-
-    public int convertToTicks(int value) {
-        return gameLogic.convertToTicks(value);
-    }
-
-    public int convertToTicks(float value) {
-        return gameLogic.convertToTicks(value);
-    }
-
-    public float convertToDeltaTime(float value) {
-        return gameLogic.convertToTicks(value);
     }
 
     public void clear() {
@@ -155,14 +140,10 @@ public class World {
     }
 
     public boolean isServer() {
-        return side.isServer();
+        return gameLogic.isServer();
     }
 
     public boolean isClient() {
-        return side.isClient();
-    }
-
-    public float getUpdateDeltaTime() {
-        return gameLogic.getUpdateDeltaTime();
+        return gameLogic.isClient();
     }
 }

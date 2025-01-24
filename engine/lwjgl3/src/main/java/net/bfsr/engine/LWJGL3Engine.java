@@ -3,6 +3,7 @@ package net.bfsr.engine;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.engine.dialog.AbstractSystemDialogs;
 import net.bfsr.engine.dialog.SystemDialogs;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
@@ -13,6 +14,8 @@ import net.bfsr.engine.loop.AbstractGameLoop;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.Renderer;
+import net.bfsr.engine.renderer.font.AbstractFontManager;
+import net.bfsr.engine.renderer.font.FontManager;
 import net.bfsr.engine.renderer.texture.TextureLoader;
 import net.bfsr.engine.sound.AbstractSoundManager;
 import net.bfsr.engine.sound.SoundLoader;
@@ -31,7 +34,7 @@ import java.nio.IntBuffer;
 import static org.lwjgl.glfw.GLFW.glfwShowWindow;
 
 @RequiredArgsConstructor
-public class LWJGL3Engine extends AbstractGameLoop implements EngineConfiguration {
+public class LWJGL3Engine extends AbstractGameLoop {
     private long window;
     private GLFWVidMode vidMode;
     private final FPSSync fpsSync = new FPSSync();
@@ -49,19 +52,30 @@ public class LWJGL3Engine extends AbstractGameLoop implements EngineConfiguratio
 
     protected void init() {
         Vector2i windowSize = initGLFW();
-
-        create();
-        Engine.renderer.init(window, windowSize.x, windowSize.y);
-        Engine.soundManager.init();
-        Engine.assetsManager.init();
-        Engine.mouse.init(window);
-        Engine.keyboard.init(window);
         fpsSync.init();
-        renderer = Engine.renderer;
+
+        EventBus eventBus = new EventBus();
+        AssetsManager assetsManager = new AssetsManager(new TextureLoader(), new SoundLoader());
+        renderer = new Renderer(profiler, window, windowSize.x, windowSize.y, assetsManager.createDummyTexture());
+        AbstractFontManager fontManager = new FontManager();
+        AbstractSoundManager soundManager = new SoundManager();
+        AbstractKeyboard keyboard = new Keyboard(window);
+        AbstractMouse mouse = new Mouse(window, renderer);
+        AbstractSystemDialogs systemDialogs = new SystemDialogs();
+
+        Engine.setRenderer(renderer);
+        Engine.setFontManager(fontManager);
+        Engine.setSoundManager(soundManager);
+        Engine.setAssetsManager(assetsManager);
+        Engine.setKeyboard(keyboard);
+        Engine.setMouse(mouse);
+        Engine.setSystemDialogs(systemDialogs);
+        Engine.setGuiManager(new GuiManager(eventBus));
 
         try {
-            gameLogic = gameLogicClass.getConstructor(Profiler.class).newInstance(profiler);
+            gameLogic = gameLogicClass.getConstructor(Profiler.class, EventBus.class).newInstance(profiler, eventBus);
             gameLogic.init();
+            gameLogic.setRunning(true);
         } catch (Exception e) {
             throw new RuntimeException("Couldn't create game logic instance", e);
         }
@@ -130,19 +144,8 @@ public class LWJGL3Engine extends AbstractGameLoop implements EngineConfiguratio
     }
 
     @Override
-    public boolean isRunning() {
-        return gameLogic.isRunning() && !GLFW.glfwWindowShouldClose(window);
-    }
-
-    @Override
     public void setFps(int fps) {
         renderer.setFps(fps);
-    }
-
-    @Override
-    public void clear() {
-        gameLogic.clear();
-        Engine.clear();
     }
 
     private boolean isVSync() {
@@ -160,52 +163,13 @@ public class LWJGL3Engine extends AbstractGameLoop implements EngineConfiguratio
     }
 
     @Override
-    public AbstractSystemDialogs createSystemDialogs() {
-        return new SystemDialogs();
+    public boolean isRunning() {
+        return gameLogic.isRunning() && !GLFW.glfwWindowShouldClose(window);
     }
 
     @Override
-    public AbstractKeyboard createKeyboard() {
-        return new Keyboard();
-    }
-
-    @Override
-    public AbstractMouse createMouse() {
-        return new Mouse();
-    }
-
-    @Override
-    public AbstractSoundManager createSoundManager() {
-        return new SoundManager();
-    }
-
-    @Override
-    public AbstractRenderer createRenderer() {
-        return new Renderer(profiler);
-    }
-
-    @Override
-    public AssetsManager createAssetManager() {
-        return new AssetsManager(new TextureLoader(), new SoundLoader());
-    }
-
-    @Override
-    public GuiManager createGuiManager() {
-        return new GuiManager();
-    }
-
-    @Override
-    protected int getUpdatesPerSecond() {
-        return gameLogic.getUpdatesPerSecond();
-    }
-
-    @Override
-    protected float getUpdateDeltaTime() {
-        return gameLogic.getUpdateDeltaTime();
-    }
-
-    @Override
-    protected double getTimeBetweenUpdates() {
-        return gameLogic.getTimeBetweenUpdates();
+    public void clear() {
+        gameLogic.clear();
+        Engine.clear();
     }
 }

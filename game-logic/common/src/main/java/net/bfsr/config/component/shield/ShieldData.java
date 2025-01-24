@@ -12,7 +12,7 @@ public class ShieldData extends ConfigData {
     private final Path texturePath;
     private final float maxShield;
     private final float regenAmount;
-    private final float rebuildTimeInTicks;
+    private final int rebuildTimeInTicks;
 
     ShieldData(ShieldConfig config, String fileName, int id, int registryId) {
         super(fileName, id, registryId);

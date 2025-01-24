@@ -31,7 +31,7 @@ public interface AbstractSpriteRenderer extends GeometryBuffer {
     int BASE_VERTEX_OFFSET = 12;
     int BASE_INSTANCE_OFFSET = 16;
 
-    void init();
+    void init(AbstractRenderer renderer);
 
     AbstractVAO createVAO();
 

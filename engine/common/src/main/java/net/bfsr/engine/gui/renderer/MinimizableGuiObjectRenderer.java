@@ -50,7 +50,7 @@ public class MinimizableGuiObjectRenderer extends SimpleGuiObjectRenderer {
     }
 
     @Override
-    public void render() {
+    public void render(int mouseX, int mouseY) {
         renderBase();
 
         if (minimizableGuiObject.isCanMaximize()) {
@@ -59,7 +59,7 @@ public class MinimizableGuiObjectRenderer extends SimpleGuiObjectRenderer {
 
         List<GuiObject> guiObjects = minimizableGuiObject.getNonHideableObjects();
         for (int i = 0; i < guiObjects.size(); i++) {
-            guiObjects.get(i).getRenderer().render();
+            guiObjects.get(i).getRenderer().render(mouseX, mouseY);
         }
     }
 

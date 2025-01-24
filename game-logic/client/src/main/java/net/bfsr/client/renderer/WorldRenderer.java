@@ -1,10 +1,9 @@
 package net.bfsr.client.renderer;
 
 import lombok.Getter;
-import net.bfsr.client.Client;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
-import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.profiler.Profiler;
@@ -16,33 +15,26 @@ import net.bfsr.engine.renderer.culling.AbstractGPUFrustumCullingSystem;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.texture.TextureRegister;
+import net.bfsr.event.world.WorldInitEvent;
 
 public class WorldRenderer {
-    private final AbstractRenderer renderer = Engine.renderer;
-    private final AbstractSpriteRenderer spriteRenderer = renderer.spriteRenderer;
+    private final AbstractRenderer renderer = Engine.getRenderer();
+    private final AbstractGPUFrustumCullingSystem cullingSystem = renderer.getCullingSystem();
+    private final AbstractSpriteRenderer spriteRenderer = renderer.getSpriteRenderer();
+    @Getter
+    private final ParticleRenderer particleRenderer = renderer.getParticleRenderer();
 
     private final Profiler profiler;
     private final EntityRenderer entityRenderer;
-    @Getter
-    private final ParticleRenderer particleRenderer = renderer.particleRenderer;
-    private final BackgroundRenderer backgroundRenderer = new BackgroundRenderer();
-    private final AbstractGPUFrustumCullingSystem cullingSystem = renderer.cullingSystem;
+    private final BackgroundRenderer backgroundRenderer;
 
-    public WorldRenderer(Profiler profiler, EntityRenderer entityRenderer) {
+    public WorldRenderer(Profiler profiler, EntityRenderer entityRenderer, EventBus eventBus) {
         this.profiler = profiler;
+        this.backgroundRenderer = new BackgroundRenderer(renderer);
         this.entityRenderer = entityRenderer;
-    }
 
-    public void init() {
-        if (ClientSettings.IS_DEBUG.getBoolean()) {
-            renderer.setDebugWindow();
-        }
-
-        Engine.assetsManager.getTexture(TextureRegister.damageFire).bind();
-
-        backgroundRenderer.init();
-
-        Client.get().getEventBus().register(this);
+        Engine.getAssetsManager().getTexture(TextureRegister.damageFire).bind();
+        eventBus.register(this);
     }
 
     void prepareRender(int totalParticlesCount) {
@@ -89,6 +81,11 @@ public class WorldRenderer {
         particleRenderer.render();
         renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
         profiler.end();
+    }
+
+    @EventHandler
+    public EventListener<WorldInitEvent> event() {
+        return event -> backgroundRenderer.createBackgroundTexture(event.getWorld().getSeed());
     }
 
     @EventHandler

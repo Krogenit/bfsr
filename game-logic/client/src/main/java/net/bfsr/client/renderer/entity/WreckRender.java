@@ -3,11 +3,11 @@ package net.bfsr.client.renderer.entity;
 import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import lombok.Getter;
 import net.bfsr.client.Client;
-import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.particle.effect.ExplosionEffects;
 import net.bfsr.client.particle.effect.FireEffects;
 import net.bfsr.config.entity.wreck.WreckData;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.entity.SpawnAccumulator;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
@@ -18,10 +18,16 @@ import net.bfsr.event.entity.wreck.WreckDeathEvent;
 import org.joml.Vector4f;
 
 public class WreckRender extends RigidBodyRender {
+    private final FireEffects fireEffects = Client.get().getParticleEffects().getFireEffects();
+    private final ExplosionEffects explosionEffects = Client.get().getParticleEffects().getExplosionEffects();
+    private final XoRoShiRo128PlusPlusRandom random = new XoRoShiRo128PlusPlusRandom();
+    private final SpawnAccumulator spawnAccumulator = new SpawnAccumulator();
+
     private final Wreck wreck;
     @Getter
     private final AbstractTexture textureFire, textureLight;
-
+    private final float fireAnimationSpeed = Engine.convertToDeltaTime(0.18f);
+    private final float lightAnimationSpeed = Engine.convertToDeltaTime(12.0f);
     private boolean changeLight;
     @Getter
     private final Vector4f colorFire = new Vector4f(), colorLight = new Vector4f();
@@ -33,16 +39,11 @@ public class WreckRender extends RigidBodyRender {
     private boolean light;
     private float sparkleBlinkTimer;
 
-    private final SpawnAccumulator spawnAccumulator = new SpawnAccumulator();
-    private final float fireAnimationSpeed = Client.get().convertToDeltaTime(0.18f);
-    private final float lightAnimationSpeed = Client.get().convertToDeltaTime(12.0f);
-    private final XoRoShiRo128PlusPlusRandom random = new XoRoShiRo128PlusPlusRandom();
-
     private int fireId = -1;
     private int lightId = -1;
 
     public WreckRender(Wreck object) {
-        super(Engine.assetsManager.getTexture(object.getConfigData().getTexture()), object, 0.5f, 0.5f, 0.5f, 1.0f);
+        super(Engine.getAssetsManager().getTexture(object.getConfigData().getTexture()), object, 0.5f, 0.5f, 0.5f, 1.0f);
         this.wreck = object;
 
         if (object.isEmitFire()) {
@@ -50,15 +51,14 @@ public class WreckRender extends RigidBodyRender {
         }
 
         WreckData wreckData = object.getWreckData();
-        this.textureFire = Engine.assetsManager.getTexture(wreckData.getFireTexture());
-        this.textureLight =
-                wreckData.getSparkleTexture() != null ? Engine.assetsManager.getTexture(wreckData.getSparkleTexture()) : null;
+        this.textureFire = Engine.getAssetsManager().getTexture(wreckData.getFireTexture());
+        this.textureLight = wreckData.getSparkleTexture() != null ? Engine.getAssetsManager().getTexture(wreckData.getSparkleTexture())
+                : null;
         this.colorFire.set(object.isFire() ? 1.0f : 0.0f);
         this.lastColorFire.set(colorFire);
         this.colorLight.set(1.0f, 1.0f, 1.0f, 0.0f);
         this.lastColorLight.set(colorLight);
-        this.sparkleActivationTimerInTicks = object.isLight() ?
-                Client.get().convertToTicks(200.0f + random.nextInt(200)) : 0;
+        this.sparkleActivationTimerInTicks = object.isLight() ? Engine.convertToTicks(200.0f + random.nextInt(200)) : 0;
         this.fire = object.isFire();
         this.light = object.isLight();
 
@@ -131,7 +131,7 @@ public class WreckRender extends RigidBodyRender {
 
     private void emitFire() {
         if (color.w > 0.6f) {
-            FireEffects.emitFire(object.getX(), object.getY(), spawnAccumulator);
+            fireEffects.emitFire(object.getX(), object.getY(), spawnAccumulator);
         }
     }
 
@@ -205,7 +205,7 @@ public class WreckRender extends RigidBodyRender {
             }
 
             if (sparkleBlinkTimer >= 100.0f) {
-                sparkleActivationTimerInTicks = Client.get().convertToTicks(200.0f + random.nextInt(200));
+                sparkleActivationTimerInTicks = Engine.convertToTicks(200.0f + random.nextInt(200));
                 sparkleBlinkTimer = 0.0f;
             }
 
@@ -245,7 +245,7 @@ public class WreckRender extends RigidBodyRender {
         return event -> {
             Wreck wreck = event.wreck();
             if (color.w > 0.01f) {
-                ExplosionEffects.spawnSmallExplosion(wreck.getX(), wreck.getY(), wreck.getSizeX());
+                explosionEffects.spawnSmallExplosion(wreck.getX(), wreck.getY(), wreck.getSizeX());
             }
         };
     }

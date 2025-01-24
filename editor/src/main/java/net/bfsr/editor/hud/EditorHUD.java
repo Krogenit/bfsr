@@ -13,9 +13,9 @@ public class EditorHUD extends HUD {
         int buttonHeight = 36;
         int y = 0;
         add(EditorTheme.setupButton(new Button(buttonWidth, buttonHeight, "Particle Editor", 22,
-                () -> Client.get().openGui(new GuiParticleEditor()))).atLeft(0, y));
+                (mouseX, mouseY) -> Client.get().openGui(new GuiParticleEditor()))).atLeft(0, y));
         y += buttonHeight;
         add(EditorTheme.setupButton(new Button(buttonWidth, buttonHeight, "Ship Editor", 22,
-                () -> Client.get().openGui(new GuiShipEditor()))).atLeft(0, y));
+                (mouseX, mouseY) -> Client.get().openGui(new GuiShipEditor()))).atLeft(0, y));
     }
 }

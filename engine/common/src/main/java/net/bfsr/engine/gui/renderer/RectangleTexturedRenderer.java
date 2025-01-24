@@ -11,7 +11,7 @@ public class RectangleTexturedRenderer extends SimpleGuiObjectRenderer {
     protected final AbstractTexture texture;
 
     public RectangleTexturedRenderer(GuiObject guiObject, TextureRegister textureRegister) {
-        this(guiObject, Engine.assetsManager.getTexture(textureRegister));
+        this(guiObject, Engine.getAssetsManager().getTexture(textureRegister));
     }
 
     public RectangleTexturedRenderer(GuiObject guiObject, AbstractTexture texture) {

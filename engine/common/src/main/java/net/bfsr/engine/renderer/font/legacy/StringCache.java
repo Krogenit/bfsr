@@ -531,4 +531,9 @@ public class StringCache {
         float v = height - getAscent(string, fontSize);
         return Math.round(v / 2.0f);
     }
+
+    public void clear() {
+        glyphCache.clear();
+        stringCache.clear();
+    }
 }

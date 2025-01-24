@@ -7,20 +7,22 @@ import net.bfsr.client.world.entity.EntitySpawnLogicType;
 import net.bfsr.client.world.entity.EntitySpawnLoginRegistry;
 import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.server.entity.PacketSpawnEntity;
+import net.bfsr.world.World;
 
 import java.net.InetSocketAddress;
 
 public class PacketSpawnEntityHandler extends PacketHandler<PacketSpawnEntity, NetworkSystem> {
     private static final EntitySpawnLogicType[] SPAWN_LOGIC_TYPES = EntitySpawnLogicType.values();
 
+    private final EntitySpawnLoginRegistry entitySpawnLoginRegistry = Client.get().getEntitySpawnLoginRegistry();
+
     @Override
     public void handle(PacketSpawnEntity packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
-        Client client = Client.get();
-        if (client.getWorld().getEntityById(packet.getEntityPacketSpawnData().getEntityId()) == null) {
-            EntitySpawnLoginRegistry entitySpawnLoginRegistry = client.getEntitySpawnLoginRegistry();
+        World world = Client.get().getWorld();
+        if (world.getEntityById(packet.getEntityPacketSpawnData().getEntityId()) == null) {
             entitySpawnLoginRegistry.spawn(SPAWN_LOGIC_TYPES[packet.getEntityPacketSpawnData().getType().ordinal()],
-                    packet.getEntityPacketSpawnData());
+                    packet.getEntityPacketSpawnData(), world);
         }
     }
 }

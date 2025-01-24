@@ -3,7 +3,6 @@ package net.bfsr.editor.gui.builder;
 import net.bfsr.editor.gui.property.PropertyComponent;
 import net.bfsr.editor.gui.property.SimplePropertyList;
 import net.bfsr.editor.property.Property;
-import net.bfsr.engine.renderer.font.Font;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -12,9 +11,10 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
+@SuppressWarnings("rawtypes")
 public class ListBuilder extends ComponentBuilder {
     @Override
-    public PropertyComponent build(int width, int height, String propertyName, int offsetX, Font font, int fontSize,
+    public PropertyComponent build(int width, int height, String propertyName, int offsetX, String fontName, int fontSize,
                                    int stringOffsetY, List<Field> fields, Object[] values, Object object,
                                    BiConsumer<Object, Integer> valueSetterConsumer) {
         Object value = values[0];
@@ -24,8 +24,8 @@ public class ListBuilder extends ComponentBuilder {
         Class<?> listElementClass = (Class<?>) type.getActualTypeArguments()[0];
         Property annotation = field.getAnnotation(Property.class);
 
-        SimplePropertyList property = createProperty(width, height, propertyName, offsetX, font, fontSize, stringOffsetY,
-                fields, values, object, valueSetterConsumer, annotation, () -> {
+        SimplePropertyList property = createProperty(width, height, propertyName, offsetX, fontName, fontSize, stringOffsetY, fields,
+                values, object, valueSetterConsumer, annotation, () -> {
                     try {
                         return listElementClass.getConstructor().newInstance();
                     } catch (InstantiationException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
@@ -42,12 +42,10 @@ public class ListBuilder extends ComponentBuilder {
         return property;
     }
 
-    protected SimplePropertyList createProperty(int width, int height, String propertyName, int offsetX, Font font,
-                                                int fontSize, int stringOffsetY, List<Field> fields, Object[] values,
-                                                Object object, BiConsumer<Object, Integer> valueSetterConsumer,
-                                                Property annotation, Supplier supplier) {
-
-        return new SimplePropertyList<>(width, height, propertyName, font, fontSize, offsetX, stringOffsetY, supplier, object,
-                fields, values, annotation.arrayElementType(), annotation.arrayElementName(), valueSetterConsumer);
+    protected SimplePropertyList createProperty(int width, int height, String propertyName, int offsetX, String fontName, int fontSize,
+                                                int stringOffsetY, List<Field> fields, Object[] values, Object object,
+                                                BiConsumer<Object, Integer> valueSetterConsumer, Property annotation, Supplier supplier) {
+        return new SimplePropertyList<>(width, height, propertyName, fontName, fontSize, offsetX, stringOffsetY, supplier, object, fields,
+                values, annotation.arrayElementType(), annotation.arrayElementName(), valueSetterConsumer);
     }
 }

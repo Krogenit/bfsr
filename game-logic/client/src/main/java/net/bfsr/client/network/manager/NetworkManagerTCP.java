@@ -1,7 +1,11 @@
 package net.bfsr.client.network.manager;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -32,7 +36,7 @@ public class NetworkManagerTCP {
                 socketChannel.pipeline().addLast("slicer", new FrameDecoder());
                 socketChannel.pipeline().addLast("prepender", new LengthPrepender());
 
-                socketChannel.pipeline().addLast("decoder", new MessageDecoderTCP());
+                socketChannel.pipeline().addLast("decoder", new MessageDecoderTCP(networkSystem));
                 socketChannel.pipeline().addLast("encoder", new PacketEncoder(networkSystem));
 
                 socketChannel.pipeline().addLast("handler", new MessageHandlerTCP(networkSystem));

@@ -265,7 +265,7 @@ public class Fixture {
 
         for (int i = 0; i < proxyCount; ++i) {
             FixtureProxy proxy = proxies[i];
-            shape.computeAABB(proxy.aabb, xf, i);
+            shape.computeAABB(proxy.aabb, xf.position.x, xf.position.y, xf.rotation.sin, xf.rotation.cos, i);
             proxy.proxyId = broadPhase.createProxy(proxy.aabb, proxy);
             proxy.fixture = this;
             proxy.childIndex = i;
@@ -305,8 +305,10 @@ public class Fixture {
             // Compute an AABB that covers the swept shape (may miss some rotation effect).
             final AABB aabb1 = pool1;
             final AABB aab = pool2;
-            shape.computeAABB(aabb1, transform1, proxy.childIndex);
-            shape.computeAABB(aab, transform2, proxy.childIndex);
+            shape.computeAABB(aabb1, transform1.position.x, transform1.position.y, transform1.rotation.sin, transform1.rotation.cos,
+                    proxy.childIndex);
+            shape.computeAABB(aab, transform2.position.x, transform2.position.y, transform2.rotation.sin, transform2.rotation.cos,
+                    proxy.childIndex);
 
             proxy.aabb.lowerBound.x =
                     aabb1.lowerBound.x < aab.lowerBound.x ? aabb1.lowerBound.x : aab.lowerBound.x;

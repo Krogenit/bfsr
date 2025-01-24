@@ -1,7 +1,7 @@
 package net.bfsr.engine.renderer.texture;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
-import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.FrameBuffer;
 import net.bfsr.engine.renderer.buffer.BufferType;
@@ -102,8 +102,8 @@ public final class TextureGenerator extends AbstractTextureGenerator {
     }
 
     @Override
-    public Texture generateNebulaTexture(int width, int height, XoRoShiRo128PlusRandom random) {
-        AbstractGUIRenderer guiRenderer = Engine.renderer.guiRenderer;
+    public Texture generateNebulaTexture(int width, int height, XoRoShiRo128PlusRandom random, AbstractRenderer renderer) {
+        AbstractGUIRenderer guiRenderer = renderer.getGuiRenderer();
         int renderId = guiRenderer.add(0, 0, 1, 1, 1.0f, 1.0f, 1.0f, 1.0f);
         int currentBindTexture = glGetInteger(GL_TEXTURE_BINDING_2D);
         NebulaShader nebulaShader = new NebulaShader();
@@ -278,7 +278,7 @@ public final class TextureGenerator extends AbstractTextureGenerator {
         starsShader.delete();
 
         FrameBuffer.unbind();
-        glViewport(0, 0, Engine.renderer.getScreenWidth(), Engine.renderer.getScreenHeight());
+        glViewport(0, 0, renderer.getScreenWidth(), renderer.getScreenHeight());
 
         buffer.delete();
         stars.delete();

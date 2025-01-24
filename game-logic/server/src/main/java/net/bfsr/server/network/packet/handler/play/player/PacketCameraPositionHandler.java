@@ -9,7 +9,8 @@ import java.net.InetSocketAddress;
 
 public class PacketCameraPositionHandler extends PacketHandler<PacketCameraPosition, PlayerNetworkHandler> {
     @Override
-    public void handle(PacketCameraPosition packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketCameraPosition packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         playerNetworkHandler.getPlayer().setPosition(packet.getX(), packet.getY());
     }
 }

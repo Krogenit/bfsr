@@ -1,17 +1,22 @@
 package net.bfsr.engine.renderer.gui;
 
+import net.bfsr.engine.gui.component.GuiObject;
+import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.primitive.Primitive;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import org.joml.Vector4f;
 
+import java.util.List;
+
 public abstract class AbstractGUIRenderer {
-    public abstract void init();
+    public abstract void init(AbstractRenderer renderer);
 
     public abstract void addPrimitive(Primitive primitive);
 
     public abstract void render();
     public abstract void render(int mode);
+    public abstract void render(List<GuiObject> guiStack, int mouseX, int mouseY);
 
     public abstract int add(int x, int y, int width, int height, Vector4f color);
     public abstract int add(int x, int y, int width, int height, float r, float g, float b, float a);
@@ -34,7 +39,6 @@ public abstract class AbstractGUIRenderer {
 
     public abstract void addDrawCommand(int id);
     public abstract void addDrawCommand(int id, int baseVertex);
-    public abstract void setIndexCount(int id, int count);
 
     public abstract void setPosition(int id, int x, int y);
     public abstract void setPosition(int id, float x, float y);
@@ -56,8 +60,6 @@ public abstract class AbstractGUIRenderer {
     public abstract void setLastSize(int id, int width, int height);
     public abstract void setLastColor(int id, Vector4f color);
     public abstract void setLastColor(int id, float r, float g, float b, float a);
-
-    public abstract int getRenderObjectsCount();
 
     public abstract void removeObject(int id);
     public abstract void removeObject(int id, BufferType bufferType);

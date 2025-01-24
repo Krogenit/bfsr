@@ -1,14 +1,16 @@
 package net.bfsr.engine.input;
 
-import static org.lwjgl.glfw.GLFW.*;
+import lombok.RequiredArgsConstructor;
 
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+import static org.lwjgl.glfw.GLFW.glfwGetKey;
+import static org.lwjgl.glfw.GLFW.glfwSetCharCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
+
+@RequiredArgsConstructor
 public final class Keyboard extends AbstractKeyboard {
-    private long window;
-
-    @Override
-    public void init(long window) {
-        this.window = window;
-    }
+    private final long window;
 
     @Override
     public void setInputHandler(AbstractInputHandler inputHandler) {
@@ -26,4 +28,7 @@ public final class Keyboard extends AbstractKeyboard {
     public boolean isKeyDown(int keyCode) {
         return glfwGetKey(window, keyCode) == GLFW_PRESS;
     }
+
+    @Override
+    public void clear() {}
 }

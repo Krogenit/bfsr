@@ -2,7 +2,6 @@ package net.bfsr.client.settings;
 
 import lombok.Getter;
 import net.bfsr.client.Client;
-import net.bfsr.client.language.Lang;
 import net.bfsr.engine.Engine;
 import net.bfsr.settings.SettingsCategory;
 import net.bfsr.settings.option.BooleanOption;
@@ -10,8 +9,6 @@ import net.bfsr.settings.option.FloatOption;
 import net.bfsr.settings.option.IntegerOption;
 import net.bfsr.settings.option.SettingsOption;
 import net.bfsr.settings.option.StringOption;
-
-import java.util.function.BiConsumer;
 
 public enum ClientSettings {
     SOUND_VOLUME(SettingsCategory.SOUND, 0.0f, 1.0f, new FloatOption(0.1f), ConsumerUtils.FLOAT_DEFAULT_CONSUMER),
@@ -26,26 +23,26 @@ public enum ClientSettings {
     CAMERA_FOLLOW_PLAYER(SettingsCategory.CAMERA, new BooleanOption(true), ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
 
     LANGUAGE(SettingsCategory.LANGUAGE, new StringOption("eng"), (option, value) -> {
-        String nextLang = Lang.getNextLang(option.option.getString());
+        String nextLang = Client.get().getLanguageManager().getNextLang(option.option.getString());
         option.option.setValue(nextLang);
     }),
 
-    V_SYNC(SettingsCategory.GRAPHICS, new BooleanOption(true).addListener(value -> Engine.renderer.setVSync(value)),
+    V_SYNC(SettingsCategory.GRAPHICS, new BooleanOption(true).addListener(value -> Engine.getRenderer().setVSync(value)),
             ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
     MAX_FPS(SettingsCategory.GRAPHICS, 10, 240, new IntegerOption(60), ConsumerUtils.INTEGER_DEFAULT_CONSUMER),
     PERSISTENT_MAPPED_BUFFERS(SettingsCategory.GRAPHICS, new BooleanOption(true)
-            .addListener(value -> Engine.renderer.setPersistentMappedBuffers(value)),
+            .addListener(value -> Engine.getRenderer().setPersistentMappedBuffers(value)),
             ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
     ENTITIES_GPU_FRUSTUM_CULLING(SettingsCategory.GRAPHICS, new BooleanOption(false)
-            .addListener(value -> Engine.renderer.setEntitiesGPUFrustumCulling(value)),
+            .addListener(value -> Engine.getRenderer().setEntitiesGPUFrustumCulling(value)),
             ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
     PARTICLES_GPU_FRUSTUM_CULLING(SettingsCategory.GRAPHICS, new BooleanOption(true)
-            .addListener(value -> Engine.renderer.setParticlesGPUFrustumCulling(value)),
+            .addListener(value -> Engine.getRenderer().setParticlesGPUFrustumCulling(value)),
             ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
 
     IS_DEBUG(SettingsCategory.DEBUG, new BooleanOption(false), ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
-    IS_PROFILING(SettingsCategory.DEBUG, new BooleanOption(false).addListener(value -> Client.get().getProfiler().setEnable(value)),
-            ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
+    IS_PROFILING(SettingsCategory.DEBUG, new BooleanOption(false)
+            .addListener(value -> Client.get().getProfiler().setEnable(value)), ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
     SHOW_DEBUG_BOXES(SettingsCategory.DEBUG, new BooleanOption(false)
             .addListener(value -> Client.get().getGlobalRenderer().setDebugBoxesEnabled(value)),
             ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER);
@@ -57,27 +54,27 @@ public enum ClientSettings {
     @Getter
     private final float maxValue;
     private final SettingsOption<?> option;
-    private final BiConsumer<ClientSettings, Object> runnable;
+    private final ChangeValueConsumer changeValueConsumer;
 
-    ClientSettings(SettingsCategory category, SettingsOption<?> option, BiConsumer<ClientSettings, Object> runnable) {
-        this(category, 0, 0, option, runnable);
+    ClientSettings(SettingsCategory category, SettingsOption<?> option, ChangeValueConsumer changeValueConsumer) {
+        this(category, 0, 0, option, changeValueConsumer);
     }
 
     ClientSettings(SettingsCategory category, float minValue, float maxValue, SettingsOption<?> option,
-                   BiConsumer<ClientSettings, Object> runnable) {
+                   ChangeValueConsumer changeValueConsumer) {
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.category = category;
         this.option = option;
-        this.runnable = runnable;
+        this.changeValueConsumer = changeValueConsumer;
     }
 
     public void changeValue(Object newValue) {
-        runnable.accept(this, newValue);
+        changeValueConsumer.change(this, newValue);
     }
 
     public void changeValue() {
-        runnable.accept(this, null);
+        changeValueConsumer.change(this, null);
     }
 
     public void setFloat(float value) {
@@ -139,5 +136,10 @@ public enum ClientSettings {
         }
 
         return stringBuilder.toString();
+    }
+
+    @FunctionalInterface
+    public interface ChangeValueConsumer {
+        void change(ClientSettings settings, Object value);
     }
 }

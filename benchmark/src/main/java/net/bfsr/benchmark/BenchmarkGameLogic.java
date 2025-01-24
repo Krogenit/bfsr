@@ -8,14 +8,13 @@ import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.component.weapon.beam.BeamRegistry;
 import net.bfsr.config.component.weapon.gun.GunRegistry;
 import net.bfsr.config.entity.bullet.DamageConfigurable;
-import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.config.entity.wreck.WreckRegistry;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
-import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.entity.wreck.Wreck;
@@ -29,8 +28,8 @@ public class BenchmarkGameLogic extends Client {
     private final XoRoShiRo128PlusPlusRandom random = new XoRoShiRo128PlusPlusRandom();
     private int pauseAfterTicks = 10;
 
-    public BenchmarkGameLogic(Profiler profiler) {
-        super(profiler);
+    public BenchmarkGameLogic(Profiler profiler, EventBus eventBus) {
+        super(profiler, eventBus);
     }
 
     @Override
@@ -43,12 +42,10 @@ public class BenchmarkGameLogic extends Client {
     }
 
     private void spawnObjects() {
+        ShipFactory shipFactory = getShipFactory();
         ConfigConverterManager configManager = getConfigConverterManager();
-        ShipOutfitter shipOutfitter = new ShipOutfitter(configManager);
-        ShipRegistry shipRegistry = configManager.getConverter(ShipRegistry.class);
         GunRegistry gunRegistry = configManager.getConverter(GunRegistry.class);
         BeamRegistry beamRegistry = configManager.getConverter(BeamRegistry.class);
-        ShipFactory shipFactory = new ShipFactory(shipRegistry, shipOutfitter);
         World world = getWorld();
 
         int shipsCount = 1000;

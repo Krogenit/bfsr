@@ -16,9 +16,9 @@ import net.bfsr.editor.object.ship.ShipProperties;
 import net.bfsr.editor.object.ship.TestShip;
 import net.bfsr.editor.property.holder.Vector2fPropertiesHolder;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.entity.GameObject;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.Label;
-import net.bfsr.entity.GameObject;
 import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.faction.Faction;
 import org.joml.Vector2f;
@@ -29,10 +29,11 @@ import java.util.List;
 
 @Log4j2
 public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
+    private final Client client = Client.get();
     private TestShip testShip;
     private final ShipConverter converter = Mappers.getMapper(ShipConverter.class);
     private boolean polygonCreationMode;
-    private final Label polygonCreationModeString = new Label(font, "Polygon creation mode", fontSize);
+    private final Label polygonCreationModeString = new Label(font.getFontName(), "Polygon creation mode", fontSize);
     private PolygonProperty polygonProperty;
     private final GameObject polygonObject = new GameObject();
     private boolean lastDebugBoxesMode;
@@ -40,7 +41,8 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
     public GuiShipEditor() {
         super("Ships", Client.get().getConfigConverterManager().getConverter(ShipRegistry.class), Mappers.getMapper(ShipConverter.class),
                 ShipConfig.class, ShipProperties.class);
-        Client.get().getEntityRenderer().addRender(new Render(polygonObject) {
+
+        client.getEntityRenderer().addRender(new Render(polygonObject) {
             @Override
             public void update() {}
 
@@ -75,17 +77,17 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
 
             if (testShip != null) {
                 testShip.setDead();
-                Client.get().getEntityRenderer().removeRenderById(testShip.getId());
+                client.getEntityRenderer().removeRenderById(testShip.getId());
             }
 
             try {
                 testShip = new TestShip(new ShipData(converter.from(properties), "ship", 0, 0));
-                testShip.init(Client.get().getWorld(), -1);
+                testShip.init(client.getWorld(), -1);
                 testShip.setFaction(Faction.HUMAN);
                 testShip.setSpawned();
 
                 try {
-                    new ShipOutfitter(Client.get().getConfigConverterManager()).outfit(testShip);
+                    new ShipOutfitter(client.getConfigConverterManager()).outfit(testShip);
                 } catch (Exception e) {
                     log.error("Can't outfit ship", e);
                 }
@@ -98,7 +100,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
                     }
                 };
                 render.init();
-                Client.get().getEntityRenderer().addRender(render);
+                client.getEntityRenderer().addRender(render);
                 render.getMaskTexture().createEmpty();
             } catch (Exception e) {
                 log.error("Can't create ship for selected entry", e);
@@ -131,11 +133,12 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
     }
 
     @Override
-    public GuiObject mouseLeftRelease() {
-        GuiObject child = super.mouseLeftRelease();
+    public GuiObject mouseLeftRelease(int mouseX, int mouseY) {
+        GuiObject child = super.mouseLeftRelease(mouseX, mouseY);
 
-        if (child == null && polygonCreationMode && !inspectionPanel.isMouseHover() && !propertiesPanel.isIntersectsWithMouse()) {
-            Vector2f position = Engine.mouse.getWorldPosition(renderer.camera);
+        if (child == null && polygonCreationMode && !inspectionPanel.isMouseHover() &&
+                !propertiesPanel.isIntersectsWithMouse(mouseX, mouseY)) {
+            Vector2f position = Engine.getMouse().getWorldPosition(renderer.getCamera());
             polygonProperty.addProperty(new Vector2fPropertiesHolder(position.x, position.y));
         }
 

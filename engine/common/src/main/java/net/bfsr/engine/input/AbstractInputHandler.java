@@ -10,11 +10,9 @@ public abstract class AbstractInputHandler {
         mouseConsumers[0][0] = action -> mouseLeftRelease();
         mouseConsumers[1][1] = action -> mouseRightClick();
         mouseConsumers[1][0] = action -> mouseRightRelease();
-    }
 
-    public void init() {
-        Engine.mouse.setInputHandler(this);
-        Engine.keyboard.setInputHandler(this);
+        Engine.getMouse().setInputHandler(this);
+        Engine.getKeyboard().setInputHandler(this);
     }
 
     public void mouseInput(int button, int action) {

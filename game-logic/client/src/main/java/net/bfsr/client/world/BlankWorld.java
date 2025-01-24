@@ -7,7 +7,7 @@ public final class BlankWorld extends World {
     private static final BlankWorld BLANK_WORLD = new BlankWorld();
 
     private BlankWorld() {
-        super(null, null, 0, null, null, null, null, new CommonCollisionHandler(null));
+        super(null, 0, null, null, null, null, new CommonCollisionHandler(null));
     }
 
     @Override

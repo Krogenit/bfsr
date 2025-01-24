@@ -10,7 +10,7 @@ public class TexturedInputBoxRenderer extends InputBoxRenderer {
 
     public TexturedInputBoxRenderer(InputBox inputBox, TextureRegister textureRegister) {
         super(inputBox);
-        this.texture = Engine.assetsManager.getTexture(textureRegister);
+        this.texture = Engine.getAssetsManager().getTexture(textureRegister);
     }
 
     @Override

@@ -6,10 +6,7 @@ import net.bfsr.engine.renderer.camera.Camera;
 import net.bfsr.engine.renderer.culling.GPUFrustumCullingSystem;
 import net.bfsr.engine.renderer.debug.DebugRenderer;
 import net.bfsr.engine.renderer.debug.OpenGLDebugUtils;
-import net.bfsr.engine.renderer.font.StringGeometryBuilder;
-import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
-import net.bfsr.engine.renderer.font.stb.STBTrueTypeGlyphsBuilder;
-import net.bfsr.engine.renderer.font.truetype.TrueTypeGlyphsBuilder;
+import net.bfsr.engine.renderer.font.string.StringGeometryBuilder;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.shader.BaseShader;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
@@ -74,9 +71,10 @@ public class Renderer extends AbstractRenderer {
     private FloatBuffer interpolationBuffer;
     private long interpolationBufferAddress;
 
-    public Renderer(Profiler profiler) {
-        super(new Camera(), new BaseShader(), new StringGeometryBuilder(), new SpriteRenderer(), new GuiRenderer(),
-                new DebugRenderer(), new TextureGenerator(), new GPUFrustumCullingSystem(), new ParticleRenderer());
+    public Renderer(Profiler profiler, long window, int screenWidth, int screenHeight, AbstractTexture dummyTexture) {
+        super(window, screenWidth, screenHeight, dummyTexture, new Camera(), new BaseShader(), new StringGeometryBuilder(),
+                new SpriteRenderer(), new GuiRenderer(), new DebugRenderer(), new TextureGenerator(), new GPUFrustumCullingSystem(),
+                new ParticleRenderer());
         this.profiler = profiler;
     }
 
@@ -270,16 +268,6 @@ public class Renderer extends AbstractRenderer {
     @Override
     public void fullTexture(AbstractTexture texture, int internalFormat, int format, ByteBuffer value) {
         glClearTexImage(texture.getId(), 0, format, GL11.GL_UNSIGNED_BYTE, value);
-    }
-
-    @Override
-    public GlyphsBuilder createSTBTrueTypeGlyphsBuilder(String fontFile) {
-        return new STBTrueTypeGlyphsBuilder(fontFile);
-    }
-
-    @Override
-    public GlyphsBuilder createTrueTypeGlyphsBuilder(String fontFile) {
-        return new TrueTypeGlyphsBuilder(fontFile);
     }
 
     @Override

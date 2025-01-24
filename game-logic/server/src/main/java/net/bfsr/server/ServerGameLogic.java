@@ -1,102 +1,111 @@
 package net.bfsr.server;
 
+import io.netty.channel.socket.DatagramChannel;
+import io.netty.channel.socket.SocketChannel;
 import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.config.ConfigConverterManager;
+import net.bfsr.config.entity.ship.ShipRegistry;
+import net.bfsr.config.entity.wreck.WreckRegistry;
 import net.bfsr.damage.DamageSystem;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.logic.GameLogic;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.util.Side;
 import net.bfsr.entity.EntityIdManager;
-import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.ShipFactory;
+import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.logic.LogicType;
+import net.bfsr.server.ai.AiFactory;
 import net.bfsr.server.config.ServerSettings;
+import net.bfsr.server.database.PlayerRepository;
 import net.bfsr.server.entity.EntityManager;
 import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.ship.ShipSpawner;
-import net.bfsr.server.event.PlayerDisconnectEvent;
+import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.event.listener.entity.ShipEventListener;
 import net.bfsr.server.event.listener.module.ModuleEventListener;
 import net.bfsr.server.event.listener.module.weapon.WeaponEventListener;
 import net.bfsr.server.module.ShieldLogic;
 import net.bfsr.server.network.NetworkSystem;
+import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.physics.CollisionHandler;
-import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
 import net.bfsr.world.World;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.List;
 
 @Log4j2
 public abstract class ServerGameLogic extends GameLogic {
-    @Getter
     private static ServerGameLogic instance;
 
     @Getter
     private int ups;
 
     @Getter
-    private net.bfsr.world.World world;
+    private World world;
 
     @Getter
     private final ConfigConverterManager configConverterManager = new ConfigConverterManager();
     @Getter
-    private final PlayerManager playerManager = createPlayerManager();
-    @Getter
-    private final NetworkSystem networkSystem = new NetworkSystem(playerManager);
-    private ServerSettings settings;
-    private final ShipSpawner shipSpawner = new ShipSpawner();
+    private final ServerSettings settings = createSettings();
     @Getter
     private final DamageSystem damageSystem = new DamageSystem();
     @Getter
+    private final ShipFactory shipFactory = new ShipFactory(configConverterManager.getConverter(ShipRegistry.class),
+            new ShipOutfitter(configConverterManager));
+    @Getter
+    private final PlayerManager playerManager = new PlayerManager(shipFactory, createPlayerRepository(settings));
+    @Getter
+    private final NetworkSystem networkSystem = new NetworkSystem(playerManager);
+    @Getter
     private final EntityTrackingManager entityTrackingManager = new EntityTrackingManager(eventBus, networkSystem);
+    @Getter
+    private final AiFactory aiFactory = new AiFactory(entityTrackingManager);
+    @Getter
+    private final ShipSpawner shipSpawner = new ShipSpawner(shipFactory, aiFactory);
+    private final ShipOutfitter shipOutfitter = new ShipOutfitter(configConverterManager);
+    private final WreckSpawner wreckSpawner = new WreckSpawner(configConverterManager.getConverter(WreckRegistry.class));
 
-    protected ServerGameLogic(Profiler profiler) {
-        super(profiler);
+    protected ServerGameLogic(Profiler profiler, EventBus eventBus) {
+        super(Side.SERVER, profiler, eventBus);
         instance = this;
     }
 
-    @Override
     public void init() {
-        world = new World(profiler, Side.SERVER, new XoRoShiRo128PlusPlusRandom().nextLong(), eventBus, new EntityManager(),
-                new EntityIdManager(), this, new CollisionHandler(eventBus));
+        world = new World(profiler, new XoRoShiRo128PlusPlusRandom().nextLong(), eventBus, new EntityManager(),
+                new EntityIdManager(), this, new CollisionHandler(eventBus, damageSystem, entityTrackingManager, wreckSpawner));
         world.init();
         profiler.setEnable(true);
         networkSystem.init();
-        configConverterManager.init();
-        settings = createSettings();
-        playerManager.init(settings);
-        startupNetworkSystem(settings);
+        startupNetworkSystem();
         initListeners();
-        registerLogic(LogicType.SHIELD_UPDATE.ordinal(), new ShieldLogic());
-        shipSpawner.init();
-        super.init();
+        registerLogic(LogicType.SHIELD_UPDATE.ordinal(), new ShieldLogic(entityTrackingManager));
     }
 
     private void initListeners() {
-        eventBus.register(new ShipEventListener());
-        eventBus.register(new WeaponEventListener());
-        eventBus.register(new ModuleEventListener());
+        eventBus.register(new ShipEventListener(wreckSpawner, entityTrackingManager, playerManager));
+        eventBus.register(new WeaponEventListener(entityTrackingManager, world));
+        eventBus.register(new ModuleEventListener(entityTrackingManager));
     }
 
     protected ServerSettings createSettings() {
         return new ServerSettings();
     }
 
-    protected abstract PlayerManager createPlayerManager();
+    protected abstract PlayerRepository createPlayerRepository(ServerSettings settings);
 
-    private void startupNetworkSystem(ServerSettings serverSettings) {
+    private void startupNetworkSystem() {
         InetAddress inetaddress;
         try {
-            inetaddress = InetAddress.getByName(serverSettings.getHostName());
-            networkSystem.startup(inetaddress, serverSettings.getPort());
-            log.info("Set server address {}:{}", serverSettings.getHostName(), serverSettings.getPort());
+            inetaddress = InetAddress.getByName(settings.getHostName());
+            networkSystem.startup(this, inetaddress, settings.getPort());
+            log.info("Set server address {}:{}", settings.getHostName(), settings.getPort());
         } catch (UnknownHostException e) {
             throw new IllegalStateException(
-                    "Can't start server on address " + serverSettings.getHostName() + ":" + serverSettings.getPort(), e);
+                    "Can't start server on address " + settings.getHostName() + ":" + settings.getPort(), e);
         }
     }
 
@@ -118,26 +127,18 @@ public abstract class ServerGameLogic extends GameLogic {
         entityTrackingManager.update(time, world.getEntities());
     }
 
-    public void onPlayerDisconnected(Player player) {
-        playerManager.removePlayer(player);
-        playerManager.save(player);
-        List<Ship> ships = player.getShips();
-        for (int i = 0, shipsSize = ships.size(); i < shipsSize; i++) {
-            Ship ship = ships.get(i);
-            if (ship.getWorld() != null) {
-                ship.setDead();
-            }
-        }
-
-        eventBus.publish(new PlayerDisconnectEvent(player));
+    public PlayerNetworkHandler createPlayerNetworkHandler(int connectionId, SocketChannel socketChannel, DatagramChannel datagramChannel,
+                                                           boolean singlePlayer) {
+        return new PlayerNetworkHandler(connectionId, socketChannel, datagramChannel, singlePlayer, world, playerManager,
+                entityTrackingManager, aiFactory, eventBus, networkSystem.getPacketRegistry(), shipOutfitter);
     }
 
     void setFps(int fps) {
         ups = fps;
     }
 
-    public static NetworkSystem getNetwork() {
-        return instance.networkSystem;
+    public static ServerGameLogic get() {
+        return instance;
     }
 
     @Override

@@ -11,7 +11,7 @@ public class PauseButton extends Button {
     public PauseButton(Pausable pausable, int width, int height) {
         super(width, height);
         this.pausable = pausable;
-        setLeftClickRunnable(() -> {
+        setLeftClickConsumer((mouseX, mouseY) -> {
             pausable.setPause(!pausable.isPaused());
             ((PauseButtonRenderer) getRenderer()).setPause(pausable.isPaused());
         });
@@ -133,7 +133,7 @@ public class PauseButton extends Button {
         }
 
         @Override
-        public void render() {
+        public void render(int mouseX, int mouseY) {
             guiRenderer.addDrawCommand(outlineId);
             guiRenderer.addDrawCommand(bodyId);
             guiRenderer.addDrawCommand(pauseId1);

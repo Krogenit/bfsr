@@ -41,8 +41,7 @@ public class RigidBodyRender extends Render {
     }
 
     public RigidBodyRender(RigidBody rigidBody, Path texturePath) {
-        this(Engine.assetsManager.getTexture(texturePath), rigidBody,
-                1.0f, 1.0f, 1.0f, 1.0f);
+        this(Engine.getAssetsManager().getTexture(texturePath), rigidBody, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     @Override
@@ -68,7 +67,8 @@ public class RigidBodyRender extends Render {
 
     @Override
     protected void updateAABB() {
-        MathUtils.computeAABB(geometryAABB, rigidBody.getBody(), rigidBody.getBody().getTransform(), cache);
+        MathUtils.computeAABB(geometryAABB, rigidBody.getBody(), rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(),
+                cache);
         aabb.set(geometryAABB.getMinX(), geometryAABB.getMinY(), geometryAABB.getMaxX(), geometryAABB.getMaxY());
     }
 
@@ -80,12 +80,21 @@ public class RigidBodyRender extends Render {
     @Override
     public void renderDebug() {
         Body body = rigidBody.getBody();
-        MathUtils.computeAABB(AABB, body, body.getTransform(), CACHE);
-        debugRenderer.renderAABB(AABB, BODY_AABB_COLOR);
-        debugRenderer.renderAABB(aabb, RENDER_AABB_COLOR);
 
-        renderDebug(body, lastPosition.x + (object.getX() - lastPosition.x) * renderer.getInterpolation(),
-                lastPosition.y + (object.getY() - lastPosition.y) * renderer.getInterpolation(), rigidBody.getSin(), rigidBody.getCos());
+        float interpolation = renderer.getInterpolation();
+        float x = lastPosition.x + (object.getX() - lastPosition.x) * interpolation;
+        float y = lastPosition.y + (object.getY() - lastPosition.y) * interpolation;
+        float sin = lastSin + (rigidBody.getSin() - lastSin) * interpolation;
+        float cos = lastCos + (rigidBody.getCos() - lastCos) * interpolation;
+
+        MathUtils.computeAABB(AABB, body, x, y, sin, cos, CACHE);
+        debugRenderer.renderAABB(AABB, BODY_AABB_COLOR);
+        debugRenderAABB.set(lastUpdateAABB.getMinX() + (aabb.getMinX() - lastUpdateAABB.getMinX()) * interpolation,
+                lastUpdateAABB.getMinY() + (aabb.getMinY() - lastUpdateAABB.getMinY()) * interpolation,
+                lastUpdateAABB.getMaxX() + (aabb.getMaxX() - lastUpdateAABB.getMaxX()) * interpolation,
+                lastUpdateAABB.getMaxY() + (aabb.getMaxY() - lastUpdateAABB.getMaxY()) * interpolation);
+        debugRenderer.renderAABB(debugRenderAABB, RENDER_AABB_COLOR);
+        renderDebug(body, x, y, sin, cos);
     }
 
     private void renderDebug(Body body, float x, float y, float sin, float cos) {

@@ -3,9 +3,7 @@ package net.bfsr.engine.gui.component;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.renderer.GuiObjectRenderer;
-import net.bfsr.engine.util.RunnableUtils;
 import org.joml.Vector4f;
 
 import javax.annotation.Nullable;
@@ -18,6 +16,8 @@ import java.util.function.Supplier;
 
 @NoArgsConstructor
 public class GuiObject {
+    protected static final BiConsumer<Integer, Integer> EMPTY_BI_CONSUMER = (mouseX, mouseY) -> {};
+
     @Getter
     protected int x;
     @Getter
@@ -34,8 +34,6 @@ public class GuiObject {
     protected final Vector4f hoverColor = new Vector4f(1.0f);
     @Getter
     protected final Vector4f outlineHoverColor = new Vector4f(1.0f);
-    @Setter
-    private Supplier<Boolean> intersectsCheckMethod = () -> isIntersects(Engine.mouse.getPosition().x, Engine.mouse.getGuiPosition().y);
     private BiFunction<Integer, Integer, Integer> widthFunction = (width, height) -> this.width;
     private BiFunction<Integer, Integer, Integer> heightFunction = (width, height) -> this.height;
     private BiFunction<Integer, Integer, Integer> xFunction = (width, height) -> 0;
@@ -44,13 +42,13 @@ public class GuiObject {
     @Setter
     protected boolean mouseHover;
     @Getter
-    protected Runnable leftClickRunnable = RunnableUtils.EMPTY_RUNNABLE;
+    protected BiConsumer<Integer, Integer> leftClickConsumer = EMPTY_BI_CONSUMER;
     @Getter
-    protected Runnable leftReleaseRunnable = RunnableUtils.EMPTY_RUNNABLE;
+    protected BiConsumer<Integer, Integer> leftReleaseConsumer = EMPTY_BI_CONSUMER;
     @Getter
-    protected Runnable rightClickRunnable = RunnableUtils.EMPTY_RUNNABLE;
+    protected BiConsumer<Integer, Integer> rightClickConsumer = EMPTY_BI_CONSUMER;
     @Getter
-    protected Runnable rightReleaseRunnable = RunnableUtils.EMPTY_RUNNABLE;
+    protected BiConsumer<Integer, Integer> rightReleaseConsumer = EMPTY_BI_CONSUMER;
     @Getter
     protected final List<GuiObject> guiObjects = new ArrayList<>();
     @Setter
@@ -71,6 +69,194 @@ public class GuiObject {
 
     protected GuiObject(int width, int height) {
         this(0, 0, width, height);
+    }
+
+    public void addIfAbsent(GuiObject guiObject) {
+        if (hasGuiObject(guiObject)) return;
+        add(guiObject);
+    }
+
+    public void add(GuiObject guiObject) {
+        guiObjects.add(guiObject);
+        guiObject.setParent(this);
+        guiObject.add();
+    }
+
+    public void addAt(int index, GuiObject guiObject) {
+        guiObjects.add(index, guiObject);
+        guiObject.setParent(this);
+        guiObject.add();
+    }
+
+    public int addBefore(GuiObject guiObject, GuiObject beforeObject) {
+        int index = guiObjects.indexOf(beforeObject);
+        if (index >= 0) {
+            addAt(index, guiObject);
+            return index;
+        } else {
+            throw new RuntimeException("Failed to add gui object " + guiObject + " before " + beforeObject);
+        }
+    }
+
+    public void add() {
+        updatePositionAndSize();
+        if (parent.isOnScene) {
+            addToScene();
+        }
+    }
+
+    public void addToScene() {
+        isOnScene = true;
+        renderer.addToScene();
+
+        for (int i = 0, size = guiObjects.size(); i < size; i++) {
+            guiObjects.get(i).addToScene();
+        }
+    }
+
+    public void remove(GuiObject guiObject) {
+        guiObjects.remove(guiObject);
+        guiObject.remove();
+        guiObject.setParent(BlankGuiObject.INSTANCE);
+    }
+
+    public void remove() {
+        if (isOnScene) {
+            isOnScene = false;
+            mouseHover = false;
+            renderer.remove();
+
+            for (int i = 0, size = guiObjects.size(); i < size; i++) {
+                guiObjects.get(i).remove();
+            }
+        }
+    }
+
+    public void removeAll() {
+        for (int i = 0; i < guiObjects.size(); i++) {
+            guiObjects.get(i).setParent(BlankGuiObject.INSTANCE);
+        }
+
+        guiObjects.clear();
+    }
+
+    public void update(int mouseX, int mouseY) {
+        renderer.update(mouseX, mouseY);
+        for (int i = 0; i < guiObjects.size(); i++) {
+            guiObjects.get(i).update(mouseX, mouseY);
+        }
+    }
+
+    public void updateLastValues() {
+        renderer.updateLastValues();
+        for (int i = 0; i < guiObjects.size(); i++) {
+            guiObjects.get(i).updateLastValues();
+        }
+    }
+
+    @Nullable
+    public GuiObject mouseLeftClick(int mouseX, int mouseY) {
+        GuiObject child = null;
+        for (int i = 0; i < guiObjects.size(); i++) {
+            GuiObject child1 = guiObjects.get(i).mouseLeftClick(mouseX, mouseY);
+            if (child1 != null) {
+                child = child1;
+            }
+        }
+
+        return child != null ? child : mouseHover ? this : null;
+    }
+
+    @Nullable
+    public GuiObject mouseLeftRelease(int mouseX, int mouseY) {
+        GuiObject child = null;
+        for (int i = 0; i < guiObjects.size(); i++) {
+            GuiObject child1 = guiObjects.get(i).mouseLeftRelease(mouseX, mouseY);
+            if (child1 != null) {
+                child = child1;
+            }
+        }
+
+        return child != null ? child : mouseHover ? this : null;
+    }
+
+    @Nullable
+    public GuiObject mouseRightClick(int mouseX, int mouseY) {
+        GuiObject child = null;
+        for (int i = 0; i < guiObjects.size(); i++) {
+            GuiObject child1 = guiObjects.get(i).mouseRightClick(mouseX, mouseY);
+            if (child1 != null) {
+                child = child1;
+            }
+        }
+
+        return child != null ? child : mouseHover ? this : null;
+    }
+
+    @Nullable
+    public GuiObject mouseRightRelease() {
+        GuiObject child = null;
+        for (int i = 0; i < guiObjects.size(); i++) {
+            GuiObject child1 = guiObjects.get(i).mouseRightRelease();
+            if (child1 != null) {
+                child = child1;
+            }
+        }
+
+        return child != null ? child : mouseHover ? this : null;
+    }
+
+    public boolean mouseScroll(int mouseX, int mouseY, float scrollY) {
+        for (int i = 0; i < guiObjects.size(); i++) {
+            if (guiObjects.get(i).mouseScroll(mouseX, mouseY, scrollY)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean mouseMove(float x, float y) {
+        boolean moveMove = false;
+        for (int i = 0; i < guiObjects.size(); i++) {
+            if (guiObjects.get(i).mouseMove(x, y)) {
+                moveMove = true;
+            }
+        }
+
+        return moveMove || mouseHover;
+    }
+
+    public boolean input(int key) {
+        for (int i = 0; i < guiObjects.size(); i++) {
+            if (guiObjects.get(i).input(key)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean textInput(int key) {
+        for (int i = 0; i < guiObjects.size(); i++) {
+            if (guiObjects.get(i).textInput(key)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void onMouseHover() {
+        if (isOnScene) {
+            renderer.onMouseHover();
+        }
+    }
+
+    public void onMouseStopHover() {
+        if (isOnScene) {
+            renderer.onMouseStopHover();
+        }
     }
 
     public GuiObject atTopLeft(int x, int y) {
@@ -178,144 +364,6 @@ public class GuiObject {
         }
     }
 
-    public void add() {
-        updatePositionAndSize();
-        if (parent.isOnScene) {
-            addToScene();
-        }
-    }
-
-    public void remove() {
-        if (isOnScene) {
-            isOnScene = false;
-            mouseHover = false;
-            renderer.remove();
-
-            for (int i = 0, size = guiObjects.size(); i < size; i++) {
-                guiObjects.get(i).remove();
-            }
-        }
-    }
-
-    public void update() {
-        renderer.update();
-        for (int i = 0; i < guiObjects.size(); i++) {
-            guiObjects.get(i).update();
-        }
-    }
-
-    public void updateLastValues() {
-        renderer.updateLastValues();
-        for (int i = 0; i < guiObjects.size(); i++) {
-            guiObjects.get(i).updateLastValues();
-        }
-    }
-
-    @Nullable
-    public GuiObject mouseLeftClick() {
-        GuiObject child = null;
-        for (int i = 0; i < guiObjects.size(); i++) {
-            GuiObject child1 = guiObjects.get(i).mouseLeftClick();
-            if (child1 != null) {
-                child = child1;
-            }
-        }
-
-        return child != null ? child : mouseHover ? this : null;
-    }
-
-    @Nullable
-    public GuiObject mouseLeftRelease() {
-        GuiObject child = null;
-        for (int i = 0; i < guiObjects.size(); i++) {
-            GuiObject child1 = guiObjects.get(i).mouseLeftRelease();
-            if (child1 != null) {
-                child = child1;
-            }
-        }
-
-        return child != null ? child : mouseHover ? this : null;
-    }
-
-    @Nullable
-    public GuiObject mouseRightClick() {
-        GuiObject child = null;
-        for (int i = 0; i < guiObjects.size(); i++) {
-            GuiObject child1 = guiObjects.get(i).mouseRightClick();
-            if (child1 != null) {
-                child = child1;
-            }
-        }
-
-        return child != null ? child : mouseHover ? this : null;
-    }
-
-    @Nullable
-    public GuiObject mouseRightRelease() {
-        GuiObject child = null;
-        for (int i = 0; i < guiObjects.size(); i++) {
-            GuiObject child1 = guiObjects.get(i).mouseRightRelease();
-            if (child1 != null) {
-                child = child1;
-            }
-        }
-
-        return child != null ? child : mouseHover ? this : null;
-    }
-
-    public boolean mouseScroll(float y) {
-        for (int i = 0; i < guiObjects.size(); i++) {
-            if (guiObjects.get(i).mouseScroll(y)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public boolean mouseMove(float x, float y) {
-        boolean moveMove = false;
-        for (int i = 0; i < guiObjects.size(); i++) {
-            if (guiObjects.get(i).mouseMove(x, y)) {
-                moveMove = true;
-            }
-        }
-
-        return moveMove || mouseHover;
-    }
-
-    public boolean input(int key) {
-        for (int i = 0; i < guiObjects.size(); i++) {
-            if (guiObjects.get(i).input(key)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public boolean textInput(int key) {
-        for (int i = 0; i < guiObjects.size(); i++) {
-            if (guiObjects.get(i).textInput(key)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public void onMouseHover() {
-        if (isOnScene) {
-            renderer.onMouseHover();
-        }
-    }
-
-    public void onMouseStopHover() {
-        if (isOnScene) {
-            renderer.onMouseStopHover();
-        }
-    }
-
     protected void onParentSizeChanged(int width, int height) {
         updatePositionAndSize(width, height);
     }
@@ -339,47 +387,6 @@ public class GuiObject {
         parent.onChildPositionChanged(guiObject, x, y);
     }
 
-    public void addIfAbsent(GuiObject guiObject) {
-        if (hasGuiObject(guiObject)) return;
-        add(guiObject);
-    }
-
-    public void add(GuiObject guiObject) {
-        guiObjects.add(guiObject);
-        guiObject.setParent(this);
-        guiObject.add();
-    }
-
-    public void addAt(int index, GuiObject guiObject) {
-        guiObjects.add(index, guiObject);
-        guiObject.setParent(this);
-        guiObject.add();
-    }
-
-    public int addBefore(GuiObject guiObject, GuiObject beforeObject) {
-        int index = guiObjects.indexOf(beforeObject);
-        if (index >= 0) {
-            addAt(index, guiObject);
-            return index;
-        } else {
-            throw new RuntimeException("Failed to add gui object " + guiObject + " before " + beforeObject);
-        }
-    }
-
-    public void remove(GuiObject guiObject) {
-        guiObjects.remove(guiObject);
-        guiObject.remove();
-        guiObject.setParent(BlankGuiObject.INSTANCE);
-    }
-
-    public void removeAll() {
-        for (int i = 0; i < guiObjects.size(); i++) {
-            guiObjects.get(i).setParent(BlankGuiObject.INSTANCE);
-        }
-
-        guiObjects.clear();
-    }
-
     protected void forEach(Consumer<GuiObject> consumer) {
         for (int i = 0; i < guiObjects.size(); i++) {
             consumer.accept(guiObjects.get(i));
@@ -390,23 +397,23 @@ public class GuiObject {
         consumer.accept(xFunction.apply(parent.width, parent.height), yFunction.apply(parent.width, parent.height));
     }
 
-    public GuiObject setLeftClickRunnable(Runnable runnable) {
-        this.leftClickRunnable = runnable;
+    public GuiObject setLeftClickConsumer(BiConsumer<Integer, Integer> consumer) {
+        this.leftClickConsumer = consumer;
         return this;
     }
 
-    public GuiObject setLeftReleaseRunnable(Runnable runnable) {
-        this.leftReleaseRunnable = runnable;
+    public GuiObject setLeftReleaseConsumer(BiConsumer<Integer, Integer> consumer) {
+        this.leftReleaseConsumer = consumer;
         return this;
     }
 
-    public GuiObject setRightClickRunnable(Runnable runnable) {
-        this.rightClickRunnable = runnable;
+    public GuiObject setRightClickConsumer(BiConsumer<Integer, Integer> consumer) {
+        this.rightClickConsumer = consumer;
         return this;
     }
 
-    public GuiObject setRightReleaseRunnable(Runnable runnable) {
-        this.rightReleaseRunnable = runnable;
+    public GuiObject setRightReleaseConsumer(BiConsumer<Integer, Integer> consumer) {
+        this.rightReleaseConsumer = consumer;
         return this;
     }
 
@@ -585,8 +592,8 @@ public class GuiObject {
         return guiObjects.contains(object);
     }
 
-    public boolean isIntersectsWithMouse() {
-        return intersectsCheckMethod.get();
+    public boolean isIntersectsWithMouse(int mouseX, int mouseY) {
+        return isIntersects(mouseX, mouseY);
     }
 
     public boolean isIntersects(float x, float y) {
@@ -605,13 +612,13 @@ public class GuiObject {
                 sceneY <= sceneY1 + guiObject.height;
     }
 
-    public GuiObject getHovered(GuiObject hoveredObject) {
-        if (canBeHovered && isIntersectsWithMouse()) {
+    public GuiObject getHovered(GuiObject hoveredObject, int mouseX, int mouseY) {
+        if (canBeHovered && isIntersectsWithMouse(mouseX, mouseY)) {
             hoveredObject = this;
         }
 
         for (int i = 0, size = guiObjects.size(); i < size; i++) {
-            hoveredObject = guiObjects.get(i).getHovered(hoveredObject);
+            hoveredObject = guiObjects.get(i).getHovered(hoveredObject, mouseX, mouseY);
         }
 
         return hoveredObject;
@@ -623,15 +630,6 @@ public class GuiObject {
 
     public int getSceneY() {
         return y + parent.getSceneY();
-    }
-
-    public void addToScene() {
-        isOnScene = true;
-        renderer.addToScene();
-
-        for (int i = 0, size = guiObjects.size(); i < size; i++) {
-            guiObjects.get(i).addToScene();
-        }
     }
 
     public void clear() {

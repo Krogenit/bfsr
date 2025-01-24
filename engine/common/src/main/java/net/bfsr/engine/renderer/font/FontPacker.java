@@ -3,12 +3,13 @@ package net.bfsr.engine.renderer.font;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
 import it.unimi.dsi.fastutil.chars.CharList;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import net.bfsr.engine.renderer.font.glyph.DynamicFont;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class FontPacker<BITMAP extends FontBitMap> {
-    private final DynamicGlyphsBuilder<?> glyphsBuilder;
+    private final DynamicFont<?> glyphsBuilder;
     protected final int bitmapWidth;
     protected final int bitmapHeight;
     protected final int fontSize;
@@ -17,7 +18,7 @@ public abstract class FontPacker<BITMAP extends FontBitMap> {
     protected final Int2ObjectOpenHashMap<BITMAP> bitmapByCharMap = new Int2ObjectOpenHashMap<>();
     protected final String fontName;
 
-    public FontPacker(DynamicGlyphsBuilder<?> glyphsBuilder, int bitmapWidth, int bitmapHeight, int fontSize, String fontName) {
+    public FontPacker(DynamicFont<?> glyphsBuilder, int bitmapWidth, int bitmapHeight, int fontSize, String fontName) {
         this.glyphsBuilder = glyphsBuilder;
         this.bitmapWidth = bitmapWidth;
         this.bitmapHeight = bitmapHeight;
@@ -73,5 +74,14 @@ public abstract class FontPacker<BITMAP extends FontBitMap> {
 
     private boolean isCharCodeSupported(char charCode) {
         return glyphsBuilder.isCharCodeSupported(charCode);
+    }
+
+    public void clear() {
+        for (int i = 0; i < bitMaps.size(); i++) {
+            bitMaps.get(i).clear();
+        }
+
+        bitMaps.clear();
+        bitmapByCharMap.clear();
     }
 }

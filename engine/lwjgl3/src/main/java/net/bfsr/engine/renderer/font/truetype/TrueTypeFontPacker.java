@@ -2,9 +2,9 @@ package net.bfsr.engine.renderer.font.truetype;
 
 import it.unimi.dsi.fastutil.chars.CharList;
 import lombok.Getter;
-import net.bfsr.engine.renderer.font.DynamicGlyphsBuilder;
 import net.bfsr.engine.renderer.font.FontPackResult;
 import net.bfsr.engine.renderer.font.FontPacker;
+import net.bfsr.engine.renderer.font.glyph.DynamicFont;
 import org.lwjgl.util.freetype.FT_Face;
 import org.lwjgl.util.freetype.FT_GlyphSlot;
 import org.lwjgl.util.freetype.FreeType;
@@ -20,7 +20,7 @@ class TrueTypeFontPacker extends FontPacker<TrueTypeBitMap> {
     @Getter
     private int descender;
 
-    TrueTypeFontPacker(DynamicGlyphsBuilder<?> glyphsBuilder, FT_Face ftFace, int bitmapWidth, int bitmapHeight, int fontSize,
+    TrueTypeFontPacker(DynamicFont<?> glyphsBuilder, FT_Face ftFace, int bitmapWidth, int bitmapHeight, int fontSize,
                        String fontName) {
         super(glyphsBuilder, bitmapWidth, bitmapHeight, fontSize, fontName);
         this.ftFace = ftFace;

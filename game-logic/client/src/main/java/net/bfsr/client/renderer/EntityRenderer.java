@@ -19,19 +19,20 @@ import java.util.List;
 
 @RequiredArgsConstructor
 public class EntityRenderer {
-    private final AbstractRenderer renderer = Engine.renderer;
-    private final AbstractCamera camera = renderer.camera;
+    private final AbstractRenderer renderer = Engine.getRenderer();
+    private final AbstractCamera camera = renderer.getCamera();
 
-    private final EntityRenderRegistry entityRenderRegistry = new EntityRenderRegistry();
+    private final EntityRenderRegistry entityRenderRegistry;
     @Getter
-    private final WeaponRenderRegistry weaponRenderRegistry = new WeaponRenderRegistry();
+    private final WeaponRenderRegistry weaponRenderRegistry;
 
     private final List<Render> renders = new ArrayList<>();
     private final TIntObjectMap<Render> rendersMap = new TIntObjectHashMap<>();
 
-    public void init() {
-        Client.get().getEventBus().register(this);
-        entityRenderRegistry.init();
+    public EntityRenderer(Client client) {
+        this.entityRenderRegistry = new EntityRenderRegistry(client);
+        this.weaponRenderRegistry = new WeaponRenderRegistry();
+        client.getEventBus().register(this);
     }
 
     public void update() {

@@ -15,7 +15,7 @@ public class ConfigConverterManager {
     private final List<ConfigToDataConverter<?, ?>> configRegistryList = new ArrayList<>();
     private final TIntObjectMap<ConfigToDataConverter<?, ?>> configConverterById = new TIntObjectHashMap<>();
 
-    public void init() {
+    public ConfigConverterManager(ConfigToDataConverter<?, ?>... configToDataConverters) {
         Reflections reflections = new Reflections("net.bfsr.config");
         Set<Class<?>> classes = reflections.get(
                 Scanners.SubTypes.of(Scanners.TypesAnnotated.with(ConfigConverter.class)).asClass());
@@ -26,6 +26,10 @@ public class ConfigConverterManager {
                 throw new RuntimeException("Failed to create config registry instance for " + aClass.getName(), e);
             }
         });
+
+        for (int i = 0; i < configToDataConverters.length; i++) {
+            registerConfigRegistry(configToDataConverters[i]);
+        }
     }
 
     public void registerConfigRegistry(ConfigToDataConverter<?, ?> converter) {

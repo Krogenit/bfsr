@@ -35,8 +35,8 @@ public class ContextMenu extends GuiObject {
     }
 
     @Override
-    public GuiObject mouseLeftClick() {
-        GuiObject guiObject = super.mouseLeftClick();
+    public GuiObject mouseLeftClick(int mouseX, int mouseY) {
+        GuiObject guiObject = super.mouseLeftClick(mouseX, mouseY);
 
         if (guiObject == null) {
             close();
@@ -47,8 +47,8 @@ public class ContextMenu extends GuiObject {
     }
 
     @Override
-    public GuiObject mouseLeftRelease() {
-        GuiObject guiObject = super.mouseLeftRelease();
+    public GuiObject mouseLeftRelease(int mouseX, int mouseY) {
+        GuiObject guiObject = super.mouseLeftRelease(mouseX, mouseY);
         close();
         return guiObject != null ? guiObject : this;
     }
@@ -60,8 +60,8 @@ public class ContextMenu extends GuiObject {
     }
 
     @Override
-    public boolean mouseScroll(float y) {
-        super.mouseScroll(y);
+    public boolean mouseScroll(int mouseX, int mouseY, float scrollY) {
+        super.mouseScroll(mouseX, mouseY, scrollY);
         return true;
     }
 }

@@ -2,7 +2,6 @@ package net.bfsr.engine.gui.component;
 
 import lombok.Getter;
 import net.bfsr.engine.gui.renderer.MinimizableGuiObjectRenderer;
-import net.bfsr.engine.renderer.font.Font;
 import org.joml.Vector4f;
 
 import java.util.ArrayList;
@@ -16,7 +15,7 @@ public class MinimizableGuiObject extends GuiObject {
     protected boolean maximized;
     @Getter
     protected final Label label;
-    protected final Font font;
+    protected final String fontName;
     protected final int fontSize;
     private final int stringOffsetX, minimizableStringOffsetX;
     protected final int stringOffsetY;
@@ -27,13 +26,13 @@ public class MinimizableGuiObject extends GuiObject {
     protected final int baseHeight;
     private final int hideableObjectsOffsetX;
 
-    public MinimizableGuiObject(int width, int height, String name, Font font, int fontSize, int stringOffsetX, int stringOffsetY,
+    public MinimizableGuiObject(int width, int height, String name, String fontName, int fontSize, int stringOffsetX, int stringOffsetY,
                                 int minimizableStringOffsetX, int hideableObjectsOffsetX) {
         super(width, height);
         this.baseHeight = height;
-        this.font = font;
+        this.fontName = fontName;
         this.fontSize = fontSize;
-        this.label = new Label(font, name, fontSize);
+        this.label = new Label(fontName, name, fontSize);
         this.stringOffsetX = stringOffsetX;
         this.stringOffsetY = stringOffsetY;
         addNonConcealable(label.atBottomLeft(this::getStringOffsetX,
@@ -41,7 +40,7 @@ public class MinimizableGuiObject extends GuiObject {
         this.minimizableStringOffsetX = minimizableStringOffsetX;
         this.hideableObjectsOffsetX = hideableObjectsOffsetX;
         setRenderer(new MinimizableGuiObjectRenderer(this));
-        setLeftReleaseRunnable(() -> {
+        setLeftReleaseConsumer((mouseX, mouseY) -> {
             if (maximized) {
                 maximized = false;
                 minimize();
@@ -52,8 +51,8 @@ public class MinimizableGuiObject extends GuiObject {
         });
     }
 
-    public MinimizableGuiObject(int width, int height, String name, Font font, int fontSize, int stringOffsetY) {
-        this(width, height, name, font, fontSize, STATIC_STRING_X_OFFSET, stringOffsetY, MINIMIZABLE_STRING_X_OFFSET,
+    public MinimizableGuiObject(int width, int height, String name, String fontName, int fontSize, int stringOffsetY) {
+        this(width, height, name, fontName, fontSize, STATIC_STRING_X_OFFSET, stringOffsetY, MINIMIZABLE_STRING_X_OFFSET,
                 MINIMIZABLE_STRING_X_OFFSET);
     }
 

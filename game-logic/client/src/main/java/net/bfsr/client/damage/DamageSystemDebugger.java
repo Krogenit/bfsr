@@ -4,6 +4,7 @@ import net.bfsr.client.renderer.texture.DamageMaskTexture;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -20,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DamageSystemDebugger {
+    private final AbstractRenderer renderer = Engine.getRenderer();
+
     private DamageMaskTexture texture;
 
     public void init() {
@@ -88,7 +91,7 @@ public class DamageSystemDebugger {
             int width = maxX - x + 1;
             int height = maxY - y + 1;
             if (width > 0 || height > 0) {
-                ByteBuffer byteBuffer = Engine.renderer.createByteBuffer(width * height);
+                ByteBuffer byteBuffer = renderer.createByteBuffer(width * height);
                 byteBuffer.put(damageMask.getData()).flip();
                 texture.upload(x, y, width, height, byteBuffer);
             }
@@ -116,7 +119,7 @@ public class DamageSystemDebugger {
         Geometry simplify = VWSimplifier.simplify(geometry, 0.1f);
         Coordinate[] coordinates = simplify.getCoordinates();
 
-        AbstractDebugRenderer debugRenderer = Engine.renderer.debugRenderer;
+        AbstractDebugRenderer debugRenderer = renderer.getDebugRenderer();
         debugRenderer.addCommand(coordinates.length - 1);
         Vector4f color = new Vector4f(1, 0, 0, 1);
         for (int i = 0; i < coordinates.length - 1; i++) {
@@ -138,7 +141,7 @@ public class DamageSystemDebugger {
     }
 
     private void renderPolygon(Polygon polygon, Vector4f color) {
-        AbstractDebugRenderer debugRenderer = Engine.renderer.debugRenderer;
+        AbstractDebugRenderer debugRenderer = renderer.getDebugRenderer();
         CoordinateSequence coordinateSequence = polygon.getExteriorRing().getCoordinateSequence();
         int count = coordinateSequence.size() - 1;
         debugRenderer.addCommand(count);

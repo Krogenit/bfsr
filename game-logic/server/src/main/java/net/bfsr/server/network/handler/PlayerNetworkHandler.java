@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.util.Side;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipOutfitter;
@@ -21,7 +22,9 @@ import net.bfsr.network.packet.server.gui.PacketOpenGui;
 import net.bfsr.network.packet.server.login.PacketDisconnectLogin;
 import net.bfsr.network.packet.server.login.PacketJoinGame;
 import net.bfsr.network.packet.server.login.PacketLoginSuccess;
-import net.bfsr.server.ServerGameLogic;
+import net.bfsr.server.ai.AiFactory;
+import net.bfsr.server.entity.EntityTrackingManager;
+import net.bfsr.server.event.PlayerDisconnectEvent;
 import net.bfsr.server.event.PlayerJoinGameEvent;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
@@ -43,6 +46,15 @@ public class PlayerNetworkHandler extends NetworkHandler {
     private final int connectionId;
     private final SocketChannel socketChannel;
     private final DatagramChannel datagramChannel;
+    private final boolean singlePlayer;
+    private final World world;
+    private final PlayerManager playerManager;
+    private final EntityTrackingManager entityTrackingManager;
+    private final AiFactory aiFactory;
+    private final EventBus eventBus;
+    private final PacketRegistry<PlayerNetworkHandler> packetRegistry;
+    private final ShipOutfitter shipOutfitter;
+
     @Setter
     private InetSocketAddress remoteAddress;
     @Setter
@@ -55,17 +67,9 @@ public class PlayerNetworkHandler extends NetworkHandler {
     private long lastPingCheckTime;
     private String terminationReason;
 
-    private final boolean singlePlayer;
-    private final ServerGameLogic server = ServerGameLogic.getInstance();
-    private final World world = server.getWorld();
-    private final PlayerManager playerManager = server.getPlayerManager();
     private Player player;
-    private final PacketRegistry<PlayerNetworkHandler> packetRegistry = ServerGameLogic.getNetwork().getPacketRegistry();
     @Setter
     private double ping;
-    private final ShipOutfitter shipOutfitter = new ShipOutfitter(ServerGameLogic.getInstance().getConfigConverterManager());
-    @Setter
-    private double deltaTime;
 
     public void update() {
         if (connectionState != ConnectionState.DISCONNECTED) {
@@ -135,9 +139,9 @@ public class PlayerNetworkHandler extends NetworkHandler {
 
         try {
             if (singlePlayer) {
-                player = playerManager.login(username, "test");
+                player = playerManager.get(username);
             } else {
-                player = playerManager.login(username, "password");
+                player = playerManager.get(username);
             }
         } catch (Exception e) {
             log.error("Couldn't auth user {}", username, e);
@@ -145,7 +149,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
             return;
         }
 
-        player.setNetworkHandler(this);
+        player.init(this, entityTrackingManager, playerManager, aiFactory);
         playerManager.addPlayer(player);
 
         sendTCPPacket(new PacketLoginSuccess());
@@ -157,7 +161,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
         if (player.getFaction() != null) {
             List<Ship> ships = player.getShips();
             if (ships.isEmpty()) {
-                server.getPlayerManager().respawnPlayer(world, player, 0, 0);
+                playerManager.respawnPlayer(world, player, 0, 0);
             } else {
                 initShips(player);
                 spawnShips(player);
@@ -208,7 +212,17 @@ public class PlayerNetworkHandler extends NetworkHandler {
         }
 
         if (player != null) {
-            server.onPlayerDisconnected(player);
+            playerManager.removePlayer(player);
+            playerManager.save(player);
+            List<Ship> ships = player.getShips();
+            for (int i = 0, shipsSize = ships.size(); i < shipsSize; i++) {
+                Ship ship = ships.get(i);
+                if (ship.getWorld() != null) {
+                    ship.setDead();
+                }
+            }
+
+            eventBus.publish(new PlayerDisconnectEvent(player));
         }
     }
 

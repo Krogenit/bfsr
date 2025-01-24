@@ -3,10 +3,10 @@ package net.bfsr.engine.gui;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.renderer.AbstractRenderer;
-import org.joml.Vector2f;
 
 public abstract class Gui extends GuiObject {
-    protected final AbstractRenderer renderer = Engine.renderer;
+    protected final GuiManager guiManager = Engine.getGuiManager();
+    protected final AbstractRenderer renderer = Engine.getRenderer();
     protected Gui parentGui;
 
     protected Gui() {
@@ -14,7 +14,7 @@ public abstract class Gui extends GuiObject {
     }
 
     protected Gui(Gui parentGui) {
-        super(Engine.renderer.getScreenWidth(), Engine.renderer.getScreenHeight());
+        super(Engine.getRenderer().getScreenWidth(), Engine.getRenderer().getScreenHeight());
         this.parentGui = parentGui;
     }
 
@@ -31,7 +31,7 @@ public abstract class Gui extends GuiObject {
         }
     }
 
-    public Vector2f getMousePosition() {
-        return Engine.mouse.getGuiPosition();
+    protected void closeGui() {
+        guiManager.closeGui();
     }
 }

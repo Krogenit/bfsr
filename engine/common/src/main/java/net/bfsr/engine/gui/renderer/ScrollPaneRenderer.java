@@ -1,6 +1,5 @@
 package net.bfsr.engine.gui.renderer;
 
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.gui.component.scroll.Scroll;
@@ -17,22 +16,22 @@ public class ScrollPaneRenderer extends GuiObjectRenderer {
     }
 
     @Override
-    public void render() {
+    public void render(int mouseX, int mouseY) {
         guiRenderer.render();
-        Engine.renderer.glEnable(GL.GL_SCISSOR_TEST);
-        Engine.renderer.glScissor(guiObject.getSceneX(), guiObject.getSceneY(), guiObject.getWidth(), guiObject.getHeight());
+        renderer.glEnable(GL.GL_SCISSOR_TEST);
+        renderer.glScissor(guiObject.getSceneX(), guiObject.getSceneY(), guiObject.getWidth(), guiObject.getHeight());
 
         List<GuiObject> guiObjects = guiObject.getGuiObjects();
         for (int i = 0; i < guiObjects.size(); i++) {
             GuiObject guiObject = guiObjects.get(i);
             if (this.guiObject.isIntersects(guiObject)) {
-                guiObject.getRenderer().render();
+                guiObject.getRenderer().render(mouseX, mouseY);
             }
         }
 
         guiRenderer.render();
-        Engine.renderer.glDisable(GL.GL_SCISSOR_TEST);
+        renderer.glDisable(GL.GL_SCISSOR_TEST);
 
-        scroll.getRenderer().render();
+        scroll.getRenderer().render(mouseX, mouseY);
     }
 }

@@ -41,7 +41,8 @@ public class PacketRegistry<NET_HANDLER extends NetworkHandler> {
             try {
                 ParameterizedType genericSuperclass = ((ParameterizedType) aClass.getGenericSuperclass());
                 Class<? extends Packet> packetType = (Class<? extends Packet>) genericSuperclass.getActualTypeArguments()[0];
-                registerPacketHandler(packetType, (PacketHandler<Packet, NET_HANDLER>) aClass.getConstructor().newInstance());
+                registerPacketHandler(packetType, (PacketHandler<Packet, NET_HANDLER>) aClass
+                        .getConstructor().newInstance());
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 throw new RuntimeException("Can't register packet handler " + aClass.getName(), e);
             }

@@ -71,7 +71,7 @@ public abstract class DamageableRigidBodySpawnData extends RigidBodySpawnData {
         polygon = ByteBufUtils.readPolygon(data);
         maskWidth = data.readShort();
         maskHeight = data.readShort();
-        damageMaskByteBuffer = Engine.renderer.createByteBuffer(maskWidth * maskHeight);
+        damageMaskByteBuffer = Engine.getRenderer().createByteBuffer(maskWidth * maskHeight);
         data.readBytes(damageMaskByteBuffer);
         damageMaskByteBuffer.position(0);
 

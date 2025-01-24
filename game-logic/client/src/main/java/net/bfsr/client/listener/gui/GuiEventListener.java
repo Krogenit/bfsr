@@ -13,7 +13,7 @@ public class GuiEventListener {
 
     @EventHandler
     public EventListener<PlayerJoinGameEvent> playerJoinGameEvent() {
-        return event -> guiManager.showHUD(Client.get().createHUD());
+        return event -> guiManager.showHUD(client.createHUD());
     }
 
     @EventHandler

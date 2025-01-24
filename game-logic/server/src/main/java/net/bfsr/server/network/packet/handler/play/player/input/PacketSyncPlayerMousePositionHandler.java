@@ -9,7 +9,8 @@ import java.net.InetSocketAddress;
 
 public class PacketSyncPlayerMousePositionHandler extends PacketHandler<PacketSyncPlayerMousePosition, PlayerNetworkHandler> {
     @Override
-    public void handle(PacketSyncPlayerMousePosition packet, PlayerNetworkHandler netHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketSyncPlayerMousePosition packet, PlayerNetworkHandler netHandler, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         netHandler.getPlayer().getPlayerInputController().setMousePosition(packet.getMousePosition());
     }
 }

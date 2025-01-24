@@ -22,13 +22,14 @@ import java.nio.IntBuffer;
 import java.nio.file.Path;
 
 @Log4j2
-public final class TextureLoader extends AbstractTextureLoader {
-    private static final TMap<String, Texture> LOADED_TEXTURES = new THashMap<>();
+public class TextureLoader extends AbstractTextureLoader {
     private static final int DEFAULT_WRAP = GL12C.GL_CLAMP_TO_EDGE;
     private static final int DEFAULT_FILTER = GL11.GL_NEAREST;
 
+    private final TMap<String, Texture> loadedTextures = new THashMap<>();
+
     @Override
-    protected AbstractTexture createDummyTexture() {
+    public AbstractTexture createDummyTexture() {
         int width = 4;
         int height = 4;
 
@@ -71,12 +72,12 @@ public final class TextureLoader extends AbstractTextureLoader {
     }
 
     private Texture getTexture(Path path, boolean createMips, int wrap, int filter) {
-        return LOADED_TEXTURES.computeIfAbsent(path.toString(), s -> loadPngTexture(path, createMips, wrap, filter));
+        return loadedTextures.computeIfAbsent(path.toString(), s -> loadPngTexture(path, createMips, wrap, filter));
     }
 
     private void loadDDSTexture(String path) {
-        if (LOADED_TEXTURES.containsKey(path)) {
-            LOADED_TEXTURES.get(path);
+        if (loadedTextures.containsKey(path)) {
+            loadedTextures.get(path);
             return;
         }
 
@@ -89,7 +90,7 @@ public final class TextureLoader extends AbstractTextureLoader {
         }
 
         Texture texture = generateTexture(dds);
-        LOADED_TEXTURES.put(path, texture);
+        loadedTextures.put(path, texture);
     }
 
     private Texture loadPngTexture(Path path, boolean createMips, int wrap, int filter) {
@@ -205,5 +206,15 @@ public final class TextureLoader extends AbstractTextureLoader {
     @Override
     public Texture newTexture(int width, int height) {
         return new Texture(width, height);
+    }
+
+    @Override
+    public void clear() {
+        loadedTextures.forEachValue(texture -> {
+            texture.delete();
+            return true;
+        });
+
+        loadedTextures.clear();
     }
 }

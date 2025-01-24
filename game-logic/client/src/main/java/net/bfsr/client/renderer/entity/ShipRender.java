@@ -2,7 +2,7 @@ package net.bfsr.client.renderer.entity;
 
 import gnu.trove.map.TMap;
 import net.bfsr.client.Client;
-import net.bfsr.client.particle.SpawnAccumulator;
+import net.bfsr.client.font.FontType;
 import net.bfsr.client.particle.effect.EngineEffects;
 import net.bfsr.client.particle.effect.JumpEffects;
 import net.bfsr.client.renderer.component.ModuleRenderer;
@@ -11,13 +11,13 @@ import net.bfsr.client.renderer.component.WeaponSlotRender;
 import net.bfsr.config.entity.ship.EngineData;
 import net.bfsr.config.entity.ship.EnginesData;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.entity.SpawnAccumulator;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
-import net.bfsr.engine.renderer.font.Font;
-import net.bfsr.engine.renderer.font.StringOffsetType;
+import net.bfsr.engine.renderer.font.string.StringOffsetType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.util.RunnableUtils;
@@ -44,14 +44,18 @@ import java.util.EnumMap;
 import java.util.List;
 
 public class ShipRender extends DamageableRigidBodyRenderer {
-    private static final AbstractTexture JUMP_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.particleJump);
-    private static final AbstractTexture REACTOR_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.moduleReactor);
-    private static final AbstractTexture ENGINE_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.moduleEngine);
-    private static final AbstractTexture SHIELD_TEXTURE = Engine.assetsManager.getTexture(TextureRegister.moduleShield);
+    private static final AbstractTexture JUMP_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.particleJump);
+    private static final AbstractTexture REACTOR_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.moduleReactor);
+    private static final AbstractTexture ENGINE_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.moduleEngine);
+    private static final AbstractTexture SHIELD_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.moduleShield);
+
+    private final Client client = Client.get();
+    private final EngineEffects engineEffects = client.getParticleEffects().getEngineEffects();
+    private final JumpEffects jumpEffects = client.getParticleEffects().getJumpEffects();
 
     private final Ship ship;
-    private final Label label = new Label(Font.XOLONIUM_FT, 24, StringOffsetType.CENTERED, BufferType.ENTITIES_ALPHA).setShadow(true)
-            .setShadowOffsetX(4).setShadowOffsetY(-4);
+    private final Label label = new Label(FontType.XOLONIUM.getFontName(), 24, StringOffsetType.CENTERED, BufferType.ENTITIES_ALPHA)
+            .setShadow(true).setShadowOffsetX(4).setShadowOffsetY(-4);
 
     private final List<WeaponSlotRender> weaponRenders = new ArrayList<>();
     private final AbstractTexture shieldTexture;
@@ -68,15 +72,14 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     private final Vector2f rotateToVector = new Vector2f();
 
     private float labelYOffset;
-
     private int spawnEffectId = -1;
     private int shieldId = -1;
 
     public ShipRender(Ship ship) {
-        super(Engine.assetsManager.getTexture(ship.getConfigData().getTexture()), ship);
+        super(Engine.getAssetsManager().getTexture(ship.getConfigData().getTexture()), ship);
         this.ship = ship;
 
-        shieldTexture = Engine.assetsManager.getTexture(ship.getModules().getShield().getShieldData().getTexturePath());
+        shieldTexture = Engine.getAssetsManager().getTexture(ship.getModules().getShield().getShieldData().getTexturePath());
         createWeaponSlotsRenders(ship);
         initEngineEffectsRunnable(ship);
         createModuleRenders(ship);
@@ -110,7 +113,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     private void createWeaponSlotsRenders(Ship ship) {
         Modules modules = ship.getModules();
         List<WeaponSlot> weaponSlots = modules.getWeaponSlots();
-        WeaponRenderRegistry weaponRenderRegistry = Client.get().getEntityRenderer().getWeaponRenderRegistry();
+        WeaponRenderRegistry weaponRenderRegistry = client.getEntityRenderer().getWeaponRenderRegistry();
         for (int i = 0; i < weaponSlots.size(); i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
             WeaponSlotRender render = weaponRenderRegistry.createRender(weaponSlot);
@@ -179,7 +182,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
                                 if (!engineModules.get(j).isDead()) {
                                     Vector2f effectPosition = engineDataList.get(j).effectPosition();
                                     RotationHelper.rotate(sin, cos, effectPosition.x, effectPosition.y, rotateToVector);
-                                    EngineEffects.smallEngine(shipX + rotateToVector.x, shipY + rotateToVector.y, sin,
+                                    engineEffects.smallEngine(shipX + rotateToVector.x, shipY + rotateToVector.y, sin,
                                             cos, 10.0f, shipVelocity.x / 50.0f, shipVelocity.y / 50.0f,
                                             effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, accumulators.get(j));
                                 }
@@ -196,7 +199,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
                                 if (!engineModules.get(j).isDead()) {
                                     Vector2f effectPosition = engineDataList.get(j).effectPosition();
                                     RotationHelper.rotate(sin, cos, effectPosition.x, effectPosition.y, rotateToVector);
-                                    EngineEffects.secondaryEngine(shipX + rotateToVector.x, shipY + rotateToVector.y,
+                                    engineEffects.secondaryEngine(shipX + rotateToVector.x, shipY + rotateToVector.y,
                                             accumulators.get(j));
                                 }
                             }
@@ -358,7 +361,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         super.renderAlpha();
         renderGunSlots();
 
-        label.render();
+        label.render(0, 0);
     }
 
     @Override
@@ -411,7 +414,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
             Ship ship = event.ship();
             Vector2 velocity = ship.getLinearVelocity();
             Vector4f effectsColor = ship.getShipData().getEffectsColor();
-            JumpEffects.jump(ship.getX(), ship.getY(), 32.0f + ship.getSizeX() * 0.25f, velocity.x * 0.5f, velocity.y * 0.5f,
+            jumpEffects.jump(ship.getX(), ship.getY(), 32.0f + ship.getSizeX() * 0.25f, velocity.x * 0.5f, velocity.y * 0.5f,
                     effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
             createName();
             if (spawnEffectId != -1) {

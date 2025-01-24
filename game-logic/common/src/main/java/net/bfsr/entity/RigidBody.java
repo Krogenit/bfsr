@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.bfsr.config.GameObjectConfigData;
+import net.bfsr.engine.entity.GameObject;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.event.entity.RigidBodyAddToWorldEvent;
 import net.bfsr.event.entity.RigidBodyPostPhysicsUpdateEvent;

@@ -8,6 +8,7 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.pack.RectanglesPackingAlgorithm;
 import net.bfsr.engine.pack.maxrects.MaxRectanglesBinPack;
 import net.bfsr.engine.pack.maxrects.Rectangle;
+import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.font.FontBitMap;
 import net.bfsr.engine.renderer.font.FontPackResult;
 import net.bfsr.engine.renderer.font.glyph.Glyph;
@@ -28,12 +29,13 @@ import static org.lwjgl.util.freetype.FreeType.FT_Set_Pixel_Sizes;
 public class TrueTypeBitMap extends FontBitMap {
     private final RectanglesPackingAlgorithm rectanglesPackingAlgorithm;
     private final Char2ObjectMap<Glyph> glyphsByCharCodeMap = new Char2ObjectOpenHashMap<>();
+    private final AbstractRenderer renderer = Engine.getRenderer();
 
     TrueTypeBitMap(int width, int height) {
         super(width, height);
         this.rectanglesPackingAlgorithm = new MaxRectanglesBinPack(width, height, false);
-        this.bitmapTexture = Engine.assetsManager.createTexture(width, height);
-        Engine.renderer.uploadTexture(bitmapTexture, GL.GL_R8, GL.GL_RED, GL.GL_CLAMP_TO_BORDER, GL.GL_NEAREST, bitmap);
+        this.bitmapTexture = Engine.getAssetsManager().createTexture(width, height);
+        renderer.uploadTexture(bitmapTexture, GL.GL_R8, GL.GL_RED, GL.GL_CLAMP_TO_BORDER, GL.GL_NEAREST, bitmap);
     }
 
     public FontPackResult packChars(String fontName, CharList charList, FT_Face ftFace, int fontSize,
@@ -92,7 +94,7 @@ public class TrueTypeBitMap extends FontBitMap {
 
                 // TODO: optimize calls to one
                 ByteBuffer buffer = glyphBitMap.buffer(glyphBitMap.width() * glyphBitMap.rows());
-                Engine.renderer.subImage2D(bitmapTexture.getId(), placement.getX(), placement.getY(), placement.getWidth(),
+                renderer.subImage2D(bitmapTexture.getId(), placement.getX(), placement.getY(), placement.getWidth(),
                         placement.getHeight(), GL.GL_RED, buffer);
 
                 // Debug
@@ -113,5 +115,11 @@ public class TrueTypeBitMap extends FontBitMap {
 
     Glyph getGlyph(char charCode) {
         return glyphsByCharCodeMap.get(charCode);
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        glyphsByCharCodeMap.clear();
     }
 }

@@ -16,11 +16,11 @@ import java.util.HashMap;
 import java.util.List;
 
 @Log4j2
-public final class Lang {
-    private static final HashMap<String, HashMap<String, String>> TRANSLATIONS = new HashMap<>();
-    private static final List<String> LANGUAGES = new ArrayList<>();
+public class LanguageManager {
+    private final HashMap<String, HashMap<String, String>> translations = new HashMap<>();
+    private final List<String> languages = new ArrayList<>();
 
-    public static void load() {
+    public LanguageManager load() {
         Path folder = PathHelper.CLIENT_CONTENT.resolve("lang");
         try {
             Files.walkFileTree(folder, new SimpleFileVisitor<>() {
@@ -36,35 +36,37 @@ public final class Lang {
                             langData.put(data[0], data[1]);
                         }
                     }
-                    TRANSLATIONS.put(langName, langData);
-                    LANGUAGES.add(langName);
+                    translations.put(langName, langData);
+                    languages.add(langName);
                     return FileVisitResult.CONTINUE;
                 }
             });
         } catch (IOException e) {
             throw new RuntimeException("Can't load localization", e);
         }
+
+        return this;
     }
 
-    public static String getString(String value) {
+    public String getString(String value) {
         String lang = ClientSettings.LANGUAGE.getString();
-        if (TRANSLATIONS.containsKey(lang)) {
-            HashMap<String, String> langData = TRANSLATIONS.get(lang);
+        if (translations.containsKey(lang)) {
+            HashMap<String, String> langData = translations.get(lang);
             if (langData.containsKey(value)) {
-                return TRANSLATIONS.get(lang).get(value);
+                return translations.get(lang).get(value);
             }
         }
 
         return value;
     }
 
-    public static String getNextLang(String currentLang) {
+    public String getNextLang(String currentLang) {
         int newLangId = 0;
-        for (int i = 0; i < LANGUAGES.size() - 1; i++) {
-            if (LANGUAGES.get(i).equals(currentLang)) {
+        for (int i = 0; i < languages.size() - 1; i++) {
+            if (languages.get(i).equals(currentLang)) {
                 newLangId = i + 1;
             }
         }
-        return LANGUAGES.get(newLangId);
+        return languages.get(newLangId);
     }
 }

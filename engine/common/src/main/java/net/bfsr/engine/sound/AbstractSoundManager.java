@@ -3,8 +3,6 @@ package net.bfsr.engine.sound;
 import org.joml.Vector2f;
 
 public abstract class AbstractSoundManager {
-    public abstract void init();
-
     public abstract void setAttenuationModel(int model);
     public abstract void setListener(AbstractSoundListener soundListener);
     public abstract void setGain(float value);
@@ -24,7 +22,6 @@ public abstract class AbstractSoundManager {
     public abstract void pause(int source);
     public abstract void stop(int source);
     public abstract void delete(int source);
-    public abstract void addSoundBuffer(AbstractSoundBuffer soundBuffer);
 
-    public abstract void cleanup();
+    public abstract void clear();
 }

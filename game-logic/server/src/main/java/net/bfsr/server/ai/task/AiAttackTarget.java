@@ -16,7 +16,6 @@ import net.bfsr.math.Direction;
 import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.server.component.PacketWeaponShoot;
-import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.EntityTrackingManager;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.common.Vector2;
@@ -37,7 +36,7 @@ public class AiAttackTarget extends AiTask {
     private final Vector2f totalTargetVelocity = new Vector2f();
     private final Vector2f bulletFinalPos = new Vector2f();
     private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
-    private final EntityTrackingManager trackingManager = ServerGameLogic.getInstance().getEntityTrackingManager();
+    private final EntityTrackingManager trackingManager;
     private final Vector2f rotatedVector = new Vector2f();
     private final Vector2f pointToRotate = new Vector2f();
     private final AABB cache = new AABB();
@@ -46,7 +45,7 @@ public class AiAttackTarget extends AiTask {
     @Override
     public void execute() {
         RigidBody target = ship.getTarget();
-        MathUtils.computeAABB(targetAABB, target.getBody(), target.getBody().getTransform(), cache);
+        MathUtils.computeAABB(targetAABB, target.getBody(), target.getX(), target.getY(), target.getSin(), target.getCos(), cache);
         targetPos.set((targetAABB.getMinX() + targetAABB.getMaxX()) / 2,
                 (targetAABB.getMinY() + targetAABB.getMaxY()) / 2);
 
@@ -118,8 +117,8 @@ public class AiAttackTarget extends AiTask {
                     if (Math.abs(rigidBodyUtils.getRotationDifference(ship, targetFinalPos)) <= 0.05f) {
                         slot.tryShoot(weaponSlot -> {
                             weaponSlot.createBullet(0);
-                            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), player -> new PacketWeaponShoot(
-                                    ship.getId(), weaponSlot.getId(), player.getClientTime(ship.getWorld().getTimestamp())));
+                            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketWeaponShoot(
+                                    ship.getId(), weaponSlot.getId(), ship.getWorld().getTimestamp()));
                         }, modules.getReactor());
                     }
                 }

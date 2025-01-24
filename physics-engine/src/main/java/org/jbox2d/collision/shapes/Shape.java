@@ -86,10 +86,13 @@ public abstract class Shape {
     /**
      * Given a transform, compute the associated axis aligned bounding box for a child shape.
      *
-     * @param aabb      returns the axis aligned box.
-     * @param transform the world transform of the shape.
+     * @param aabb returns the axis aligned box.
+     * @param x    the world x position of the shape.
+     * @param y    the world y position of the shape.
+     * @param sin  the sin of the shape.
+     * @param cos  the cos of the shape.
      */
-    public abstract void computeAABB(final AABB aabb, final Transform transform, int childIndex);
+    public abstract void computeAABB(final AABB aabb, float x, float y, float sin, float cos, int childIndex);
 
     /**
      * Compute the mass properties of this shape using its dimensions and density. The inertia tensor

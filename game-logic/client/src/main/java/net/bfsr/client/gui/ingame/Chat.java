@@ -1,10 +1,10 @@
 package net.bfsr.client.gui.ingame;
 
+import net.bfsr.client.font.FontType;
 import net.bfsr.client.gui.input.ChatInput;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.gui.component.TexturedRectangle;
-import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 
 public class Chat extends TexturedRectangle {
@@ -21,8 +21,8 @@ public class Chat extends TexturedRectangle {
     }
 
     public void addChatMessage(String message) {
-        scrollPane.add(new Label(Font.NOTOSANS_REGULAR_FT, message, chatInput.getFontSize()).setMaxWidth(chatInput.getWidth() - 20)
-                .atTopLeft(0, -scrollPane.getTotalHeight() - chatMessagesOffsetY));
+        scrollPane.add(new Label(FontType.NOTOSANS_REGULAR.getFontName(), message, chatInput.getFontSize())
+                .setMaxWidth(chatInput.getWidth() - 20).atTopLeft(0, -scrollPane.getTotalHeight() - chatMessagesOffsetY));
         scrollPane.scrollBottom();
     }
 

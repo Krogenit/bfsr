@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 public class Scroll extends Rectangle {
+    private final AbstractMouse mouse = Engine.getMouse();
+
     @Getter
     private int scroll;
     private int clickStartScroll;
@@ -30,7 +32,6 @@ public class Scroll extends Rectangle {
     private int scrollAmount = 40;
     private int accumulator;
     private int minObjectY = Integer.MAX_VALUE, maxObjectY = Integer.MIN_VALUE;
-    private final AbstractMouse mouse = Engine.mouse;
 
     public Scroll(int width, int height) {
         super(width, height);
@@ -52,8 +53,8 @@ public class Scroll extends Rectangle {
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void update(int mouseX, int mouseY) {
+        super.update(mouseX, mouseY);
 
         if (accumulator != 0) {
             updateScroll(scroll + accumulator);
@@ -152,19 +153,21 @@ public class Scroll extends Rectangle {
     }
 
     @Override
-    public GuiObject mouseLeftClick() {
-        if (!isMouseHover()) return null;
+    public GuiObject mouseLeftClick(int mouseX, int mouseY) {
+        if (!isMouseHover()) {
+            return null;
+        }
 
         movingByMouse = true;
-        mouseStartClickY = (int) (mouse.getGuiPosition().y);
+        mouseStartClickY = mouseY;
         clickStartScroll = scroll;
 
         return this;
     }
 
     @Override
-    public GuiObject mouseLeftRelease() {
-        GuiObject guiObject = super.mouseLeftRelease();
+    public GuiObject mouseLeftRelease(int mouseX, int mouseY) {
+        GuiObject guiObject = super.mouseLeftRelease(mouseX, mouseY);
 
         if (movingByMouse) {
             movingByMouse = false;
@@ -178,9 +181,12 @@ public class Scroll extends Rectangle {
     }
 
     @Override
-    public boolean mouseScroll(float y) {
-        if (!parent.isIntersectsWithMouse()) return false;
-        accumulator -= (int) (y * scrollAmount);
+    public boolean mouseScroll(int mouseX, int mouseY, float scrollY) {
+        if (!parent.isIntersectsWithMouse(mouseX, mouseY)) {
+            return false;
+        }
+
+        accumulator -= (int) (scrollY * scrollAmount);
         return true;
     }
 

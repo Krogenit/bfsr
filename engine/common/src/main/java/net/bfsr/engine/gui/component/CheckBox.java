@@ -13,6 +13,6 @@ public class CheckBox extends GuiObject {
         super(width, height);
         this.checked = checked;
         setRenderer(new CheckBoxRenderer(this));
-        setLeftClickRunnable(() -> this.checked = !this.checked);
+        setLeftClickConsumer((mouseX, mouseY) -> this.checked = !this.checked);
     }
 }

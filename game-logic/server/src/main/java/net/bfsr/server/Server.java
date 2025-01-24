@@ -18,6 +18,7 @@ public abstract class Server extends AbstractGameLoop {
     public void run() {
         log.info("Server initialization...");
         init();
+        gameLogic.setRunning(true);
         log.info("Initialized");
         super.run();
     }
@@ -50,21 +51,6 @@ public abstract class Server extends AbstractGameLoop {
     }
 
     public void stop() {
-        gameLogic.stop();
-    }
-
-    @Override
-    protected int getUpdatesPerSecond() {
-        return gameLogic.getUpdatesPerSecond();
-    }
-
-    @Override
-    protected float getUpdateDeltaTime() {
-        return gameLogic.getUpdateDeltaTime();
-    }
-
-    @Override
-    protected double getTimeBetweenUpdates() {
-        return gameLogic.getTimeBetweenUpdates();
+        gameLogic.shutdown();
     }
 }

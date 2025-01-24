@@ -1,8 +1,6 @@
 package net.bfsr.client.input;
 
 public class InputController {
-    public void init() {}
-
     public void update() {}
 
     public boolean mouseLeftClick() {
@@ -21,7 +19,7 @@ public class InputController {
         return false;
     }
 
-    public boolean scroll(float y) {
+    public boolean scroll(float scrollY) {
         return false;
     }
 

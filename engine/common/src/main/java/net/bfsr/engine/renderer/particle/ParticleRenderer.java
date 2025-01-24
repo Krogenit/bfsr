@@ -2,13 +2,13 @@ package net.bfsr.engine.renderer.particle;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.culling.AbstractGPUFrustumCullingSystem;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.util.MultithreadingUtils;
+import net.bfsr.engine.util.ObjectPool;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +25,7 @@ public class ParticleRenderer {
     private AbstractGPUFrustumCullingSystem cullingSystem;
     private AbstractBuffersHolder[] buffersHolderArray;
 
+    private final ObjectPool<ParticleRender>[] renderPool = new ObjectPool[RenderLayer.VALUES.length];
     private final List<ParticleRender>[] particlesByRenderLayer = new List[RenderLayer.VALUES.length];
     private final ParticlesStoreRunnable[] particlesStoreRunnables;
     private final ParticlesStoreRunnable[] backgroundParticlesStoreRunnables;
@@ -54,15 +55,16 @@ public class ParticleRenderer {
         }
     }
 
-    public void init() {
-        renderer = Engine.renderer;
-        spriteRenderer = renderer.spriteRenderer;
-        cullingSystem = renderer.cullingSystem;
+    public void init(AbstractRenderer renderer) {
+        this.renderer = renderer;
+        spriteRenderer = renderer.getSpriteRenderer();
+        cullingSystem = renderer.getCullingSystem();
         buffersHolderArray = spriteRenderer.createBuffersHolderArray(RenderLayer.VALUES.length);
 
         RenderLayer[] renderLayers = RenderLayer.VALUES;
         for (int i = 0; i < renderLayers.length; i++) {
             buffersHolderArray[renderLayers[i].ordinal()] = spriteRenderer.createBuffersHolder(START_PARTICLE_COUNT, true);
+            renderPool[renderLayers[i].ordinal()] = new ObjectPool<>(() -> new ParticleRender(renderer));
         }
 
         for (int i = 0; i < particlesStoreRunnables.length; i++) {
@@ -218,10 +220,12 @@ public class ParticleRenderer {
         return buffersHolderArray[renderLayer.ordinal()];
     }
 
-    public void removeAllRenders() {
-        for (int i = 0; i < particlesByRenderLayer.length; i++) {
-            particlesByRenderLayer[i].clear();
-        }
+    public ParticleRender newRender(RenderLayer renderLayer) {
+        return renderPool[renderLayer.ordinal()].get();
+    }
+
+    public void remove(RenderLayer renderLayer, ParticleRender render) {
+        renderPool[renderLayer.ordinal()].returnBack(render);
     }
 
     public void clear() {
@@ -229,6 +233,12 @@ public class ParticleRenderer {
 
         for (int i = 0; i < buffersHolderArray.length; i++) {
             buffersHolderArray[i].clear();
+        }
+    }
+
+    public void removeAllRenders() {
+        for (int i = 0; i < particlesByRenderLayer.length; i++) {
+            particlesByRenderLayer[i].clear();
         }
     }
 }

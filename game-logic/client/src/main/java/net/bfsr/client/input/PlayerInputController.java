@@ -12,6 +12,7 @@ import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.gui.GuiManager;
+import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.entity.PositionHistory;
@@ -44,28 +45,28 @@ import static net.bfsr.engine.input.Keys.KEY_X;
 public class PlayerInputController extends InputController {
     private static final int NOT_CONTROLLED_SHIP_ID = -1;
 
+    private final Client client;
+    private final GuiManager guiManager = Engine.getGuiManager();
+    private final AbstractCamera camera = Engine.getRenderer().getCamera();
+    private final AbstractMouse mouse = Engine.getMouse();
+    private final Vector2f lastMousePosition = new Vector2f();
+    private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
+    private final PositionHistory positionHistory = new PositionHistory(500);
+    private final EventBus eventBus;
+    private final LocalPlayerInputCorrectionHandler localPlayerInputCorrectionHandler;
+
     @Setter
     private int controlledShipId = NOT_CONTROLLED_SHIP_ID;
     @Getter
     private Ship ship;
-    private Client client;
-    private GuiManager guiManager;
-    private final AbstractCamera camera = Engine.renderer.camera;
-    private final Vector2f lastMousePosition = new Vector2f();
-    private boolean mouseLeftDown;
-    private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
-    private final PositionHistory positionHistory = new PositionHistory(500);
-    private EventBus eventBus;
-    private LocalPlayerInputCorrectionHandler localPlayerInputCorrectionHandler;
 
-    @Override
-    public void init() {
-        client = Client.get();
-        localPlayerInputCorrectionHandler = new LocalPlayerInputCorrectionHandler(positionHistory,
-                Client.get().getClientRenderDelay());
-        guiManager = client.getGuiManager();
-        eventBus = client.getEventBus();
-        eventBus.register(this);
+    private boolean mouseLeftDown;
+
+    PlayerInputController(Client client) {
+        this.client = client;
+        this.localPlayerInputCorrectionHandler = new LocalPlayerInputCorrectionHandler(positionHistory, client.getClientRenderDelay());
+        this.eventBus = client.getEventBus();
+        this.eventBus.register(this);
     }
 
     @Override
@@ -164,7 +165,7 @@ public class PlayerInputController extends InputController {
         Body body = ship.getBody();
         if (!body.isAwake()) body.setAwake(true);
 
-        Vector2f mouseWorldPosition = Engine.mouse.getWorldPosition(camera);
+        Vector2f mouseWorldPosition = mouse.getWorldPosition(camera);
         rigidBodyUtils.rotateToVector(ship, mouseWorldPosition, ship.getModules().getEngines().getAngularVelocity());
         if (mouseWorldPosition.x != lastMousePosition.x || mouseWorldPosition.y != lastMousePosition.y) {
             client.sendUDPPacket(new PacketSyncPlayerMousePosition(mouseWorldPosition));
@@ -182,7 +183,7 @@ public class PlayerInputController extends InputController {
         if (guiManager.isActive()) return false;
 
         if (ship == null) {
-            Vector2f mousePosition = Engine.mouse.getWorldPosition(camera);
+            Vector2f mousePosition = mouse.getWorldPosition(camera);
             List<Ship> ships = client.getWorld().getEntitiesByType(Ship.class);
             for (int i = 0, size = ships.size(); i < size; i++) {
                 Ship ship = ships.get(i);
@@ -212,7 +213,7 @@ public class PlayerInputController extends InputController {
 
     @Override
     public boolean mouseRightClick() {
-        Vector2f mousePosition = Engine.mouse.getWorldPosition(camera);
+        Vector2f mousePosition = mouse.getWorldPosition(camera);
         List<Ship> ships = client.getWorld().getEntitiesByType(Ship.class);
         for (int i = 0, size = ships.size(); i < size; i++) {
             Ship ship = ships.get(i);
@@ -228,22 +229,25 @@ public class PlayerInputController extends InputController {
 
     private boolean isMouseIntersectsWith(RigidBody rigidBody, float mouseX, float mouseY) {
         AABB aabb = new AABB();
-        MathUtils.computeAABB(aabb, rigidBody.getBody(), rigidBody.getBody().getTransform(), new AABB());
+        MathUtils.computeAABB(aabb, rigidBody.getBody(), rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(),
+                new AABB());
         return aabb.contains(mouseX, mouseY);
     }
 
     public void setShip(Ship ship) {
         if (this.ship != null) {
-            this.ship.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), new CorrectionHandler(),
-                    new HistoryCorrectionHandler()));
+            this.ship.setCorrectionHandler(
+                    new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), new CorrectionHandler(),
+                            new HistoryCorrectionHandler()));
             this.ship.setControlledByPlayer(false);
         }
 
         this.ship = ship;
 
         if (ship != null) {
-            ship.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), localPlayerInputCorrectionHandler,
-                    localPlayerInputCorrectionHandler));
+            ship.setCorrectionHandler(
+                    new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), localPlayerInputCorrectionHandler,
+                            localPlayerInputCorrectionHandler));
             ship.setControlledByPlayer(true);
         }
     }

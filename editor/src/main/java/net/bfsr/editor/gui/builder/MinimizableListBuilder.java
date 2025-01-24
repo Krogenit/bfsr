@@ -4,7 +4,6 @@ import net.bfsr.editor.gui.property.MinimizablePropertyList;
 import net.bfsr.editor.gui.property.PropertyComponent;
 import net.bfsr.editor.property.Property;
 import net.bfsr.editor.property.holder.PropertiesHolder;
-import net.bfsr.engine.renderer.font.Font;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -14,7 +13,7 @@ import java.util.function.BiConsumer;
 
 public class MinimizableListBuilder extends ComponentBuilder {
     @Override
-    public PropertyComponent build(int width, int height, String propertyName, int offsetX, Font font, int fontSize,
+    public PropertyComponent build(int width, int height, String propertyName, int offsetX, String fontName, int fontSize,
                                    int stringOffsetY, List<Field> fields, Object[] values, Object object,
                                    BiConsumer<Object, Integer> valueSetterConsumer) {
         Object value = values[0];
@@ -24,8 +23,8 @@ public class MinimizableListBuilder extends ComponentBuilder {
         Class<PropertiesHolder> listElementClass = (Class<PropertiesHolder>) type.getActualTypeArguments()[0];
         Property annotation = field.getAnnotation(Property.class);
 
-        MinimizablePropertyList minimizablePropertyList = new MinimizablePropertyList(width, height, propertyName, font,
-                fontSize, offsetX, stringOffsetY, () -> {
+        MinimizablePropertyList minimizablePropertyList = new MinimizablePropertyList(width, height, propertyName,
+                fontName, fontSize, offsetX, stringOffsetY, () -> {
             try {
                 return listElementClass.getConstructor().newInstance();
             } catch (InstantiationException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {

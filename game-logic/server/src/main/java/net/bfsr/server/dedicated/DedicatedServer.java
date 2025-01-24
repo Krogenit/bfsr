@@ -45,7 +45,7 @@ public class DedicatedServer extends Server {
                 try {
                     name = reader.readLine();
                     if ("stop".equals(name)) {
-                        gameLogic.stop();
+                        gameLogic.shutdown();
                     }
                 } catch (IOException e) {
                     log.error("Can't read line from console input", e);

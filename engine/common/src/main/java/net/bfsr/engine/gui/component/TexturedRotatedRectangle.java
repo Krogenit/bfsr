@@ -9,7 +9,7 @@ public class TexturedRotatedRectangle extends GuiObject {
     private final RectangleTexturedRotatedRenderer renderer;
 
     public TexturedRotatedRectangle(TextureRegister textureRegister, int width, int height) {
-        this(Engine.assetsManager.getTexture(textureRegister), width, height);
+        this(Engine.getAssetsManager().getTexture(textureRegister), width, height);
     }
 
     public TexturedRotatedRectangle(AbstractTexture texture, int width, int height) {

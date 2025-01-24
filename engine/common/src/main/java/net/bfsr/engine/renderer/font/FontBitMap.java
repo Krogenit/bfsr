@@ -1,8 +1,8 @@
 package net.bfsr.engine.renderer.font;
 
 import it.unimi.dsi.fastutil.chars.Char2IntOpenHashMap;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
-import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;
 
@@ -17,7 +17,7 @@ public class FontBitMap {
     public FontBitMap(int width, int height) {
         this.width = width;
         this.height = height;
-        this.bitmap = BufferUtils.createByteBuffer(width * height);
+        this.bitmap = Engine.getRenderer().createByteBuffer(width * height);
     }
 
     public int getCharIndex(char charCode) {
@@ -30,5 +30,11 @@ public class FontBitMap {
 
     protected int getNextCharIndex() {
         return packedCharIndex++;
+    }
+
+    public void clear() {
+        Engine.getRenderer().memFree(bitmap);
+        bitmapTexture.delete();
+        packedCharMap.clear();
     }
 }

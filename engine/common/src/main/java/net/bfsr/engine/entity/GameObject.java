@@ -1,4 +1,4 @@
-package net.bfsr.entity;
+package net.bfsr.engine.entity;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

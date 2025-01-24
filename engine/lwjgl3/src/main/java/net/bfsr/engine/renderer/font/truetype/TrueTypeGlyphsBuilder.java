@@ -1,7 +1,7 @@
 package net.bfsr.engine.renderer.font.truetype;
 
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.engine.renderer.font.DynamicGlyphsBuilder;
+import net.bfsr.engine.renderer.font.glyph.DynamicFont;
 import net.bfsr.engine.renderer.font.glyph.Glyph;
 import net.bfsr.engine.renderer.font.glyph.GlyphsData;
 import net.bfsr.engine.util.IOUtils;
@@ -21,7 +21,7 @@ import static org.lwjgl.util.freetype.FreeType.FT_Init_FreeType;
 import static org.lwjgl.util.freetype.FreeType.FT_New_Memory_Face;
 
 @Log4j2
-public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPacker> {
+public class TrueTypeGlyphsBuilder extends DynamicFont<TrueTypeFontPacker> {
     private static final PointerBuffer libraryPointerBuffer;
     private static final long library;
 
@@ -58,7 +58,7 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
 
     @Override
     public GlyphsData getGlyphsData(String text, int fontSize) {
-        TrueTypeFontPacker trueTypeFontPacker = getFontBySize(fontSize);
+        TrueTypeFontPacker trueTypeFontPacker = getFontPackerBySize(fontSize);
         trueTypeFontPacker.packNewChars(text);
 
         List<Glyph> glyphs = new ArrayList<>(32);
@@ -81,7 +81,7 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
     }
 
     @Override
-    protected TrueTypeFontPacker createNewFont(int fontSize) {
+    protected TrueTypeFontPacker createNewFontPacker(int fontSize) {
         return new TrueTypeFontPacker(this, ftFace, bitmapWidth, bitmapHeight, fontSize, fontFile);
     }
 
@@ -92,7 +92,7 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
 
     @Nullable
     private Glyph getGlyph(char charCode, int fontSize) {
-        TrueTypeBitMap bitMap = getFontBySize(fontSize).getBitMapByChar(charCode);
+        TrueTypeBitMap bitMap = getFontPackerBySize(fontSize).getBitMapByChar(charCode);
         if (bitMap == null) {
             TrueTypeGlyphsBuilder trueTypeGlyphsBuilder = findFontSupportedChar(charCode,
                     glyphsBuilder -> glyphsBuilder instanceof TrueTypeGlyphsBuilder);
@@ -100,7 +100,7 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
                 return null;
             }
 
-            TrueTypeFontPacker stbTrueTypeFontPacker1 = trueTypeGlyphsBuilder.getFontBySize(fontSize);
+            TrueTypeFontPacker stbTrueTypeFontPacker1 = trueTypeGlyphsBuilder.getFontPackerBySize(fontSize);
             stbTrueTypeFontPacker1.packNewChars("" + charCode);
             bitMap = stbTrueTypeFontPacker1.getBitMapByChar(charCode);
         }
@@ -184,12 +184,12 @@ public class TrueTypeGlyphsBuilder extends DynamicGlyphsBuilder<TrueTypeFontPack
 
     @Override
     public float getAscent(String string, int fontSize) {
-        return getFontBySize(fontSize).getAscender();
+        return getFontPackerBySize(fontSize).getAscender();
     }
 
     @Override
     public float getDescent(String string, int fontSize) {
-        return getFontBySize(fontSize).getDescender();
+        return getFontPackerBySize(fontSize).getDescender();
     }
 
     @Override

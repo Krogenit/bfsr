@@ -16,22 +16,24 @@ public class PropertyFileSelector extends PropertyComponent {
     private final Button button;
     private String path;
 
-    public PropertyFileSelector(int width, int height, String name, int propertyOffsetX, int fontSize, int stringOffsetY,
-                                Object object, List<Field> fields, Object[] values, BiConsumer<Object, Integer> valueConsumer) {
-        super(width, height, name, FONT_TYPE, fontSize, propertyOffsetX, 0, stringOffsetY, object, fields, values, valueConsumer);
+    public PropertyFileSelector(int width, int height, String name, int propertyOffsetX, int fontSize, int stringOffsetY, Object object,
+                                List<Field> fields, Object[] values, BiConsumer<Object, Integer> valueConsumer) {
+        super(width, height, name, FONT_TYPE.getFontName(), fontSize, propertyOffsetX, 0, stringOffsetY, object, fields, values,
+                valueConsumer);
         this.propertyOffsetX = label.getWidth() + MINIMIZABLE_STRING_X_OFFSET;
         path = (String) values[0];
-        addNonConcealable(button = new Button(width - propertyOffsetX, height, path, FONT_TYPE, fontSize, stringOffsetY, () -> {
-            try {
-                String selectedFilePath = Engine.systemDialogs.openFileDialog("Select file",
-                        PathHelper.CLIENT_CONTENT.resolve(path).toString(), false);
-                if (selectedFilePath != null) {
-                    setPath(selectedFilePath);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }));
+        addNonConcealable(button = new Button(width - propertyOffsetX, height, path, FONT_TYPE.getFontName(), fontSize, stringOffsetY,
+                (mouseX, mouseY) -> {
+                    try {
+                        String selectedFilePath = Engine.getSystemDialogs()
+                                .openFileDialog("Select file", PathHelper.CLIENT_CONTENT.resolve(path).toString(), false);
+                        if (selectedFilePath != null) {
+                            setPath(selectedFilePath);
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }));
         setupButton(button).atTopLeft(this.propertyOffsetX, propertyOffsetY);
     }
 

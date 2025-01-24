@@ -1,6 +1,6 @@
 package net.bfsr.engine.renderer;
 
-import net.bfsr.engine.Engine;
+import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
@@ -9,6 +9,8 @@ import net.bfsr.engine.renderer.primitive.Primitive;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11C;
+
+import java.util.List;
 
 import static net.bfsr.engine.renderer.AbstractSpriteRenderer.LAST_UPDATE_MATERIAL_DATA_SIZE_IN_BYTES;
 import static net.bfsr.engine.renderer.SpriteRenderer.COLOR_A_OFFSET;
@@ -26,8 +28,8 @@ public class GuiRenderer extends AbstractGUIRenderer {
     private AbstractBuffersHolder buffersHolder;
 
     @Override
-    public void init() {
-        spriteRenderer = Engine.renderer.spriteRenderer;
+    public void init(AbstractRenderer renderer) {
+        spriteRenderer = renderer.getSpriteRenderer();
         buffersHolder = spriteRenderer.getBuffersHolder(BufferType.GUI);
     }
 
@@ -50,6 +52,15 @@ public class GuiRenderer extends AbstractGUIRenderer {
     }
 
     @Override
+    public void render(List<GuiObject> guiStack, int mouseX, int mouseY) {
+        for (int i = 0; i < guiStack.size(); i++) {
+            guiStack.get(i).getRenderer().render(mouseX, mouseY);
+        }
+
+        render();
+    }
+
+    @Override
     public void addDrawCommand(int id) {
         addDrawCommand(id, AbstractSpriteRenderer.SIMPLE_QUAD_BASE_VERTEX);
     }
@@ -57,11 +68,6 @@ public class GuiRenderer extends AbstractGUIRenderer {
     @Override
     public void addDrawCommand(int id, int baseVertex) {
         spriteRenderer.addDrawCommand(id, baseVertex, buffersHolder);
-    }
-
-    @Override
-    public void setIndexCount(int id, int count) {
-        spriteRenderer.setIndexCount(id, count, buffersHolder);
     }
 
     @Override
@@ -258,11 +264,6 @@ public class GuiRenderer extends AbstractGUIRenderer {
         buffersHolder.putLastUpdateMaterialData(offset + COLOR_B_OFFSET, b);
         buffersHolder.putLastUpdateMaterialData(offset + COLOR_A_OFFSET, a);
         buffersHolder.setLastUpdateMaterialBufferDirty(true);
-    }
-
-    @Override
-    public int getRenderObjectsCount() {
-        return buffersHolder.getRenderObjects();
     }
 
     @Override

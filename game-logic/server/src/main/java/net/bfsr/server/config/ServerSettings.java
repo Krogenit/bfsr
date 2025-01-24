@@ -18,7 +18,7 @@ public class ServerSettings {
     private int databaseServicePort = 7000;
 
     public void saveSettings(Path path) {
-        ConfigLoader.save(path, this, ServerSettings.class);
+        ConfigLoader.save(path, this);
     }
 
     public static ServerSettings load() {

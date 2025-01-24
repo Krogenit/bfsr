@@ -4,11 +4,9 @@ import io.netty.channel.ChannelHandlerContext;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.ai.Ai;
 import net.bfsr.command.Command;
-import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
-import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.client.PacketCommand;
@@ -22,6 +20,7 @@ import java.net.InetSocketAddress;
 public class PacketCommandHandler extends PacketHandler<PacketCommand, PlayerNetworkHandler> {
     private final Command[] commands = Command.values();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
+    private final ShipFactory shipFactory = ServerGameLogic.get().getShipFactory();
 
     @Override
     public void handle(PacketCommand packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx,
@@ -33,10 +32,6 @@ public class PacketCommandHandler extends PacketHandler<PacketCommand, PlayerNet
             Vector2f pos = new Vector2f(Float.parseFloat(args[0]), Float.parseFloat(args[1]));
             Faction fact = Faction.values()[random.nextInt(Faction.values().length)];
             Ai ai = Ai.NO_AI;
-
-            ShipRegistry shipRegistry = ServerGameLogic.getInstance().getConfigConverterManager().getConverter(ShipRegistry.class);
-            ShipFactory shipFactory = new ShipFactory(shipRegistry,
-                    new ShipOutfitter(ServerGameLogic.getInstance().getConfigConverterManager()));
 
             Ship ship = switch (fact) {
                 case HUMAN -> shipFactory.createBotHumanSmall(world, pos.x, pos.y, random.nextFloat() * MathUtils.TWO_PI, ai);

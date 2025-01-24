@@ -1,12 +1,16 @@
 package net.bfsr.engine.gui.component;
 
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.renderer.font.Font;
-import net.bfsr.engine.renderer.font.StringOffsetType;
+import net.bfsr.engine.input.AbstractMouse;
+import net.bfsr.engine.renderer.font.string.StringOffsetType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import org.joml.Vector4f;
 
+import static net.bfsr.engine.renderer.font.AbstractFontManager.DEFAULT_FONT_NAME;
+
 public class Slider extends TexturedRectangle {
+    private final AbstractMouse mouse = Engine.getMouse();
+
     protected float value;
     private boolean movingByMouse;
     private final int indent;
@@ -21,17 +25,16 @@ public class Slider extends TexturedRectangle {
         add(slider.atBottomLeft(this::calculateSliderXPos, () -> 0));
         setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
 
-        Font font = Font.XOLONIUM_FT;
-        this.label = new Label(font, string, fontSize, StringOffsetType.CENTERED);
+        this.label = new Label(DEFAULT_FONT_NAME, string, fontSize, StringOffsetType.CENTERED);
         add(label.atBottomLeft(width / 2, label.getCenteredOffsetY(height)));
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void update(int mouseX, int mouseY) {
+        super.update(mouseX, mouseY);
 
         if (movingByMouse) {
-            int sliderX = (int) Engine.mouse.getPosition().x - getSceneX() - slider.getWidth() / 2;
+            int sliderX = (int) mouse.getScreenPosition().x - getSceneX() - slider.getWidth() / 2;
 
             int maxXPos = getMaxX();
             int minXPos = getMinX();
@@ -41,9 +44,12 @@ public class Slider extends TexturedRectangle {
 
             slider.setX(sliderX);
 
+            float prevValue = value;
             value = (sliderX - minXPos) / (float) (maxXPos - minXPos);
 
-            onValueChanged();
+            if (prevValue != value) {
+                onValueChanged();
+            }
         }
     }
 
@@ -69,8 +75,8 @@ public class Slider extends TexturedRectangle {
     }
 
     @Override
-    public GuiObject mouseLeftClick() {
-        GuiObject guiObject = super.mouseLeftClick();
+    public GuiObject mouseLeftClick(int mouseX, int mouseY) {
+        GuiObject guiObject = super.mouseLeftClick(mouseX, mouseY);
 
         if (isMouseHover()) {
             movingByMouse = true;
@@ -80,9 +86,9 @@ public class Slider extends TexturedRectangle {
     }
 
     @Override
-    public GuiObject mouseLeftRelease() {
+    public GuiObject mouseLeftRelease(int mouseX, int mouseY) {
         movingByMouse = false;
-        return super.mouseLeftRelease();
+        return super.mouseLeftRelease(mouseX, mouseY);
     }
 
     @Override

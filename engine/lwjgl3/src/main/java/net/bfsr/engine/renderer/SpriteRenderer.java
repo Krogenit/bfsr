@@ -3,7 +3,6 @@ package net.bfsr.engine.renderer;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import lombok.Getter;
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
@@ -129,8 +128,8 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     }
 
     @Override
-    public void init() {
-        renderer = Engine.renderer;
+    public void init(AbstractRenderer renderer) {
+        this.renderer = renderer;
     }
 
     @Override
@@ -363,7 +362,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
         buffersHolder.bindCommandBuffer();
 
         glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, 0, objectCount, 0);
-        Engine.renderer.increaseDrawCalls();
+        renderer.increaseDrawCalls();
         buffersHolder.lockRange();
         buffersHolder.switchRenderingIndex();
     }

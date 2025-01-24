@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.bfsr.client.Client;
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.gui.component.GuiObject;
@@ -53,7 +52,7 @@ public class MiniMapRenderer extends RectangleTexturedRenderer {
         int width = guiObject.getWidth();
         int height = guiObject.getHeight();
 
-        Vector2f camPos = Engine.renderer.camera.getPosition();
+        Vector2f camPos = renderer.getCamera().getPosition();
         int miniMapX = guiObject.getX() + width / 2;
         int miniMapY = guiObject.getY() + height / 2;
 
@@ -72,13 +71,13 @@ public class MiniMapRenderer extends RectangleTexturedRenderer {
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void update(int mouseX, int mouseY) {
+        super.update(mouseX, mouseY);
 
         int width = guiObject.getWidth();
         int height = guiObject.getHeight();
 
-        Vector2f camPos = Engine.renderer.camera.getPosition();
+        Vector2f camPos = renderer.getCamera().getPosition();
         boundingBox.set(camPos.x - mapOffsetX, camPos.y - mapOffsetY, camPos.x + mapOffsetX, camPos.y + mapOffsetY);
 
         int miniMapX = guiObject.getX() + width / 2;
@@ -114,7 +113,7 @@ public class MiniMapRenderer extends RectangleTexturedRenderer {
 
                 float shipX = ship.getX();
                 float shipY = ship.getY();
-                Vector2f camPos = Engine.renderer.camera.getPosition();
+                Vector2f camPos = renderer.getCamera().getPosition();
                 int x1 = (int) (miniMapX + (shipX - camPos.x) / mapScaleX);
                 int y1 = (int) (miniMapY + (shipY - camPos.y) / mapScaleY);
 
@@ -149,17 +148,17 @@ public class MiniMapRenderer extends RectangleTexturedRenderer {
     }
 
     @Override
-    public void render() {
+    public void render(int mouseX, int mouseY) {
         int width = guiObject.getWidth();
         int height = guiObject.getHeight();
 
         guiRenderer.render();
         List<Ship> ships = client.getWorld().getEntitiesByType(Ship.class);
 
-        Engine.renderer.glEnable(GL.GL_SCISSOR_TEST);
+        renderer.glEnable(GL.GL_SCISSOR_TEST);
         int offsetY = 17;
         int offsetX = 22;
-        Engine.renderer.glScissor(guiObject.getX() + offsetX, Engine.renderer.getScreenHeight() - height + offsetY,
+        renderer.glScissor(guiObject.getX() + offsetX, renderer.getScreenHeight() - height + offsetY,
                 width - (offsetX << 1), height - (offsetY << 1));
 
         for (int i = 0; i < ships.size(); i++) {
@@ -170,9 +169,9 @@ public class MiniMapRenderer extends RectangleTexturedRenderer {
         }
 
         guiRenderer.render();
-        Engine.renderer.glDisable(GL.GL_SCISSOR_TEST);
+        renderer.glDisable(GL.GL_SCISSOR_TEST);
 
-        super.render();
+        super.render(mouseX, mouseY);
     }
 
     @Override

@@ -25,7 +25,7 @@ public class PacketSyncDamageHandler extends PacketHandler<PacketSyncDamage, Net
             damageableRigidBody.setFixtures(packet.getFixtures());
             damageHandler.updateDamage(damageableRigidBody, packet.getX(), packet.getY(), packet.getWidth(), packet.getHeight(),
                     packet.getByteBuffer());
-            Engine.renderer.memFree(packet.getByteBuffer());
+            Engine.getRenderer().memFree(packet.getByteBuffer());
         }
     }
 }

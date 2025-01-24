@@ -105,12 +105,12 @@ public class ScrollPane extends GuiObject {
     }
 
     @Override
-    public GuiObject getHovered(GuiObject hoveredObject) {
-        if (isIntersectsWithMouse()) {
+    public GuiObject getHovered(GuiObject hoveredObject, int mouseX, int mouseY) {
+        if (isIntersectsWithMouse(mouseX, mouseY)) {
             hoveredObject = this;
 
             for (int i = 0, size = guiObjects.size(); i < size; i++) {
-                hoveredObject = guiObjects.get(i).getHovered(hoveredObject);
+                hoveredObject = guiObjects.get(i).getHovered(hoveredObject, mouseX, mouseY);
             }
         }
 

@@ -32,7 +32,7 @@ public class ConfigurableGameObject implements PropertiesHolder {
     }
 
     public void init() {
-        texture = Engine.assetsManager.getTexture(PathHelper.convertPath(texturePath));
+        texture = Engine.getAssetsManager().getTexture(PathHelper.convertPath(texturePath));
     }
 
     @Override

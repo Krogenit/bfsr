@@ -1,8 +1,10 @@
 package net.bfsr.client.world.entity;
 
 import lombok.RequiredArgsConstructor;
-import net.bfsr.client.Client;
+import net.bfsr.client.damage.DamageHandler;
+import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.damage.DamageMask;
+import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.entity.ship.module.engine.Engine;
@@ -20,11 +22,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ShipSpawnLogic extends DamageableRigidBodySpawnLogic<ShipSpawnData> {
     private final ShipFactory shipFactory;
+    private final DamageHandler damageHandler;
 
     @Override
-    public void spawn(ShipSpawnData spawnData) {
-        World world = Client.get().getWorld();
-
+    public void spawn(ShipSpawnData spawnData, World world, ConfigConverterManager configConverterManager, AbstractRenderer renderer) {
         Ship ship = shipFactory.create(spawnData.getPosX(), spawnData.getPosY(), spawnData.getSin(), spawnData.getCos(),
                 Faction.get(spawnData.getFaction()), shipFactory.getShipRegistry().get(spawnData.getDataId()),
                 new DamageMask(32, 32, null));
@@ -35,7 +36,7 @@ public class ShipSpawnLogic extends DamageableRigidBodySpawnLogic<ShipSpawnData>
         outfit(ship, spawnData, shipFactory);
 
         //Should be called before adding to world for proper ShipRender with connected objects initialization
-        addFixturesAndConnectedObjects(ship, spawnData);
+        addFixturesAndConnectedObjects(ship, spawnData, configConverterManager);
 
         world.add(ship, false);
 
@@ -43,7 +44,7 @@ public class ShipSpawnLogic extends DamageableRigidBodySpawnLogic<ShipSpawnData>
         if (spawnData.isSpawned()) ship.setSpawned();
 
         //Render instance with mask texture only available after ShipRender created when ship has added to world
-        updateDamage(ship, spawnData);
+        updateDamage(damageHandler, ship, spawnData);
     }
 
     private void outfit(Ship ship, ShipSpawnData shipSpawnData, ShipFactory shipFactory) {

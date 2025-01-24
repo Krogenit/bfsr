@@ -1,4 +1,4 @@
-package net.bfsr.engine.renderer.font;
+package net.bfsr.engine.renderer.font.string;
 
 public enum StringOffsetType {
     DEFAULT, CENTERED, RIGHT

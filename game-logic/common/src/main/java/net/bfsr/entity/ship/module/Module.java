@@ -3,7 +3,7 @@ package net.bfsr.entity.ship.module;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.bfsr.entity.GameObject;
+import net.bfsr.engine.entity.GameObject;
 import net.bfsr.entity.RigidBody;
 
 import java.util.List;

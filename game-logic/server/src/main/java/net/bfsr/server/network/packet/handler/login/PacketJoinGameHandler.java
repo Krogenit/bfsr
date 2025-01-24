@@ -9,7 +9,8 @@ import java.net.InetSocketAddress;
 
 public class PacketJoinGameHandler extends PacketHandler<PacketJoinGame, PlayerNetworkHandler> {
     @Override
-    public void handle(PacketJoinGame packet, PlayerNetworkHandler networkHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketJoinGame packet, PlayerNetworkHandler networkHandler, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         networkHandler.joinGame();
     }
 }

@@ -16,10 +16,11 @@ public class PacketOpenGuiHandler extends PacketHandler<PacketOpenGui, NetworkSy
     public void handle(PacketOpenGui packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
         GuiType guiType = GuiType.values()[packet.getGui()];
+        Client client = Client.get();
         if (guiType == GuiType.SELECT_FACTION) {
-            Client.get().openGui(new GuiFactionSelect());
+            client.openGui(new GuiFactionSelect());
         } else if (guiType == GuiType.DESTROYED) {
-            Client.get().openGui(new GuiDestroyed(packet.getDestroyer()));
+            client.openGui(new GuiDestroyed(packet.getDestroyer()));
         }
     }
 }

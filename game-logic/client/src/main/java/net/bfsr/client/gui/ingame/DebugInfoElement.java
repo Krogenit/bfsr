@@ -2,6 +2,7 @@ package net.bfsr.client.gui.ingame;
 
 import lombok.Setter;
 import net.bfsr.client.Client;
+import net.bfsr.client.font.FontType;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.settings.ClientSettings;
@@ -13,8 +14,8 @@ import net.bfsr.engine.gui.component.MinimizableGuiObject;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.profiler.Profiler;
+import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
-import net.bfsr.engine.renderer.font.Font;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.entity.ship.Ship;
@@ -31,29 +32,32 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class DebugInfoElement extends MinimizableGuiObject {
-    private static final Font FONT_TYPE = Font.CONSOLA_FT;
+    private static final FontType FONT_TYPE = FontType.CONSOLA;
     private static final int FONT_SIZE = 13;
-
-    private final StringBuilder stringBuilder = new StringBuilder(64);
-    private final String openGlVersion = Engine.renderer.glGetString(GL.GL_VERSION);
-    private final String openGlRenderer = Engine.renderer.glGetString(GL.GL_RENDERER);
-    @Setter
-    private float ping;
 
     private final Client client = Client.get();
     private final ParticleRenderer particleRenderer = client.getGlobalRenderer().getParticleRenderer();
     private final PlayerInputController playerInputController = client.getInputHandler().getPlayerInputController();
-    private final AbstractMouse mouse = Engine.mouse;
-    private int sortTimer;
+
+    private final AbstractRenderer renderer = Engine.getRenderer();
+    private final AbstractCamera camera = renderer.getCamera();
+    private final AbstractMouse mouse = Engine.getMouse();
+
+    private final StringBuilder stringBuilder = new StringBuilder(64);
+    private final String openGlVersion = renderer.glGetString(GL.GL_VERSION);
+    private final String openGlRenderer = renderer.glGetString(GL.GL_RENDERER);
+
     private final StringBuilder offset = new StringBuilder(32);
     private final StringBuilder fullCategoryName = new StringBuilder(32);
     private final ScrollPane scrollPane = new ScrollPane(300 - STATIC_STRING_X_OFFSET, 500, 10);
-    private final Label profilerLabel = new Label(FONT_TYPE, "", 0, 0, FONT_SIZE);
+    private final Label profilerLabel = new Label(FONT_TYPE.getFontName(), "", 0, 0, FONT_SIZE);
+
+    @Setter
+    private float ping;
+    private int sortTimer;
 
     public DebugInfoElement(HUD hud) {
-        super(300, 20, "Debug info", FONT_TYPE, FONT_SIZE, 0, 0, MINIMIZABLE_STRING_X_OFFSET,
-                STATIC_STRING_X_OFFSET);
-
+        super(300, 20, "Debug info", FONT_TYPE.getFontName(), FONT_SIZE, 0, 0, MINIMIZABLE_STRING_X_OFFSET, STATIC_STRING_X_OFFSET);
         setTextColor(205 / 255.0f, 205 / 255.0f, 205 / 255.0f, 1.0f).setHoverColor(0.3f, 0.3f, 0.3f, 0.5f);
 
         add(scrollPane);
@@ -65,9 +69,9 @@ public class DebugInfoElement extends MinimizableGuiObject {
         int y = 0;
         y -= addDebugLabel(y, "BFSR Client " + Client.GAME_VERSION + "\n", label1 -> {}).getHeight();
         y -= addDebugLabel(y, "", label1 -> {
-            ServerGameLogic server = ServerGameLogic.getInstance();
+            ServerGameLogic server = ServerGameLogic.get();
             int ups = server != null ? server.getUps() : 0;
-            label1.setString("FPS " + Engine.renderer.getFps() + ", Local Server UPS " + ups);
+            label1.setString("FPS " + renderer.getFps() + ", Local Server UPS " + ups);
         }).getHeight();
         y -= addDebugLabel(y, "", label1 -> {
             Runtime runtime = Runtime.getRuntime();
@@ -81,11 +85,11 @@ public class DebugInfoElement extends MinimizableGuiObject {
                     "MB up to " + maxMemoryMB + "MB");
         }).getHeight();
         y -= addDebugLabel(y, "", label1 -> {
-            Vector2f mousePosition = mouse.getPosition();
+            Vector2f mousePosition = mouse.getScreenPosition();
             label1.setString("Mouse screen pos: " + (int) mousePosition.x + ", " + (int) mousePosition.y);
         }).getHeight();
         y -= addDebugLabel(y, "", label1 -> {
-            AbstractCamera camera = Engine.renderer.camera;
+
             Vector2f mouseWorldPosition = mouse.getWorldPosition(camera);
             label1.setString("Mouse world pos: " + DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.x) +
                     ", " + DecimalUtils.strictFormatWithToDigits(mouseWorldPosition.y));
@@ -96,13 +100,12 @@ public class DebugInfoElement extends MinimizableGuiObject {
                         "\nClient render delay: " + client.getClientRenderDelay() / 1_000_000 + "ms"))).getHeight();
         y -= addMinimizableWithLabel(width, height, y, "Render", createLabel(0, "",
                 label1 -> {
-                    AbstractCamera camera = Engine.renderer.camera;
                     Vector2f camPos = camera.getPosition();
                     label1.setString("GPU: " + openGlRenderer +
                             "\nDriver version: " + openGlVersion +
                             "\nCamera pos: " + DecimalUtils.strictFormatWithToDigits(camPos.x) + ", " +
                             DecimalUtils.strictFormatWithToDigits(camPos.y) +
-                            "\nDraw calls: " + Engine.renderer.getLastFrameDrawCalls() +
+                            "\nDraw calls: " + renderer.getLastFrameDrawCalls() +
                             "\nParticle Renderer: " +
                             (particleRenderer.getTaskCount() > 1 ? particleRenderer.getTaskCount() + " active threads" :
                                     "single-threaded"));
@@ -117,7 +120,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
                     int shipWreckCount = world.getShipWreckCount();
                     int bodyCount = world.getPhysicWorld().getBodyCount();
 
-                    ServerGameLogic server = ServerGameLogic.getInstance();
+                    ServerGameLogic server = ServerGameLogic.get();
                     int sBulletsCount = 0;
                     int sShipsCount = 0;
                     int sWrecksCount = 0;
@@ -179,18 +182,18 @@ public class DebugInfoElement extends MinimizableGuiObject {
     }
 
     private Label createLabel(int y, String text, Consumer<Label> updateConsumer) {
-        return new Label(Font.CONSOLA_FT, text, 0, 0, FONT_SIZE) {
+        return new Label(FontType.CONSOLA.getFontName(), text, 0, 0, FONT_SIZE) {
             @Override
-            public void update() {
-                super.update();
+            public void update(int mouseX, int mouseY) {
+                super.update(mouseX, mouseY);
                 updateConsumer.accept(this);
             }
         }.atTopLeft(0, y);
     }
 
     private MinimizableGuiObject addMinimizableWithLabel(int width, int height, int y, String name, Label label) {
-        MinimizableGuiObject minimizableGuiObject = new MinimizableGuiObject(width, height, name, FONT_TYPE, FONT_SIZE,
-                0, 0, MINIMIZABLE_STRING_X_OFFSET, STATIC_STRING_X_OFFSET);
+        MinimizableGuiObject minimizableGuiObject = new MinimizableGuiObject(width, height, name, FONT_TYPE.getFontName(),
+                FONT_SIZE, 0, 0, MINIMIZABLE_STRING_X_OFFSET, STATIC_STRING_X_OFFSET);
         scrollPane.add(minimizableGuiObject.atTopLeft(0, y).setTextColor(205 / 255.0f, 205 / 255.0f, 205 / 255.0f, 1.0f)
                 .setHoverColor(0.3f, 0.3f, 0.3f, 0.5f));
         minimizableGuiObject.add(label);
@@ -198,8 +201,8 @@ public class DebugInfoElement extends MinimizableGuiObject {
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void update(int mouseX, int mouseY) {
+        super.update(mouseX, mouseY);
 
         if (!ClientSettings.IS_DEBUG.getBoolean() || profilerLabel.getParent() == BlankGuiObject.INSTANCE) return;
 
@@ -212,7 +215,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
             boolean needSort = sortTimer-- == 0;
             @Nullable Profiler serverProfiler;
 
-            ServerGameLogic server = ServerGameLogic.getInstance();
+            ServerGameLogic server = ServerGameLogic.get();
             if (server != null) {
                 serverProfiler = server.getProfiler();
             } else {

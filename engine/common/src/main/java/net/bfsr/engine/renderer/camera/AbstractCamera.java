@@ -1,10 +1,11 @@
 package net.bfsr.engine.renderer.camera;
 
+import net.bfsr.engine.renderer.AbstractRenderer;
 import org.jbox2d.collision.AABB;
 import org.joml.Vector2f;
 
 public interface AbstractCamera {
-    void init(int width, int height);
+    void init(int width, int height, AbstractRenderer renderer);
     void resize(int width, int height);
     void update();
     void calculateInterpolatedViewMatrix(float interpolation);

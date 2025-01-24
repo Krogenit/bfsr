@@ -9,7 +9,8 @@ import java.net.InetSocketAddress;
 
 public class PacketShipStopMoveHandler extends PacketHandler<PacketShipStopMove, PlayerNetworkHandler> {
     @Override
-    public void handle(PacketShipStopMove packet, PlayerNetworkHandler netHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
+    public void handle(PacketShipStopMove packet, PlayerNetworkHandler netHandler, ChannelHandlerContext ctx,
+                       InetSocketAddress remoteAddress) {
         netHandler.getPlayer().getPlayerInputController().stopMove(packet.getDirection());
     }
 }
