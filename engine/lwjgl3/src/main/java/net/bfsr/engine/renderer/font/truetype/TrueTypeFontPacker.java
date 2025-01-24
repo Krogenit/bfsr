@@ -20,8 +20,7 @@ class TrueTypeFontPacker extends FontPacker<TrueTypeBitMap> {
     @Getter
     private int descender;
 
-    TrueTypeFontPacker(DynamicFont<?> glyphsBuilder, FT_Face ftFace, int bitmapWidth, int bitmapHeight, int fontSize,
-                       String fontName) {
+    TrueTypeFontPacker(DynamicFont<?> glyphsBuilder, FT_Face ftFace, int bitmapWidth, int bitmapHeight, int fontSize, String fontName) {
         super(glyphsBuilder, bitmapWidth, bitmapHeight, fontSize, fontName);
         this.ftFace = ftFace;
     }

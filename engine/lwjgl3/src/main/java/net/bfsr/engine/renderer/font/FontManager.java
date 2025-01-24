@@ -5,12 +5,14 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
 import net.bfsr.engine.logic.ClientGameLogic;
 import net.bfsr.engine.renderer.font.glyph.Font;
-import net.bfsr.engine.renderer.font.stb.STBTrueTypeFont;
+import net.bfsr.engine.renderer.font.truetype.TrueTypeFont;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class FontManager implements AbstractFontManager {
+    public static final boolean DEBUG = false;
+
     private final Object2ObjectMap<String, Font> fontsMap = new Object2ObjectOpenHashMap<>();
     @Getter
     private final List<Font> fonts = new ArrayList<>();
@@ -21,9 +23,9 @@ public class FontManager implements AbstractFontManager {
             throw new IllegalArgumentException("Font with name " + fontName + " already registered");
         }
 
-        STBTrueTypeFont glyphsBuilder = new STBTrueTypeFont(fontFile);
-        fontsMap.put(fontName, glyphsBuilder);
-        fonts.add(glyphsBuilder);
+        TrueTypeFont font = new TrueTypeFont(fontFile);
+        fontsMap.put(fontName, font);
+        fonts.add(font);
     }
 
     @Override

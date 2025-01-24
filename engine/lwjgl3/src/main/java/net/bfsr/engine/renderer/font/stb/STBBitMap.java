@@ -9,6 +9,7 @@ import net.bfsr.engine.AssetsManager;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.font.FontBitMap;
+import net.bfsr.engine.renderer.font.FontManager;
 import net.bfsr.engine.renderer.font.FontPackResult;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.util.IOUtils;
@@ -80,7 +81,9 @@ class STBBitMap extends FontBitMap {
                 renderer.subImage2D(bitmapTexture.getId(), 0, 0, width, height, GL.GL_RED, bitmap);
             }
 
-            IOUtils.writePNGGrayScale(bitmap, width, height, "stb_" + fontName + "_atlas_" + fontSize + "_" + index);
+            if (FontManager.DEBUG) {
+                IOUtils.writePNGGrayScale(bitmap, width, height, "stb_" + fontName + "_atlas_" + fontSize + "_" + index);
+            }
 
             IntBuffer advance = memoryStack.mallocInt(1);
             IntBuffer leftSideBearing = memoryStack.mallocInt(1);

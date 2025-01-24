@@ -21,7 +21,7 @@ import static org.lwjgl.util.freetype.FreeType.FT_Init_FreeType;
 import static org.lwjgl.util.freetype.FreeType.FT_New_Memory_Face;
 
 @Log4j2
-public class TrueTypeGlyphsBuilder extends DynamicFont<TrueTypeFontPacker> {
+public class TrueTypeFont extends DynamicFont<TrueTypeFontPacker> {
     private static final PointerBuffer libraryPointerBuffer;
     private static final long library;
 
@@ -40,7 +40,7 @@ public class TrueTypeGlyphsBuilder extends DynamicFont<TrueTypeFontPacker> {
     private final PointerBuffer ftFacePointerBuffer;
     private final FT_Face ftFace;
 
-    public TrueTypeGlyphsBuilder(String fontFile) {
+    public TrueTypeFont(String fontFile) {
         super(fontFile);
 
         byteBuffer = IOUtils.fileToByteBuffer(PathHelper.FONT.resolve(fontFile));
@@ -94,13 +94,13 @@ public class TrueTypeGlyphsBuilder extends DynamicFont<TrueTypeFontPacker> {
     private Glyph getGlyph(char charCode, int fontSize) {
         TrueTypeBitMap bitMap = getFontPackerBySize(fontSize).getBitMapByChar(charCode);
         if (bitMap == null) {
-            TrueTypeGlyphsBuilder trueTypeGlyphsBuilder = findFontSupportedChar(charCode,
-                    glyphsBuilder -> glyphsBuilder instanceof TrueTypeGlyphsBuilder);
-            if (trueTypeGlyphsBuilder == null) {
+            TrueTypeFont trueTypeFont = findFontSupportedChar(charCode,
+                    glyphsBuilder -> glyphsBuilder instanceof TrueTypeFont);
+            if (trueTypeFont == null) {
                 return null;
             }
 
-            TrueTypeFontPacker stbTrueTypeFontPacker1 = trueTypeGlyphsBuilder.getFontPackerBySize(fontSize);
+            TrueTypeFontPacker stbTrueTypeFontPacker1 = trueTypeFont.getFontPackerBySize(fontSize);
             stbTrueTypeFontPacker1.packNewChars("" + charCode);
             bitMap = stbTrueTypeFontPacker1.getBitMapByChar(charCode);
         }
