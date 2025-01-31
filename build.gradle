@@ -1,9 +1,9 @@
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
-    id 'org.springframework.boot' version '3.4.1'
+    id 'org.springframework.boot' version '3.4.2'
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'me.champeau.jmh' version '0.7.2'
+    id 'me.champeau.jmh' version '0.7.3'
 }
 
 dependencies {
@@ -45,7 +45,7 @@ subprojects {
         testImplementation 'org.junit.platform:junit-platform-engine:1.11.4'
         testImplementation 'org.mockito:mockito-core:5.15.2'
         testImplementation 'org.mockito:mockito-junit-jupiter:5.15.2'
-        testImplementation 'org.assertj:assertj-core:3.27.2'
+        testImplementation 'org.assertj:assertj-core:3.27.3'
 
         jmh 'org.openjdk.jmh:jmh-core:1.37'
         jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
