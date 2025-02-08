@@ -68,12 +68,15 @@ public class PropertiesPanel extends Rectangle {
         setupButton(removeButton).atBottomLeft(x + buttonWidth, 0);
     }
 
-    public void add(PropertiesHolder propertiesHolder, String name) {
-        createMinimizable(propertiesHolder, name, width - scrollPane.getScrollWidth(), elementHeight, 150);
+    public MinimizableHolder<PropertiesHolder> add(PropertiesHolder propertiesHolder, String name) {
+        MinimizableHolder<PropertiesHolder> minimizableHolder = createMinimizable(propertiesHolder, name,
+                width - scrollPane.getScrollWidth(), elementHeight, 150);
         updatePositionAndSize();
+        return minimizableHolder;
     }
 
-    private void createMinimizable(PropertiesHolder propertiesHolder, String name, int width, int height, int propertyOffsetX) {
+    private MinimizableHolder<PropertiesHolder> createMinimizable(PropertiesHolder propertiesHolder, String name, int width, int height,
+                                                                  int propertyOffsetX) {
         propertiesHolder.clearListeners();
         MinimizableHolder<PropertiesHolder> minimizableHolder = new MinimizableHolder<>(width, height, name, font.getFontName(),
                 fontSize, stringYOffset, propertiesHolder);
@@ -111,6 +114,7 @@ public class PropertiesPanel extends Rectangle {
         scrollPane.add(setup(minimizableHolder));
         minimizableProperties.add(minimizableHolder);
         minimizableHolder.tryMaximize();
+        return minimizableHolder;
     }
 
     @Override

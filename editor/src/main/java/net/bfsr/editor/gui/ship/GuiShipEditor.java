@@ -9,14 +9,18 @@ import net.bfsr.config.entity.ship.ShipConfig;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.editor.gui.GuiEditor;
+import net.bfsr.editor.gui.component.MinimizableHolder;
 import net.bfsr.editor.gui.inspection.InspectionEntry;
 import net.bfsr.editor.gui.property.PolygonProperty;
+import net.bfsr.editor.gui.property.PropertyCheckBox;
 import net.bfsr.editor.object.ship.ShipConverter;
 import net.bfsr.editor.object.ship.ShipProperties;
 import net.bfsr.editor.object.ship.TestShip;
+import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.editor.property.holder.Vector2fPropertiesHolder;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.entity.GameObject;
+import net.bfsr.engine.gui.component.CheckBox;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.entity.ship.ShipOutfitter;
@@ -37,6 +41,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
     private PolygonProperty polygonProperty;
     private final GameObject polygonObject = new GameObject();
     private boolean lastDebugBoxesMode;
+    private boolean showShipSprite = true;
 
     public GuiShipEditor() {
         super("Ships", Client.get().getConfigConverterManager().getConverter(ShipRegistry.class), Mappers.getMapper(ShipConverter.class),
@@ -73,7 +78,15 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
         ShipProperties properties = entry.getComponentByType(ShipProperties.class);
 
         if (properties != null) {
-            propertiesPanel.add(properties, "Ship");
+            MinimizableHolder<PropertiesHolder> minimizableHolder = propertiesPanel.add(properties, "Ship");
+            PropertyCheckBox propertyCheckBox = new PropertyCheckBox(minimizableHolder.getWidth(), elementHeight, "Show ship sprite", 0,
+                    fontSize, stringOffsetY, null, null, new Object[]{showShipSprite}, (object, integer) -> {});
+            minimizableHolder.add(propertyCheckBox);
+            CheckBox checkBox = propertyCheckBox.getCheckBox();
+            checkBox.setLeftClickConsumer((mouseX, mouseY) -> {
+                checkBox.setChecked(!checkBox.isChecked());
+                showShipSprite = checkBox.isChecked();
+            });
 
             if (testShip != null) {
                 testShip.setDead();
@@ -93,6 +106,23 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
                 }
 
                 ShipRender render = new ShipRender(testShip) {
+                    @Override
+                    public void renderAlpha() {
+                        if (!ship.isSpawned()) {
+                            return;
+                        }
+
+                        for (int i = 0; i < moduleRenders.size(); i++) {
+                            moduleRenders.get(i).renderAlpha();
+                        }
+
+                        if (showShipSprite) {
+                            super.renderAlpha();
+                        }
+
+                        renderGunSlots();
+                    }
+
                     @Override
                     public void renderDebug() {
                         if (polygonCreationMode) return;

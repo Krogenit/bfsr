@@ -51,7 +51,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
     protected final FontType font = EditorTheme.FONT_TYPE;
     protected final int fontSize = 13;
     private final int stringOffsetX = 4;
-    private final int stringOffsetY = 0;
+    protected final int stringOffsetY = 0;
     private final int contextMenuStringOffsetX = 8;
 
     private final boolean prevFollowCameraOptionValue;

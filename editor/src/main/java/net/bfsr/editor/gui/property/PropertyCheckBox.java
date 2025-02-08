@@ -1,5 +1,6 @@
 package net.bfsr.editor.gui.property;
 
+import lombok.Getter;
 import net.bfsr.engine.gui.component.CheckBox;
 
 import java.lang.reflect.Field;
@@ -9,6 +10,7 @@ import java.util.function.BiConsumer;
 import static net.bfsr.editor.gui.EditorTheme.FONT_TYPE;
 import static net.bfsr.editor.gui.EditorTheme.setup;
 
+@Getter
 public class PropertyCheckBox extends PropertyComponent {
     private final CheckBox checkBox;
 

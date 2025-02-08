@@ -53,7 +53,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     private final EngineEffects engineEffects = client.getParticleEffects().getEngineEffects();
     private final JumpEffects jumpEffects = client.getParticleEffects().getJumpEffects();
 
-    private final Ship ship;
+    protected final Ship ship;
     private final Label label = new Label(FontType.XOLONIUM.getFontName(), 24, StringOffsetType.CENTERED, BufferType.ENTITIES_ALPHA)
             .setShadow(true).setShadowOffsetX(4).setShadowOffsetY(-4);
 
@@ -67,7 +67,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
     private final EnumMap<Direction, List<SpawnAccumulator>> engineAccumulators = new EnumMap<>(Direction.class);
     private final EnumMap<Direction, Runnable> engineEffectsRunnable = new EnumMap<>(Direction.class);
-    private final List<ModuleRenderer> moduleRenders = new ArrayList<>();
+    protected final List<ModuleRenderer> moduleRenders = new ArrayList<>();
     private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
     private final Vector2f rotateToVector = new Vector2f();
 
@@ -384,7 +384,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         }
     }
 
-    private void renderGunSlots() {
+    protected void renderGunSlots() {
         for (int i = 0, size = weaponRenders.size(); i < size; i++) {
             weaponRenders.get(i).renderAlpha();
         }
