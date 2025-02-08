@@ -10,6 +10,7 @@ import net.bfsr.engine.gui.component.InputBox;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static net.bfsr.editor.gui.EditorTheme.setupButton;
@@ -30,38 +31,81 @@ public class PolygonProperty extends SimplePropertyList<Vector2fPropertiesHolder
                     }
                 });
         int x1 = -40;
+        int y1 = 0;
         add(setupButton(polygonCreationModeButton).atBottomRight(x1, 0));
+        y1 += 20;
+        x1 = 0;
 
         Button scaleButton = new Button(60, 20, "Scale", fontName, fontSize, stringOffsetY);
-        x1 -= polygonCreationModeButton.getWidth();
-        add(setupButton(scaleButton).atBottomRight(x1, 0));
-
-        InputBox scaleInputBox = new InputBox(50, height, "", fontName, fontSize, 3, stringOffsetY);
+        add(setupButton(scaleButton).atBottomRight(x1, y1));
         x1 -= scaleButton.getWidth();
-        add(setupInputBox(scaleInputBox).atBottomRight(x1, 0));
+
+        InputBox scaleYInputBox = new InputBox(50, height, "1.0", fontName, fontSize, 3, stringOffsetY);
+        add(setupInputBox(scaleYInputBox).atBottomRight(x1, y1));
+        x1 -= scaleYInputBox.getWidth();
+
+        InputBox scaleXInputBox = new InputBox(50, height, "1.0", fontName, fontSize, 3, stringOffsetY);
+        add(setupInputBox(scaleXInputBox).atBottomRight(x1, y1));
 
         scaleButton.setLeftReleaseConsumer((mouseX, mouseY) -> {
-            String string = scaleInputBox.getString();
+            String scaleXString = scaleXInputBox.getString();
+            String scaleYString = scaleYInputBox.getString();
 
             try {
-                float scale = Float.parseFloat(string);
-
-                for (int i = 0; i < objects.size(); i++) {
-                    Vector2fPropertiesHolder holder = objects.get(i);
-                    holder.setX(holder.getX() * scale);
-                    holder.setY(holder.getY() * scale);
-
-                    PropertyInputBox propertyComponent = ((PropertyInputBox) properties.get(i));
-                    propertyComponent.inputBoxes.get(0).setString(holder.getX() + "");
-                    propertyComponent.inputBoxes.get(1).setString(holder.getY() + "");
-                }
+                float scaleX = Float.parseFloat(scaleXString);
+                float scaleY = Float.parseFloat(scaleYString);
+                modifyVertices(aFloat -> aFloat * scaleX, aFloat -> aFloat * scaleY);
             } catch (NumberFormatException e) {
-                log.error("Failed to parse float for input string {}", string);
+                log.error("Failed to parse float for input strings {}, {}", scaleXString, scaleYString);
+            }
+        });
+
+        y1 += 20;
+        x1 = 0;
+
+        Button moveButton = new Button(60, 20, "Move", fontName, fontSize, stringOffsetY);
+        add(setupButton(moveButton).atBottomRight(x1, y1));
+        x1 -= moveButton.getWidth();
+
+        InputBox moveYInputBox = new InputBox(50, height, "0.0", fontName, fontSize, 3, stringOffsetY);
+        add(setupInputBox(moveYInputBox).atBottomRight(x1, y1));
+        x1 -= moveYInputBox.getWidth();
+
+        InputBox moveXInputBox = new InputBox(50, height, "0.0", fontName, fontSize, 3, stringOffsetY);
+        add(setupInputBox(moveXInputBox).atBottomRight(x1, y1));
+
+        moveButton.setLeftReleaseConsumer((mouseX, mouseY) -> {
+            String moveXString = moveXInputBox.getString();
+            String moveYString = moveYInputBox.getString();
+
+            try {
+                float moveX = Float.parseFloat(moveXString);
+                float moveY = Float.parseFloat(moveYString);
+                modifyVertices(aFloat -> aFloat + moveX, aFloat -> aFloat + moveY);
+            } catch (NumberFormatException e) {
+                log.error("Failed to parse float for input strings {}, {}", moveXString, moveYString);
             }
         });
     }
 
+    private void modifyVertices(Function<Float, Float> xFunction, Function<Float, Float> yFunction) {
+        for (int i = 0; i < objects.size(); i++) {
+            Vector2fPropertiesHolder holder = objects.get(i);
+            holder.setX(xFunction.apply(holder.getX()));
+            holder.setY(yFunction.apply(holder.getY()));
+
+            PropertyInputBox propertyComponent = ((PropertyInputBox) properties.get(i));
+            propertyComponent.inputBoxes.get(0).setString(holder.getX() + "");
+            propertyComponent.inputBoxes.get(1).setString(holder.getY() + "");
+        }
+    }
+
     public List<Vector2fPropertiesHolder> getVertices() {
         return objects;
+    }
+
+    @Override
+    protected int getMaximizedHeight() {
+        return super.getMaximizedHeight() + 40;
     }
 }
