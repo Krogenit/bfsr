@@ -65,8 +65,9 @@ public class ModuleRenderer extends Render {
         Vector2 center = shape.centroid;
         AABB aabb1 = new AABB();
         shape.computeAABB(aabb1, 0, 0, 0, 1, 0);
-        float dx = aabb1.getWidth();
-        float dy = aabb1.getHeight();
+        float offset = -0.1f;
+        float dx = aabb1.getWidth() + offset;
+        float dy = aabb1.getHeight() + offset;
 
         if (dy > dx) {
             sizeX = dy;
@@ -76,7 +77,7 @@ public class ModuleRenderer extends Render {
             sizeY = dy;
         }
 
-        if (direction == Direction.RIGHT) {
+        if (direction == Direction.FORWARD) {
             updateRunnable = () -> {
                 sin = ship.getSin();
                 cos = ship.getCos();
@@ -86,13 +87,13 @@ public class ModuleRenderer extends Render {
         } else {
             float sin1;
             float cos1;
-            if (direction == Direction.FORWARD) {
+            if (direction == Direction.LEFT) {
                 sin1 = LUT.sin(-MathUtils.HALF_PI);
                 cos1 = LUT.cos(-MathUtils.HALF_PI);
-            } else if (direction == Direction.BACKWARD) {
+            } else if (direction == Direction.RIGHT) {
                 sin1 = LUT.sin(MathUtils.HALF_PI);
                 cos1 = LUT.cos(MathUtils.HALF_PI);
-            } else if (direction == Direction.LEFT) {
+            } else if (direction == Direction.BACKWARD) {
                 sin1 = LUT.sin(MathUtils.PI);
                 cos1 = LUT.cos(MathUtils.PI);
             } else {
