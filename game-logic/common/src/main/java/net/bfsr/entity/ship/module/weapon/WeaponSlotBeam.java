@@ -11,8 +11,8 @@ import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.physics.RayCastSource;
 import net.bfsr.physics.RayCastType;
 import net.bfsr.physics.filter.Filters;
-import org.jbox2d.callbacks.RayCastCallback;
 import org.jbox2d.common.Vector2;
+import org.jbox2d.dynamics.Fixture;
 import org.joml.Vector2f;
 
 import java.util.function.Consumer;
@@ -28,8 +28,12 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     private final Vector2f collisionPoint = new Vector2f();
     @Getter
     private final BulletDamage damage;
+
     private final Vector2 rayStart = new Vector2();
     private final Vector2 rayDirection = new Vector2();
+    private Fixture rayCastResultFixture;
+    private Vector2 rayCastResultNormal;
+
     private final float powerAnimationSpeed = Engine.convertToDeltaTime(3.5f);
     @Getter
     private float aliveTimerInTicks;
@@ -100,7 +104,9 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
         collisionPoint.x = 0;
         collisionPoint.y = 0;
         rayDirection.set(rayStart.x + cos * currentBeamRange, rayStart.y + sin * currentBeamRange);
-        world.getPhysicWorld().raycast((RayCastCallback) (fixture, point, normal, fraction) -> {
+        rayCastResultFixture = null;
+
+        world.getPhysicWorld().raycast((fixture, point, normal, fraction) -> {
             if (!world.getContactFilter().shouldCollide(fixture.getFilter(), Filters.BEAM_FILTER)) {
                 return -1.0f;
             }
@@ -112,9 +118,15 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
             collisionPoint.x = point.x;
             collisionPoint.y = point.y;
             currentBeamRange = collisionPoint.distance(rayStart.x, rayStart.y);
-            world.getCollisionMatrix().rayCast(this, fixture, collisionPoint.x, collisionPoint.y, normal.x, normal.y);
-            return 0.0f;
+            rayCastResultFixture = fixture;
+            rayCastResultNormal = normal;
+            return fraction;
         }, rayStart, rayDirection);
+
+        if (rayCastResultFixture != null) {
+            world.getCollisionMatrix().rayCast(this, rayCastResultFixture, collisionPoint.x, collisionPoint.y, rayCastResultNormal.x,
+                    rayCastResultNormal.y);
+        }
     }
 
     @Override
