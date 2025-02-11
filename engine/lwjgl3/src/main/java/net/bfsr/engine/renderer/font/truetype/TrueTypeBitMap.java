@@ -47,11 +47,6 @@ public class TrueTypeBitMap extends FontBitMap {
         CharList packedCharsList = new CharArrayList();
         CharList unpackedCharsList = new CharArrayList();
         boolean allCharsPacked = true;
-        int minX = Integer.MAX_VALUE;
-        int minY = Integer.MAX_VALUE;
-        int maxX = Integer.MIN_VALUE;
-        int maxY = Integer.MIN_VALUE;
-        ByteBuffer byteBuffer = renderer.createByteBuffer(width * height);
 
         for (int i = 0; i < charList.size(); i++) {
             char charCode = charList.getChar(i);
@@ -107,42 +102,13 @@ public class TrueTypeBitMap extends FontBitMap {
                 for (int y = 0; y < glyphBitMap.rows(); y++) {
                     for (int x = 0; x < glyphBitMap.width(); x++) {
                         int pixelIndex = placementX + x + (placementY + y) * height;
-                        byteBuffer.put(pixelIndex, buffer.get(x + y * glyphBitMap.pitch()));
-                    }
-                }
-
-                if (placementX < minX) {
-                    minX = placementX;
-                }
-
-                if (placementX + placementWidth > maxX) {
-                    maxX = placementX + placementWidth;
-                }
-
-                if (placementY < minY) {
-                    minY = placementY;
-                }
-
-                if (placementY + placementHeight > maxY) {
-                    maxY = placementY + placementHeight;
-                }
-
-                if (FontManager.DEBUG) {
-                    for (int y = 0; y < glyphBitMap.rows(); y++) {
-                        for (int x = 0; x < glyphBitMap.width(); x++) {
-                            int pixelIndex = placementX + x + (placementY + y) * height;
-                            bitmap.put(pixelIndex, buffer.get(x + y * glyphBitMap.pitch()));
-                        }
+                        bitmap.put(pixelIndex, buffer.get(x + y * glyphBitMap.pitch()));
                     }
                 }
             }
         }
 
-        int width = maxX - minX;
-        int height = maxY - minY;
-        byteBuffer.flip();
-        renderer.subImage2D(bitmapTexture.getId(), minX, minY, width, height, GL.GL_RED, byteBuffer);
-        renderer.memFree(byteBuffer);
+        renderer.subImage2D(bitmapTexture.getId(), 0, 0, width, height, GL.GL_RED, bitmap);
 
         if (FontManager.DEBUG) {
             IOUtils.writePNGGrayScale(bitmap, width, height, "truetype_" + fontName + "_atlas_" + fontSize + "_" + index);
