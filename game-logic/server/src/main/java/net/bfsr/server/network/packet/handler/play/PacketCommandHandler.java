@@ -4,7 +4,9 @@ import io.netty.channel.ChannelHandlerContext;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.ai.Ai;
 import net.bfsr.command.Command;
+import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.engine.math.MathUtils;
+import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.faction.Faction;
@@ -13,7 +15,6 @@ import net.bfsr.network.packet.client.PacketCommand;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.world.World;
-import org.joml.Vector2f;
 
 import java.net.InetSocketAddress;
 
@@ -21,6 +22,7 @@ public class PacketCommandHandler extends PacketHandler<PacketCommand, PlayerNet
     private final Command[] commands = Command.values();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
     private final ShipFactory shipFactory = ServerGameLogic.get().getShipFactory();
+    private final ShipRegistry shipRegistry = ServerGameLogic.get().getConfigConverterManager().getConverter(ShipRegistry.class);
 
     @Override
     public void handle(PacketCommand packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx,
@@ -29,17 +31,23 @@ public class PacketCommandHandler extends PacketHandler<PacketCommand, PlayerNet
         World world = playerNetworkHandler.getWorld();
         if (cmd == Command.SPAWN_SHIP) {
             String[] args = packet.getArgs();
-            Vector2f pos = new Vector2f(Float.parseFloat(args[0]), Float.parseFloat(args[1]));
-            Faction fact = Faction.values()[random.nextInt(Faction.values().length)];
+            int shipId = Integer.parseInt(args[0]);
+            float x = Float.parseFloat(args[1]);
+            float y = Float.parseFloat(args[2]);
+
+            Faction faction = Faction.get((byte) random.nextInt(Faction.values().length));
             Ai ai = Ai.NO_AI;
 
-            Ship ship = switch (fact) {
-                case HUMAN -> shipFactory.createBotHumanSmall(world, pos.x, pos.y, random.nextFloat() * MathUtils.TWO_PI, ai);
-                case SAIMON -> shipFactory.createBotSaimonSmall(world, pos.x, pos.y, random.nextFloat() * MathUtils.TWO_PI, ai);
-                case ENGI -> shipFactory.createBotEngiSmall(world, pos.x, pos.y, random.nextFloat() * MathUtils.TWO_PI, ai);
-            };
+            Ship ship = shipFactory.createBot(world, x, y, random.nextFloat() * MathUtils.TWO_PI, faction, shipRegistry.get(shipId), ai);
             world.add(ship, false);
             ship.setSpawned();
+        } else if (cmd == Command.DESTROY_SHIP) {
+            String[] args = packet.getArgs();
+            int shipId = Integer.parseInt(args[0]);
+            RigidBody rigidBody = world.getEntityById(shipId);
+            if (rigidBody instanceof Ship ship) {
+                ship.setDestroying();
+            }
         }
     }
 }

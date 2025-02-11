@@ -1,5 +1,5 @@
 package net.bfsr.command;
 
 public enum Command {
-    SPAWN_SHIP, SPAWN_PARTICLE
+    SPAWN_SHIP, SPAWN_PARTICLE, DESTROY_SHIP
 }

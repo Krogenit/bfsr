@@ -30,7 +30,8 @@ public class DebugInputController extends InputController {
         if (keyboard.isKeyDown(KEY_LEFT_CONTROL)) {
             if (key == KEY_F) {
                 Vector2f pos = mouse.getWorldPosition(renderer.getCamera());
-                client.sendTCPPacket(new PacketCommand(Command.SPAWN_SHIP, String.valueOf((int) pos.x), String.valueOf((int) pos.y)));
+                client.sendTCPPacket(new PacketCommand(Command.SPAWN_SHIP, String.valueOf(0), String.valueOf((int) pos.x),
+                        String.valueOf((int) pos.y)));
                 return true;
             } else if (key == KEY_P) {
                 client.setPaused(!client.isPaused());

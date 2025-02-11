@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.command.Command;
+import net.bfsr.network.packet.Packet;
 import net.bfsr.network.packet.PacketAdapter;
 import net.bfsr.network.util.ByteBufUtils;
 
@@ -15,9 +16,20 @@ public class PacketCommand extends PacketAdapter {
     private int command;
     private String[] args;
 
-    public PacketCommand(Command command, String... args) {
+    public PacketCommand(Command command, Object... args) {
         this.command = command.ordinal();
-        this.args = args;
+        this.args = new String[args.length];
+        for (int i = 0; i < args.length; i++) {
+            this.args[i] = args[i].toString();
+        }
+    }
+
+    public static Packet spawnShip(int id, float x, float y) {
+        return new PacketCommand(Command.SPAWN_SHIP, id, x, y);
+    }
+
+    public static Packet destroyShip(int id) {
+        return new PacketCommand(Command.DESTROY_SHIP, id);
     }
 
     @Override
