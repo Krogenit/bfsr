@@ -9,7 +9,11 @@ import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.font.FontType;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.gui.main.GuiMainMenu;
+import net.bfsr.client.input.CameraInputController;
+import net.bfsr.client.input.DebugInputController;
+import net.bfsr.client.input.GuiInputController;
 import net.bfsr.client.input.InputHandler;
+import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.language.LanguageManager;
 import net.bfsr.client.listener.entity.ShipEventListener;
 import net.bfsr.client.listener.gui.GuiEventListener;
@@ -61,7 +65,9 @@ public class Client extends ClientGameLogic {
 
     private final ConfigSettings settings = new ConfigSettings();
 
-    private final InputHandler inputHandler = new InputHandler(this);
+    private final PlayerInputController playerInputController = new PlayerInputController(this);
+    private final InputHandler inputHandler = new InputHandler(new GuiInputController(), playerInputController,
+            new CameraInputController(this, playerInputController), new DebugInputController(this));
 
     private final GuiManager guiManager = Engine.getGuiManager();
 

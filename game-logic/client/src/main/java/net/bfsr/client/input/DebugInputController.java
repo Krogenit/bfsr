@@ -19,7 +19,7 @@ import static net.bfsr.engine.input.Keys.KEY_P;
 import static net.bfsr.engine.input.Keys.KEY_R;
 
 @RequiredArgsConstructor
-class DebugInputController extends InputController {
+public class DebugInputController extends InputController {
     private final Client client;
     private final AbstractMouse mouse = Engine.getMouse();
     private final AbstractKeyboard keyboard = Engine.getKeyboard();

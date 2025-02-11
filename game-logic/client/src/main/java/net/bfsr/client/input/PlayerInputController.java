@@ -62,7 +62,7 @@ public class PlayerInputController extends InputController {
 
     private boolean mouseLeftDown;
 
-    PlayerInputController(Client client) {
+    public PlayerInputController(Client client) {
         this.client = client;
         this.localPlayerInputCorrectionHandler = new LocalPlayerInputCorrectionHandler(positionHistory, client.getClientRenderDelay());
         this.eventBus = client.getEventBus();

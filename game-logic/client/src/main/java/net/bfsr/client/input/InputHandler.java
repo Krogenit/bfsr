@@ -1,84 +1,105 @@
 package net.bfsr.client.input;
 
-import lombok.Getter;
-import net.bfsr.client.Client;
 import net.bfsr.engine.input.AbstractInputHandler;
 
-public class InputHandler extends AbstractInputHandler {
-    private final GuiInputController guiInputController;
-    @Getter
-    private final PlayerInputController playerInputController;
-    private final CameraInputController cameraInputController;
-    private final DebugInputController debugInputController;
+import java.util.ArrayList;
+import java.util.List;
 
-    public InputHandler(Client client) {
-        guiInputController = new GuiInputController();
-        playerInputController = new PlayerInputController(client);
-        cameraInputController = new CameraInputController(client, playerInputController);
-        debugInputController = new DebugInputController(client);
+public class InputHandler extends AbstractInputHandler {
+    private final List<InputController> inputControllers = new ArrayList<>(4);
+
+    public InputHandler(InputController... controllers) {
+        for (int i = 0; i < controllers.length; i++) {
+            inputControllers.add(controllers[i]);
+        }
+    }
+
+    public void addInputController(InputController controller) {
+        inputControllers.add(controller);
     }
 
     public void update() {
-        playerInputController.update();
-        cameraInputController.update();
+        for (int i = 0; i < inputControllers.size(); i++) {
+            inputControllers.get(i).update();
+        }
     }
 
     @Override
     public void input(int key) {
-        if (!guiInputController.input(key)) {
-            if (!playerInputController.input(key)) {
-                debugInputController.input(key);
+        for (int i = 0; i < inputControllers.size(); i++) {
+            if (inputControllers.get(i).input(key)) {
+                break;
             }
         }
     }
 
     @Override
     public void textInput(int key) {
-        guiInputController.textInput(key);
+        for (int i = 0; i < inputControllers.size(); i++) {
+            if (inputControllers.get(i).textInput(key)) {
+                break;
+            }
+        }
     }
 
     @Override
     public void release(int key) {
-        playerInputController.release(key);
+        for (int i = 0; i < inputControllers.size(); i++) {
+            inputControllers.get(i).release(key);
+        }
     }
 
     @Override
     protected void mouseLeftClick() {
-        if (!guiInputController.mouseLeftClick()) {
-            playerInputController.mouseLeftClick();
+        for (int i = 0; i < inputControllers.size(); i++) {
+            if (inputControllers.get(i).mouseLeftClick()) {
+                break;
+            }
         }
     }
 
     @Override
     protected void mouseLeftRelease() {
-        if (!guiInputController.mouseLeftRelease()) {
-            playerInputController.mouseLeftRelease();
+        for (int i = 0; i < inputControllers.size(); i++) {
+            if (inputControllers.get(i).mouseLeftRelease()) {
+                break;
+            }
         }
     }
 
     @Override
     protected void mouseRightClick() {
-        if (!guiInputController.mouseRightClick()) {
-            playerInputController.mouseRightClick();
+        for (int i = 0; i < inputControllers.size(); i++) {
+            if (inputControllers.get(i).mouseRightClick()) {
+                break;
+            }
         }
     }
 
     @Override
     protected void mouseRightRelease() {
-        guiInputController.mouseRightRelease();
+        for (int i = 0; i < inputControllers.size(); i++) {
+            if (inputControllers.get(i).mouseRightRelease()) {
+                break;
+            }
+        }
     }
 
     @Override
     public void mouseMove(float dx, float dy) {
-        if (!guiInputController.mouseMove(dx, dy)) {
-            cameraInputController.mouseMove(dx, dy);
+        for (int i = 0; i < inputControllers.size(); i++) {
+            if (inputControllers.get(i).mouseMove(dx, dy)) {
+                break;
+            }
         }
     }
 
     @Override
     public void scroll(float y) {
-        if (!guiInputController.scroll(y)) {
-            cameraInputController.scroll(y);
+        for (int i = 0; i < inputControllers.size(); i++) {
+            if (inputControllers.get(i).scroll(y)) {
+                break;
+            }
         }
     }
 }

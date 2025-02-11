@@ -8,7 +8,7 @@ import org.joml.Vector2i;
 
 import java.util.List;
 
-class GuiInputController extends InputController {
+public class GuiInputController extends InputController {
     private final GuiManager guiManager = Engine.getGuiManager();
     private final AbstractMouse mouse = Engine.getMouse();
 

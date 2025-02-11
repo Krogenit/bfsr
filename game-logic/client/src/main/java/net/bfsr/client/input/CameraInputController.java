@@ -39,7 +39,7 @@ public class CameraInputController extends InputController {
     private @Nullable Ship followShip;
     private long lastSendTime;
 
-    CameraInputController(Client client, PlayerInputController playerInputController) {
+    public CameraInputController(Client client, PlayerInputController playerInputController) {
         this.client = client;
         this.playerInputController = playerInputController;
 
