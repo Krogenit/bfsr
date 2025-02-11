@@ -43,7 +43,11 @@ public final class Settings {
     public static boolean FAST_FLOOR = true;
     public static boolean FAST_CEIL = true;
     public static boolean FAST_ROUND = true;
-    public static boolean FAST_ATAN2 = true;
+
+    /**
+     * Not recommended, cause ship rotation issues with low angular velocity
+     */
+    public static boolean FAST_ATAN2;
     public static boolean FAST_POW = true;
     public static int CONTACT_STACK_INIT_SIZE = 10;
     public static boolean SINCOS_LUT_ENABLED = true;
