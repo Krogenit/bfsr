@@ -40,14 +40,14 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
             float dy = serverPosition.y - localPosition.y;
             float dxAbs = Math.abs(dx);
 
-            if (dxAbs > MIN_VALUE_TO_CORRECTION) {
+            if (dxAbs > MIN_VALUE_TO_CORRECTION && dxAbs < 10) {
                 float xCorrectionAmount = (dxAbs - MIN_VALUE_TO_CORRECTION) * 0.1f * correctionAmount;
                 correctionX = dx * xCorrectionAmount;
                 rigidBody.setPosition(rigidBody.getX() + correctionX, rigidBody.getY());
             }
 
             float dyAbs = Math.abs(dy);
-            if (dyAbs > MIN_VALUE_TO_CORRECTION) {
+            if (dyAbs > MIN_VALUE_TO_CORRECTION && dyAbs < 10) {
                 float yCorrectionAmount = (dyAbs - MIN_VALUE_TO_CORRECTION) * 0.1f * correctionAmount;
                 correctionY = dy * yCorrectionAmount;
                 rigidBody.setPosition(rigidBody.getX(), rigidBody.getY() + correctionY);
