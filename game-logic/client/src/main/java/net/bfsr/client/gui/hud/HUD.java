@@ -13,7 +13,7 @@ import static net.bfsr.engine.input.Keys.KEY_ESCAPE;
 
 public class HUD extends HUDAdapter {
     private final ShipOverlay shipOverlay = new ShipOverlay(this);
-    private final OtherShipOverlay otherShipOverlay = new OtherShipOverlay();
+    protected final OtherShipOverlay otherShipOverlay = new OtherShipOverlay();
     private final DebugInfoElement debugInfoElement = new DebugInfoElement(this);
     private final Chat chat = new Chat();
 
