@@ -3,8 +3,8 @@ package net.bfsr.editor.gui.property;
 import net.bfsr.editor.gui.builder.ComponentBuilder;
 import net.bfsr.editor.property.PropertiesBuilder;
 import net.bfsr.editor.property.holder.PropertiesHolder;
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.Button;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.font.string.StringOffsetType;
 
 import java.lang.reflect.Field;
@@ -20,11 +20,12 @@ public class SimplePropertyList<PRIMITIVE_TYPE> extends PropertyList<PropertyCom
     private final String propertyName;
     final List<PRIMITIVE_TYPE> objects = new ArrayList<>();
 
-    public SimplePropertyList(int width, int height, String name, String fontName, int fontSize, int propertyOffsetX, int stringOffsetY,
+    public SimplePropertyList(int width, int height, String name, Font font, int fontSize, int propertyOffsetX, int stringOffsetY,
                               Supplier<PRIMITIVE_TYPE> supplier, Object object, List<Field> fields, Object[] values,
                               PropertyGuiElementType propertyGuiElementType, String propertyName,
-                              BiConsumer<Object, Integer> valueConsumer) {
-        super(width, height, name, fontName, fontSize, propertyOffsetX, stringOffsetY, supplier, object, fields, values, valueConsumer);
+                              BiConsumer<Object, Integer> valueConsumer, Runnable changeValueListener) {
+        super(width, height, name, font, fontSize, propertyOffsetX, stringOffsetY, supplier, object, fields, values, valueConsumer,
+                changeValueListener);
         this.propertyGuiElementType = propertyGuiElementType;
         this.propertyName = propertyName;
     }
@@ -43,13 +44,12 @@ public class SimplePropertyList<PRIMITIVE_TYPE> extends PropertyList<PropertyCom
     public void addProperty(PRIMITIVE_TYPE arrayElement) {
         try {
             if (arrayElement instanceof PropertiesHolder) {
-                PropertiesBuilder.createGuiProperties(arrayElement, baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight,
-                        fontName, fontSize, MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, this::addPropertyComponent, propertyName);
+                PropertiesBuilder.createGuiProperties(arrayElement, baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight, font, fontSize,
+                        MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, this::addPropertyComponent, propertyName, changeValueListener);
             } else {
                 addPropertyComponent(ComponentBuilder.build(propertyGuiElementType, baseWidth - MINIMIZABLE_STRING_X_OFFSET,
-                        baseHeight, propertyName, Engine.getFontManager().getFont(fontName).getWidth(propertyName, fontSize),
-                        fontName, fontSize, stringOffsetY, fields, new Object[]{arrayElement}, arrayElement,
-                        (o, integer) -> ((List) values[0]).set(integer, o)));
+                        baseHeight, propertyName, font.getWidth(propertyName, fontSize), font, fontSize, stringOffsetY, fields,
+                        new Object[]{arrayElement}, arrayElement, (o, integer) -> ((List) values[0]).set(integer, o), changeValueListener));
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
@@ -65,11 +65,11 @@ public class SimplePropertyList<PRIMITIVE_TYPE> extends PropertyList<PropertyCom
     private void addPropertyComponent(PropertyComponent propertyComponent) {
         propertyComponent.setRightClickConsumer((mouseX, mouseY) -> {
             String addString = "Remove";
-            Button button = new Button(mouseX, mouseY, Engine.getFontManager().getFont(fontName)
-                    .getWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight, addString, fontName, fontSize, 4, stringOffsetY,
-                    StringOffsetType.DEFAULT, EMPTY_BI_CONSUMER);
+            Button button = new Button(font.getWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight, addString, font, fontSize,
+                    4, stringOffsetY, StringOffsetType.DEFAULT, EMPTY_BI_CONSUMER);
             setupContextMenuButton(button);
             button.setLeftReleaseConsumer((mouseX1, mouseY1) -> removeProperty(propertyComponent));
+            button.atBottomLeft(mouseX, mouseY);
             guiManager.openContextMenu(button);
         });
 

@@ -1,5 +1,6 @@
 package net.bfsr.editor.gui.ship;
 
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.Client;
 import net.bfsr.client.renderer.Render;
@@ -18,18 +19,20 @@ import net.bfsr.editor.object.ship.ShipProperties;
 import net.bfsr.editor.object.ship.TestShip;
 import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.editor.property.holder.Vector2fPropertiesHolder;
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.entity.GameObject;
 import net.bfsr.engine.gui.component.CheckBox;
-import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.Label;
+import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.faction.Faction;
-import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.mapstruct.factory.Mappers;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static net.bfsr.editor.gui.EditorTheme.CONTEXT_MENU_STRING_OFFSET_X;
+import static net.bfsr.editor.gui.EditorTheme.FONT_SIZE;
 
 @Log4j2
 public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
@@ -37,7 +40,8 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
     private TestShip testShip;
     private final ShipConverter converter = Mappers.getMapper(ShipConverter.class);
     private boolean polygonCreationMode;
-    private final Label polygonCreationModeString = new Label(font.getFontName(), "Polygon creation mode", fontSize);
+    private final Label polygonCreationModeString = new Label(font, "Polygon creation mode", FONT_SIZE);
+    @Getter
     private PolygonProperty polygonProperty;
     private final GameObject polygonObject = new GameObject();
     private boolean lastDebugBoxesMode;
@@ -80,7 +84,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
         if (properties != null) {
             MinimizableHolder<PropertiesHolder> minimizableHolder = propertiesPanel.add(properties, "Ship");
             PropertyCheckBox propertyCheckBox = new PropertyCheckBox(minimizableHolder.getWidth(), elementHeight, "Show ship sprite", 0,
-                    fontSize, stringOffsetY, null, null, new Object[]{showShipSprite}, (object, integer) -> {});
+                    FONT_SIZE, 0, null, null, new Object[]{showShipSprite}, (object, integer) -> {}, RunnableUtils.EMPTY_RUNNABLE);
             minimizableHolder.add(propertyCheckBox);
             CheckBox checkBox = propertyCheckBox.getCheckBox();
             checkBox.setLeftClickConsumer((mouseX, mouseY) -> {
@@ -152,7 +156,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
         polygonCreationMode = !polygonCreationMode;
 
         if (polygonCreationMode) {
-            add(polygonCreationModeString.atTop(-polygonCreationModeString.getWidth() / 2, elementHeight));
+            add(polygonCreationModeString.atTop(0, -elementHeight));
             this.polygonProperty = polygonProperty;
             lastDebugBoxesMode = ClientSettings.SHOW_DEBUG_BOXES.getBoolean();
             ClientSettings.SHOW_DEBUG_BOXES.setValue(true);
@@ -160,19 +164,6 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
             remove(polygonCreationModeString);
             ClientSettings.SHOW_DEBUG_BOXES.setValue(lastDebugBoxesMode);
         }
-    }
-
-    @Override
-    public GuiObject mouseLeftRelease(int mouseX, int mouseY) {
-        GuiObject child = super.mouseLeftRelease(mouseX, mouseY);
-
-        if (child == null && polygonCreationMode && !inspectionPanel.isMouseHover() &&
-                !propertiesPanel.isIntersectsWithMouse(mouseX, mouseY)) {
-            Vector2f position = Engine.getMouse().getWorldPosition(renderer.getCamera());
-            polygonProperty.addProperty(new Vector2fPropertiesHolder(position.x, position.y));
-        }
-
-        return child;
     }
 
     @Override

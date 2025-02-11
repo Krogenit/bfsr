@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.Client;
 import net.bfsr.client.font.FontType;
 import net.bfsr.client.language.LanguageManager;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.InputBox;
@@ -15,7 +16,8 @@ import java.net.UnknownHostException;
 
 @Log4j2
 public class GuiConnect extends Gui {
-    private final Label connectingText = new Label(FontType.XOLONIUM.getFontName(), 20).setColor(1.0f, 1.0f, 1.0f, 0.0f);
+    private final Label connectingText = new Label(Engine.getFontManager().getFont(FontType.XOLONIUM.getFontName()), 20)
+            .setColor(1.0f, 1.0f, 1.0f, 0.0f);
 
     public GuiConnect(Gui parentGui) {
         super(parentGui);
@@ -23,14 +25,16 @@ public class GuiConnect extends Gui {
         LanguageManager languageManager = Client.get().getLanguageManager();
         int fontSize = 20;
         int offsetX = 24;
-        InputBox hostInputBox = new InputBox(TextureRegister.guiButtonBase, languageManager.getString("gui.connect.host"),
-                fontSize, offsetX, 0).setString("192.168.2.2:34000");
+        InputBox hostInputBox = new InputBox(TextureRegister.guiButtonBase, "192.168.2.2:34000",
+                languageManager.getString("gui.connect.host"),
+                fontSize, offsetX, 0);
         add(hostInputBox.atCenter(0, 50));
-        InputBox usernameInputBox = new InputBox(TextureRegister.guiButtonBase, languageManager.getString("gui.connect.username"),
-                fontSize, offsetX, 0).setString("Krogenit");
+        InputBox usernameInputBox = new InputBox(TextureRegister.guiButtonBase, "Krogenit",
+                languageManager.getString("gui.connect.username"),
+                fontSize, offsetX, 0);
         add(usernameInputBox.atCenter(0, 0));
-        InputBox passwordInputBox = new InputBox(TextureRegister.guiButtonBase, languageManager.getString("gui.connect.password"),
-                fontSize, offsetX, 0).setString("test");
+        InputBox passwordInputBox = new InputBox(TextureRegister.guiButtonBase, "test", languageManager.getString("gui.connect.password"),
+                fontSize, offsetX, 0);
         add(passwordInputBox.atCenter(0, -50));
 
         Client client = Client.get();

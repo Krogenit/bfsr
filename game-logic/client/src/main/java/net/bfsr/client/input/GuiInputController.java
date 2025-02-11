@@ -37,10 +37,15 @@ class GuiInputController extends InputController {
     public boolean mouseLeftClick() {
         Vector2i mousePosition = mouse.getGuiPosition();
         GuiObject hoveredGuiObject = guiManager.findHoveredGuiObject(mousePosition.x, mousePosition.y);
+
+        boolean contextMenuWasOpen = guiManager.isContextMenuOpen();
         guiManager.forEach(guiObject -> guiObject.mouseLeftClick(mousePosition.x, mousePosition.y));
-        if (hoveredGuiObject == null) return false;
-        hoveredGuiObject.getLeftClickConsumer().accept(mousePosition.x, mousePosition.y);
-        return true;
+        if (hoveredGuiObject != null) {
+            hoveredGuiObject.getLeftClickConsumer().accept(mousePosition.x, mousePosition.y);
+            return true;
+        }
+
+        return contextMenuWasOpen;
     }
 
     @Override
@@ -67,7 +72,10 @@ class GuiInputController extends InputController {
         Vector2i mousePosition = mouse.getGuiPosition();
         GuiObject hoveredGuiObject = guiManager.findHoveredGuiObject(mousePosition.x, mousePosition.y);
         guiManager.forEach(guiObject -> guiObject.mouseRightClick(mousePosition.x, mousePosition.y));
-        if (hoveredGuiObject == null) return false;
+        if (hoveredGuiObject == null) {
+            return false;
+        }
+
         hoveredGuiObject.getRightClickConsumer().accept(mousePosition.x, mousePosition.y);
         return true;
     }
@@ -76,8 +84,11 @@ class GuiInputController extends InputController {
     public boolean mouseRightRelease() {
         Vector2i mousePosition = mouse.getGuiPosition();
         GuiObject hoveredGuiObject = guiManager.findHoveredGuiObject(mousePosition.x, mousePosition.y);
-        guiManager.forEach(GuiObject::mouseRightRelease);
-        if (hoveredGuiObject == null) return false;
+        guiManager.forEach(guiObject -> guiObject.mouseRightRelease(mousePosition.x, mousePosition.y));
+        if (hoveredGuiObject == null) {
+            return false;
+        }
+
         hoveredGuiObject.getRightReleaseConsumer().accept(mousePosition.x, mousePosition.y);
         return true;
     }

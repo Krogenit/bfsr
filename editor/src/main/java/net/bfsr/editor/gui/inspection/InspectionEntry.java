@@ -10,6 +10,7 @@ import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.InputBox;
 import net.bfsr.engine.gui.component.MinimizableGuiObject;
 import net.bfsr.engine.input.AbstractMouse;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 
@@ -30,9 +31,9 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
     private final Vector2i selectPosition = new Vector2i();
     private @Nullable InputBox inputBox;
 
-    public InspectionEntry(InspectionPanel<T> inspectionPanel, int width, int height, String name, String fontName, int fontSize,
+    public InspectionEntry(InspectionPanel<T> inspectionPanel, int width, int height, String name, Font font, int fontSize,
                            int stringOffsetY) {
-        super(width, height, name, fontName, fontSize, stringOffsetY);
+        super(width, height, name, font, fontSize, stringOffsetY);
         this.inspectionPanel = inspectionPanel;
         setCanMaximize(false);
         setRenderer(new InspectionEntryRenderer(this));
@@ -63,7 +64,7 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
             } else if (selected) {
                 if (mouseX >= sceneX + selectOffsetX && mouseX < sceneX + width) {
                     if (wasSelected) {
-                        inputBox = new InputBox(width - selectOffsetX, height, "", fontName, fontSize, 3, this.stringOffsetY, 300);
+                        inputBox = new InputBox(width - selectOffsetX, height, "", font, fontSize, 3, this.stringOffsetY, 300);
                         inputBox.setX(selectOffsetX);
                         inputBox.setY(getHeight() - getBaseHeight());
                         inputBox.setOnUnselectedRunnable(() -> {

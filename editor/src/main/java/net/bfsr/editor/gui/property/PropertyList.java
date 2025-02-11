@@ -5,6 +5,7 @@ import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.renderer.RectangleOutlinedRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.primitive.Primitive;
 
 import java.lang.reflect.Field;
@@ -21,12 +22,14 @@ abstract class PropertyList<T extends PropertyComponent, O> extends PropertyObje
     final Supplier<O> supplier;
     final int contextMenuStringXOffset = 8;
 
-    PropertyList(int width, int height, String name, String fontName, int fontSize, int propertyOffsetX, int stringOffsetY,
-                 Supplier<O> supplier, Object object, List<Field> fields, Object[] values, BiConsumer<Object, Integer> valueConsumer) {
-        super(width, height, name, fontName, fontSize, propertyOffsetX, stringOffsetY, object, fields, values, valueConsumer);
+    PropertyList(int width, int height, String name, Font font, int fontSize, int propertyOffsetX, int stringOffsetY,
+                 Supplier<O> supplier, Object object, List<Field> fields, Object[] values, BiConsumer<Object, Integer> valueConsumer,
+                 Runnable changeValueListener) {
+        super(width, height, name, font, fontSize, propertyOffsetX, stringOffsetY, object, fields, values, valueConsumer,
+                changeValueListener);
         this.supplier = supplier;
         int addButtonSize = 20;
-        add(addButton = new Button(width - addButtonSize, height - baseHeight, addButtonSize, addButtonSize, "", fontName, fontSize,
+        add(addButton = new Button(addButtonSize, addButtonSize, "", font, fontSize,
                 stringOffsetY, (mouseX, mouseY) -> addProperty(createObject())));
         setupButton(addButton).atBottomRight(0, 0);
         addButton.setRenderer(new RectangleOutlinedRenderer(addButton) {
@@ -75,7 +78,7 @@ abstract class PropertyList<T extends PropertyComponent, O> extends PropertyObje
             }
         });
 
-        Button removeButton = new Button(0, 0, 20, 20, "", fontName, fontSize, stringOffsetY, (mouseX, mouseY) -> {
+        Button removeButton = new Button(20, 20, "", font, fontSize, stringOffsetY, (mouseX, mouseY) -> {
             if (properties.size() > 0) {
                 removeProperty(properties.get(properties.size() - 1));
             }

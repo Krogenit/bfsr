@@ -6,6 +6,7 @@ import net.bfsr.engine.util.MatrixBufferUtils;
 import org.jbox2d.collision.AABB;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.lwjgl.opengl.GL15C;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
@@ -188,13 +189,14 @@ public class Camera implements AbstractCamera {
     }
 
     @Override
-    public Vector2f getWorldVector(Vector2f position) {
+    public Vector2f getWorldVector(Vector2i position) {
         return getWorldVector(position.x, position.y);
     }
 
+    @Override
     public Vector2f getWorldVector(float x, float y) {
         vectorInCamSpace.x = (x + origin.x) / zoom + position.x;
-        vectorInCamSpace.y = (-y - origin.y) / zoom + position.y;
+        vectorInCamSpace.y = (y + origin.y) / zoom + position.y;
         return vectorInCamSpace;
     }
 

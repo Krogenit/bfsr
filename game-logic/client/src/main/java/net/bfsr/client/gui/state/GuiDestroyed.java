@@ -9,6 +9,7 @@ import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.TexturedRectangle;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.network.packet.client.PacketRespawn;
 import org.joml.Vector2f;
@@ -38,10 +39,9 @@ public class GuiDestroyed extends Gui {
         rectangle.add(new Button(TextureRegister.guiButtonBase, buttonWidth, buttonHeight,
                 languageManager.getString("gui.ingamemenu.tomainmenu"), 16, (mouseX, mouseY) -> client.quitToMainMenu()).atBottom(
                 -buttonsOffset, 24));
-        rectangle.add(new Label(FontType.XOLONIUM.getFontName(), languageManager.getString("gui.destroyed.shipWasDestroyed"), 20)
-                .atTopLeft(14, -20));
-        rectangle.add(new Label(FontType.CONSOLA.getFontName(), languageManager.getString("gui.destroyed.destroyedBy") + ": "
-                + destroyedBy, 16).atTopLeft(14, -60));
+        Font font = Engine.getFontManager().getFont(FontType.XOLONIUM.getFontName());
+        rectangle.add(new Label(font, languageManager.getString("gui.destroyed.shipWasDestroyed"), 20).atTopLeft(14, -20));
+        rectangle.add(new Label(font, languageManager.getString("gui.destroyed.destroyedBy") + ": " + destroyedBy, 16).atTopLeft(14, -60));
     }
 
     @Override

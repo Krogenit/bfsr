@@ -159,6 +159,7 @@ public class Scroll extends Rectangle {
         }
 
         movingByMouse = true;
+        Engine.getGuiManager().setActiveGuiObject(this);
         mouseStartClickY = mouseY;
         clickStartScroll = scroll;
 
@@ -171,6 +172,7 @@ public class Scroll extends Rectangle {
 
         if (movingByMouse) {
             movingByMouse = false;
+            Engine.getGuiManager().setActiveGuiObject(null);
 
             if (guiObject == null) {
                 return this;
@@ -212,6 +214,15 @@ public class Scroll extends Rectangle {
     public Scroll setViewHeightResizeFunction(BiFunction<Integer, Integer, Integer> viewHeightResizeFunction) {
         this.viewHeightResizeFunction = viewHeightResizeFunction;
         return this;
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+
+        if (movingByMouse) {
+            Engine.getGuiManager().setActiveGuiObject(null);
+        }
     }
 
     @Override

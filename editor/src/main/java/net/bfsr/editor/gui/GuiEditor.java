@@ -1,7 +1,6 @@
 package net.bfsr.editor.gui;
 
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.client.font.FontType;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.config.Config;
 import net.bfsr.config.ConfigLoader;
@@ -17,7 +16,7 @@ import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.ScrollPane;
-import net.bfsr.engine.renderer.font.AbstractFontManager;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.font.string.StringOffsetType;
 import net.bfsr.engine.util.PathHelper;
 import org.jetbrains.annotations.NotNull;
@@ -37,32 +36,27 @@ import java.util.Comparator;
 import java.util.List;
 
 import static net.bfsr.editor.gui.EditorTheme.BACKGROUND_COLOR;
+import static net.bfsr.editor.gui.EditorTheme.CONTEXT_MENU_STRING_OFFSET_X;
+import static net.bfsr.editor.gui.EditorTheme.FONT_SIZE;
 import static net.bfsr.editor.gui.EditorTheme.setupContextMenuButton;
 import static net.bfsr.engine.input.Keys.KEY_ESCAPE;
 
 @Log4j2
 public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE extends ObjectProperties> extends Gui {
-    private final AbstractFontManager fontManager = Engine.getFontManager();
     private final int propertiesContainerWidth = 450;
     protected final int elementHeight = 20;
 
     private final int leftPanelWidth = 300;
 
-    protected final FontType font = EditorTheme.FONT_TYPE;
-    protected final int fontSize = 13;
+    protected final Font font = EditorTheme.FONT;
     private final int stringOffsetX = 4;
-    protected final int stringOffsetY = 0;
-    private final int contextMenuStringOffsetX = 8;
 
     private final boolean prevFollowCameraOptionValue;
 
     protected @Nullable InspectionEntry<PROPERTIES_TYPE> selectedEntry;
     private final List<InspectionEntry<PROPERTIES_TYPE>> entries = new ArrayList<>();
     protected final InspectionPanel<PROPERTIES_TYPE> inspectionPanel;
-    protected final PropertiesPanel propertiesPanel = new PropertiesPanel(
-            propertiesContainerWidth, renderer.getScreenHeight() - elementHeight, font, fontSize, stringOffsetX, stringOffsetY,
-            contextMenuStringOffsetX
-    );
+    protected final PropertiesPanel propertiesPanel;
 
     private final ConfigToDataConverter<CONFIG_TYPE, ?> configRegistry;
     private final EditorObjectConverter<CONFIG_TYPE, PROPERTIES_TYPE> converter;
@@ -72,8 +66,10 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
     protected GuiEditor(String inspectionPanelName, ConfigToDataConverter<CONFIG_TYPE, ?> configRegistry,
                         EditorObjectConverter<CONFIG_TYPE, PROPERTIES_TYPE> converter, Class<CONFIG_TYPE> configClass,
                         Class<PROPERTIES_TYPE> propertiesClass) {
+        this.propertiesPanel = new PropertiesPanel(propertiesContainerWidth, renderer.getScreenHeight() - elementHeight, font, FONT_SIZE,
+                CONTEXT_MENU_STRING_OFFSET_X);
         this.inspectionPanel = new InspectionPanel<>(this, inspectionPanelName, leftPanelWidth, Engine.getRenderer().getScreenHeight(),
-                font, fontSize, stringOffsetY);
+                font, FONT_SIZE);
         this.configRegistry = configRegistry;
         this.converter = converter;
         this.configClass = configClass;
@@ -98,21 +94,19 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
                     int y1 = mouseY - elementHeight;
 
                     String name = "Create Folder";
-                    Button createEntryButton = new Button(x1, y1, fontManager.getFont(font.getFontName())
-                            .getWidth(name, fontSize) + contextMenuStringOffsetX, elementHeight, name, font.getFontName(), fontSize,
-                            stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT, EMPTY_BI_CONSUMER);
-                    createEntryButton.setLeftReleaseConsumer((mouseX1, mouseY1) -> inspectionPanel.add(createEntry()));
+                    Button createEntryButton = new Button(font.getWidth(name, FONT_SIZE) + CONTEXT_MENU_STRING_OFFSET_X, elementHeight,
+                            name, font, FONT_SIZE, CONTEXT_MENU_STRING_OFFSET_X / 2, 0, StringOffsetType.DEFAULT, EMPTY_BI_CONSUMER);
+                    createEntryButton.atBottomLeft(x1, y1).setLeftReleaseConsumer((mouseX1, mouseY1) -> inspectionPanel.add(createEntry()));
 
                     y1 -= elementHeight;
 
                     name = "Create Object";
-                    Button createEffectButton = new Button(x1, y1, fontManager.getFont(font.getFontName())
-                            .getWidth(name, fontSize) + contextMenuStringOffsetX, elementHeight, name, font.getFontFile(), fontSize,
-                            stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT, EMPTY_BI_CONSUMER);
-                    createEffectButton.setLeftReleaseConsumer((mouseX1, mouseY1) -> inspectionPanel.add(createObject()));
+                    Button createEffectButton = new Button(font.getWidth(name, FONT_SIZE) + CONTEXT_MENU_STRING_OFFSET_X, elementHeight,
+                            name, font, FONT_SIZE, CONTEXT_MENU_STRING_OFFSET_X / 2, 0, StringOffsetType.DEFAULT, EMPTY_BI_CONSUMER);
+                    createEffectButton.atBottomLeft(x1, y1)
+                            .setLeftReleaseConsumer((mouseX1, mouseY1) -> inspectionPanel.add(createObject()));
 
-                    guiManager.openContextMenu(setupContextMenuButton(createEntryButton), setupContextMenuButton(
-                            createEffectButton));
+                    guiManager.openContextMenu(setupContextMenuButton(createEntryButton), setupContextMenuButton(createEffectButton));
                 }));
 
         int x = 0;
@@ -236,39 +230,35 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
 
     private InspectionEntry<PROPERTIES_TYPE> createEntry(String name) {
         ScrollPane scrollPane = inspectionPanel.getScrollPane();
-        InspectionEntry<PROPERTIES_TYPE> entry = new InspectionEntry<>(inspectionPanel,
-                scrollPane.getWidth() - scrollPane.getScrollWidth(), elementHeight, name, font.getFontName(), fontSize, stringOffsetY);
+        InspectionEntry<PROPERTIES_TYPE> entry = new InspectionEntry<>(inspectionPanel, scrollPane.getWidth() - scrollPane.getScrollWidth(),
+                elementHeight, name, font, FONT_SIZE, 0);
         entry.setRightClickConsumer((mouseX, mouseY) -> {
             int x1 = mouseX;
             int y1 = mouseY - elementHeight;
             String addString = "Create Entry";
-            Button createEntryButton = new Button(x1, y1, fontManager.getFont(font.getFontName())
-                    .getWidth(addString, fontSize) + contextMenuStringOffsetX, elementHeight, addString, font.getFontName(), fontSize,
-                    stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT, (mouseX1, mouseY1) -> {
+            Button createEntryButton = new Button(font.getWidth(addString, FONT_SIZE) + CONTEXT_MENU_STRING_OFFSET_X, elementHeight,
+                    addString, font, FONT_SIZE, stringOffsetX, 0, StringOffsetType.DEFAULT, (mouseX1, mouseY1) -> {
                 InspectionEntry<PROPERTIES_TYPE> childEntry = createEntry();
                 entry.add(childEntry);
                 entry.tryMaximize();
-            }
-            );
-
+            });
+            createEntryButton.atBottomLeft(x1, y1);
             y1 -= elementHeight;
 
             addString = "Create Object";
-            Button createEffectButton = new Button(x1, y1, fontManager.getFont(font.getFontName())
-                    .getWidth(addString, fontSize) + contextMenuStringOffsetX, elementHeight, addString, font.getFontName(), fontSize,
-                    stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT, (mouseX1, mouseY1) -> {
+            Button createEffectButton = new Button(font.getWidth(addString, FONT_SIZE) + CONTEXT_MENU_STRING_OFFSET_X, elementHeight,
+                    addString, font, FONT_SIZE, stringOffsetX, 0, StringOffsetType.DEFAULT, (mouseX1, mouseY1) -> {
                 InspectionEntry<PROPERTIES_TYPE> inspectionHolder = createEntry();
                 entry.add(inspectionHolder);
                 entry.tryMaximize();
-            }
-            );
+            });
+            createEffectButton.atBottomLeft(x1, y1);
             y1 -= elementHeight;
 
             addString = "Remove";
-            Button removeButton = new Button(x1, y1, fontManager.getFont(font.getFontName())
-                    .getWidth(addString, fontSize) + contextMenuStringOffsetX, elementHeight, addString, font.getFontName(), fontSize,
-                    stringOffsetX, stringOffsetY, StringOffsetType.DEFAULT, (mouseX1, mouseY1) -> remove(entry)
-            );
+            Button removeButton = new Button(font.getWidth(addString, FONT_SIZE) + CONTEXT_MENU_STRING_OFFSET_X, elementHeight, addString,
+                    font, FONT_SIZE, stringOffsetX, 0, StringOffsetType.DEFAULT, (mouseX1, mouseY1) -> remove(entry));
+            removeButton.atBottomLeft(x1, y1);
 
             guiManager.openContextMenu(setupContextMenuButton(createEntryButton),
                     setupContextMenuButton(createEffectButton),

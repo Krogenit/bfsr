@@ -22,9 +22,10 @@ public class PropertyInputBox extends PropertyComponent {
     final List<InputBox> inputBoxes = new ArrayList<>();
 
     public PropertyInputBox(int width, int height, String name, int propertyOffsetX, int fontSize, int stringOffsetY, Object object,
-                            List<Field> fields, Object[] values, List<Class<?>> types, BiConsumer<Object, Integer> valueConsumer) {
-        super(width, height, name, EditorTheme.FONT_TYPE.getFontName(), fontSize, propertyOffsetX, 0, stringOffsetY, object, fields, values,
-                valueConsumer);
+                            List<Field> fields, Object[] values, List<Class<?>> types, BiConsumer<Object, Integer> valueConsumer,
+                            Runnable changeValueListener) {
+        super(width, height, name, EditorTheme.FONT, fontSize, propertyOffsetX, 0, stringOffsetY, object, fields, values, valueConsumer,
+                changeValueListener);
         this.propertyOffsetX = label.getWidth() + MINIMIZABLE_STRING_X_OFFSET;
         int inputBoxWidth = (width - propertyOffsetX) / values.length;
         int offsetX = propertyOffsetX;
@@ -37,8 +38,7 @@ public class PropertyInputBox extends PropertyComponent {
             Class<? extends PropertyReceiver> receiveHandler = annotation.receiveHandler();
             try {
                 InputBoxPropertyReceiver inputBox = new InputBoxPropertyReceiver(inputBoxWidth, height, "",
-                        EditorTheme.FONT_TYPE.getFontName(), fontSize, 3, stringOffsetY, MAX_LINE_SIZE,
-                        receiveHandler.getConstructor().newInstance()) {
+                        EditorTheme.FONT, fontSize, 3, stringOffsetY, MAX_LINE_SIZE, receiveHandler.getConstructor().newInstance()) {
                     @Override
                     public boolean mouseScroll(int mouseX, int mouseY, float scrollY) {
                         boolean mouseScroll = super.mouseScroll(mouseX, mouseY, scrollY);

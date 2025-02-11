@@ -3,6 +3,7 @@ package net.bfsr.engine.renderer.camera;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import org.jbox2d.collision.AABB;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 
 public interface AbstractCamera {
     void init(int width, int height, AbstractRenderer renderer);
@@ -20,7 +21,8 @@ public interface AbstractCamera {
     float getZoom();
     Vector2f getLastPosition();
     Vector2f getPosition();
-    Vector2f getWorldVector(Vector2f position);
+    Vector2f getWorldVector(Vector2i position);
+    Vector2f getWorldVector(float x, float y);
     AABB getBoundingBox();
     Vector2f getOrigin();
     void clear();

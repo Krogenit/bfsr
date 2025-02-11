@@ -3,12 +3,14 @@ package net.bfsr.client.gui.faction;
 import net.bfsr.client.Client;
 import net.bfsr.client.font.FontType;
 import net.bfsr.client.language.LanguageManager;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.TexturedRectangle;
 import net.bfsr.engine.gui.component.TexturedRotatedRectangle;
 import net.bfsr.engine.math.MathUtils;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.packet.client.PacketFactionSelect;
@@ -39,16 +41,14 @@ public class GuiFactionSelect extends Gui {
         add(new GuiShip(TextureRegister.shipSaimonSmall0, 170, 170).atCenter(0, -70));
         add(new GuiShip(TextureRegister.shipEngiSmall0, 180, 180).atCenter(309, -70));
 
-        Label label = new Label(FontType.XOLONIUM.getFontName(), languageManager.getString("gui.selectFaction.maintext"), 24);
+        Font font = Engine.getFontManager().getFont(FontType.XOLONIUM.getFontName());
+        Label label = new Label(font, languageManager.getString("gui.selectFaction.maintext"), 24);
         add(label.atCenter(0, 108));
 
         int discFontSize = 16;
-        add(new Label(FontType.XOLONIUM.getFontName(), languageManager.getString("gui.selectFaction.humanDisc"), discFontSize).setMaxWidth(
-                300).atCenter(-248, 64));
-        add(new Label(FontType.XOLONIUM.getFontName(), languageManager.getString("gui.selectFaction.saimonDisc"),
-                discFontSize).setMaxWidth(300).atCenter(69, 64));
-        add(new Label(FontType.XOLONIUM.getFontName(), languageManager.getString("gui.selectFaction.engiDisc"), discFontSize).setMaxWidth(
-                300).atCenter(378, 64));
+        add(new Label(font, languageManager.getString("gui.selectFaction.humanDisc"), discFontSize).setMaxWidth(300).atCenter(-248, 64));
+        add(new Label(font, languageManager.getString("gui.selectFaction.saimonDisc"), discFontSize).setMaxWidth(300).atCenter(69, 64));
+        add(new Label(font, languageManager.getString("gui.selectFaction.engiDisc"), discFontSize).setMaxWidth(300).atCenter(378, 64));
     }
 
     private static class GuiShip extends TexturedRotatedRectangle {

@@ -5,6 +5,7 @@ import lombok.Setter;
 import net.bfsr.editor.gui.EditorTheme;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.MinimizableGuiObject;
+import net.bfsr.engine.renderer.font.glyph.Font;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -19,12 +20,13 @@ public abstract class PropertyComponent extends MinimizableGuiObject {
     protected int propertyOffsetX;
     final int propertyOffsetY;
     protected final BiConsumer<Object, Integer> valueConsumer;
+    protected final Runnable changeValueListener;
     int baseWidth;
 
-    protected PropertyComponent(int width, int height, String name, String fontName, int fontSize, int propertyOffsetX, int propertyOffsetY,
+    protected PropertyComponent(int width, int height, String name, Font font, int fontSize, int propertyOffsetX, int propertyOffsetY,
                                 int minimizableStringOffsetX, int stringOffsetY, Object object, List<Field> fields, Object[] values,
-                                BiConsumer<Object, Integer> valueConsumer) {
-        super(width, height, name, fontName, fontSize, 0, stringOffsetY, minimizableStringOffsetX, minimizableStringOffsetX);
+                                BiConsumer<Object, Integer> valueConsumer, Runnable changeValueListener) {
+        super(width, height, name, font, fontSize, 0, stringOffsetY, minimizableStringOffsetX, minimizableStringOffsetX);
         this.baseWidth = width;
         this.object = object;
         this.fields = fields;
@@ -32,16 +34,17 @@ public abstract class PropertyComponent extends MinimizableGuiObject {
         this.propertyOffsetX = propertyOffsetX;
         this.propertyOffsetY = propertyOffsetY;
         this.valueConsumer = valueConsumer;
+        this.changeValueListener = changeValueListener;
         setTextColor(EditorTheme.TEXT_COLOR_GRAY, EditorTheme.TEXT_COLOR_GRAY, EditorTheme.TEXT_COLOR_GRAY, 1.0f);
         setHoverColor(0.3f, 0.3f, 0.3f, 0.5f);
         setCanMaximize(false);
     }
 
-    protected PropertyComponent(int width, int height, String name, String fontName, int fontSize, int propertyOffsetX, int propertyOffsetY,
+    protected PropertyComponent(int width, int height, String name, Font font, int fontSize, int propertyOffsetX, int propertyOffsetY,
                                 int stringOffsetY, Object object, List<Field> fields, Object[] values,
-                                BiConsumer<Object, Integer> valueConsumer) {
-        this(width, height, name, fontName, fontSize, propertyOffsetX, propertyOffsetY, 0, stringOffsetY, object, fields, values,
-                valueConsumer);
+                                BiConsumer<Object, Integer> valueConsumer, Runnable changeValueListener) {
+        this(width, height, name, font, fontSize, propertyOffsetX, propertyOffsetY, 0, stringOffsetY, object, fields, values,
+                valueConsumer, changeValueListener);
     }
 
     @Override

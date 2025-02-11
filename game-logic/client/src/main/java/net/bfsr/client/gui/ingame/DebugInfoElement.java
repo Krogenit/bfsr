@@ -16,6 +16,7 @@ import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.entity.ship.Ship;
@@ -32,12 +33,12 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class DebugInfoElement extends MinimizableGuiObject {
-    private static final FontType FONT_TYPE = FontType.CONSOLA;
+    private static final Font FONT = Engine.getFontManager().getFont(FontType.CONSOLA.getFontName());
     private static final int FONT_SIZE = 13;
 
     private final Client client = Client.get();
     private final ParticleRenderer particleRenderer = client.getGlobalRenderer().getParticleRenderer();
-    private final PlayerInputController playerInputController = client.getInputHandler().getPlayerInputController();
+    private final PlayerInputController playerInputController = client.getPlayerInputController();
 
     private final AbstractRenderer renderer = Engine.getRenderer();
     private final AbstractCamera camera = renderer.getCamera();
@@ -50,14 +51,14 @@ public class DebugInfoElement extends MinimizableGuiObject {
     private final StringBuilder offset = new StringBuilder(32);
     private final StringBuilder fullCategoryName = new StringBuilder(32);
     private final ScrollPane scrollPane = new ScrollPane(300 - STATIC_STRING_X_OFFSET, 500, 10);
-    private final Label profilerLabel = new Label(FONT_TYPE.getFontName(), "", 0, 0, FONT_SIZE);
+    private final Label profilerLabel = new Label(FONT, "", 0, 0, FONT_SIZE);
 
     @Setter
     private float ping;
     private int sortTimer;
 
     public DebugInfoElement(HUD hud) {
-        super(300, 20, "Debug info", FONT_TYPE.getFontName(), FONT_SIZE, 0, 0, MINIMIZABLE_STRING_X_OFFSET, STATIC_STRING_X_OFFSET);
+        super(300, 20, "Debug info", FONT, FONT_SIZE, 0, 0, MINIMIZABLE_STRING_X_OFFSET, STATIC_STRING_X_OFFSET);
         setTextColor(205 / 255.0f, 205 / 255.0f, 205 / 255.0f, 1.0f).setHoverColor(0.3f, 0.3f, 0.3f, 0.5f);
 
         add(scrollPane);
@@ -182,7 +183,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
     }
 
     private Label createLabel(int y, String text, Consumer<Label> updateConsumer) {
-        return new Label(FontType.CONSOLA.getFontName(), text, 0, 0, FONT_SIZE) {
+        return new Label(Engine.getFontManager().getFont(FontType.CONSOLA.getFontName()), text, 0, 0, FONT_SIZE) {
             @Override
             public void update(int mouseX, int mouseY) {
                 super.update(mouseX, mouseY);
@@ -192,8 +193,8 @@ public class DebugInfoElement extends MinimizableGuiObject {
     }
 
     private MinimizableGuiObject addMinimizableWithLabel(int width, int height, int y, String name, Label label) {
-        MinimizableGuiObject minimizableGuiObject = new MinimizableGuiObject(width, height, name, FONT_TYPE.getFontName(),
-                FONT_SIZE, 0, 0, MINIMIZABLE_STRING_X_OFFSET, STATIC_STRING_X_OFFSET);
+        MinimizableGuiObject minimizableGuiObject = new MinimizableGuiObject(width, height, name, FONT, FONT_SIZE, 0, 0,
+                MINIMIZABLE_STRING_X_OFFSET, STATIC_STRING_X_OFFSET);
         scrollPane.add(minimizableGuiObject.atTopLeft(0, y).setTextColor(205 / 255.0f, 205 / 255.0f, 205 / 255.0f, 1.0f)
                 .setHoverColor(0.3f, 0.3f, 0.3f, 0.5f));
         minimizableGuiObject.add(label);

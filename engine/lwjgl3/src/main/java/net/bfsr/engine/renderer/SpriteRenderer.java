@@ -35,8 +35,8 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
 
     public static final int MODEL_BUFFER_INDEX = 0;
     public static final int MATERIAL_BUFFER_INDEX = 1;
-    static final int LAST_UPDATE_MODEL_BUFFER_INDEX = 2;
-    static final int LAST_UPDATE_MATERIAL_BUFFER_INDEX = 3;
+    public static final int LAST_UPDATE_MODEL_BUFFER_INDEX = 2;
+    public static final int LAST_UPDATE_MATERIAL_BUFFER_INDEX = 3;
 
     private static final int SSBO_MODEL_DATA = 0;
     private static final int SSBO_LAST_UPDATE_MODEL_DATA = 1;

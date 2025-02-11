@@ -2,6 +2,7 @@ package net.bfsr.engine.gui.component;
 
 import lombok.Getter;
 import net.bfsr.engine.gui.renderer.RectangleOutlinedRenderer;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.font.string.StringOffsetType;
 
 @Getter
@@ -11,13 +12,13 @@ public class ComboBoxData<V> extends GuiObject {
     private final int stringOffsetY;
     private final int fontSize;
 
-    ComboBoxData(int width, int height, V value, String name, String fontName, int fontSize, int stringOffsetY) {
+    ComboBoxData(int width, int height, V value, String name, Font font, int fontSize, int stringOffsetY) {
         super(width, height);
         this.stringOffsetY = stringOffsetY;
         this.fontSize = fontSize;
         this.value = value;
 
-        add(this.label = new Label(fontName, name, fontSize, StringOffsetType.CENTERED));
+        add(this.label = new Label(font, name, fontSize, StringOffsetType.CENTERED));
         label.atBottomLeft(width / 2, label.getCenteredOffsetY(height));
         setRenderer(new RectangleOutlinedRenderer(this));
     }

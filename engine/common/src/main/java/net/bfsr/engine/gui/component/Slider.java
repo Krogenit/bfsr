@@ -25,7 +25,7 @@ public class Slider extends TexturedRectangle {
         add(slider.atBottomLeft(this::calculateSliderXPos, () -> 0));
         setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
 
-        this.label = new Label(DEFAULT_FONT_NAME, string, fontSize, StringOffsetType.CENTERED);
+        this.label = new Label(Engine.getFontManager().getFont(DEFAULT_FONT_NAME), string, fontSize, StringOffsetType.CENTERED);
         add(label.atBottomLeft(width / 2, label.getCenteredOffsetY(height)));
     }
 
@@ -80,6 +80,7 @@ public class Slider extends TexturedRectangle {
 
         if (isMouseHover()) {
             movingByMouse = true;
+            Engine.getGuiManager().setActiveGuiObject(slider);
         }
 
         return guiObject;
@@ -87,8 +88,20 @@ public class Slider extends TexturedRectangle {
 
     @Override
     public GuiObject mouseLeftRelease(int mouseX, int mouseY) {
+        boolean wasMovingByMouse = movingByMouse;
+
         movingByMouse = false;
-        return super.mouseLeftRelease(mouseX, mouseY);
+
+        if (wasMovingByMouse) {
+            Engine.getGuiManager().setActiveGuiObject(null);
+        }
+
+        GuiObject childGuiObject = super.mouseLeftRelease(mouseX, mouseY);
+        if (childGuiObject != null) {
+            return childGuiObject;
+        }
+
+        return wasMovingByMouse ? slider : null;
     }
 
     @Override
@@ -103,5 +116,14 @@ public class Slider extends TexturedRectangle {
         slider.setHoverColor(color.x, color.y, color.z, color.w);
         super.setHoverColor(color);
         return this;
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+
+        if (movingByMouse) {
+            Engine.getGuiManager().setActiveGuiObject(null);
+        }
     }
 }

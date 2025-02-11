@@ -31,12 +31,16 @@ public class Label extends GuiObject {
         packGlyphs();
     }
 
-    public Label(String fontName, int fontSize, float r, float g, float b, float a) {
-        this(Engine.getFontManager().getFont(fontName), "", 0, 0, fontSize, r, g, b, a, StringOffsetType.DEFAULT, BufferType.GUI);
+    public Label(Font font, int fontSize, float r, float g, float b, float a) {
+        this(font, "", 0, 0, fontSize, r, g, b, a, StringOffsetType.DEFAULT, BufferType.GUI);
+    }
+
+    public Label(Font font, String string, int x, int y, int fontSize, StringOffsetType offsetType) {
+        this(font, string, x, y, fontSize, 1.0f, 1.0f, 1.0f, 1.0f, offsetType, BufferType.GUI);
     }
 
     public Label(String fontName, String string, int x, int y, int fontSize, StringOffsetType offsetType) {
-        this(Engine.getFontManager().getFont(fontName), string, x, y, fontSize, 1.0f, 1.0f, 1.0f, 1.0f, offsetType, BufferType.GUI);
+        this(Engine.getFontManager().getFont(fontName), string, x, y, fontSize, offsetType);
     }
 
     public Label(String fontName, String string, int fontSize, int x, int y, StringOffsetType offsetType,
@@ -44,9 +48,8 @@ public class Label extends GuiObject {
         this(Engine.getFontManager().getFont(fontName), string, x, y, fontSize, 1.0f, 1.0f, 1.0f, 1.0f, offsetType, bufferType);
     }
 
-    public Label(String fontName, String string, int fontSize, float r, float g, float b, float a) {
-        this(Engine.getFontManager().getFont(fontName), string, 0, 0, fontSize, r, g, b, a, StringOffsetType.DEFAULT,
-                BufferType.GUI);
+    public Label(Font font, String string, int fontSize, float r, float g, float b, float a) {
+        this(font, string, 0, 0, fontSize, r, g, b, a, StringOffsetType.DEFAULT, BufferType.GUI);
     }
 
     protected Label(String fontName, String string, int x, int y, int fontSize, float r, float g, float b,
@@ -55,36 +58,36 @@ public class Label extends GuiObject {
                 BufferType.GUI);
     }
 
-    public Label(String fontName, String string, int fontSize, StringOffsetType offsetType) {
-        this(fontName, string, 0, 0, fontSize, offsetType);
+    public Label(Font font, String string, int fontSize, StringOffsetType offsetType) {
+        this(font, string, 0, 0, fontSize, offsetType);
     }
 
-    public Label(String fontName, String string, int x, int y, int fontSize) {
-        this(fontName, string, x, y, fontSize, StringOffsetType.DEFAULT);
+    public Label(Font font, String string, int x, int y, int fontSize) {
+        this(font, string, x, y, fontSize, StringOffsetType.DEFAULT);
     }
 
     public Label(String fontName, int fontSize, StringOffsetType offsetType) {
         this(fontName, "", 0, 0, fontSize, offsetType);
     }
 
-    public Label(String fontName, String string, int fontSize) {
-        this(fontName, string, fontSize, StringOffsetType.DEFAULT);
+    public Label(Font font, String string, int fontSize) {
+        this(font, string, fontSize, StringOffsetType.DEFAULT);
     }
 
     public Label(String fontName, int fontSize, StringOffsetType offsetType, BufferType bufferType) {
         this(fontName, "", fontSize, 0, 0, offsetType, bufferType);
     }
 
-    public Label(String fontName, int fontSize) {
-        this(fontName, "", 0, 0, fontSize);
+    public Label(Font font, int fontSize) {
+        this(font, "", 0, 0, fontSize);
     }
 
-    public Label(String fontName, String string) {
-        this(fontName, string, 0, 0, 14);
+    public Label(Font font, String string) {
+        this(font, string, 0, 0, 14);
     }
 
-    public Label(String fontName) {
-        this(fontName, 14);
+    public Label(Font font) {
+        this(font, 14);
     }
 
     private void packGlyphs() {

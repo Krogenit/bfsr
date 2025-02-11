@@ -2,6 +2,7 @@ package net.bfsr.engine.gui;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.gui.CloseGuiEvent;
@@ -24,7 +25,7 @@ import java.util.function.Consumer;
 public class GuiManager {
     @Getter
     private final List<GuiObject> guiStack = new ArrayList<>(3);
-    private final ContextMenu contextMenu = new ContextMenu(contextMenu1 -> getLast().remove(contextMenu1));
+    private final ContextMenu contextMenu = new ContextMenu();
     @Getter
     private GuiObject hoveredGuiObject;
     @Getter
@@ -33,6 +34,8 @@ public class GuiManager {
     protected HUDAdapter hud = NoHUD.get();
     private final EventBus eventBus;
     private final AbstractMouse mouse = Engine.getMouse();
+    @Setter
+    private GuiObject activeGuiObject;
 
     public void showHUD(HUDAdapter hud) {
         if (this.hud != NoHUD.get()) {
@@ -104,13 +107,16 @@ public class GuiManager {
     }
 
     public void openContextMenu(GuiObject... objects) {
-        contextMenu.clear();
-        contextMenu.open(objects);
+        contextMenu.add(objects);
         getLast().addIfAbsent(contextMenu);
     }
 
     @Nullable
     public GuiObject findHoveredGuiObject(int mouseX, int mouseY) {
+        if (activeGuiObject != null) {
+            return activeGuiObject;
+        }
+
         GuiObject hoveredObject = null;
         for (int i = 0; i < guiStack.size(); i++) {
             hoveredObject = guiStack.get(i).getHovered(hoveredObject, mouseX, mouseY);
@@ -143,5 +149,9 @@ public class GuiManager {
 
     public Vector2i getMousePosition() {
         return mouse.getGuiPosition();
+    }
+
+    public boolean isContextMenuOpen() {
+        return contextMenu.isOpen();
     }
 }

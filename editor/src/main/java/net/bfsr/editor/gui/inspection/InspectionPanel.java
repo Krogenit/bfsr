@@ -3,7 +3,6 @@ package net.bfsr.editor.gui.inspection;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.Client;
-import net.bfsr.client.font.FontType;
 import net.bfsr.editor.gui.component.receive.DragTarget;
 import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.engine.Engine;
@@ -16,6 +15,7 @@ import net.bfsr.engine.gui.component.MinimizableGuiObject;
 import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.renderer.AbstractRenderer;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.util.MutableInt;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static net.bfsr.editor.gui.EditorTheme.SCROLL_WIDTH;
 import static net.bfsr.editor.gui.EditorTheme.TEXT_COLOR;
 import static net.bfsr.editor.gui.EditorTheme.setupButton;
 import static net.bfsr.editor.gui.EditorTheme.setupScrollPane;
@@ -38,9 +39,8 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
     private final Gui gui;
     @Getter
     private final ScrollPane scrollPane;
-    private final FontType font;
+    private final Font font;
     private final int fontSize;
-    private final int stringOffsetY;
     @Getter
     private final int elementHeight = 20;
     @Getter
@@ -57,15 +57,14 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
     private long hoverTime;
     private final List<Button> bottomButtons = new ArrayList<>();
 
-    public InspectionPanel(Gui gui, String name, int width, int height, FontType font, int fontSize, int stringOffsetY) {
+    public InspectionPanel(Gui gui, String name, int width, int height, Font font, int fontSize) {
         super(width, height);
         this.gui = gui;
-        this.scrollPane = setupScrollPane(new ScrollPane(width, height - elementHeight, 16));
+        this.scrollPane = setupScrollPane(new ScrollPane(width, height - elementHeight, SCROLL_WIDTH));
         this.font = font;
         this.fontSize = fontSize;
-        this.stringOffsetY = stringOffsetY;
         setWidthFunction((width1, height1) -> getPanelWidth()).updatePositionAndSize();
-        Label label = new Label(font.getFontName(), name, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w);
+        Label label = new Label(font, name, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w);
         add(label.atBottomLeft(() -> 0, () -> this.height - elementHeight + label.getCenteredOffsetY(elementHeight)));
         add(scrollPane.atBottomLeft(0, 0).setWidthFunction((width1, height1) -> getPanelWidth())
                 .setHeightFunction((width1, height1) -> this.height - elementHeight));
@@ -73,8 +72,7 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
     }
 
     public void addBottomButton(int x, int y, String name, BiConsumer<Integer, Integer> consumer) {
-        Button button = new Button(scrollPane.getWidth(), elementHeight, name, font.getFontName(), fontSize, stringOffsetY,
-                consumer);
+        Button button = new Button(scrollPane.getWidth(), elementHeight, name, font, fontSize, consumer);
         add(setupButton(button).atBottomLeft(x, y).setWidthFunction((width1, height1) -> getPanelWidth()));
         bottomButtons.add(button);
 
@@ -90,7 +88,7 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
     }
 
     public void removeEntry(InspectionEntry<PROPERTIES_TYPE> entry) {
-        entry.getParent().remove(entry);
+        entry.removeFromParent();
         updatePositionAndSize();
     }
 
@@ -135,7 +133,7 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
                 GuiObject parent = inspectionEntry.getParent();
                 List<GuiObject> guiObjects = parent.getGuiObjects();
                 int index = guiObjects.indexOf(inspectionEntry) + 1;
-                entry.getParent().remove(entry);
+                entry.removeFromParent();
                 if (index >= guiObjects.size()) {
                     parent.add(entry);
                 } else {
@@ -157,7 +155,7 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
 
                 List<GuiObject> guiObjects = parent.getGuiObjects();
                 int index = guiObjects.indexOf(inspectionEntry);
-                entry.getParent().remove(entry);
+                entry.removeFromParent();
                 parent.addAt(index, entry);
 
                 if (parent == scrollPane) {
@@ -167,13 +165,13 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
                 updatePositionAndSize();
             } else if (inspectionEntry != movableObject &&
                     !isInHierarchy(movableObject, (InspectionEntry<PROPERTIES_TYPE>) inspectionEntry)) {
-                entry.getParent().remove(entry);
+                entry.removeFromParent();
                 inspectionEntry.add(entry);
                 inspectionEntry.tryMaximize();
                 updatePositionAndSize();
             }
         } else {
-            entry.getParent().remove(entry);
+            entry.removeFromParent();
             add(entry);
             updatePositionAndSize();
         }

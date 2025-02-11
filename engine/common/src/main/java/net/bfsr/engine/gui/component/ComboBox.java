@@ -5,6 +5,7 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.gui.renderer.combobox.ComboBoxRenderer;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.font.string.StringOffsetType;
 
 import java.util.ArrayList;
@@ -18,18 +19,18 @@ public class ComboBox<V> extends GuiObject {
     private boolean opened;
     @Getter
     private final Label label;
-    private final String fontName;
+    private final Font font;
     private final int fontSize;
     private final int stringOffsetY;
     private final List<ComboBoxData<V>> data = new ArrayList<>();
 
-    public ComboBox(int width, int height, String fontName, int fontSize, int stringOffsetY) {
+    public ComboBox(int width, int height, Font font, int fontSize, int stringOffsetY) {
         super(width, height);
-        this.fontName = fontName;
+        this.font = font;
         this.fontSize = fontSize;
         this.stringOffsetY = stringOffsetY;
 
-        add(this.label = new Label(fontName, "", fontSize, StringOffsetType.CENTERED));
+        add(this.label = new Label(font, "", fontSize, StringOffsetType.CENTERED));
         label.atBottomLeft(width / 2, label.getCenteredOffsetY(height));
 
         setRenderer(new ComboBoxRenderer(this));
@@ -44,7 +45,7 @@ public class ComboBox<V> extends GuiObject {
     }
 
     public void addData(V value) {
-        ComboBoxData<V> data = new ComboBoxData<>(width, height, value, value.toString(), fontName, fontSize, stringOffsetY);
+        ComboBoxData<V> data = new ComboBoxData<>(width, height, value, value.toString(), font, fontSize, stringOffsetY);
         this.data.add(data);
         data.setWidthFunction((width, height) -> this.width);
         data.setLeftReleaseConsumer((mouseX, mouseY) -> {

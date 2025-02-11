@@ -7,7 +7,7 @@ import net.bfsr.network.packet.common.PacketChatMessage;
 
 public class ChatInput extends InputBox {
     public ChatInput() {
-        super(298, 25, Client.get().getLanguageManager().getString("gui.chat.typeSomething"), 14, 4, 0);
+        super(298, 25, "", Client.get().getLanguageManager().getString("gui.chat.typeSomething"), 14, 4, 0);
         setCursorHeight(16);
         setMaxLineSize(290);
         setRenderer(new EmptyInputRenderer(this));

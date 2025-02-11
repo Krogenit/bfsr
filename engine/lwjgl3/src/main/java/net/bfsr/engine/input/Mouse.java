@@ -61,7 +61,7 @@ public final class Mouse extends AbstractMouse {
 
     @Override
     public Vector2f getWorldPosition(AbstractCamera camera) {
-        return camera.getWorldVector(screenPosition);
+        return camera.getWorldVector(guiPosition);
     }
 
     @Override

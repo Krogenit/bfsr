@@ -72,7 +72,10 @@ public class GuiObject {
     }
 
     public void addIfAbsent(GuiObject guiObject) {
-        if (hasGuiObject(guiObject)) return;
+        if (hasGuiObject(guiObject)) {
+            return;
+        }
+
         add(guiObject);
     }
 
@@ -120,6 +123,10 @@ public class GuiObject {
         guiObject.setParent(BlankGuiObject.INSTANCE);
     }
 
+    public void removeFromParent() {
+        parent.remove(this);
+    }
+
     public void remove() {
         if (isOnScene) {
             isOnScene = false;
@@ -132,7 +139,7 @@ public class GuiObject {
         }
     }
 
-    public void removeAll() {
+    public void removeAllChild() {
         for (int i = 0; i < guiObjects.size(); i++) {
             guiObjects.get(i).setParent(BlankGuiObject.INSTANCE);
         }
@@ -154,8 +161,7 @@ public class GuiObject {
         }
     }
 
-    @Nullable
-    public GuiObject mouseLeftClick(int mouseX, int mouseY) {
+    public @Nullable GuiObject mouseLeftClick(int mouseX, int mouseY) {
         GuiObject child = null;
         for (int i = 0; i < guiObjects.size(); i++) {
             GuiObject child1 = guiObjects.get(i).mouseLeftClick(mouseX, mouseY);
@@ -167,8 +173,7 @@ public class GuiObject {
         return child != null ? child : mouseHover ? this : null;
     }
 
-    @Nullable
-    public GuiObject mouseLeftRelease(int mouseX, int mouseY) {
+    public @Nullable GuiObject mouseLeftRelease(int mouseX, int mouseY) {
         GuiObject child = null;
         for (int i = 0; i < guiObjects.size(); i++) {
             GuiObject child1 = guiObjects.get(i).mouseLeftRelease(mouseX, mouseY);
@@ -180,8 +185,7 @@ public class GuiObject {
         return child != null ? child : mouseHover ? this : null;
     }
 
-    @Nullable
-    public GuiObject mouseRightClick(int mouseX, int mouseY) {
+    public @Nullable GuiObject mouseRightClick(int mouseX, int mouseY) {
         GuiObject child = null;
         for (int i = 0; i < guiObjects.size(); i++) {
             GuiObject child1 = guiObjects.get(i).mouseRightClick(mouseX, mouseY);
@@ -193,11 +197,10 @@ public class GuiObject {
         return child != null ? child : mouseHover ? this : null;
     }
 
-    @Nullable
-    public GuiObject mouseRightRelease() {
+    public @Nullable GuiObject mouseRightRelease(int mouseX, int mouseY) {
         GuiObject child = null;
         for (int i = 0; i < guiObjects.size(); i++) {
-            GuiObject child1 = guiObjects.get(i).mouseRightRelease();
+            GuiObject child1 = guiObjects.get(i).mouseRightRelease(mouseX, mouseY);
             if (child1 != null) {
                 child = child1;
             }

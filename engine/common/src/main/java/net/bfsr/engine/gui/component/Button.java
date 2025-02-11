@@ -3,6 +3,7 @@ package net.bfsr.engine.gui.component;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.renderer.RectangleRenderer;
 import net.bfsr.engine.gui.renderer.RectangleTexturedRenderer;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.font.string.StringOffsetType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import org.joml.Vector4f;
@@ -14,64 +15,52 @@ import static net.bfsr.engine.renderer.font.AbstractFontManager.DEFAULT_FONT_NAM
 public class Button extends GuiObject {
     private final Label label;
 
-    public Button(int x, int y, int width, int height, String string, String fontName, int fontSize, int stringXOffset, int stringYOffset,
+    public Button(int width, int height, String string, Font font, int fontSize, int stringXOffset, int stringYOffset,
                   StringOffsetType stringOffsetType, BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        super(x, y, width, height);
+        super(width, height);
         this.leftReleaseConsumer = leftReleaseConsumer;
-        this.label = new Label(fontName, string, stringXOffset, 0, fontSize, stringOffsetType);
+        this.label = new Label(font, string, stringXOffset, 0, fontSize, stringOffsetType);
         add(label.atBottomLeft(stringXOffset, stringYOffset));
         setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
         setRenderer(new RectangleRenderer(this));
     }
 
-    public Button(int x, int y, int width, int height, String string, String fontName, int fontSize, int stringYOffset,
+    public Button(int width, int height, String string, Font font, int fontSize, int stringYOffset,
                   BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(x, y, width, height, string, fontName, fontSize, width / 2, stringYOffset, StringOffsetType.CENTERED, leftReleaseConsumer);
+        this(width, height, string, font, fontSize, width / 2, stringYOffset,
+                StringOffsetType.CENTERED, leftReleaseConsumer);
     }
 
-    public Button(int x, int y, int width, int height, String string, String fontName, int fontSize,
-                  BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(x, y, width, height, string, fontName, fontSize, Engine.getFontManager().getFont(fontName)
-                .getCenteredOffsetY(string, height, fontSize), leftReleaseConsumer);
+    public Button(int width, int height, String string, Font font, int fontSize, BiConsumer<Integer, Integer> leftReleaseConsumer) {
+        this(width, height, string, font, fontSize, font.getCenteredOffsetY(string, height, fontSize), leftReleaseConsumer);
     }
 
-    public Button(int x, int y, int width, int height, String string, int fontSize, BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(x, y, width, height, string, DEFAULT_FONT_NAME, fontSize, leftReleaseConsumer);
+    public Button(int width, int height, String string, int fontSize, BiConsumer<Integer, Integer> leftReleaseConsumer) {
+        this(width, height, string, Engine.getFontManager().getFont(DEFAULT_FONT_NAME), fontSize, leftReleaseConsumer);
     }
 
-    public Button(TextureRegister texture, int x, int y, int width, int height, String string, int fontSize) {
-        this(texture, x, y, width, height, string, fontSize, EMPTY_BI_CONSUMER);
-    }
-
-    public Button(TextureRegister texture, int x, int y, int width, int height, String string, int fontSize,
-                  BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(x, y, width, height, string, fontSize, leftReleaseConsumer);
-        setRenderer(new RectangleTexturedRenderer(this, texture));
-    }
-
-    public Button(TextureRegister texture, int width, int height, String string, String fontName, int fontSize,
-                  BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(0, 0, width, height, string, fontName, fontSize, leftReleaseConsumer);
-        setRenderer(new RectangleTexturedRenderer(this, texture));
+    public Button(TextureRegister texture, int width, int height, String string, int fontSize) {
+        this(texture, width, height, string, fontSize, EMPTY_BI_CONSUMER);
     }
 
     public Button(TextureRegister texture, int width, int height, String string, int fontSize,
                   BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(texture, 0, 0, width, height, string, fontSize, leftReleaseConsumer);
+        this(width, height, string, fontSize, leftReleaseConsumer);
+        setRenderer(new RectangleTexturedRenderer(this, texture));
     }
 
-    public Button(int width, int height, String string, String fontName, int fontSize, int stringYOffset,
+    public Button(TextureRegister texture, int width, int height, String string, Font font, int fontSize,
                   BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(0, 0, width, height, string, fontName, fontSize, stringYOffset, leftReleaseConsumer);
+        this(width, height, string, font, fontSize, leftReleaseConsumer);
+        setRenderer(new RectangleTexturedRenderer(this, texture));
     }
 
-    public Button(int width, int height, String string, String fontName, int fontSize, int stringYOffset) {
-        this(0, 0, width, height, string, fontName, fontSize, stringYOffset, EMPTY_BI_CONSUMER);
+    public Button(int width, int height, String string, Font font, int fontSize, int stringYOffset) {
+        this(width, height, string, font, fontSize, stringYOffset, EMPTY_BI_CONSUMER);
     }
 
-    public Button(int width, int height, String string, int fontSize, BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(width, height, string, DEFAULT_FONT_NAME, fontSize, Engine.getFontManager().getFont(DEFAULT_FONT_NAME)
-                .getCenteredOffsetY(string, height, fontSize), leftReleaseConsumer);
+    public Button(int width, int height, String string, Font font, int fontSize) {
+        this(width, height, string, font, fontSize, font.getCenteredOffsetY(string, height, fontSize), EMPTY_BI_CONSUMER);
     }
 
     public Button(String string, int fontSize, BiConsumer<Integer, Integer> leftReleaseConsumer) {
@@ -79,37 +68,31 @@ public class Button extends GuiObject {
     }
 
     public Button(int width, int height, String string, BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(TextureRegister.guiButtonBase, 0, 0, width, height, string, 20, leftReleaseConsumer);
-    }
-
-    public Button(int width, int height, String string, String fontName, int fontSize,
-                  BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(TextureRegister.guiButtonBase, width, height, string, fontName, fontSize, leftReleaseConsumer);
+        this(TextureRegister.guiButtonBase, width, height, string, 20, leftReleaseConsumer);
     }
 
     public Button(String string, BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(TextureRegister.guiButtonBase, 0, 0, 300, 50, string, 20, leftReleaseConsumer);
+        this(TextureRegister.guiButtonBase, 300, 50, string, 20, leftReleaseConsumer);
     }
 
     public Button(TextureRegister texture, int width, int height, String string) {
-        this(texture, 0, 0, width, height, string, 20, EMPTY_BI_CONSUMER);
+        this(texture, width, height, string, 20, EMPTY_BI_CONSUMER);
     }
 
-    public Button(TextureRegister texture, int width, int height,
-                  BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(texture, 0, 0, width, height, "", 20, leftReleaseConsumer);
+    public Button(TextureRegister texture, int width, int height, BiConsumer<Integer, Integer> leftReleaseConsumer) {
+        this(texture, width, height, "", 20, leftReleaseConsumer);
     }
 
     public Button(TextureRegister texture, BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(texture, 0, 0, 300, 50, "", 20, leftReleaseConsumer);
+        this(texture, 300, 50, "", 20, leftReleaseConsumer);
     }
 
     public Button(int width, int height, BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(0, 0, width, height, "", 20, leftReleaseConsumer);
+        this(width, height, "", 20, leftReleaseConsumer);
     }
 
     public Button(int width, int height) {
-        this(0, 0, width, height, "", 20, EMPTY_BI_CONSUMER);
+        this(width, height, "", 20, EMPTY_BI_CONSUMER);
     }
 
     public Button setStringXOffset(int stringXOffset) {

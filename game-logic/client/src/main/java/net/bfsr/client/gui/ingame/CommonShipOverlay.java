@@ -1,7 +1,6 @@
 package net.bfsr.client.gui.ingame;
 
 import lombok.Getter;
-import lombok.Setter;
 import net.bfsr.client.Client;
 import net.bfsr.client.font.FontType;
 import net.bfsr.client.renderer.EntityRenderer;
@@ -35,7 +34,7 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
     private final EntityRenderer entityRenderer = client.getEntityRenderer();
     private final Vector2f rotationVector = new Vector2f();
 
-    private final Label textShield = new Label(FontType.CONSOLA.getFontName());
+    private final Label textShield = new Label(Engine.getFontManager().getFont(FontType.CONSOLA.getFontName()));
     private final TexturedRotatedRectangle shipGuiObject = new TexturedRotatedRectangle(Engine.getRenderer().getDummyTexture(), 100, 100);
 
     private final List<Rectangle> hullCells = new ArrayList<>();

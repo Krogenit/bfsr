@@ -4,6 +4,7 @@ import net.bfsr.client.Client;
 import net.bfsr.client.font.FontType;
 import net.bfsr.client.language.LanguageManager;
 import net.bfsr.client.settings.ClientSettings;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.Label;
@@ -61,8 +62,8 @@ public class GuiSettings extends Gui {
         for (Map.Entry<SettingsCategory, List<ClientSettings>> entry : optionsByCategory.entrySet()) {
             List<ClientSettings> options = entry.getValue();
 
-            Label sectionText = new Label(FontType.XOLONIUM.getFontName(), languageManager.getString("settings.section." +
-                    entry.getKey().getCategoryName()), fontSectionSize);
+            Label sectionText = new Label(Engine.getFontManager().getFont(FontType.XOLONIUM.getFontName()),
+                    languageManager.getString("settings.section." + entry.getKey().getCategoryName()), fontSectionSize);
             scrollPane.add(sectionText.atTop(0, y - 20));
 
             for (int i = 0; i < options.size(); i++) {
@@ -97,7 +98,8 @@ public class GuiSettings extends Gui {
         add(new Rectangle(width, backgroundHeight).setWidthFunction((width, height) -> width).atTopLeft(0, 0)
                 .setAllColors(0.1f, 0.2f, 0.4f, 1.0f));
 
-        Label label = new Label(FontType.XOLONIUM.getFontName(), languageManager.getString("gui.settings.mainText"), 24);
+        Label label = new Label(Engine.getFontManager().getFont(FontType.XOLONIUM.getFontName()),
+                languageManager.getString("gui.settings.mainText"), 24);
         add(label.atTop(0, label.getCenteredOffsetY(backgroundHeight) - 36));
 
         add(new Button(languageManager.getString("gui.settings.save"), 20, (mouseX, mouseY) -> {
