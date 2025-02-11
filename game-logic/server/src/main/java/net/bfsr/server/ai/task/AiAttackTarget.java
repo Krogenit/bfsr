@@ -17,6 +17,7 @@ import net.bfsr.math.RigidBodyUtils;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.network.packet.server.component.PacketWeaponShoot;
 import net.bfsr.server.entity.EntityTrackingManager;
+import net.bfsr.world.World;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.common.Vector2;
 import org.joml.Vector2f;
@@ -41,13 +42,39 @@ public class AiAttackTarget extends AiTask {
     private final Vector2f pointToRotate = new Vector2f();
     private final AABB cache = new AABB();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
+    private final Vector2 rayStart = new Vector2();
+    private final Vector2 rayDirection = new Vector2();
 
     @Override
     public void execute() {
         RigidBody target = ship.getTarget();
-        MathUtils.computeAABB(targetAABB, target.getBody(), target.getX(), target.getY(), target.getSin(), target.getCos(), cache);
-        targetPos.set((targetAABB.getMinX() + targetAABB.getMaxX()) / 2,
-                (targetAABB.getMinY() + targetAABB.getMaxY()) / 2);
+        float targetSizeX = target.getSizeX();
+        float targetSizeY = target.getSizeY();
+        float targetSizeAverage;
+
+        if (target.getSizeX() >= 20.0f || target.getSizeY() >= 20.0f) {
+            World world = target.getWorld();
+
+            rayStart.x = ship.getX();
+            rayStart.y = ship.getY();
+            rayDirection.set(target.getX(), target.getY());
+
+            world.getPhysicWorld().raycast((fixture, point, normal, fraction) -> {
+                if (fixture.getBody().getUserData() == target) {
+                    targetPos.set(point.x, point.y);
+                    return fraction;
+                } else {
+                    return -1.0f;
+                }
+            }, rayStart, rayDirection);
+
+            targetSizeAverage = 0.0f;
+        } else {
+            MathUtils.computeAABB(targetAABB, target.getBody(), target.getX(), target.getY(), target.getSin(), target.getCos(), cache);
+            targetPos.set((targetAABB.getMinX() + targetAABB.getMaxX()) / 2,
+                    (targetAABB.getMinY() + targetAABB.getMaxY()) / 2);
+            targetSizeAverage = (targetSizeX + targetSizeY) / 2.0f;
+        }
 
         float x = ship.getX();
         float y = ship.getY();
@@ -64,9 +91,6 @@ public class AiAttackTarget extends AiTask {
         float minTargetToShip = Float.MAX_VALUE;
 
         float maxDistance = 0;
-        float targetSizeX = target.getSizeX();
-        float targetSizeY = target.getSizeY();
-        float targetSizeAverage = (targetSizeX + targetSizeY) / 2.0f;
 
         Vector2 targetVelocity = target.getLinearVelocity();
 
