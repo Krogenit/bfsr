@@ -13,7 +13,6 @@ import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.input.AbstractMouse;
-import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.entity.PositionHistory;
 import net.bfsr.entity.RigidBody;
@@ -31,10 +30,10 @@ import net.bfsr.physics.correction.DynamicCorrectionHandler;
 import net.bfsr.physics.correction.HistoryCorrectionHandler;
 import net.bfsr.physics.correction.LocalPlayerInputCorrectionHandler;
 import org.jbox2d.collision.AABB;
+import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Body;
+import org.jbox2d.dynamics.Fixture;
 import org.joml.Vector2f;
-
-import java.util.List;
 
 import static net.bfsr.engine.input.Keys.KEY_A;
 import static net.bfsr.engine.input.Keys.KEY_D;
@@ -61,6 +60,7 @@ public class PlayerInputController extends InputController {
     private Ship ship;
 
     private boolean mouseLeftDown;
+    private Fixture selectedFixture;
 
     public PlayerInputController(Client client) {
         this.client = client;
@@ -180,17 +180,23 @@ public class PlayerInputController extends InputController {
 
     @Override
     public boolean mouseLeftClick() {
-        if (guiManager.isActive()) return false;
+        if (guiManager.isActive()) {
+            return false;
+        }
 
         if (ship == null) {
             Vector2f mousePosition = mouse.getWorldPosition(camera);
-            List<Ship> ships = client.getWorld().getEntitiesByType(Ship.class);
-            for (int i = 0, size = ships.size(); i < size; i++) {
-                Ship ship = ships.get(i);
-                if (isMouseIntersectsWith(ship, mousePosition.x, mousePosition.y)) {
-                    eventBus.publish(new SelectShipEvent(ship));
-                    return true;
-                }
+            float offset = 0.01f;
+            selectedFixture = null;
+            client.getWorld().getPhysicWorld().queryAABB(fixture -> {
+                selectedFixture = fixture;
+                return true;
+            }, new AABB(new Vector2(mousePosition.x - offset, mousePosition.y - offset),
+                    new Vector2(mousePosition.x + offset, mousePosition.y + offset)));
+
+            if (selectedFixture != null && selectedFixture.getBody().getUserData() instanceof Ship ship) {
+                eventBus.publish(new SelectShipEvent(ship));
+                return true;
             }
 
             eventBus.publish(new SelectShipEvent(null));
@@ -204,7 +210,9 @@ public class PlayerInputController extends InputController {
 
     @Override
     public boolean mouseLeftRelease() {
-        if (ship == null) return false;
+        if (ship == null) {
+            return false;
+        }
 
         client.sendUDPPacket(new PacketMouseLeftRelease());
         mouseLeftDown = false;
@@ -212,26 +220,23 @@ public class PlayerInputController extends InputController {
     }
 
     @Override
-    public boolean mouseRightClick() {
+    public boolean mouseRightRelease() {
         Vector2f mousePosition = mouse.getWorldPosition(camera);
-        List<Ship> ships = client.getWorld().getEntitiesByType(Ship.class);
-        for (int i = 0, size = ships.size(); i < size; i++) {
-            Ship ship = ships.get(i);
-            if (isMouseIntersectsWith(ship, mousePosition.x, mousePosition.y)) {
-                eventBus.publish(new SelectSecondaryShipEvent(ship));
-                return true;
-            }
+        float offset = 0.01f;
+        selectedFixture = null;
+        client.getWorld().getPhysicWorld().queryAABB(fixture -> {
+            selectedFixture = fixture;
+            return true;
+        }, new AABB(new Vector2(mousePosition.x - offset, mousePosition.y - offset),
+                new Vector2(mousePosition.x + offset, mousePosition.y + offset)));
+
+        if (selectedFixture != null && selectedFixture.getBody().getUserData() instanceof Ship ship) {
+            eventBus.publish(new SelectSecondaryShipEvent(ship));
+            return true;
         }
 
         eventBus.publish(new SelectSecondaryShipEvent(null));
         return false;
-    }
-
-    private boolean isMouseIntersectsWith(RigidBody rigidBody, float mouseX, float mouseY) {
-        AABB aabb = new AABB();
-        MathUtils.computeAABB(aabb, rigidBody.getBody(), rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(),
-                new AABB());
-        return aabb.contains(mouseX, mouseY);
     }
 
     public void setShip(Ship ship) {
@@ -245,9 +250,8 @@ public class PlayerInputController extends InputController {
         this.ship = ship;
 
         if (ship != null) {
-            ship.setCorrectionHandler(
-                    new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), localPlayerInputCorrectionHandler,
-                            localPlayerInputCorrectionHandler));
+            ship.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), localPlayerInputCorrectionHandler,
+                    localPlayerInputCorrectionHandler));
             ship.setControlledByPlayer(true);
         }
     }
