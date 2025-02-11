@@ -63,7 +63,7 @@ public class HUD extends HUDAdapter {
     }
 
     public void selectShipSecondary(Ship ship) {
-        otherShipOverlay.setShip(ship);
+        otherShipOverlay.selectShip(ship);
 
         if (ship != null) {
             addIfAbsent(otherShipOverlay);
