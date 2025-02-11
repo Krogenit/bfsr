@@ -556,6 +556,13 @@ public class Island {
     public void add(Body body) {
         assert (m_bodyCount < m_bodyCapacity);
         body.islandIndex = m_bodyCount;
+
+        if (m_bodyCount >= m_bodies.length) {
+            Body[] lastBodies = m_bodies;
+            init(m_bodyCapacity + 1, m_contactCapacity, m_jointCapacity, m_listener);
+            System.arraycopy(lastBodies, 0, m_bodies, 0, lastBodies.length);
+        }
+
         m_bodies[m_bodyCount] = body;
         ++m_bodyCount;
     }
