@@ -62,7 +62,7 @@ public class Ship extends DamageableRigidBody {
     @Getter
     protected boolean spawned;
     @Getter
-    private final int jumpTimeInTicks = Engine.convertToTicks(0.6f);
+    private final int jumpTimeInTicks;
     @Getter
     private int jumpTimer;
     @Getter
@@ -102,6 +102,7 @@ public class Ship extends DamageableRigidBody {
         this.shipData = shipData;
         this.timeToDestroy = shipData.getDestroyTimeInTicks();
         this.maxSparksTimer = timeToDestroy / 3;
+        this.jumpTimeInTicks = Math.round(Engine.convertToTicks(0.6f) * ((Math.max(Math.max(getSizeX(), getSizeY()) / 150.0f, 1.0f))));
         this.jumpTimer = jumpTimeInTicks;
         setJumpPosition();
     }
@@ -360,7 +361,8 @@ public class Ship extends DamageableRigidBody {
     }
 
     private void setJumpPosition() {
-        RotationHelper.angleToVelocity(getSin(), getCos(), -100.0f, jumpPosition);
+        float jumpLength = Math.max(getSizeX(), getSizeY()) * 1.25f + 25.0f;
+        RotationHelper.angleToVelocity(getSin(), getCos(), -jumpLength, jumpPosition);
         jumpPosition.add(getX(), getY());
     }
 

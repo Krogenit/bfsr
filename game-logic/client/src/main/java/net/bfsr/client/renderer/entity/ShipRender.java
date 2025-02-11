@@ -44,10 +44,10 @@ import java.util.EnumMap;
 import java.util.List;
 
 public class ShipRender extends DamageableRigidBodyRenderer {
-    private static final AbstractTexture JUMP_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.particleJump);
-    private static final AbstractTexture REACTOR_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.moduleReactor);
-    private static final AbstractTexture ENGINE_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.moduleEngine);
-    private static final AbstractTexture SHIELD_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.moduleShield);
+    private static final AbstractTexture PARTICLE_JUMP_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.particleJump);
+    private static final AbstractTexture REACTOR_MODULE_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.moduleReactor);
+    private static final AbstractTexture ENGINE_MODULE_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.moduleEngine);
+    private static final AbstractTexture SHIELD_MODULE_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.moduleShield);
 
     private final Client client = Client.get();
     private final EngineEffects engineEffects = client.getParticleEffects().getEngineEffects();
@@ -62,8 +62,8 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
     private final Vector2f jumpPosition = new Vector2f();
     private final Vector2f lastJumpPosition = new Vector2f();
-    private float lastJumpDelta;
     private float jumpDelta;
+    private float jumpEffectSize;
 
     private final EnumMap<Direction, List<SpawnAccumulator>> engineAccumulators = new EnumMap<>(Direction.class);
     private final EnumMap<Direction, Runnable> engineEffectsRunnable = new EnumMap<>(Direction.class);
@@ -93,10 +93,9 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
         if (!ship.isSpawned()) {
             Vector4f effectsColor = ship.getShipData().getEffectsColor();
-            float delta = lastJumpDelta + (jumpDelta - lastJumpDelta) * renderer.getInterpolation();
-            float size = 40.0f * delta;
-            spawnEffectId = spriteRenderer.add(jumpPosition.x, jumpPosition.y, ship.getSin(), ship.getCos(), size, size, effectsColor.x,
-                    effectsColor.y, effectsColor.z, delta, JUMP_TEXTURE.getTextureHandle(), BufferType.ENTITIES_ADDITIVE);
+            jumpEffectSize = 1.5f * Math.max(ship.getSizeX(), ship.getSizeY()) + 5.0f;
+            spawnEffectId = spriteRenderer.add(jumpPosition.x, jumpPosition.y, ship.getSin(), ship.getCos(), 0.0f, 0.0f, effectsColor.x,
+                    effectsColor.y, effectsColor.z, 0.0f, PARTICLE_JUMP_TEXTURE.getTextureHandle(), BufferType.ENTITIES_ADDITIVE);
         }
 
         Shield shield = ship.getModules().getShield();
@@ -217,11 +216,11 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     private void createModuleRenders(Ship ship) {
         Modules modules = ship.getModules();
 
-        moduleRenders.add(new ModuleRenderer(ship, modules.getReactor(), REACTOR_TEXTURE));
+        moduleRenders.add(new ModuleRenderer(ship, modules.getReactor(), REACTOR_MODULE_TEXTURE));
 
         Shield shield = modules.getShield();
         if (!shield.isDead()) {
-            addModuleRenderer(shield, new ModuleRenderer(ship, shield, SHIELD_TEXTURE));
+            addModuleRenderer(shield, new ModuleRenderer(ship, shield, SHIELD_MODULE_TEXTURE));
         }
 
         Engines enginesModule = modules.getEngines();
@@ -231,7 +230,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
             for (int i = 0; i < engineDataList.size(); i++) {
                 net.bfsr.entity.ship.module.engine.Engine engine = enginesModule.getEngines(direction).get(i);
                 if (!engine.isDead()) {
-                    addModuleRenderer(engine, new ModuleRenderer(ship, engine, ENGINE_TEXTURE, direction));
+                    addModuleRenderer(engine, new ModuleRenderer(ship, engine, ENGINE_MODULE_TEXTURE, direction));
                 }
             }
 
@@ -293,11 +292,10 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     protected void updateLastRenderValues() {
         super.updateLastRenderValues();
         if (!ship.isSpawned()) {
-            lastJumpDelta = jumpDelta;
             lastJumpPosition.set(jumpPosition);
             spriteRenderer.setLastPosition(spawnEffectId, BufferType.ENTITIES_ADDITIVE, jumpPosition.x, jumpPosition.y);
 
-            float size = 40.0f * jumpDelta;
+            float size = jumpEffectSize * jumpDelta;
             spriteRenderer.setLastSize(spawnEffectId, BufferType.ENTITIES_ADDITIVE, size, size);
 
             spriteRenderer.setLastColorAlpha(spawnEffectId, BufferType.ENTITIES_ADDITIVE, jumpDelta);
@@ -321,7 +319,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
         if (!ship.isSpawned()) {
             spriteRenderer.setPosition(spawnEffectId, BufferType.ENTITIES_ADDITIVE, jumpPosition.x, jumpPosition.y);
-            float size = 40.0f * jumpDelta;
+            float size = jumpEffectSize * jumpDelta;
             spriteRenderer.setSize(spawnEffectId, BufferType.ENTITIES_ADDITIVE, size, size);
             spriteRenderer.setColorAlpha(spawnEffectId, BufferType.ENTITIES_ADDITIVE, jumpDelta);
         } else {
@@ -414,7 +412,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
             Ship ship = event.ship();
             Vector2 velocity = ship.getLinearVelocity();
             Vector4f effectsColor = ship.getShipData().getEffectsColor();
-            jumpEffects.jump(ship.getX(), ship.getY(), 32.0f + ship.getSizeX() * 0.25f, velocity.x * 0.5f, velocity.y * 0.5f,
+            jumpEffects.jump(ship.getX(), ship.getY(), jumpEffectSize * 1.25f, velocity.x * 0.5f, velocity.y * 0.5f,
                     effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
             createName();
             if (spawnEffectId != -1) {
