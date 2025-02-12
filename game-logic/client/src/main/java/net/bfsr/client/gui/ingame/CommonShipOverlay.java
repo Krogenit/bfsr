@@ -315,6 +315,8 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
     protected abstract void rebuildScene();
 
     private void calculateScale() {
+        dynamicShipScale = 1.0f;
+        
         /*
          * We use height instead of width because ship is rotated in GUI
          */
