@@ -33,7 +33,7 @@ public final class DamageSystem {
     private static final float BUFFER_Y_OFFSET = -0.16f;
     public static final double BUFFER_DISTANCE = 0.3f;
     private static final double MIN_POLYGON_AREA = 0.3;
-    private static final float MIN_DISTANCE_BETWEEN_VERTICES_SQ = 0.3f;
+    private static final float MIN_DISTANCE_BETWEEN_VERTICES_SQ = 0.5f;
     public static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
     private static final SweepLine SWEEP_LINE = new SweepLine();
     public static final BufferParameters BUFFER_PARAMETERS = new BufferParameters(1, BufferParameters.CAP_SQUARE,
