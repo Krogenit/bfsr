@@ -1,7 +1,7 @@
 #version 460
 #extension GL_ARB_shading_language_include: enable
 #include "/common/common.glsl"
-#include "/common/occlusion-culling-common.glsl"
+#include "/common/frustum-culling-common.glsl"
 
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
@@ -55,8 +55,8 @@ void main() {
             drawCommands[globalThreadID * COMMANDSTRIDE + 1] = 0;
         }
     } else {
-        float halfModelWidth = modelData.width * 0.5;
-        float halfModelHeight = modelData.height * 0.5;
+        float halfModelWidth = modelData.width * 0.5 * zoom;
+        float halfModelHeight = modelData.height * 0.5 * zoom;
         if (x - halfModelWidth < viewHalfWidth && y - halfModelHeight < viewHalfHeight
         && x + halfModelWidth >= -viewHalfWidth && y + halfModelHeight >= -viewHalfHeight) {
             drawCommands[commandIndex + 1] = 1;
