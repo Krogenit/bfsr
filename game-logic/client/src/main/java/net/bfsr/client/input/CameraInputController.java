@@ -126,10 +126,12 @@ public class CameraInputController extends InputController {
             float minDist = Float.MAX_VALUE;
             for (int i = 0; i < ships.size(); i++) {
                 Ship ship = ships.get(i);
-                float dist = camera.getPosition().distance(ship.getX(), ship.getY());
-                if (dist < minDist) {
-                    newShip = ship;
-                    minDist = dist;
+                if (ship.getModules().getEngines().isSomeEngineAlive()) {
+                    float dist = camera.getPosition().distance(ship.getX(), ship.getY());
+                    if (dist < minDist) {
+                        newShip = ship;
+                        minDist = dist;
+                    }
                 }
             }
 
