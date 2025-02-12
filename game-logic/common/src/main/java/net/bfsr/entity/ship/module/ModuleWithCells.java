@@ -1,9 +1,7 @@
 package net.bfsr.entity.ship.module;
 
 import lombok.Getter;
-import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.ship.Ship;
-import org.jbox2d.collision.AABB;
 
 import java.lang.reflect.Array;
 import java.util.function.Supplier;
@@ -14,10 +12,8 @@ public abstract class ModuleWithCells<T> extends Module {
     protected final float width, height;
 
     protected ModuleWithCells(Ship ship, Class<T> componentType, Supplier<T> supplier) {
-        AABB aabb = new AABB();
-        MathUtils.computeAABB(aabb, ship.getBody(), new AABB());
-        this.width = aabb.getWidth();
-        this.height = aabb.getHeight();
+        this.width = ship.getSizeX();
+        this.height = ship.getSizeY();
         int width = (int) Math.ceil(this.width / 2);
         int height = (int) Math.ceil(this.height / 2);
         this.cells = (T[][]) Array.newInstance(componentType, width, height);
