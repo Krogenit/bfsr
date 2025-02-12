@@ -347,7 +347,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     }
 
     @Override
-    public void renderAlpha() {
+    public void render() {
         if (!ship.isSpawned()) {
             return;
         }
@@ -384,13 +384,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
     protected void renderGunSlots() {
         for (int i = 0, size = weaponRenders.size(); i < size; i++) {
-            weaponRenders.get(i).renderAlpha();
-        }
-    }
-
-    private void renderGunSlotsAdditive() {
-        for (int i = 0, size = weaponRenders.size(); i < size; i++) {
-            weaponRenders.get(i).renderAdditive();
+            weaponRenders.get(i).render();
         }
     }
 

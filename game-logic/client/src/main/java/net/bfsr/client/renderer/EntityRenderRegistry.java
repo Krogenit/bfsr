@@ -11,6 +11,7 @@ import net.bfsr.client.renderer.entity.WreckRender;
 import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.config.entity.ship.ShipRegistry;
+import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;

@@ -66,10 +66,7 @@ public class BulletRender extends RigidBodyRender {
     }
 
     @Override
-    public void renderAlpha() {}
-
-    @Override
-    public void renderAdditive() {
+    public void render() {
         spriteRenderer.addDrawCommand(lightId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ADDITIVE);
         spriteRenderer.addDrawCommand(id, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ADDITIVE);
     }

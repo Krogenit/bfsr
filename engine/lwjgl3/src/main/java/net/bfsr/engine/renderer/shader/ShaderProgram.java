@@ -57,7 +57,11 @@ public class ShaderProgram extends AbstractShaderProgram {
     }
 
     protected void setVector(int location, Vector2f vector) {
-        glUniform2f(location, vector.x, vector.y);
+        setVector(location, vector.x, vector.y);
+    }
+
+    protected void setVector(int location, float x, float y) {
+        glUniform2f(location, x, y);
     }
 
     protected void setVector(int location, Vector3f vector) {

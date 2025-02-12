@@ -230,7 +230,9 @@ public class WreckRender extends RigidBodyRender {
     }
 
     @Override
-    public void renderAdditive() {
+    public void render() {
+        super.render();
+
         if (colorFire.w > 0) {
             spriteRenderer.addDrawCommand(fireId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ADDITIVE);
         }

@@ -12,6 +12,7 @@ import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
+import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.entity.RigidBody;
 
 import java.util.ArrayList;
@@ -55,31 +56,16 @@ public class EntityRenderer {
         }
     }
 
-    public void renderAlpha() {
+    public void render() {
         if (renderer.isEntitiesGPUFrustumCulling()) {
             for (int i = 0, size = renders.size(); i < size; i++) {
-                renders.get(i).renderAlpha();
+                renders.get(i).render();
             }
         } else {
             for (int i = 0, size = renders.size(); i < size; i++) {
                 Render render = renders.get(i);
                 if (render.getAabb().overlaps(camera.getBoundingBox())) {
-                    render.renderAlpha();
-                }
-            }
-        }
-    }
-
-    void renderAdditive() {
-        if (renderer.isEntitiesGPUFrustumCulling()) {
-            for (int i = 0, size = renders.size(); i < size; i++) {
-                renders.get(i).renderAdditive();
-            }
-        } else {
-            for (int i = 0, size = renders.size(); i < size; i++) {
-                Render render = renders.get(i);
-                if (render.getAabb().overlaps(camera.getBoundingBox())) {
-                    render.renderAdditive();
+                    render.render();
                 }
             }
         }

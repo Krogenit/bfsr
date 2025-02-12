@@ -3,7 +3,6 @@ package net.bfsr.editor.gui.ship;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.Client;
-import net.bfsr.client.renderer.Render;
 import net.bfsr.client.renderer.entity.ShipRender;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.config.entity.ship.ShipConfig;
@@ -23,6 +22,7 @@ import net.bfsr.editor.property.holder.Vector2fPropertiesHolder;
 import net.bfsr.engine.entity.GameObject;
 import net.bfsr.engine.gui.component.CheckBox;
 import net.bfsr.engine.gui.component.Label;
+import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.faction.Faction;
@@ -170,17 +170,17 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
 
             ShipRender render = new ShipRender(testShip) {
                 @Override
-                public void renderAlpha() {
+                public void render() {
                     if (!ship.isSpawned()) {
                         return;
                     }
 
                     for (int i = 0; i < moduleRenders.size(); i++) {
-                        moduleRenders.get(i).renderAlpha();
+                        moduleRenders.get(i).render();
                     }
 
                     if (showShipSprite) {
-                        super.renderAlpha();
+                        super.render();
                     }
 
                     renderGunSlots();

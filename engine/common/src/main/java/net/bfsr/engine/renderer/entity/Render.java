@@ -1,6 +1,8 @@
 package net.bfsr.engine.renderer.entity;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.entity.GameObject;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
@@ -12,7 +14,12 @@ import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 @Getter
+@NoArgsConstructor
 public class Render {
+    protected final AbstractRenderer renderer = Engine.getRenderer();
+    protected final AbstractSpriteRenderer spriteRenderer = renderer.getSpriteRenderer();
+    protected final AbstractDebugRenderer debugRenderer = renderer.getDebugRenderer();
+
     protected GameObject object;
     protected AbstractTexture texture;
     protected final Vector4f color = new Vector4f();
@@ -27,15 +34,9 @@ public class Render {
     protected final AABB lastUpdateAABB = new AABB();
     protected final AABB debugRenderAABB = new AABB();
 
-    protected final AbstractRenderer renderer;
-    protected final AbstractSpriteRenderer spriteRenderer;
-    protected final AbstractDebugRenderer debugRenderer;
     protected int id = -1;
 
-    public Render(AbstractRenderer renderer, AbstractTexture texture, GameObject object, float r, float g, float b, float a) {
-        this.renderer = renderer;
-        this.spriteRenderer = renderer.getSpriteRenderer();
-        this.debugRenderer = renderer.getDebugRenderer();
+    public Render(AbstractTexture texture, GameObject object, float r, float g, float b, float a) {
         this.object = object;
         this.texture = texture;
         this.lastPosition.set(object.getX(), object.getY());
@@ -44,15 +45,12 @@ public class Render {
         this.lastSize.set(object.getSizeX(), object.getSizeY());
     }
 
-    public Render(AbstractRenderer renderer, AbstractTexture texture, GameObject object) {
-        this(renderer, texture, object, 1.0f, 1.0f, 1.0f, 1.0f);
+    public Render(AbstractTexture texture, GameObject object) {
+        this(texture, object, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public Render(AbstractRenderer renderer) {
-        this.renderer = renderer;
-        this.spriteRenderer = renderer.getSpriteRenderer();
-        this.debugRenderer = renderer.getDebugRenderer();
-        this.texture = renderer.getDummyTexture();
+    public Render(GameObject object) {
+        this(Engine.getRenderer().getDummyTexture(), object);
     }
 
     public void init() {
@@ -78,9 +76,7 @@ public class Render {
         spriteRenderer.setPosition(id, BufferType.ENTITIES_ALPHA, object.getX(), object.getY());
     }
 
-    public void renderAlpha() {}
-
-    public void renderAdditive() {}
+    public void render() {}
 
     public void renderDebug() {}
 

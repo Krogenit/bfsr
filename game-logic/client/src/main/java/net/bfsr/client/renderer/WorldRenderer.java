@@ -40,8 +40,7 @@ public class WorldRenderer {
     void prepareRender(int totalParticlesCount) {
         particleRenderer.putBackgroundParticlesToBuffers(totalParticlesCount);
         backgroundRenderer.render();
-        entityRenderer.renderAlpha();
-        entityRenderer.renderAdditive();
+        entityRenderer.render();
         particleRenderer.putParticlesToBuffers();
     }
 

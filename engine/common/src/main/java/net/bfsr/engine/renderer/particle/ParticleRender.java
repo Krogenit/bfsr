@@ -2,7 +2,6 @@ package net.bfsr.engine.renderer.particle;
 
 import lombok.Setter;
 import net.bfsr.engine.entity.Particle;
-import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.entity.Render;
@@ -17,10 +16,6 @@ public class ParticleRender extends Render {
     private AbstractBuffersHolder buffersHolder;
     @Setter
     private Consumer<ParticleRender> lastValuesUpdateConsumer;
-
-    public ParticleRender(AbstractRenderer renderer) {
-        super(renderer);
-    }
 
     public ParticleRender init(Particle object, float x, float y, float sin, float cos, float width, float height, long textureHandle,
                                float r, float g, float b, float a, boolean isAlphaFromZero, float alphaVelocity,

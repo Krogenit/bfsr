@@ -1,10 +1,10 @@
 package net.bfsr.client.renderer.entity;
 
-import net.bfsr.client.renderer.Render;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.math.RotationHelper;
@@ -73,7 +73,7 @@ public class RigidBodyRender extends Render {
     }
 
     @Override
-    public void renderAlpha() {
+    public void render() {
         spriteRenderer.addDrawCommand(id, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ALPHA);
     }
 

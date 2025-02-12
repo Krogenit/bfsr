@@ -39,6 +39,7 @@ public class ParticleRenderer {
         RenderLayer[] renderLayers = RenderLayer.VALUES;
         for (int i = 0; i < renderLayers.length; i++) {
             particlesByRenderLayer[renderLayers[i].ordinal()] = new ArrayList<>(256);
+            renderPool[renderLayers[i].ordinal()] = new ObjectPool<>(ParticleRender::new);
         }
 
         particlesStoreRunnables = new ParticlesStoreRunnable[MultithreadingUtils.PARALLELISM];
@@ -64,7 +65,6 @@ public class ParticleRenderer {
         RenderLayer[] renderLayers = RenderLayer.VALUES;
         for (int i = 0; i < renderLayers.length; i++) {
             buffersHolderArray[renderLayers[i].ordinal()] = spriteRenderer.createBuffersHolder(START_PARTICLE_COUNT, true);
-            renderPool[renderLayers[i].ordinal()] = new ObjectPool<>(() -> new ParticleRender(renderer));
         }
 
         for (int i = 0; i < particlesStoreRunnables.length; i++) {

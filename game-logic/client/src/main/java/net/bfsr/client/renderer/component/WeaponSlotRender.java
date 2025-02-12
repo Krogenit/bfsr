@@ -3,13 +3,13 @@ package net.bfsr.client.renderer.component;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.client.Client;
 import net.bfsr.client.particle.effect.WeaponEffects;
-import net.bfsr.client.renderer.Render;
 import net.bfsr.config.SoundData;
 import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.engine.AssetsManager;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.sound.AbstractSoundManager;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
@@ -54,7 +54,7 @@ public class WeaponSlotRender extends Render {
     }
 
     @Override
-    public void renderAlpha() {
+    public void render() {
         spriteRenderer.addDrawCommand(id, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ALPHA);
     }
 

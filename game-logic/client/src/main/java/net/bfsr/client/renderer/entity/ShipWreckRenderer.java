@@ -1,9 +1,9 @@
 package net.bfsr.client.renderer.entity;
 
-import net.bfsr.client.renderer.Render;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.math.RotationHelper;
 import org.joml.Vector2f;
@@ -96,11 +96,11 @@ public class ShipWreckRenderer extends DamageableRigidBodyRenderer {
     }
 
     @Override
-    public void renderAlpha() {
-        super.renderAlpha();
+    public void render() {
+        super.render();
 
         for (int i = 0; i < connectedObjectRenders.size(); i++) {
-            connectedObjectRenders.get(i).renderAlpha();
+            connectedObjectRenders.get(i).render();
         }
     }
 

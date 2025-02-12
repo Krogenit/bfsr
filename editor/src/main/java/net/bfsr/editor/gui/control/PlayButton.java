@@ -46,7 +46,7 @@ public class PlayButton extends Button {
             renderer.getSpriteRenderer().addPrimitive(PLAY_SIGN_PRIMITIVE_PARAMS);
 
             float color = 192 / 255.0f;
-            idList.add(playId = guiRenderer.add(centerX, centerY, width - 10, height - 10, color, color, color, 1.0f, 0));
+            idList.add(playId = guiRenderer.add(centerX, centerY, width - 10, height - 10, color, color, color, 1.0f));
         }
 
         void setPlaying(boolean playing) {
