@@ -16,6 +16,7 @@ import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
+import net.bfsr.engine.renderer.MaterialType;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.font.string.StringOffsetType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
@@ -58,7 +59,6 @@ public class ShipRender extends DamageableRigidBodyRenderer {
             .setShadow(true).setShadowOffsetX(4).setShadowOffsetY(-4);
 
     private final List<WeaponSlotRender> weaponRenders = new ArrayList<>();
-    private final AbstractTexture shieldTexture;
 
     private final Vector2f jumpPosition = new Vector2f();
     private final Vector2f lastJumpPosition = new Vector2f();
@@ -75,16 +75,20 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     private int spawnEffectId = -1;
     private int shieldId = -1;
 
+    private final float shieldSize = 1.25f;
+    private final AbstractTexture shieldTexture;
+
     public ShipRender(Ship ship) {
         super(Engine.getAssetsManager().getTexture(ship.getConfigData().getTexture()), ship);
         this.ship = ship;
 
-        shieldTexture = Engine.getAssetsManager().getTexture(ship.getModules().getShield().getShieldData().getTexturePath());
         createWeaponSlotsRenders(ship);
         initEngineEffectsRunnable(ship);
         createModuleRenders(ship);
 
         ship.getShipEventBus().register(this);
+
+        shieldTexture = renderer.getTextureGenerator().generateShieldTexture(texture, getRenderer());
     }
 
     @Override
@@ -100,12 +104,10 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
         Shield shield = ship.getModules().getShield();
         if (shield != null) {
-            Vector2f diameter = shield.getDiameter();
-            float shieldSizeX = shield.getSizeX();
             Vector4f color = ship.getShipData().getEffectsColor();
-            shieldId = spriteRenderer.add(ship.getX(), ship.getY(), ship.getSin(), ship.getCos(), diameter.x * shieldSizeX,
-                    diameter.y * shieldSizeX, color.x, color.y, color.z, color.w, shieldTexture.getTextureHandle(),
-                    BufferType.ENTITIES_ADDITIVE);
+            shieldId = spriteRenderer.add(ship.getX(), ship.getY(), ship.getSin(), ship.getCos(), ship.getSizeX() * shieldSize,
+                    ship.getSizeY() * shieldSize, color.x, color.y, color.z, 0.25f, shieldTexture.getTextureHandle(),
+                    maskTexture.getTextureHandle(), MaterialType.SHIELD, BufferType.ENTITIES_BACKGROUND_ADDITIVE);
         }
     }
 
@@ -304,11 +306,11 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
             Shield shield = ship.getModules().getShield();
             if (shieldId != -1 && shield != null) {
-                spriteRenderer.setLastPosition(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getX(), ship.getY());
-                spriteRenderer.setLastRotation(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getSin(), ship.getCos());
-                Vector2f diameter = shield.getDiameter();
-                float shieldSizeX = shield.getSizeX();
-                spriteRenderer.setLastSize(shieldId, BufferType.ENTITIES_ADDITIVE, diameter.x * shieldSizeX, diameter.y * shieldSizeX);
+                spriteRenderer.setLastPosition(shieldId, BufferType.ENTITIES_BACKGROUND_ADDITIVE, ship.getX(), ship.getY());
+                spriteRenderer.setLastRotation(shieldId, BufferType.ENTITIES_BACKGROUND_ADDITIVE, ship.getSin(), ship.getCos());
+                float finalShieldSize = shield.getSizeX() * shieldSize;
+                spriteRenderer.setLastSize(shieldId, BufferType.ENTITIES_BACKGROUND_ADDITIVE, ship.getSizeX() * finalShieldSize,
+                        ship.getSizeY() * finalShieldSize);
             }
         }
     }
@@ -325,11 +327,11 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         } else {
             Shield shield = ship.getModules().getShield();
             if (shieldId != -1 && shield != null) {
-                spriteRenderer.setPosition(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getX(), ship.getY());
-                spriteRenderer.setRotation(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getSin(), ship.getCos());
-                Vector2f diameter = shield.getDiameter();
-                float shieldSizeX = shield.getSizeX();
-                spriteRenderer.setSize(shieldId, BufferType.ENTITIES_ADDITIVE, diameter.x * shieldSizeX, diameter.y * shieldSizeX);
+                spriteRenderer.setPosition(shieldId, BufferType.ENTITIES_BACKGROUND_ADDITIVE, ship.getX(), ship.getY());
+                spriteRenderer.setRotation(shieldId, BufferType.ENTITIES_BACKGROUND_ADDITIVE, ship.getSin(), ship.getCos());
+                float finalShieldSize = shield.getSizeX() * shieldSize;
+                spriteRenderer.setSize(shieldId, BufferType.ENTITIES_BACKGROUND_ADDITIVE, ship.getSizeX() * finalShieldSize,
+                        ship.getSizeY() * finalShieldSize);
             }
 
             label.updatePosition(object.getX(), object.getY());
@@ -349,29 +351,23 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     @Override
     public void render() {
         if (!ship.isSpawned()) {
+            spriteRenderer.addDrawCommand(spawnEffectId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ADDITIVE);
             return;
         }
 
         for (int i = 0; i < moduleRenders.size(); i++) {
-            moduleRenders.get(i).renderAlpha();
+            moduleRenders.get(i).render();
         }
 
-        super.renderAlpha();
+        super.render();
         renderGunSlots();
 
         label.render(0, 0);
-    }
 
-    @Override
-    public void renderAdditive() {
-        if (ship.isSpawned()) {
-            renderGunSlotsAdditive();
-            Shield shield = ship.getModules().getShield();
-            if (shieldId != -1 && shield != null && shield.isAlive()) {
-                spriteRenderer.addDrawCommand(shieldId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ADDITIVE);
-            }
-        } else {
-            spriteRenderer.addDrawCommand(spawnEffectId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ADDITIVE);
+        Shield shield = ship.getModules().getShield();
+        if (shieldId != -1 && shield != null && shield.isAlive()) {
+            spriteRenderer.addDrawCommand(shieldId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX,
+                    BufferType.ENTITIES_BACKGROUND_ADDITIVE);
         }
     }
 
@@ -439,7 +435,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         }
 
         if (shieldId != -1) {
-            spriteRenderer.removeObject(shieldId, BufferType.ENTITIES_ADDITIVE);
+            spriteRenderer.removeObject(shieldId, BufferType.ENTITIES_BACKGROUND_ADDITIVE);
         }
     }
 }

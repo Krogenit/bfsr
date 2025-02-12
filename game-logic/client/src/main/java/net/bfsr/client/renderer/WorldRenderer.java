@@ -55,9 +55,9 @@ public class WorldRenderer {
         particleRenderer.renderBackground();
 
         profiler.endStart("entitiesAlpha");
-        renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 
         if (renderer.isEntitiesGPUFrustumCulling()) {
+            renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
             AbstractBuffersHolder buffersHolder = spriteRenderer.getBuffersHolder(BufferType.ENTITIES_ALPHA);
             cullingSystem.renderFrustumCulled(buffersHolder.getRenderObjects(), buffersHolder);
             buffersHolder.setRenderObjects(0);
@@ -67,6 +67,9 @@ public class WorldRenderer {
             cullingSystem.renderFrustumCulled(buffersHolder.getRenderObjects(), buffersHolder);
             buffersHolder.setRenderObjects(0);
         } else {
+            renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
+            spriteRenderer.render(BufferType.ENTITIES_BACKGROUND_ADDITIVE);
+            renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
             spriteRenderer.render(BufferType.ENTITIES_ALPHA);
             profiler.endStart("entitiesAdditive");
             renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);

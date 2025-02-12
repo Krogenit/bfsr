@@ -12,7 +12,9 @@ public class ShieldLogic extends CommonShieldLogic {
         float sizeX = shield.getSizeX();
         if (sizeX < 1.0f) {
             shield.addSize(scaleAnimation, 0);
-            if (shield.getSizeX() > 1.0f) shield.setSize(1.0f, shield.getSizeY());
+            if (shield.getSizeX() > 1.0f) {
+                shield.setSize(1.0f, shield.getSizeY());
+            }
         }
     }
 }

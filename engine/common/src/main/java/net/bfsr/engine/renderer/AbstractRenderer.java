@@ -73,6 +73,7 @@ public abstract class AbstractRenderer {
         shader.load();
         shader.init();
         cullingSystem.init(shader, this);
+        textureGenerator.init();
     }
 
     public abstract void setupOpenGL();
