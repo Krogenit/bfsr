@@ -204,6 +204,7 @@ public final class TextureGenerator extends AbstractTextureGenerator {
         spriteRenderer.removeObject(texturedRectangleRenderId, BufferType.GUI);
         spriteRenderer.removeObject(rectangleRenderId, BufferType.GUI);
         glBindTexture(GL_TEXTURE_2D, currentBindTexture);
+        renderer.setDefaultClearColor();
 
         return currentTexture;
     }

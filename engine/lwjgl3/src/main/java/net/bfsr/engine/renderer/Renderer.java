@@ -97,7 +97,7 @@ public class Renderer extends AbstractRenderer {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glAlphaFunc(GL_GREATER, 0.0001f);
-        glClearColor(0.05F, 0.1F, 0.2F, 1.0F);
+        setDefaultClearColor();
 
         interpolationUBO = GL45.glCreateBuffers();
         interpolationBuffer = createFloatBuffer(1);
@@ -282,6 +282,11 @@ public class Renderer extends AbstractRenderer {
         int height = screenHeight;
         glfwSetWindowSize(window, 1280, 720);
         glfwSetWindowPos(window, (width - 1280) / 2, (height - 720) / 2);
+    }
+
+    @Override
+    public void setDefaultClearColor() {
+        glClearColor(0.05F, 0.1F, 0.2F, 1.0F);
     }
 
     @Override

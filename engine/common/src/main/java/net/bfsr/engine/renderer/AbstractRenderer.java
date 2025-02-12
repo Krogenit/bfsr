@@ -106,6 +106,7 @@ public abstract class AbstractRenderer {
                                        IntBuffer buffer);
     public abstract void uploadFilledTexture(AbstractTexture texture, int internalFormat, int format, ByteBuffer value);
     public abstract void fullTexture(AbstractTexture texture, int internalFormat, int format, ByteBuffer value);
+    public abstract void setDefaultClearColor();
 
     public void resetDrawCalls() {
         lastFrameDrawCalls = drawCalls;
