@@ -233,6 +233,9 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
     private void updateShield() {
         Shield shield = ship.getModules().getShield();
         if (shield != null && shield.isAlive()) {
+            addIfAbsent(shieldGuiObject);
+            addIfAbsent(shieldValueGuiObject);
+
             float shieldValue = shield.getShieldHp() / shield.getShieldMaxHp();
             shieldGuiObject.setAllColors(1.0f - shieldValue, shieldValue, 0.0f, 1.0f);
 
@@ -240,6 +243,9 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
                 textShield.setString(String.valueOf(Math.round(shield.getShieldHp())));
                 lastShieldValue = shieldValue;
             }
+        } else {
+            remove(shieldGuiObject);
+            remove(shieldValueGuiObject);
         }
     }
 
@@ -316,7 +322,7 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
 
     private void calculateScale() {
         dynamicShipScale = 1.0f;
-        
+
         /*
          * We use height instead of width because ship is rotated in GUI
          */
