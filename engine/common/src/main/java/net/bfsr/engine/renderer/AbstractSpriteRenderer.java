@@ -14,7 +14,7 @@ public interface AbstractSpriteRenderer extends GeometryBuffer {
     int MODEL_DATA_SIZE_IN_BYTES = MODEL_DATA_SIZE << 2;
     int COMMAND_SIZE = 5;
     int COMMAND_SIZE_IN_BYTES = COMMAND_SIZE << 2;
-    int MATERIAL_DATA_SIZE = 16;
+    int MATERIAL_DATA_SIZE = 12;
     int LAST_UPDATE_MATERIAL_DATA_SIZE = 8;
     int MATERIAL_DATA_SIZE_IN_BYTES = MATERIAL_DATA_SIZE << 2;
     int LAST_UPDATE_MATERIAL_DATA_SIZE_IN_BYTES = LAST_UPDATE_MATERIAL_DATA_SIZE << 2;
@@ -59,22 +59,27 @@ public interface AbstractSpriteRenderer extends GeometryBuffer {
     void updateCommandBufferAndRender(int mode, int renderObjects, AbstractBuffersHolder buffersHolder);
     void render(int mode, int objectCount, AbstractBuffersHolder buffersHolder);
 
+    int add(float x, float y, float width, float height, float r, float g, float b, float a, BufferType bufferType);
     int add(float x, float y, float width, float height, float r, float g, float b, float a,
             long textureHandle, BufferType bufferType);
     int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle,
             float zoomFactor, BufferType bufferType);
-    int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
-            long textureHandle, BufferType bufferType);
+    int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a, long textureHandle,
+            BufferType bufferType);
+    int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a, long textureHandle,
+            MaterialType materialType, BufferType bufferType);
     int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
             long textureHandle, long maskTextureHandle, BufferType bufferType);
+    int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a, long textureHandle,
+            long maskTextureHandle, MaterialType materialType, BufferType bufferType);
     int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
             long textureHandle, AbstractBuffersHolder buffersHolder);
-    int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle, int font,
+    int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle, MaterialType materialType,
             AbstractBuffersHolder buffersHolder);
     int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
-            long textureHandle, int font, AbstractBuffersHolder buffersHolder);
+            long textureHandle, MaterialType materialType, AbstractBuffersHolder buffersHolder);
 
-    void addMaterialData(float r, float g, float b, float a, long textureHandle, int font, int offset,
+    void addMaterialData(float r, float g, float b, float a, long textureHandle, MaterialType materialType, int offset,
                          AbstractBuffersHolder buffersHolder);
     void addModelData(float x, float y, float sin, float cos, float width, float height, int offset,
                       AbstractBuffersHolder buffersHolder);

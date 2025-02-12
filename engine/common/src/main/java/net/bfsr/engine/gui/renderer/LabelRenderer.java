@@ -3,6 +3,7 @@ package net.bfsr.engine.gui.renderer;
 import lombok.Getter;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
+import net.bfsr.engine.renderer.MaterialType;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.font.glyph.Font;
@@ -75,7 +76,7 @@ public class LabelRenderer extends GuiObjectRenderer {
                 GlyphData glyphData = glyphsData.get(i);
                 int id = spriteRenderer.add(x + glyphData.getX(), y + glyphData.getY(), glyphData.getWidth(),
                         glyphData.getHeight(), glyphData.getR(), glyphData.getG(), glyphData.getB(), glyphData.getA(),
-                        glyphData.getTextureHandle(), 1, buffersHolder);
+                        glyphData.getTextureHandle(), MaterialType.FONT, buffersHolder);
                 glyphData.setBaseInstance(id);
                 putCommandData(commandDataOffset, AbstractSpriteRenderer.QUAD_INDEX_COUNT);
                 putCommandData(commandDataOffset + AbstractSpriteRenderer.INSTANCE_COUNT_OFFSET, 1);

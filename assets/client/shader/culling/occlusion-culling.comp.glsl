@@ -45,7 +45,7 @@ void main() {
     float viewHalfWidth = viewData.width * invertedHalfZoom;
     float viewHalfHeight = viewData.height * invertedHalfZoom;
 
-    if (material.font) {
+    if (material.materialType == FONT) {
         float glyphWidth = modelData.width * zoom;
         float glyphHeight = modelData.height * zoom;
         if (x <= viewHalfWidth && y <= viewHalfHeight

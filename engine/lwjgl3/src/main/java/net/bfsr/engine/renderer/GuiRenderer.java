@@ -82,7 +82,7 @@ public class GuiRenderer extends AbstractGUIRenderer {
 
     @Override
     public int add(int x, int y, float sin, float cos, int width, int height, float r, float g, float b, float a) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, 0, 0);
+        return add(x, y, sin, cos, width, height, r, g, b, a, 0, MaterialType.NOT_TEXTURED);
     }
 
     @Override
@@ -97,19 +97,20 @@ public class GuiRenderer extends AbstractGUIRenderer {
 
     @Override
     public int add(int x, int y, int width, int height, float r, float g, float b, float a, long textureHandle) {
-        return add(x, y, 0, 1, width, height, r, g, b, a, textureHandle, 0);
+        return add(x, y, 0, 1, width, height, r, g, b, a, textureHandle,
+                textureHandle != 0 ? MaterialType.TEXTURED : MaterialType.NOT_TEXTURED);
     }
 
     @Override
     public int add(int x, int y, float sin, float cos, int width, int height, float r, float g, float b, float a,
                    AbstractTexture texture) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, texture.getTextureHandle(), 0);
+        return add(x, y, sin, cos, width, height, r, g, b, a, texture.getTextureHandle(), MaterialType.TEXTURED);
     }
 
     @Override
     public int add(int x, int y, float sin, float cos, int width, int height, float r, float g, float b, float a,
-                   long textureHandle, int font) {
-        return spriteRenderer.add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, font, buffersHolder);
+                   long textureHandle, MaterialType materialType) {
+        return spriteRenderer.add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, materialType, buffersHolder);
     }
 
     @Override
@@ -135,8 +136,8 @@ public class GuiRenderer extends AbstractGUIRenderer {
     @Override
     public int addCentered(int x, int y, float sin, float cos, int width, int height, float r, float g, float b, float a,
                            long textureHandle) {
-        return spriteRenderer.add(x + width * 0.5f, y + height * 0.5f, sin, cos, width, height, r, g, b, a, textureHandle, 0,
-                buffersHolder);
+        return spriteRenderer.add(x + width * 0.5f, y + height * 0.5f, sin, cos, width, height, r, g, b, a, textureHandle,
+                MaterialType.TEXTURED, buffersHolder);
     }
 
     @Override

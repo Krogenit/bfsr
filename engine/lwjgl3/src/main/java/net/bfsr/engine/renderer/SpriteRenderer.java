@@ -53,15 +53,11 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     public static final int COLOR_B_OFFSET = 8;
     public static final int COLOR_A_OFFSET = 12;
     public static final int TEXTURE_HANDLE_OFFSET = 16;
-    private static final int USE_TEXTURE_OFFSET = 24;
-    private static final int USE_MASK_OFFSET = 28;
-    private static final int MASK_TEXTURE_HANDLE_OFFSET = 32;
-    private static final int FIRE_AMOUNT_OFFSET = 40;
-    private static final int FIRE_UV_ANIMATION_OFFSET = 44;
-    private static final int FONT_OFFSET = 48;
-    private static final int ZOOM_FACTOR_OFFSET = 52;
-    private static final int PADDING_2_OFFSET = 56;
-    private static final int PADDING_3_OFFSET = 60;
+    private static final int MASK_TEXTURE_HANDLE_OFFSET = 24;
+    private static final int MATERIAL_TYPE_OFFSET = 32;
+    private static final int FIRE_AMOUNT_OFFSET = 36;
+    private static final int FIRE_UV_ANIMATION_OFFSET = 40;
+    private static final int ZOOM_FACTOR_OFFSET = 44;
 
     private static final int LAST_FIRE_AMOUNT_OFFSET = 16;
     private static final int LAST_FIRE_UV_ANIMATION_OFFSET = 20;
@@ -114,6 +110,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
         indexVBO.storeData(indexBuffer, 0);
 
         buffersHolders[BufferType.BACKGROUND.ordinal()] = createBuffersHolder(1, true);
+        buffersHolders[BufferType.ENTITIES_BACKGROUND_ADDITIVE.ordinal()] = createBuffersHolder(512, true);
         buffersHolders[BufferType.ENTITIES_ALPHA.ordinal()] = createBuffersHolder(512, true);
         buffersHolders[BufferType.ENTITIES_ADDITIVE.ordinal()] = createBuffersHolder(512, true);
         buffersHolders[BufferType.GUI.ordinal()] = createBuffersHolder(512, false);
@@ -368,6 +365,11 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     }
 
     @Override
+    public int add(float x, float y, float width, float height, float r, float g, float b, float a, BufferType bufferType) {
+        return add(x, y, 0, 1, width, height, r, g, b, a, 0, MaterialType.NOT_TEXTURED, bufferType);
+    }
+
+    @Override
     public int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle,
                    BufferType bufferType) {
         return add(x, y, 0, 1, width, height, r, g, b, a, textureHandle, bufferType);
@@ -381,66 +383,78 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
 
     public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
                    long textureHandle, float zoomFactor, BufferType bufferType) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, 0, zoomFactor, bufferType);
+        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, MaterialType.TEXTURED, zoomFactor, bufferType);
     }
 
     private int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
-                    long textureHandle, int font, float zoomFactor, BufferType bufferType) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, 0, font, zoomFactor, buffersHolders[bufferType.ordinal()]);
+                    long textureHandle, MaterialType materialType, float zoomFactor, BufferType bufferType) {
+        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, 0, materialType, zoomFactor,
+                buffersHolders[bufferType.ordinal()]);
     }
 
     @Override
     public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
                    long textureHandle, BufferType bufferType) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, 0, bufferType);
+        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, 0, MaterialType.TEXTURED,
+                buffersHolders[bufferType.ordinal()]);
+    }
+
+    @Override
+    public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+                   long textureHandle, MaterialType materialType, BufferType bufferType) {
+        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, 0, materialType, buffersHolders[bufferType.ordinal()]);
     }
 
     @Override
     public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
                    long textureHandle, long maskTextureHandle, BufferType bufferType) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, maskTextureHandle, buffersHolders[bufferType.ordinal()]);
+        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, maskTextureHandle, MaterialType.MASKED,
+                buffersHolders[bufferType.ordinal()]);
+    }
+
+    @Override
+    public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+                   long textureHandle, long maskTextureHandle, MaterialType materialType, BufferType bufferType) {
+        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, maskTextureHandle, materialType,
+                buffersHolders[bufferType.ordinal()]);
     }
 
     @Override
     public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
                    long textureHandle, AbstractBuffersHolder buffersHolder) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, 0, buffersHolder);
+        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, MaterialType.TEXTURED, buffersHolder);
     }
 
     @Override
-    public int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle, int font,
-                   AbstractBuffersHolder buffersHolder) {
-        return add(x, y, 0, 1, width, height, r, g, b, a, textureHandle, font, buffersHolder);
+    public int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle,
+                   MaterialType materialType, AbstractBuffersHolder buffersHolder) {
+        return add(x, y, 0, 1, width, height, r, g, b, a, textureHandle, materialType, buffersHolder);
     }
 
-    public int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle, int font,
-                   float zoomFactor, BuffersHolder buffersHolder) {
-        return add(x, y, 0, 1, width, height, r, g, b, a, textureHandle, font, zoomFactor, buffersHolder);
+    public int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle,
+                   MaterialType materialType, float zoomFactor, BuffersHolder buffersHolder) {
+        return add(x, y, 0, 1, width, height, r, g, b, a, textureHandle, materialType, zoomFactor, buffersHolder);
     }
 
     private int add(float x, float y, int sin, int cos, float width, float height, float r, float g, float b, float a, long textureHandle,
-                    int font, float zoomFactor, BuffersHolder buffersHolder) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, 0, font, zoomFactor, buffersHolder);
+                    MaterialType materialType, float zoomFactor, BuffersHolder buffersHolder) {
+        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, 0, materialType, zoomFactor, buffersHolder);
     }
 
     @Override
     public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
-                   long textureHandle, int font, AbstractBuffersHolder buffersHolder) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, 0, font, buffersHolder);
-    }
-
-    public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
-                   long textureHandle, long maskTextureHandle, AbstractBuffersHolder buffersHolder) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, maskTextureHandle, 0, buffersHolder);
+                   long textureHandle, MaterialType materialType, AbstractBuffersHolder buffersHolder) {
+        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, 0, materialType, buffersHolder);
     }
 
     private int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
-                    long textureHandle, long maskTextureHandle, int font, AbstractBuffersHolder buffersHolder) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, maskTextureHandle, font, 1.0f, buffersHolder);
+                    long textureHandle, long maskTextureHandle, MaterialType materialType, AbstractBuffersHolder buffersHolder) {
+        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, maskTextureHandle, materialType, 1.0f, buffersHolder);
     }
 
     public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
-                   long textureHandle, long maskTextureHandle, int font, float zoomFactor, AbstractBuffersHolder buffersHolder) {
+                   long textureHandle, long maskTextureHandle, MaterialType materialType, float zoomFactor,
+                   AbstractBuffersHolder buffersHolder) {
         int id = buffersHolder.getNextBaseInstanceId();
         int modelDataOffset = id * MODEL_DATA_SIZE;
         int materialOffset = id * MATERIAL_DATA_SIZE_IN_BYTES;
@@ -448,7 +462,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
 
         addLastUpdateModelData(x, y, sin, cos, width, height, modelDataOffset, buffersHolder);
         addModelData(x, y, sin, cos, width, height, modelDataOffset, buffersHolder);
-        addMaterialData(r, g, b, a, textureHandle, maskTextureHandle, font, zoomFactor, materialOffset, buffersHolder);
+        addMaterialData(r, g, b, a, textureHandle, maskTextureHandle, materialType, zoomFactor, materialOffset, buffersHolder);
         addLastUpdateMaterialData(r, g, b, a, lastMaterialOffset, buffersHolder);
         buffersHolder.markAllBuffersDirty();
 
@@ -476,52 +490,47 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
         buffersHolder.putLastUpdateModelData(offset + HEIGHT_OFFSET, height);
     }
 
-    private void addMaterialData(float r, float g, float b, float a, long textureHandle, long maskTextureHandle, int offset,
-                                 float zoomFactor, AbstractBuffersHolder buffersHolder) {
-        addMaterialData(r, g, b, a, textureHandle, maskTextureHandle, 0, zoomFactor, offset, buffersHolder);
+    private void addMaterialData(float r, float g, float b, float a, long textureHandle, long maskTextureHandle, MaterialType materialType,
+                                 int offset, float zoomFactor, AbstractBuffersHolder buffersHolder) {
+        addMaterialData(r, g, b, a, textureHandle, maskTextureHandle, materialType, zoomFactor, offset, buffersHolder);
     }
 
     @Override
-    public void addMaterialData(float r, float g, float b, float a, long textureHandle, int font, int offset,
+    public void addMaterialData(float r, float g, float b, float a, long textureHandle, MaterialType materialType, int offset,
                                 AbstractBuffersHolder buffersHolder) {
-        addMaterialData(r, g, b, a, textureHandle, 0, font, offset, buffersHolder);
+        addMaterialData(r, g, b, a, textureHandle, 0, materialType, offset, buffersHolder);
     }
 
-    private void addMaterialData(float r, float g, float b, float a, long textureHandle, long maskTextureHandle, int font, float zoomFactor,
+    private void addMaterialData(float r, float g, float b, float a, long textureHandle, long maskTextureHandle, MaterialType materialType,
+                                 float zoomFactor, int offset, AbstractBuffersHolder buffersHolder) {
+        addMaterialData(r, g, b, a, textureHandle, maskTextureHandle, materialType, 0.0f, 0.0f, zoomFactor, offset, buffersHolder);
+    }
+
+    private void addMaterialData(float r, float g, float b, float a, long textureHandle, long maskTextureHandle, MaterialType materialType,
                                  int offset, AbstractBuffersHolder buffersHolder) {
-        addMaterialData(r, g, b, a, textureHandle, maskTextureHandle, 0.0f, 0.0f, font, zoomFactor, offset, buffersHolder);
+        addMaterialData(r, g, b, a, textureHandle, maskTextureHandle, materialType, 0.0f, 0.0f, offset, buffersHolder);
     }
 
-    private void addMaterialData(float r, float g, float b, float a, long textureHandle, long maskTextureHandle, int font, int offset,
-                                 AbstractBuffersHolder buffersHolder) {
-        addMaterialData(r, g, b, a, textureHandle, maskTextureHandle, 0.0f, 0.0f, font, offset, buffersHolder);
+    public void addMaterialData(float r, float g, float b, float a, long textureHandle, long maskTextureHandle, MaterialType materialType,
+                                float fireAmount, float fireUVAnimation, int offset, AbstractBuffersHolder buffersHolder) {
+        addMaterialData(r, g, b, a, textureHandle, maskTextureHandle, materialType, fireAmount, fireUVAnimation, 1.0f, offset,
+                buffersHolder);
     }
 
-    public void addMaterialData(float r, float g, float b, float a, long textureHandle, long maskTextureHandle, float fireAmount,
-                                float fireUVAnimation, int font, int offset, AbstractBuffersHolder buffersHolder) {
-        addMaterialData(r, g, b, a, textureHandle, maskTextureHandle, fireAmount, fireUVAnimation, font, 1.0f, offset, buffersHolder);
-    }
-
-    public void addMaterialData(float r, float g, float b, float a, long textureHandle, long maskTextureHandle, float fireAmount,
-                                float fireUVAnimation, int font, float zoomFactor, int offset, AbstractBuffersHolder buffersHolder) {
+    public void addMaterialData(float r, float g, float b, float a, long textureHandle, long maskTextureHandle, MaterialType materialType,
+                                float fireAmount, float fireUVAnimation, float zoomFactor, int offset,
+                                AbstractBuffersHolder buffersHolder) {
         buffersHolder.putMaterialData(offset, r);
         buffersHolder.putMaterialData(offset + COLOR_G_OFFSET, g);
         buffersHolder.putMaterialData(offset + COLOR_B_OFFSET, b);
         buffersHolder.putMaterialData(offset + COLOR_A_OFFSET, a);
 
         buffersHolder.putMaterialData(offset + TEXTURE_HANDLE_OFFSET, textureHandle);
-        buffersHolder.putMaterialData(offset + USE_TEXTURE_OFFSET, textureHandle != 0 ? 1 : 0);
-
-        buffersHolder.putMaterialData(offset + USE_MASK_OFFSET, maskTextureHandle != 0 ? 1 : 0);
         buffersHolder.putMaterialData(offset + MASK_TEXTURE_HANDLE_OFFSET, maskTextureHandle);
+        buffersHolder.putMaterialData(offset + MATERIAL_TYPE_OFFSET, materialType.ordinal());
         buffersHolder.putMaterialData(offset + FIRE_AMOUNT_OFFSET, fireAmount);
         buffersHolder.putMaterialData(offset + FIRE_UV_ANIMATION_OFFSET, fireUVAnimation);
-        buffersHolder.putMaterialData(offset + FONT_OFFSET, font);
-
-        //padding
         buffersHolder.putMaterialData(offset + ZOOM_FACTOR_OFFSET, zoomFactor);
-        buffersHolder.putMaterialData(offset + PADDING_2_OFFSET, 0);
-        buffersHolder.putMaterialData(offset + PADDING_3_OFFSET, 0);
     }
 
     public void addLastUpdateMaterialData(float r, float g, float b, float a, int offset,

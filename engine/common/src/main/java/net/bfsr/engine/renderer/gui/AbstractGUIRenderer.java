@@ -2,6 +2,7 @@ package net.bfsr.engine.renderer.gui;
 
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.renderer.AbstractRenderer;
+import net.bfsr.engine.renderer.MaterialType;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.primitive.Primitive;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
@@ -28,7 +29,7 @@ public abstract class AbstractGUIRenderer {
     public abstract void add(int x, int y, int width, int height, float r, float g, float b, float a, AbstractTexture texture);
     public abstract int add(int x, int y, int width, int height, float r, float g, float b, float a, long textureHandle);
     public abstract int add(int x, int y, float sin, float cos, int width, int height, float r, float g, float b, float a,
-                            long textureHandle, int font);
+                            long textureHandle, MaterialType materialType);
 
     public abstract int addCentered(int x, int y, int width, int height, Vector4f color);
     public abstract int addCentered(int x, int y, int width, int height, float r, float g, float b, float a);

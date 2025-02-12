@@ -7,13 +7,11 @@ layout (location = 0) in vec4 in_PositionUV;
 layout (location = 0) out data {
     vec2 textureCoords;
     vec4 color;
+    flat int materialType;
     flat uvec2 textureHandle;
-    flat bool useTexture;
-    flat bool useMask;
     flat uvec2 maskTextureHandle;
     flat float fireAmount;
     flat float fireUVAnimation;
-    flat bool font;
 };
 
 layout (std140, binding = UBO_PROJECTION_MATRIX) uniform projectionMatrixBuffer {
@@ -74,11 +72,9 @@ void main() {
 
     textureCoords = in_PositionUV.zw;
     color = material.color;
+    materialType = material.materialType;
     textureHandle = material.textureHandle;
-    useTexture = material.useTexture;
-    useMask = material.useMask;
     maskTextureHandle = material.maskTextureHandle;
     fireAmount = material.fireAmount;
     fireUVAnimation = material.fireUVAnimation;
-    font = material.font;
 }
