@@ -8,6 +8,7 @@ import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import org.jbox2d.callbacks.ContactImpulse;
 import org.jbox2d.collision.Manifold;
+import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Rotation;
 import org.jbox2d.common.Transform;
 import org.jbox2d.common.Vector2;
@@ -21,8 +22,10 @@ import java.util.Objects;
 public class ContactListener implements org.jbox2d.callbacks.ContactListener {
     private final CollisionMatrix collisionMatrix;
 
-    private final Vector2 worldPoint = new Vector2();
+    private final Vector2 planePoint = new Vector2();
     private final Vector2 worldNormal = new Vector2();
+    private final Vector2 worldPoint = new Vector2();
+    private final Vector2 clipPoint = new Vector2();
 
     private final Object2ObjectMap<Pair, Contact> contactMap = new Object2ObjectOpenHashMap<>();
     private final ObjectPool<Pair> pairPool = new ObjectPool<>(Pair::new);
@@ -66,13 +69,44 @@ public class ContactListener implements org.jbox2d.callbacks.ContactListener {
 
         Manifold manifold = contact.manifold;
         Manifold.ManifoldType type = manifold.type;
+        Shape shapeA = fixtureA.getShape();
+        Shape shapeB = fixtureB.getShape();
 
         if (type == Manifold.ManifoldType.FACE_A) {
             Rotation.mulToOutUnsafe(body1.getTransform().rotation, manifold.localNormal, worldNormal);
-            Transform.mulToOut(body1.getTransform(), manifold.localPoint, worldPoint);
+            Transform.mulToOut(body1.getTransform(), manifold.localPoint, planePoint);
+
+            Transform.mulToOut(body2.getTransform(), manifold.points[0].localPoint, clipPoint);
+
+            final float scalar =
+                    shapeA.radius - ((clipPoint.x - planePoint.x) * worldNormal.x + (clipPoint.y - planePoint.y) * worldNormal.y);
+
+            final float cAx = worldNormal.x * scalar + clipPoint.x;
+            final float cAy = worldNormal.y * scalar + clipPoint.y;
+
+            final float cBx = -worldNormal.x * shapeB.radius + clipPoint.x;
+            final float cBy = -worldNormal.y * shapeB.radius + clipPoint.y;
+
+            worldPoint.set((cAx + cBx) * .5f, (cAy + cBy) * .5f);
         } else {
-            Transform.mulToOut(body2.getTransform(), manifold.localPoint, worldPoint);
             Rotation.mulToOutUnsafe(body2.getTransform().rotation, manifold.localNormal, worldNormal);
+            Transform.mulToOut(body2.getTransform(), manifold.localPoint, planePoint);
+
+            Transform.mulToOut(body1.getTransform(), manifold.points[0].localPoint, clipPoint);
+
+            final float scalar =
+                    shapeB.radius - ((clipPoint.x - planePoint.x) * worldNormal.x + (clipPoint.y - planePoint.y) * worldNormal.y);
+
+            final float cBx = worldNormal.x * scalar + clipPoint.x;
+            final float cBy = worldNormal.y * scalar + clipPoint.y;
+
+            final float cAx = -worldNormal.x * shapeA.radius + clipPoint.x;
+            final float cAy = -worldNormal.y * shapeA.radius + clipPoint.y;
+
+            worldPoint.set((cAx + cBx) * .5f, (cAy + cBy) * .5f);
+
+            worldNormal.x = -worldNormal.x;
+            worldNormal.y = -worldNormal.y;
         }
 
         collisionMatrix.collision(rigidBody1, rigidBody2, fixtureA, fixtureB, worldPoint.x, worldPoint.y, worldNormal.x, worldNormal.y);
