@@ -48,7 +48,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
     protected final EventBus weaponSlotEventBus = new EventBus();
 
     public WeaponSlot(GunData gunData, WeaponType weaponType) {
-        super(gunData.getHp(), gunData.getSizeX(), gunData.getSizeY());
+        super(gunData, gunData.getHp(), gunData.getSizeX(), gunData.getSizeY());
         this.timeToReload = gunData.getReloadTimeInTicks();
         this.energyCost = gunData.getEnergyCost();
         this.weaponType = weaponType;
@@ -230,12 +230,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
 
     @Override
     public int getRegistryId() {
-        return gunData.getRegistryId();
-    }
-
-    @Override
-    public int getDataId() {
-        return gunData.getId();
+        return data.getRegistryId();
     }
 
     @Override

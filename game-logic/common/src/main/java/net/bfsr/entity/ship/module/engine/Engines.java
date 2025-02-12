@@ -16,7 +16,6 @@ import java.util.List;
 
 @Getter
 public class Engines extends DamageableModule {
-    private final EnginesData enginesData;
     private final float forwardAcceleration, backwardAcceleration, sideAcceleration;
     private final float maxForwardVelocity;
     private final float maneuverability;
@@ -25,7 +24,7 @@ public class Engines extends DamageableModule {
     private final EnumMap<Direction, List<Engine>> enginesByDirection = new EnumMap<>(Direction.class);
 
     public Engines(EnginesData enginesData, Ship ship) {
-        this.enginesData = enginesData;
+        super(enginesData);
         this.forwardAcceleration = enginesData.getForwardAcceleration();
         this.backwardAcceleration = enginesData.getBackwardAcceleration();
         this.sideAcceleration = enginesData.getSideAcceleration();
@@ -38,7 +37,7 @@ public class Engines extends DamageableModule {
             List<Engine> engineList = new ArrayList<>(engines1.size());
             for (int i = 0; i < engines1.size(); i++) {
                 EngineData engineData = engines1.get(i);
-                Engine engine = new Engine(engineData);
+                Engine engine = new Engine(enginesData, engineData);
                 engineList.add(engine);
                 engines.add(engine);
             }

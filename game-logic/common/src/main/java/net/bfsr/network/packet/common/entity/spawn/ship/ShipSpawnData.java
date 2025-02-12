@@ -43,10 +43,10 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData {
         this.faction = (byte) ship.getFaction().ordinal();
         Modules modules = ship.getModules();
 
-        this.reactorDataId = modules.getReactor().getReactorData().getId();
+        this.reactorDataId = modules.getReactor().getData().getId();
 
         Engines engines = modules.getEngines();
-        this.enginesDataId = engines.getEnginesData().getId();
+        this.enginesDataId = engines.getData().getId();
 
         EnumMap<Direction, List<Engine>> enginesByDirection = engines.getEnginesByDirection();
         enginesByDirection.forEach((direction, engines1) -> {
@@ -64,7 +64,7 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData {
         if (hasShield) {
             this.shieldDead = shield.isDead();
             if (!shieldDead) {
-                this.shieldDataId = shield.getShieldData().getId();
+                this.shieldDataId = shield.getData().getId();
                 this.shieldRebuildingTime = shield.getRebuildingTime();
                 this.shieldHp = shield.getShieldHp();
             }

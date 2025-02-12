@@ -5,13 +5,26 @@ import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
+import net.bfsr.entity.ship.module.Module;
+import net.bfsr.event.module.ModuleAddEvent;
 import net.bfsr.event.module.ModuleDestroyEvent;
+import net.bfsr.network.packet.server.component.PacketAddModule;
 import net.bfsr.network.packet.server.component.PacketDestroyModule;
 import net.bfsr.server.entity.EntityTrackingManager;
 
 @RequiredArgsConstructor
 public class ModuleEventListener {
     private final EntityTrackingManager trackingManager;
+
+    @EventHandler
+    public EventListener<ModuleAddEvent> moduleAddEvent() {
+        return event -> {
+            Ship ship = event.getShip();
+            Module module = event.getModule();
+            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(),
+                    new PacketAddModule(ship.getId(), module, ship.getWorld().getTimestamp()));
+        };
+    }
 
     @EventHandler
     public EventListener<ModuleDestroyEvent> moduleDestroyEvent() {

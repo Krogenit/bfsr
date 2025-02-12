@@ -37,37 +37,26 @@ import net.bfsr.world.World;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+@Getter
 @Log4j2
 public abstract class ServerGameLogic extends GameLogic {
     private static ServerGameLogic instance;
 
-    @Getter
-    private int ups;
-
-    @Getter
-    private World world;
-
-    @Getter
     private final ConfigConverterManager configConverterManager = new ConfigConverterManager();
-    @Getter
     private final ServerSettings settings = createSettings();
-    @Getter
     private final DamageSystem damageSystem = new DamageSystem();
-    @Getter
     private final ShipFactory shipFactory = new ShipFactory(configConverterManager.getConverter(ShipRegistry.class),
             new ShipOutfitter(configConverterManager));
-    @Getter
     private final PlayerManager playerManager = new PlayerManager(shipFactory);
-    @Getter
     private final NetworkSystem networkSystem = new NetworkSystem(playerManager);
-    @Getter
     private final EntityTrackingManager entityTrackingManager = new EntityTrackingManager(eventBus, networkSystem);
-    @Getter
     private final AiFactory aiFactory = new AiFactory(entityTrackingManager);
-    @Getter
     private final ShipSpawner shipSpawner = new ShipSpawner(shipFactory, aiFactory);
     private final ShipOutfitter shipOutfitter = new ShipOutfitter(configConverterManager);
     private final WreckSpawner wreckSpawner = new WreckSpawner(configConverterManager.getConverter(WreckRegistry.class));
+
+    private int ups;
+    private World world;
 
     protected ServerGameLogic(Profiler profiler, EventBus eventBus) {
         super(Side.SERVER, profiler, eventBus);

@@ -78,8 +78,8 @@ public class Client extends ClientGameLogic {
     private final ConfigConverterManager configConverterManager = new ConfigConverterManager(particleEffectsRegistry);
     private final ParticleEffects particleEffects = new ParticleEffects(particleManager, particleEffectsRegistry);
 
-    private final ShipFactory shipFactory = new ShipFactory(configConverterManager.getConverter(ShipRegistry.class),
-            new ShipOutfitter(configConverterManager));
+    private final ShipOutfitter shipOutfitter = new ShipOutfitter(configConverterManager);
+    private final ShipFactory shipFactory = new ShipFactory(configConverterManager.getConverter(ShipRegistry.class), shipOutfitter);
 
     private final EntityRenderer entityRenderer = new EntityRenderer(this);
     private final GlobalRenderer globalRenderer = new GlobalRenderer(profiler, entityRenderer, particleManager,

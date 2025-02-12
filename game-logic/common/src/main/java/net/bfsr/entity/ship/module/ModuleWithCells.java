@@ -1,6 +1,7 @@
 package net.bfsr.entity.ship.module;
 
 import lombok.Getter;
+import net.bfsr.config.ConfigData;
 import net.bfsr.entity.ship.Ship;
 
 import java.lang.reflect.Array;
@@ -11,7 +12,8 @@ public abstract class ModuleWithCells<T> extends Module {
     protected final T[][] cells;
     protected final float width, height;
 
-    protected ModuleWithCells(Ship ship, Class<T> componentType, Supplier<T> supplier) {
+    protected ModuleWithCells(ConfigData data, Ship ship, Class<T> componentType, Supplier<T> supplier) {
+        super(data);
         this.width = ship.getSizeX();
         this.height = ship.getSizeY();
         int width = (int) Math.ceil(this.width / 2);

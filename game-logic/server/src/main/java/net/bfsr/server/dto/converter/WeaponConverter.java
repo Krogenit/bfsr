@@ -8,7 +8,7 @@ import org.mapstruct.Mappings;
 
 @Mapper(uses = WeaponFactory.class)
 public interface WeaponConverter {
-    @Mapping(target = "name", expression = "java(weaponSlot.getGunData().getFileName())")
+    @Mapping(target = "name", expression = "java(weaponSlot.getData().getFileName())")
     WeaponModel to(WeaponSlot weaponSlot);
 
     @Mappings({
@@ -16,7 +16,7 @@ public interface WeaponConverter {
             @Mapping(target = "ship", ignore = true), @Mapping(target = "localPosition", ignore = true),
             @Mapping(target = "configData", ignore = true), @Mapping(target = "fixture", ignore = true),
             @Mapping(target = "gunData", ignore = true), @Mapping(target = "moduleEventBus", ignore = true),
-            @Mapping(target = "weaponSlotEventBus", ignore = true)
+            @Mapping(target = "weaponSlotEventBus", ignore = true), @Mapping(target = "data", ignore = true)
     })
     WeaponSlot from(WeaponModel weaponModel);
 }

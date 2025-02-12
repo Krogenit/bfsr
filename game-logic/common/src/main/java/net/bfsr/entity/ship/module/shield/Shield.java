@@ -22,8 +22,6 @@ public class Shield extends DamageableModule {
     @Getter
     private boolean alive;
     @Getter
-    private final ShieldData shieldData;
-    @Getter
     @Setter
     private float shieldHp;
     @Getter
@@ -32,12 +30,11 @@ public class Shield extends DamageableModule {
     private final CommonShieldLogic logic;
 
     public Shield(ShieldData shieldData, Shape shieldShape, CommonShieldLogic logic) {
-        super(5.0f, 1.0f, 1.0f);
+        super(shieldData, 5.0f, 1.0f, 1.0f);
         this.shieldHp = shieldMaxHp = shieldData.getMaxShield();
         this.shieldRegen = shieldData.getRegenAmount();
         this.timeToRebuild = shieldData.getRebuildTimeInTicks();
         this.rebuildingTime = timeToRebuild;
-        this.shieldData = shieldData;
         this.shieldShape = shieldShape;
         this.logic = logic;
         this.alive = true;
@@ -51,7 +48,9 @@ public class Shield extends DamageableModule {
 
     @Override
     public void update() {
-        if (isDead) return;
+        if (isDead) {
+            return;
+        }
 
         logic.update(this);
     }
@@ -63,7 +62,9 @@ public class Shield extends DamageableModule {
     public void regenHp() {
         if (shieldHp < shieldMaxHp) {
             shieldHp += shieldRegen;
-            if (shieldHp > shieldMaxHp) shieldHp = shieldMaxHp;
+            if (shieldHp > shieldMaxHp) {
+                shieldHp = shieldMaxHp;
+            }
         }
     }
 
@@ -71,6 +72,15 @@ public class Shield extends DamageableModule {
         shieldHp = shieldMaxHp / 5.0f;
         rebuildingTime = timeToRebuild;
         alive = true;
+    }
+
+    public void damageShield(float amount) {
+        shieldHp -= amount;
+
+        if (shieldHp <= 0) {
+            removeShield();
+            shieldHp = 0;
+        }
     }
 
     @Override
@@ -82,6 +92,7 @@ public class Shield extends DamageableModule {
 
     public void resetRebuildingTime() {
         rebuildingTime = 0;
+        logic.onRebuildingTimeUpdate(this);
     }
 
     public void removeShield() {
@@ -89,6 +100,7 @@ public class Shield extends DamageableModule {
         setSize(0.0f, 0.0f);
         shieldHp = 0;
         alive = false;
+        logic.onShieldRemove(this);
     }
 
     @Override

@@ -19,12 +19,9 @@ public class Reactor extends DamageableModule {
     private final float maxEnergy;
     private final float regenEnergy;
     private final Shape shape;
-    @Getter
-    private final ReactorData reactorData;
 
     public Reactor(ReactorData reactorData, Shape shape) {
-        super(reactorData.getHp());
-        this.reactorData = reactorData;
+        super(reactorData, reactorData.getHp());
         this.energy = reactorData.getMaxEnergyCapacity();
         this.maxEnergy = reactorData.getMaxEnergyCapacity();
         this.regenEnergy = reactorData.getRegenAmount();

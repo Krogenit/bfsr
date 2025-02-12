@@ -28,10 +28,6 @@ public class PacketCommand extends PacketAdapter {
         return new PacketCommand(Command.SPAWN_SHIP, id, x, y);
     }
 
-    public static Packet destroyShip(int id) {
-        return new PacketCommand(Command.DESTROY_SHIP, id);
-    }
-
     @Override
     public void write(ByteBuf data) throws IOException {
         data.writeInt(command);

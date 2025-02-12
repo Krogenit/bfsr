@@ -2,14 +2,17 @@ package net.bfsr.editor.hud;
 
 import net.bfsr.client.Client;
 import net.bfsr.client.gui.hud.HUD;
+import net.bfsr.command.Command;
 import net.bfsr.editor.gui.EditorTheme;
 import net.bfsr.editor.gui.particle.GuiParticleEditor;
 import net.bfsr.editor.gui.ship.GuiShipEditor;
 import net.bfsr.engine.gui.component.Button;
+import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.renderer.font.string.StringOffsetType;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.network.packet.client.PacketCommand;
+
+import java.util.Locale;
 
 import static net.bfsr.editor.gui.EditorTheme.CONTEXT_MENU_BUTTON_HEIGHT;
 import static net.bfsr.editor.gui.EditorTheme.CONTEXT_MENU_STRING_OFFSET_X;
@@ -30,13 +33,26 @@ public class EditorHUD extends HUD {
         add(EditorTheme.setupButton(new Button(buttonWidth, buttonHeight, "Ship Editor", 22,
                 (mouseX, mouseY) -> Client.get().openGui(new GuiShipEditor()))).atLeft(0, y));
 
-        commandsRectangle.atTopRight(-otherShipOverlay.getWidth(), 0);
+        commandsRectangle.atTopRight(-otherShipOverlay.getWidth(), -20);
         commandsRectangle.setAllColors(0.2f, 0.2f, 0.2f, 0.75f);
-        String title = "Destroy ship";
-        Button destroyShipButton = new Button(commandsRectangle.getWidth(), CONTEXT_MENU_BUTTON_HEIGHT, title, FONT, FONT_SIZE,
-                CONTEXT_MENU_STRING_OFFSET_X / 2, 0, StringOffsetType.DEFAULT,
-                (mouseX1, mouseY1) -> Client.get().sendTCPPacket(PacketCommand.destroyShip(otherShipOverlay.getShip().getId())));
-        commandsRectangle.add(setupContextMenuButton(destroyShipButton).atTopLeft(0, 0));
+        addShipCommandButtons(commandsRectangle);
+    }
+
+    private void addShipCommandButtons(GuiObject guiObject) {
+        Command[] commands = Command.values();
+        int y = 0;
+        for (int i = 0; i < commands.length; i++) {
+            Command command = commands[i];
+            if (command.isShipCommand()) {
+                String title = command.name().toLowerCase(Locale.getDefault()).replace("_", " ");
+                Button destroyShipButton = new Button(guiObject.getWidth(), CONTEXT_MENU_BUTTON_HEIGHT, title, FONT, FONT_SIZE,
+                        CONTEXT_MENU_STRING_OFFSET_X / 2, 0, StringOffsetType.DEFAULT,
+                        (mouseX1, mouseY1) -> Client.get().sendTCPPacket(command.createShipPacketCommand(command,
+                                otherShipOverlay.getShip())));
+                guiObject.add(setupContextMenuButton(destroyShipButton).atTopLeft(0, y));
+                y -= CONTEXT_MENU_BUTTON_HEIGHT;
+            }
+        }
     }
 
     @Override

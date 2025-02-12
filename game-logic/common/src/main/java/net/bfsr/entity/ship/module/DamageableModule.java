@@ -1,15 +1,14 @@
 package net.bfsr.entity.ship.module;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.bfsr.config.ConfigData;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.module.ModuleDestroyEvent;
 import org.jbox2d.dynamics.Fixture;
 
-@NoArgsConstructor
 public abstract class DamageableModule extends Module {
     @Getter
     protected float maxHp;
@@ -24,12 +23,16 @@ public abstract class DamageableModule extends Module {
     @Getter
     private final EventBus moduleEventBus = new EventBus();
 
-    protected DamageableModule(float hp) {
-        this.maxHp = this.hp = hp;
+    protected DamageableModule(ConfigData data) {
+        this(data, 0.0f);
     }
 
-    protected DamageableModule(float hp, float sizeX, float sizeY) {
-        super(sizeX, sizeY);
+    protected DamageableModule(ConfigData data, float hp) {
+        this(data, hp, 0.0f, 0.0f);
+    }
+
+    protected DamageableModule(ConfigData data, float hp, float sizeX, float sizeY) {
+        super(data, sizeX, sizeY);
         this.maxHp = this.hp = hp;
     }
 

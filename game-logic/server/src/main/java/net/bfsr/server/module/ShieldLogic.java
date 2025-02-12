@@ -5,6 +5,8 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.module.CommonShieldLogic;
 import net.bfsr.network.packet.server.component.PacketShieldRebuild;
+import net.bfsr.network.packet.server.component.PacketShieldRebuildingTime;
+import net.bfsr.network.packet.server.component.PacketShieldRemove;
 import net.bfsr.server.entity.EntityTrackingManager;
 
 @RequiredArgsConstructor
@@ -26,5 +28,19 @@ public class ShieldLogic extends CommonShieldLogic {
                         ship.getWorld().getTimestamp()));
             }
         }
+    }
+
+    @Override
+    public void onShieldRemove(Shield shield) {
+        Ship ship = shield.getShip();
+        trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRemove(ship.getId(),
+                ship.getWorld().getTimestamp()));
+    }
+
+    @Override
+    public void onRebuildingTimeUpdate(Shield shield) {
+        Ship ship = shield.getShip();
+        trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRebuildingTime(
+                ship.getId(), 0, ship.getWorld().getTimestamp()));
     }
 }
