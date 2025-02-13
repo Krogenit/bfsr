@@ -1,10 +1,10 @@
 package net.bfsr.entity.ship;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import lombok.Getter;
 import net.bfsr.ai.Ai;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.config.entity.ship.ShipRegistry;
-import net.bfsr.damage.DamageMask;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.faction.Faction;
 import net.bfsr.world.World;
@@ -13,6 +13,7 @@ import net.bfsr.world.World;
 public class ShipFactory {
     private final ShipRegistry shipRegistry;
     private final ShipOutfitter shipOutfitter;
+    private final XoRoShiRo128PlusPlusRandom random = new XoRoShiRo128PlusPlusRandom();
 
     public ShipFactory(ShipRegistry shipRegistry, ShipOutfitter shipOutfitter) {
         this.shipRegistry = shipRegistry;
@@ -20,27 +21,35 @@ public class ShipFactory {
     }
 
     public Ship createPlayerShipHumanSmall(World world, float x, float y, float angle) {
-        return create(world, world.getNextId(), x, y, angle, Faction.HUMAN, shipRegistry.get("human_small"));
+        return create(world, world.getNextId(), x, y, angle, Faction.HUMAN, shipRegistry.get("human_small0"));
     }
 
     public Ship createPlayerShipSaimonSmall(World world, float x, float y, float angle) {
-        return create(world, world.getNextId(), x, y, angle, Faction.SAIMON, shipRegistry.get("saimon_small"));
+        return create(world, world.getNextId(), x, y, angle, Faction.SAIMON, shipRegistry.get("saimon_small0"));
     }
 
     public Ship createPlayerShipEngiSmall(World world, float x, float y, float angle) {
-        return create(world, world.getNextId(), x, y, angle, Faction.ENGI, shipRegistry.get("engi_small"));
+        return create(world, world.getNextId(), x, y, angle, Faction.ENGI, shipRegistry.get("engi_small0"));
     }
 
     public Ship createBotHumanSmall(World world, float x, float y, float angle, Ai ai) {
-        return createBot(world, x, y, angle, Faction.HUMAN, shipRegistry.get("human_small"), ai);
+        ShipData shipData;
+
+        if (random.nextBoolean()) {
+            shipData = shipRegistry.get("human_small0");
+        } else {
+            shipData = shipRegistry.get("human_small1");
+        }
+
+        return createBot(world, x, y, angle, Faction.HUMAN, shipData, ai);
     }
 
     public Ship createBotSaimonSmall(World world, float x, float y, float angle, Ai ai) {
-        return createBot(world, x, y, angle, Faction.SAIMON, shipRegistry.get("saimon_small"), ai);
+        return createBot(world, x, y, angle, Faction.SAIMON, shipRegistry.get("saimon_small0"), ai);
     }
 
     public Ship createBotEngiSmall(World world, float x, float y, float angle, Ai ai) {
-        return createBot(world, x, y, angle, Faction.ENGI, shipRegistry.get("engi_small"), ai);
+        return createBot(world, x, y, angle, Faction.ENGI, shipRegistry.get("engi_small0"), ai);
     }
 
     private Ship create(World world, int id, float x, float y, float angle, Faction faction, ShipData shipData) {
