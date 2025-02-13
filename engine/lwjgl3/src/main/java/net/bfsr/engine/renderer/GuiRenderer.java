@@ -137,7 +137,7 @@ public class GuiRenderer extends AbstractGUIRenderer {
     public int addCentered(int x, int y, float sin, float cos, int width, int height, float r, float g, float b, float a,
                            long textureHandle) {
         return spriteRenderer.add(x + width * 0.5f, y + height * 0.5f, sin, cos, width, height, r, g, b, a, textureHandle,
-                MaterialType.TEXTURED, buffersHolder);
+                textureHandle != 0 ? MaterialType.TEXTURED : MaterialType.NOT_TEXTURED, buffersHolder);
     }
 
     @Override
