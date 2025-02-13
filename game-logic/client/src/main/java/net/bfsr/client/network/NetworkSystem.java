@@ -11,6 +11,7 @@ import net.bfsr.client.gui.main.GuiMainMenu;
 import net.bfsr.client.network.manager.NetworkManagerTCP;
 import net.bfsr.client.network.manager.NetworkManagerUDP;
 import net.bfsr.engine.gui.Gui;
+import net.bfsr.engine.gui.NoGui;
 import net.bfsr.engine.util.Side;
 import net.bfsr.network.ConnectionState;
 import net.bfsr.network.NetworkHandler;
@@ -113,7 +114,7 @@ public class NetworkSystem extends NetworkHandler {
 
     public void onDisconnect(String reason) {
         Gui currentGui = client.getGuiManager().getGui();
-        Gui parentGui = currentGui != null ? currentGui : new GuiMainMenu();
+        Gui parentGui = currentGui == NoGui.get() ? new GuiMainMenu() : currentGui;
 
         if (connectionState == ConnectionState.CONNECTED) {
             client.addFutureTask(() -> {
