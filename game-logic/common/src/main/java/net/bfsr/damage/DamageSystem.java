@@ -42,8 +42,8 @@ public final class DamageSystem {
     private final Vector2f rotatedLocalCenter = new Vector2f();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
-    public void damage(DamageableRigidBody damageable, float contactX, float contactY, org.locationtech.jts.geom.Polygon clip, float radius,
-                       float x, float y, float sin, float cos, Runnable onDamageSuccessRunnable) {
+    public void damage(DamageableRigidBody damageable, float contactX, float contactY, org.locationtech.jts.geom.Polygon clip,
+                       float textureClipRadius, float x, float y, float sin, float cos, Runnable onDamageSuccessRunnable) {
         if (damageable.isDead()) {
             return;
         }
@@ -52,7 +52,7 @@ public final class DamageSystem {
         mask.reset();
         damageable.removeHullFixtures();
 
-        clipTexture(contactX, contactY, -sin, cos, damageable, radius, mask, damageable.getLocalOffsetX(),
+        clipTexture(contactX, contactY, -sin, cos, damageable, textureClipRadius, mask, damageable.getLocalOffsetX(),
                 damageable.getLocalOffsetY());
 
         org.locationtech.jts.geom.Polygon polygon = damageable.getPolygon();
@@ -346,7 +346,7 @@ public final class DamageSystem {
         float halfSizeY = sizeY / 2.0f;
         int width = mask.getWidth();
         int height = mask.getHeight();
-        int radius = (int) (clipRadius * (width / sizeX) / 2.0f);
+        int radius = (int) Math.ceil(clipRadius * (width / sizeX) / 2.0f);
 
         float localPosX = x - damageable.getX();
         float localPosY = y - damageable.getY();

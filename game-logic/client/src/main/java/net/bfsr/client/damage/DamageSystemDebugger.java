@@ -94,6 +94,7 @@ public class DamageSystemDebugger {
                 ByteBuffer byteBuffer = renderer.createByteBuffer(width * height);
                 byteBuffer.put(damageMask.getData()).flip();
                 texture.upload(x, y, width, height, byteBuffer);
+                renderer.memFree(byteBuffer);
             }
         } catch (Exception e) {
             e.printStackTrace();

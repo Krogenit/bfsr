@@ -219,10 +219,10 @@ public class CollisionHandler extends CommonCollisionHandler {
         float sin = rigidBody.getSin();
         float cos = rigidBody.getCos();
         float polygonRadius = 0.5f;
-        float radius = 1.0f;
+        float textureClipRadius = 1.0f;
 
         Polygon clip = damageSystem.createCirclePath(contactX - x, contactY - y, -sin, cos, 12, polygonRadius);
-        damageSystem.damage(rigidBody, contactX, contactY, clip, radius, x, y, sin, cos,
+        damageSystem.damage(rigidBody, contactX, contactY, clip, textureClipRadius, x, y, sin, cos,
                 () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
                         new PacketSyncDamage(rigidBody, rigidBody.getWorld().getTimestamp())));
     }

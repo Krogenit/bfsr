@@ -355,15 +355,23 @@ public class ShipRender extends DamageableRigidBodyRenderer {
             return;
         }
 
-        for (int i = 0; i < moduleRenders.size(); i++) {
-            moduleRenders.get(i).render();
-        }
+        renderModules();
 
         super.render();
         renderGunSlots();
 
         label.render(0, 0);
 
+        renderShield();
+    }
+
+    protected void renderModules() {
+        for (int i = 0; i < moduleRenders.size(); i++) {
+            moduleRenders.get(i).render();
+        }
+    }
+
+    protected void renderShield() {
         Shield shield = ship.getModules().getShield();
         if (shieldId != -1 && shield != null && shield.isAlive()) {
             spriteRenderer.addDrawCommand(shieldId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX,
