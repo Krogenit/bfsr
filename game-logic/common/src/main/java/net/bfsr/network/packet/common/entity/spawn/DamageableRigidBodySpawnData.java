@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.ConnectedObjectType;
-import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
@@ -24,7 +23,6 @@ public abstract class DamageableRigidBodySpawnData extends RigidBodySpawnData {
     protected Polygon polygon;
     protected List<Fixture> fixtures;
 
-    protected int maskWidth, maskHeight;
     private byte[] damageMaskBytes;
     private ByteBuffer damageMaskByteBuffer;
 
@@ -34,10 +32,7 @@ public abstract class DamageableRigidBodySpawnData extends RigidBodySpawnData {
     protected DamageableRigidBodySpawnData(DamageableRigidBody damageableRigidBody) {
         super(damageableRigidBody);
         this.polygon = (Polygon) damageableRigidBody.getPolygon().copy();
-        DamageMask damageMask = damageableRigidBody.getMask();
-        this.maskWidth = damageMask.getWidth();
-        this.maskHeight = damageMask.getHeight();
-        this.damageMaskBytes = damageMask.copy();
+        this.damageMaskBytes = damageableRigidBody.getDamageMask().copy();
 
         List<ConnectedObject<?>> connectedObjects = damageableRigidBody.getConnectedObjects();
         this.connectedObjects = new ArrayList<>(connectedObjects.size());
@@ -50,8 +45,7 @@ public abstract class DamageableRigidBodySpawnData extends RigidBodySpawnData {
     public void writeData(ByteBuf data) {
         super.writeData(data);
         ByteBufUtils.writePolygon(data, polygon);
-        data.writeShort(maskWidth);
-        data.writeShort(maskHeight);
+        data.writeInt(damageMaskBytes.length);
         data.writeBytes(damageMaskBytes);
 
         data.writeShort(connectedObjects.size());
@@ -69,9 +63,8 @@ public abstract class DamageableRigidBodySpawnData extends RigidBodySpawnData {
         super.readData(data);
 
         polygon = ByteBufUtils.readPolygon(data);
-        maskWidth = data.readShort();
-        maskHeight = data.readShort();
-        damageMaskByteBuffer = Engine.getRenderer().createByteBuffer(maskWidth * maskHeight);
+        int maskDataLength = data.readInt();
+        damageMaskByteBuffer = Engine.getRenderer().createByteBuffer(maskDataLength);
         data.readBytes(damageMaskByteBuffer);
         damageMaskByteBuffer.position(0);
 

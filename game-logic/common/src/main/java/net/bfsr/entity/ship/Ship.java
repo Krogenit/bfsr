@@ -97,8 +97,9 @@ public class Ship extends DamageableRigidBody {
     @Getter
     private final ShipData shipData;
 
-    public Ship(ShipData shipData, DamageMask mask) {
-        super(shipData.getSizeX(), shipData.getSizeY(), shipData, mask, shipData.getPolygonJTS());
+    public Ship(ShipData shipData) {
+        super(shipData.getSizeX(), shipData.getSizeY(), shipData, new DamageMask(shipData.getDamageMaskSize().x,
+                shipData.getDamageMaskSize().y), shipData.getPolygonJTS());
         this.shipData = shipData;
         this.timeToDestroy = shipData.getDestroyTimeInTicks();
         this.maxSparksTimer = timeToDestroy / 3;

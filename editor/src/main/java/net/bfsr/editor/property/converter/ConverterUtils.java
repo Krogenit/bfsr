@@ -1,6 +1,7 @@
 package net.bfsr.editor.property.converter;
 
 import net.bfsr.config.Vector2fConfigurable;
+import net.bfsr.config.Vector2iConfigurable;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -19,6 +20,7 @@ public final class ConverterUtils {
         CONVERTER_MAP.put(Vector4f.class, new Vector4fConverter());
         CONVERTER_MAP.put(Enum.class, new EnumConverter());
         CONVERTER_MAP.put(Vector2fConfigurable.class, new Vector2fConfigurableConverter());
+        CONVERTER_MAP.put(Vector2iConfigurable.class, new Vector2iConfigurableConverter());
     }
 
     public static PropertyConverter<?> getConverter(Class<?> clazz) {

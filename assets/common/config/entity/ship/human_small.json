@@ -269,6 +269,10 @@
     }
   ],
   "minDistanceBetweenVerticesSq": 0.3,
+  "damageMaskSize": {
+    "x": 32,
+    "y": 32
+  },
   "weaponSlotPositions": [
     {
       "x": 1.0,

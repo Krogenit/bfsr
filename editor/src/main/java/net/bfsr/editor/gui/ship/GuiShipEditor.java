@@ -251,6 +251,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
 
         try {
             testShip = new TestShip(new ShipData(converter.from(properties), "ship", 0, 0));
+            testShip.getDamageMask().init();
             testShip.init(client.getWorld(), -1);
             testShip.getBody().setActive(false);
             testShip.setFaction(Faction.HUMAN);
@@ -347,7 +348,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
             damageSystem.damage(testShip, mouseWorldPosition.x, mouseWorldPosition.y,
                     createClipPolygon(mouseWorldPosition.x, mouseWorldPosition.y), textureClipRadius,
                     0, 0, 0, 1, RunnableUtils.EMPTY_RUNNABLE);
-            DamageMask damageMask = testShip.getMask();
+            DamageMask damageMask = testShip.getDamageMask();
 
             int width = damageMask.getWidth();
             int height = damageMask.getHeight();

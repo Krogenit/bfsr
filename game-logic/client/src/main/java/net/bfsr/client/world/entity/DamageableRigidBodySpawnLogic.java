@@ -12,7 +12,7 @@ import java.util.List;
 
 abstract class DamageableRigidBodySpawnLogic<T extends DamageableRigidBodySpawnData> implements EntitySpawnLogic<T> {
     void updateDamage(DamageHandler damageHandler, DamageableRigidBody rigidBody, T spawnData) {
-        damageHandler.updateDamage(rigidBody, 0, 0, rigidBody.getMask().getWidth(), rigidBody.getMask().getHeight(),
+        damageHandler.updateDamage(rigidBody, 0, 0, rigidBody.getDamageMask().getWidth(), rigidBody.getDamageMask().getHeight(),
                 spawnData.getDamageMaskByteBuffer());
         Engine.getRenderer().memFree(spawnData.getDamageMaskByteBuffer());
     }

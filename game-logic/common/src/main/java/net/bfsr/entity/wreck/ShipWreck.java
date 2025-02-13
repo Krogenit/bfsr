@@ -9,9 +9,15 @@ import net.bfsr.physics.CollisionMatrixType;
 import org.locationtech.jts.geom.Polygon;
 
 public class ShipWreck extends DamageableRigidBody {
-    public ShipWreck(float x, float y, float sin, float cos, float sizeX, float sizeY, ShipData shipData,
-                     DamageMask mask, Polygon polygon, float localOffsetX, float localOffsetY) {
-        super(x, y, sin, cos, sizeX, sizeY, shipData, mask, polygon, localOffsetX, localOffsetY);
+    public ShipWreck(float x, float y, float sin, float cos, float sizeX, float sizeY, ShipData shipData, DamageMask damageMask,
+                     Polygon polygon, float localOffsetX, float localOffsetY) {
+        super(x, y, sin, cos, sizeX, sizeY, shipData, damageMask, polygon, localOffsetX, localOffsetY);
+    }
+
+    public ShipWreck(float x, float y, float sin, float cos, float sizeX, float sizeY, ShipData shipData, Polygon polygon,
+                     float localOffsetX, float localOffsetY) {
+        this(x, y, sin, cos, sizeX, sizeY, shipData, new DamageMask(shipData.getDamageMaskSize().x, shipData.getDamageMaskSize().y),
+                polygon, localOffsetX, localOffsetY);
     }
 
     @Override

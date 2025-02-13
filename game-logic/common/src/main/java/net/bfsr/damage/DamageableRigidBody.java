@@ -15,20 +15,20 @@ import java.util.List;
 @Getter
 @RequiredArgsConstructor
 public class DamageableRigidBody extends RigidBody {
-    private final DamageMask mask;
+    private final DamageMask damageMask;
     @Setter
     private Polygon polygon;
     private final List<ConnectedObject<?>> connectedObjects = new ArrayList<>();
     private final float localOffsetX, localOffsetY;
 
-    protected DamageableRigidBody(float sizeX, float sizeY, GameObjectConfigData configData, DamageMask mask, Polygon polygon) {
-        this(0, 0, 0, 1, sizeX, sizeY, configData, mask, polygon, 0.0f, 0.0f);
+    protected DamageableRigidBody(float sizeX, float sizeY, GameObjectConfigData configData, DamageMask damageMask, Polygon polygon) {
+        this(0, 0, 0, 1, sizeX, sizeY, configData, damageMask, polygon, 0.0f, 0.0f);
     }
 
     protected DamageableRigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, GameObjectConfigData configData,
-                                  DamageMask mask, Polygon polygon, float localOffsetX, float localOffsetY) {
+                                  DamageMask damageMask, Polygon polygon, float localOffsetX, float localOffsetY) {
         super(x, y, sin, cos, sizeX, sizeY, configData);
-        this.mask = mask;
+        this.damageMask = damageMask;
         this.polygon = polygon;
         this.localOffsetX = localOffsetX;
         this.localOffsetY = localOffsetY;

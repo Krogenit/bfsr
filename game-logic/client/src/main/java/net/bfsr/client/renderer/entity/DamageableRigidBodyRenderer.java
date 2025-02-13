@@ -29,7 +29,7 @@ public class DamageableRigidBodyRenderer extends RigidBodyRender {
         super(texture, object, r, g, b, a);
         this.damageableRigidBody = object;
 
-        DamageMask mask = object.getMask();
+        DamageMask mask = object.getDamageMask();
         maskTexture = new DamageMaskTexture(mask.getWidth(), mask.getHeight());
         maskTexture.createEmpty();
     }

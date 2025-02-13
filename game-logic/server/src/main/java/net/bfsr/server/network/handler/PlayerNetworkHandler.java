@@ -178,6 +178,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
         List<Ship> ships = player.getShips();
         for (int i = 0; i < ships.size(); i++) {
             Ship ship = ships.get(i);
+            ship.getDamageMask().init();
             ship.init(world, world.getNextId());
             ship.setName(player.getUsername());
             ship.setOwner(player.getUsername());

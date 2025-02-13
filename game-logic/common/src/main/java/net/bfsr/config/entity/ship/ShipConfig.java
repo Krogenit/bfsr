@@ -6,6 +6,7 @@ import net.bfsr.config.ColorConfigurable;
 import net.bfsr.config.Configurable;
 import net.bfsr.config.GameObjectConfig;
 import net.bfsr.config.Vector2fConfigurable;
+import net.bfsr.config.Vector2iConfigurable;
 import net.bfsr.config.component.ModulesPolygonsConfig;
 
 @Getter
@@ -16,4 +17,5 @@ public final class ShipConfig extends GameObjectConfig {
     private ColorConfigurable effectsColor;
     private Vector2fConfigurable[] weaponSlotPositions;
     private ModulesPolygonsConfig modules;
+    private Vector2iConfigurable damageMaskSize;
 }

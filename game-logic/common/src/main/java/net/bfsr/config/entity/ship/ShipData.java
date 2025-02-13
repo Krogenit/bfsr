@@ -9,6 +9,7 @@ import net.bfsr.engine.Engine;
 import net.bfsr.math.Direction;
 import org.jbox2d.collision.shapes.Polygon;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.joml.Vector4f;
 
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ public class ShipData extends GameObjectConfigData {
     private final Polygon reactorPolygon;
     private final Polygon shieldPolygon;
     private final TMap<Direction, EnginesData> engines;
+    private final Vector2i damageMaskSize;
 
     public ShipData(ShipConfig shipConfig, String fileName, int id, int registryId) {
         super(shipConfig, fileName, id, registryId);
@@ -39,6 +41,7 @@ public class ShipData extends GameObjectConfigData {
         this.reactorPolygon = convertToPolygon(modules.getReactor().getVertices());
         this.shieldPolygon = convertToPolygon(modules.getShield().getVertices());
         this.engines = convert(modules.getEngines(), direction -> direction, this::convert);
+        this.damageMaskSize = convert(shipConfig.getDamageMaskSize());
     }
 
     private EnginesData convert(EnginesConfig enginesConfig) {

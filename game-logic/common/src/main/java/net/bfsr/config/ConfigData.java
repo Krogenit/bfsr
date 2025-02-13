@@ -9,6 +9,7 @@ import net.bfsr.engine.util.PathHelper;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.common.Vector2;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.joml.Vector4f;
 import org.locationtech.jts.geom.Coordinate;
 
@@ -89,5 +90,9 @@ public class ConfigData {
         }
         coordinates[vertices.length] = coordinates[0];
         return DamageSystem.GEOMETRY_FACTORY.createPolygon(DamageSystem.GEOMETRY_FACTORY.createLinearRing(coordinates));
+    }
+
+    protected Vector2i convert(Vector2iConfigurable damageMaskSize) {
+        return new Vector2i(damageMaskSize.x(), damageMaskSize.y());
     }
 }

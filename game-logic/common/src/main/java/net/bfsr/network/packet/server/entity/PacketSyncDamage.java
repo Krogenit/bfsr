@@ -33,7 +33,7 @@ public class PacketSyncDamage extends PacketScheduled {
     public PacketSyncDamage(DamageableRigidBody damageable, double timestamp) {
         super(timestamp);
         this.damageable = damageable;
-        DamageMask damageMask = damageable.getMask();
+        DamageMask damageMask = damageable.getDamageMask();
         x = damageMask.getX();
         y = damageMask.getY();
         maxX = damageMask.getMaxX();
@@ -52,7 +52,7 @@ public class PacketSyncDamage extends PacketScheduled {
         data.writeShort(maxX);
         data.writeShort(maxY);
 
-        int maskHeight = damageable.getMask().getHeight();
+        int maskHeight = damageable.getDamageMask().getHeight();
         int width = maxX - x + 1;
         for (int i = y; i <= maxY; i++) {
             data.writeBytes(bytes, i * maskHeight + x, width);

@@ -3,7 +3,7 @@ package net.bfsr.client.world.entity;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.client.damage.DamageHandler;
 import net.bfsr.config.ConfigConverterManager;
-import net.bfsr.damage.DamageMask;
+import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
@@ -26,9 +26,9 @@ public class ShipSpawnLogic extends DamageableRigidBodySpawnLogic<ShipSpawnData>
 
     @Override
     public void spawn(ShipSpawnData spawnData, World world, ConfigConverterManager configConverterManager, AbstractRenderer renderer) {
+        ShipData shipData = shipFactory.getShipRegistry().get(spawnData.getDataId());
         Ship ship = shipFactory.create(spawnData.getPosX(), spawnData.getPosY(), spawnData.getSin(), spawnData.getCos(),
-                Faction.get(spawnData.getFaction()), shipFactory.getShipRegistry().get(spawnData.getDataId()),
-                new DamageMask(32, 32, null));
+                Faction.get(spawnData.getFaction()), shipData);
         ship.setName(spawnData.getName());
         ship.setPolygon(spawnData.getPolygon());
 

@@ -1,7 +1,6 @@
 package net.bfsr.server.dto.factory;
 
 import net.bfsr.config.entity.ship.ShipRegistry;
-import net.bfsr.damage.DamageMask;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.dto.ShipModel;
@@ -13,6 +12,6 @@ public class ShipFactory {
 
     @ObjectFactory
     public <T extends Ship> T createEntity(ShipModel shipModel, @TargetType Class<T> entityClass) {
-        return (T) new Ship(shipRegistry.get(shipModel.name()), new DamageMask(32, 32));
+        return (T) new Ship(shipRegistry.get(shipModel.name()));
     }
 }

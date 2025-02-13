@@ -5,7 +5,6 @@ import net.bfsr.client.damage.DamageHandler;
 import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.config.entity.ship.ShipRegistry;
-import net.bfsr.damage.DamageMask;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.network.packet.common.entity.spawn.ShipWreckSpawnData;
@@ -21,8 +20,7 @@ public class ShipWreckSpawnLogic extends DamageableRigidBodySpawnLogic<ShipWreck
     public void spawn(ShipWreckSpawnData spawnData, World world, ConfigConverterManager configConverterManager, AbstractRenderer renderer) {
         ShipData shipData = shipRegistry.get(spawnData.getDataId());
         ShipWreck wreck = new ShipWreck(spawnData.getPosX(), spawnData.getPosY(), spawnData.getSin(), spawnData.getCos(),
-                shipData.getSizeX(), shipData.getSizeY(), shipData,
-                new DamageMask(spawnData.getMaskWidth(), spawnData.getMaskHeight(), null), spawnData.getPolygon(),
+                shipData.getSizeX(), shipData.getSizeY(), shipData, spawnData.getPolygon(),
                 spawnData.getLocalOffsetX(), spawnData.getLocalOffsetY());
 
         wreck.init(world, spawnData.getEntityId());

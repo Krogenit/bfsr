@@ -44,13 +44,14 @@ public class ShipFactory {
     }
 
     private Ship create(World world, int id, float x, float y, float angle, Faction faction, ShipData shipData) {
-        Ship ship = create(x, y, LUT.sin(angle), LUT.cos(angle), faction, shipData, new DamageMask(32, 32));
+        Ship ship = create(x, y, LUT.sin(angle), LUT.cos(angle), faction, shipData);
+        ship.getDamageMask().init();
         ship.init(world, id);
         return ship;
     }
 
-    public Ship create(float x, float y, float sin, float cos, Faction faction, ShipData shipData, DamageMask damageMask) {
-        Ship ship = create(faction, shipData, damageMask);
+    public Ship create(float x, float y, float sin, float cos, Faction faction, ShipData shipData) {
+        Ship ship = create(faction, shipData);
         ship.setPosition(x, y);
         ship.setRotation(sin, cos);
         return ship;
@@ -66,8 +67,8 @@ public class ShipFactory {
         return ship;
     }
 
-    private Ship create(Faction faction, ShipData shipData, DamageMask damageMask) {
-        Ship ship = new Ship(shipData, damageMask);
+    private Ship create(Faction faction, ShipData shipData) {
+        Ship ship = new Ship(shipData);
         ship.setFaction(faction);
         return ship;
     }

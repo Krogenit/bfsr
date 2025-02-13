@@ -10,6 +10,7 @@ import net.bfsr.editor.object.ObjectProperties;
 import net.bfsr.editor.property.Property;
 import net.bfsr.editor.property.holder.ColorPropertiesHolder;
 import net.bfsr.editor.property.holder.Vector2fPropertiesHolder;
+import net.bfsr.editor.property.holder.Vector2iPropertiesHolder;
 import net.bfsr.server.dto.Default;
 
 import java.util.ArrayList;
@@ -35,6 +36,8 @@ public class ShipProperties extends ObjectProperties {
     private List<Vector2fPropertiesHolder> vertices;
     @Property(elementType = PropertyGuiElementType.INPUT_BOX, name = "verticesMinDistSq")
     private float minDistanceBetweenVerticesSq;
+    @Property(elementType = PropertyGuiElementType.INPUT_BOX)
+    private Vector2iPropertiesHolder damageMaskSize;
     @Property(elementType = PropertyGuiElementType.OBJECT)
     private ModulesPolygonsPropertiesHolder modules;
 
@@ -57,6 +60,7 @@ public class ShipProperties extends ObjectProperties {
         vertices.add(new Vector2fPropertiesHolder(0.6f, 3.1f));
         vertices.add(new Vector2fPropertiesHolder(-1.0f, 3.1f));
         minDistanceBetweenVerticesSq = GameObjectConfigData.MIN_DISTANCE_BETWEEN_VERTICES_SQ;
+        damageMaskSize = new Vector2iPropertiesHolder(32, 32);
         modules = new ModulesPolygonsPropertiesHolder();
         modules.setDefaultValues();
     }

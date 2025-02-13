@@ -47,7 +47,7 @@ public final class DamageSystem {
             return;
         }
 
-        DamageMask mask = damageable.getMask();
+        DamageMask mask = damageable.getDamageMask();
         mask.reset();
         damageable.removeHullFixtures();
 
@@ -181,7 +181,7 @@ public final class DamageSystem {
         float sizeX = damageable.getSizeX();
         float sizeY = damageable.getSizeY();
         World world = damageable.getWorld();
-        DamageMask mask = damageable.getMask();
+        DamageMask mask = damageable.getDamageMask();
 
         for (int i = 0; i < removedPaths.size(); i++) {
             org.locationtech.jts.geom.Polygon removedPath = removedPaths.get(i);
@@ -417,7 +417,7 @@ public final class DamageSystem {
 
     private DamageMask createInvertedDamageMask(org.locationtech.jts.geom.Polygon polygon, DamageMask damageMask, float sizeX,
                                                 float sizeY) {
-        DamageMask damagedTexture = new DamageMask(damageMask.getWidth(), damageMask.getHeight(), damageMask.copy());
+        DamageMask damagedTexture = new DamageMask(damageMask);
         List<Coordinate> path = clipTextureOutside(polygon, damagedTexture, sizeX, sizeY, 0, 0);
         for (int i = 0; i < path.size(); i++) {
             Coordinate point = path.get(i);

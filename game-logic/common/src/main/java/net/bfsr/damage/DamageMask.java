@@ -13,15 +13,18 @@ public class DamageMask {
     private int width, height;
     private byte[] data;
 
-    public DamageMask(int width, int height, byte[] data) {
-        this.width = width;
-        this.height = height;
-        this.data = data;
+    DamageMask(DamageMask damageMask) {
+        this.width = damageMask.width;
+        this.height = damageMask.height;
+        this.data = damageMask.copy();
     }
 
     public DamageMask(int width, int height) {
         this.width = width;
         this.height = height;
+    }
+
+    public void init() {
         Arrays.fill(this.data = new byte[width * height], (byte) 255);
     }
 
