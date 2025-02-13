@@ -65,7 +65,9 @@ public abstract class ServerGameLogic extends GameLogic {
 
     public void init() {
         playerManager.init(createPlayerRepository(settings));
-        world = new World(profiler, new XoRoShiRo128PlusPlusRandom().nextLong(), eventBus, new EntityManager(),
+        long seed = new XoRoShiRo128PlusPlusRandom().nextLong();
+        log.info("Creating world with seed {}", seed);
+        world = new World(profiler, seed, eventBus, new EntityManager(),
                 new EntityIdManager(), this, new CollisionHandler(eventBus, damageSystem, entityTrackingManager, wreckSpawner));
         world.init();
         profiler.setEnable(true);
