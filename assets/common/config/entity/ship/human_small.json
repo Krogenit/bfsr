@@ -268,6 +268,7 @@
       "y": -1.55
     }
   ],
+  "minDistanceBetweenVerticesSq": 0.3,
   "weaponSlotPositions": [
     {
       "x": 1.0,

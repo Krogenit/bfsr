@@ -10,4 +10,5 @@ public class GameObjectConfig extends Config {
     private String texture;
     private Vector2fConfigurable size;
     private Vector2fConfigurable[] vertices;
+    private float minDistanceBetweenVerticesSq;
 }

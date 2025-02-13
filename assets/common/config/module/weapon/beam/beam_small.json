@@ -53,6 +53,7 @@
       "y": 0.5
     }
   ],
+  "minDistanceBetweenVerticesSq": 0.3,
   "bulletSpeed": 0.0,
   "bulletLifeTimeInSeconds": 0.0,
   "bulletSize": {

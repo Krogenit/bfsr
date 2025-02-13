@@ -1,6 +1,7 @@
 package net.bfsr.client.damage;
 
 import net.bfsr.client.renderer.texture.DamageMaskTexture;
+import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.Engine;
@@ -72,7 +73,8 @@ public class DamageSystemDebugger {
         try {
             Geometry geometry = polygon.difference(clipPolygon);
             if (geometry instanceof Polygon polygon1) {
-                org.locationtech.jts.geom.Geometry geometry1 = DamageSystem.optimizeAndReverse(polygon1);
+                org.locationtech.jts.geom.Geometry geometry1 = DamageSystem.optimizeAndReverse(polygon1,
+                        GameObjectConfigData.MIN_DISTANCE_BETWEEN_VERTICES_SQ);
                 if (geometry1 instanceof Polygon polygon2) {
                     clipTextureOutside(polygon2, damageMask, size);
 

@@ -33,7 +33,6 @@ public final class DamageSystem {
     private static final float BUFFER_Y_OFFSET = -0.16f;
     public static final double BUFFER_DISTANCE = 0.3f;
     private static final double MIN_POLYGON_AREA = 0.3;
-    private static final float MIN_DISTANCE_BETWEEN_VERTICES_SQ = 0.5f;
     public static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
     private static final SweepLine SWEEP_LINE = new SweepLine();
     public static final BufferParameters BUFFER_PARAMETERS = new BufferParameters(1, BufferParameters.CAP_SQUARE,
@@ -64,7 +63,8 @@ public final class DamageSystem {
         } else if (difference instanceof org.locationtech.jts.geom.Polygon polygon1) {
             double area = Area.ofRing(polygon1.getExteriorRing().getCoordinateSequence());
             if (area > MIN_POLYGON_AREA) {
-                org.locationtech.jts.geom.Geometry geometry = optimizeAndReverse(polygon1);
+                org.locationtech.jts.geom.Geometry geometry = optimizeAndReverse(polygon1,
+                        damageable.getConfigData().getMinDistanceBetweenVerticesSq());
                 if (geometry instanceof org.locationtech.jts.geom.Polygon polygon2) {
                     clipTextureOutside(polygon2, mask, damageable.getSizeX(), damageable.getSizeY(), damageable.getLocalOffsetX(),
                             damageable.getLocalOffsetY());
@@ -107,7 +107,8 @@ public final class DamageSystem {
             double area = Area.ofRing(polygon1.getExteriorRing().getCoordinateSequence());
             if (area > MIN_POLYGON_AREA) {
                 if (optimize) {
-                    org.locationtech.jts.geom.Geometry geometry = optimizeAndReverse(polygon1);
+                    org.locationtech.jts.geom.Geometry geometry = optimizeAndReverse(polygon1,
+                            damageable.getConfigData().getMinDistanceBetweenVerticesSq());
 
                     if (geometry instanceof org.locationtech.jts.geom.Polygon polygon2) {
                         Coordinate center = polygon2.getCentroid().getCoordinate();
@@ -209,13 +210,14 @@ public final class DamageSystem {
         }
     }
 
-    public static org.locationtech.jts.geom.Geometry optimizeAndReverse(org.locationtech.jts.geom.Polygon polygon) {
+    public static org.locationtech.jts.geom.Geometry optimizeAndReverse(org.locationtech.jts.geom.Polygon polygon,
+                                                                        float minDistanceBetweenVerticesSq) {
         int numInteriorRing = polygon.getNumInteriorRing();
         if (numInteriorRing > 0) {
             polygon = GEOMETRY_FACTORY.createPolygon(polygon.getExteriorRing());
         }
 
-        return VWSimplifier.simplify(polygon, MIN_DISTANCE_BETWEEN_VERTICES_SQ).reverse();
+        return VWSimplifier.simplify(polygon, minDistanceBetweenVerticesSq).reverse();
     }
 
     public static void fillTextureOutsidePolygon(List<Coordinate> coordinates, int count, DamageMask damageMask, byte value) {

@@ -93,6 +93,8 @@ public class Client extends ClientGameLogic {
 
     private final NetworkSystem networkSystem = new NetworkSystem(this);
 
+    protected HUD hud;
+
     private World world = BlankWorld.get();
     private String playerName;
 
@@ -309,7 +311,7 @@ public class Client extends ClientGameLogic {
     }
 
     public HUD createHUD() {
-        return new HUD();
+        return hud = new HUD();
     }
 
     @Override

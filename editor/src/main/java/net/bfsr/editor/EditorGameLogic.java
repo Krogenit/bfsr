@@ -23,6 +23,6 @@ public class EditorGameLogic extends Client {
 
     @Override
     public HUD createHUD() {
-        return new EditorHUD();
+        return hud = new EditorHUD();
     }
 }

@@ -3,6 +3,7 @@ package net.bfsr.editor.object.ship;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.editor.gui.property.PropertyGuiElementType;
 import net.bfsr.editor.gui.ship.ModulesPolygonsPropertiesHolder;
 import net.bfsr.editor.object.ObjectProperties;
@@ -15,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@AllArgsConstructor(onConstructor_ = {@Default})
+@AllArgsConstructor(onConstructor_ = @Default)
 @NoArgsConstructor
 public class ShipProperties extends ObjectProperties {
     @Property(elementType = PropertyGuiElementType.INPUT_BOX)
@@ -32,6 +33,8 @@ public class ShipProperties extends ObjectProperties {
     @Property(elementType = PropertyGuiElementType.POLYGON, arrayElementType = PropertyGuiElementType.INPUT_BOX,
             arrayElementName = "vertex")
     private List<Vector2fPropertiesHolder> vertices;
+    @Property(elementType = PropertyGuiElementType.INPUT_BOX, name = "verticesMinDistSq")
+    private float minDistanceBetweenVerticesSq;
     @Property(elementType = PropertyGuiElementType.OBJECT)
     private ModulesPolygonsPropertiesHolder modules;
 
@@ -53,6 +56,7 @@ public class ShipProperties extends ObjectProperties {
         vertices.add(new Vector2fPropertiesHolder(2.7f, 0.1f));
         vertices.add(new Vector2fPropertiesHolder(0.6f, 3.1f));
         vertices.add(new Vector2fPropertiesHolder(-1.0f, 3.1f));
+        minDistanceBetweenVerticesSq = GameObjectConfigData.MIN_DISTANCE_BETWEEN_VERTICES_SQ;
         modules = new ModulesPolygonsPropertiesHolder();
         modules.setDefaultValues();
     }

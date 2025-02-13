@@ -218,7 +218,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
                 showModules = checkBoxModules.isChecked();
             });
             PropertyCheckBox propertyDebugDamageSystem = new PropertyCheckBox(minimizableHolder.getWidth(), elementHeight,
-                    "Enable debug damage system with mouse", 0, FONT_SIZE, 0, null, null, new Object[]{debugDamageSystem},
+                    "Debug damage system", 0, FONT_SIZE, 0, null, null, new Object[]{debugDamageSystem},
                     (object, integer) -> {}, RunnableUtils.EMPTY_RUNNABLE);
             minimizableHolder.add(propertyDebugDamageSystem);
             CheckBox debugDamageSystemCheckBox = propertyDebugDamageSystem.getCheckBox();
@@ -343,6 +343,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
         if (guiObject == this && debugDamageSystem) {
             Vector2f mouseWorldPosition = mouse.getWorldPosition(client.getCamera());
             float textureClipRadius = clipPolygonRadius * 2.0f;
+            int vertices = testShip.getPolygon().getNumPoints();
             damageSystem.damage(testShip, mouseWorldPosition.x, mouseWorldPosition.y,
                     createClipPolygon(mouseWorldPosition.x, mouseWorldPosition.y), textureClipRadius,
                     0, 0, 0, 1, RunnableUtils.EMPTY_RUNNABLE);
@@ -354,6 +355,9 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
             byteBuffer.put(damageMask.getData()).flip();
             shipRender.updateDamageMask(0, 0, width, height, byteBuffer);
             renderer.memFree(byteBuffer);
+
+            int newVertices = testShip.getPolygon().getNumPoints();
+            Client.get().getHud().addChatMessage("Vertices count before: " + vertices + ", after: " + newVertices);
         }
 
         return guiObject;
