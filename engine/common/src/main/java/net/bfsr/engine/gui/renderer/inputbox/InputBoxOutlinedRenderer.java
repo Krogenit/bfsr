@@ -39,6 +39,7 @@ public class InputBoxOutlinedRenderer extends InputBoxRenderer {
     protected void setBodyLastValues() {
         super.setBodyLastValues();
         guiRenderer.setLastPosition(innerBody, lastX + 1, lastY + 1);
+        guiRenderer.setLastSize(innerBody, guiObject.getWidth() - 2, guiObject.getHeight() - 2);
         guiRenderer.setLastColor(innerBody, color);
         guiRenderer.setLastColor(id, outlineColor);
     }
@@ -47,5 +48,11 @@ public class InputBoxOutlinedRenderer extends InputBoxRenderer {
     public void updatePosition() {
         super.updatePosition();
         guiRenderer.setPosition(innerBody, guiObject.getSceneX() + 1, guiObject.getSceneY() + 1);
+    }
+
+    @Override
+    public void updateSize() {
+        super.updateSize();
+        guiRenderer.setSize(innerBody, guiObject.getWidth() - 2, guiObject.getHeight() - 2);
     }
 }
