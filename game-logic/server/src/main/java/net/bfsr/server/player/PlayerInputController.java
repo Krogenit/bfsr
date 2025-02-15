@@ -67,9 +67,7 @@ public class PlayerInputController {
 
     public void setShip(Ship ship) {
         if (this.ship != null) {
-            Ai ai = aiFactory.createAi();
-            ai.init(this.ship);
-            this.ship.setAi(ai);
+            this.ship.setAi(aiFactory.createAi());
             this.ship.removeAllMoveDirections();
             this.ship.setControlledByPlayer(false);
             playerManager.setPlayerControlledShip(player, null);

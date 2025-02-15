@@ -15,6 +15,7 @@ import net.bfsr.faction.Faction;
 import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.client.PacketCommand;
 import net.bfsr.server.ServerGameLogic;
+import net.bfsr.server.ai.AiFactory;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -24,9 +25,11 @@ import java.net.InetSocketAddress;
 public class PacketCommandHandler extends PacketHandler<PacketCommand, PlayerNetworkHandler> {
     private final Command[] commands = Command.values();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
-    private final ShipFactory shipFactory = ServerGameLogic.get().getShipFactory();
-    private final ShipOutfitter shipOutfitter = ServerGameLogic.get().getShipOutfitter();
-    private final ShipRegistry shipRegistry = ServerGameLogic.get().getConfigConverterManager().getConverter(ShipRegistry.class);
+    private final ServerGameLogic serverGameLogic = ServerGameLogic.get();
+    private final ShipFactory shipFactory = serverGameLogic.getShipFactory();
+    private final ShipOutfitter shipOutfitter = serverGameLogic.getShipOutfitter();
+    private final ShipRegistry shipRegistry = serverGameLogic.getConfigConverterManager().getConverter(ShipRegistry.class);
+    private final AiFactory aiFactory = serverGameLogic.getAiFactory();
 
     @Override
     public void handle(PacketCommand packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx,
@@ -67,6 +70,16 @@ public class PacketCommandHandler extends PacketHandler<PacketCommand, PlayerNet
                 if (shield == null) {
                     shipOutfitter.addShieldToShip(ship);
                 }
+            }
+        } else if (cmd == Command.ADD_AI) {
+            Ship ship = getShipByArgumentId(world, packet.getArgs()[0]);
+            if (ship != null) {
+                ship.setAi(aiFactory.createAi());
+            }
+        } else if (cmd == Command.REMOVE_AI) {
+            Ship ship = getShipByArgumentId(world, packet.getArgs()[0]);
+            if (ship != null) {
+                ship.setAi(Ai.NO_AI);
             }
         }
     }

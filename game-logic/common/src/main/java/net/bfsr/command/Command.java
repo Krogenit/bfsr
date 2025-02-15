@@ -13,7 +13,9 @@ public enum Command {
     DESTROY_SHIP(true),
     REMOVE_SHIELD(true),
     DISABLE_SHIELD(true),
-    ADD_SHIELD(true);
+    ADD_SHIELD(true),
+    ADD_AI(true),
+    REMOVE_AI(true);
 
     private final boolean shipCommand;
 

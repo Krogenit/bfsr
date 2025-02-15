@@ -84,7 +84,6 @@ public class Ship extends DamageableRigidBody {
     @Getter
     private final THashSet<Direction> moveDirections = new THashSet<>();
     @Getter
-    @Setter
     private Ai ai = Ai.NO_AI;
     @Getter
     @Setter
@@ -344,6 +343,11 @@ public class Ship extends DamageableRigidBody {
         return null;
     }
 
+    public void setAi(Ai ai) {
+        ai.init(this);
+        this.ai = ai;
+    }
+
     public void setSpawned() {
         spawned = true;
         world.getPhysicWorld().addBody(body);
@@ -375,14 +379,14 @@ public class Ship extends DamageableRigidBody {
         }
     }
 
-    public boolean isDestroying() {
-        return maxLifeTime != DEFAULT_MAX_LIFE_TIME_IN_TICKS;
-    }
-
     @Override
     public void setDead() {
         super.setDead();
         eventBus.publish(new ShipDestroyEvent(this));
+    }
+
+    public boolean isDestroying() {
+        return maxLifeTime != DEFAULT_MAX_LIFE_TIME_IN_TICKS;
     }
 
     public boolean isBot() {

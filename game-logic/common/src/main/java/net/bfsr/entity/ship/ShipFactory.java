@@ -71,7 +71,6 @@ public class ShipFactory {
         ship.init(world, world.getNextId());
         ship.setName("[BOT] " + ship.getFaction().toString());
         shipOutfitter.outfit(ship);
-        ai.init(ship);
         ship.setAi(ai);
         return ship;
     }
