@@ -30,7 +30,8 @@ import java.util.function.Consumer;
 
 @Log4j2
 public final class DamageSystem {
-    private static final float BUFFER_Y_OFFSET = -0.16f;
+    private static final boolean DEBUG = false;
+    private static final float BUFFER_Y_OFFSET = -0.32f;
     public static final double BUFFER_DISTANCE = 0.3f;
     private static final double MIN_POLYGON_AREA = 0.3;
     public static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
@@ -225,8 +226,20 @@ public final class DamageSystem {
         int nodes, i, j, swap, pixelX;
         int x = Integer.MAX_VALUE, y = Integer.MAX_VALUE, maxX = 0, maxY = 0;
         byte[] data = damageMask.getData();
+        int damageMaskWidth = damageMask.getWidth();
+        int damageMaskHeight = damageMask.getHeight();
 
-        for (int pixelY = 0; pixelY < damageMask.getHeight(); pixelY++) {
+        if (DEBUG) {
+            for (int k = 0; k < damageMaskHeight; k++) {
+                for (int n = 0; n < damageMaskWidth; n++) {
+                    log.debug(Byte.toUnsignedInt(data[k * damageMaskWidth + n]) == 255 ? 1 : 0);
+                }
+
+                log.debug("");
+            }
+        }
+
+        for (int pixelY = 0; pixelY < damageMaskHeight; pixelY++) {
             nodes = 0;
             j = count - 1;
             for (i = 0; i < count; i++) {
@@ -256,7 +269,7 @@ public final class DamageSystem {
                 int endX = nodeX[0];
                 for (i = 1; i < nodes; i += 2) {
                     for (pixelX = startX; pixelX < endX; pixelX++) {
-                        int index = pixelY * damageMask.getHeight() + pixelX;
+                        int index = pixelY * damageMaskWidth + pixelX;
                         byte currValue = data[index];
                         if (currValue != value) {
                             data[index] = value;
@@ -267,11 +280,11 @@ public final class DamageSystem {
                         }
                     }
                     startX = nodeX[i] + 1;
-                    endX = i + 1 == nodes ? damageMask.getWidth() : nodeX[i + 1];
+                    endX = i + 1 == nodes ? damageMaskWidth : nodeX[i + 1];
                 }
 
-                for (pixelX = startX; pixelX < damageMask.getWidth(); pixelX++) {
-                    int index = pixelY * damageMask.getHeight() + pixelX;
+                for (pixelX = startX; pixelX < damageMaskWidth; pixelX++) {
+                    int index = pixelY * damageMaskWidth + pixelX;
                     byte currValue = data[index];
                     if (currValue != value) {
                         data[index] = value;
@@ -282,8 +295,8 @@ public final class DamageSystem {
                     }
                 }
             } else {
-                for (pixelX = 0; pixelX < damageMask.getWidth(); pixelX++) {
-                    int index = pixelY * damageMask.getHeight() + pixelX;
+                for (pixelX = 0; pixelX < damageMaskWidth; pixelX++) {
+                    int index = pixelY * damageMaskWidth + pixelX;
                     byte currValue = data[index];
                     if (currValue != value) {
                         data[index] = value;
@@ -298,6 +311,20 @@ public final class DamageSystem {
             if (onePixelPut) {
                 if (pixelY < y) y = pixelY;
                 if (pixelY > maxY) maxY = pixelY;
+
+                if (DEBUG) {
+                    log.debug("Change in pixelY {}", pixelY);
+
+                    for (int k = 0; k < damageMaskHeight; k++) {
+                        for (int n = 0; n < damageMaskWidth; n++) {
+                            log.debug(Byte.toUnsignedInt(data[k * damageMaskWidth + n]) == 255 ? 1 : 0);
+                        }
+
+                        log.debug("");
+                    }
+                }
+            } else if (DEBUG) {
+                log.debug("No changes in pixelY {}", pixelY);
             }
         }
 
@@ -305,6 +332,20 @@ public final class DamageSystem {
         damageMask.setY(Math.min(damageMask.getY(), y));
         damageMask.setMaxX(Math.max(damageMask.getMaxX(), maxX));
         damageMask.setMaxY(Math.max(damageMask.getMaxY(), maxY));
+
+        if (DEBUG) {
+            log.debug("");
+            log.debug("---- AFTER ----");
+            log.debug("");
+
+            for (int k = 0; k < damageMaskHeight; k++) {
+                for (int n = 0; n < damageMaskWidth; n++) {
+                    log.debug(Byte.toUnsignedInt(data[k * damageMaskWidth + n]) == 255 ? 1 : 0);
+                }
+
+                log.debug("");
+            }
+        }
     }
 
     private static List<Coordinate> clipTextureOutside(org.locationtech.jts.geom.Polygon polygon, DamageMask mask, float sizeX,
@@ -372,7 +413,7 @@ public final class DamageSystem {
                     int dy = j - localY;
                     float square = (dx * dx + dy * dy) * (random.nextFloat(0.5f) + 0.5f);
                     if (square < radiusSq) {
-                        int index = j * height + i;
+                        int index = j * width + i;
                         float holeThreshold = radiusSq / 4.0f * random.nextFloat();
                         if (square <= holeThreshold) {
                             data[index] = value;
