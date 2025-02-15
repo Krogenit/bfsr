@@ -73,7 +73,7 @@ public class PropertyMap<KEY> extends PropertyList<PropertyObject<PropertyCompon
             }
         });
 
-        component.setRightClickConsumer((mouseX, mouseY) -> {
+        component.setRightReleaseConsumer((mouseX, mouseY) -> {
             String addString = "Remove";
             Button button = new Button(font.getWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight, addString, font, fontSize,
                     4, stringOffsetY, StringOffsetType.DEFAULT, (mouseX1, mouseY1) -> remove(component));

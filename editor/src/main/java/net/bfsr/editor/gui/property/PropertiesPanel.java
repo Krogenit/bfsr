@@ -81,7 +81,7 @@ public class PropertiesPanel extends Rectangle {
         propertiesHolder.clearListeners();
         MinimizableHolder<PropertiesHolder> minimizableHolder = new MinimizableHolder<>(width, height, name, font, fontSize,
                 propertiesHolder);
-        minimizableHolder.setRightClickConsumer((mouseX, mouseY) -> {
+        minimizableHolder.setRightReleaseConsumer((mouseX, mouseY) -> {
             int x1 = mouseX;
             int y1 = mouseY - elementHeight;
             String buttonName = "Copy";

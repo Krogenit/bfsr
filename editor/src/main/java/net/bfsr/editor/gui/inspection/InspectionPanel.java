@@ -318,6 +318,12 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
         return this;
     }
 
+    @Override
+    public GuiObject setRightReleaseConsumer(BiConsumer<Integer, Integer> consumer) {
+        scrollPane.setRightReleaseConsumer(consumer);
+        return this;
+    }
+
     public InspectionPanel<PROPERTIES_TYPE> setOnSelectConsumer(Consumer<InspectionEntry<PROPERTIES_TYPE>> onSelectConsumer) {
         this.onSelectConsumer = onSelectConsumer;
         return this;

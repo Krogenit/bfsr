@@ -87,7 +87,7 @@ public class SimplePropertyList<PRIMITIVE_TYPE> extends PropertyList<PropertyCom
     }
 
     private void addPropertyComponentAt(int index, PropertyComponent propertyComponent) {
-        propertyComponent.setRightClickConsumer((mouseX, mouseY) -> {
+        propertyComponent.setRightReleaseConsumer((mouseX, mouseY) -> {
             String removeString = "Remove";
             Button button = new Button(font.getWidth(removeString, fontSize) + contextMenuStringXOffset, baseHeight, removeString, font,
                     fontSize, 4, stringOffsetY, StringOffsetType.DEFAULT, (mouseX1, mouseY1) -> removeProperty(propertyComponent));

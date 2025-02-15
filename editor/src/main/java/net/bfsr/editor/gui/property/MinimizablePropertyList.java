@@ -38,7 +38,7 @@ public class MinimizablePropertyList extends PropertyList<PropertyObject<Propert
         PropertyObject<PropertyComponent> propertyObject = new PropertyObject<>(baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight,
                 elementPropertyName, font, fontSize, MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, object, fields,
                 new Object[]{object}, valueConsumer, changeValueListener);
-        propertyObject.setRightClickConsumer((mouseX, mouseY) -> {
+        propertyObject.setRightReleaseConsumer((mouseX, mouseY) -> {
             String addString = "Remove";
             Button button = new Button(font.getWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight, addString, font, fontSize,
                     4, stringOffsetY, StringOffsetType.DEFAULT, (mouseX1, mouseY1) -> removeProperty(propertyObject));

@@ -89,7 +89,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
         add(inspectionPanel.setOnSelectConsumer(this::selectEntry)
                 .setAllColors(BACKGROUND_COLOR.x, BACKGROUND_COLOR.y, BACKGROUND_COLOR.z, BACKGROUND_COLOR.w)
                 .setHeightFunction((integer, integer2) -> renderer.getScreenHeight())
-                .setRightClickConsumer((mouseX, mouseY) -> {
+                .setRightReleaseConsumer((mouseX, mouseY) -> {
                     int x1 = mouseX;
                     int y1 = mouseY - elementHeight;
 
@@ -232,7 +232,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
         ScrollPane scrollPane = inspectionPanel.getScrollPane();
         InspectionEntry<PROPERTIES_TYPE> entry = new InspectionEntry<>(inspectionPanel, scrollPane.getWidth() - scrollPane.getScrollWidth(),
                 elementHeight, name, font, FONT_SIZE, 0);
-        entry.setRightClickConsumer((mouseX, mouseY) -> {
+        entry.setRightReleaseConsumer((mouseX, mouseY) -> {
             int x1 = mouseX;
             int y1 = mouseY - elementHeight;
             String addString = "Create Entry";
