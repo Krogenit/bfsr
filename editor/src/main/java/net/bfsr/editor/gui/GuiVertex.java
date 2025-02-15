@@ -47,13 +47,13 @@ public class GuiVertex extends GuiObject {
         setHoverColor(0.8f, 0.8f, 0.8f, 0.75f);
         setRenderer(new RectangleRenderer(this));
 
-        setRightClickConsumer((mouseX, mouseY) -> {
+        setRightReleaseConsumer((mouseX, mouseY) -> {
             Client client = Client.get();
 
             String title = "Remove vertex";
             Button removeVertexButton = new Button(font.getWidth(title, fontSize) + contextMenuStringOffsetX, elementHeight, title, font,
                     fontSize, contextMenuStringOffsetX / 2, 0, StringOffsetType.DEFAULT, (mouseX1, mouseY1) -> {
-                vertices.remove(vertex);
+                polygonProperty.removeObject(vertex);
                 guiShipEditor.removeVertex(this);
             });
 
@@ -74,7 +74,7 @@ public class GuiVertex extends GuiObject {
                     Vector2fPropertiesHolder prevVertex = vertices.get(beforeIndex);
                     Vector2fPropertiesHolder newVertex = new Vector2fPropertiesHolder((vertex.getX() + prevVertex.getX()) / 2,
                             (vertex.getY() + prevVertex.getY()) / 2);
-                    vertices.add(index, newVertex);
+                    polygonProperty.addObjectAt(index, newVertex);
                     guiShipEditor.addVertex(index, new GuiVertex(guiShipEditor, newVertex, font, fontSize, elementHeight,
                             contextMenuStringOffsetX));
                 }
@@ -96,7 +96,7 @@ public class GuiVertex extends GuiObject {
                     Vector2fPropertiesHolder prevVertex = vertices.get(insertIndex);
                     Vector2fPropertiesHolder newVertex = new Vector2fPropertiesHolder((vertex.getX() + prevVertex.getX()) / 2,
                             (vertex.getY() + prevVertex.getY()) / 2);
-                    vertices.add(insertIndex, newVertex);
+                    polygonProperty.addObjectAt(insertIndex, newVertex);
                     guiShipEditor.addVertex(insertIndex, new GuiVertex(guiShipEditor, newVertex, font, fontSize, elementHeight,
                             contextMenuStringOffsetX));
                 }

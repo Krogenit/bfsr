@@ -1,7 +1,6 @@
 package net.bfsr.editor.gui.property;
 
 import lombok.Getter;
-import lombok.Setter;
 import net.bfsr.editor.gui.EditorTheme;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.MinimizableGuiObject;
@@ -16,7 +15,6 @@ public abstract class PropertyComponent extends MinimizableGuiObject {
     protected final Object object;
     protected final Object[] values;
     protected final List<Field> fields;
-    @Setter
     protected int propertyOffsetX;
     final int propertyOffsetY;
     protected final BiConsumer<Object, Integer> valueConsumer;
@@ -47,11 +45,16 @@ public abstract class PropertyComponent extends MinimizableGuiObject {
                 valueConsumer, changeValueListener);
     }
 
+    public abstract void setSetting() throws IllegalAccessException;
+
     @Override
     public GuiObject setWidth(int width) {
         this.baseWidth = width;
         return super.setWidth(width);
     }
 
-    public abstract void setSetting() throws IllegalAccessException;
+    public void setPropertyOffsetX(int propertyOffsetX) {
+        this.propertyOffsetX = propertyOffsetX;
+        updateConcealableObjectsPositions();
+    }
 }

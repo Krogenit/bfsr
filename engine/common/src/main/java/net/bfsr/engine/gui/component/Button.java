@@ -18,9 +18,9 @@ public class Button extends GuiObject {
     public Button(int width, int height, String string, Font font, int fontSize, int stringXOffset, int stringYOffset,
                   StringOffsetType stringOffsetType, BiConsumer<Integer, Integer> leftReleaseConsumer) {
         super(width, height);
-        this.leftReleaseConsumer = leftReleaseConsumer;
-        this.label = new Label(font, string, stringXOffset, 0, fontSize, stringOffsetType);
+        label = new Label(font, string, stringXOffset, 0, fontSize, stringOffsetType);
         add(label.atBottomLeft(stringXOffset, stringYOffset));
+        setLeftReleaseConsumer(leftReleaseConsumer);
         setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
         setRenderer(new RectangleRenderer(this));
     }

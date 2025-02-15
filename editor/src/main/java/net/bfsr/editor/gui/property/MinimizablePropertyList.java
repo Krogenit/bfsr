@@ -33,24 +33,43 @@ public class MinimizablePropertyList extends PropertyList<PropertyObject<Propert
     }
 
     @Override
-    public void addProperty(PropertiesHolder propertiesHolder) {
-        propertiesHolder.clearListeners();
+    public void addObjectAt(int index, PropertiesHolder object) {
+        object.clearListeners();
         PropertyObject<PropertyComponent> propertyObject = new PropertyObject<>(baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight,
-                elementPropertyName, font, fontSize, MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, propertiesHolder, fields,
-                new Object[]{propertiesHolder}, valueConsumer, changeValueListener);
+                elementPropertyName, font, fontSize, MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, object, fields,
+                new Object[]{object}, valueConsumer, changeValueListener);
         propertyObject.setRightClickConsumer((mouseX, mouseY) -> {
             String addString = "Remove";
             Button button = new Button(font.getWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight, addString, font, fontSize,
-                    4, stringOffsetY, StringOffsetType.DEFAULT, EMPTY_BI_CONSUMER);
-            setupContextMenuButton(button);
-            button.atBottomLeft(mouseX, mouseY - baseHeight);
-            button.setLeftReleaseConsumer((mouseX1, mouseY1) -> removeProperty(propertyObject));
-            guiManager.openContextMenu(button);
+                    4, stringOffsetY, StringOffsetType.DEFAULT, (mouseX1, mouseY1) -> removeProperty(propertyObject));
+            guiManager.openContextMenu(setupContextMenuButton(button).atBottomLeft(mouseX, mouseY - baseHeight));
         });
-        propertiesHolder.addChangeNameEventListener(propertyObject::setName);
+        object.addChangeNameEventListener(propertyObject::setName);
 
-        properties.add(propertyObject);
-        add(propertyObject);
+        if (index == properties.size() || properties.isEmpty()) {
+            properties.add(propertyObject);
+            add(propertyObject);
+        } else {
+            addAt(hideableObjects.indexOf(properties.get(index)), propertyObject);
+            properties.add(index, propertyObject);
+        }
+    }
+
+    @Override
+    public void addObject(PropertiesHolder object) {
+        addObjectAt(properties.size(), object);
+    }
+
+    @Override
+    public void removeObject(PropertiesHolder object) {
+        for (int i = 0; i < properties.size(); i++) {
+            PropertyObject<PropertyComponent> propertyObject = properties.get(i);
+            if (propertyObject.getObject() == object) {
+                properties.remove(i);
+                remove(propertyObject);
+                return;
+            }
+        }
     }
 
     @Override

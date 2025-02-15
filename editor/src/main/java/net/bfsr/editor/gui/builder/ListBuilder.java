@@ -36,7 +36,7 @@ public class ListBuilder extends ComponentBuilder {
 
         if (objects != null) {
             for (int i = 0; i < objects.size(); i++) {
-                property.addProperty(objects.get(i));
+                property.addObject(objects.get(i));
             }
         }
 

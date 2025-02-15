@@ -35,36 +35,58 @@ public class PropertyMap<KEY> extends PropertyList<PropertyObject<PropertyCompon
     }
 
     @Override
-    public void addProperty(PropertiesHolder propertiesHolder) {
-        add(keySupplier.get(), propertiesHolder);
+    public void addObjectAt(int index, PropertiesHolder object) {
+        add(index, keySupplier.get(), object);
+    }
+
+    @Override
+    public void addObject(PropertiesHolder object) {
+        addObjectAt(properties.size(), object);
+    }
+
+    @Override
+    public void removeObject(PropertiesHolder object) {
+        for (int i = 0; i < properties.size(); i++) {
+            PropertyObject<PropertyComponent> propertyObject = properties.get(i);
+            if (propertyObject.getObject() == object) {
+                properties.remove(i);
+                remove(propertyObject);
+                return;
+            }
+        }
     }
 
     public void add(KEY key, PropertiesHolder propertiesHolder) {
+        add(properties.size(), key, propertiesHolder);
+    }
+
+    private void add(int index, KEY key, PropertiesHolder propertiesHolder) {
         PropertyObject<PropertyComponent> component = new PropertyObject<>(baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight,
                 key.toString(), font, fontSize, MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, propertiesHolder, null,
                 new Object[]{propertiesHolder}, (o, integer) -> {}, changeValueListener);
 
-        component.addProperty(
-                new PropertyInputBox(width - MINIMIZABLE_STRING_X_OFFSET, baseHeight, "keyName", MINIMIZABLE_STRING_X_OFFSET, fontSize,
-                        stringOffsetY, key, fields, new Object[]{key}, List.of(key.getClass()), (o, integer) -> {}, changeValueListener) {
-                    @Override
-                    public void setSetting() {
-                        component.setName(inputBoxes.get(0).getString());
-                    }
-                });
+        component.addProperty(new PropertyInputBox(width - MINIMIZABLE_STRING_X_OFFSET, baseHeight, "keyName", MINIMIZABLE_STRING_X_OFFSET,
+                fontSize, stringOffsetY, key, fields, new Object[]{key}, List.of(key.getClass()), (o, integer) -> {}, changeValueListener) {
+            @Override
+            public void setSetting() {
+                component.setName(inputBoxes.get(0).getString());
+            }
+        });
 
         component.setRightClickConsumer((mouseX, mouseY) -> {
             String addString = "Remove";
             Button button = new Button(font.getWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight, addString, font, fontSize,
-                    4, stringOffsetY, StringOffsetType.DEFAULT, EMPTY_BI_CONSUMER);
-            setupContextMenuButton(button);
-            button.setLeftReleaseConsumer((mouseX1, mouseY1) -> remove(component));
-            button.atBottomLeft(mouseX, mouseY - baseHeight);
-            guiManager.openContextMenu(button);
+                    4, stringOffsetY, StringOffsetType.DEFAULT, (mouseX1, mouseY1) -> remove(component));
+            guiManager.openContextMenu(setupContextMenuButton(button).atBottomLeft(mouseX, mouseY - baseHeight));
         });
 
-        properties.add(component);
-        add(component);
+        if (index == properties.size() || properties.isEmpty()) {
+            add(component);
+            properties.add(component);
+        } else {
+            addAt(hideableObjects.indexOf(properties.get(index)), component);
+            properties.add(index, component);
+        }
     }
 
     @Override

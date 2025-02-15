@@ -352,13 +352,13 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
     private void selectEntry(InspectionEntry<PROPERTIES_TYPE> entry) {
         if (selectedEntry != null) {
             propertiesPanel.applyProperties();
+            onEntryDeselected(selectedEntry);
         }
 
         selectedEntry = entry;
         remove(propertiesPanel);
 
         if (entry == null) {
-            onEntryDeselected();
             return;
         }
 
@@ -370,7 +370,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
 
     protected abstract void onEntrySelected(InspectionEntry<PROPERTIES_TYPE> entry);
 
-    protected void onEntryDeselected() {}
+    protected void onEntryDeselected(InspectionEntry<PROPERTIES_TYPE> selectedEntry) {}
 
     public void switchPolygonEditMode(PolygonProperty polygonProperty) {}
 

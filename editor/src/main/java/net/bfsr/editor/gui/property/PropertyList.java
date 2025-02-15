@@ -30,7 +30,7 @@ abstract class PropertyList<T extends PropertyComponent, O> extends PropertyObje
         this.supplier = supplier;
         int addButtonSize = 20;
         add(addButton = new Button(addButtonSize, addButtonSize, "", font, fontSize,
-                stringOffsetY, (mouseX, mouseY) -> addProperty(createObject())));
+                stringOffsetY, (mouseX, mouseY) -> addObject(createObject())));
         setupButton(addButton).atBottomRight(0, 0);
         addButton.setRenderer(new RectangleOutlinedRenderer(addButton) {
             private static final Primitive PLUS_1_PRIMITIVE = new Primitive(-0.0833f, 0.5f, 0.0f, 1.0f, -0.0833f, -0.5f, 1.0f, 1.0f,
@@ -127,7 +127,9 @@ abstract class PropertyList<T extends PropertyComponent, O> extends PropertyObje
 
     protected abstract O createObject();
 
-    public abstract void addProperty(O propertiesHolder);
+    public abstract void addObject(O object);
+    public abstract void addObjectAt(int index, O object);
+    public abstract void removeObject(O object);
 
     protected void removeProperty(T guiObject) {
         properties.remove(guiObject);

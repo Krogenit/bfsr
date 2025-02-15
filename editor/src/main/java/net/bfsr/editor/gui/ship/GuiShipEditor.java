@@ -53,7 +53,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
     private final AbstractMouse mouse = Engine.getMouse();
     private final Client client = Client.get();
     private final ShipConverter converter = Mappers.getMapper(ShipConverter.class);
-    private final Label polygonCreationModeLabel = new Label(font, "Polygon creation mode", FONT_SIZE);
+    private final Label polygonCreationModeLabel = new Label(font, "Polygon edit mode", FONT_SIZE);
     private final Label debugDamageSystemModeLabel = new Label(font, "Damage system debug mode", FONT_SIZE);
 
     private final GameObject polygonObject = new GameObject();
@@ -64,7 +64,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
 
     @Getter
     private PolygonProperty polygonProperty;
-    private boolean polygonCreationMode;
+    private boolean polygonEditMode;
     private final List<GuiVertex> guiVertices = new ArrayList<>();
 
     private boolean lastDebugBoxesMode;
@@ -89,7 +89,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
 
             @Override
             public void postWorldUpdate() {
-                if (polygonCreationMode) {
+                if (polygonEditMode) {
                     List<Vector2fPropertiesHolder> vertices = polygonProperty.getVertices();
                     if (vertices.isEmpty()) {
                         aabb.set(0.0f, 0.0f, 0.0f, 0.0f);
@@ -160,7 +160,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
 
             @Override
             public void renderDebug() {
-                if (polygonCreationMode) {
+                if (polygonEditMode) {
                     List<Vector2fPropertiesHolder> vertices = polygonProperty.getVertices();
                     if (vertices.isEmpty()) {
                         return;
@@ -286,7 +286,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
 
                 @Override
                 public void renderDebug() {
-                    if (polygonCreationMode) return;
+                    if (polygonEditMode) return;
                     super.renderDebug();
                 }
             };
@@ -300,19 +300,23 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
     }
 
     @Override
-    protected void onEntryDeselected() {
+    protected void onEntryDeselected(@Nullable InspectionEntry<ShipProperties> selectedEntry) {
         if (testShip != null) {
             testShip.setDead();
         }
 
         selectedShipProperties = null;
+
+        if (polygonEditMode) {
+            switchPolygonEditMode(null);
+        }
     }
 
     @Override
     public void switchPolygonEditMode(PolygonProperty polygonProperty) {
-        polygonCreationMode = !polygonCreationMode;
+        polygonEditMode = !polygonEditMode;
 
-        if (polygonCreationMode) {
+        if (polygonEditMode) {
             add(polygonCreationModeLabel.atTop(0, -elementHeight));
             this.polygonProperty = polygonProperty;
             lastDebugBoxesMode = ClientSettings.SHOW_DEBUG_BOXES.getBoolean();
@@ -394,7 +398,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
     }
 
     public void addVertex(int insertIndex, GuiVertex guiVertex) {
-        guiVertices.add(guiVertex);
+        guiVertices.add(insertIndex, guiVertex);
         addAt(insertIndex, guiVertex);
     }
 

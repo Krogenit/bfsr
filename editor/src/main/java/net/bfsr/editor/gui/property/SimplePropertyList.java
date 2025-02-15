@@ -6,6 +6,7 @@ import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.font.string.StringOffsetType;
+import net.bfsr.engine.util.MutableInt;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -41,18 +42,41 @@ public class SimplePropertyList<PRIMITIVE_TYPE> extends PropertyList<PropertyCom
     }
 
     @Override
-    public void addProperty(PRIMITIVE_TYPE arrayElement) {
+    public void addObject(PRIMITIVE_TYPE object) {
+        addObjectAt(properties.size(), object);
+    }
+
+    @Override
+    public void addObjectAt(int index, PRIMITIVE_TYPE object) {
         try {
-            if (arrayElement instanceof PropertiesHolder) {
-                PropertiesBuilder.createGuiProperties(arrayElement, baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight, font, fontSize,
-                        MINIMIZABLE_STRING_X_OFFSET, stringOffsetY, this::addPropertyComponent, propertyName, changeValueListener);
+            if (object instanceof PropertiesHolder) {
+                MutableInt mutableIndex = new MutableInt(index);
+                PropertiesBuilder.createGuiProperties(object, baseWidth - MINIMIZABLE_STRING_X_OFFSET, baseHeight, font, fontSize,
+                        MINIMIZABLE_STRING_X_OFFSET, stringOffsetY,
+                        propertyComponent -> addPropertyComponentAt(mutableIndex.getAndAdd(1), propertyComponent),
+                        propertyName, changeValueListener);
             } else {
-                addPropertyComponent(ComponentBuilder.build(propertyGuiElementType, baseWidth - MINIMIZABLE_STRING_X_OFFSET,
+                addPropertyComponentAt(index, ComponentBuilder.build(propertyGuiElementType, baseWidth - MINIMIZABLE_STRING_X_OFFSET,
                         baseHeight, propertyName, font.getWidth(propertyName, fontSize), font, fontSize, stringOffsetY, fields,
-                        new Object[]{arrayElement}, arrayElement, (o, integer) -> ((List) values[0]).set(integer, o), changeValueListener));
+                        new Object[]{object}, object, (o, integer) -> ((List) values[0]).set(integer, o), changeValueListener));
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
+        }
+
+        updateConcealableObjectsPositions();
+    }
+
+    @Override
+    public void removeObject(PRIMITIVE_TYPE object) {
+        for (int i = 0; i < properties.size(); i++) {
+            PropertyComponent propertyComponent = properties.get(i);
+            if (propertyComponent.getObject() == object) {
+                properties.remove(i);
+                remove(propertyComponent);
+                objects.remove(object);
+                return;
+            }
         }
     }
 
@@ -62,20 +86,23 @@ public class SimplePropertyList<PRIMITIVE_TYPE> extends PropertyList<PropertyCom
         objects.remove((PRIMITIVE_TYPE) propertyComponent.object);
     }
 
-    private void addPropertyComponent(PropertyComponent propertyComponent) {
+    private void addPropertyComponentAt(int index, PropertyComponent propertyComponent) {
         propertyComponent.setRightClickConsumer((mouseX, mouseY) -> {
-            String addString = "Remove";
-            Button button = new Button(font.getWidth(addString, fontSize) + contextMenuStringXOffset, baseHeight, addString, font, fontSize,
-                    4, stringOffsetY, StringOffsetType.DEFAULT, EMPTY_BI_CONSUMER);
-            setupContextMenuButton(button);
-            button.setLeftReleaseConsumer((mouseX1, mouseY1) -> removeProperty(propertyComponent));
-            button.atBottomLeft(mouseX, mouseY);
-            guiManager.openContextMenu(button);
+            String removeString = "Remove";
+            Button button = new Button(font.getWidth(removeString, fontSize) + contextMenuStringXOffset, baseHeight, removeString, font,
+                    fontSize, 4, stringOffsetY, StringOffsetType.DEFAULT, (mouseX1, mouseY1) -> removeProperty(propertyComponent));
+            guiManager.openContextMenu(setupContextMenuButton(button).atBottomLeft(mouseX, mouseY));
         });
 
-        properties.add(propertyComponent);
-        objects.add((PRIMITIVE_TYPE) propertyComponent.object);
-        add(propertyComponent);
+        if (index == properties.size() || properties.isEmpty()) {
+            properties.add(propertyComponent);
+            objects.add((PRIMITIVE_TYPE) propertyComponent.object);
+            add(propertyComponent);
+        } else {
+            addAt(hideableObjects.indexOf(properties.get(index)), propertyComponent);
+            properties.add(index, propertyComponent);
+            objects.add(index, (PRIMITIVE_TYPE) propertyComponent.object);
+        }
     }
 
     @Override
