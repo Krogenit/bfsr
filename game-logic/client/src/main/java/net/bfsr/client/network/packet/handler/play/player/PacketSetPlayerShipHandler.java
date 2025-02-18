@@ -12,6 +12,8 @@ public class PacketSetPlayerShipHandler extends PacketHandler<PacketSetPlayerShi
     @Override
     public void handle(PacketSetPlayerShip packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
-        Client.get().getPlayerInputController().setControlledShipId(packet.getId());
+        Client client = Client.get();
+        client.getPlayerInputController().setControlledShipId(packet.getId());
+        client.getCamera().setPosition(packet.getX(), packet.getY());
     }
 }

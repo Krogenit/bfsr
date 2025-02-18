@@ -19,6 +19,7 @@ import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.pipeline.MessageDecoderTCP;
 import net.bfsr.server.network.pipeline.MessageHandlerTCP;
 import net.bfsr.server.network.pipeline.PacketEncoderTCP;
+import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;
 import java.util.function.Supplier;
@@ -38,7 +39,7 @@ public class NetworkManagerTCP {
         bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
         bootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
             @Override
-            protected void initChannel(SocketChannel socketChannel) {
+            protected void initChannel(@NotNull SocketChannel socketChannel) {
                 PlayerNetworkHandler playerNetworkHandler = serverGameLogic.createPlayerNetworkHandler(connectionIds++, socketChannel,
                         datagramChannelSupplier.get(), true);
                 socketChannel.pipeline().addLast("slicer", new FrameDecoder());

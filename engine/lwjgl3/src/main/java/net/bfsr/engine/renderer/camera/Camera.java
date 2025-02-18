@@ -219,6 +219,12 @@ public class Camera implements AbstractCamera {
     }
 
     @Override
+    public void setPosition(float x, float y) {
+        position.set(x, y);
+        updateBoundingBox();
+    }
+
+    @Override
     public void clear() {
         GL15C.glDeleteBuffers(worldProjectionMatrixUBO);
         GL15C.glDeleteBuffers(GUIProjectionMatrixUBO);

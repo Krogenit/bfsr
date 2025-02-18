@@ -18,6 +18,8 @@ public interface AbstractCamera {
     void moveByMouse(float dx, float dy);
 
     void setBoundingBox(float minX, float minY, float maxX, float maxY);
+    void setPosition(float x, float y);
+
     float getZoom();
     Vector2f getLastPosition();
     Vector2f getPosition();
