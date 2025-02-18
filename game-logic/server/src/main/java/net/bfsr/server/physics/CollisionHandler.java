@@ -59,6 +59,7 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         super.bulletShip(bullet, ship, bulletFixture, shipFixture, contactX, contactY, normalX, normalY);
 
+        float clipPolygonRadius = 0.75f;
         damageShip(ship, bullet.getDamage(), 1.0f, contactX, contactY, shipFixture, () -> {
             bullet.damage();
             bullet.reflect(normalX, normalY);
@@ -72,7 +73,7 @@ public class CollisionHandler extends CommonCollisionHandler {
                         velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f);
             }
             bullet.setDead();
-        });
+        }, clipPolygonRadius);
     }
 
     @Override
@@ -86,7 +87,8 @@ public class CollisionHandler extends CommonCollisionHandler {
     public void bulletShipWreck(Bullet bullet, ShipWreck wreck, Fixture bulletFixture, Fixture shipWreckFixture,
                                 float contactX, float contactY, float normalX, float normalY) {
         super.bulletShipWreck(bullet, wreck, bulletFixture, shipWreckFixture, contactX, contactY, normalX, normalY);
-        createDamage(wreck, contactX, contactY);
+        float clipPolygonRadius = 0.75f;
+        createDamage(wreck, contactX, contactY, clipPolygonRadius);
     }
 
     @Override
@@ -119,8 +121,7 @@ public class CollisionHandler extends CommonCollisionHandler {
     public void weaponSlotBeamShip(WeaponSlotBeam weaponSlot, Ship ship, Fixture fixture, float contactX, float contactY,
                                    float normalX, float normalY) {
         damageShip(ship, weaponSlot.getDamage(), weaponSlot.getBeamPower() * Engine.getUpdateDeltaTime(), contactX, contactY,
-                fixture,
-                RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE);
+                fixture, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, 0.5f);
     }
 
     @Override
@@ -132,7 +133,7 @@ public class CollisionHandler extends CommonCollisionHandler {
 
     private void damageShip(Ship ship, BulletDamage damage, float multiplayer, float contactX, float contactY,
                             Fixture fixture, Runnable onShieldDamageRunnable, Runnable onArmorDamageRunnable,
-                            Runnable onHullDamageRunnable) {
+                            Runnable onHullDamageRunnable, float clipPolygonRadius) {
         Modules modules = ship.getModules();
         Shield shield = modules.getShield();
         if (shield != null && damageShield(shield, damage.getShield() * multiplayer)) {
@@ -160,7 +161,7 @@ public class CollisionHandler extends CommonCollisionHandler {
         }
 
         if (cell.getValue() <= 0) {
-            createDamage(ship, contactX, contactY);
+            createDamage(ship, contactX, contactY, clipPolygonRadius);
         }
     }
 
@@ -185,7 +186,8 @@ public class CollisionHandler extends CommonCollisionHandler {
         }
 
         if (cell.getValue() <= 0 && impactPower > 0.4f) {
-            createDamage(ship, contactX, contactY);
+            float clipPolygonRadius = 0.5f;
+            createDamage(ship, contactX, contactY, clipPolygonRadius);
         }
     }
 
@@ -213,15 +215,14 @@ public class CollisionHandler extends CommonCollisionHandler {
         }
     }
 
-    private void createDamage(DamageableRigidBody rigidBody, float contactX, float contactY) {
+    private void createDamage(DamageableRigidBody rigidBody, float contactX, float contactY, float polygonRadius) {
         float x = rigidBody.getX();
         float y = rigidBody.getY();
         float sin = rigidBody.getSin();
         float cos = rigidBody.getCos();
-        float polygonRadius = 0.5f;
-        float textureClipRadius = 1.0f;
+        float textureClipRadius = polygonRadius * 1.75f;
 
-        Polygon clip = damageSystem.createCirclePath(contactX - x, contactY - y, -sin, cos, 12, polygonRadius);
+        Polygon clip = damageSystem.createCirclePath(contactX - x, contactY - y, -sin, cos, 6, polygonRadius);
         damageSystem.damage(rigidBody, contactX, contactY, clip, textureClipRadius, x, y, sin, cos,
                 () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
                         new PacketSyncDamage(rigidBody, rigidBody.getWorld().getTimestamp())));

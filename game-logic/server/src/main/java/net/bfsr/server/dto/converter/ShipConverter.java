@@ -32,7 +32,7 @@ public abstract class ShipConverter {
             @Mapping(target = "updateRunnable", ignore = true), @Mapping(target = "damageMask", ignore = true),
             @Mapping(target = "angularVelocity", ignore = true), @Mapping(target = "correctionHandler", ignore = true),
             @Mapping(target = "crew", ignore = true), @Mapping(target = "lastAttacker", ignore = true),
-            @Mapping(target = "ai", ignore = true), @Mapping(target = "shipData", ignore = true),
+            @Mapping(target = "ai", ignore = true),
             @Mapping(target = "body", ignore = true), @Mapping(target = "jumpPosition", ignore = true),
             @Mapping(target = "shipEventBus", ignore = true), @Mapping(target = "world", ignore = true)
     })

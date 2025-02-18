@@ -240,7 +240,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
     }
 
     private Polygon createClipPolygon(float x, float y) {
-        return damageSystem.createCirclePath(x, y, 0, 1, 12, clipPolygonRadius);
+        return damageSystem.createCirclePath(x, y, 0, 1, 6, clipPolygonRadius);
     }
 
     private void createShip(ShipProperties properties) {
