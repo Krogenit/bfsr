@@ -170,10 +170,11 @@ public class Fixture {
     /**
      * Test a point for containment in this fixture. This only works for convex shapes.
      *
-     * @param p a point in world coordinates.
+     * @param x x component of a point in world coordinates.
+     * @param y y component of a point in world coordinates.
      */
-    public boolean testPoint(final Vector2 p) {
-        return shape.testPoint(body.transform, p);
+    public boolean testPoint(float x, float y) {
+        return shape.testPoint(body.transform, x, y);
     }
 
     /**

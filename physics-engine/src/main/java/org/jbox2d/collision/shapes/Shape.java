@@ -67,9 +67,10 @@ public abstract class Shape {
      * Test a point for containment in this shape. This only works for convex shapes.
      *
      * @param xf the shape world transform.
-     * @param p  a point in world coordinates.
+     * @param x  x component of a point in world coordinates
+     * @param y  y component of a point in world coordinates
      */
-    public abstract boolean testPoint(final Transform xf, final Vector2 p);
+    public abstract boolean testPoint(final Transform xf, float x, float y);
 
     /**
      * Cast a ray against a child shape.

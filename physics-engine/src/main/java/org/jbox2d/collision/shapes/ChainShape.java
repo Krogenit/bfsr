@@ -109,7 +109,7 @@ public class ChainShape extends Shape {
     }
 
     @Override
-    public boolean testPoint(Transform xf, Vector2 p) {
+    public boolean testPoint(Transform xf, float x, float y) {
         return false;
     }
 

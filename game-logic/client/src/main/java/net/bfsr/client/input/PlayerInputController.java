@@ -185,16 +185,8 @@ public class PlayerInputController extends InputController {
         }
 
         if (ship == null) {
-            Vector2f mousePosition = mouse.getWorldPosition(camera);
-            float offset = 0.01f;
-            selectedFixture = null;
-            client.getWorld().getPhysicWorld().queryAABB(fixture -> {
-                selectedFixture = fixture;
-                return true;
-            }, new AABB(new Vector2(mousePosition.x - offset, mousePosition.y - offset),
-                    new Vector2(mousePosition.x + offset, mousePosition.y + offset)));
-
-            if (selectedFixture != null && selectedFixture.getBody().getUserData() instanceof Ship ship) {
+            Fixture fixture = selectFixtureWithMouse();
+            if (fixture != null && fixture.getBody().getUserData() instanceof Ship ship) {
                 eventBus.publish(new SelectShipEvent(ship));
                 return true;
             }
@@ -206,6 +198,26 @@ public class PlayerInputController extends InputController {
         }
 
         return false;
+    }
+
+    private Fixture selectFixtureWithMouse() {
+        selectedFixture = null;
+        float offset = 0.01f;
+        Vector2f mousePosition = mouse.getWorldPosition(camera);
+
+        AABB mouseAABB = new AABB(new Vector2(mousePosition.x - offset, mousePosition.y - offset),
+                new Vector2(mousePosition.x + offset, mousePosition.y + offset));
+
+        client.getWorld().getPhysicWorld().queryAABB(fixture -> {
+            if (fixture.testPoint(mousePosition.x, mousePosition.y)) {
+                selectedFixture = fixture;
+                return false;
+            }
+
+            return true;
+        }, mouseAABB);
+
+        return selectedFixture;
     }
 
     @Override
@@ -221,16 +233,9 @@ public class PlayerInputController extends InputController {
 
     @Override
     public boolean mouseRightRelease() {
-        Vector2f mousePosition = mouse.getWorldPosition(camera);
-        float offset = 0.01f;
-        selectedFixture = null;
-        client.getWorld().getPhysicWorld().queryAABB(fixture -> {
-            selectedFixture = fixture;
-            return true;
-        }, new AABB(new Vector2(mousePosition.x - offset, mousePosition.y - offset),
-                new Vector2(mousePosition.x + offset, mousePosition.y + offset)));
+        Fixture fixture = selectFixtureWithMouse();
 
-        if (selectedFixture != null && selectedFixture.getBody().getUserData() instanceof Ship ship) {
+        if (fixture != null && fixture.getBody().getUserData() instanceof Ship ship) {
             eventBus.publish(new SelectSecondaryShipEvent(ship));
             return true;
         }

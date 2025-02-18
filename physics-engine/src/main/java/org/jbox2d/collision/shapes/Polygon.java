@@ -143,12 +143,12 @@ public class Polygon extends Shape {
     }
 
     @Override
-    public final boolean testPoint(final Transform xf, final Vector2 p) {
+    public final boolean testPoint(final Transform xf, float x, float y) {
         float tempx, tempy;
         final Rotation xfq = xf.rotation;
 
-        tempx = p.x - xf.position.x;
-        tempy = p.y - xf.position.y;
+        tempx = x - xf.position.x;
+        tempy = y - xf.position.y;
         final float pLocalx = xfq.cos * tempx + xfq.sin * tempy;
         final float pLocaly = -xfq.sin * tempx + xfq.cos * tempy;
 

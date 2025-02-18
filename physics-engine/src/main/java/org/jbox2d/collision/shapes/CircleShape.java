@@ -86,7 +86,7 @@ public class CircleShape extends Shape {
     }
 
     @Override
-    public final boolean testPoint(final Transform transform, final Vector2 p) {
+    public final boolean testPoint(final Transform transform, float x, float y) {
         // Rot.mulToOutUnsafe(transform.q, m_p, center);
         // center.addLocal(transform.p);
         //
@@ -94,8 +94,8 @@ public class CircleShape extends Shape {
         // return Vec2.dot(d, d) <= m_radius * m_radius;
         Rotation q = transform.rotation;
         Vector2 tp = transform.position;
-        float centerx = -(q.cos * m_p.x - q.sin * m_p.y + tp.x - p.x);
-        float centery = -(q.sin * m_p.x + q.cos * m_p.y + tp.y - p.y);
+        float centerx = -(q.cos * m_p.x - q.sin * m_p.y + tp.x - x);
+        float centery = -(q.sin * m_p.x + q.cos * m_p.y + tp.y - y);
 
         return centerx * centerx + centery * centery <= radius * radius;
     }
