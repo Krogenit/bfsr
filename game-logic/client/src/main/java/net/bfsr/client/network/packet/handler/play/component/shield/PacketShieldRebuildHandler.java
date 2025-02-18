@@ -26,7 +26,7 @@ public class PacketShieldRebuildHandler extends PacketHandler<PacketShieldRebuil
             if (shield != null) {
                 shield.rebuildShield();
 
-                Vector4f shipEffectColor = ship.getShipData().getEffectsColor();
+                Vector4f shipEffectColor = ship.getConfigData().getEffectsColor();
                 shieldEffects.rebuild(ship.getX(), ship.getY(), ship.getSizeX() * 2.0f, shipEffectColor.x, shipEffectColor.y,
                         shipEffectColor.z, 1.0f);
             }

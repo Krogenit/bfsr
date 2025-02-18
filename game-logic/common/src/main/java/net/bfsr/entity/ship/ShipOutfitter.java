@@ -57,9 +57,9 @@ public class ShipOutfitter {
     }
 
     private void outfit(Ship ship, String factionName) {
-        if (ship.getShipData().getFileName().equals("engi_huge0")) {
+        if (ship.getConfigData().getFileName().equals("engi_huge0")) {
             ship.setEngine(new Engines(engineRegistry.get("engi_huge0"), ship));
-            ship.setReactor(new Reactor(reactorRegistry.get("engi_huge0"), ship.getShipData().getReactorPolygon()));
+            ship.setReactor(new Reactor(reactorRegistry.get("engi_huge0"), ship.getConfigData().getReactorPolygon()));
             ship.setHull(new Hull(hullRegistry.get(factionName), ship));
             ship.setArmor(new Armor(armorPlateRegistry.get(factionName), ship));
             addShieldToShip(ship, "engi_huge0");
@@ -67,7 +67,7 @@ public class ShipOutfitter {
             ship.setCargo(new Cargo(cargoRegistry.get(factionName)));
         } else {
             ship.setEngine(new Engines(engineRegistry.get(factionName), ship));
-            ship.setReactor(new Reactor(reactorRegistry.get(factionName), ship.getShipData().getReactorPolygon()));
+            ship.setReactor(new Reactor(reactorRegistry.get(factionName), ship.getConfigData().getReactorPolygon()));
             ship.setHull(new Hull(hullRegistry.get(factionName), ship));
             ship.setArmor(new Armor(armorPlateRegistry.get(factionName), ship));
             addShieldToShip(ship, factionName);
@@ -81,7 +81,7 @@ public class ShipOutfitter {
     public void outfit(Ship ship, int reactorDataId, int enginesDataId, int hullDataId, int armorDataId, int crewDataId, int cargoDataId,
                        int shieldDataId) {
         ship.setReactor(new Reactor(reactorRegistry.get(reactorDataId),
-                ship.getShipData().getReactorPolygon()));
+                ship.getConfigData().getReactorPolygon()));
         Engines engines = new Engines(engineRegistry.get(enginesDataId), ship);
         ship.setEngine(engines);
 
@@ -90,7 +90,7 @@ public class ShipOutfitter {
         ship.setCrew(new Crew(crewRegistry.get(crewDataId)));
         ship.setCargo(new Cargo(cargoRegistry.get(cargoDataId)));
         if (shieldDataId > -1) {
-            Shield shield = new Shield(shieldRegistry.get(shieldDataId), ship.getShipData().getShieldPolygon(),
+            Shield shield = new Shield(shieldRegistry.get(shieldDataId), ship.getConfigData().getShieldPolygon(),
                     ship.getWorld().getGameLogic().getLogic(LogicType.SHIELD_UPDATE.ordinal()));
             ship.setShield(shield);
         }
@@ -107,7 +107,7 @@ public class ShipOutfitter {
     }
 
     private void addRandomWeapons(Ship ship, String gunName) {
-        Vector2f[] weaponSlotPositions = ship.getShipData().getWeaponSlotPositions();
+        Vector2f[] weaponSlotPositions = ship.getConfigData().getWeaponSlotPositions();
 
         if (random.nextInt(3) == 0) {
             for (int i = 0; i < weaponSlotPositions.length; i++) {
@@ -138,7 +138,7 @@ public class ShipOutfitter {
     }
 
     public void addShieldToShip(Ship ship, ShieldData shieldData) {
-        ship.setShield(new Shield(shieldData, ship.getShipData().getShieldPolygon(),
+        ship.setShield(new Shield(shieldData, ship.getConfigData().getShieldPolygon(),
                 ship.getWorld().getGameLogic().getLogic(LogicType.SHIELD_UPDATE.ordinal())));
     }
 

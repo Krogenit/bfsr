@@ -9,7 +9,7 @@ import net.bfsr.client.renderer.entity.ShipRender;
 import net.bfsr.client.renderer.entity.ShipWreckRenderer;
 import net.bfsr.client.renderer.entity.WreckRender;
 import net.bfsr.config.ConfigConverterManager;
-import net.bfsr.config.GameObjectConfigData;
+import net.bfsr.config.entity.GameObjectConfigData;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.entity.RigidBody;

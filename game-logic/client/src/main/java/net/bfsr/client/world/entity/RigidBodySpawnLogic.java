@@ -2,7 +2,7 @@ package net.bfsr.client.world.entity;
 
 import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.ConfigToDataConverter;
-import net.bfsr.config.GameObjectConfigData;
+import net.bfsr.config.entity.GameObjectConfigData;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.network.packet.common.entity.spawn.RigidBodySpawnData;

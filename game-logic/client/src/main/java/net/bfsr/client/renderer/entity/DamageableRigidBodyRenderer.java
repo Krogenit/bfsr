@@ -102,7 +102,8 @@ public class DamageableRigidBodyRenderer extends RigidBodyRender {
     }
 
     private void renderRingOffset(float x, float y, float sin, float cos, Polygon polygon) {
-        Polygon polygon1 = (Polygon) BufferOp.bufferOp(polygon, DamageSystem.BUFFER_DISTANCE, DamageSystem.BUFFER_PARAMETERS);
+        Polygon polygon1 = (Polygon) BufferOp.bufferOp(polygon, damageableRigidBody.getConfigData().getBufferDistance(),
+                DamageSystem.BUFFER_PARAMETERS);
         CoordinateSequence coordinates = polygon1.getExteriorRing().getCoordinateSequence();
         int size = coordinates.size() - 1;
 

@@ -1,7 +1,7 @@
 package net.bfsr.damage;
 
 import io.netty.buffer.ByteBuf;
-import net.bfsr.config.GameObjectConfigData;
+import net.bfsr.config.entity.GameObjectConfigData;
 import net.bfsr.entity.RigidBody;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Polygon;

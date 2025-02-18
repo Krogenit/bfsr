@@ -7,5 +7,6 @@ public abstract class AbstractTextureGenerator {
     public abstract void init();
 
     public abstract AbstractTexture generateNebulaTexture(int width, int height, XoRoShiRo128PlusRandom random, AbstractRenderer renderer);
-    public abstract AbstractTexture generateShieldTexture(AbstractTexture texture, AbstractRenderer renderer);
+    public abstract AbstractTexture generateShieldTexture(AbstractTexture texture, AbstractRenderer renderer, float outlineOffset,
+                                                          float blurSize);
 }

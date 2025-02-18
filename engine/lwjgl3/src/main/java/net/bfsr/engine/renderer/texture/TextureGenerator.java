@@ -125,8 +125,7 @@ public final class TextureGenerator extends AbstractTextureGenerator {
     }
 
     @Override
-    public AbstractTexture generateShieldTexture(AbstractTexture texture,
-                                                 AbstractRenderer renderer) {
+    public AbstractTexture generateShieldTexture(AbstractTexture texture, AbstractRenderer renderer, float outlineOffset, float blurSize) {
         int currentBindTexture = glGetInteger(GL_TEXTURE_BINDING_2D);
         AbstractSpriteRenderer spriteRenderer = renderer.getSpriteRenderer();
         int rectangleRenderId = spriteRenderer.add(0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, BufferType.GUI);
@@ -161,6 +160,7 @@ public final class TextureGenerator extends AbstractTextureGenerator {
         currentTexture.bind();
 
         outlineShader.enable();
+        outlineShader.setOffset(outlineOffset);
         secondFrameBuffer.bind();
 
         spriteRenderer.addDrawCommand(rectangleRenderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.GUI);
@@ -172,7 +172,7 @@ public final class TextureGenerator extends AbstractTextureGenerator {
         currentTexture.bind();
 
         gaussianBlurShader.enable();
-        gaussianBlurShader.setFlip(true);
+        gaussianBlurShader.setSize(blurSize);
         gaussianBlurShader.setResolution(viewportWidth, viewportHeight);
 
         frameBuffer.bind();

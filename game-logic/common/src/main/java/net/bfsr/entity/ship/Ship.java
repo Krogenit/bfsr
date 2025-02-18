@@ -6,7 +6,6 @@ import lombok.Setter;
 import net.bfsr.ai.Ai;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.damage.ConnectedObject;
-import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
@@ -94,12 +93,11 @@ public class Ship extends DamageableRigidBody {
     @Setter
     private Runnable updateRunnable = this::updateAlive;
     @Getter
-    private final ShipData shipData;
+    private final ShipData configData;
 
     public Ship(ShipData shipData) {
-        super(shipData.getSizeX(), shipData.getSizeY(), shipData, new DamageMask(shipData.getDamageMaskSize().x,
-                shipData.getDamageMaskSize().y), shipData.getPolygonJTS());
-        this.shipData = shipData;
+        super(shipData.getSizeX(), shipData.getSizeY(), shipData, shipData.getPolygonJTS());
+        this.configData = shipData;
         this.timeToDestroy = shipData.getDestroyTimeInTicks();
         this.maxSparksTimer = timeToDestroy / 3;
         this.jumpTimeInTicks = Math.round(Engine.convertToTicks(0.6f) * ((Math.max(Math.max(getSizeX(), getSizeY()) / 150.0f, 1.0f))));
@@ -269,7 +267,7 @@ public class Ship extends DamageableRigidBody {
 
     @Override
     public void onContourReconstructed(Polygon polygon) {
-        if (!DamageSystem.isPolygonConnectedToContour(shipData.getReactorPolygon().getVertices(), polygon)) {
+        if (!DamageSystem.isPolygonConnectedToContour(configData.getReactorPolygon().getVertices(), polygon)) {
             modules.getReactor().setDead();
             return;
         }
@@ -284,7 +282,7 @@ public class Ship extends DamageableRigidBody {
         }
 
         Shield shield = modules.getShield();
-        if (!DamageSystem.isPolygonConnectedToContour(shipData.getShieldPolygon().getVertices(), polygon)) {
+        if (!DamageSystem.isPolygonConnectedToContour(configData.getShieldPolygon().getVertices(), polygon)) {
             shield.setDead();
         }
     }
@@ -323,7 +321,7 @@ public class Ship extends DamageableRigidBody {
     }
 
     public Vector2f getWeaponSlotPosition(int id) {
-        return shipData.getWeaponSlotPositions()[id];
+        return configData.getWeaponSlotPositions()[id];
     }
 
     public void addWeaponToSlot(int id, WeaponSlot slot) {

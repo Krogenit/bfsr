@@ -3,7 +3,7 @@ package net.bfsr.damage;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import net.bfsr.config.GameObjectConfigData;
+import net.bfsr.config.entity.damageable.DamageableRigidBodyConfigData;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.physics.CollisionMatrixType;
 import org.jbox2d.dynamics.Fixture;
@@ -20,18 +20,23 @@ public class DamageableRigidBody extends RigidBody {
     private Polygon polygon;
     private final List<ConnectedObject<?>> connectedObjects = new ArrayList<>();
     private final float localOffsetX, localOffsetY;
+    @Getter
+    protected DamageableRigidBodyConfigData configData;
 
-    protected DamageableRigidBody(float sizeX, float sizeY, GameObjectConfigData configData, DamageMask damageMask, Polygon polygon) {
-        this(0, 0, 0, 1, sizeX, sizeY, configData, damageMask, polygon, 0.0f, 0.0f);
+    protected DamageableRigidBody(float sizeX, float sizeY, DamageableRigidBodyConfigData configData, Polygon polygon) {
+        this(0, 0, 0, 1, sizeX, sizeY, configData, new DamageMask(configData.getDamageMaskSize().x,
+                configData.getDamageMaskSize().y), polygon, 0.0f, 0.0f);
     }
 
-    protected DamageableRigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY, GameObjectConfigData configData,
-                                  DamageMask damageMask, Polygon polygon, float localOffsetX, float localOffsetY) {
+    protected DamageableRigidBody(float x, float y, float sin, float cos, float sizeX, float sizeY,
+                                  DamageableRigidBodyConfigData configData, DamageMask damageMask, Polygon polygon, float localOffsetX,
+                                  float localOffsetY) {
         super(x, y, sin, cos, sizeX, sizeY, configData);
         this.damageMask = damageMask;
         this.polygon = polygon;
         this.localOffsetX = localOffsetX;
         this.localOffsetY = localOffsetY;
+        this.configData = configData;
     }
 
     @Override

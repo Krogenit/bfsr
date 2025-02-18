@@ -2,7 +2,7 @@ package net.bfsr.config.entity.wreck;
 
 import lombok.Getter;
 import net.bfsr.config.Configurable;
-import net.bfsr.config.GameObjectConfig;
+import net.bfsr.config.entity.GameObjectConfig;
 import net.bfsr.entity.wreck.WreckType;
 
 @Getter

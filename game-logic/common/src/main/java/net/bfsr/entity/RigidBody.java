@@ -3,7 +3,7 @@ package net.bfsr.entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.bfsr.config.GameObjectConfigData;
+import net.bfsr.config.entity.GameObjectConfigData;
 import net.bfsr.engine.entity.GameObject;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.event.entity.RigidBodyAddToWorldEvent;

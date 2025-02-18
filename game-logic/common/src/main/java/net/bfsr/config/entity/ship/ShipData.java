@@ -2,28 +2,28 @@ package net.bfsr.config.entity.ship;
 
 import gnu.trove.map.TMap;
 import lombok.Getter;
-import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.config.Vector2fConfigurable;
 import net.bfsr.config.component.ModulesPolygonsConfig;
+import net.bfsr.config.entity.damageable.DamageableRigidBodyConfigData;
 import net.bfsr.engine.Engine;
 import net.bfsr.math.Direction;
 import org.jbox2d.collision.shapes.Polygon;
 import org.joml.Vector2f;
-import org.joml.Vector2i;
 import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class ShipData extends GameObjectConfigData {
+public class ShipData extends DamageableRigidBodyConfigData {
     private final int destroyTimeInTicks;
     private final Vector4f effectsColor;
     private final Vector2f[] weaponSlotPositions;
     private final Polygon reactorPolygon;
     private final Polygon shieldPolygon;
     private final TMap<Direction, EnginesData> engines;
-    private final Vector2i damageMaskSize;
+    private final float shieldOutlineOffset;
+    private final float shieldBlurSize;
 
     public ShipData(ShipConfig shipConfig, String fileName, int id, int registryId) {
         super(shipConfig, fileName, id, registryId);
@@ -41,7 +41,8 @@ public class ShipData extends GameObjectConfigData {
         this.reactorPolygon = convertToPolygon(modules.getReactor().getVertices());
         this.shieldPolygon = convertToPolygon(modules.getShield().getVertices());
         this.engines = convert(modules.getEngines(), direction -> direction, this::convert);
-        this.damageMaskSize = convert(shipConfig.getDamageMaskSize());
+        this.shieldOutlineOffset = shipConfig.getShieldOutlineOffset();
+        this.shieldBlurSize = shipConfig.getShieldBlurSize();
     }
 
     private EnginesData convert(EnginesConfig enginesConfig) {

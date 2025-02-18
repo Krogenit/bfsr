@@ -1,7 +1,6 @@
 package net.bfsr.client.damage;
 
 import net.bfsr.client.renderer.texture.DamageMaskTexture;
-import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.Engine;
@@ -23,6 +22,8 @@ import java.util.List;
 
 public class DamageSystemDebugger {
     private final AbstractRenderer renderer = Engine.getRenderer();
+    private final float minDistanceBetweenVertices = 0.3f;
+    private final float bufferDistance = 0.3f;
 
     private DamageMaskTexture texture;
 
@@ -73,8 +74,7 @@ public class DamageSystemDebugger {
         try {
             Geometry geometry = polygon.difference(clipPolygon);
             if (geometry instanceof Polygon polygon1) {
-                org.locationtech.jts.geom.Geometry geometry1 = DamageSystem.optimizeAndReverse(polygon1,
-                        GameObjectConfigData.MIN_DISTANCE_BETWEEN_VERTICES_SQ);
+                org.locationtech.jts.geom.Geometry geometry1 = DamageSystem.optimizeAndReverse(polygon1, minDistanceBetweenVertices);
                 if (geometry1 instanceof Polygon polygon2) {
                     clipTextureOutside(polygon2, damageMask, size);
 
@@ -117,8 +117,7 @@ public class DamageSystemDebugger {
             point64.y += clippingOffset;
         }
 
-        org.locationtech.jts.geom.Geometry geometry = BufferOp.bufferOp(polygon, DamageSystem.BUFFER_DISTANCE,
-                DamageSystem.BUFFER_PARAMETERS);
+        org.locationtech.jts.geom.Geometry geometry = BufferOp.bufferOp(polygon, bufferDistance, DamageSystem.BUFFER_PARAMETERS);
         Geometry simplify = VWSimplifier.simplify(geometry, 0.1f);
         Coordinate[] coordinates = simplify.getCoordinates();
 

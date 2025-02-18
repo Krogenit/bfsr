@@ -32,7 +32,7 @@ public class Engines extends DamageableModule {
         this.maneuverability = enginesData.getManeuverability();
         this.angularVelocity = enginesData.getAngularVelocity();
 
-        ship.getShipData().getEngines().forEachEntry((direction, enginesData1) -> {
+        ship.getConfigData().getEngines().forEachEntry((direction, enginesData1) -> {
             List<EngineData> engines1 = enginesData1.engines();
             List<Engine> engineList = new ArrayList<>(engines1.size());
             for (int i = 0; i < engines1.size(); i++) {

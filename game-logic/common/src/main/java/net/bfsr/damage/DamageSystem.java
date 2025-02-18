@@ -2,7 +2,7 @@ package net.bfsr.damage;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.config.entity.ship.ShipData;
+import net.bfsr.config.entity.damageable.DamageableRigidBodyConfigData;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.entity.wreck.ShipWreck;
@@ -31,8 +31,6 @@ import java.util.function.Consumer;
 @Log4j2
 public final class DamageSystem {
     private static final boolean DEBUG = false;
-    private static final float BUFFER_Y_OFFSET = -0.32f;
-    public static final double BUFFER_DISTANCE = 0.3f;
     private static final double MIN_POLYGON_AREA = 0.3;
     public static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
     private static final SweepLine SWEEP_LINE = new SweepLine();
@@ -64,11 +62,11 @@ public final class DamageSystem {
         } else if (difference instanceof org.locationtech.jts.geom.Polygon polygon1) {
             double area = Area.ofRing(polygon1.getExteriorRing().getCoordinateSequence());
             if (area > MIN_POLYGON_AREA) {
-                org.locationtech.jts.geom.Geometry geometry = optimizeAndReverse(polygon1,
-                        damageable.getConfigData().getMinDistanceBetweenVerticesSq());
+                DamageableRigidBodyConfigData configData = damageable.getConfigData();
+                org.locationtech.jts.geom.Geometry geometry = optimizeAndReverse(polygon1, configData.getMinDistanceBetweenVerticesSq());
                 if (geometry instanceof org.locationtech.jts.geom.Polygon polygon2) {
                     clipTextureOutside(polygon2, mask, damageable.getSizeX(), damageable.getSizeY(), damageable.getLocalOffsetX(),
-                            damageable.getLocalOffsetY());
+                            damageable.getLocalOffsetY(), configData.getBufferDistance(), configData.getBufferYOffset());
                     damageable.setPolygon(polygon2);
                     decompose(polygon2, polygon3 -> damageable.addHullFixture(damageable.setupFixture(new Fixture(polygon3))));
 
@@ -103,13 +101,14 @@ public final class DamageSystem {
         double minDistance = Double.MAX_VALUE;
         org.locationtech.jts.geom.Polygon newHull = null;
         List<org.locationtech.jts.geom.Polygon> removedPaths = new ArrayList<>(polygonsCount - 1);
+        DamageableRigidBodyConfigData configData = damageable.getConfigData();
         for (int i = 0; i < polygonsCount; i++) {
             org.locationtech.jts.geom.Polygon polygon1 = (org.locationtech.jts.geom.Polygon) multiPolygon.getGeometryN(i);
             double area = Area.ofRing(polygon1.getExteriorRing().getCoordinateSequence());
             if (area > MIN_POLYGON_AREA) {
                 if (optimize) {
                     org.locationtech.jts.geom.Geometry geometry = optimizeAndReverse(polygon1,
-                            damageable.getConfigData().getMinDistanceBetweenVerticesSq());
+                            configData.getMinDistanceBetweenVerticesSq());
 
                     if (geometry instanceof org.locationtech.jts.geom.Polygon polygon2) {
                         Coordinate center = polygon2.getCentroid().getCoordinate();
@@ -186,10 +185,11 @@ public final class DamageSystem {
 
         for (int i = 0; i < removedPaths.size(); i++) {
             org.locationtech.jts.geom.Polygon removedPath = removedPaths.get(i);
-            DamageMask damageMask = createInvertedDamageMask(removedPath, mask, sizeX, sizeY);
+            DamageMask damageMask = createInvertedDamageMask(removedPath, mask, sizeX, sizeY, configData.getBufferDistance(),
+                    configData.getBufferYOffset());
             Coordinate localCenter = removedPath.getCentroid().getCoordinate();
             ShipWreck wreck = createWreck(world, x, y, sin, cos, sizeX, sizeY, removedPath,
-                    damageMask, (ShipData) damageable.getConfigData(), localCenter);
+                    damageMask, configData, localCenter);
             wreck.setLinearVelocity(damageable.getLinearVelocity());
             wreck.setAngularVelocity(damageable.getAngularVelocity());
 
@@ -207,7 +207,8 @@ public final class DamageSystem {
         }
 
         if (!damageable.isDead()) {
-            clipTextureOutside(newHull, mask, sizeX, sizeY, damageable.getLocalOffsetX(), damageable.getLocalOffsetY());
+            clipTextureOutside(newHull, mask, sizeX, sizeY, damageable.getLocalOffsetX(), damageable.getLocalOffsetY(),
+                    configData.getBufferDistance(), configData.getBufferYOffset());
         }
     }
 
@@ -348,8 +349,8 @@ public final class DamageSystem {
         }
     }
 
-    private static List<Coordinate> clipTextureOutside(org.locationtech.jts.geom.Polygon polygon, DamageMask mask, float sizeX,
-                                                       float sizeY, float offsetX, float offsetY) {
+    private static List<Coordinate> clipTextureOutside(org.locationtech.jts.geom.Polygon polygon, DamageMask mask, float sizeX, float sizeY,
+                                                       float offsetX, float offsetY, float bufferDistance, float bufferYOffset) {
         float halfSizeX = sizeX / 2.0f;
         float halfSizeY = sizeY / 2.0f;
         float localScaleX = mask.getWidth() / sizeX;
@@ -359,10 +360,10 @@ public final class DamageSystem {
         int size = coordinateSequence.size();
         for (int i = 0; i < size; i++) {
             Coordinate point64 = coordinateSequence.getCoordinate(i);
-            point64.y += BUFFER_Y_OFFSET;
+            point64.y += bufferYOffset;
         }
 
-        org.locationtech.jts.geom.Polygon polygon1 = (org.locationtech.jts.geom.Polygon) BufferOp.bufferOp(polygon, BUFFER_DISTANCE,
+        org.locationtech.jts.geom.Polygon polygon1 = (org.locationtech.jts.geom.Polygon) BufferOp.bufferOp(polygon, bufferDistance,
                 BUFFER_PARAMETERS);
 
         CoordinateSequence coordinateSequence1 = polygon1.getExteriorRing().getCoordinateSequence();
@@ -375,7 +376,7 @@ public final class DamageSystem {
 
         for (int i = 0; i < size; i++) {
             Coordinate point64 = coordinateSequence.getCoordinate(i);
-            point64.y -= BUFFER_Y_OFFSET;
+            point64.y -= bufferYOffset;
         }
 
         return res;
@@ -457,9 +458,9 @@ public final class DamageSystem {
     }
 
     private DamageMask createInvertedDamageMask(org.locationtech.jts.geom.Polygon polygon, DamageMask damageMask, float sizeX,
-                                                float sizeY) {
+                                                float sizeY, float bufferDistance, float bufferYOffset) {
         DamageMask damagedTexture = new DamageMask(damageMask);
-        List<Coordinate> path = clipTextureOutside(polygon, damagedTexture, sizeX, sizeY, 0, 0);
+        List<Coordinate> path = clipTextureOutside(polygon, damagedTexture, sizeX, sizeY, 0, 0, bufferDistance, bufferYOffset);
         for (int i = 0; i < path.size(); i++) {
             Coordinate point = path.get(i);
             if (point.x < damagedTexture.getX()) damagedTexture.setX((int) point.x);
@@ -475,8 +476,8 @@ public final class DamageSystem {
     }
 
     private ShipWreck createWreck(World world, double x, double y, double sin, double cos, float scaleX, float scaleY,
-                                  org.locationtech.jts.geom.Polygon polygon, DamageMask damageMask, ShipData shipData,
-                                  Coordinate localCenter) {
+                                  org.locationtech.jts.geom.Polygon polygon, DamageMask damageMask,
+                                  DamageableRigidBodyConfigData configData, Coordinate localCenter) {
         RotationHelper.rotate((float) sin, (float) cos, (float) localCenter.x, (float) localCenter.y, rotatedLocalCenter);
         x += rotatedLocalCenter.x;
         y += rotatedLocalCenter.y;
@@ -486,14 +487,14 @@ public final class DamageSystem {
         });
         List<Shape> convexes = new ArrayList<>(32);
         decompose(polygon, convexes::add);
-        return createWreck(world, x, y, sin, cos, scaleX, scaleY, convexes, polygon, damageMask, shipData, (float) localCenter.x,
+        return createWreck(world, x, y, sin, cos, scaleX, scaleY, convexes, polygon, damageMask, configData, (float) localCenter.x,
                 (float) localCenter.y);
     }
 
     private ShipWreck createWreck(World world, double x, double y, double sin, double cos, float scaleX, float scaleY,
                                   List<Shape> convexes, org.locationtech.jts.geom.Polygon polygon, DamageMask damageMask,
-                                  ShipData shipData, float localOffsetX, float localOffsetY) {
-        ShipWreck wreck = new ShipWreck((float) x, (float) y, (float) sin, (float) cos, scaleX, scaleY, shipData, damageMask,
+                                  DamageableRigidBodyConfigData configData, float localOffsetX, float localOffsetY) {
+        ShipWreck wreck = new ShipWreck((float) x, (float) y, (float) sin, (float) cos, scaleX, scaleY, configData, damageMask,
                 polygon, localOffsetX, localOffsetY);
         wreck.init(world, world.getNextId());
         for (int i = 0; i < convexes.size(); i++) {

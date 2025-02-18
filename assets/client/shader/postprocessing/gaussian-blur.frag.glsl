@@ -5,13 +5,13 @@ layout (location = 0) in vec2 textureCoords0;
 layout (binding = 0) uniform sampler2D image;
 
 uniform vec2 resolution;
+uniform float size; // Blur size (radius)
 
 layout (location = 0) out vec4 out_Color;
 
 const float twoPi = 6.28318530718;
 const float directions = 12.0; // Blur directions (default 16.0 - more is better but slower)
 const float quality = 3.0; // Blur quality (default 4.0 - more is better but slower)
-const float size = 4.0; // Blur size (radius)
 
 void main() {
     vec2 radius = size / resolution;

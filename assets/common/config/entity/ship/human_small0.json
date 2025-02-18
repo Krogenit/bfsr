@@ -1,4 +1,10 @@
 {
+  "bufferDistance": 0.3,
+  "bufferYOffset": 0.0,
+  "damageMaskSize": {
+    "x": 16,
+    "y": 16
+  },
   "destroyTimeInSeconds": 1.0,
   "effectsColor": {
     "r": 0.5,
@@ -6,40 +12,9 @@
     "b": 1.0,
     "a": 1.0
   },
+  "minDistanceBetweenVerticesSq": 0.3,
   "modules": {
     "engines": {
-      "RIGHT": {
-        "engines": [
-          {
-            "effectPosition": {
-              "x": -0.5,
-              "y": -3.0
-            },
-            "polygons": [
-              {
-                "vertices": [
-                  {
-                    "x": -0.8,
-                    "y": -2.0
-                  },
-                  {
-                    "x": -0.8,
-                    "y": -3.0
-                  },
-                  {
-                    "x": -0.2,
-                    "y": -3.0
-                  },
-                  {
-                    "x": -0.2,
-                    "y": -2.0
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
       "LEFT": {
         "engines": [
           {
@@ -65,6 +40,38 @@
                   {
                     "x": -0.2,
                     "y": 3.0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "FORWARD": {
+        "engines": [
+          {
+            "effectPosition": {
+              "x": -2.3,
+              "y": 0.0
+            },
+            "polygons": [
+              {
+                "vertices": [
+                  {
+                    "x": -0.7,
+                    "y": 0.35
+                  },
+                  {
+                    "x": -1.5,
+                    "y": 0.35
+                  },
+                  {
+                    "x": -1.5,
+                    "y": -0.35
+                  },
+                  {
+                    "x": -0.7,
+                    "y": -0.35
                   }
                 ]
               }
@@ -104,31 +111,31 @@
           }
         ]
       },
-      "FORWARD": {
+      "RIGHT": {
         "engines": [
           {
             "effectPosition": {
-              "x": -2.3,
-              "y": 0.0
+              "x": -0.5,
+              "y": -3.0
             },
             "polygons": [
               {
                 "vertices": [
                   {
-                    "x": -0.7,
-                    "y": 0.35
+                    "x": -0.8,
+                    "y": -2.0
                   },
                   {
-                    "x": -1.5,
-                    "y": 0.35
+                    "x": -0.8,
+                    "y": -3.0
                   },
                   {
-                    "x": -1.5,
-                    "y": -0.35
+                    "x": -0.2,
+                    "y": -3.0
                   },
                   {
-                    "x": -0.7,
-                    "y": -0.35
+                    "x": -0.2,
+                    "y": -2.0
                   }
                 ]
               }
@@ -180,12 +187,14 @@
   },
   "name": "human_small0",
   "path": "",
+  "shieldBlurSize": 4.0,
+  "shieldOutlineOffset": 0.015625,
   "size": {
     "x": 5.46,
     "y": 6.3
   },
   "texture": "texture/entity/ship/human_small0.png",
-  "treeIndex": 1,
+  "treeIndex": 4,
   "vertices": [
     {
       "x": 2.68,
@@ -268,11 +277,6 @@
       "y": -1.55
     }
   ],
-  "minDistanceBetweenVerticesSq": 0.3,
-  "damageMaskSize": {
-    "x": 32,
-    "y": 32
-  },
   "weaponSlotPositions": [
     {
       "x": 1.0,

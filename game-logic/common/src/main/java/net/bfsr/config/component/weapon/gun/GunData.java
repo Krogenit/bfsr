@@ -1,8 +1,8 @@
 package net.bfsr.config.component.weapon.gun;
 
 import lombok.Getter;
-import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.config.SoundData;
+import net.bfsr.config.entity.GameObjectConfigData;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.util.PathHelper;
 import net.bfsr.entity.bullet.BulletDamage;

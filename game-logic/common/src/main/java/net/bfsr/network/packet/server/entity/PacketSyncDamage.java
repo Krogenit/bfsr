@@ -52,10 +52,10 @@ public class PacketSyncDamage extends PacketScheduled {
         data.writeShort(maxX);
         data.writeShort(maxY);
 
-        int maskHeight = damageable.getDamageMask().getHeight();
+        int maskWidth = damageable.getDamageMask().getWidth();
         int width = maxX - x + 1;
         for (int i = y; i <= maxY; i++) {
-            data.writeBytes(bytes, i * maskHeight + x, width);
+            data.writeBytes(bytes, i * maskWidth + x, width);
         }
     }
 

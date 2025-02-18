@@ -6,8 +6,7 @@ import org.lwjgl.opengl.GL20;
 
 public class GaussianBlurShader extends ShaderProgram {
     private int loc_resolution;
-    private int loc_flip;
-    private int loc_direction;
+    private int loc_size;
 
     public GaussianBlurShader() {
         super(new Definition(GL20.GL_VERTEX_SHADER, "postprocessing/gaussian-blur.vert.glsl"),
@@ -17,19 +16,14 @@ public class GaussianBlurShader extends ShaderProgram {
     @Override
     protected void getAllUniformLocations() {
         loc_resolution = getUniformLocation("resolution");
-        loc_flip = getUniformLocation("flip");
-        loc_direction = getUniformLocation("direction");
+        loc_size = getUniformLocation("size");
     }
 
     public void setResolution(float width, float height) {
         setVector(loc_resolution, width, height);
     }
 
-    public void setFlip(boolean flip) {
-        setInt(loc_flip, flip ? 1 : 0);
-    }
-
-    public void setDirection(float x, float y) {
-        setVector(loc_direction, x, y);
+    public void setSize(float size) {
+        setFloat(loc_size, size);
     }
 }

@@ -10,6 +10,7 @@ import net.bfsr.client.renderer.component.WeaponRenderRegistry;
 import net.bfsr.client.renderer.component.WeaponSlotRender;
 import net.bfsr.config.entity.ship.EngineData;
 import net.bfsr.config.entity.ship.EnginesData;
+import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.entity.SpawnAccumulator;
 import net.bfsr.engine.event.EventHandler;
@@ -88,7 +89,9 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
         ship.getShipEventBus().register(this);
 
-        shieldTexture = renderer.getTextureGenerator().generateShieldTexture(texture, getRenderer());
+        ShipData configData = ship.getConfigData();
+        shieldTexture = renderer.getTextureGenerator().generateShieldTexture(texture, getRenderer(), configData.getShieldOutlineOffset(),
+                configData.getShieldBlurSize());
     }
 
     @Override
@@ -96,7 +99,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         super.init();
 
         if (!ship.isSpawned()) {
-            Vector4f effectsColor = ship.getShipData().getEffectsColor();
+            Vector4f effectsColor = ship.getConfigData().getEffectsColor();
             jumpEffectSize = 1.5f * Math.max(ship.getSizeX(), ship.getSizeY()) + 5.0f;
             spawnEffectId = spriteRenderer.add(jumpPosition.x, jumpPosition.y, ship.getSin(), ship.getCos(), 0.0f, 0.0f, effectsColor.x,
                     effectsColor.y, effectsColor.z, 0.0f, PARTICLE_JUMP_TEXTURE.getTextureHandle(), BufferType.ENTITIES_ADDITIVE);
@@ -104,7 +107,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
         Shield shield = ship.getModules().getShield();
         if (shield != null) {
-            Vector4f color = ship.getShipData().getEffectsColor();
+            Vector4f color = ship.getConfigData().getEffectsColor();
             shieldId = spriteRenderer.add(ship.getX(), ship.getY(), ship.getSin(), ship.getCos(), ship.getSizeX() * shieldSize,
                     ship.getSizeY() * shieldSize, color.x, color.y, color.z, 0.25f, shieldTexture.getTextureHandle(),
                     maskTexture.getTextureHandle(), MaterialType.SHIELD, BufferType.ENTITIES_BACKGROUND_ADDITIVE);
@@ -130,7 +133,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     }
 
     private void initEngineEffectsRunnable(Ship ship) {
-        TMap<Direction, EnginesData> engines = ship.getShipData().getEngines();
+        TMap<Direction, EnginesData> engines = ship.getConfigData().getEngines();
         engines.forEachEntry((direction, enginesData) -> {
             int size = enginesData.engines().size();
             ArrayList<SpawnAccumulator> accumulators = new ArrayList<>(size);
@@ -142,7 +145,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         });
 
         Body body = ship.getBody();
-        Vector4f effectsColor = ship.getShipData().getEffectsColor();
+        Vector4f effectsColor = ship.getConfigData().getEffectsColor();
         Vector2 shipVelocity = body.getLinearVelocity();
 
         Direction[] directions = Direction.VALUES;
@@ -226,7 +229,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         }
 
         Engines enginesModule = modules.getEngines();
-        TMap<Direction, EnginesData> engines = ship.getShipData().getEngines();
+        TMap<Direction, EnginesData> engines = ship.getConfigData().getEngines();
         engines.forEachEntry((direction, enginesData) -> {
             List<EngineData> engineDataList = enginesData.engines();
             for (int i = 0; i < engineDataList.size(); i++) {
@@ -409,7 +412,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         return event -> {
             Ship ship = event.ship();
             Vector2 velocity = ship.getLinearVelocity();
-            Vector4f effectsColor = ship.getShipData().getEffectsColor();
+            Vector4f effectsColor = ship.getConfigData().getEffectsColor();
             jumpEffects.jump(ship.getX(), ship.getY(), jumpEffectSize * 1.25f, velocity.x * 0.5f, velocity.y * 0.5f,
                     effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
             createName();

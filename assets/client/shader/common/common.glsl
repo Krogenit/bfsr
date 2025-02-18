@@ -10,6 +10,8 @@
 #define MIN_CAMERA_ZOOM                2.0
 #define MAX_CAMERA_ZOOM                30.0
 
+#define SHIP_SHIELD_SIZE               1.25
+
 // Material types
 #define NOT_TEXTURED 0
 #define TEXTURED     1

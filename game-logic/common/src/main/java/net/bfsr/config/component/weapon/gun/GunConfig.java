@@ -1,7 +1,11 @@
 package net.bfsr.config.component.weapon.gun;
 
 import lombok.Getter;
-import net.bfsr.config.*;
+import net.bfsr.config.ColorConfigurable;
+import net.bfsr.config.Configurable;
+import net.bfsr.config.ConfigurableSound;
+import net.bfsr.config.Vector2fConfigurable;
+import net.bfsr.config.entity.GameObjectConfig;
 import net.bfsr.config.entity.bullet.DamageConfigurable;
 
 @Configurable

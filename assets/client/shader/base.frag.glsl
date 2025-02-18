@@ -75,7 +75,7 @@ void main() {
     }
 
     if (materialType == SHIELD) {
-        float maskAlpha = texture(sampler2D(maskTextureHandle), textureCoords).r;
+        float maskAlpha = texture(sampler2D(maskTextureHandle), textureCoords * SHIP_SHIELD_SIZE - SHIP_SHIELD_SIZE * 0.1).r;
         if (maskAlpha <= 0.0) {
             discard;
         }
