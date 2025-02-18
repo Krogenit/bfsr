@@ -35,6 +35,8 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     private Vector2 rayCastResultNormal;
 
     private final float powerAnimationSpeed = Engine.convertToDeltaTime(3.5f);
+    private final float beamRangeAnimationSpeed = Engine.convertToDeltaTime(60.0f);
+
     @Getter
     private float aliveTimerInTicks;
     private final float maxAliveTimerInTicks;
@@ -90,7 +92,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
 
     private void rayCast() {
         if (currentBeamRange < beamMaxRange) {
-            currentBeamRange += 1.0f;
+            currentBeamRange += beamRangeAnimationSpeed;
         }
 
         float cos = ship.getCos();

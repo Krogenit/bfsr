@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.bfsr.config.entity.GameObjectConfigData;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.entity.GameObject;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.event.entity.RigidBodyAddToWorldEvent;
@@ -26,7 +27,7 @@ import java.util.List;
 
 @NoArgsConstructor
 public class RigidBody extends GameObject {
-    protected static final int DEFAULT_MAX_LIFE_TIME_IN_TICKS = 1200;
+    protected static final int DEFAULT_MAX_LIFE_TIME_IN_TICKS = Engine.convertToTicks(20);
 
     @Getter
     protected World world;

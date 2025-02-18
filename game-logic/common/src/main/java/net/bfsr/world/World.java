@@ -16,7 +16,7 @@ import net.bfsr.physics.CollisionMatrix;
 import net.bfsr.physics.CommonCollisionHandler;
 import net.bfsr.physics.ContactListener;
 import net.bfsr.physics.filter.ContactFilter;
-import org.jbox2d.common.Vector2;
+import org.jbox2d.common.Settings;
 
 import java.util.List;
 
@@ -58,9 +58,11 @@ public class World {
     }
 
     private void initPhysicWorld() {
-        physicWorld = new org.jbox2d.dynamics.World(new Vector2());
+        physicWorld = new org.jbox2d.dynamics.World();
         physicWorld.setContactListener(new ContactListener(collisionMatrix));
         physicWorld.setContactFilter(contactFilter);
+        Settings.maxTranslation = Engine.convertToDeltaTime(120);
+        Settings.maxTranslationSquared = Settings.maxTranslation * Settings.maxTranslation;
     }
 
     public void init() {
