@@ -15,6 +15,7 @@ import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.ModuleWithCells;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.armor.ArmorPlate;
 import net.bfsr.entity.ship.module.hull.Hull;
@@ -80,9 +81,11 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
             hullCells.clear();
         }
 
-        float cellSize = 28.0f * dynamicShipScale;
-        float offset = dynamicShipScale;
         Hull hull = ship.getModules().getHull();
+        float cellSizeScale = calculateHullCellSize(hull);
+        float cellSize = 15.0f * cellSizeScale;
+        float offset = 0.75f * cellSizeScale;
+
         HullCell[][] cells = hull.getCells();
         float startX = cells[0].length * cellSize / 2.0f + (cells[0].length - 1) * offset / 2 - cellSize / 2.0f;
         float y1 = -cells.length * cellSize / 2.0f - (cells.length - 1) * offset / 2 + cellSize / 2.0f;
@@ -107,6 +110,19 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
         }
     }
 
+    private float calculateHullCellSize(ModuleWithCells<?> module) {
+        float shipWidth = ship.getSizeX();
+        float shipHeight = ship.getSizeY();
+        float cellSizeScale;
+        if (shipWidth > shipHeight) {
+            cellSizeScale = shipWidth / module.getCells().length * dynamicShipScale;
+        } else {
+            cellSizeScale = shipHeight / module.getCells()[0].length * dynamicShipScale;
+        }
+
+        return cellSizeScale;
+    }
+
     void addArmorPlates() {
         if (armorCells.size() > 0) {
             for (int i = 0; i < armorCells.size(); i++) {
@@ -116,9 +132,11 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
             armorCells.clear();
         }
 
-        float cellSize = 28 / 1.75f * dynamicShipScale;
-        float offset = 13 * dynamicShipScale;
         Armor armor = ship.getModules().getArmor();
+        float cellSizeScale = calculateHullCellSize(armor);
+        float cellSize = 15.0f * 0.5f * cellSizeScale * dynamicShipScale;
+        float offset = 7.5f * cellSizeScale * dynamicShipScale;
+
         ArmorPlate[][] cells = armor.getCells();
         float startX = cells[0].length * cellSize * 0.5f + (cells[0].length - 1) * offset * 0.5f - cellSize / 2;
         float y1 = -cells.length * cellSize * 0.5f - (cells.length - 1) * offset * 0.5f + cellSize / 2;
