@@ -87,12 +87,6 @@ public class World {
     private final List<Body> bodyList = new ArrayList<>(128);
     private final List<Joint> jointList = new ArrayList<>();
 
-    /**
-     * -- GETTER --
-     * Get the global gravity vector.
-     */
-    @Getter
-    private final Vector2 gravity = new Vector2();
     @Getter
     private boolean allowSleep;
 
@@ -133,27 +127,23 @@ public class World {
 
     /**
      * Construct a world object.
-     *
-     * @param gravity the world gravity vector.
      */
-    public World(Vector2 gravity) {
-        this(gravity, new DefaultWorldPool(WORLD_POOL_SIZE, WORLD_POOL_CONTAINER_SIZE));
+    public World() {
+        this(new DefaultWorldPool(WORLD_POOL_SIZE, WORLD_POOL_CONTAINER_SIZE));
     }
 
     /**
      * Construct a world object.
-     *
-     * @param gravity the world gravity vector.
      */
-    public World(Vector2 gravity, IWorldPool pool) {
-        this(gravity, pool, new DynamicTree());
+    public World(IWorldPool pool) {
+        this(pool, new DynamicTree());
     }
 
-    public World(Vector2 gravity, IWorldPool pool, BroadPhaseStrategy strategy) {
-        this(gravity, pool, new DefaultBroadPhaseBuffer(strategy));
+    public World(IWorldPool pool, BroadPhaseStrategy strategy) {
+        this(pool, new DefaultBroadPhaseBuffer(strategy));
     }
 
-    public World(Vector2 gravity, IWorldPool pool, BroadPhase broadPhase) {
+    public World(IWorldPool pool, BroadPhase broadPhase) {
         this.pool = pool;
         destructionListener = null;
 
@@ -162,7 +152,6 @@ public class World {
         stepComplete = true;
 
         allowSleep = true;
-        this.gravity.set(gravity);
 
         flags = CLEAR_FORCES;
 
@@ -710,13 +699,6 @@ public class World {
     }
 
     /**
-     * Change the global gravity vector.
-     */
-    public void setGravity(Vector2 gravity) {
-        this.gravity.set(gravity);
-    }
-
-    /**
      * Is the world locked (in the middle of a time step).
      */
     public boolean isLocked() {
@@ -876,7 +858,7 @@ public class World {
                     other.flags |= Body.E_ISLAND_FLAG;
                 }
             }
-            island.solve(profile, step, gravity, allowSleep);
+            island.solve(profile, step, allowSleep);
 
             // Post solve cleanup.
             for (int j = 0; j < island.m_bodyCount; ++j) {

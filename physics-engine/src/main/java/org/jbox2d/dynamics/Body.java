@@ -25,7 +25,6 @@ package org.jbox2d.dynamics;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.jbox2d.collision.broadphase.BroadPhase;
 import org.jbox2d.collision.shapes.MassData;
 import org.jbox2d.common.MathUtils;
@@ -101,15 +100,6 @@ public class Body {
 
     public float linearDamping;
     public float angularDamping;
-    /**
-     * -- GETTER --
-     * Get the gravity scale of the body.
-     * -- SETTER --
-     * Set the gravity scale of the body.
-     */
-    @Setter
-    @Getter
-    public float gravityScale;
 
     public float sleepTime;
 
