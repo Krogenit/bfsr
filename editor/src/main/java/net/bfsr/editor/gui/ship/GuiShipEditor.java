@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.Client;
 import net.bfsr.client.renderer.entity.ShipRender;
 import net.bfsr.client.settings.ClientSettings;
+import net.bfsr.config.ConfigData;
 import net.bfsr.config.entity.ship.ShipConfig;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.config.entity.ship.ShipRegistry;
@@ -250,7 +251,10 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
         }
 
         try {
-            testShip = new TestShip(new ShipData(converter.from(properties), "ship", 0, 0));
+            ShipConfig shipConfig = converter.from(properties);
+            ConfigData configData = configRegistry.get(shipConfig.getName());
+            int id = configData != null ? configData.getId() : 0;
+            testShip = new TestShip(new ShipData(shipConfig, "ship", id, configRegistry.getId()));
             testShip.getDamageMask().init();
             testShip.init(client.getWorld(), -1);
             testShip.getBody().setActive(false);
