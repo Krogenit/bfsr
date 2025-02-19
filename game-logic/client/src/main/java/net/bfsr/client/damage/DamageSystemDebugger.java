@@ -134,7 +134,7 @@ public class DamageSystemDebugger {
             Coordinate coordinate = coordinates[i];
             res.add(new Coordinate((coordinate.x + sizeX) * localScaleX, (coordinate.y + sizeY) * localScaleY));
         }
-        DamageSystem.fillTextureOutsidePolygon(res, res.size(), mask, (byte) 0);
+        DamageSystem.fillMaskOutsidePolygon(res, res.size(), mask, (byte) 0);
 
         for (int i = 0; i < size; i++) {
             Coordinate point64 = coordinateSequence.getCoordinate(i);

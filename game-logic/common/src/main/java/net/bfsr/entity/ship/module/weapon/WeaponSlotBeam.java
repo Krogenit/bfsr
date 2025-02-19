@@ -7,6 +7,7 @@ import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.engine.Engine;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.BulletDamage;
+import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.physics.RayCastSource;
 import net.bfsr.physics.RayCastType;
@@ -42,11 +43,21 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     private final float maxAliveTimerInTicks;
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
+    private int damageTicks;
+    private int ticksPerDamage;
+
     public WeaponSlotBeam(BeamData beamData) {
         super(beamData, WeaponType.BEAM);
         this.beamMaxRange = beamData.getBeamMaxRange();
-        this.damage = beamData.getDamage();
+        this.damage = beamData.getDamage().copy();
         this.maxAliveTimerInTicks = beamData.getAliveTimeInTicks();
+    }
+
+    @Override
+    public void init(int id, Ship ship) {
+        super.init(id, ship);
+        ticksPerDamage = ship.getWorld().isServer() ? 10 : 1;
+        damage.multiply(ticksPerDamage);
     }
 
     @Override
@@ -103,8 +114,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
         float startY = sin * startRange;
         rayStart.x = startX + getX();
         rayStart.y = startY + getY();
-        collisionPoint.x = 0;
-        collisionPoint.y = 0;
+        collisionPoint.set(0.0f);
         rayDirection.set(rayStart.x + cos * currentBeamRange, rayStart.y + sin * currentBeamRange);
         rayCastResultFixture = null;
 
@@ -117,17 +127,21 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
                 return -1.0f;
             }
 
-            collisionPoint.x = point.x;
-            collisionPoint.y = point.y;
-            currentBeamRange = collisionPoint.distance(rayStart.x, rayStart.y);
+            collisionPoint.set(point.x, point.y);
             rayCastResultFixture = fixture;
             rayCastResultNormal = normal;
             return fraction;
         }, rayStart, rayDirection);
 
         if (rayCastResultFixture != null) {
-            world.getCollisionMatrix().rayCast(this, rayCastResultFixture, collisionPoint.x, collisionPoint.y, rayCastResultNormal.x,
-                    rayCastResultNormal.y);
+            currentBeamRange = collisionPoint.distance(rayStart.x, rayStart.y);
+
+            if (damageTicks == 0) {
+                world.getCollisionMatrix().rayCast(this, rayCastResultFixture, collisionPoint.x, collisionPoint.y, rayCastResultNormal.x,
+                        rayCastResultNormal.y);
+            }
+
+            damageTicks = (damageTicks + 1) % ticksPerDamage;
         }
     }
 

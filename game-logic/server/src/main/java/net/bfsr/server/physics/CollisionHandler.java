@@ -28,6 +28,7 @@ import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Fixture;
 import org.joml.Math;
 import org.joml.Vector2f;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Polygon;
 
 public class CollisionHandler extends CommonCollisionHandler {
@@ -55,11 +56,16 @@ public class CollisionHandler extends CommonCollisionHandler {
     @Override
     public void bulletShip(Bullet bullet, Ship ship, Fixture bulletFixture, Fixture shipFixture, float contactX,
                            float contactY, float normalX, float normalY) {
-        if (bullet.getLastCollidedRigidBody() == ship) return;
+        if (bullet.getLastCollidedRigidBody() == ship) {
+            return;
+        }
 
         super.bulletShip(bullet, ship, bulletFixture, shipFixture, contactX, contactY, normalX, normalY);
 
         float clipPolygonRadius = 0.75f;
+        float maskClipRadius = 1.0f;
+        Polygon clipPolygon = createBulletClipPolygon(contactX - ship.getX(), contactY - ship.getY(), ship.getSin(), ship.getCos(),
+                clipPolygonRadius);
         damageShip(ship, bullet.getDamage(), 1.0f, contactX, contactY, shipFixture, () -> {
             bullet.damage();
             bullet.reflect(normalX, normalY);
@@ -73,7 +79,11 @@ public class CollisionHandler extends CommonCollisionHandler {
                         velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f);
             }
             bullet.setDead();
-        }, clipPolygonRadius);
+        }, clipPolygon, maskClipRadius);
+    }
+
+    private Polygon createBulletClipPolygon(float x, float y, float sin, float cos, float radius) {
+        return damageSystem.createCirclePath(x, y, -sin, cos, 6, radius);
     }
 
     @Override
@@ -88,7 +98,10 @@ public class CollisionHandler extends CommonCollisionHandler {
                                 float contactX, float contactY, float normalX, float normalY) {
         super.bulletShipWreck(bullet, wreck, bulletFixture, shipWreckFixture, contactX, contactY, normalX, normalY);
         float clipPolygonRadius = 0.75f;
-        createDamage(wreck, contactX, contactY, clipPolygonRadius);
+        float maskClipRadius = 1.0f;
+        Polygon clipPolygon = createBulletClipPolygon(contactX - wreck.getX(), contactY - wreck.getY(), wreck.getSin(), wreck.getCos(),
+                clipPolygonRadius);
+        createDamage(wreck, contactX, contactY, clipPolygon, maskClipRadius);
     }
 
     @Override
@@ -120,8 +133,39 @@ public class CollisionHandler extends CommonCollisionHandler {
     @Override
     public void weaponSlotBeamShip(WeaponSlotBeam weaponSlot, Ship ship, Fixture fixture, float contactX, float contactY,
                                    float normalX, float normalY) {
+        float maskClipRadius = 1.25f;
+        float clipRectangleWidth = 1.5f;
+        float clipRectangleHeight = 1.0f;
+        float penetration = 0.7f;
+        float sin = ship.getSin();
+        float cos = ship.getCos();
+        float localRotatedContactX = contactX - ship.getX();
+        float localRotatedContactY = contactY - ship.getY();
+        float localContactX = cos * localRotatedContactX + sin * localRotatedContactY;
+        float localContactY = cos * localRotatedContactY - sin * localRotatedContactX;
+        float localSin = cos * weaponSlot.getSin() - sin * weaponSlot.getCos();
+        float localCos = cos * weaponSlot.getCos() + sin * weaponSlot.getSin();
+
+        Polygon clipPolygon = createBeamClipPolygon(clipRectangleWidth, clipRectangleHeight, localContactX, localContactY,
+                localSin, localCos, penetration);
         damageShip(ship, weaponSlot.getDamage(), weaponSlot.getBeamPower() * Engine.getUpdateDeltaTime(), contactX, contactY,
-                fixture, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, 0.5f);
+                fixture, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, clipPolygon,
+                maskClipRadius);
+    }
+
+    private Polygon createBeamClipPolygon(float width, float height, float x, float y, float sin, float cos, float penetration) {
+        Polygon polygon = damageSystem.createCenteredRectanglePolygon(width, height, x, y, sin, cos);
+        float penetrationX = penetration * cos;
+        float penetrationY = penetration * sin;
+
+        Coordinate[] coordinates = polygon.getCoordinates();
+        for (int i = 0; i < coordinates.length - 1; i++) {
+            Coordinate coordinate = coordinates[i];
+            coordinate.x += penetrationX;
+            coordinate.y += penetrationY;
+        }
+
+        return polygon;
     }
 
     @Override
@@ -133,7 +177,7 @@ public class CollisionHandler extends CommonCollisionHandler {
 
     private void damageShip(Ship ship, BulletDamage damage, float multiplayer, float contactX, float contactY,
                             Fixture fixture, Runnable onShieldDamageRunnable, Runnable onArmorDamageRunnable,
-                            Runnable onHullDamageRunnable, float clipPolygonRadius) {
+                            Runnable onHullDamageRunnable, Polygon clipPolygon, float maskClipRadius) {
         Modules modules = ship.getModules();
         Shield shield = modules.getShield();
         if (shield != null && damageShield(shield, damage.getShield() * multiplayer)) {
@@ -161,7 +205,7 @@ public class CollisionHandler extends CommonCollisionHandler {
         }
 
         if (cell.getValue() <= 0) {
-            createDamage(ship, contactX, contactY, clipPolygonRadius);
+            createDamage(ship, contactX, contactY, clipPolygon, maskClipRadius);
         }
     }
 
@@ -187,7 +231,10 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         if (cell.getValue() <= 0 && impactPower > 0.4f) {
             float clipPolygonRadius = 0.5f;
-            createDamage(ship, contactX, contactY, clipPolygonRadius);
+            float maskClipRadius = 0.75f;
+            Polygon clipPolygon = createBulletClipPolygon(contactX - ship.getX(), contactY - ship.getY(), ship.getSin(), ship.getCos(),
+                    clipPolygonRadius);
+            createDamage(ship, contactX, contactY, clipPolygon, maskClipRadius);
         }
     }
 
@@ -215,15 +262,13 @@ public class CollisionHandler extends CommonCollisionHandler {
         }
     }
 
-    private void createDamage(DamageableRigidBody rigidBody, float contactX, float contactY, float polygonRadius) {
+    private void createDamage(DamageableRigidBody rigidBody, float contactX, float contactY, Polygon clipPolygon, float maskClipRadius) {
         float x = rigidBody.getX();
         float y = rigidBody.getY();
         float sin = rigidBody.getSin();
         float cos = rigidBody.getCos();
-        float textureClipRadius = polygonRadius * 1.75f;
 
-        Polygon clip = damageSystem.createCirclePath(contactX - x, contactY - y, -sin, cos, 6, polygonRadius);
-        damageSystem.damage(rigidBody, contactX, contactY, clip, textureClipRadius, x, y, sin, cos,
+        damageSystem.damage(rigidBody, contactX, contactY, clipPolygon, maskClipRadius, x, y, sin, cos,
                 () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
                         new PacketSyncDamage(rigidBody, rigidBody.getWorld().getTimestamp())));
     }

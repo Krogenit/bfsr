@@ -58,7 +58,7 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
     protected final InspectionPanel<PROPERTIES_TYPE> inspectionPanel;
     protected final PropertiesPanel propertiesPanel;
 
-    private final ConfigToDataConverter<CONFIG_TYPE, ?> configRegistry;
+    protected final ConfigToDataConverter<CONFIG_TYPE, ?> configRegistry;
     private final EditorObjectConverter<CONFIG_TYPE, PROPERTIES_TYPE> converter;
     private final Class<CONFIG_TYPE> configClass;
     private final Class<PROPERTIES_TYPE> propertiesClass;
@@ -125,6 +125,8 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
             String fileName = config.getName();
 
             PROPERTIES_TYPE properties = converter.to(config);
+            properties.setName(config.getName());
+            properties.setPath(config.getPath());
 
             if (editorPath != null && !editorPath.isEmpty()) {
                 addToEntry(buildEntryPath(editorPath), properties, fileName);
@@ -311,16 +313,10 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
     }
 
     private void save(InspectionEntry<PROPERTIES_TYPE> entry) {
-        GuiObject parent = entry.getParent();
-        String editorPath = "";
-        while (parent instanceof InspectionEntry<?> inspectionEntry) {
-            editorPath = inspectionEntry.getName() + (editorPath.isEmpty() ? editorPath : "/" + editorPath);
-            parent = inspectionEntry.getParent();
-        }
-
         propertiesPanel.applyProperties();
         PROPERTIES_TYPE properties = entry.getComponentByType(propertiesClass);
         if (properties != null) {
+            String editorPath = getEditorPath(entry);
             properties.setName(entry.getName());
             properties.setPath(editorPath);
             properties.setTreeIndex(entry.getParent().getGuiObjects().indexOf(entry));
@@ -336,6 +332,17 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
             ConfigLoader.save(path, config);
             log.info("Config {} successfully saved", fileName);
         }
+    }
+
+    private String getEditorPath(InspectionEntry<PROPERTIES_TYPE> entry) {
+        GuiObject parent = entry.getParent();
+        String editorPath = "";
+        while (parent instanceof InspectionEntry<?> inspectionEntry) {
+            editorPath = inspectionEntry.getName() + (editorPath.isEmpty() ? editorPath : "/" + editorPath);
+            parent = inspectionEntry.getParent();
+        }
+
+        return editorPath;
     }
 
     private void remove(InspectionEntry<PROPERTIES_TYPE> entry) {
