@@ -47,8 +47,8 @@ public class Hull extends ModuleWithCells<HullCell> {
         }
     }
 
-    public HullCell damage(float amount, float contactX, float contactY, Ship ship) {
-        HullCell cell = getCell(contactX, contactY, ship);
+    public HullCell damage(float amount, float contactX, float contactY) {
+        HullCell cell = getCell(contactX, contactY);
         cell.damage(amount);
         return cell;
     }

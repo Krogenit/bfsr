@@ -5,14 +5,17 @@ import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.util.RandomHelper;
 import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
+import net.bfsr.entity.ship.module.ModuleCell;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.armor.ArmorPlate;
+import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.entity.ship.module.hull.HullCell;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
@@ -153,6 +156,27 @@ public class CollisionHandler extends CommonCollisionHandler {
                 maskClipRadius);
     }
 
+    @Override
+    public void weaponSlotBeamShipWreck(WeaponSlotBeam weaponSlot, ShipWreck wreck, Fixture fixture, float contactX, float contactY,
+                                        float normalX, float normalY) {
+        float maskClipRadius = 0.75f;
+        float clipRectangleWidth = 1.5f;
+        float clipRectangleHeight = 1.0f;
+        float penetration = 0.7f;
+        float sin = wreck.getSin();
+        float cos = wreck.getCos();
+        float localRotatedContactX = contactX - wreck.getX();
+        float localRotatedContactY = contactY - wreck.getY();
+        float localContactX = cos * localRotatedContactX + sin * localRotatedContactY;
+        float localContactY = cos * localRotatedContactY - sin * localRotatedContactX;
+        float localSin = cos * weaponSlot.getSin() - sin * weaponSlot.getCos();
+        float localCos = cos * weaponSlot.getCos() + sin * weaponSlot.getSin();
+
+        Polygon clipPolygon = createBeamClipPolygon(clipRectangleWidth, clipRectangleHeight, localContactX, localContactY,
+                localSin, localCos, penetration);
+        createDamage(wreck, contactX, contactY, clipPolygon, maskClipRadius);
+    }
+
     private Polygon createBeamClipPolygon(float width, float height, float x, float y, float sin, float cos, float penetration) {
         Polygon polygon = damageSystem.createCenteredRectanglePolygon(width, height, x, y, sin, cos);
         float penetrationX = penetration * cos;
@@ -188,7 +212,7 @@ public class CollisionHandler extends CommonCollisionHandler {
         float armorDamage = damage.getArmor() * multiplayer;
         float hullDamage = damage.getHull() * multiplayer;
 
-        ArmorPlate armorPlate = modules.getArmor().getCell(contactX, contactY, ship);
+        ArmorPlate armorPlate = modules.getArmor().getCell(contactX, contactY);
         if (armorPlate != null && armorPlate.getValue() > 0) {
             armorPlate.damage(armorDamage);
             hullDamage /= armorPlate.getHullProtection();
@@ -197,16 +221,47 @@ public class CollisionHandler extends CommonCollisionHandler {
             onHullDamageRunnable.run();
         }
 
-        HullCell cell = modules.getHull().damage(hullDamage, contactX, contactY, ship);
+        Hull hull = modules.getHull();
+        HullCell cell = hull.getCell(contactX, contactY);
+
+        if (cell.getValue() > 0.0f) {
+            cell.damage(hullDamage);
+
+            if (cell.getValue() <= 0.0f) {
+                createCellDamage(hull.getCells(), cell, ship, contactX, contactY);
+            }
+        } else {
+            createDamage(ship, contactX, contactY, clipPolygon, maskClipRadius);
+        }
 
         Object userData = fixture.getUserData();
         if (userData instanceof DamageableModule) {
             ((DamageableModule) userData).damage(hullDamage);
         }
+    }
 
-        if (cell.getValue() <= 0) {
-            createDamage(ship, contactX, contactY, clipPolygon, maskClipRadius);
-        }
+    private void createCellDamage(ModuleCell[][] cells, ModuleCell cell, DamageableRigidBody rigidBody, float contactX, float contactY) {
+        int lengthX = cells.length;
+        int lengthY = cells[0].length;
+        float sizeX = rigidBody.getSizeX();
+        float sizeY = rigidBody.getSizeY();
+        float halfSizeX = sizeX * 0.5f;
+        float halfSizeY = sizeY * 0.5f;
+        float rhombusScaleX = RandomHelper.randomFloat(random, 1.1f, 1.6f);
+        float rhombusScaleY = RandomHelper.randomFloat(random, 1.1f, 1.6f);
+        float rhombusWidth = sizeX / lengthX;
+        float rhombusHeight = sizeY / lengthY;
+        float halfRhombusWidth = rhombusWidth * 0.5f;
+        float halfRhombusHeight = rhombusHeight * 0.5f;
+        float posX = cell.getColumn() * rhombusWidth - halfSizeX + halfRhombusWidth;
+        float posY = cell.getRow() * rhombusHeight - halfSizeY + halfRhombusHeight;
+
+        Polygon clipPolygon = damageSystem.createCenteredRhombusPolygon(rhombusWidth * rhombusScaleX, rhombusHeight * rhombusScaleY,
+                posX, posY, 0, 1);
+        damageSystem.damage(rigidBody, contactX, contactY, clipPolygon, java.lang.Math.max(rhombusWidth, rhombusHeight) / 2,
+                rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(),
+                () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
+                        new PacketSyncDamage(rigidBody, rigidBody.getWorld().getTimestamp())));
     }
 
     private void damageShipByCollision(Ship ship, Fixture fixture, float impactPower, float contactX, float contactY) {
@@ -216,25 +271,34 @@ public class CollisionHandler extends CommonCollisionHandler {
             return;
         }
 
-        ArmorPlate armorPlate = modules.getArmor().getCell(contactX, contactY, ship);
+        ArmorPlate armorPlate = modules.getArmor().getCell(contactX, contactY);
         if (armorPlate != null && armorPlate.getValue() > 0) {
             armorPlate.damage(impactPower);
             impactPower /= armorPlate.getHullProtection();
         }
 
-        HullCell cell = modules.getHull().damage(impactPower, contactX, contactY, ship);
+        Hull hull = modules.getHull();
+        HullCell cell = hull.getCell(contactX, contactY);
 
-        Object userData = fixture.getUserData();
-        if (userData instanceof DamageableModule) {
-            ((DamageableModule) userData).damage(impactPower);
-        }
+        if (impactPower > 0.4f) {
+            if (cell.getValue() > 0.0f) {
+                cell.damage(impactPower);
 
-        if (cell.getValue() <= 0 && impactPower > 0.4f) {
-            float clipPolygonRadius = 0.5f;
-            float maskClipRadius = 0.75f;
-            Polygon clipPolygon = createBulletClipPolygon(contactX - ship.getX(), contactY - ship.getY(), ship.getSin(), ship.getCos(),
-                    clipPolygonRadius);
-            createDamage(ship, contactX, contactY, clipPolygon, maskClipRadius);
+                if (cell.getValue() <= 0.0f) {
+                    createCellDamage(hull.getCells(), cell, ship, contactX, contactY);
+                }
+            } else {
+                float clipPolygonRadius = 0.5f;
+                float maskClipRadius = 0.75f;
+                Polygon clipPolygon = createBulletClipPolygon(contactX - ship.getX(), contactY - ship.getY(), ship.getSin(), ship.getCos(),
+                        clipPolygonRadius);
+                createDamage(ship, contactX, contactY, clipPolygon, maskClipRadius);
+            }
+
+            Object userData = fixture.getUserData();
+            if (userData instanceof DamageableModule) {
+                ((DamageableModule) userData).damage(impactPower);
+            }
         }
     }
 

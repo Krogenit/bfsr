@@ -8,7 +8,8 @@ import net.bfsr.entity.ship.module.hull.HullCell;
 public class ArmorPlate extends HullCell {
     private final float hullProtection;
 
-    ArmorPlate(ArmorPlateData armorPlateData) {
+    ArmorPlate(int column, int row, ArmorPlateData armorPlateData) {
+        super(column, row);
         this.hullProtection = armorPlateData.getHullProtection();
     }
 }

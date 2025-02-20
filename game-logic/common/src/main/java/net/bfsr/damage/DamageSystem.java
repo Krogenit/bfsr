@@ -553,6 +553,29 @@ public final class DamageSystem {
         return GEOMETRY_FACTORY.createPolygon(coordinates);
     }
 
+    public org.locationtech.jts.geom.Polygon createCenteredRhombusPolygon(float width, float height, float x, float y, float sin,
+                                                                          float cos) {
+        Coordinate[] coordinates = new Coordinate[5];
+        float halfWidth = width / 2.0f;
+        float halfHeight = height / 2.0f;
+        coordinates[0] = new Coordinate(-halfWidth, 0.0f);
+        coordinates[1] = new Coordinate(0.0f, -halfHeight);
+        coordinates[2] = new Coordinate(halfWidth, 0.0f);
+        coordinates[3] = new Coordinate(0.0f, halfHeight);
+
+        for (int i = 0; i < 4; i++) {
+            Coordinate coordinate = coordinates[i];
+            double localX = coordinate.x;
+            double localY = coordinate.y;
+            coordinate.setX(cos * localX - sin * localY + x);
+            coordinate.setY(sin * localX + cos * localY + y);
+        }
+
+        coordinates[4] = coordinates[0];
+
+        return GEOMETRY_FACTORY.createPolygon(coordinates);
+    }
+
     public static boolean isPolygonConnectedToContour(Vector2[] vertices, org.locationtech.jts.geom.Polygon polygon) {
         return isPolygonConnectedToContour(vertices, polygon, 0, 0);
     }

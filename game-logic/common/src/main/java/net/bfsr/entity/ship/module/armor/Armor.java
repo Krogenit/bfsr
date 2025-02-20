@@ -10,7 +10,7 @@ public class Armor extends ModuleWithCells<ArmorPlate> {
     private final float repairSpeed;
 
     public Armor(ArmorPlateData armorPlateData, Ship ship) {
-        super(armorPlateData, ship, ArmorPlate.class, () -> new ArmorPlate(armorPlateData));
+        super(armorPlateData, ship, ArmorPlate.class, (column, row) -> new ArmorPlate(column, row, armorPlateData));
         this.repairSpeed = armorPlateData.getRegenAmount();
 
         for (int i = 0; i < cells.length; i++) {
