@@ -84,6 +84,10 @@ public class DamageableRigidBody extends RigidBody {
         connectedObjects.remove(connectedObject);
     }
 
+    public void removeConnectedObject(int index) {
+        connectedObjects.remove(index);
+    }
+
     public void initConnectedObject(ConnectedObject<?> connectedObject) {
         connectedObject.init(this);
     }

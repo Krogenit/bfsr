@@ -74,7 +74,7 @@ public final class DamageSystem {
                     for (int i = 0; i < connectedObjects.size(); i++) {
                         ConnectedObject<?> connectedObject = connectedObjects.get(i);
                         if (!connectedObject.isInside(polygon2)) {
-                            damageable.removeConnectedObject(connectedObject);
+                            damageable.removeConnectedObject(i--);
                             connectedObject.spawn();
                         }
                     }
@@ -168,7 +168,7 @@ public final class DamageSystem {
             for (int i = 0; i < connectedObjects.size(); i++) {
                 ConnectedObject<?> connectedObject = connectedObjects.get(i);
                 if (!connectedObject.isInside(newHull)) {
-                    damageable.removeConnectedObject(connectedObject);
+                    damageable.removeConnectedObject(i--);
                     removedConnectedObjects.add(connectedObject);
                 }
             }
@@ -176,6 +176,11 @@ public final class DamageSystem {
             damageable.onContourReconstructed(newHull);
         } else {
             damageable.setDead();
+
+            List<ConnectedObject<?>> connectedObjects = damageable.getConnectedObjects();
+            for (int i = 0; i < connectedObjects.size(); i++) {
+                removedConnectedObjects.add(connectedObjects.get(i));
+            }
         }
 
         float sizeX = damageable.getSizeX();
@@ -195,15 +200,20 @@ public final class DamageSystem {
 
             for (int j = 0; j < removedConnectedObjects.size(); j++) {
                 ConnectedObject<?> connectedObject = removedConnectedObjects.get(j);
-                if (connectedObject.isInside(removedPath, (float) -localCenter.x, (float) -localCenter.y)) {
+                float offsetX = (float) -localCenter.x;
+                float offsetY = (float) -localCenter.y;
+                if (connectedObject.isInside(removedPath, offsetX, offsetY)) {
                     wreck.addConnectedObject(connectedObject);
-                    connectedObject.addPositionOffset((float) -localCenter.x, (float) -localCenter.y);
-                } else {
-                    connectedObject.spawn();
+                    connectedObject.addPositionOffset(offsetX, offsetY);
+                    removedConnectedObjects.remove(j--);
                 }
             }
 
             world.add(wreck);
+        }
+
+        for (int i = 0; i < removedConnectedObjects.size(); i++) {
+            removedConnectedObjects.get(i).spawn();
         }
 
         if (!damageable.isDead()) {
@@ -386,16 +396,16 @@ public final class DamageSystem {
                           DamageMask mask, float localOffsetX, float localOffsetY) {
         float sizeX = damageable.getSizeX();
         float sizeY = damageable.getSizeY();
-        float halfSizeX = sizeX / 2.0f;
-        float halfSizeY = sizeY / 2.0f;
+        float halfSizeX = sizeX * 0.5f;
+        float halfSizeY = sizeY * 0.5f;
         int width = mask.getWidth();
         int height = mask.getHeight();
-        int radius = (int) Math.ceil(clipRadius * (width / sizeX) / 2.0f);
+        int radius = (int) Math.ceil(clipRadius * (width / sizeX) * 0.5f);
 
         float localPosX = x - damageable.getX();
         float localPosY = y - damageable.getY();
         float rotatedX = cos * localPosX - sin * localPosY;
-        float rotatedY = sin * localPosX + cos * localPosY;
+        float rotatedY = cos * localPosY + sin * localPosX;
         int localX = (int) ((rotatedX + halfSizeX + localOffsetX) * (width / sizeX));
         int localY = (int) ((rotatedY + halfSizeY + localOffsetY) * (height / sizeY));
         int startX = Math.max(localX - radius, 0);

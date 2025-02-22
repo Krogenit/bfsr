@@ -196,6 +196,15 @@ public class Ship extends DamageableRigidBody {
     }
 
     @Override
+    public void removeConnectedObject(int index) {
+        ConnectedObject<?> connectedObject = getConnectedObjects().get(index);
+        super.removeConnectedObject(index);
+        if (connectedObject instanceof WeaponSlot weaponSlot) {
+            modules.removeWeaponSlot(weaponSlot.getId());
+        }
+    }
+
+    @Override
     public void update() {
         if (spawned) {
             updateConnectedObjects();
