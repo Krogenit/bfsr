@@ -29,10 +29,12 @@ import net.bfsr.physics.correction.CorrectionHandler;
 import net.bfsr.physics.correction.DynamicCorrectionHandler;
 import net.bfsr.physics.correction.HistoryCorrectionHandler;
 import net.bfsr.physics.correction.LocalPlayerInputCorrectionHandler;
+import net.bfsr.world.World;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.Fixture;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 
 import static net.bfsr.engine.input.Keys.KEY_A;
@@ -200,7 +202,12 @@ public class PlayerInputController extends InputController {
         return false;
     }
 
-    private Fixture selectFixtureWithMouse() {
+    private @Nullable Fixture selectFixtureWithMouse() {
+        World world = client.getWorld();
+        if (world == null) {
+            return null;
+        }
+
         selectedFixture = null;
         float offset = 0.01f;
         Vector2f mousePosition = mouse.getWorldPosition(camera);
@@ -208,7 +215,7 @@ public class PlayerInputController extends InputController {
         AABB mouseAABB = new AABB(new Vector2(mousePosition.x - offset, mousePosition.y - offset),
                 new Vector2(mousePosition.x + offset, mousePosition.y + offset));
 
-        client.getWorld().getPhysicWorld().queryAABB(fixture -> {
+        world.getPhysicWorld().queryAABB(fixture -> {
             if (fixture.testPoint(mousePosition.x, mousePosition.y)) {
                 selectedFixture = fixture;
                 return false;
