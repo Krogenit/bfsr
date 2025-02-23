@@ -9,11 +9,12 @@ import net.bfsr.engine.entity.SpawnAccumulator;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.util.RunnableUtils;
+import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.entity.wreck.Wreck;
+import net.bfsr.event.module.weapon.beam.BeamDamageHullEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageShipArmorEvent;
-import net.bfsr.event.module.weapon.beam.BeamDamageShipHullEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageShipShieldEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageWreckEvent;
 import org.joml.Vector4f;
@@ -81,13 +82,13 @@ public class WeaponSlotBeamRender extends WeaponSlotRender {
     }
 
     @EventHandler
-    public EventListener<BeamDamageShipHullEvent> beamDamageShipHullEvent() {
+    public EventListener<BeamDamageHullEvent> beamDamageShipHullEvent() {
         return event -> {
-            Ship ship = event.ship();
+            RigidBody rigidBody = event.rigidBody();
             onDamage(event.normalX(), event.normalY(), event.hitX(), event.hitY());
 
-            garbageSpawner.beamHullDamage(event.hitX(), event.hitY(), ship.getLinearVelocity().x * 0.005f,
-                    ship.getLinearVelocity().y * 0.005f);
+            garbageSpawner.beamHullDamage(event.hitX(), event.hitY(), rigidBody.getLinearVelocity().x * 0.005f,
+                    rigidBody.getLinearVelocity().y * 0.005f);
         };
     }
 

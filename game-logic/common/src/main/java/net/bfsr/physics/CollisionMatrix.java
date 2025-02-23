@@ -56,8 +56,11 @@ public class CollisionMatrix {
                 (RayCastListener<WeaponSlotBeam, Ship>) collisionHandler::weaponSlotBeamShip);
         register(RayCastType.WEAPON_SLOT_BEAM, CollisionMatrixType.WRECK,
                 (RayCastListener<WeaponSlotBeam, Wreck>) collisionHandler::weaponSlotBeamWreck);
+        register(RayCastType.WEAPON_SLOT_BEAM, CollisionMatrixType.SHIP_WRECK,
+                (RayCastListener<WeaponSlotBeam, ShipWreck>) collisionHandler::weaponSlotBeamShipWreck);
     }
 
+    @SuppressWarnings("unchecked")
     private void register(CollisionMatrixType type1, CollisionMatrixType type2,
                           @SuppressWarnings("rawtypes") CanCollideFunction canCollideFunction) {
         canCollideFunctions[type1.ordinal()][type2.ordinal()] = canCollideFunction;
@@ -65,6 +68,7 @@ public class CollisionMatrix {
                 rigidBody1);
     }
 
+    @SuppressWarnings("unchecked")
     private void register(CollisionMatrixType type1, CollisionMatrixType type2,
                           @SuppressWarnings("rawtypes") CollisionListener collisionListener) {
         matrix[type1.ordinal()][type2.ordinal()] = (rigidBody1, rigidBody2, fixture1, fixture2, contactX, contactY, normalX,
@@ -80,12 +84,14 @@ public class CollisionMatrix {
         rayCastMatrix[rayCastType.ordinal()][collisionMatrixType.ordinal()] = rayCastListener;
     }
 
+    @SuppressWarnings("unchecked")
     void collision(RigidBody rigidBody1, RigidBody rigidBody2, Fixture fixture1, Fixture fixture2,
                    float contactX, float contactY, float normalX, float normalY) {
         matrix[rigidBody1.getCollisionMatrixType()][rigidBody2.getCollisionMatrixType()].handle(rigidBody1, rigidBody2,
                 fixture1, fixture2, contactX, contactY, normalX, normalY);
     }
 
+    @SuppressWarnings("unchecked")
     public void rayCast(RayCastSource rayCastSource, Fixture fixture, float contactX, float contactY,
                         float normalX, float normalY) {
         RigidBody rigidBody = ((RigidBody) fixture.getBody().getUserData());
@@ -93,6 +99,7 @@ public class CollisionMatrix {
                 fixture, contactX, contactY, normalX, normalY);
     }
 
+    @SuppressWarnings("unchecked")
     public boolean canCollideWith(RigidBody rigidBody1, RigidBody rigidBody2) {
         return canCollideFunctions[rigidBody1.getCollisionMatrixType()][rigidBody2.getCollisionMatrixType()].apply(rigidBody1,
                 rigidBody2);

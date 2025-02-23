@@ -57,4 +57,9 @@ public class CommonCollisionHandler {
         weaponSlotBeam.getWeaponSlotEventBus().publish(new BeamDamageWreckEvent(weaponSlotBeam, wreck, contactX, contactY,
                 normalX, normalY));
     }
+
+    public void weaponSlotBeamShipWreck(WeaponSlotBeam weaponSlot, ShipWreck wreck, Fixture fixture, float contactX, float contactY,
+                                        float normalX, float normalY) {
+
+    }
 }

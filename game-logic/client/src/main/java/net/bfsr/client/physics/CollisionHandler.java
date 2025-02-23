@@ -14,9 +14,10 @@ import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.armor.ArmorPlate;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
+import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
+import net.bfsr.event.module.weapon.beam.BeamDamageHullEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageShipArmorEvent;
-import net.bfsr.event.module.weapon.beam.BeamDamageShipHullEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageShipShieldEvent;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.physics.CommonCollisionHandler;
@@ -32,7 +33,7 @@ public class CollisionHandler extends CommonCollisionHandler {
     private final Vector2f angleToVelocity = new Vector2f();
     private final BeamDamageShipShieldEvent beamDamageShipShieldEvent = new BeamDamageShipShieldEvent();
     private final BeamDamageShipArmorEvent beamDamageShipArmorEvent = new BeamDamageShipArmorEvent();
-    private final BeamDamageShipHullEvent beamDamageShipHullEvent = new BeamDamageShipHullEvent();
+    private final BeamDamageHullEvent beamDamageHullEvent = new BeamDamageHullEvent();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
     private final WeaponEffects weaponEffects;
     private final GarbageSpawner garbageSpawner;
@@ -41,7 +42,7 @@ public class CollisionHandler extends CommonCollisionHandler {
         super(client.getEventBus());
         eventBus.optimizeEvent(beamDamageShipShieldEvent);
         eventBus.optimizeEvent(beamDamageShipArmorEvent);
-        eventBus.optimizeEvent(beamDamageShipHullEvent);
+        eventBus.optimizeEvent(beamDamageHullEvent);
         weaponEffects = client.getParticleEffects().getWeaponEffects();
         garbageSpawner = client.getParticleEffects().getGarbageSpawner();
     }
@@ -131,8 +132,15 @@ public class CollisionHandler extends CommonCollisionHandler {
                         ship, contactX, contactY, normalX, normalY)),
                 () -> weaponSlotEventBus.publishOptimized(beamDamageShipArmorEvent.set(weaponSlot, ship, contactX, contactY,
                         normalX, normalY)),
-                () -> weaponSlotEventBus.publishOptimized(beamDamageShipHullEvent.set(weaponSlot, ship, contactX, contactY,
+                () -> weaponSlotEventBus.publishOptimized(beamDamageHullEvent.set(weaponSlot, ship, contactX, contactY,
                         normalX, normalY)));
+    }
+
+    @Override
+    public void weaponSlotBeamShipWreck(WeaponSlotBeam weaponSlot, ShipWreck wreck, Fixture fixture, float contactX, float contactY,
+                                        float normalX, float normalY) {
+        weaponSlot.getWeaponSlotEventBus().publishOptimized(beamDamageHullEvent.set(weaponSlot, wreck, contactX, contactY,
+                normalX, normalY));
     }
 
     private void damageShip(Ship ship, float contactX, float contactY, Runnable onShieldDamageRunnable,
@@ -144,7 +152,7 @@ public class CollisionHandler extends CommonCollisionHandler {
             return;
         }
 
-        ArmorPlate armorPlate = modules.getArmor().getCell(contactX, contactY, ship);
+        ArmorPlate armorPlate = modules.getArmor().getCell(contactX, contactY);
         if (armorPlate != null && armorPlate.getValue() > 0) {
             onArmorDamageRunnable.run();
         } else {
