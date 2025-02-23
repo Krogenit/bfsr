@@ -1,5 +1,7 @@
 package net.bfsr.entity;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,11 +9,11 @@ public class EntityDataHistory<T extends ChronologicalEntityData> {
     final List<T> dataList = new ArrayList<>();
     final double historyLengthMillis;
 
-    EntityDataHistory(double historyLengthMillis) {
+    public EntityDataHistory(double historyLengthMillis) {
         this.historyLengthMillis = historyLengthMillis * 1_000_000;
     }
 
-    void addData(T data) {
+    public void addData(T data) {
         boolean added = false;
         for (int i = 0; i < dataList.size(); i++) {
             T epd = dataList.get(i);
@@ -42,7 +44,9 @@ public class EntityDataHistory<T extends ChronologicalEntityData> {
     }
 
     public T get(double time) {
-        if (dataList.size() == 0) return null;
+        if (dataList.isEmpty()) {
+            return null;
+        }
 
         if (dataList.getFirst().getTime() < time) {
             return dataList.getFirst();
@@ -63,5 +67,13 @@ public class EntityDataHistory<T extends ChronologicalEntityData> {
         }
 
         return null;
+    }
+
+    public @Nullable T getFirst() {
+        return dataList.isEmpty() ? null : dataList.getFirst();
+    }
+
+    public void clear() {
+        dataList.clear();
     }
 }

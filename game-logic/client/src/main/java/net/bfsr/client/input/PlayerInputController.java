@@ -14,7 +14,6 @@ import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
-import net.bfsr.entity.PositionHistory;
 import net.bfsr.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.engine.Engines;
@@ -52,7 +51,6 @@ public class PlayerInputController extends InputController {
     private final AbstractMouse mouse = Engine.getMouse();
     private final Vector2f lastMousePosition = new Vector2f();
     private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
-    private final PositionHistory positionHistory = new PositionHistory(500);
     private final EventBus eventBus;
     private final LocalPlayerInputCorrectionHandler localPlayerInputCorrectionHandler;
 
@@ -66,7 +64,7 @@ public class PlayerInputController extends InputController {
 
     public PlayerInputController(Client client) {
         this.client = client;
-        this.localPlayerInputCorrectionHandler = new LocalPlayerInputCorrectionHandler(positionHistory, client.getClientRenderDelay());
+        this.localPlayerInputCorrectionHandler = new LocalPlayerInputCorrectionHandler(client.getClientRenderDelay());
         this.eventBus = client.getEventBus();
         this.eventBus.register(this);
     }
@@ -275,7 +273,7 @@ public class PlayerInputController extends InputController {
     public void resetControlledShip() {
         setShip(null);
         controlledShipId = NOT_CONTROLLED_SHIP_ID;
-        positionHistory.clear();
+        localPlayerInputCorrectionHandler.clear();
     }
 
     @EventHandler

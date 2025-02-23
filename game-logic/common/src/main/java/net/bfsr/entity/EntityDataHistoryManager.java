@@ -46,6 +46,10 @@ public class EntityDataHistoryManager {
         return positionHistoryMap.get(id).getFirst();
     }
 
+    public PacketWorldSnapshot.EntityData getFirstData(int id) {
+        return dataHistoryMap.get(id).getFirst();
+    }
+
     public PacketWorldSnapshot.EntityData getData(int id, double timestamp) {
         return dataHistoryMap.get(id).get(timestamp);
     }
