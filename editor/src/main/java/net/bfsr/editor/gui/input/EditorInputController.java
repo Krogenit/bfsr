@@ -9,14 +9,8 @@ import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.input.AbstractMouse;
-import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.renderer.font.string.StringOffsetType;
-import net.bfsr.entity.ship.Ship;
 import net.bfsr.network.packet.client.PacketCommand;
-import net.bfsr.world.World;
-import org.jbox2d.collision.AABB;
-import org.jbox2d.common.Vector2;
-import org.jbox2d.dynamics.Fixture;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
@@ -35,39 +29,12 @@ public class EditorInputController extends InputController {
     private final Client client = Client.get();
     private final GuiManager guiManager = Engine.getGuiManager();
     private final AbstractMouse mouse = Engine.getMouse();
-    private Fixture selectedFixture;
 
     @Override
     public boolean mouseRightRelease() {
         Vector2i mousePosition = mouse.getGuiPosition();
-        World world = client.getWorld();
-        AbstractCamera camera = client.getCamera();
-        Vector2f worldVector = camera.getWorldVector(mousePosition.x, mousePosition.y);
-        float offset = 0.01f;
-
-        selectedFixture = null;
-        world.getPhysicWorld().queryAABB(fixture -> {
-            selectedFixture = fixture;
-            return true;
-        }, new AABB(new Vector2(worldVector.x - offset, worldVector.y - offset),
-                new Vector2(worldVector.x + offset, worldVector.y + offset)));
-
-        if (selectedFixture != null) {
-            Object userData = selectedFixture.getBody().getUserData();
-            if (userData instanceof Ship ship) {
-                showShipContextMenu(ship, mousePosition.x, mousePosition.y);
-            } else {
-                return false;
-            }
-        } else {
-            showDefaultContextMenu(mousePosition.x, mousePosition.y);
-        }
-
+        showDefaultContextMenu(mousePosition.x, mousePosition.y);
         return true;
-    }
-
-    private void showShipContextMenu(Ship ship, int mouseX, int mouseY) {
-
     }
 
     private void showDefaultContextMenu(int mouseX, int mouseY) {
