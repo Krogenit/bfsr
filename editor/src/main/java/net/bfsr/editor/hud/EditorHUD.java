@@ -47,8 +47,12 @@ public class EditorHUD extends HUD {
                 String title = command.name().toLowerCase(Locale.getDefault()).replace("_", " ");
                 Button destroyShipButton = new Button(guiObject.getWidth(), CONTEXT_MENU_BUTTON_HEIGHT, title, FONT, FONT_SIZE,
                         CONTEXT_MENU_STRING_OFFSET_X / 2, 0, StringOffsetType.DEFAULT,
-                        (mouseX1, mouseY1) -> Client.get().sendTCPPacket(command.createShipPacketCommand(command,
-                                otherShipOverlay.getShip())));
+                        (mouseX1, mouseY1) -> {
+                            Ship ship = otherShipOverlay.getShip();
+                            if (ship != null) {
+                                Client.get().sendTCPPacket(command.createShipPacketCommand(command, ship));
+                            }
+                        });
                 guiObject.add(setupContextMenuButton(destroyShipButton).atTopLeft(0, y));
                 y -= CONTEXT_MENU_BUTTON_HEIGHT;
             }
