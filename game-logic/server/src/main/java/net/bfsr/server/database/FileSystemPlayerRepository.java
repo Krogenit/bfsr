@@ -6,12 +6,18 @@ import net.bfsr.server.dto.converter.PlayerConverter;
 import net.bfsr.server.player.Player;
 import org.mapstruct.factory.Mappers;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
 public class FileSystemPlayerRepository implements PlayerRepository {
     private final Path folder = Path.of("players");
     private final PlayerConverter playerConverter = Mappers.getMapper(PlayerConverter.class);
+
+    public FileSystemPlayerRepository() {
+        File file = folder.toFile();
+        file.mkdirs();
+    }
 
     @Override
     public Player load(String username) {
