@@ -14,8 +14,10 @@ import net.bfsr.event.entity.ship.ShipRemoveMoveDirectionEvent;
 import net.bfsr.network.packet.server.entity.ship.PacketDestroyingShip;
 import net.bfsr.network.packet.server.entity.ship.PacketShipInfo;
 import net.bfsr.network.packet.server.entity.ship.PacketSyncMoveDirection;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.wreck.WreckSpawner;
+import net.bfsr.server.physics.CollisionHandler;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
 import net.bfsr.world.World;
@@ -23,9 +25,11 @@ import org.jbox2d.common.Vector2;
 
 @RequiredArgsConstructor
 public class ShipEventListener {
-    private final WreckSpawner wreckSpawner;
-    private final EntityTrackingManager trackingManager;
-    private final PlayerManager playerManager;
+    private final ServerGameLogic serverGameLogic = ServerGameLogic.get();
+    private final WreckSpawner wreckSpawner = serverGameLogic.getWreckSpawner();
+    private final EntityTrackingManager trackingManager = serverGameLogic.getEntityTrackingManager();
+    private final PlayerManager playerManager = serverGameLogic.getPlayerManager();
+    private final CollisionHandler collisionHandler = serverGameLogic.getCollisionHandler();
     private final XoRoShiRo128PlusPlusRandom random = new XoRoShiRo128PlusPlusRandom();
 
     @EventHandler
@@ -94,6 +98,10 @@ public class ShipEventListener {
         return event -> {
             Ship ship = event.ship();
             wreckSpawner.spawnDestroyShipSmall(ship);
+            float maxShipSize = Math.max(ship.getSizeX(), ship.getSizeY());
+            float waveRadius = maxShipSize * 2.0f;
+            float wavePower = maxShipSize * 1.75f + 0.25f;
+            collisionHandler.createWave(ship.getWorld(), ship.getX(), ship.getY(), waveRadius, wavePower);
         };
     }
 }
