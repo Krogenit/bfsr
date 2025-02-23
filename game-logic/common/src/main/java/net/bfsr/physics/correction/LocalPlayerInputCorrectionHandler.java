@@ -37,9 +37,6 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
             Vector2f serverPosition = serverTransformData.getPosition();
             Vector2f localPosition = localTransformData.getPosition();
 
-            float correctionX;
-            float correctionY;
-            float angleCorrectionAmount;
             float dx = serverPosition.x - localPosition.x;
             float dy = serverPosition.y - localPosition.y;
             float dxAbs = Math.abs(dx);
@@ -48,9 +45,8 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
                 if (dxAbs > 10) {
                     rigidBody.setPosition(serverPosition.x, rigidBody.getY());
                 } else {
-                    float xCorrectionAmount = (dxAbs - MIN_VALUE_TO_CORRECTION) * 0.1f * correctionAmount;
-                    correctionX = dx * xCorrectionAmount;
-                    rigidBody.setPosition(rigidBody.getX() + correctionX, rigidBody.getY());
+                    float xCorrection = dx * (dxAbs - MIN_VALUE_TO_CORRECTION) * 0.1f * correctionAmount;
+                    rigidBody.setPosition(rigidBody.getX() + xCorrection, rigidBody.getY());
                 }
             }
 
@@ -59,9 +55,8 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
                 if (dyAbs > 10) {
                     rigidBody.setPosition(rigidBody.getX(), serverPosition.y);
                 } else {
-                    float yCorrectionAmount = (dyAbs - MIN_VALUE_TO_CORRECTION) * 0.1f * correctionAmount;
-                    correctionY = dy * yCorrectionAmount;
-                    rigidBody.setPosition(rigidBody.getX(), rigidBody.getY() + correctionY);
+                    float yCorrection = dy * (dyAbs - MIN_VALUE_TO_CORRECTION) * 0.1f * correctionAmount;
+                    rigidBody.setPosition(rigidBody.getX(), rigidBody.getY() + yCorrection);
                 }
             }
 
@@ -74,8 +69,7 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
             float angleDiff = MathUtils.lerpAngle(localAngle, serverAngle);
 
             if (angleDiff > MIN_ANGLE_VALUE_TO_CORRECTION) {
-                angleCorrectionAmount = (angleDiff - MIN_ANGLE_VALUE_TO_CORRECTION) * 0.1f * correctionAmount;
-                float newAngle = localAngle + angleCorrectionAmount;
+                float newAngle = localAngle + (angleDiff - MIN_ANGLE_VALUE_TO_CORRECTION) * 0.1f * correctionAmount;
                 rigidBody.setRotation(LUT.sin(newAngle), LUT.cos(newAngle));
             }
         }

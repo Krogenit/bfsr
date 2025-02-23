@@ -98,8 +98,10 @@ public class CollisionHandler extends CommonCollisionHandler {
             }
 
             if (ship1.isControlledByPlayer()) {
+                setDynamicCorrection(ship1);
                 setDynamicCorrection(ship2);
             } else if (ship2.isControlledByPlayer()) {
+                setDynamicCorrection(ship2);
                 setDynamicCorrection(ship1);
             }
         }
@@ -120,6 +122,7 @@ public class CollisionHandler extends CommonCollisionHandler {
         }
 
         if (ship.isControlledByPlayer()) {
+            setDynamicCorrection(ship);
             setDynamicCorrection(wreck);
         }
     }
@@ -188,7 +191,9 @@ public class CollisionHandler extends CommonCollisionHandler {
     }
 
     private boolean isShieldAlive(Shield shield) {
-        if (shield.isDead()) return false;
+        if (shield.isDead()) {
+            return false;
+        }
 
         return shield.getShieldHp() > 0;
     }
