@@ -7,6 +7,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.FixedRecvByteBufAllocator;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
@@ -38,6 +39,7 @@ public class NetworkManagerUDP {
                 datagramChannel.pipeline().addLast("handler", new MessageHandlerUDP(networkSystem));
             }
         });
+        bootstrap.option(ChannelOption.RCVBUF_ALLOCATOR, new FixedRecvByteBufAllocator(65536));
 
         ChannelFuture channelFuture = bootstrap.connect(address, port).syncUninterruptibly();
         channel = channelFuture.channel();
