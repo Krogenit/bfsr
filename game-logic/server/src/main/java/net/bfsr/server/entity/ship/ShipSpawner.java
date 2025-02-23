@@ -6,6 +6,7 @@ import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.util.RandomHelper;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
+import net.bfsr.entity.ship.module.engine.Engine;
 import net.bfsr.faction.Faction;
 import net.bfsr.math.RotationHelper;
 import net.bfsr.server.ai.AiFactory;
@@ -22,8 +23,12 @@ public class ShipSpawner {
     private final ShipFactory shipFactory;
     private final AiFactory aiFactory;
 
+    private Ship hugeShip;
+
     private void spawnShips(World world) {
-        if (timer-- > 0) return;
+        if (timer-- > 0) {
+            return;
+        }
 
         boolean sameFaction = true;
         int botCount = 0;
@@ -40,7 +45,7 @@ public class ShipSpawner {
             lastFaction = s.getFaction();
         }
 
-        if (botCount < 50 || sameFaction) {
+        if (botCount < 100 || sameFaction) {
             timer = 40;
             int maxCount = 1;
             int count = maxCount;
@@ -76,6 +81,15 @@ public class ShipSpawner {
                         rand.nextFloat() * MathUtils.TWO_PI, aiFactory.createAi()), false);
             }
         }
+
+        if (hugeShip == null || hugeShip.isDead()) {
+            world.add(hugeShip = shipFactory.createBot(world, 0, 0, rand.nextFloat() * MathUtils.TWO_PI, Faction.ENGI,
+                    shipFactory.getShipRegistry().get("engi_huge0"), aiFactory.createAi()));
+            List<Engine> engines = hugeShip.getModules().getEngines().getEngines();
+            for (int i = 0; i < engines.size(); i++) {
+                engines.get(i).setDead();
+            }
+        }
     }
 
     private void spawnShipsSides(World world) {
@@ -102,13 +116,13 @@ public class ShipSpawner {
         float startSpawnY = -500;
         Faction firstFaction = Faction.get((byte) rand.nextInt(3));
         for (int i = 0; i < count; i++) {
-            if (firstFaction == Faction.HUMAN)
+            if (firstFaction == Faction.HUMAN) {
                 world.add(shipFactory.createBotHumanSmall(world, startSpawnX, startSpawnY, 0, aiFactory.createAi()), false);
-            else if (firstFaction == Faction.SAIMON)
-                world.add(shipFactory.createBotSaimonSmall(world, startSpawnX, startSpawnY, 0, aiFactory.createAi()),
-                        false);
-            else
+            } else if (firstFaction == Faction.SAIMON) {
+                world.add(shipFactory.createBotSaimonSmall(world, startSpawnX, startSpawnY, 0, aiFactory.createAi()), false);
+            } else {
                 world.add(shipFactory.createBotEngiSmall(world, startSpawnX, startSpawnY, 0, aiFactory.createAi()), false);
+            }
             startSpawnY += padding;
         }
 
@@ -120,13 +134,13 @@ public class ShipSpawner {
         }
 
         for (int i = 0; i < count; i++) {
-            if (secondFaction == Faction.HUMAN)
+            if (secondFaction == Faction.HUMAN) {
                 world.add(shipFactory.createBotHumanSmall(world, startSpawnX, startSpawnY, 0, aiFactory.createAi()), false);
-            else if (secondFaction == Faction.SAIMON)
-                world.add(shipFactory.createBotSaimonSmall(world, startSpawnX, startSpawnY, 0, aiFactory.createAi()),
-                        false);
-            else
+            } else if (secondFaction == Faction.SAIMON) {
+                world.add(shipFactory.createBotSaimonSmall(world, startSpawnX, startSpawnY, 0, aiFactory.createAi()), false);
+            } else {
                 world.add(shipFactory.createBotEngiSmall(world, startSpawnX, startSpawnY, 0, aiFactory.createAi()), false);
+            }
 
             startSpawnY += padding;
         }
@@ -141,6 +155,6 @@ public class ShipSpawner {
             }
         }
 
-        spawnShips(world);
+//        spawnShips(world);
     }
 }
