@@ -54,6 +54,7 @@ public abstract class ServerGameLogic extends GameLogic {
     private final ShipSpawner shipSpawner = new ShipSpawner(shipFactory, aiFactory);
     private final ShipOutfitter shipOutfitter = new ShipOutfitter(configConverterManager);
     private final WreckSpawner wreckSpawner = new WreckSpawner(configConverterManager.getConverter(WreckRegistry.class));
+    private final CollisionHandler collisionHandler = new CollisionHandler(eventBus, damageSystem, entityTrackingManager, wreckSpawner);
 
     private int ups;
     private World world;
@@ -67,8 +68,7 @@ public abstract class ServerGameLogic extends GameLogic {
         playerManager.init(createPlayerRepository(settings));
         long seed = new XoRoShiRo128PlusPlusRandom().nextLong();
         log.info("Creating world with seed {}", seed);
-        world = new World(profiler, seed, eventBus, new EntityManager(),
-                new EntityIdManager(), this, new CollisionHandler(eventBus, damageSystem, entityTrackingManager, wreckSpawner));
+        world = new World(profiler, seed, eventBus, new EntityManager(), new EntityIdManager(), this, collisionHandler);
         world.init();
         profiler.setEnable(true);
         networkSystem.init();
@@ -78,7 +78,7 @@ public abstract class ServerGameLogic extends GameLogic {
     }
 
     private void initListeners() {
-        eventBus.register(new ShipEventListener(wreckSpawner, entityTrackingManager, playerManager));
+        eventBus.register(new ShipEventListener());
         eventBus.register(new WeaponEventListener(entityTrackingManager, world));
         eventBus.register(new ModuleEventListener(entityTrackingManager));
     }

@@ -22,17 +22,23 @@ import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.math.RotationHelper;
+import net.bfsr.network.packet.server.effect.PacketHullCellDestroy;
 import net.bfsr.network.packet.server.entity.PacketSyncDamage;
 import net.bfsr.physics.CommonCollisionHandler;
 import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.world.World;
+import org.jbox2d.collision.AABB;
 import org.jbox2d.common.Vector2;
+import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.Fixture;
 import org.joml.Math;
 import org.joml.Vector2f;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Polygon;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class CollisionHandler extends CommonCollisionHandler {
     private final DamageSystem damageSystem;
@@ -40,6 +46,8 @@ public class CollisionHandler extends CommonCollisionHandler {
     private final WreckSpawner wreckSpawner;
     private final Vector2f angleToVelocity = new Vector2f();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
+    private final AABB aabb = new AABB();
+    private final Set<Body> affectedBodies = new HashSet<>();
 
     public CollisionHandler(EventBus eventBus, DamageSystem damageSystem, EntityTrackingManager trackingManager,
                             WreckSpawner wreckSpawner) {
@@ -225,11 +233,7 @@ public class CollisionHandler extends CommonCollisionHandler {
         HullCell cell = hull.getCell(contactX, contactY);
 
         if (cell.getValue() > 0.0f) {
-            cell.damage(hullDamage);
-
-            if (cell.getValue() <= 0.0f) {
-                createCellDamage(hull.getCells(), cell, ship, contactX, contactY);
-            }
+            damageHullCell(cell, hullDamage, ship, hull.getCells(), contactX, contactY);
         } else {
             createDamage(ship, contactX, contactY, clipPolygon, maskClipRadius);
         }
@@ -237,6 +241,15 @@ public class CollisionHandler extends CommonCollisionHandler {
         Object userData = fixture.getUserData();
         if (userData instanceof DamageableModule) {
             ((DamageableModule) userData).damage(hullDamage);
+        }
+    }
+
+    public void damageHullCell(HullCell cell, float hullDamage, DamageableRigidBody damageableRigidBody, ModuleCell[][] cells,
+                               float contactX, float contactY) {
+        cell.damage(hullDamage);
+
+        if (cell.getValue() <= 0.0f) {
+            createCellDamage(cells, cell, damageableRigidBody, contactX, contactY);
         }
     }
 
@@ -256,12 +269,65 @@ public class CollisionHandler extends CommonCollisionHandler {
         float posX = cell.getColumn() * rhombusWidth - halfSizeX + halfRhombusWidth;
         float posY = cell.getRow() * rhombusHeight - halfSizeY + halfRhombusHeight;
 
-        Polygon clipPolygon = damageSystem.createCenteredRhombusPolygon(rhombusWidth * rhombusScaleX, rhombusHeight * rhombusScaleY,
-                posX, posY, 0, 1);
-        damageSystem.damage(rigidBody, contactX, contactY, clipPolygon, java.lang.Math.max(rhombusWidth, rhombusHeight) / 2,
+        float rhombusScaledWidth = rhombusWidth * rhombusScaleX;
+        float rhombusScaledHeight = rhombusHeight * rhombusScaleY;
+        Polygon clipPolygon = damageSystem.createCenteredRhombusPolygon(rhombusScaledWidth, rhombusScaledHeight, posX, posY, 0, 1);
+        damageSystem.damage(rigidBody, contactX, contactY, clipPolygon, java.lang.Math.max(rhombusWidth, rhombusHeight) * 0.5f,
                 rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(),
                 () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
                         new PacketSyncDamage(rigidBody, rigidBody.getWorld().getTimestamp())));
+        trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
+                new PacketHullCellDestroy(rigidBody.getId(), cell.getColumn(), cell.getRow(), rigidBody.getWorld().getTimestamp()));
+
+        float maxSize = Math.max(rhombusScaledWidth, rhombusScaledHeight);
+        float waveRadius = maxSize * 2.0f;
+        float wavePower = maxSize * 1.75f;
+        createWave(rigidBody.getWorld(), posX + rigidBody.getX(), posY + rigidBody.getY(), waveRadius, wavePower);
+    }
+
+    public void createWave(World world, float x, float y, float radius, float power) {
+        org.jbox2d.dynamics.World physicWorld = world.getPhysicWorld();
+        aabb.set(x - radius, y - radius, x + radius, y + radius);
+        affectedBodies.clear();
+        physicWorld.queryAABB(fixture -> {
+            Body body = fixture.getBody();
+            if (affectedBodies.contains(body)) {
+                return true;
+            }
+
+            float distance = body.getPosition().distance(x, y);
+            if (distance > radius) {
+                return true;
+            }
+
+            affectedBodies.add(body);
+            return true;
+        }, aabb);
+
+        affectedBodies.forEach(body -> {
+            Vector2 position = body.getPosition();
+            float directionX = position.x - x;
+            float directionY = position.y - y;
+            float distance = Math.sqrt(directionX * directionX + directionY * directionY);
+            if (distance <= 0.0f) {
+                return;
+            }
+
+            float invDistance = 1.0f / distance;
+            float normalX = directionX * invDistance;
+            float normalY = directionY * invDistance;
+            float distanceImpulseSq = Math.min(invDistance, 1.0f);
+            float impulseMag = power * distanceImpulseSq;
+
+            Vector2 linearVelocity = body.getLinearVelocity();
+            float impulseX = impulseMag * normalX;
+            float impulseY = impulseMag * normalY;
+            linearVelocity.x += impulseX;
+            linearVelocity.y += impulseY;
+
+            float angularImpulse = Math.min(0.02f * impulseMag, 0.02f);
+            body.setAngularVelocity(body.getAngularVelocity() + RandomHelper.randomFloat(random, -angularImpulse, angularImpulse));
+        });
     }
 
     private void damageShipByCollision(Ship ship, Fixture fixture, float impactPower, float contactX, float contactY) {
@@ -282,11 +348,7 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         if (impactPower > 0.4f) {
             if (cell.getValue() > 0.0f) {
-                cell.damage(impactPower);
-
-                if (cell.getValue() <= 0.0f) {
-                    createCellDamage(hull.getCells(), cell, ship, contactX, contactY);
-                }
+                damageHullCell(cell, impactPower, ship, hull.getCells(), contactX, contactY);
             } else {
                 float clipPolygonRadius = 0.5f;
                 float maskClipRadius = 0.75f;

@@ -548,11 +548,12 @@ public class Body {
      * body if 'wake' is set to true. If the body is sleeping and 'wake' is false, then there is no
      * effect.
      *
-     * @param impulse the world impulse vector, usually in N-seconds or kg-m/s.
-     * @param point   the world position of the point of application.
-     * @param wake    also wake up the body
+     * @param x     the x component of impulse vector, usually in N-seconds or kg-m/s.
+     * @param y     the y component of impulse vector, usually in N-seconds or kg-m/s.
+     * @param point the world position of the point of application.
+     * @param wake  also wake up the body
      */
-    public final void applyLinearImpulse(Vector2 impulse, Vector2 point, boolean wake) {
+    public final void applyLinearImpulse(float x, float y, Vector2 point, boolean wake) {
         if (type != BodyType.DYNAMIC) {
             return;
         }
@@ -565,10 +566,10 @@ public class Body {
             }
         }
 
-        linearVelocity.x += impulse.x * invMass;
-        linearVelocity.y += impulse.y * invMass;
+        linearVelocity.x += x * invMass;
+        linearVelocity.y += y * invMass;
 
-        angularVelocity += invI * ((point.x - sweep.center.x) * impulse.y - (point.y - sweep.center.y) * impulse.x);
+        angularVelocity += invI * ((point.x - sweep.center.x) * y - (point.y - sweep.center.y) * x);
     }
 
     /**
