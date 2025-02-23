@@ -9,7 +9,7 @@ import io.netty.handler.codec.TooLongFrameException;
 import java.util.List;
 
 public class FrameDecoder extends ByteToMessageDecoder {
-    private final int maxFrameLength = Short.MAX_VALUE;
+    private final int maxFrameLength = Short.MAX_VALUE << 1;
     private final int lengthFieldOffset = 0;
     private final int lengthFieldLength = 2;
     private final int initialBytesToStrip = 2;
@@ -20,45 +20,46 @@ public class FrameDecoder extends ByteToMessageDecoder {
     private long bytesToDiscard;
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
+    protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) {
         long frameLength = 0;
         if (frameLengthInt == -1) { // new frame
-            if (discardingTooLongFrame) discardingTooLongFrame(in);
+            if (discardingTooLongFrame) discardingTooLongFrame(byteBuf);
 
-            if (in.readableBytes() < lengthFieldLength) return;
+            if (byteBuf.readableBytes() < lengthFieldLength) return;
 
-            int actualLengthFieldOffset = in.readerIndex() + lengthFieldOffset;
-            frameLength = in.getUnsignedShort(actualLengthFieldOffset);
+            int actualLengthFieldOffset = byteBuf.readerIndex() + lengthFieldOffset;
+            frameLength = byteBuf.getUnsignedShort(actualLengthFieldOffset);
 
             if (frameLength < 0) {
-                in.skipBytes(lengthFieldLength);
+                byteBuf.skipBytes(lengthFieldLength);
                 throw new CorruptedFrameException("negative pre-adjustment length field: " + frameLength);
             }
 
             frameLength += lengthFieldLength;
 
             if (frameLength > maxFrameLength) {
-                exceededFrameLength(in, frameLength);
+                exceededFrameLength(byteBuf, frameLength);
                 return;
             }
             // never overflows because it's less than maxFrameLength
             frameLengthInt = (int) frameLength;
         }
-        if (in.readableBytes() < frameLengthInt) return;
+        if (byteBuf.readableBytes() < frameLengthInt) return;
 
         if (initialBytesToStrip > frameLengthInt) {
-            in.skipBytes((int) frameLength);
-            throw new CorruptedFrameException("Adjusted frame length (" + frameLength + ") is less " + "than initialBytesToStrip: " + initialBytesToStrip);
+            byteBuf.skipBytes((int) frameLength);
+            throw new CorruptedFrameException(
+                    "Adjusted frame length (" + frameLength + ") is less " + "than initialBytesToStrip: " + initialBytesToStrip);
         }
-        in.skipBytes(initialBytesToStrip);
+        byteBuf.skipBytes(initialBytesToStrip);
 
         // extract frame
-        int readerIndex = in.readerIndex();
+        int readerIndex = byteBuf.readerIndex();
         int actualFrameLength = frameLengthInt - initialBytesToStrip;
-        ByteBuf frame = in.retainedSlice(readerIndex, actualFrameLength);
-        in.readerIndex(readerIndex + actualFrameLength);
+        ByteBuf frame = byteBuf.retainedSlice(readerIndex, actualFrameLength);
+        byteBuf.readerIndex(readerIndex + actualFrameLength);
         frameLengthInt = -1; // start processing the next frame
-        out.add(frame);
+        list.add(frame);
     }
 
     private void discardingTooLongFrame(ByteBuf in) {
