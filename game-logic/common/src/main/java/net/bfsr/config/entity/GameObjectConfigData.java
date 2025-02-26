@@ -3,7 +3,7 @@ package net.bfsr.config.entity;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.config.ConfigData;
-import net.bfsr.damage.DamageSystem;
+import net.bfsr.engine.geometry.GeometryUtils;
 import net.bfsr.engine.util.PathHelper;
 import org.jbox2d.collision.shapes.Shape;
 import org.locationtech.jts.geom.Polygon;
@@ -29,7 +29,7 @@ public class GameObjectConfigData extends ConfigData {
         this.shapeList = new ArrayList<>();
 
         try {
-            DamageSystem.decompose(polygonJTS, shapeList::add);
+            GeometryUtils.decompose(polygonJTS, shapeList::add);
         } catch (Exception e) {
             throw new RuntimeException("Can't decompose vertex data for config " + fileName, e);
         }

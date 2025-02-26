@@ -5,9 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.ConnectedObjectType;
-import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.geometry.GeometryUtils;
 import net.bfsr.network.packet.common.entity.spawn.connectedobject.ConnectedObjectSpawnData;
 import net.bfsr.network.util.ByteBufUtils;
 import org.jbox2d.dynamics.Fixture;
@@ -69,7 +69,7 @@ public abstract class DamageableRigidBodySpawnData extends RigidBodySpawnData {
         damageMaskByteBuffer.position(0);
 
         fixtures = new ArrayList<>(32);
-        DamageSystem.decompose(polygon, convex -> fixtures.add(new Fixture(convex)));
+        GeometryUtils.decompose(polygon, convex -> fixtures.add(new Fixture(convex)));
 
         short connectedObjectsCount = data.readShort();
         connectedObjectSpawnData = new ArrayList<>(connectedObjectsCount);

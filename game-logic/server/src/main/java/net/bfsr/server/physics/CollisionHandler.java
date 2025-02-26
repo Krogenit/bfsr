@@ -5,6 +5,7 @@ import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.geometry.GeometryUtils;
 import net.bfsr.engine.util.RandomHelper;
 import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.entity.RigidBody;
@@ -94,7 +95,7 @@ public class CollisionHandler extends CommonCollisionHandler {
     }
 
     private Polygon createBulletClipPolygon(float x, float y, float sin, float cos, float radius) {
-        return damageSystem.createCirclePath(x, y, -sin, cos, 6, radius);
+        return GeometryUtils.createCirclePath(x, y, -sin, cos, 6, radius);
     }
 
     @Override
@@ -186,7 +187,7 @@ public class CollisionHandler extends CommonCollisionHandler {
     }
 
     private Polygon createBeamClipPolygon(float width, float height, float x, float y, float sin, float cos, float penetration) {
-        Polygon polygon = damageSystem.createCenteredRectanglePolygon(width, height, x, y, sin, cos);
+        Polygon polygon = GeometryUtils.createCenteredRectanglePolygon(width, height, x, y, sin, cos);
         float penetrationX = penetration * cos;
         float penetrationY = penetration * sin;
 
@@ -271,7 +272,7 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         float rhombusScaledWidth = rhombusWidth * rhombusScaleX;
         float rhombusScaledHeight = rhombusHeight * rhombusScaleY;
-        Polygon clipPolygon = damageSystem.createCenteredRhombusPolygon(rhombusScaledWidth, rhombusScaledHeight, posX, posY, 0, 1);
+        Polygon clipPolygon = GeometryUtils.createCenteredRhombusPolygon(rhombusScaledWidth, rhombusScaledHeight, posX, posY, 0, 1);
         damageSystem.damage(rigidBody, contactX, contactY, clipPolygon, java.lang.Math.max(rhombusWidth, rhombusHeight) * 0.5f,
                 rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(),
                 () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),

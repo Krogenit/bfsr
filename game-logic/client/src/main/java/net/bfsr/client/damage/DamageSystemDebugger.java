@@ -4,6 +4,7 @@ import net.bfsr.client.renderer.texture.DamageMaskTexture;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.geometry.GeometryUtils;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
 import org.joml.Vector2f;
@@ -78,7 +79,7 @@ public class DamageSystemDebugger {
                 if (geometry1 instanceof Polygon polygon2) {
                     clipTextureOutside(polygon2, damageMask, size);
 
-                    DamageSystem.decompose(polygon2, polygon3 -> {});
+                    GeometryUtils.decompose(polygon2, polygon3 -> {});
 
                     renderPolygon(polygon2, new Vector4f(1, 1, 0, 0.75f));
                 }

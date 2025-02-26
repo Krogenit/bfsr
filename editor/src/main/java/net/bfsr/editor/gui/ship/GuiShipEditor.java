@@ -24,6 +24,7 @@ import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.editor.property.holder.Vector2fPropertiesHolder;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.entity.GameObject;
+import net.bfsr.engine.geometry.GeometryUtils;
 import net.bfsr.engine.gui.component.CheckBox;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.Label;
@@ -241,7 +242,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
     }
 
     private Polygon createClipPolygon(float x, float y) {
-        return damageSystem.createCirclePath(x, y, 0, 1, 6, clipPolygonRadius);
+        return GeometryUtils.createCirclePath(x, y, 0, 1, 6, clipPolygonRadius);
     }
 
     private void createShip(ShipProperties properties) {

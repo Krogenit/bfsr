@@ -2,6 +2,7 @@ package net.bfsr.server.event.listener.entity;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import lombok.RequiredArgsConstructor;
+import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.entity.ship.Ship;
@@ -30,6 +31,7 @@ public class ShipEventListener {
     private final EntityTrackingManager trackingManager = serverGameLogic.getEntityTrackingManager();
     private final PlayerManager playerManager = serverGameLogic.getPlayerManager();
     private final CollisionHandler collisionHandler = serverGameLogic.getCollisionHandler();
+    private final DamageSystem damageSystem = serverGameLogic.getDamageSystem();
     private final XoRoShiRo128PlusPlusRandom random = new XoRoShiRo128PlusPlusRandom();
 
     @EventHandler
@@ -97,7 +99,10 @@ public class ShipEventListener {
     public EventListener<ShipDestroyEvent> shipDestroyEvent() {
         return event -> {
             Ship ship = event.ship();
+            damageSystem.createDestroyedShipWrecks(ship);
+
             wreckSpawner.spawnDestroyShipSmall(ship);
+
             float maxShipSize = Math.max(ship.getSizeX(), ship.getSizeY());
             float waveRadius = maxShipSize * 2.0f;
             float wavePower = maxShipSize * 1.75f + 0.25f;

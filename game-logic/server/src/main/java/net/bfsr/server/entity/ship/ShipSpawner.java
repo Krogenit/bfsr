@@ -155,6 +155,6 @@ public class ShipSpawner {
             }
         }
 
-//        spawnShips(world);
+        spawnShips(world);
     }
 }

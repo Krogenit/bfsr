@@ -4,9 +4,9 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.damage.DamageMask;
-import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.geometry.GeometryUtils;
 import net.bfsr.network.packet.common.PacketScheduled;
 import net.bfsr.network.util.ByteBufUtils;
 import org.jbox2d.dynamics.Fixture;
@@ -77,6 +77,6 @@ public class PacketSyncDamage extends PacketScheduled {
         byteBuffer.position(0);
         fixtures = new ArrayList<>(32);
 
-        DamageSystem.decompose(polygon, polygon -> fixtures.add(new Fixture(polygon)));
+        GeometryUtils.decompose(polygon, polygon -> fixtures.add(new Fixture(polygon)));
     }
 }
