@@ -104,8 +104,8 @@ public class ShipEventListener {
             wreckSpawner.spawnDestroyShipSmall(ship);
 
             float maxShipSize = Math.max(ship.getSizeX(), ship.getSizeY());
-            float waveRadius = maxShipSize * 2.0f;
-            float wavePower = maxShipSize * 1.75f + 0.25f;
+            float waveRadius = maxShipSize * 1.1f;
+            float wavePower = maxShipSize * 0.008f;
             collisionHandler.createWave(ship.getWorld(), ship.getX(), ship.getY(), waveRadius, wavePower);
         };
     }

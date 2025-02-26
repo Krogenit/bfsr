@@ -1,6 +1,9 @@
 package net.bfsr.server.physics;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
@@ -48,7 +51,7 @@ public class CollisionHandler extends CommonCollisionHandler {
     private final Vector2f angleToVelocity = new Vector2f();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
     private final AABB aabb = new AABB();
-    private final Set<Body> affectedBodies = new HashSet<>();
+    private final Set<BodyDistance> affectedBodies = new HashSet<>();
 
     public CollisionHandler(EventBus eventBus, DamageSystem damageSystem, EntityTrackingManager trackingManager,
                             WreckSpawner wreckSpawner) {
@@ -292,42 +295,38 @@ public class CollisionHandler extends CommonCollisionHandler {
         affectedBodies.clear();
         physicWorld.queryAABB(fixture -> {
             Body body = fixture.getBody();
-            if (affectedBodies.contains(body)) {
+            BodyDistance bodyDistance = new BodyDistance(body);
+            if (affectedBodies.contains(bodyDistance)) {
                 return true;
             }
 
-            float distance = body.getPosition().distance(x, y);
-            if (distance > radius) {
+            float distance = bodyDistance.calculateDistance(x, y);
+            if (distance > radius || distance == 0.0f) {
                 return true;
             }
 
-            affectedBodies.add(body);
+            bodyDistance.setDistance(distance);
+            affectedBodies.add(bodyDistance);
             return true;
         }, aabb);
 
-        affectedBodies.forEach(body -> {
-            Vector2 position = body.getPosition();
-            float directionX = position.x - x;
-            float directionY = position.y - y;
-            float distance = Math.sqrt(directionX * directionX + directionY * directionY);
-            if (distance <= 0.0f) {
-                return;
-            }
-
-            float invDistance = 1.0f / distance;
-            float normalX = directionX * invDistance;
-            float normalY = directionY * invDistance;
-            float distanceImpulseSq = Math.min(invDistance, 1.0f);
+        affectedBodies.forEach(bodyDistance -> {
+            float invDistance = 1.0f / bodyDistance.distance;
+            float normalX = bodyDistance.dx * invDistance;
+            float normalY = bodyDistance.dy * invDistance;
+            float distanceImpulseSq = 1.0f;
             float impulseMag = power * distanceImpulseSq;
 
+            Body body = bodyDistance.getBody();
             Vector2 linearVelocity = body.getLinearVelocity();
             float impulseX = impulseMag * normalX;
             float impulseY = impulseMag * normalY;
-            linearVelocity.x += impulseX;
-            linearVelocity.y += impulseY;
+            float invMass = body.invMass < 1.0f ? body.invMass * 4.0f : body.invMass;
+            linearVelocity.addLocal(impulseX * invMass, impulseY * invMass);
 
-            float angularImpulse = Math.min(0.02f * impulseMag, 0.02f);
-            body.setAngularVelocity(body.getAngularVelocity() + RandomHelper.randomFloat(random, -angularImpulse, angularImpulse));
+            float angularImpulse = 0.04f * distanceImpulseSq;
+            float invV = body.invI < 1.0f ? body.invI * 4.0f : body.invI;
+            body.setAngularVelocity(body.getAngularVelocity() + RandomHelper.randomFloat(random, -angularImpulse, angularImpulse) * invV);
         });
     }
 
@@ -398,5 +397,22 @@ public class CollisionHandler extends CommonCollisionHandler {
         damageSystem.damage(rigidBody, contactX, contactY, clipPolygon, maskClipRadius, x, y, sin, cos,
                 () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
                         new PacketSyncDamage(rigidBody, rigidBody.getWorld().getTimestamp())));
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    private static class BodyDistance {
+        private final Body body;
+        @Setter
+        private float distance;
+        private float dx, dy;
+
+        float calculateDistance(float x, float y) {
+            Vector2 position = body.getPosition();
+            distance = position.distance(x, y);
+            dx = position.x - x;
+            dy = position.y - y;
+            return distance;
+        }
     }
 }
