@@ -2,7 +2,7 @@ package net.bfsr.server.config;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.config.ConfigLoader;
+import net.bfsr.engine.config.ConfigLoader;
 
 import java.nio.file.Path;
 

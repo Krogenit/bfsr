@@ -1,7 +1,7 @@
 package net.bfsr.config.entity.wreck;
 
 import lombok.Getter;
-import net.bfsr.config.entity.GameObjectConfigData;
+import net.bfsr.engine.config.entity.GameObjectConfigData;
 import net.bfsr.engine.util.PathHelper;
 import net.bfsr.entity.wreck.WreckType;
 import org.jbox2d.collision.shapes.Polygon;

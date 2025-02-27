@@ -1,6 +1,0 @@
-package net.bfsr.physics;
-
-public final class PhysicsUtils {
-    public static final float DEFAULT_FIXTURE_DENSITY = 0.001f;
-    public static final float ZERO_FIXTURE_DENSITY = 0.0f;
-}

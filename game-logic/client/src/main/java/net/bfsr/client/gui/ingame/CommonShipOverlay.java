@@ -11,6 +11,7 @@ import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.gui.component.TexturedRectangle;
 import net.bfsr.engine.gui.component.TexturedRotatedRectangle;
 import net.bfsr.engine.math.MathUtils;
+import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureRegister;
@@ -23,7 +24,6 @@ import net.bfsr.entity.ship.module.hull.HullCell;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
-import net.bfsr.math.RotationHelper;
 import org.joml.Vector2f;
 
 import javax.annotation.Nullable;

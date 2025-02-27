@@ -3,14 +3,14 @@ package net.bfsr.entity.bullet;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.weapon.gun.GunData;
+import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
+import net.bfsr.engine.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.engine.util.RunnableUtils;
-import net.bfsr.entity.RigidBody;
 import net.bfsr.network.packet.common.entity.spawn.BulletSpawnData;
-import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.physics.CollisionMatrixType;
-import net.bfsr.physics.filter.Filters;
+import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Fixture;
@@ -95,7 +95,7 @@ public class Bullet extends RigidBody {
     }
 
     @Override
-    public int getCollisionMatrixType() {
+    public int getCollisionMatrixId() {
         return CollisionMatrixType.BULLET.ordinal();
     }
 }

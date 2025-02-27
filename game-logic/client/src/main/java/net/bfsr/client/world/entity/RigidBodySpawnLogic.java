@@ -1,12 +1,12 @@
 package net.bfsr.client.world.entity;
 
-import net.bfsr.config.ConfigConverterManager;
-import net.bfsr.config.ConfigToDataConverter;
-import net.bfsr.config.entity.GameObjectConfigData;
+import net.bfsr.engine.config.ConfigConverterManager;
+import net.bfsr.engine.config.ConfigToDataConverter;
+import net.bfsr.engine.config.entity.GameObjectConfigData;
+import net.bfsr.engine.entity.RigidBody;
+import net.bfsr.engine.network.packet.common.entity.spawn.RigidBodySpawnData;
 import net.bfsr.engine.renderer.AbstractRenderer;
-import net.bfsr.entity.RigidBody;
-import net.bfsr.network.packet.common.entity.spawn.RigidBodySpawnData;
-import net.bfsr.world.World;
+import net.bfsr.engine.world.World;
 import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.Fixture;

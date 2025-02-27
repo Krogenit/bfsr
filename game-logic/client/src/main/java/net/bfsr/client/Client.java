@@ -34,23 +34,24 @@ import net.bfsr.client.settings.ConfigSettings;
 import net.bfsr.client.world.BlankWorld;
 import net.bfsr.client.world.entity.ClientEntityIdManager;
 import net.bfsr.client.world.entity.EntitySpawnLoginRegistry;
-import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.config.ConfigConverterManager;
 import net.bfsr.engine.entity.ParticleManager;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.logic.ClientGameLogic;
+import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.sound.AbstractSoundManager;
+import net.bfsr.engine.world.World;
 import net.bfsr.entity.CommonEntityManager;
 import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.logic.LogicType;
-import net.bfsr.network.packet.Packet;
-import net.bfsr.world.World;
+import net.bfsr.physics.collision.CollisionMatrix;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;
@@ -89,7 +90,7 @@ public class Client extends ClientGameLogic {
     private final DamageHandler damageHandler = new DamageHandler(entityRenderer);
 
     private final EntitySpawnLoginRegistry entitySpawnLoginRegistry = new EntitySpawnLoginRegistry(configConverterManager, shipFactory,
-            damageHandler);
+            damageHandler, this);
 
     private final NetworkSystem networkSystem = new NetworkSystem(this);
 
@@ -278,7 +279,7 @@ public class Client extends ClientGameLogic {
 
     public void createWorld(long seed) {
         world = new World(profiler, seed, eventBus, new CommonEntityManager(), new ClientEntityIdManager(), this,
-                new CollisionHandler(this));
+                new CollisionMatrix(new CollisionHandler(this)));
         world.init();
     }
 

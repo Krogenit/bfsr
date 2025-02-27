@@ -3,8 +3,8 @@ package net.bfsr.network.packet.server.entity;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.bfsr.network.packet.common.PacketScheduled;
-import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
+import net.bfsr.engine.network.packet.PacketScheduled;
+import net.bfsr.engine.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnType;
 
 import java.io.IOException;
@@ -22,7 +22,7 @@ public class PacketSpawnEntity extends PacketScheduled {
     @Override
     public void write(ByteBuf data) throws IOException {
         super.write(data);
-        data.writeByte(entityPacketSpawnData.getType().ordinal());
+        data.writeByte(entityPacketSpawnData.getTypeId());
         entityPacketSpawnData.writeData(data);
     }
 

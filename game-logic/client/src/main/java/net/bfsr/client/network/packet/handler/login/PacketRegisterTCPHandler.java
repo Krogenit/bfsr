@@ -2,9 +2,9 @@ package net.bfsr.client.network.packet.handler.login;
 
 import io.netty.channel.ChannelHandlerContext;
 import net.bfsr.client.network.NetworkSystem;
-import net.bfsr.network.packet.PacketHandler;
-import net.bfsr.network.packet.common.PacketRegisterTCP;
-import net.bfsr.network.packet.common.PacketRegisterUDP;
+import net.bfsr.engine.network.packet.PacketHandler;
+import net.bfsr.engine.network.packet.common.PacketRegisterTCP;
+import net.bfsr.engine.network.packet.common.PacketRegisterUDP;
 
 import java.net.InetSocketAddress;
 

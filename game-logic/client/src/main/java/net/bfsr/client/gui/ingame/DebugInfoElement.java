@@ -19,12 +19,15 @@ import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
+import net.bfsr.engine.util.DecimalUtils;
+import net.bfsr.engine.world.World;
+import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
+import net.bfsr.entity.wreck.ShipWreck;
+import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.server.ServerGameLogic;
-import net.bfsr.util.DecimalUtils;
-import net.bfsr.world.World;
 import org.jbox2d.common.Vector2;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
@@ -114,11 +117,11 @@ public class DebugInfoElement extends MinimizableGuiObject {
         y -= addMinimizableWithLabel(width, height, y, "World", createLabel(0, "",
                 label1 -> {
                     World world = client.getWorld();
-                    int bulletsCount = world.getBulletsCount();
+                    int bulletsCount = getBulletsCount(world);
                     int shipsCount = world.getEntitiesByType(Ship.class).size();
                     int particlesCount = client.getParticlesCount();
-                    int wreckCount = world.getWreckCount();
-                    int shipWreckCount = world.getShipWreckCount();
+                    int wreckCount = getWreckCount(world);
+                    int shipWreckCount = getShipWreckCount(world);
                     int bodyCount = world.getPhysicWorld().getBodyCount();
 
                     ServerGameLogic server = ServerGameLogic.get();
@@ -129,10 +132,10 @@ public class DebugInfoElement extends MinimizableGuiObject {
                     int sBodyCount = 0;
                     if (server != null) {
                         World sWorld = server.getWorld();
-                        sBulletsCount = sWorld.getBulletsCount();
+                        sBulletsCount = getBulletsCount(sWorld);
                         sShipsCount = sWorld.getEntitiesByType(Ship.class).size();
-                        sWrecksCount = sWorld.getWreckCount();
-                        sShipWrecksCount = sWorld.getShipWreckCount();
+                        sWrecksCount = getWreckCount(sWorld);
+                        sShipWrecksCount = getShipWreckCount(sWorld);
                         sBodyCount = sWorld.getPhysicWorld().getBodyCount();
                     }
 
@@ -274,5 +277,17 @@ public class DebugInfoElement extends MinimizableGuiObject {
             guiObject.atTopLeft(0, y);
             y -= guiObject.getHeight();
         }
+    }
+
+    private int getBulletsCount(World world) {
+        return world.getEntitiesByType(Bullet.class).size();
+    }
+
+    private int getWreckCount(World world) {
+        return world.getEntitiesByType(Wreck.class).size();
+    }
+
+    private int getShipWreckCount(World world) {
+        return world.getEntitiesByType(ShipWreck.class).size();
     }
 }

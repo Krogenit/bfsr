@@ -1,7 +1,7 @@
 package net.bfsr.config.component.cargo;
 
-import net.bfsr.config.ConfigConverter;
-import net.bfsr.config.ConfigToDataConverter;
+import net.bfsr.engine.config.ConfigConverter;
+import net.bfsr.engine.config.ConfigToDataConverter;
 
 @ConfigConverter
 public final class CargoRegistry extends ConfigToDataConverter<CargoConfig, CargoData> {

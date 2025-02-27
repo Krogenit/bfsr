@@ -6,7 +6,7 @@ import com.squareup.moshi.Moshi;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.client.settings.adapter.ConfigSettingsAdapter;
-import net.bfsr.config.ConfigLoader;
+import net.bfsr.engine.config.ConfigLoader;
 
 import java.io.IOException;
 import java.io.Serializable;

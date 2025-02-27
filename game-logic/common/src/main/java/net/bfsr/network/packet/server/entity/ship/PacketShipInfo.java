@@ -3,13 +3,13 @@ package net.bfsr.network.packet.server.entity.ship;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.bfsr.engine.network.packet.PacketScheduled;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.armor.ArmorPlate;
 import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.entity.ship.module.hull.HullCell;
-import net.bfsr.network.packet.common.PacketScheduled;
 
 import java.io.IOException;
 

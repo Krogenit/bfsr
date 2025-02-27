@@ -2,7 +2,7 @@ package net.bfsr.config.entity.damageable;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.config.entity.GameObjectConfigData;
+import net.bfsr.engine.config.entity.GameObjectConfigData;
 import org.joml.Vector2i;
 
 @Getter

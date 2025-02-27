@@ -1,5 +1,6 @@
 package net.bfsr.client.renderer.component;
 
+import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
@@ -9,7 +10,6 @@ import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.engine.Engine;
-import net.bfsr.math.Direction;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.common.Vector2;

@@ -3,9 +3,9 @@ package net.bfsr.network.packet.server.gui;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.bfsr.engine.network.packet.PacketAdapter;
+import net.bfsr.engine.network.util.ByteBufUtils;
 import net.bfsr.network.GuiType;
-import net.bfsr.network.packet.PacketAdapter;
-import net.bfsr.network.util.ByteBufUtils;
 
 import java.io.IOException;
 
@@ -39,5 +39,4 @@ public class PacketOpenGui extends PacketAdapter {
             destroyer = ByteBufUtils.readString(data);
         }
     }
-
 }

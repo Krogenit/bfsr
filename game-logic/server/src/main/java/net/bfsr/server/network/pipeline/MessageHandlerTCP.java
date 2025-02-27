@@ -4,7 +4,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.network.packet.Packet;
+import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import org.jetbrains.annotations.NotNull;

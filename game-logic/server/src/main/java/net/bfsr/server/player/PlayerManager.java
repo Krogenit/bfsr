@@ -8,15 +8,15 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.math.MathUtils;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.world.World;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.GuiType;
 import net.bfsr.network.packet.server.gui.PacketOpenGui;
 import net.bfsr.server.database.PlayerRepository;
-import net.bfsr.world.World;
 
 import java.util.ArrayList;
 import java.util.List;

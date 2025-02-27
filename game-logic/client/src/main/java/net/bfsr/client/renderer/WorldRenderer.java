@@ -6,6 +6,7 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
+import net.bfsr.engine.event.world.WorldInitEvent;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
@@ -15,7 +16,6 @@ import net.bfsr.engine.renderer.culling.AbstractGPUFrustumCullingSystem;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.texture.TextureRegister;
-import net.bfsr.event.world.WorldInitEvent;
 
 public class WorldRenderer {
     private final AbstractRenderer renderer = Engine.getRenderer();

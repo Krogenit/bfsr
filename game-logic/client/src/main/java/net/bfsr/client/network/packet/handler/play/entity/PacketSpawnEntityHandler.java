@@ -5,9 +5,9 @@ import net.bfsr.client.Client;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.world.entity.EntitySpawnLogicType;
 import net.bfsr.client.world.entity.EntitySpawnLoginRegistry;
-import net.bfsr.network.packet.PacketHandler;
+import net.bfsr.engine.network.packet.PacketHandler;
+import net.bfsr.engine.world.World;
 import net.bfsr.network.packet.server.entity.PacketSpawnEntity;
-import net.bfsr.world.World;
 
 import java.net.InetSocketAddress;
 
@@ -21,7 +21,7 @@ public class PacketSpawnEntityHandler extends PacketHandler<PacketSpawnEntity, N
                        InetSocketAddress remoteAddress) {
         World world = Client.get().getWorld();
         if (world.getEntityById(packet.getEntityPacketSpawnData().getEntityId()) == null) {
-            entitySpawnLoginRegistry.spawn(SPAWN_LOGIC_TYPES[packet.getEntityPacketSpawnData().getType().ordinal()],
+            entitySpawnLoginRegistry.spawn(SPAWN_LOGIC_TYPES[packet.getEntityPacketSpawnData().getTypeId()],
                     packet.getEntityPacketSpawnData(), world);
         }
     }

@@ -4,13 +4,16 @@ import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import net.bfsr.ai.Ai;
 import net.bfsr.client.Client;
 import net.bfsr.client.gui.hud.HUD;
-import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.component.weapon.beam.BeamRegistry;
 import net.bfsr.config.component.weapon.gun.GunRegistry;
 import net.bfsr.config.entity.bullet.DamageConfigurable;
 import net.bfsr.config.entity.wreck.WreckRegistry;
+import net.bfsr.engine.config.ConfigConverterManager;
 import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.engine.profiler.Profiler;
+import net.bfsr.engine.util.ObjectPool;
+import net.bfsr.engine.world.World;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.ship.Ship;
@@ -19,8 +22,6 @@ import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.entity.wreck.WreckType;
-import net.bfsr.network.packet.Packet;
-import net.bfsr.world.World;
 
 import java.util.List;
 
@@ -98,8 +99,9 @@ public class BenchmarkGameLogic extends Client {
         rectangleSpawnHalfHeight = (float) (offset * Math.sqrt(wreckCount)) / 2;
         x = -rectangleSpawnHalfWidth;
         y = -rectangleSpawnHalfHeight;
+        ObjectPool<Wreck> wreckPool = getObjectPool(Wreck.class);
         for (int i = 0; i < wreckCount; i++) {
-            Wreck wreck = world.getObjectPools().getWrecksPool().get();
+            Wreck wreck = wreckPool.get();
             wreck.init(world, world.getNextId(), 0, true, true, true, x, y, 0, 0, 0, 1, 0, 5, 5, 1200, WreckType.DEFAULT,
                     wreckRegistry.getWreck(WreckType.DEFAULT, 0));
             world.add(wreck);

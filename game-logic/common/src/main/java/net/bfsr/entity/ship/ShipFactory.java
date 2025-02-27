@@ -6,8 +6,8 @@ import net.bfsr.ai.Ai;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.engine.math.LUT;
+import net.bfsr.engine.world.World;
 import net.bfsr.faction.Faction;
-import net.bfsr.world.World;
 
 @Getter
 public class ShipFactory {

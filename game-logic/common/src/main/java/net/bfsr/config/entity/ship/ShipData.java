@@ -2,11 +2,11 @@ package net.bfsr.config.entity.ship;
 
 import gnu.trove.map.TMap;
 import lombok.Getter;
-import net.bfsr.config.Vector2fConfigurable;
 import net.bfsr.config.component.ModulesPolygonsConfig;
 import net.bfsr.config.entity.damageable.DamageableRigidBodyConfigData;
 import net.bfsr.engine.Engine;
-import net.bfsr.math.Direction;
+import net.bfsr.engine.config.Vector2fConfigurable;
+import net.bfsr.engine.math.Direction;
 import org.jbox2d.collision.shapes.Polygon;
 import org.joml.Vector2f;
 import org.joml.Vector4f;

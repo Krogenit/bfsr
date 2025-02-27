@@ -1,7 +1,7 @@
 package net.bfsr.config.component.cargo;
 
 import lombok.Getter;
-import net.bfsr.config.ConfigData;
+import net.bfsr.engine.config.ConfigData;
 
 @Getter
 public class CargoData extends ConfigData {

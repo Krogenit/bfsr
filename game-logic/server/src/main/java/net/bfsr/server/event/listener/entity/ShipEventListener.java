@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
+import net.bfsr.engine.world.World;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.entity.ship.ShipDestroyEvent;
 import net.bfsr.event.entity.ship.ShipDestroyingEvent;
@@ -21,7 +22,6 @@ import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.physics.CollisionHandler;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
-import net.bfsr.world.World;
 import org.jbox2d.common.Vector2;
 
 @RequiredArgsConstructor

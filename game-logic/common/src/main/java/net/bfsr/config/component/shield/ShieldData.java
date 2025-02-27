@@ -1,8 +1,8 @@
 package net.bfsr.config.component.shield;
 
 import lombok.Getter;
-import net.bfsr.config.ConfigData;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.config.ConfigData;
 
 @Getter
 public class ShieldData extends ConfigData {

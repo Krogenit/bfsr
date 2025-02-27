@@ -1,7 +1,7 @@
 package net.bfsr.server.network.packet.handler.play;
 
 import io.netty.channel.ChannelHandlerContext;
-import net.bfsr.network.packet.PacketHandler;
+import net.bfsr.engine.network.packet.PacketHandler;
 import net.bfsr.network.packet.client.PacketPauseGame;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;

@@ -2,10 +2,10 @@ package net.bfsr.client.network.packet.handler.play.component;
 
 import io.netty.channel.ChannelHandlerContext;
 import net.bfsr.client.Client;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.entity.RigidBody;
+import net.bfsr.engine.network.NetworkHandler;
+import net.bfsr.engine.network.packet.PacketHandler;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.network.NetworkHandler;
-import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.server.component.PacketDestroyModule;
 
 import java.net.InetSocketAddress;

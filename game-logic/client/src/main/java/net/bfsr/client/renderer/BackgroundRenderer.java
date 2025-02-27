@@ -3,12 +3,12 @@ package net.bfsr.client.renderer;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
+import net.bfsr.engine.event.world.WorldInitEvent;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.util.RunnableUtils;
-import net.bfsr.event.world.WorldInitEvent;
 
 public class BackgroundRenderer {
     private final AbstractRenderer renderer;

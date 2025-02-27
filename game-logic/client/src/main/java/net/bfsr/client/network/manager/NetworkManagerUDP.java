@@ -16,7 +16,7 @@ import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.network.pipeline.MessageDecoderUDP;
 import net.bfsr.client.network.pipeline.MessageHandlerUDP;
 import net.bfsr.client.network.pipeline.PacketEncoder;
-import net.bfsr.network.packet.Packet;
+import net.bfsr.engine.network.packet.Packet;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;

@@ -9,8 +9,12 @@ import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.event.EventBus;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.math.Direction;
+import net.bfsr.engine.math.RotationHelper;
+import net.bfsr.engine.network.packet.common.entity.spawn.EntityPacketSpawnData;
+import net.bfsr.engine.world.World;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.cargo.Cargo;
@@ -28,14 +32,12 @@ import net.bfsr.event.entity.ship.ShipNewMoveDirectionEvent;
 import net.bfsr.event.entity.ship.ShipPostPhysicsUpdate;
 import net.bfsr.event.entity.ship.ShipRemoveMoveDirectionEvent;
 import net.bfsr.faction.Faction;
-import net.bfsr.math.Direction;
-import net.bfsr.math.RotationHelper;
-import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.ship.ShipSpawnData;
 import net.bfsr.physics.CollisionMatrixType;
-import net.bfsr.world.World;
+import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Vector2;
+import org.jbox2d.dynamics.Filter;
 import org.jbox2d.dynamics.Fixture;
 import org.joml.Vector2f;
 import org.locationtech.jts.geom.Polygon;
@@ -401,7 +403,12 @@ public class Ship extends DamageableRigidBody {
     }
 
     @Override
-    public int getCollisionMatrixType() {
+    public int getCollisionMatrixId() {
         return CollisionMatrixType.SHIP.ordinal();
+    }
+
+    @Override
+    public Filter getCollisionFilter(Fixture fixture) {
+        return Filters.SHIP_FILTER;
     }
 }

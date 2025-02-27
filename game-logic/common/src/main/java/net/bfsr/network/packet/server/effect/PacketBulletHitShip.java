@@ -4,9 +4,9 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.damage.DamageType;
+import net.bfsr.engine.network.packet.PacketScheduled;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.network.packet.common.PacketScheduled;
 
 import java.io.IOException;
 

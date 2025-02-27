@@ -1,7 +1,7 @@
 package net.bfsr.server.network.packet.handler.play.player;
 
 import io.netty.channel.ChannelHandlerContext;
-import net.bfsr.network.packet.PacketHandler;
+import net.bfsr.engine.network.packet.PacketHandler;
 import net.bfsr.network.packet.client.PacketCameraPosition;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 

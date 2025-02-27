@@ -1,7 +1,7 @@
 package net.bfsr.editor.property.converter;
 
-import net.bfsr.config.Vector2fConfigurable;
-import net.bfsr.config.Vector2iConfigurable;
+import net.bfsr.engine.config.Vector2fConfigurable;
+import net.bfsr.engine.config.Vector2iConfigurable;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 

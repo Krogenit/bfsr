@@ -1,13 +1,13 @@
 package net.bfsr.client.world.entity;
 
 import lombok.RequiredArgsConstructor;
-import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.config.component.weapon.gun.GunRegistry;
+import net.bfsr.engine.config.ConfigConverterManager;
 import net.bfsr.engine.renderer.AbstractRenderer;
+import net.bfsr.engine.world.World;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.network.packet.common.entity.spawn.BulletSpawnData;
-import net.bfsr.world.World;
 
 @RequiredArgsConstructor
 public class BulletSpawnLogic implements EntitySpawnLogic<BulletSpawnData> {

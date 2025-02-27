@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.AllArgsConstructor;
-import net.bfsr.network.packet.Packet;
+import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.server.network.NetworkSystem;
 
 import java.io.IOException;

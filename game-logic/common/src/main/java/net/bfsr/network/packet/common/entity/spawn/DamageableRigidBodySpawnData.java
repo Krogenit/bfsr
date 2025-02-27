@@ -8,8 +8,9 @@ import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.geometry.GeometryUtils;
+import net.bfsr.engine.network.packet.common.entity.spawn.RigidBodySpawnData;
+import net.bfsr.engine.network.util.ByteBufUtils;
 import net.bfsr.network.packet.common.entity.spawn.connectedobject.ConnectedObjectSpawnData;
-import net.bfsr.network.util.ByteBufUtils;
 import org.jbox2d.dynamics.Fixture;
 import org.locationtech.jts.geom.Polygon;
 

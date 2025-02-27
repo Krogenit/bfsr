@@ -2,19 +2,19 @@ package net.bfsr.client.world.entity;
 
 import lombok.RequiredArgsConstructor;
 import net.bfsr.client.damage.DamageHandler;
-import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.entity.ship.ShipData;
+import net.bfsr.engine.config.ConfigConverterManager;
+import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.renderer.AbstractRenderer;
+import net.bfsr.engine.world.World;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.entity.ship.module.engine.Engine;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.faction.Faction;
-import net.bfsr.math.Direction;
 import net.bfsr.network.packet.common.entity.spawn.ship.EngineSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.ship.ShipSpawnData;
-import net.bfsr.world.World;
 
 import java.util.EnumMap;
 import java.util.List;

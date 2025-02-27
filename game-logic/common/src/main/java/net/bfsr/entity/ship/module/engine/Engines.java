@@ -3,12 +3,12 @@ package net.bfsr.entity.ship.module.engine;
 import lombok.Getter;
 import net.bfsr.config.component.engine.EnginesData;
 import net.bfsr.config.entity.ship.EngineData;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.entity.RigidBody;
+import net.bfsr.engine.math.Direction;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.Module;
 import net.bfsr.entity.ship.module.ModuleType;
-import net.bfsr.math.Direction;
 
 import java.util.ArrayList;
 import java.util.EnumMap;

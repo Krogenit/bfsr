@@ -5,18 +5,22 @@ import io.netty.channel.socket.SocketChannel;
 import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.config.entity.wreck.WreckRegistry;
 import net.bfsr.damage.DamageSystem;
+import net.bfsr.engine.config.ConfigConverterManager;
+import net.bfsr.engine.entity.EntityIdManager;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.logic.GameLogic;
 import net.bfsr.engine.profiler.Profiler;
+import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.engine.util.Side;
-import net.bfsr.entity.EntityIdManager;
+import net.bfsr.engine.world.World;
 import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.entity.ship.ShipOutfitter;
+import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.logic.LogicType;
+import net.bfsr.physics.collision.CollisionMatrix;
 import net.bfsr.server.ai.AiFactory;
 import net.bfsr.server.config.ServerSettings;
 import net.bfsr.server.database.PlayerRepository;
@@ -32,7 +36,6 @@ import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.physics.CollisionHandler;
 import net.bfsr.server.player.PlayerManager;
-import net.bfsr.world.World;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -53,7 +56,8 @@ public abstract class ServerGameLogic extends GameLogic {
     private final AiFactory aiFactory = new AiFactory(entityTrackingManager);
     private final ShipSpawner shipSpawner = new ShipSpawner(shipFactory, aiFactory);
     private final ShipOutfitter shipOutfitter = new ShipOutfitter(configConverterManager);
-    private final WreckSpawner wreckSpawner = new WreckSpawner(configConverterManager.getConverter(WreckRegistry.class));
+    private final WreckSpawner wreckSpawner = new WreckSpawner(configConverterManager.getConverter(WreckRegistry.class),
+            addObjectPool(Wreck.class, new ObjectPool<>(Wreck::new)));
     private final CollisionHandler collisionHandler = new CollisionHandler(eventBus, damageSystem, entityTrackingManager, wreckSpawner);
 
     private int ups;
@@ -68,7 +72,8 @@ public abstract class ServerGameLogic extends GameLogic {
         playerManager.init(createPlayerRepository(settings));
         long seed = new XoRoShiRo128PlusPlusRandom().nextLong();
         log.info("Creating world with seed {}", seed);
-        world = new World(profiler, seed, eventBus, new EntityManager(), new EntityIdManager(), this, collisionHandler);
+        world = new World(profiler, seed, eventBus, new EntityManager(), new EntityIdManager(), this,
+                new CollisionMatrix(collisionHandler));
         world.init();
         profiler.setEnable(true);
         networkSystem.init();

@@ -5,7 +5,7 @@ import net.bfsr.client.Client;
 import net.bfsr.client.event.chat.ChatMessageEvent;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.engine.event.EventBus;
-import net.bfsr.network.packet.PacketHandler;
+import net.bfsr.engine.network.packet.PacketHandler;
 import net.bfsr.network.packet.common.PacketChatMessage;
 
 import java.net.InetSocketAddress;

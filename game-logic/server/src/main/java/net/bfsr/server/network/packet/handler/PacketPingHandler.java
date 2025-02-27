@@ -1,9 +1,9 @@
 package net.bfsr.server.network.packet.handler;
 
 import io.netty.channel.ChannelHandlerContext;
+import net.bfsr.engine.network.packet.PacketHandler;
+import net.bfsr.engine.network.packet.common.PacketPing;
 import net.bfsr.engine.util.Side;
-import net.bfsr.network.packet.PacketHandler;
-import net.bfsr.network.packet.common.PacketPing;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 
 import java.net.InetSocketAddress;

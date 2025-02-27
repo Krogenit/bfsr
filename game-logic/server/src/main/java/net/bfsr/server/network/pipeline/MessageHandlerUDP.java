@@ -5,7 +5,7 @@ import io.netty.channel.DefaultAddressedEnvelope;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.network.packet.Packet;
+import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.server.network.NetworkSystem;
 
 import java.net.InetSocketAddress;

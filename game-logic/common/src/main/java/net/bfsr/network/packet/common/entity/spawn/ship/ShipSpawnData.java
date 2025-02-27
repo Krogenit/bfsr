@@ -3,15 +3,15 @@ package net.bfsr.network.packet.common.entity.spawn.ship;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.bfsr.engine.math.Direction;
+import net.bfsr.engine.network.util.ByteBufUtils;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.engine.Engine;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.shield.Shield;
-import net.bfsr.math.Direction;
 import net.bfsr.network.packet.common.entity.spawn.DamageableRigidBodySpawnData;
 import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnType;
-import net.bfsr.network.util.ByteBufUtils;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -151,7 +151,7 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData {
     }
 
     @Override
-    public EntityPacketSpawnType getType() {
-        return EntityPacketSpawnType.SHIP;
+    public int getTypeId() {
+        return EntityPacketSpawnType.SHIP.ordinal();
     }
 }

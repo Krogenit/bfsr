@@ -7,8 +7,8 @@ import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.geometry.GeometryUtils;
-import net.bfsr.network.packet.common.PacketScheduled;
-import net.bfsr.network.util.ByteBufUtils;
+import net.bfsr.engine.network.packet.PacketScheduled;
+import net.bfsr.engine.network.util.ByteBufUtils;
 import org.jbox2d.dynamics.Fixture;
 import org.locationtech.jts.geom.Polygon;
 

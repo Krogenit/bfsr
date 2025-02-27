@@ -4,8 +4,8 @@ import io.netty.channel.ChannelHandlerContext;
 import net.bfsr.client.Client;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.engine.entity.GameObject;
+import net.bfsr.engine.network.packet.PacketHandler;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.server.entity.ship.PacketShipSetSpawned;
 
 import java.net.InetSocketAddress;

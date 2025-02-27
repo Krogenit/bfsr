@@ -1,6 +1,6 @@
 package net.bfsr.editor.property.converter;
 
-import net.bfsr.util.DecimalUtils;
+import net.bfsr.engine.util.DecimalUtils;
 
 import java.util.function.Function;
 

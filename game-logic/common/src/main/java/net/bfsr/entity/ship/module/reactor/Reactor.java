@@ -3,11 +3,11 @@ package net.bfsr.entity.ship.module.reactor;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.reactor.ReactorData;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.entity.RigidBody;
+import net.bfsr.engine.physics.PhysicsUtils;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
-import net.bfsr.physics.PhysicsUtils;
-import net.bfsr.physics.filter.Filters;
+import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.dynamics.Fixture;
 

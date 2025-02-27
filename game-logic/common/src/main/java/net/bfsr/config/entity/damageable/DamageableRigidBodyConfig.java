@@ -2,9 +2,9 @@ package net.bfsr.config.entity.damageable;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.config.Configurable;
-import net.bfsr.config.Vector2iConfigurable;
-import net.bfsr.config.entity.GameObjectConfig;
+import net.bfsr.engine.config.Configurable;
+import net.bfsr.engine.config.Vector2iConfigurable;
+import net.bfsr.engine.config.entity.GameObjectConfig;
 
 @Getter
 @Setter

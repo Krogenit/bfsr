@@ -2,7 +2,7 @@ package net.bfsr.config.entity.ship;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.config.Configurable;
+import net.bfsr.engine.config.Configurable;
 
 import java.util.List;
 

@@ -2,11 +2,11 @@ package net.bfsr.config.entity.ship;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.config.ColorConfigurable;
-import net.bfsr.config.Configurable;
-import net.bfsr.config.Vector2fConfigurable;
 import net.bfsr.config.component.ModulesPolygonsConfig;
 import net.bfsr.config.entity.damageable.DamageableRigidBodyConfig;
+import net.bfsr.engine.config.ColorConfigurable;
+import net.bfsr.engine.config.Configurable;
+import net.bfsr.engine.config.Vector2fConfigurable;
 
 @Getter
 @Setter

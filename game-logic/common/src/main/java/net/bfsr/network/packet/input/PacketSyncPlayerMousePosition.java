@@ -3,8 +3,8 @@ package net.bfsr.network.packet.input;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.bfsr.network.packet.PacketAdapter;
-import net.bfsr.network.util.ByteBufUtils;
+import net.bfsr.engine.network.packet.PacketAdapter;
+import net.bfsr.engine.network.util.ByteBufUtils;
 import org.joml.Vector2f;
 
 import java.io.IOException;

@@ -3,7 +3,7 @@ package net.bfsr.network.packet.server.entity.ship;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.bfsr.network.packet.common.PacketScheduled;
+import net.bfsr.engine.network.packet.PacketScheduled;
 
 import java.io.IOException;
 

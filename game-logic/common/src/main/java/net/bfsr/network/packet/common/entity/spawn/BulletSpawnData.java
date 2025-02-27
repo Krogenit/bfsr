@@ -3,6 +3,7 @@ package net.bfsr.network.packet.common.entity.spawn;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.bfsr.engine.network.packet.common.entity.spawn.RigidBodySpawnData;
 import net.bfsr.entity.bullet.Bullet;
 
 @Getter
@@ -28,7 +29,7 @@ public class BulletSpawnData extends RigidBodySpawnData {
     }
 
     @Override
-    public EntityPacketSpawnType getType() {
-        return EntityPacketSpawnType.BULLET;
+    public int getTypeId() {
+        return EntityPacketSpawnType.BULLET.ordinal();
     }
 }

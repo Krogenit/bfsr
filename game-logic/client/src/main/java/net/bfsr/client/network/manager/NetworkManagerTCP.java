@@ -14,9 +14,9 @@ import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.network.pipeline.MessageDecoderTCP;
 import net.bfsr.client.network.pipeline.MessageHandlerTCP;
 import net.bfsr.client.network.pipeline.PacketEncoder;
-import net.bfsr.network.packet.Packet;
-import net.bfsr.network.pipeline.tcp.FrameDecoder;
-import net.bfsr.network.pipeline.tcp.LengthPrepender;
+import net.bfsr.engine.network.packet.Packet;
+import net.bfsr.engine.network.pipeline.tcp.FrameDecoder;
+import net.bfsr.engine.network.pipeline.tcp.LengthPrepender;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;

@@ -7,7 +7,9 @@ import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Vector2;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
 
 import java.util.List;
@@ -111,5 +113,21 @@ public final class GeometryUtils {
         coordinates[4] = coordinates[0];
 
         return GEOMETRY_FACTORY.createPolygon(coordinates);
+    }
+
+    public static Polygon createPolygon(LinearRing linearRing) {
+        return GEOMETRY_FACTORY.createPolygon(linearRing);
+    }
+
+    public static Geometry createPoint(Coordinate coordinate) {
+        return GEOMETRY_FACTORY.createPoint(coordinate);
+    }
+
+    public static LinearRing createLinearRing(Coordinate[] coordinates) {
+        return GEOMETRY_FACTORY.createLinearRing(coordinates);
+    }
+
+    public static Polygon createPolygon(LinearRing linearRing, LinearRing[] holes) {
+        return GEOMETRY_FACTORY.createPolygon(linearRing, holes);
     }
 }

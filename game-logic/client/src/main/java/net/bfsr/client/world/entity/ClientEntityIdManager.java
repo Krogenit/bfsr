@@ -1,6 +1,6 @@
 package net.bfsr.client.world.entity;
 
-import net.bfsr.entity.EntityIdManager;
+import net.bfsr.engine.entity.EntityIdManager;
 
 public class ClientEntityIdManager extends EntityIdManager {
     public ClientEntityIdManager() {

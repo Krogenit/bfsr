@@ -2,7 +2,7 @@ package net.bfsr.config.component.hull;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import net.bfsr.config.Configurable;
+import net.bfsr.engine.config.Configurable;
 
 @Configurable
 @AllArgsConstructor

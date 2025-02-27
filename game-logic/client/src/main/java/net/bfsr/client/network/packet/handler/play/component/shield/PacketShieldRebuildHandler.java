@@ -5,9 +5,9 @@ import net.bfsr.client.Client;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.particle.effect.ShieldEffects;
 import net.bfsr.engine.entity.GameObject;
+import net.bfsr.engine.network.packet.PacketHandler;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.shield.Shield;
-import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.server.component.PacketShieldRebuild;
 import org.joml.Vector4f;
 

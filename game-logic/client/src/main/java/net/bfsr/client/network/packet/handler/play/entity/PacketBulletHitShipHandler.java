@@ -7,11 +7,11 @@ import net.bfsr.client.particle.effect.GarbageSpawner;
 import net.bfsr.client.particle.effect.WeaponEffects;
 import net.bfsr.damage.DamageType;
 import net.bfsr.engine.entity.GameObject;
+import net.bfsr.engine.network.packet.PacketHandler;
+import net.bfsr.engine.world.World;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.server.effect.PacketBulletHitShip;
-import net.bfsr.world.World;
 import org.joml.Vector4f;
 
 import java.net.InetSocketAddress;

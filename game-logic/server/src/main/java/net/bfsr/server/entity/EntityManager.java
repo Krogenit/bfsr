@@ -1,7 +1,7 @@
 package net.bfsr.server.entity;
 
+import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.entity.CommonEntityManager;
-import net.bfsr.entity.RigidBody;
 
 public class EntityManager extends CommonEntityManager {
     @Override

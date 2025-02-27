@@ -1,6 +1,6 @@
 package net.bfsr.editor.property.converter;
 
-import net.bfsr.config.Vector2iConfigurable;
+import net.bfsr.engine.config.Vector2iConfigurable;
 
 class Vector2iConfigurableConverter extends VectorConverter<Vector2iConfigurable> {
     Vector2iConfigurableConverter() {

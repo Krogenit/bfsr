@@ -3,7 +3,7 @@ package net.bfsr.client.gui.settings;
 import net.bfsr.client.Client;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.gui.component.Slider;
-import net.bfsr.util.DecimalUtils;
+import net.bfsr.engine.util.DecimalUtils;
 
 public class OptionSlider extends Slider {
     private final ClientSettings option;

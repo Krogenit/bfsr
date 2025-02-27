@@ -64,8 +64,8 @@ public class DamageSystemDebugger {
         DamageMask damageMask = new DamageMask(32, 32);
         texture.fillEmpty();
 
-        Polygon polygon = DamageSystem.GEOMETRY_FACTORY.createPolygon(DamageSystem.GEOMETRY_FACTORY.createLinearRing(hull));
-        Polygon clipPolygon = DamageSystem.GEOMETRY_FACTORY.createPolygon(DamageSystem.GEOMETRY_FACTORY.createLinearRing(clip));
+        Polygon polygon = GeometryUtils.createPolygon(GeometryUtils.createLinearRing(hull));
+        Polygon clipPolygon = GeometryUtils.createPolygon(GeometryUtils.createLinearRing(clip));
 
         Vector4f color = new Vector4f(0, 1, 0, 1f);
         renderPolygon(polygon, color);

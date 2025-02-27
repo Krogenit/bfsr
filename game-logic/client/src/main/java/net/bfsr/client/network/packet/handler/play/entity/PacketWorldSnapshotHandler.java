@@ -4,9 +4,9 @@ import io.netty.channel.ChannelHandlerContext;
 import net.bfsr.client.Client;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.engine.collection.UnorderedArrayList;
-import net.bfsr.entity.EntityDataHistoryManager;
-import net.bfsr.network.packet.PacketHandler;
-import net.bfsr.network.packet.common.entity.PacketWorldSnapshot;
+import net.bfsr.engine.entity.EntityDataHistoryManager;
+import net.bfsr.engine.network.packet.PacketHandler;
+import net.bfsr.engine.network.packet.common.entity.PacketWorldSnapshot;
 
 import java.net.InetSocketAddress;
 

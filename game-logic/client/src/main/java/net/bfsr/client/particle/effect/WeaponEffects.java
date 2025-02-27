@@ -6,7 +6,7 @@ import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.engine.entity.Particle;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
-import net.bfsr.math.RotationHelper;
+import net.bfsr.engine.math.RotationHelper;
 import org.joml.Vector2f;
 
 import java.util.function.Consumer;

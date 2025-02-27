@@ -6,10 +6,10 @@ import net.bfsr.config.entity.damageable.DamageableRigidBodyConfigData;
 import net.bfsr.engine.geometry.GeometryUtils;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
+import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.util.RandomHelper;
+import net.bfsr.engine.world.World;
 import net.bfsr.entity.wreck.ShipWreck;
-import net.bfsr.math.RotationHelper;
-import net.bfsr.world.World;
 import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Fixture;
@@ -19,7 +19,6 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateFilter;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.operation.buffer.BufferOp;
@@ -34,7 +33,6 @@ import java.util.List;
 public final class DamageSystem {
     private static final boolean DEBUG = false;
     private static final double MIN_POLYGON_AREA = 0.3;
-    public static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
     public static final BufferParameters BUFFER_PARAMETERS = new BufferParameters(1, BufferParameters.CAP_SQUARE,
             BufferParameters.JOIN_MITRE, 0.1);
 
@@ -269,7 +267,7 @@ public final class DamageSystem {
     public static Geometry optimizeAndReverse(Polygon polygon, float minDistanceBetweenVerticesSq) {
         int numInteriorRing = polygon.getNumInteriorRing();
         if (numInteriorRing > 0) {
-            polygon = GEOMETRY_FACTORY.createPolygon(polygon.getExteriorRing());
+            polygon = GeometryUtils.createPolygon(polygon.getExteriorRing());
         }
 
         return VWSimplifier.simplify(polygon, minDistanceBetweenVerticesSq).reverse();
@@ -562,7 +560,7 @@ public final class DamageSystem {
     public static boolean isPolygonConnectedToContour(Vector2[] vertices, Polygon polygon, float offsetX, float offsetY) {
         for (int i = 0; i < vertices.length; i++) {
             Vector2 vertex = vertices[i];
-            if (polygon.contains(GEOMETRY_FACTORY.createPoint(new Coordinate(vertex.x + offsetX, vertex.y + offsetY)))) {
+            if (polygon.contains(GeometryUtils.createPoint(new Coordinate(vertex.x + offsetX, vertex.y + offsetY)))) {
                 return true;
             }
         }

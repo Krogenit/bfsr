@@ -48,7 +48,7 @@ public class ShipWreckSpawnData extends DamageableRigidBodySpawnData {
     }
 
     @Override
-    public EntityPacketSpawnType getType() {
-        return EntityPacketSpawnType.SHIP_WRECK;
+    public int getTypeId() {
+        return EntityPacketSpawnType.SHIP_WRECK.ordinal();
     }
 }

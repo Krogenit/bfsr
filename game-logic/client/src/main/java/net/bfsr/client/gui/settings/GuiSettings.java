@@ -11,8 +11,8 @@ import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.renderer.texture.TextureRegister;
+import net.bfsr.engine.settings.SettingsOption;
 import net.bfsr.settings.SettingsCategory;
-import net.bfsr.settings.option.SettingsOption;
 
 import java.util.ArrayList;
 import java.util.EnumMap;

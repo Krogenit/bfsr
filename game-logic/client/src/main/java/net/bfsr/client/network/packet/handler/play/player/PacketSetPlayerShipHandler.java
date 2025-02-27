@@ -3,7 +3,7 @@ package net.bfsr.client.network.packet.handler.play.player;
 import io.netty.channel.ChannelHandlerContext;
 import net.bfsr.client.Client;
 import net.bfsr.client.network.NetworkSystem;
-import net.bfsr.network.packet.PacketHandler;
+import net.bfsr.engine.network.packet.PacketHandler;
 import net.bfsr.network.packet.server.player.PacketSetPlayerShip;
 
 import java.net.InetSocketAddress;

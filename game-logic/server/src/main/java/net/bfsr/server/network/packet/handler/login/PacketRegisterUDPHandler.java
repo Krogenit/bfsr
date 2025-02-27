@@ -2,8 +2,8 @@ package net.bfsr.server.network.packet.handler.login;
 
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.network.packet.PacketHandler;
-import net.bfsr.network.packet.common.PacketRegisterUDP;
+import net.bfsr.engine.network.packet.PacketHandler;
+import net.bfsr.engine.network.packet.common.PacketRegisterUDP;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;

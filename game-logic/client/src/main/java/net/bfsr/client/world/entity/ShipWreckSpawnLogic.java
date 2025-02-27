@@ -2,13 +2,13 @@ package net.bfsr.client.world.entity;
 
 import lombok.RequiredArgsConstructor;
 import net.bfsr.client.damage.DamageHandler;
-import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.config.entity.ship.ShipRegistry;
+import net.bfsr.engine.config.ConfigConverterManager;
 import net.bfsr.engine.renderer.AbstractRenderer;
+import net.bfsr.engine.world.World;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.network.packet.common.entity.spawn.ShipWreckSpawnData;
-import net.bfsr.world.World;
 import org.jbox2d.dynamics.Body;
 
 @RequiredArgsConstructor

@@ -2,10 +2,10 @@ package net.bfsr.client.renderer.entity;
 
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.entity.wreck.ShipWreck;
-import net.bfsr.math.RotationHelper;
 import org.joml.Vector2f;
 
 import java.nio.file.Path;

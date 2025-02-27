@@ -3,12 +3,12 @@ package net.bfsr.client.settings;
 import lombok.Getter;
 import net.bfsr.client.Client;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.settings.BooleanOption;
+import net.bfsr.engine.settings.FloatOption;
+import net.bfsr.engine.settings.IntegerOption;
+import net.bfsr.engine.settings.SettingsOption;
+import net.bfsr.engine.settings.StringOption;
 import net.bfsr.settings.SettingsCategory;
-import net.bfsr.settings.option.BooleanOption;
-import net.bfsr.settings.option.FloatOption;
-import net.bfsr.settings.option.IntegerOption;
-import net.bfsr.settings.option.SettingsOption;
-import net.bfsr.settings.option.StringOption;
 
 public enum ClientSettings {
     SOUND_VOLUME(SettingsCategory.SOUND, 0.0f, 1.0f, new FloatOption(0.1f), ConsumerUtils.FLOAT_DEFAULT_CONSUMER),

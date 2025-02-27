@@ -2,9 +2,9 @@ package net.bfsr.entity.ship.module;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.config.ConfigData;
+import net.bfsr.engine.config.ConfigData;
 import net.bfsr.engine.entity.GameObject;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.entity.RigidBody;
 
 import java.util.List;
 

@@ -1,10 +1,10 @@
 package net.bfsr.client.world.entity;
 
 import net.bfsr.client.damage.DamageHandler;
-import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.config.ConfigConverterManager;
 import net.bfsr.network.packet.common.entity.spawn.DamageableRigidBodySpawnData;
 import net.bfsr.network.packet.common.entity.spawn.connectedobject.ConnectedObjectSpawnData;
 

@@ -1,5 +1,5 @@
 package net.bfsr.network.packet.client;
 
-import net.bfsr.network.packet.PacketAdapter;
+import net.bfsr.engine.network.packet.PacketAdapter;
 
 public class PacketPauseGame extends PacketAdapter {}

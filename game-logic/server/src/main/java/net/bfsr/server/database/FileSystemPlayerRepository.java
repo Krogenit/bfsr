@@ -1,6 +1,6 @@
 package net.bfsr.server.database;
 
-import net.bfsr.config.ConfigLoader;
+import net.bfsr.engine.config.ConfigLoader;
 import net.bfsr.server.dto.PlayerModel;
 import net.bfsr.server.dto.converter.PlayerConverter;
 import net.bfsr.server.player.Player;

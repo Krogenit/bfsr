@@ -3,6 +3,7 @@ package net.bfsr.network.packet.common.entity.spawn;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.bfsr.engine.network.packet.common.entity.spawn.RigidBodySpawnData;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.entity.wreck.WreckType;
 import org.jbox2d.common.Vector2;
@@ -73,7 +74,7 @@ public class WreckSpawnData extends RigidBodySpawnData {
     }
 
     @Override
-    public EntityPacketSpawnType getType() {
-        return EntityPacketSpawnType.WRECK;
+    public int getTypeId() {
+        return EntityPacketSpawnType.WRECK.ordinal();
     }
 }

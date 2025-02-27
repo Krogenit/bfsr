@@ -4,9 +4,9 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.command.Command;
-import net.bfsr.network.packet.Packet;
-import net.bfsr.network.packet.PacketAdapter;
-import net.bfsr.network.util.ByteBufUtils;
+import net.bfsr.engine.network.packet.Packet;
+import net.bfsr.engine.network.packet.PacketAdapter;
+import net.bfsr.engine.network.util.ByteBufUtils;
 
 import java.io.IOException;
 

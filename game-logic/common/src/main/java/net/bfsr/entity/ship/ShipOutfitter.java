@@ -1,7 +1,6 @@
 package net.bfsr.entity.ship;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
-import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.component.armor.ArmorPlateRegistry;
 import net.bfsr.config.component.cargo.CargoRegistry;
 import net.bfsr.config.component.crew.CrewRegistry;
@@ -12,6 +11,7 @@ import net.bfsr.config.component.shield.ShieldData;
 import net.bfsr.config.component.shield.ShieldRegistry;
 import net.bfsr.config.component.weapon.beam.BeamRegistry;
 import net.bfsr.config.component.weapon.gun.GunRegistry;
+import net.bfsr.engine.config.ConfigConverterManager;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.cargo.Cargo;
 import net.bfsr.entity.ship.module.crew.Crew;

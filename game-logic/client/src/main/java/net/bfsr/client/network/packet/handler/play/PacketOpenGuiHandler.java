@@ -5,8 +5,8 @@ import net.bfsr.client.Client;
 import net.bfsr.client.gui.faction.GuiFactionSelect;
 import net.bfsr.client.gui.state.GuiDestroyed;
 import net.bfsr.client.network.NetworkSystem;
+import net.bfsr.engine.network.packet.PacketHandler;
 import net.bfsr.network.GuiType;
-import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.server.gui.PacketOpenGui;
 
 import java.net.InetSocketAddress;

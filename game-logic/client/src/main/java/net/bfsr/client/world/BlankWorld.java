@@ -1,13 +1,14 @@
 package net.bfsr.client.world;
 
-import net.bfsr.physics.CommonCollisionHandler;
-import net.bfsr.world.World;
+import net.bfsr.engine.world.World;
+import net.bfsr.physics.collision.CollisionMatrix;
+import net.bfsr.physics.collision.CommonCollisionHandler;
 
 public final class BlankWorld extends World {
     private static final BlankWorld BLANK_WORLD = new BlankWorld();
 
     private BlankWorld() {
-        super(null, 0, null, null, null, null, new CommonCollisionHandler(null));
+        super(null, 0, null, null, null, null, new CollisionMatrix(new CommonCollisionHandler(null)));
     }
 
     @Override

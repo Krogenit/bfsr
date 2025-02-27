@@ -1,7 +1,7 @@
 package net.bfsr.entity.ship.module;
 
 import lombok.Getter;
-import net.bfsr.config.ConfigData;
+import net.bfsr.engine.config.ConfigData;
 import net.bfsr.entity.ship.Ship;
 import org.joml.Vector2f;
 

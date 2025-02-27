@@ -6,8 +6,8 @@ import net.bfsr.client.damage.DamageHandler;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
-import net.bfsr.entity.RigidBody;
-import net.bfsr.network.packet.PacketHandler;
+import net.bfsr.engine.entity.RigidBody;
+import net.bfsr.engine.network.packet.PacketHandler;
 import net.bfsr.network.packet.server.entity.PacketSyncDamage;
 
 import java.net.InetSocketAddress;

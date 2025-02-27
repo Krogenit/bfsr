@@ -8,7 +8,9 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.profiler.Profiler;
+import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.engine.util.Side;
+import net.bfsr.engine.world.ObjectPools;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -37,6 +39,8 @@ public class GameLogic {
     private final Queue<Runnable> futureTasks = new ConcurrentLinkedQueue<>();
 
     private final Int2ObjectMap<Logic> customLogic = new Int2ObjectOpenHashMap<>();
+
+    private final ObjectPools objectPools = new ObjectPools();
 
     public void update(double time) {
         profiler.start("tasks");
@@ -76,5 +80,16 @@ public class GameLogic {
         isRunning = false;
     }
 
-    public void clear() {}
+    public <T> ObjectPool<T> addObjectPool(Class<T> objectClass, ObjectPool<T> objectPool) {
+        objectPools.addPool(objectClass, objectPool);
+        return objectPool;
+    }
+
+    public <T> ObjectPool<T> getObjectPool(Class<T> objectClass) {
+        return objectPools.getPool(objectClass);
+    }
+
+    public void clear() {
+        objectPools.clear();
+    }
 }
