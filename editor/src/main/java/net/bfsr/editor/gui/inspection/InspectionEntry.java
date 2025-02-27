@@ -65,8 +65,6 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
                 if (mouseX >= sceneX + selectOffsetX && mouseX < sceneX + width) {
                     if (wasSelected) {
                         inputBox = new InputBox(width - selectOffsetX, height, "", font, fontSize, 3, this.stringOffsetY, 300);
-                        inputBox.setX(selectOffsetX);
-                        inputBox.setY(getHeight() - getBaseHeight());
                         inputBox.setOnUnselectedRunnable(() -> {
                             removeNonConcealable(inputBox);
                             onNameChanged(inputBox.getString());
@@ -74,7 +72,7 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
                         });
                         EditorTheme.setupInputBox(inputBox);
                         inputBox.setString(getName());
-                        addNonConcealable(inputBox);
+                        addNonConcealable(inputBox.atBottomLeft(selectOffsetX, getHeight() - getBaseHeight()));
                         inputBox.enableTyping();
                         selected = false;
                     } else {
