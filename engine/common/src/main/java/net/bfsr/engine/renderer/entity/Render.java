@@ -101,6 +101,13 @@ public class Render {
         spriteRenderer.setTexture(id, BufferType.ENTITIES_ALPHA, texture.getTextureHandle());
     }
 
+    public void setSize(float width, float height) {
+        if (id != -1) {
+            spriteRenderer.setSize(id, BufferType.ENTITIES_ALPHA, width, height);
+            spriteRenderer.setLastSize(id, BufferType.ENTITIES_ALPHA, width, height);
+        }
+    }
+
     public boolean isDead() {
         return object.isDead();
     }

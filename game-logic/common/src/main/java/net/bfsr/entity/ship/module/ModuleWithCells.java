@@ -27,12 +27,12 @@ public abstract class ModuleWithCells<T extends ModuleCell> extends Module {
         this.halfShipSizeY = shipSizeY * 0.5f;
         int columns;
         int rows;
-        if (shipSizeX > 100.0f || shipSizeY > 100.0f) {
-            columns = (int) Math.ceil(shipSizeX / 4.0f);
-            rows = (int) Math.ceil(shipSizeY / 4.0f);
+        if (shipSizeX > 10.0f || shipSizeY > 10.0f) {
+            columns = (int) Math.ceil(shipSizeX * 2.5f);
+            rows = (int) Math.ceil(shipSizeY * 2.5f);
         } else {
-            columns = (int) Math.ceil(shipSizeX / 2.0f);
-            rows = (int) Math.ceil(shipSizeY / 2.0f);
+            columns = (int) Math.ceil(shipSizeX * 5.0f);
+            rows = (int) Math.ceil(shipSizeY * 5.0f);
         }
 
         this.cells = (T[][]) Array.newInstance(componentType, columns, rows);

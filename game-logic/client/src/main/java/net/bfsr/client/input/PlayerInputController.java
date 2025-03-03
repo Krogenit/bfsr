@@ -252,7 +252,7 @@ public class PlayerInputController extends InputController {
     public void setShip(Ship ship) {
         if (this.ship != null) {
             this.ship.setCorrectionHandler(
-                    new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), new CorrectionHandler(),
+                    new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.2f), new CorrectionHandler(),
                             new HistoryCorrectionHandler()));
             this.ship.setControlledByPlayer(false);
         }
@@ -260,7 +260,7 @@ public class PlayerInputController extends InputController {
         this.ship = ship;
 
         if (ship != null) {
-            ship.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f), localPlayerInputCorrectionHandler,
+            ship.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.2f), localPlayerInputCorrectionHandler,
                     localPlayerInputCorrectionHandler));
             ship.setControlledByPlayer(true);
         }

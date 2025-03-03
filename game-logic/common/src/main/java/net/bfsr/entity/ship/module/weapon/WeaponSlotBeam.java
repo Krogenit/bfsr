@@ -36,7 +36,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     private Vector2 rayCastResultNormal;
 
     private final float powerAnimationSpeed = Engine.convertToDeltaTime(3.5f);
-    private final float beamRangeAnimationSpeed = Engine.convertToDeltaTime(60.0f);
+    private final float beamRangeAnimationSpeed = Engine.convertToDeltaTime(6.0f);
 
     @Getter
     private float aliveTimerInTicks;
@@ -81,7 +81,9 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
                     currentBeamRange = 0;
                 }
             } else {
-                if (reloadTimer > 0) reloadTimer--;
+                if (reloadTimer > 0) {
+                    reloadTimer--;
+                }
             }
         }
     }

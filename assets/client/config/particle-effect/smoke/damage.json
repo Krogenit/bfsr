@@ -1,7 +1,6 @@
 {
   "a": 0.6,
   "b": 1.0,
-  "editorPath": "smoke",
   "g": 1.0,
   "isAlphaFromZero": true,
   "maxAlphaVelocity": 0.9,
@@ -26,6 +25,8 @@
   "minSpawnCount": 1,
   "minVelocityX": -1.5,
   "minVelocityY": -1.5,
+  "name": "damage",
+  "path": "smoke",
   "r": 1.0,
   "renderLayer": "DEFAULT_ALPHA_BLENDED",
   "soundEffects": [],

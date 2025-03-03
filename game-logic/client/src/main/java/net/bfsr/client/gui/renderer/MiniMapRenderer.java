@@ -26,10 +26,10 @@ public class MiniMapRenderer extends RectangleTexturedRenderer {
     private final Client client = Client.get();
     private final AABB boundingBox = new AABB();
     private final AABB shipAABB = new AABB();
-    private final float mapOffsetX = 600;
-    private final float mapOffsetY = 600;
-    private final float mapScaleX = 5.0f;
-    private final float mapScaleY = 7.0f;
+    private final float mapOffsetX = 60;
+    private final float mapOffsetY = 60;
+    private final float mapScaleX = 0.5f;
+    private final float mapScaleY = 0.7f;
     private final Int2ObjectMap<MapEntity> entityIdToDrawIdMap = new Int2ObjectOpenHashMap<>();
 
     @Getter

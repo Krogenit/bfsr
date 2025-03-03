@@ -52,7 +52,7 @@ public class BeamEffects {
     public Particle beamEffect(WeaponSlotBeam slot, Vector4f color) {
         Ship ship = slot.getShip();
         float localX = random.nextFloat();
-        float localY = (random.nextFloat() * 2.0f - 1.0f) * slot.getSizeY() / 2.0f;
+        float localY = (random.nextFloat() * 2.0f - 1.0f) * slot.getSizeY() * 0.5f;
 
         float beamRange = slot.getCurrentBeamRange();
 

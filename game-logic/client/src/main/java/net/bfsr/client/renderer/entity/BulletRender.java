@@ -11,6 +11,7 @@ public class BulletRender extends RigidBodyRender {
     private static final AbstractTexture LIGHT_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.particleLight);
 
     private final Bullet bullet;
+    private final float lightSize;
 
     private int lightId = -1;
 
@@ -19,11 +20,11 @@ public class BulletRender extends RigidBodyRender {
                 bullet.getGunData().getColor().x, bullet.getGunData().getColor().y, bullet.getGunData().getColor().z,
                 bullet.getGunData().getColor().w);
         this.bullet = bullet;
+        this.lightSize = Math.max(object.getSizeX(), object.getSizeY()) * 2.0f;
     }
 
     @Override
     public void init() {
-        float lightSize = 6.0f;
         lightId = spriteRenderer.add(object.getX(), object.getY(), lightSize, lightSize, color.x / 1.5f, color.y / 1.5f, color.z / 1.5f,
                 color.w / 4.0f, LIGHT_TEXTURE.getTextureHandle(), BufferType.ENTITIES_ADDITIVE);
         id = spriteRenderer.add(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), rigidBody.getSizeX(),
@@ -41,7 +42,8 @@ public class BulletRender extends RigidBodyRender {
         super.updateAABB();
         float x = rigidBody.getX();
         float y = rigidBody.getY();
-        aabb.combine(-3.0f + x, -3.0f + y, 3.0f + x, 3.0f + y);
+        float halfLightSize = lightSize * 0.5f;
+        aabb.combine(-halfLightSize + x, -halfLightSize + y, halfLightSize + x, halfLightSize + y);
     }
 
     @Override

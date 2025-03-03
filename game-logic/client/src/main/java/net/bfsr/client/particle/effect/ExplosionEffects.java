@@ -16,7 +16,8 @@ public class ExplosionEffects {
 
     public void spawnDestroyShipSmall(RigidBody ship) {
         Vector2 velocity = ship.getLinearVelocity();
-        shipDestroySmall.play(ship.getX(), ship.getY(), ship.getSizeX(), ship.getSizeY(), velocity.x, velocity.y);
+        float size = Math.max(ship.getSizeX(), ship.getSizeY()) * 1.1f;
+        shipDestroySmall.play(ship.getX(), ship.getY(), size, size, velocity.x, velocity.y);
     }
 
     public void spawnSmallExplosion(float x, float y, float size) {

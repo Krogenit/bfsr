@@ -1,7 +1,6 @@
 {
   "a": 1.0,
   "b": 1.0,
-  "editorPath": "weapon/small",
   "g": 1.0,
   "isAlphaFromZero": false,
   "maxAlphaVelocity": 3.0,
@@ -26,6 +25,8 @@
   "minSpawnCount": 1,
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
+  "name": "light",
+  "path": "weapon/small",
   "r": 1.0,
   "renderLayer": "DEFAULT_ADDITIVE",
   "soundEffects": [],

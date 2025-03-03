@@ -26,7 +26,7 @@ public class ShipEventListener {
             float sizeY = ship.getSizeY();
             float randomVectorX = -sizeX * 0.4f + sizeX * 0.8f * rand.nextFloat();
             float randomVectorY = -sizeY * 0.4f + sizeY * 0.8f * rand.nextFloat();
-            explosionEffects.spawnSmallExplosion(ship.getX() + randomVectorX, ship.getY() + randomVectorY, 2.0f);
+            explosionEffects.spawnSmallExplosion(ship.getX() + randomVectorX, ship.getY() + randomVectorY, 0.2f);
         };
     }
 }

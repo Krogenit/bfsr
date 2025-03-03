@@ -65,8 +65,8 @@ public class WeaponSlotRender extends Render {
         Ship ship = weaponSlot.getShip();
         float sin = ship.getSin();
         float cos = ship.getCos();
-        RotationHelper.rotate(sin, cos, 1.0f, 0, rotationHelper);
-        weaponEffects.spawnWeaponShoot(x, y, rotationHelper.x, rotationHelper.y, sin, cos, 8.0f, color.x,
+        RotationHelper.rotate(sin, cos, 0.1f, 0, rotationHelper);
+        weaponEffects.spawnWeaponShoot(x, y, rotationHelper.x, rotationHelper.y, sin, cos, weaponSlot.getSizeY() * 4.0f, color.x,
                 color.y, color.z, color.w, particle -> {
                     particle.setRotation(ship.getSin(), ship.getCos());
                     particle.setPosition(object.getX() + rotationHelper.x, object.getY() + rotationHelper.y);

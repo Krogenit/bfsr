@@ -23,8 +23,8 @@ import static net.bfsr.engine.renderer.Renderer.UBO_VIEW_DATA;
 public class Camera implements AbstractCamera {
     private static final float Z_NEAR = -1.0f;
     private static final float Z_FAR = 1.0f;
-    private static final float ZOOM_MAX = 30.0f;
-    private static final float ZOOM_MIN = 2.0f;
+    private static final float ZOOM_MAX = 300.0f;
+    private static final float ZOOM_MIN = 20.0f;
 
     private final Matrix4f orthographicMatrix = new Matrix4f();
     @Getter
@@ -38,7 +38,7 @@ public class Camera implements AbstractCamera {
     @Getter
     private final Vector2f origin = new Vector2f();
     @Getter
-    private float zoom = 10.0f;
+    private float zoom = 100.0f;
     @Getter
     private float lastZoom = zoom;
     private float zoomAccumulator;
@@ -66,7 +66,7 @@ public class Camera implements AbstractCamera {
         this.height = height;
         this.renderer = renderer;
 
-        origin.set(-width / 2.0f, -height / 2.0f);
+        origin.set(-width * 0.5f, -height * 0.5f);
         boundingBox.set(position.x + origin.x, position.y + origin.y, position.x - origin.x, position.y - origin.y);
 
         worldProjectionMatrixUBO = GL45.glCreateBuffers();
@@ -76,8 +76,8 @@ public class Camera implements AbstractCamera {
 
         GL45.glNamedBufferStorage(GUIProjectionMatrixUBO, orthographicMatrix.setOrtho(0.0f, width, 0.0f, height, Z_NEAR, Z_FAR)
                 .get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
-        GL45.glNamedBufferStorage(worldProjectionMatrixUBO, orthographicMatrix.setOrtho(-width / 2.0f, width / 2.0f,
-                        -height / 2.0f, height / 2.0f, Z_NEAR, Z_FAR)
+        GL45.glNamedBufferStorage(worldProjectionMatrixUBO, orthographicMatrix.setOrtho(-width * 0.5f, width * 0.5f,
+                        -height * 0.5f, height * 0.5f, Z_NEAR, Z_FAR)
                 .get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
 
         viewBuffer = MemoryUtil.memAllocFloat(5);
@@ -169,8 +169,8 @@ public class Camera implements AbstractCamera {
         this.width = width;
         this.height = height;
 
-        origin.x = -width / 2.0f;
-        origin.y = -height / 2.0f;
+        origin.x = -width * 0.5f;
+        origin.y = -height * 0.5f;
 
         updateBoundingBox();
 
@@ -184,8 +184,8 @@ public class Camera implements AbstractCamera {
 
         GL45C.glNamedBufferSubData(GUIProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(0.0f, width, 0.0f, height, Z_NEAR, Z_FAR)
                 .get(MatrixBufferUtils.MATRIX_BUFFER));
-        GL45C.glNamedBufferSubData(worldProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(-width / 2.0f, width / 2.0f,
-                -height / 2.0f, height / 2.0f, Z_NEAR, Z_FAR).get(MatrixBufferUtils.MATRIX_BUFFER));
+        GL45C.glNamedBufferSubData(worldProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(-width * 0.5f, width * 0.5f,
+                -height * 0.5f, height * 0.5f, Z_NEAR, Z_FAR).get(MatrixBufferUtils.MATRIX_BUFFER));
     }
 
     @Override

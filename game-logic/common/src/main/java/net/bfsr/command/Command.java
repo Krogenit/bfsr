@@ -10,6 +10,7 @@ import net.bfsr.network.packet.client.PacketCommand;
 public enum Command {
     SPAWN_SHIP(false),
     SPAWN_PARTICLE(false),
+    SET_DESTROYING(true),
     DESTROY_SHIP(true),
     REMOVE_SHIELD(true),
     DISABLE_SHIELD(true),

@@ -38,7 +38,7 @@ public class WeaponEffects {
     public void lightingIon(Vector2f pos, float size) {
         int count = random.nextInt(3) + 1;
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(MathUtils.TWO_PI * random.nextFloat(), size / 4.0f, cachedVector);
+            RotationHelper.angleToVelocity(MathUtils.TWO_PI * random.nextFloat(), size * 0.25f, cachedVector);
             lightingIon.play(pos.x + cachedVector.x, pos.y + cachedVector.y, size, size);
         }
     }

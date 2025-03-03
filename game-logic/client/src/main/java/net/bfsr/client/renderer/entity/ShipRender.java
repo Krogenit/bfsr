@@ -102,7 +102,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
         if (!ship.isSpawned()) {
             Vector4f effectsColor = ship.getConfigData().getEffectsColor();
-            jumpEffectSize = 1.5f * Math.max(ship.getSizeX(), ship.getSizeY()) + 5.0f;
+            jumpEffectSize = 1.5f * Math.max(ship.getSizeX(), ship.getSizeY()) + 0.5f;
             spawnEffectId = spriteRenderer.add(jumpPosition.x, jumpPosition.y, ship.getSin(), ship.getCos(), 0.0f, 0.0f, effectsColor.x,
                     effectsColor.y, effectsColor.z, 0.0f, PARTICLE_JUMP_TEXTURE.getTextureHandle(), BufferType.ENTITIES_ADDITIVE);
         }
@@ -189,7 +189,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
                                     Vector2f effectPosition = engineDataList.get(j).effectPosition();
                                     RotationHelper.rotate(sin, cos, effectPosition.x, effectPosition.y, rotateToVector);
                                     engineEffects.smallEngine(shipX + rotateToVector.x, shipY + rotateToVector.y, sin,
-                                            cos, 10.0f, shipVelocity.x / 50.0f, shipVelocity.y / 50.0f,
+                                            cos, 1.0f, shipVelocity.x / 50.0f, shipVelocity.y / 50.0f,
                                             effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, accumulators.get(j));
                                 }
                             }
@@ -349,8 +349,8 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
         float x = object.getX();
         float y = object.getY();
-        float halfStringWidth = label.getWidth() / (label.getFontSize() * 1.4f);
-        aabb.combine(x - halfStringWidth, y + labelYOffset - label.getHeight() * 0.05f, x + halfStringWidth, y);
+        float halfStringWidth = label.getWidth() / (label.getFontSize() * 14.0f);
+        aabb.combine(x - halfStringWidth, y + labelYOffset - label.getHeight() * 0.005f, x + halfStringWidth, y);
     }
 
     @Override
@@ -400,13 +400,13 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     private void createName() {
         super.updateAABB();
         labelYOffset = getStringYPosition();
-        float yOffset = labelYOffset * 20.0f - label.getHeight();
-        label.setString(ship.getName(), 0, yOffset).scale(0.05f, 0.05f);
+        float yOffset = labelYOffset * 200.0f - label.getHeight();
+        label.setString(ship.getName(), 0, yOffset).scale(0.005f, 0.005f);
         label.getLabelRenderer().create(ship.getX(), ship.getY());
     }
 
     private float getStringYPosition() {
-        return -(geometryAABB.getMaxY() - geometryAABB.getMinY()) * 0.5f - 0.5f;
+        return -(geometryAABB.getMaxY() - geometryAABB.getMinY()) * 0.5f - 0.05f;
     }
 
     @EventHandler

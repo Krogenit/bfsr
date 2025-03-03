@@ -34,7 +34,7 @@ public class BackgroundRenderer {
         renderRunnable = this::renderBackground;
 
         float zoomFactor = 0.005f;
-        renderId = spriteRenderer.add(0, 0, texture.getWidth() * 0.5f, texture.getHeight() * 0.5f, 1.0f, 1.0f, 1.0f, 1.0f,
+        renderId = spriteRenderer.add(0, 0, texture.getWidth() * 0.05f, texture.getHeight() * 0.05f, 1.0f, 1.0f, 1.0f, 1.0f,
                 texture.getTextureHandle(), zoomFactor, BufferType.BACKGROUND);
     }
 

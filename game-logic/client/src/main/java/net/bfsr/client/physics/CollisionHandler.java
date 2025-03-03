@@ -11,6 +11,7 @@ import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.physics.correction.CorrectionHandler;
 import net.bfsr.engine.physics.correction.DynamicCorrectionHandler;
+import net.bfsr.engine.util.RandomHelper;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.Modules;
@@ -96,14 +97,14 @@ public class CollisionHandler extends CommonCollisionHandler {
                 ship2.setLastAttacker(ship1);
                 damageShipByCollision(ship2, contactX, contactY, normalX, normalY);
             }
+        }
 
-            if (ship1.isControlledByPlayer()) {
-                setDynamicCorrection(ship1);
-                setDynamicCorrection(ship2);
-            } else if (ship2.isControlledByPlayer()) {
-                setDynamicCorrection(ship2);
-                setDynamicCorrection(ship1);
-            }
+        if (ship1.isControlledByPlayer()) {
+            setDynamicCorrectionForLocalPlayer(ship1);
+            setDynamicCorrection(ship2);
+        } else if (ship2.isControlledByPlayer()) {
+            setDynamicCorrectionForLocalPlayer(ship2);
+            setDynamicCorrection(ship1);
         }
     }
 
@@ -115,14 +116,14 @@ public class CollisionHandler extends CommonCollisionHandler {
             Shield shield = ship.getModules().getShield();
             if (shield != null && isShieldAlive(shield)) {
                 Vector4f color = ship.getConfigData().getEffectsColor();
-                weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
+                weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 0.45f, color.x, color.y, color.z, color.w);
             } else {
-                weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
+                weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 0.375f, 1.0f, 1.0f, 1.0f, 1.0f);
             }
         }
 
         if (ship.isControlledByPlayer()) {
-            setDynamicCorrection(ship);
+            setDynamicCorrectionForLocalPlayer(ship);
             setDynamicCorrection(wreck);
         }
     }
@@ -168,25 +169,34 @@ public class CollisionHandler extends CommonCollisionHandler {
         Shield shield = modules.getShield();
         if (shield != null && isShieldAlive(shield)) {
             Vector4f color = ship.getConfigData().getEffectsColor();
-            weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
+            weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 0.45f, color.x, color.y, color.z, color.w);
             return;
         }
 
         Vector2 velocity = ship.getLinearVelocity();
-        weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f,
+        weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 0.375f, 1.0f,
                 1.0f, 1.0f, 1.0f);
         RotationHelper.angleToVelocity(MathUtils.TWO_PI * random.nextFloat(), 0.15f, angleToVelocity);
         garbageSpawner.smallGarbage(random.nextInt(4), contactX, contactY,
-                velocity.x * 0.25f + angleToVelocity.x, velocity.y * 0.25f + angleToVelocity.y, 2.0f * random.nextFloat());
+                velocity.x * 0.25f + angleToVelocity.x, velocity.y * 0.25f + angleToVelocity.y,
+                RandomHelper.randomFloat(random, 0.02f, 0.2f));
+    }
+
+    private void setDynamicCorrectionForLocalPlayer(RigidBody rigidBody) {
+        setDynamicCorrection(rigidBody, rigidBody.getCorrectionHandler(), 0.25f);
     }
 
     private void setDynamicCorrection(RigidBody rigidBody) {
+        setDynamicCorrection(rigidBody, new CorrectionHandler(), 0.1f);
+    }
+
+    private void setDynamicCorrection(RigidBody rigidBody, CorrectionHandler interpolatingCorrectionHandler, float correctionChanging) {
         CorrectionHandler correctionHandler = rigidBody.getCorrectionHandler();
         if (correctionHandler.getClass() == DynamicCorrectionHandler.class) {
             ((DynamicCorrectionHandler) correctionHandler).setCorrectionAmount(0.0f);
         } else {
-            rigidBody.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f),
-                    correctionHandler, correctionHandler));
+            rigidBody.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(correctionChanging),
+                    interpolatingCorrectionHandler, correctionHandler));
         }
     }
 

@@ -53,6 +53,11 @@ public class PacketCommandHandler extends PacketHandler<PacketCommand, PlayerNet
             Ship ship = shipFactory.createBot(world, x, y, random.nextFloat() * MathUtils.TWO_PI, faction, shipRegistry.get(shipId), ai);
             world.add(ship, false);
             ship.setSpawned();
+        } else if (cmd == Command.SET_DESTROYING) {
+            Ship ship = getShipByArgumentId(world, packet.getArgs()[0]);
+            if (ship != null) {
+                ship.setDestroying();
+            }
         } else if (cmd == Command.DESTROY_SHIP) {
             Ship ship = getShipByArgumentId(world, packet.getArgs()[0]);
             if (ship != null) {

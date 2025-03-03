@@ -3,7 +3,7 @@
   "forwardAcceleration": 20.0,
   "backwardAcceleration": 10.6,
   "sideAcceleration": 10.6,
-  "maxForwardVelocity": 20.0,
+  "maxForwardVelocity": 2.0,
   "maneuverability": 1.0203,
   "angularVelocity": 0.01
 }

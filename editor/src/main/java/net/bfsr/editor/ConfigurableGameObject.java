@@ -27,7 +27,7 @@ public class ConfigurableGameObject implements PropertiesHolder {
 
     @Override
     public void setDefaultValues() {
-        sizeX = sizeY = 7.0f;
+        sizeX = sizeY = 1.0f;
         texturePath = PathHelper.convertToLocalPath(TextureRegister.shipHumanSmall0.getPath());
     }
 

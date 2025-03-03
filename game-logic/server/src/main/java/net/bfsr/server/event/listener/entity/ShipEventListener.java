@@ -1,10 +1,11 @@
 package net.bfsr.server.event.listener.entity;
 
-import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
+import net.bfsr.engine.util.RandomHelper;
 import net.bfsr.engine.world.World;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.entity.ship.ShipDestroyEvent;
@@ -32,7 +33,7 @@ public class ShipEventListener {
     private final PlayerManager playerManager = serverGameLogic.getPlayerManager();
     private final CollisionHandler collisionHandler = serverGameLogic.getCollisionHandler();
     private final DamageSystem damageSystem = serverGameLogic.getDamageSystem();
-    private final XoRoShiRo128PlusPlusRandom random = new XoRoShiRo128PlusPlusRandom();
+    private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
     @EventHandler
     public EventListener<ShipNewMoveDirectionEvent> shipNewMoveDirectionEvent() {
@@ -86,11 +87,10 @@ public class ShipEventListener {
             Ship ship = event.ship();
             World world = ship.getWorld();
             Vector2 linearVelocity = ship.getLinearVelocity();
-            float sizeX = ship.getSizeX();
-            float sizeY = ship.getSizeY();
-            wreckSpawner.spawnDamageDebris(world, 1, ship.getX() - sizeX / 2.5f + random.nextInt((int) (sizeX / 1.25f)),
-                    ship.getY() - sizeY / 2.5f + random.nextInt((int) (sizeY / 1.25f)), linearVelocity.x * 0.1f,
-                    linearVelocity.y * 0.1f,
+            float halfSizeX = ship.getSizeX() * 0.5f;
+            float halfSizeY = ship.getSizeY() * 0.5f;
+            wreckSpawner.spawnDamageDebris(world, 1, ship.getX() + RandomHelper.randomFloat(random, -halfSizeX, halfSizeX),
+                    ship.getY() + RandomHelper.randomFloat(random, -halfSizeY, halfSizeY), linearVelocity.x * 0.1f, linearVelocity.y * 0.1f,
                     1.0f);
         };
     }
@@ -105,7 +105,7 @@ public class ShipEventListener {
 
             float maxShipSize = Math.max(ship.getSizeX(), ship.getSizeY());
             float waveRadius = maxShipSize * 1.1f;
-            float wavePower = maxShipSize * 0.008f;
+            float wavePower = maxShipSize * 0.01f;
             collisionHandler.createWave(ship.getWorld(), ship.getX(), ship.getY(), waveRadius, wavePower);
         };
     }

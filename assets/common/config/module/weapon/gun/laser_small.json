@@ -20,8 +20,8 @@
     "shield": 5.0
   },
   "size": {
-    "x": 2.6,
-    "y": 1.4
+    "x": 0.26,
+    "y": 0.14
   },
   "texture": "texture/component/weapon/laser1.png",
   "color": {
@@ -32,46 +32,46 @@
   },
   "vertices": [
     {
-      "x": -1.2,
-      "y": -0.7
+      "x": -0.12,
+      "y": -0.07
     },
     {
-      "x": 1.2,
-      "y": -0.7
+      "x": 0.12,
+      "y": -0.07
     },
     {
-      "x": 1.2,
-      "y": 0.7
+      "x": 0.12,
+      "y": 0.07
     },
     {
-      "x": -1.2,
-      "y": 0.7
+      "x": -0.12,
+      "y": 0.07
     }
   ],
-  "minDistanceBetweenVerticesSq": 0.3,
-  "bulletSpeed": 75.0,
+  "minDistanceBetweenVerticesSq": 0.03,
+  "bulletSpeed": 7.5,
   "bulletLifeTimeInSeconds": 0.84,
   "bulletSize": {
-    "x": 2.4,
-    "y": 2.4
+    "x": 0.24,
+    "y": 0.24
   },
   "bulletTexture": "texture/entity/bullet/smallLaser.png",
   "bulletVertices": [
     {
-      "x": -0.6,
-      "y": -0.2
+      "x": -0.06,
+      "y": -0.02
     },
     {
-      "x": 0.6,
-      "y": -0.2
+      "x": 0.06,
+      "y": -0.02
     },
     {
-      "x": 0.6,
-      "y": 0.2
+      "x": 0.06,
+      "y": 0.02
     },
     {
-      "x": -0.6,
-      "y": 0.2
+      "x": -0.06,
+      "y": 0.02
     }
   ]
 }

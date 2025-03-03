@@ -110,7 +110,7 @@ public class BeamParticles {
         Ship ship = slot.getShip();
         float sin = ship.getSin();
         float cos = ship.getCos();
-        RotationHelper.angleToVelocity(sin, cos, 15.0f, angleToVelocity);
+        RotationHelper.angleToVelocity(sin, cos, 1.5f, angleToVelocity);
         beamEffects.beam(slot.getX(), slot.getY(), 0, 0, 2.0f, sin, cos, angleToVelocity.x, angleToVelocity.y, color.x,
                 color.y, color.z, color.w * 0.6f, weaponSpawnAccumulator, particle -> {
                     Vector2f localPosition = particle.getLocalPosition();

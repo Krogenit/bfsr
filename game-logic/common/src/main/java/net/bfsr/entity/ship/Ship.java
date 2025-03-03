@@ -375,7 +375,7 @@ public class Ship extends DamageableRigidBody {
     }
 
     private void setJumpPosition() {
-        float jumpLength = Math.max(getSizeX(), getSizeY()) * 1.25f + 25.0f;
+        float jumpLength = Math.max(getSizeX(), getSizeY()) * 1.25f + 2.5f;
         RotationHelper.angleToVelocity(getSin(), getCos(), -jumpLength, jumpPosition);
         jumpPosition.add(getX(), getY());
     }

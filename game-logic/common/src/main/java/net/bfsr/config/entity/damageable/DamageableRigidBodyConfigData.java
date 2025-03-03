@@ -8,8 +8,8 @@ import org.joml.Vector2i;
 @Getter
 @Log4j2
 public class DamageableRigidBodyConfigData extends GameObjectConfigData {
-    public static final float MIN_DISTANCE_BETWEEN_VERTICES_SQ = 0.3f;
-    private static final float MIN_BUFFER_DISTANCE = 0.1f;
+    public static final float MIN_DISTANCE_BETWEEN_VERTICES_SQ = 0.03f;
+    private static final float MIN_BUFFER_DISTANCE = 0.01f;
 
     private final Vector2i damageMaskSize;
     private final float minDistanceBetweenVerticesSq;

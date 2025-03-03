@@ -77,8 +77,8 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         super.bulletShip(bullet, ship, bulletFixture, shipFixture, contactX, contactY, normalX, normalY);
 
-        float clipPolygonRadius = 0.75f;
-        float maskClipRadius = 1.0f;
+        float clipPolygonRadius = 0.075f;
+        float maskClipRadius = 0.1f;
         Polygon clipPolygon = createBulletClipPolygon(contactX - ship.getX(), contactY - ship.getY(), ship.getSin(), ship.getCos(),
                 clipPolygonRadius);
         damageShip(ship, bullet.getDamage(), 1.0f, contactX, contactY, shipFixture, () -> {
@@ -112,8 +112,8 @@ public class CollisionHandler extends CommonCollisionHandler {
     public void bulletShipWreck(Bullet bullet, ShipWreck wreck, Fixture bulletFixture, Fixture shipWreckFixture,
                                 float contactX, float contactY, float normalX, float normalY) {
         super.bulletShipWreck(bullet, wreck, bulletFixture, shipWreckFixture, contactX, contactY, normalX, normalY);
-        float clipPolygonRadius = 0.75f;
-        float maskClipRadius = 1.0f;
+        float clipPolygonRadius = 0.075f;
+        float maskClipRadius = 0.1f;
         Polygon clipPolygon = createBulletClipPolygon(contactX - wreck.getX(), contactY - wreck.getY(), wreck.getSin(), wreck.getCos(),
                 clipPolygonRadius);
         createDamage(wreck, contactX, contactY, clipPolygon, maskClipRadius);
@@ -148,10 +148,10 @@ public class CollisionHandler extends CommonCollisionHandler {
     @Override
     public void weaponSlotBeamShip(WeaponSlotBeam weaponSlot, Ship ship, Fixture fixture, float contactX, float contactY,
                                    float normalX, float normalY) {
-        float maskClipRadius = 1.25f;
-        float clipRectangleWidth = 1.5f;
-        float clipRectangleHeight = 1.0f;
-        float penetration = 0.7f;
+        float maskClipRadius = 0.125f;
+        float clipRectangleWidth = 0.15f;
+        float clipRectangleHeight = 0.1f;
+        float penetration = 0.07f;
         float sin = ship.getSin();
         float cos = ship.getCos();
         float localRotatedContactX = contactX - ship.getX();
@@ -171,10 +171,10 @@ public class CollisionHandler extends CommonCollisionHandler {
     @Override
     public void weaponSlotBeamShipWreck(WeaponSlotBeam weaponSlot, ShipWreck wreck, Fixture fixture, float contactX, float contactY,
                                         float normalX, float normalY) {
-        float maskClipRadius = 0.75f;
-        float clipRectangleWidth = 1.5f;
-        float clipRectangleHeight = 1.0f;
-        float penetration = 0.7f;
+        float maskClipRadius = 0.075f;
+        float clipRectangleWidth = 0.15f;
+        float clipRectangleHeight = 0.1f;
+        float penetration = 0.07f;
         float sin = wreck.getSin();
         float cos = wreck.getCos();
         float localRotatedContactX = contactX - wreck.getX();
@@ -276,17 +276,20 @@ public class CollisionHandler extends CommonCollisionHandler {
         float rhombusScaledWidth = rhombusWidth * rhombusScaleX;
         float rhombusScaledHeight = rhombusHeight * rhombusScaleY;
         Polygon clipPolygon = GeometryUtils.createCenteredRhombusPolygon(rhombusScaledWidth, rhombusScaledHeight, posX, posY, 0, 1);
+        float sin = rigidBody.getSin();
+        float cos = rigidBody.getCos();
         damageSystem.damage(rigidBody, contactX, contactY, clipPolygon, java.lang.Math.max(rhombusWidth, rhombusHeight) * 0.5f,
-                rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(),
-                () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
+                rigidBody.getX(), rigidBody.getY(), sin, cos, () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
                         new PacketSyncDamage(rigidBody, rigidBody.getWorld().getTimestamp())));
         trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
                 new PacketHullCellDestroy(rigidBody.getId(), cell.getColumn(), cell.getRow(), rigidBody.getWorld().getTimestamp()));
 
+        float rotatedX = posX * cos - posY * sin;
+        float rotatedY = posY * cos + posX * sin;
         float maxSize = Math.max(rhombusScaledWidth, rhombusScaledHeight);
         float waveRadius = maxSize * 2.0f;
-        float wavePower = maxSize * 1.75f;
-        createWave(rigidBody.getWorld(), posX + rigidBody.getX(), posY + rigidBody.getY(), waveRadius, wavePower);
+        float wavePower = maxSize * 0.0175f;
+        createWave(rigidBody.getWorld(), rigidBody.getX() + rotatedX, rigidBody.getY() + rotatedY, waveRadius, wavePower);
     }
 
     public void createWave(World world, float x, float y, float radius, float power) {
@@ -301,7 +304,7 @@ public class CollisionHandler extends CommonCollisionHandler {
             }
 
             float distance = bodyDistance.calculateDistance(x, y);
-            if (distance > radius || distance == 0.0f) {
+            if (distance > radius || distance <= 0.0f) {
                 return true;
             }
 
@@ -324,7 +327,7 @@ public class CollisionHandler extends CommonCollisionHandler {
             float invMass = body.invMass < 1.0f ? body.invMass * 4.0f : body.invMass;
             linearVelocity.addLocal(impulseX * invMass, impulseY * invMass);
 
-            float angularImpulse = 0.04f * distanceImpulseSq;
+            float angularImpulse = power * 0.04f * distanceImpulseSq;
             float invV = body.invI < 1.0f ? body.invI * 4.0f : body.invI;
             body.setAngularVelocity(body.getAngularVelocity() + RandomHelper.randomFloat(random, -angularImpulse, angularImpulse) * invV);
         });
@@ -350,8 +353,8 @@ public class CollisionHandler extends CommonCollisionHandler {
             if (cell.getValue() > 0.0f) {
                 damageHullCell(cell, impactPower, ship, hull.getCells(), contactX, contactY);
             } else {
-                float clipPolygonRadius = 0.5f;
-                float maskClipRadius = 0.75f;
+                float clipPolygonRadius = 0.05f;
+                float maskClipRadius = 0.075f;
                 Polygon clipPolygon = createBulletClipPolygon(contactX - ship.getX(), contactY - ship.getY(), ship.getSin(), ship.getCos(),
                         clipPolygonRadius);
                 createDamage(ship, contactX, contactY, clipPolygon, maskClipRadius);

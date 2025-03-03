@@ -74,7 +74,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
     private boolean showModules = true;
 
     private boolean debugDamageSystem;
-    private float clipPolygonRadius = 0.5f;
+    private float clipPolygonRadius = 0.05f;
     private Polygon clipPolygon;
 
     private ShipProperties selectedShipProperties;
@@ -378,9 +378,9 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
         boolean mouseScroll = super.mouseScroll(mouseX, mouseY, scrollY);
 
         if (!mouseScroll && debugDamageSystem && Engine.getKeyboard().isKeyDown(Keys.KEY_LEFT_CONTROL)) {
-            clipPolygonRadius += scrollY / 2.0f;
-            if (clipPolygonRadius < 0.1f) {
-                clipPolygonRadius = 0.1f;
+            clipPolygonRadius += scrollY * 0.5f;
+            if (clipPolygonRadius < 0.01f) {
+                clipPolygonRadius = 0.01f;
             }
 
             clipPolygon = createClipPolygon(0, 0);

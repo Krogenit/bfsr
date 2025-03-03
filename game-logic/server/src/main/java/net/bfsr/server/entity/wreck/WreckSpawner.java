@@ -8,6 +8,7 @@ import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.util.ObjectPool;
+import net.bfsr.engine.util.RandomHelper;
 import net.bfsr.engine.world.World;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.Wreck;
@@ -33,12 +34,12 @@ public final class WreckSpawner {
 
     public void spawnDamageDebris(World world, int count, float x, float y, float velocityX, float velocityY, float size) {
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(random.nextFloat() * MathUtils.TWO_PI,
-                    4.0f + random.nextFloat() * 2.0f, angleToVelocity);
+            RotationHelper.angleToVelocity(random.nextFloat() * MathUtils.TWO_PI, RandomHelper.randomFloat(random, 0.4f, 0.6f),
+                    angleToVelocity);
             angleToVelocity.add(velocityX, velocityY).mul(0.7f);
             float angle = random.nextFloat() * MathUtils.TWO_PI;
             float angleVel = (-0.005f + random.nextFloat() / 200.0f) * 60.0f;
-            float size2 = (1.0F - random.nextFloat() / 3.0F) * 2.0f * size;
+            float size2 = RandomHelper.randomFloat(random, 0.132f, 0.2f) * size;
             int maxLifeTime = Engine.convertToTicks(30);
             boolean isFire = random.nextInt(3) == 0;
             boolean isFireExplosion = isFire && random.nextInt(5) == 0;
@@ -51,11 +52,10 @@ public final class WreckSpawner {
 
     private void spawnDamageWrecks(World world, int count, float x, float y, float velocityX, float velocityY) {
         for (int i = 0; i < count; i++) {
-            RotationHelper.angleToVelocity(random.nextFloat() * MathUtils.TWO_PI, 4.0f + random.nextFloat() * 2.0f,
-                    angleToVelocity);
+            RotationHelper.angleToVelocity(random.nextFloat() * MathUtils.TWO_PI, 0.4f + random.nextFloat() * 0.2f, angleToVelocity);
             float angle = random.nextFloat() * MathUtils.TWO_PI;
             float angleVel = (-0.005f + random.nextFloat() / 200.0f) * 60.0f;
-            float size = (1.0F - random.nextFloat() / 3.0F) * 4.0f;
+            float size = RandomHelper.randomFloat(random, 0.25f, 0.4f);
             int maxLifeTime = Engine.convertToTicks(60);
             boolean isFireExplosion = random.nextInt(4) == 0;
             int wreckIndex = random.nextInt(3);

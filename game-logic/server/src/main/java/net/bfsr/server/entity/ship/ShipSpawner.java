@@ -8,7 +8,6 @@ import net.bfsr.engine.util.RandomHelper;
 import net.bfsr.engine.world.World;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
-import net.bfsr.entity.ship.module.engine.Engine;
 import net.bfsr.faction.Faction;
 import net.bfsr.server.ai.AiFactory;
 import org.joml.Vector2f;
@@ -51,8 +50,8 @@ public class ShipSpawner {
             int count = maxCount;
 
             float rotation = MathUtils.TWO_PI / 3;
-            RotationHelper.angleToVelocity(0, 200, angleToVelocity);
-            float spawnRandomOffset = 75;
+            RotationHelper.angleToVelocity(0, 30, angleToVelocity);
+            float spawnRandomOffset = 7.5f;
             if (sameFaction && lastFaction == Faction.HUMAN) count = count - botCount;
             for (int i = 0; i < count; i++) {
                 float addX = RandomHelper.randomFloat(rand, -spawnRandomOffset, spawnRandomOffset);
@@ -83,12 +82,8 @@ public class ShipSpawner {
         }
 
         if (hugeShip == null || hugeShip.isDead()) {
-            world.add(hugeShip = shipFactory.createBot(world, 0, 0, rand.nextFloat() * MathUtils.TWO_PI, Faction.ENGI,
+            world.add(hugeShip = shipFactory.createBot(world, -30, -20, rand.nextFloat() * MathUtils.TWO_PI, Faction.ENGI,
                     shipFactory.getShipRegistry().get("engi_huge0"), aiFactory.createAi()));
-            List<Engine> engines = hugeShip.getModules().getEngines().getEngines();
-            for (int i = 0; i < engines.size(); i++) {
-                engines.get(i).setDead();
-            }
         }
     }
 
@@ -112,8 +107,8 @@ public class ShipSpawner {
         int count = 100;
 
         float padding = 10;
-        float startSpawnX = -500;
-        float startSpawnY = -500;
+        float startSpawnX = -50;
+        float startSpawnY = -50;
         Faction firstFaction = Faction.get((byte) rand.nextInt(3));
         for (int i = 0; i < count; i++) {
             if (firstFaction == Faction.HUMAN) {
@@ -126,8 +121,8 @@ public class ShipSpawner {
             startSpawnY += padding;
         }
 
-        startSpawnX = 500;
-        startSpawnY = -500;
+        startSpawnX = 50;
+        startSpawnY = -50;
         Faction secondFaction = Faction.get((byte) rand.nextInt(3));
         while (secondFaction == firstFaction) {
             secondFaction = Faction.get((byte) rand.nextInt(3));
@@ -150,7 +145,7 @@ public class ShipSpawner {
         List<Ship> ships = world.getEntitiesByType(Ship.class);
         for (int i = 0; i < ships.size(); i++) {
             Ship ship = ships.get(i);
-            if (Math.abs(ship.getX()) >= 1000 || Math.abs(ship.getY()) >= 1000) {
+            if (Math.abs(ship.getX()) >= 100 || Math.abs(ship.getY()) >= 100) {
                 ship.setDead();
             }
         }

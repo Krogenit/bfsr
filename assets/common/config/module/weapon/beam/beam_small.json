@@ -19,10 +19,10 @@
   "aliveTimeInSeconds": 2.0,
   "energyCost": 15.0,
   "size": {
-    "x": 1.4,
-    "y": 1.0
+    "x": 0.14,
+    "y": 0.1
   },
-  "beamMaxRange": 40.0,
+  "beamMaxRange": 4.0,
   "damage": {
     "armor": 4.0,
     "hull": 4.0,
@@ -37,28 +37,28 @@
   },
   "vertices": [
     {
-      "x": -0.7,
-      "y": -0.5
+      "x": -0.07,
+      "y": -0.05
     },
     {
-      "x": 0.7,
-      "y": -0.5
+      "x": 0.07,
+      "y": -0.05
     },
     {
-      "x": 0.7,
-      "y": 0.5
+      "x": 0.07,
+      "y": 0.05
     },
     {
-      "x": -0.7,
-      "y": 0.5
+      "x": -0.07,
+      "y": 0.05
     }
   ],
-  "minDistanceBetweenVerticesSq": 0.3,
+  "minDistanceBetweenVerticesSq": 0.03,
   "bulletSpeed": 0.0,
   "bulletLifeTimeInSeconds": 0.0,
   "bulletSize": {
-    "x": 1.0,
-    "y": 1.0
+    "x": 0.1,
+    "y": 0.1
   },
   "bulletTexture": "",
   "bulletVertices": []

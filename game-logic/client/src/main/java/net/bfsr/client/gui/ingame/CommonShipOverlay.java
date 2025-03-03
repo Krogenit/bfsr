@@ -46,7 +46,9 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
     private final TexturedRectangle shieldGuiObject = new TexturedRectangle(TextureRegister.guiShield, 210, 210);
     private final TexturedRectangle shieldValueGuiObject = new TexturedRectangle(TextureRegister.shieldSmall0, textShield.getWidth() + 8,
             18);
-    private final float fixedShipScale = 14.5f;
+    private final float fixedShipScale = 145.0f;
+    private final float fixedCellSize = 150.0f;
+    private final float fixedOffsetSize = 7.5f;
 
     private float lastShieldValue;
     private float dynamicShipScale = 1.0f;
@@ -83,8 +85,8 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
 
         Hull hull = ship.getModules().getHull();
         float cellSizeScale = calculateHullCellSize(hull);
-        float cellSize = 15.0f * cellSizeScale;
-        float offset = 0.75f * cellSizeScale;
+        float cellSize = fixedCellSize * cellSizeScale;
+        float offset = fixedOffsetSize * cellSizeScale;
 
         HullCell[][] cells = hull.getCells();
         float startX = cells[0].length * cellSize / 2.0f + (cells[0].length - 1) * offset / 2 - cellSize / 2.0f;
@@ -134,8 +136,8 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
 
         Armor armor = ship.getModules().getArmor();
         float cellSizeScale = calculateHullCellSize(armor);
-        float cellSize = 15.0f * 0.5f * cellSizeScale * dynamicShipScale;
-        float offset = 7.5f * cellSizeScale * dynamicShipScale;
+        float cellSize = fixedCellSize * 0.5f * cellSizeScale * dynamicShipScale;
+        float offset = fixedOffsetSize * 10.0f * cellSizeScale * dynamicShipScale;
 
         ArmorPlate[][] cells = armor.getCells();
         float startX = cells[0].length * cellSize * 0.5f + (cells[0].length - 1) * offset * 0.5f - cellSize / 2;

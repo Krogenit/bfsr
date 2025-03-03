@@ -17,6 +17,7 @@ import net.bfsr.engine.entity.GameObject;
 import net.bfsr.engine.entity.SpawnAccumulator;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.Rectangle;
+import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.entity.Render;
 import org.jetbrains.annotations.Nullable;
@@ -35,7 +36,7 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
         @Override
         public void render() {
             if (particleEffect != null && playing) {
-                spriteRenderer.addDrawCommand(id, BufferType.ENTITIES_ALPHA);
+                spriteRenderer.addDrawCommand(id, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ALPHA);
             }
         }
     };
@@ -111,6 +112,7 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
             textureObject.setPosition(gameObject.getPosX(), gameObject.getPosY());
             textureObject.setSize(gameObject.getSizeX(), gameObject.getSizeY());
             testRender.setTexture(gameObject.getTexture());
+            testRender.setSize(gameObject.getSizeX(), gameObject.getSizeY());
             propertiesPanel.applyProperties();
             if (particleEffect != null) {
                 ParticleEffectProperties propertiesHolder = selectedEntry.getComponentByType(ParticleEffectProperties.class);

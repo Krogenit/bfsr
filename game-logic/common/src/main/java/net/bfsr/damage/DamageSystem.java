@@ -32,9 +32,9 @@ import java.util.List;
 @Log4j2
 public final class DamageSystem {
     private static final boolean DEBUG = false;
-    private static final double MIN_POLYGON_AREA = 0.3;
+    private static final double MIN_POLYGON_AREA = 0.03;
     public static final BufferParameters BUFFER_PARAMETERS = new BufferParameters(1, BufferParameters.CAP_SQUARE,
-            BufferParameters.JOIN_MITRE, 0.1);
+            BufferParameters.JOIN_MITRE, 0.01);
 
     private final Vector2f rotatedLocalCenter = new Vector2f();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();

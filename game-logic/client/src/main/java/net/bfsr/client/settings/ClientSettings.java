@@ -11,14 +11,14 @@ import net.bfsr.engine.settings.StringOption;
 import net.bfsr.settings.SettingsCategory;
 
 public enum ClientSettings {
-    SOUND_VOLUME(SettingsCategory.SOUND, 0.0f, 1.0f, new FloatOption(0.1f), ConsumerUtils.FLOAT_DEFAULT_CONSUMER),
+    SOUND_VOLUME(SettingsCategory.SOUND, 0.0f, 1.0f, new FloatOption(0.05f), ConsumerUtils.FLOAT_DEFAULT_CONSUMER),
 
     CAMERA_MOVE_BY_SCREEN_BORDERS(SettingsCategory.CAMERA, new BooleanOption(true), ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
-    CAMERA_MOVE_BY_SCREEN_BORDERS_SPEED(SettingsCategory.CAMERA, 1.0f, 50.0f, new FloatOption(6.0f),
+    CAMERA_MOVE_BY_SCREEN_BORDERS_SPEED(SettingsCategory.CAMERA, 0.1f, 5.0f, new FloatOption(0.f),
             ConsumerUtils.FLOAT_DEFAULT_CONSUMER),
     CAMERA_MOVE_BY_SCREEN_BORDERS_OFFSET(SettingsCategory.CAMERA, 2.0f, 25.0f, new FloatOption(15.0f),
             ConsumerUtils.FLOAT_DEFAULT_CONSUMER),
-    CAMERA_MOVE_BY_KEY_SPEED(SettingsCategory.CAMERA, 0.25f, 40.0f, new FloatOption(10.0f), ConsumerUtils.FLOAT_DEFAULT_CONSUMER),
+    CAMERA_MOVE_BY_KEY_SPEED(SettingsCategory.CAMERA, 0.025f, 4.0f, new FloatOption(1.0f), ConsumerUtils.FLOAT_DEFAULT_CONSUMER),
     CAMERA_ZOOM_SPEED(SettingsCategory.CAMERA, 0.01f, 0.5f, new FloatOption(0.2f), ConsumerUtils.FLOAT_DEFAULT_CONSUMER),
     CAMERA_FOLLOW_PLAYER(SettingsCategory.CAMERA, new BooleanOption(true), ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
 
