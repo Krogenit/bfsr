@@ -87,7 +87,7 @@ public class CameraInputController extends InputController {
         if (playerShip != null) {
             float x = playerShip.getX();
             float y = playerShip.getY();
-            float minDistance = 0.04f;
+            float minDistance = 0.00002f;
             float dis = position.distanceSquared(x, y);
             if (dis > minDistance) {
                 float mDx = x - position.x;
