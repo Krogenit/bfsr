@@ -441,7 +441,7 @@ public final class DamageSystem {
         float halfSizeY = sizeY * 0.5f;
         int width = mask.getWidth();
         int height = mask.getHeight();
-        int radius = (int) Math.ceil(clipRadius * (width / sizeX) * 0.5f);
+        int radius = (int) Math.ceil(clipRadius * (width / sizeX));
 
         float localPosX = x - damageable.getX();
         float localPosY = y - damageable.getY();
