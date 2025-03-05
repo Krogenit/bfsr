@@ -352,7 +352,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
 
         if (guiObject == this && debugDamageSystem) {
             Vector2f mouseWorldPosition = mouse.getWorldPosition(client.getCamera());
-            float textureClipRadius = clipPolygonRadius * 2.0f;
+            float textureClipRadius = clipPolygonRadius;
             int vertices = testShip.getPolygon().getNumPoints();
             damageSystem.damage(testShip, mouseWorldPosition.x, mouseWorldPosition.y,
                     createClipPolygon(mouseWorldPosition.x, mouseWorldPosition.y), textureClipRadius,
@@ -378,7 +378,7 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
         boolean mouseScroll = super.mouseScroll(mouseX, mouseY, scrollY);
 
         if (!mouseScroll && debugDamageSystem && Engine.getKeyboard().isKeyDown(Keys.KEY_LEFT_CONTROL)) {
-            clipPolygonRadius += scrollY * 0.5f;
+            clipPolygonRadius += scrollY * 0.05f;
             if (clipPolygonRadius < 0.01f) {
                 clipPolygonRadius = 0.01f;
             }
