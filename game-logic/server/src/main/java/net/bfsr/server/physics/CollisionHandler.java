@@ -78,7 +78,6 @@ public class CollisionHandler extends CommonCollisionHandler {
         super.bulletShip(bullet, ship, bulletFixture, shipFixture, contactX, contactY, normalX, normalY);
 
         float clipPolygonRadius = 0.075f;
-        float maskClipRadius = 0.1f;
         Polygon clipPolygon = createBulletClipPolygon(contactX - ship.getX(), contactY - ship.getY(), ship.getSin(), ship.getCos(),
                 clipPolygonRadius);
         damageShip(ship, bullet.getDamage(), 1.0f, contactX, contactY, shipFixture, () -> {
@@ -94,7 +93,7 @@ public class CollisionHandler extends CommonCollisionHandler {
                         velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f);
             }
             bullet.setDead();
-        }, clipPolygon, maskClipRadius);
+        }, clipPolygon, clipPolygonRadius);
     }
 
     private Polygon createBulletClipPolygon(float x, float y, float sin, float cos, float radius) {
@@ -113,10 +112,9 @@ public class CollisionHandler extends CommonCollisionHandler {
                                 float contactX, float contactY, float normalX, float normalY) {
         super.bulletShipWreck(bullet, wreck, bulletFixture, shipWreckFixture, contactX, contactY, normalX, normalY);
         float clipPolygonRadius = 0.075f;
-        float maskClipRadius = 0.1f;
         Polygon clipPolygon = createBulletClipPolygon(contactX - wreck.getX(), contactY - wreck.getY(), wreck.getSin(), wreck.getCos(),
                 clipPolygonRadius);
-        createDamage(wreck, contactX, contactY, clipPolygon, maskClipRadius);
+        createDamage(wreck, contactX, contactY, clipPolygon, clipPolygonRadius);
     }
 
     @Override
@@ -127,8 +125,6 @@ public class CollisionHandler extends CommonCollisionHandler {
         float dx = linearVelocity2.x - linearVelocity1.x;
         float dy = linearVelocity2.y - linearVelocity1.y;
         float impactPower = (Math.sqrt(dx * dx + dy * dy)) * (ship1.getBody().getMass() / ship2.getBody().getMass());
-
-        impactPower /= 10.0f;
 
         if (impactPower > 0.25f) {
             if (ship1.getCollisionTimer() <= 0) {
@@ -148,7 +144,6 @@ public class CollisionHandler extends CommonCollisionHandler {
     @Override
     public void weaponSlotBeamShip(WeaponSlotBeam weaponSlot, Ship ship, Fixture fixture, float contactX, float contactY,
                                    float normalX, float normalY) {
-        float maskClipRadius = 0.125f;
         float clipRectangleWidth = 0.15f;
         float clipRectangleHeight = 0.1f;
         float penetration = 0.07f;
@@ -161,17 +156,15 @@ public class CollisionHandler extends CommonCollisionHandler {
         float localSin = cos * weaponSlot.getSin() - sin * weaponSlot.getCos();
         float localCos = cos * weaponSlot.getCos() + sin * weaponSlot.getSin();
 
-        Polygon clipPolygon = createBeamClipPolygon(clipRectangleWidth, clipRectangleHeight, localContactX, localContactY,
-                localSin, localCos, penetration);
-        damageShip(ship, weaponSlot.getDamage(), weaponSlot.getBeamPower() * Engine.getUpdateDeltaTime(), contactX, contactY,
-                fixture, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, clipPolygon,
-                maskClipRadius);
+        Polygon clipPolygon = createBeamClipPolygon(clipRectangleWidth, clipRectangleHeight, localContactX, localContactY, localSin,
+                localCos, penetration);
+        damageShip(ship, weaponSlot.getDamage(), weaponSlot.getBeamPower() * Engine.getUpdateDeltaTime(), contactX, contactY, fixture,
+                RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, clipPolygon, clipRectangleHeight);
     }
 
     @Override
     public void weaponSlotBeamShipWreck(WeaponSlotBeam weaponSlot, ShipWreck wreck, Fixture fixture, float contactX, float contactY,
                                         float normalX, float normalY) {
-        float maskClipRadius = 0.075f;
         float clipRectangleWidth = 0.15f;
         float clipRectangleHeight = 0.1f;
         float penetration = 0.07f;
@@ -186,7 +179,7 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         Polygon clipPolygon = createBeamClipPolygon(clipRectangleWidth, clipRectangleHeight, localContactX, localContactY,
                 localSin, localCos, penetration);
-        createDamage(wreck, contactX, contactY, clipPolygon, maskClipRadius);
+        createDamage(wreck, contactX, contactY, clipPolygon, clipRectangleWidth);
     }
 
     private Polygon createBeamClipPolygon(float width, float height, float x, float y, float sin, float cos, float penetration) {
@@ -278,7 +271,7 @@ public class CollisionHandler extends CommonCollisionHandler {
         Polygon clipPolygon = GeometryUtils.createCenteredRhombusPolygon(rhombusScaledWidth, rhombusScaledHeight, posX, posY, 0, 1);
         float sin = rigidBody.getSin();
         float cos = rigidBody.getCos();
-        damageSystem.damage(rigidBody, contactX, contactY, clipPolygon, java.lang.Math.max(rhombusWidth, rhombusHeight) * 0.5f,
+        damageSystem.damage(rigidBody, contactX, contactY, clipPolygon, Math.min(rhombusWidth, rhombusHeight) * 0.5f,
                 rigidBody.getX(), rigidBody.getY(), sin, cos, () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
                         new PacketSyncDamage(rigidBody, rigidBody.getWorld().getTimestamp())));
         trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
@@ -354,10 +347,9 @@ public class CollisionHandler extends CommonCollisionHandler {
                 damageHullCell(cell, impactPower, ship, hull.getCells(), contactX, contactY);
             } else {
                 float clipPolygonRadius = 0.05f;
-                float maskClipRadius = 0.075f;
                 Polygon clipPolygon = createBulletClipPolygon(contactX - ship.getX(), contactY - ship.getY(), ship.getSin(), ship.getCos(),
                         clipPolygonRadius);
-                createDamage(ship, contactX, contactY, clipPolygon, maskClipRadius);
+                createDamage(ship, contactX, contactY, clipPolygon, clipPolygonRadius);
             }
 
             Object userData = fixture.getUserData();
