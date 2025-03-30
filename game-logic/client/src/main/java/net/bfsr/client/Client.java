@@ -17,7 +17,6 @@ import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.language.LanguageManager;
 import net.bfsr.client.listener.entity.ShipEventListener;
 import net.bfsr.client.listener.gui.GuiEventListener;
-import net.bfsr.client.listener.gui.HUDEventListener;
 import net.bfsr.client.listener.world.WorldEventListener;
 import net.bfsr.client.module.ShieldLogic;
 import net.bfsr.client.network.NetworkSystem;
@@ -139,7 +138,6 @@ public class Client extends ClientGameLogic {
         eventBus.register(new ShipEventListener());
         eventBus.register(new WorldEventListener());
         eventBus.register(new GuiEventListener());
-        eventBus.register(new HUDEventListener());
     }
 
     private void registerFonts() {
