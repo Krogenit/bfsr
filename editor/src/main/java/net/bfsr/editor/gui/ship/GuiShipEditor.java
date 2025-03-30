@@ -256,7 +256,6 @@ public class GuiShipEditor extends GuiEditor<ShipConfig, ShipProperties> {
             ConfigData configData = configRegistry.get(shipConfig.getName());
             int id = configData != null ? configData.getId() : 0;
             testShip = new TestShip(new ShipData(shipConfig, "ship", id, configRegistry.getId()));
-            testShip.getDamageMask().init();
             testShip.init(client.getWorld(), -1);
             testShip.getBody().setActive(false);
             testShip.setFaction(Faction.HUMAN);

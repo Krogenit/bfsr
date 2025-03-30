@@ -147,7 +147,7 @@ public class GuiVertex extends GuiObject {
         float zoom = camera.getZoom();
 
         float guiX = (vertex.getX() - camera.getPosition().x) * zoom - camera.getOrigin().x;
-        float guiY = -((-vertex.getY() + camera.getPosition().y) * zoom + camera.getOrigin().y);
+        float guiY = (vertex.getY() - camera.getPosition().y) * zoom - camera.getOrigin().y;
 
         setPosition(guiX - width / 2.0f, guiY - height / 2.0f);
     }

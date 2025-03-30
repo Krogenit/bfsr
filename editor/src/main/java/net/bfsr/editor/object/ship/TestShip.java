@@ -6,6 +6,7 @@ import net.bfsr.entity.ship.Ship;
 public class TestShip extends Ship {
     public TestShip(ShipData shipData) {
         super(shipData);
+        getDamageMask().init();
     }
 
     @Override
