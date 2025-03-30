@@ -51,7 +51,7 @@ public class PositionHistory extends EntityDataHistory<TransformData> {
             return null;
         }
 
-        if (dataList.getFirst().getTime() <= time) {
+        if (dataList.getFirst().getTime() < time) {
             return dataList.getFirst();
         }
 

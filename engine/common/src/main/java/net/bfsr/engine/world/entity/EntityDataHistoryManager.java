@@ -26,16 +26,20 @@ public class EntityDataHistoryManager {
     private final Int2ObjectMap<PositionHistory> positionHistoryMap = new Int2ObjectOpenHashMap<>();
     private final Int2ObjectMap<EntityDataHistory<PacketWorldSnapshot.EntityData>> dataHistoryMap = new Int2ObjectOpenHashMap<>();
 
-    EntityDataHistoryManager() {
+    public EntityDataHistoryManager() {
         positionHistoryMap.defaultReturnValue(EMPTY_POSITION_HISTORY);
         dataHistoryMap.defaultReturnValue(EMPTY_DATA_HISTORY);
     }
 
     public void addData(PacketWorldSnapshot.EntityData entityData, double timestamp) {
         int id = entityData.getEntityId();
-        positionHistoryMap.computeIfAbsent(id, key -> new PositionHistory(HISTORY_DURATION_MILLIS))
-                .addPositionData(entityData.getX(), entityData.getY(), entityData.getSin(), entityData.getCos(), timestamp);
+        addPositionData(id, entityData.getX(), entityData.getY(), entityData.getSin(), entityData.getCos(), timestamp);
         dataHistoryMap.computeIfAbsent(id, key -> new EntityDataHistory<>(HISTORY_DURATION_MILLIS)).addData(entityData);
+    }
+
+    public void addPositionData(int id, float x, float y, float sin, float cos, double timestamp) {
+        positionHistoryMap.computeIfAbsent(id, key -> new PositionHistory(HISTORY_DURATION_MILLIS))
+                .addPositionData(x, y, sin, cos, timestamp);
     }
 
     public TransformData getTransformData(int id, double timestamp) {

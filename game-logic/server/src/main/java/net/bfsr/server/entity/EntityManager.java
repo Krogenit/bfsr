@@ -5,7 +5,7 @@ import net.bfsr.entity.CommonEntityManager;
 
 public class EntityManager extends CommonEntityManager {
     @Override
-    public void update() {
+    public void update(double timestamp) {
         for (int i = 0; i < entities.size(); i++) {
             RigidBody rigidBody = entities.get(i);
 
@@ -16,6 +16,9 @@ public class EntityManager extends CommonEntityManager {
 
                 if (rigidBody.getLifeTime() >= rigidBody.getMaxLifeTime()) {
                     rigidBody.setDead();
+                } else {
+                    getDataHistoryManager().addPositionData(rigidBody.getId(), rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(),
+                            rigidBody.getCos(), timestamp);
                 }
             }
         }

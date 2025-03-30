@@ -21,7 +21,7 @@ public class World {
     private static final int POSITION_ITERATIONS = 1;
 
     @Getter
-    private org.jbox2d.dynamics.World physicWorld;
+    private final org.jbox2d.dynamics.World physicWorld = new org.jbox2d.dynamics.World();
     @Getter
     private final long seed;
     private final Profiler profiler;
@@ -49,18 +49,13 @@ public class World {
         this.gameLogic = gameLogic;
         this.collisionMatrix = collisionMatrix;
         this.contactFilter = new ContactFilter(collisionMatrix);
-    }
-
-    private void initPhysicWorld() {
-        physicWorld = new org.jbox2d.dynamics.World();
-        physicWorld.setContactListener(new ContactListener(collisionMatrix));
-        physicWorld.setContactFilter(contactFilter);
+        this.physicWorld.setContactListener(new ContactListener(collisionMatrix));
+        this.physicWorld.setContactFilter(contactFilter);
         Settings.maxTranslation = Engine.convertToDeltaTime(120);
         Settings.maxTranslationSquared = Settings.maxTranslation * Settings.maxTranslation;
     }
 
     public void init() {
-        initPhysicWorld();
         eventBus.register(entityManager.getDataHistoryManager());
         eventBus.publish(new WorldInitEvent(this));
     }
@@ -69,7 +64,7 @@ public class World {
         this.timestamp = timestamp;
 
         profiler.start("entityManager");
-        entityManager.update();
+        entityManager.update(timestamp);
         profiler.endStart("physics");
         physicWorld.step(Engine.getUpdateDeltaTime(), VELOCITY_ITERATIONS, POSITION_ITERATIONS);
         profiler.endStart("postPhysicsUpdate");
@@ -104,7 +99,11 @@ public class World {
     public void clear() {
         eventBus.unregister(entityManager.getDataHistoryManager());
         entityManager.clear();
-        physicWorld.removeAllBodies();
+
+        // Only happens when server is crashed
+        if (!physicWorld.isLocked()) {
+            physicWorld.removeAllBodies();
+        }
     }
 
     public List<? extends RigidBody> getEntities() {

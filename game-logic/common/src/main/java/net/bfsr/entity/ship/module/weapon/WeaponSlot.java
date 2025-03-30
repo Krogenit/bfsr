@@ -8,6 +8,9 @@ import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
+import net.bfsr.engine.Engine;
+import net.bfsr.engine.entity.EntityDataHistoryManager;
+import net.bfsr.engine.entity.TransformData;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.physics.PhysicsUtils;
 import net.bfsr.engine.world.World;
@@ -20,11 +23,16 @@ import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.event.module.weapon.WeaponShotEvent;
 import net.bfsr.event.module.weapon.WeaponSlotRemovedEvent;
 import net.bfsr.physics.collision.filter.Filters;
+import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.shapes.Polygon;
+import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.Fixture;
 import org.joml.Vector2f;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class WeaponSlot extends DamageableModule implements ConnectedObject<GunData> {
@@ -124,24 +132,88 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
         weaponSlotEventBus.publish(new WeaponShotEvent(this));
     }
 
-    public void createBullet(float fastForwardTime) {
+    public void createBullet(float fastForwardTimeInMillis) {
         float cos = ship.getCos();
         float sin = ship.getSin();
         float x = getX() + getSizeX() * cos;
         float y = getY() + getSizeX() * sin;
 
-        // TODO: implement collision detection
-//        float updateDeltaTime = ship.getWorld().getUpdateDeltaTime();
-//        float updateDeltaTimeInMills = updateDeltaTime * 1000;
-//        while (fastForwardTime > 0) {
-//            x += cos * gunData.getBulletSpeed() * updateDeltaTime;
-//            y += sin * gunData.getBulletSpeed() * updateDeltaTime;
-//            fastForwardTime -= updateDeltaTimeInMills;
-//        }
-
         Bullet bullet = new Bullet(x, y, sin, cos, gunData, ship, gunData.getDamage().copy());
         bullet.init(world, world.getNextId());
         world.add(bullet);
+
+        float updateDeltaTimeInMills = Engine.getUpdateDeltaTime() * 1000.0f;
+        int iterations = Math.round(fastForwardTimeInMillis / updateDeltaTimeInMills);
+        if (iterations > 0) {
+            float bulletSpeed = gunData.getBulletSpeed();
+            float offset = 1.0f + Math.max(gunData.getBulletSizeX(), gunData.getBulletSizeY());
+            float endX = x + cos * bulletSpeed;
+            float endY = y + sin * bulletSpeed;
+            float minX = Math.min(x, endX) - offset;
+            float minY = Math.min(y, endY) - offset;
+            float maxX = Math.max(x, endX) + offset;
+            float maxY = Math.max(y, endY) + offset;
+            AABB aabb = new AABB(new Vector2(minX, minY), new Vector2(maxX, maxY));
+
+            Set<Body> affectedBodies = new HashSet<>();
+
+            Body bulletBody = bullet.getBody();
+            org.jbox2d.dynamics.World physicWorld = world.getPhysicWorld();
+            physicWorld.queryAABB(fixture -> {
+                Body body = fixture.getBody();
+                if (affectedBodies.contains(body)) {
+                    return true;
+                }
+
+                if (body == bulletBody) {
+                    return true;
+                }
+
+                affectedBodies.add(body);
+                return true;
+            }, aabb);
+
+            EntityDataHistoryManager entityDataHistoryManager = new EntityDataHistoryManager();
+
+            for (Body body : affectedBodies) {
+                RigidBody rigidBody = (RigidBody) body.getUserData();
+                entityDataHistoryManager.addPositionData(rigidBody.getId(), rigidBody.getX(), rigidBody.getY(),
+                        rigidBody.getSin(), rigidBody.getCos(), 0);
+            }
+
+            physicWorld.beginFastForward();
+
+            double timestamp = world.getTimestamp();
+            float fastForwardTimeInNanos = fastForwardTimeInMillis * 1_000_000.0f;
+            float updateDeltaTimeInNanos = updateDeltaTimeInMills * 1_000_000.0f;
+            for (int i = 0; i < iterations; i++) {
+                EntityDataHistoryManager dataHistoryManager = world.getEntityManager().getDataHistoryManager();
+
+                for (Body body : affectedBodies) {
+                    RigidBody rigidBody = (RigidBody) body.getUserData();
+                    TransformData transformData = dataHistoryManager.getTransformData(rigidBody.getId(),
+                            timestamp - fastForwardTimeInNanos);
+                    if (transformData != null) {
+                        Vector2f position = transformData.getPosition();
+                        body.setTransform(position.x, position.y, transformData.getSin(), transformData.getCos());
+                    }
+                }
+
+                bullet.update();
+                physicWorld.fastForwardStep(Engine.getUpdateDeltaTime(), Collections.singletonList(bulletBody));
+                bullet.postPhysicsUpdate();
+
+                fastForwardTimeInNanos -= updateDeltaTimeInNanos;
+            }
+
+            physicWorld.endFastForward();
+            for (Body body : affectedBodies) {
+                RigidBody rigidBody = (RigidBody) body.getUserData();
+                TransformData transformData = entityDataHistoryManager.getFirstTransformData(rigidBody.getId());
+                Vector2f position = transformData.getPosition();
+                body.setTransform(position.x, position.y, transformData.getSin(), transformData.getCos());
+            }
+        }
     }
 
     @Override

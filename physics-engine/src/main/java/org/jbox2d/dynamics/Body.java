@@ -899,10 +899,7 @@ public class Body {
         sweep.center0.set(sweep.center);
 
         if (fixtures.size() > 0) {
-            BroadPhase broadPhase = world.contactManager.broadPhase;
-            for (int i = 0; i < fixtures.size(); i++) {
-                fixtures.get(i).synchronize(broadPhase, transform, transform);
-            }
+            synchronizeFixtures(world.contactManager.broadPhase);
         }
     }
 
@@ -916,10 +913,25 @@ public class Body {
         sweep.angle0 = sweep.angle;
 
         if (fixtures.size() > 0) {
-            BroadPhase broadPhase = world.contactManager.broadPhase;
-            for (int i = 0; i < fixtures.size(); i++) {
-                fixtures.get(i).synchronize(broadPhase, transform, transform);
-            }
+            synchronizeFixtures(world.contactManager.broadPhase);
+        }
+    }
+
+    public void setTransform(float x, float y, float sin, float cos) {
+        transform.rotation.set(sin, cos);
+        transform.position.set(x, y);
+
+        Transform.mulToOutUnsafe(transform, sweep.localCenter, sweep.center);
+        sweep.angle = MathUtils.atan2(sin, cos);
+        sweep.center0.set(sweep.center);
+        sweep.angle0 = sweep.angle;
+
+        synchronizeFixtures(world.contactManager.broadPhase);
+    }
+
+    public void synchronizeFixtures(BroadPhase broadPhase) {
+        for (int i = 0; i < fixtures.size(); i++) {
+            fixtures.get(i).synchronize(broadPhase, transform, transform);
         }
     }
 
