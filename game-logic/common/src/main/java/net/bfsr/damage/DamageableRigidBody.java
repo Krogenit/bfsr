@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.bfsr.config.entity.damageable.DamageableRigidBodyConfigData;
-import net.bfsr.engine.entity.RigidBody;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.physics.CollisionMatrixType;
 import org.jbox2d.dynamics.Fixture;
 import org.locationtech.jts.geom.Polygon;

@@ -1,7 +1,7 @@
 package net.bfsr.physics.collision;
 
-import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.physics.collision.AbstractCollisionMatrix;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;

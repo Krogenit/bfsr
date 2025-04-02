@@ -1,8 +1,8 @@
 package net.bfsr.client.config.particle;
 
 import net.bfsr.engine.config.ConfigToDataConverter;
-import net.bfsr.engine.entity.ParticleManager;
 import net.bfsr.engine.util.PathHelper;
+import net.bfsr.engine.world.entity.ParticleManager;
 
 import java.util.List;
 

@@ -9,13 +9,13 @@ import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.config.entity.wreck.WreckRegistry;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.config.ConfigConverterManager;
-import net.bfsr.engine.entity.EntityIdManager;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.logic.GameLogic;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.engine.util.Side;
 import net.bfsr.engine.world.World;
+import net.bfsr.engine.world.entity.EntityIdManager;
 import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.entity.wreck.Wreck;
@@ -51,7 +51,7 @@ public abstract class ServerGameLogic extends GameLogic {
     private final ShipFactory shipFactory = new ShipFactory(configConverterManager.getConverter(ShipRegistry.class),
             new ShipOutfitter(configConverterManager));
     private final PlayerManager playerManager = new PlayerManager(shipFactory);
-    private final NetworkSystem networkSystem = new NetworkSystem(playerManager);
+    private final NetworkSystem networkSystem = new NetworkSystem(playerManager, this);
     private final EntityTrackingManager entityTrackingManager = new EntityTrackingManager(eventBus, networkSystem);
     private final AiFactory aiFactory = new AiFactory(entityTrackingManager);
     private final ShipSpawner shipSpawner = new ShipSpawner(shipFactory, aiFactory);

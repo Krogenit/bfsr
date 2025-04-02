@@ -521,8 +521,6 @@ public class World {
         // Integrate velocities, solve velocity constraints, and integrate positions.
         if (stepComplete && step.dt > 0.0f) {
             tempTimer.reset();
-            profile.solveParticleSystem.record(tempTimer.getMilliseconds());
-            tempTimer.reset();
             solve(step);
             profile.solve.record(tempTimer.getMilliseconds());
         }

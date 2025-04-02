@@ -3,16 +3,17 @@ package net.bfsr.network.packet.common.entity.spawn;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.bfsr.engine.network.packet.common.entity.spawn.RigidBodySpawnData;
+import net.bfsr.engine.network.packet.common.world.entity.spawn.RigidBodySpawnData;
 import net.bfsr.entity.bullet.Bullet;
 
 @Getter
 @NoArgsConstructor
-public class BulletSpawnData extends RigidBodySpawnData {
+public class BulletSpawnData extends RigidBodySpawnData<Bullet> {
     private int ownerId;
 
-    public BulletSpawnData(Bullet bullet) {
-        super(bullet);
+    @Override
+    public void setData(Bullet bullet) {
+        super.setData(bullet);
         this.ownerId = bullet.getOwner().getId();
     }
 

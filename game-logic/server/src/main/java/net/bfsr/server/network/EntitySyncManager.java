@@ -2,8 +2,8 @@ package net.bfsr.server.network;
 
 import lombok.RequiredArgsConstructor;
 import net.bfsr.engine.collection.UnorderedArrayList;
-import net.bfsr.engine.entity.RigidBody;
-import net.bfsr.engine.network.packet.common.entity.PacketWorldSnapshot;
+import net.bfsr.engine.network.packet.common.world.PacketWorldSnapshot;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.server.player.Player;
 
 @RequiredArgsConstructor

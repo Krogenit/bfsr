@@ -32,20 +32,21 @@ import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.client.settings.ConfigSettings;
 import net.bfsr.client.world.BlankWorld;
 import net.bfsr.client.world.entity.ClientEntityIdManager;
-import net.bfsr.client.world.entity.EntitySpawnLoginRegistry;
+import net.bfsr.client.world.entity.EntitySpawnDataRegistry;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.config.ConfigConverterManager;
-import net.bfsr.engine.entity.ParticleManager;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.logic.ClientGameLogic;
 import net.bfsr.engine.network.packet.Packet;
+import net.bfsr.engine.network.packet.common.world.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.sound.AbstractSoundManager;
 import net.bfsr.engine.world.World;
+import net.bfsr.engine.world.entity.ParticleManager;
 import net.bfsr.entity.CommonEntityManager;
 import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.entity.ship.ShipOutfitter;
@@ -88,7 +89,7 @@ public class Client extends ClientGameLogic {
 
     private final DamageHandler damageHandler = new DamageHandler(entityRenderer);
 
-    private final EntitySpawnLoginRegistry entitySpawnLoginRegistry = new EntitySpawnLoginRegistry(configConverterManager, shipFactory,
+    private final EntitySpawnDataRegistry entitySpawnDataRegistry = new EntitySpawnDataRegistry(configConverterManager, shipFactory,
             damageHandler, this);
 
     private final NetworkSystem networkSystem = new NetworkSystem(this);
@@ -233,13 +234,6 @@ public class Client extends ClientGameLogic {
         networkSystem.connect(inetaddress, port, login);
     }
 
-    public void stopLocalServer() {
-        if (localServer != null) {
-            localServer.stop();
-            localServer = null;
-        }
-    }
-
     public void quitToMainMenu() {
         particleManager.clear();
         eventBus.publish(new ExitToMainMenuEvent());
@@ -255,6 +249,13 @@ public class Client extends ClientGameLogic {
         networkSystem.closeChannels();
         networkSystem.shutdown();
         networkSystem.clear();
+    }
+
+    public void stopLocalServer() {
+        if (localServer != null) {
+            localServer.stop();
+            localServer = null;
+        }
     }
 
     private void waitServerStop() {
@@ -281,12 +282,12 @@ public class Client extends ClientGameLogic {
         world.init();
     }
 
-    public void closeGui() {
-        guiManager.closeGui();
-    }
-
     public void openGui(@NotNull Gui gui) {
         guiManager.openGui(gui);
+    }
+
+    public void closeGui() {
+        guiManager.closeGui();
     }
 
     public void sendTCPPacket(Packet packet) {
@@ -295,13 +296,6 @@ public class Client extends ClientGameLogic {
 
     public void sendUDPPacket(Packet packet) {
         networkSystem.sendPacketUDP(packet);
-    }
-
-    @Override
-    public void clear() {
-        super.clear();
-        clearNetwork();
-        stopLocalServer();
     }
 
     private void setBlankWorld() {
@@ -315,8 +309,7 @@ public class Client extends ClientGameLogic {
 
     @Override
     public boolean isVSync() {
-        return ClientSettings.V_SYNC.getBoolean() && ClientSettings.MAX_FPS.getMaxValue() - ClientSettings.MAX_FPS.getInteger()
-                <= 0;
+        return ClientSettings.V_SYNC.getBoolean() && ClientSettings.MAX_FPS.getMaxValue() - ClientSettings.MAX_FPS.getInteger() <= 0;
     }
 
     @Override
@@ -337,7 +330,19 @@ public class Client extends ClientGameLogic {
         return world != BlankWorld.get();
     }
 
+    @Override
+    public EntityPacketSpawnData<?> getEntitySpawnData(int entityId) {
+        return entitySpawnDataRegistry.createSpawnData(entityId);
+    }
+
     public static Client get() {
         return instance;
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        clearNetwork();
+        stopLocalServer();
     }
 }

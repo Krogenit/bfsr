@@ -3,14 +3,14 @@ package net.bfsr.network.packet.common.entity.spawn;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.bfsr.engine.network.packet.common.entity.spawn.RigidBodySpawnData;
+import net.bfsr.engine.network.packet.common.world.entity.spawn.RigidBodySpawnData;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.entity.wreck.WreckType;
 import org.jbox2d.common.Vector2;
 
 @Getter
 @NoArgsConstructor
-public class WreckSpawnData extends RigidBodySpawnData {
+public class WreckSpawnData extends RigidBodySpawnData<Wreck> {
     private static final WreckType[] WRECK_TYPES = WreckType.values();
 
     private int wreckIndex;
@@ -21,8 +21,9 @@ public class WreckSpawnData extends RigidBodySpawnData {
     private float sizeX, sizeY;
     private WreckType wreckType;
 
-    public WreckSpawnData(Wreck wreck) {
-        super(wreck);
+    @Override
+    public void setData(Wreck wreck) {
+        super.setData(wreck);
         this.wreckIndex = wreck.getWreckIndex();
         this.isFire = wreck.isFire();
         this.isLight = wreck.isLight();

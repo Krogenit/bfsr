@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.network.packet.common.world.entity.spawn.EntityPacketSpawnData;
+import net.bfsr.engine.network.packet.common.world.entity.spawn.RigidBodySpawnData;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.engine.util.Side;
@@ -76,10 +78,6 @@ public class GameLogic {
         return side.isClient();
     }
 
-    public void shutdown() {
-        isRunning = false;
-    }
-
     public <T> ObjectPool<T> addObjectPool(Class<T> objectClass, ObjectPool<T> objectPool) {
         objectPools.addPool(objectClass, objectPool);
         return objectPool;
@@ -87,6 +85,14 @@ public class GameLogic {
 
     public <T> ObjectPool<T> getObjectPool(Class<T> objectClass) {
         return objectPools.getPool(objectClass);
+    }
+
+    public EntityPacketSpawnData<?> getEntitySpawnData(int entityId) {
+        return new RigidBodySpawnData<>();
+    }
+
+    public void shutdown() {
+        isRunning = false;
     }
 
     public void clear() {

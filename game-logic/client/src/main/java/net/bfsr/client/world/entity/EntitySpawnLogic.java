@@ -1,7 +1,7 @@
 package net.bfsr.client.world.entity;
 
 import net.bfsr.engine.config.ConfigConverterManager;
-import net.bfsr.engine.network.packet.common.entity.spawn.EntityPacketSpawnData;
+import net.bfsr.engine.network.packet.common.world.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.world.World;
 

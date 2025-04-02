@@ -2,7 +2,7 @@ package net.bfsr.client.particle.effect;
 
 import net.bfsr.client.config.particle.ParticleEffect;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
-import net.bfsr.engine.entity.RigidBody;
+import net.bfsr.engine.world.entity.RigidBody;
 import org.jbox2d.common.Vector2;
 
 public class ExplosionEffects {

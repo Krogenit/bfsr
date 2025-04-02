@@ -9,6 +9,7 @@ import gnu.trove.map.hash.TObjectIntHashMap;
 import net.bfsr.engine.network.NetworkHandler;
 import net.bfsr.engine.util.Side;
 import org.reflections.Reflections;
+import org.reflections.scanners.Scanners;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -22,21 +23,24 @@ public class PacketRegistry<NET_HANDLER extends NetworkHandler> {
     private final TIntObjectMap<Class<? extends Packet>> packetRegistry = new TIntObjectHashMap<>();
     private final TObjectIntMap<Class<? extends Packet>> packetRegistryInverse = new TObjectIntHashMap<>();
     private final TMap<Class<? extends Packet>, PacketHandler<Packet, NET_HANDLER>> packetHandlerRegistry = new THashMap<>();
-    private int id;
 
     public void registerPackets(Side side) {
         Reflections reflections = new Reflections("net.bfsr");
-        Set<Class<?>> subTypes = reflections.get(SubTypes.of(PacketAdapter.class).asClass());
+        Set<Class<?>> subTypes = reflections.get(Scanners.SubTypes.of(Scanners.TypesAnnotated.with(PacketAnnotation.class)).asClass());
         subTypes.forEach(aClass -> {
-            if (Modifier.isAbstract(aClass.getModifiers())) return;
+            if (Modifier.isAbstract(aClass.getModifiers())) {
+                return;
+            }
+
             registerPacket((Class<? extends Packet>) aClass);
         });
 
         reflections = new Reflections("net.bfsr." + side.toString().toLowerCase(Locale.ENGLISH) + ".network.packet.handler");
-
         Set<Class<?>> singletons = reflections.get(SubTypes.of(PacketHandler.class).asClass());
         singletons.forEach(aClass -> {
-            if (Modifier.isAbstract(aClass.getModifiers())) return;
+            if (Modifier.isAbstract(aClass.getModifiers())) {
+                return;
+            }
 
             try {
                 ParameterizedType genericSuperclass = ((ParameterizedType) aClass.getGenericSuperclass());
@@ -62,8 +66,17 @@ public class PacketRegistry<NET_HANDLER extends NetworkHandler> {
     }
 
     private void registerPacket(Class<? extends Packet> packetClass) {
-        packetRegistry.put(id, packetClass);
-        packetRegistryInverse.put(packetClass, id++);
+        PacketAnnotation annotation = packetClass.getAnnotation(PacketAnnotation.class);
+        if (annotation == null) {
+            throw new RuntimeException("Can't find annotation for packet class " + packetClass.getSimpleName());
+        }
+
+        if (packetRegistry.get(annotation.id()) != null) {
+            throw new IllegalStateException("Packet with id " + annotation.id() + " already registered!");
+        }
+
+        packetRegistry.put(annotation.id(), packetClass);
+        packetRegistryInverse.put(packetClass, annotation.id());
     }
 
     private void registerPacketHandler(Class<? extends Packet> packetClass, PacketHandler<Packet, NET_HANDLER> packetHandler) {

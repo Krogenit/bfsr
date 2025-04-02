@@ -3,11 +3,10 @@ package net.bfsr.entity.bullet;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.weapon.gun.GunData;
-import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
-import net.bfsr.engine.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.engine.util.RunnableUtils;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.network.packet.common.entity.spawn.BulletSpawnData;
 import net.bfsr.physics.CollisionMatrixType;
 import net.bfsr.physics.collision.filter.Filters;
@@ -90,8 +89,8 @@ public class Bullet extends RigidBody {
     }
 
     @Override
-    public EntityPacketSpawnData createSpawnData() {
-        return new BulletSpawnData(this);
+    public BulletSpawnData createSpawnData() {
+        return new BulletSpawnData();
     }
 
     @Override

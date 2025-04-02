@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.bfsr.engine.logic.GameLogic;
 
 import java.io.IOException;
 
@@ -19,7 +20,7 @@ public abstract class PacketScheduled extends PacketAdapter {
     }
 
     @Override
-    public void read(ByteBuf data) throws IOException {
+    public void read(ByteBuf data, GameLogic gameLogic) throws IOException {
         timestamp = data.readDouble();
     }
 

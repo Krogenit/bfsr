@@ -1,6 +1,6 @@
 package net.bfsr.engine.physics.collision;
 
-import net.bfsr.engine.entity.RigidBody;
+import net.bfsr.engine.world.entity.RigidBody;
 import org.jbox2d.dynamics.Fixture;
 
 import java.util.Arrays;

@@ -2,9 +2,6 @@ package net.bfsr.engine.world;
 
 import lombok.Getter;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.entity.AbstractEntityManager;
-import net.bfsr.engine.entity.EntityIdManager;
-import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.world.WorldInitEvent;
 import net.bfsr.engine.logic.GameLogic;
@@ -12,6 +9,9 @@ import net.bfsr.engine.physics.collision.AbstractCollisionMatrix;
 import net.bfsr.engine.physics.collision.ContactListener;
 import net.bfsr.engine.physics.collision.filter.ContactFilter;
 import net.bfsr.engine.profiler.Profiler;
+import net.bfsr.engine.world.entity.AbstractEntityManager;
+import net.bfsr.engine.world.entity.EntityIdManager;
+import net.bfsr.engine.world.entity.RigidBody;
 import org.jbox2d.common.Settings;
 
 import java.util.List;

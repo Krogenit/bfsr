@@ -5,18 +5,18 @@ import lombok.RequiredArgsConstructor;
 import net.bfsr.ai.task.AiTask;
 import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.math.RigidBodyUtils;
 import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.world.World;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.entity.ship.module.weapon.WeaponType;
-import net.bfsr.network.packet.server.component.PacketWeaponShoot;
+import net.bfsr.network.packet.server.component.PacketWeaponSlotShoot;
 import net.bfsr.server.entity.EntityTrackingManager;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.common.Vector2;
@@ -141,7 +141,7 @@ public class AiAttackTarget extends AiTask {
                     if (Math.abs(rigidBodyUtils.getRotationDifference(ship, targetFinalPos)) <= 0.05f) {
                         slot.tryShoot(weaponSlot -> {
                             weaponSlot.createBullet(0);
-                            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketWeaponShoot(
+                            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketWeaponSlotShoot(
                                     ship.getId(), weaponSlot.getId(), ship.getWorld().getTimestamp()));
                         }, modules.getReactor());
                     }

@@ -1,6 +1,6 @@
 package net.bfsr.engine.physics.correction;
 
-import net.bfsr.engine.entity.RigidBody;
+import net.bfsr.engine.world.entity.RigidBody;
 
 public class DynamicCorrectionHandler extends CorrectionHandler {
     private final float correctionChanging;

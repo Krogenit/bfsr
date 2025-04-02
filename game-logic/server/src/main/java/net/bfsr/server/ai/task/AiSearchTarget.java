@@ -3,9 +3,9 @@ package net.bfsr.server.ai.task;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.ai.AiAggressiveType;
 import net.bfsr.ai.task.AiTask;
-import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.world.World;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 
 import java.util.List;

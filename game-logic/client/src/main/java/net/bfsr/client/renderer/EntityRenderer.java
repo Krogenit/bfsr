@@ -8,12 +8,12 @@ import net.bfsr.client.Client;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.renderer.component.WeaponRenderRegistry;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.renderer.entity.Render;
+import net.bfsr.engine.world.entity.RigidBody;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -2,7 +2,6 @@ package net.bfsr.client.renderer;
 
 import lombok.RequiredArgsConstructor;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.entity.ParticleManager;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
@@ -14,6 +13,7 @@ import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.shader.AbstractShaderProgram;
 import net.bfsr.engine.util.RunnableUtils;
+import net.bfsr.engine.world.entity.ParticleManager;
 import org.joml.Vector2i;
 
 @RequiredArgsConstructor

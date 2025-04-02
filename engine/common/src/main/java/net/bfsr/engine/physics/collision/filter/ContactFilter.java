@@ -1,8 +1,8 @@
 package net.bfsr.engine.physics.collision.filter;
 
 import lombok.RequiredArgsConstructor;
-import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.physics.collision.AbstractCollisionMatrix;
+import net.bfsr.engine.world.entity.RigidBody;
 import org.jbox2d.dynamics.Filter;
 import org.jbox2d.dynamics.Fixture;
 

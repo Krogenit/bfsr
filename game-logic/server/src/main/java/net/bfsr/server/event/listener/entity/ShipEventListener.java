@@ -14,9 +14,9 @@ import net.bfsr.event.entity.ship.ShipDestroyingExplosionEvent;
 import net.bfsr.event.entity.ship.ShipNewMoveDirectionEvent;
 import net.bfsr.event.entity.ship.ShipPostPhysicsUpdate;
 import net.bfsr.event.entity.ship.ShipRemoveMoveDirectionEvent;
-import net.bfsr.network.packet.server.entity.ship.PacketDestroyingShip;
 import net.bfsr.network.packet.server.entity.ship.PacketShipInfo;
-import net.bfsr.network.packet.server.entity.ship.PacketSyncMoveDirection;
+import net.bfsr.network.packet.server.entity.ship.PacketShipSetDestroying;
+import net.bfsr.network.packet.server.entity.ship.PacketShipSyncMoveDirection;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.wreck.WreckSpawner;
@@ -41,10 +41,10 @@ public class ShipEventListener {
             Ship ship = event.ship();
             if (ship.isControlledByPlayer()) {
                 Player player = playerManager.getPlayerControllingShip(ship);
-                trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketSyncMoveDirection(ship.getId(),
+                trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketShipSyncMoveDirection(ship.getId(),
                         event.direction().ordinal(), false, ship.getWorld().getTimestamp()), player);
             } else {
-                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketSyncMoveDirection(ship.getId(),
+                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShipSyncMoveDirection(ship.getId(),
                         event.direction().ordinal(), false, ship.getWorld().getTimestamp()));
             }
         };
@@ -56,10 +56,10 @@ public class ShipEventListener {
             Ship ship = event.ship();
             if (ship.isControlledByPlayer()) {
                 Player player = playerManager.getPlayerControllingShip(ship);
-                trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketSyncMoveDirection(ship.getId(),
+                trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketShipSyncMoveDirection(ship.getId(),
                         event.direction().ordinal(), true, ship.getWorld().getTimestamp()), player);
             } else {
-                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketSyncMoveDirection(ship.getId(),
+                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShipSyncMoveDirection(ship.getId(),
                         event.direction().ordinal(), true, ship.getWorld().getTimestamp()));
             }
         };
@@ -77,7 +77,8 @@ public class ShipEventListener {
     public EventListener<ShipDestroyingEvent> shipDestroyingEvent() {
         return event -> {
             Ship ship = event.ship();
-            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketDestroyingShip(ship, ship.getWorld().getTimestamp()));
+            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(),
+                    new PacketShipSetDestroying(ship, ship.getWorld().getTimestamp()));
         };
     }
 

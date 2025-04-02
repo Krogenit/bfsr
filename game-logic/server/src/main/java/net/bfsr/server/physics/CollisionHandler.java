@@ -7,13 +7,13 @@ import lombok.Setter;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.geometry.GeometryUtils;
 import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.util.RandomHelper;
 import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.engine.world.World;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.ship.Ship;
@@ -28,7 +28,7 @@ import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.network.packet.server.effect.PacketHullCellDestroy;
-import net.bfsr.network.packet.server.entity.PacketSyncDamage;
+import net.bfsr.network.packet.server.entity.PacketEntitySyncDamage;
 import net.bfsr.physics.collision.CommonCollisionHandler;
 import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.wreck.WreckSpawner;
@@ -273,7 +273,7 @@ public class CollisionHandler extends CommonCollisionHandler {
         float cos = rigidBody.getCos();
         damageSystem.damage(rigidBody, contactX, contactY, clipPolygon, Math.min(rhombusWidth, rhombusHeight) * 0.5f,
                 rigidBody.getX(), rigidBody.getY(), sin, cos, () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
-                        new PacketSyncDamage(rigidBody, rigidBody.getWorld().getTimestamp())));
+                        new PacketEntitySyncDamage(rigidBody, rigidBody.getWorld().getTimestamp())));
         trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
                 new PacketHullCellDestroy(rigidBody.getId(), cell.getColumn(), cell.getRow(), rigidBody.getWorld().getTimestamp()));
 
@@ -391,7 +391,7 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         damageSystem.damage(rigidBody, contactX, contactY, clipPolygon, maskClipRadius, x, y, sin, cos,
                 () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
-                        new PacketSyncDamage(rigidBody, rigidBody.getWorld().getTimestamp())));
+                        new PacketEntitySyncDamage(rigidBody, rigidBody.getWorld().getTimestamp())));
     }
 
     @Getter

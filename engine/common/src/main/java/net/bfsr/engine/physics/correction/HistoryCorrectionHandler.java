@@ -1,7 +1,7 @@
 package net.bfsr.engine.physics.correction;
 
-import net.bfsr.engine.entity.TransformData;
-import net.bfsr.engine.network.packet.common.entity.PacketWorldSnapshot;
+import net.bfsr.engine.network.packet.common.world.PacketWorldSnapshot;
+import net.bfsr.engine.world.entity.TransformData;
 import org.joml.Vector2f;
 
 public class HistoryCorrectionHandler extends CorrectionHandler {

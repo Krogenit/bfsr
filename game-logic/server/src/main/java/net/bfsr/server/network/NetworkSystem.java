@@ -40,6 +40,7 @@ public class NetworkSystem {
     private final TIntObjectMap<PlayerNetworkHandler> networkHandlerMap = new TIntObjectHashMap<>();
     private final TLongObjectMap<PlayerNetworkHandler> networkHandlerByAddressMap = new TLongObjectHashMap<>();
     private final PlayerManager playerManager;
+    private final ServerGameLogic serverGameLogic;
 
     public void init() {
         packetRegistry.registerPackets(Side.SERVER);
@@ -213,7 +214,7 @@ public class NetworkSystem {
 
         try {
             Packet packet = createPacket(packetId);
-            packet.read(buffer);
+            packet.read(buffer, serverGameLogic);
             return packet;
         } catch (Exception e) {
             throw new IOException("Can't decode packet with id " + packetId, e);

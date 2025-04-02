@@ -2,7 +2,7 @@ package net.bfsr.client.particle.effect;
 
 import lombok.Getter;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
-import net.bfsr.engine.entity.ParticleManager;
+import net.bfsr.engine.world.entity.ParticleManager;
 
 @Getter
 public class ParticleEffects {

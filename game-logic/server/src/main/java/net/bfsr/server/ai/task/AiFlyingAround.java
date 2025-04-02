@@ -2,9 +2,9 @@ package net.bfsr.server.ai.task;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.ai.task.AiTask;
-import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.math.RotationHelper;
+import net.bfsr.engine.world.entity.RigidBody;
 import org.joml.Vector2f;
 
 public class AiFlyingAround extends AiTask {

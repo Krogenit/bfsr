@@ -2,7 +2,7 @@ package net.bfsr.client.particle.effect;
 
 import net.bfsr.client.config.particle.ParticleEffect;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
-import net.bfsr.engine.entity.SpawnAccumulator;
+import net.bfsr.engine.world.entity.SpawnAccumulator;
 
 public class SmokeEffects {
     private final ParticleEffect damageSmoke;

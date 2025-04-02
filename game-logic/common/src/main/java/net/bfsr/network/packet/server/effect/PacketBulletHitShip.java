@@ -4,14 +4,18 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.damage.DamageType;
+import net.bfsr.engine.logic.GameLogic;
+import net.bfsr.engine.network.packet.PacketAnnotation;
 import net.bfsr.engine.network.packet.PacketScheduled;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.network.packet.PacketIdRegistry;
 
 import java.io.IOException;
 
 @NoArgsConstructor
 @Getter
+@PacketAnnotation(id = PacketIdRegistry.EFFECT_BULLET_HIT_SHIP)
 public class PacketBulletHitShip extends PacketScheduled {
     private Bullet bullet;
     private Ship ship;
@@ -45,8 +49,8 @@ public class PacketBulletHitShip extends PacketScheduled {
     }
 
     @Override
-    public void read(ByteBuf data) throws IOException {
-        super.read(data);
+    public void read(ByteBuf data, GameLogic gameLogic) throws IOException {
+        super.read(data, gameLogic);
         bulletId = data.readInt();
         shipId = data.readInt();
         contactX = data.readFloat();

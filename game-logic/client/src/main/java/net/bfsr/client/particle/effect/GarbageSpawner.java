@@ -3,13 +3,13 @@ package net.bfsr.client.particle.effect;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.client.config.particle.ParticleEffect;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
-import net.bfsr.engine.entity.ParticleManager;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.renderer.particle.RenderLayer;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.util.RandomHelper;
+import net.bfsr.engine.world.entity.ParticleManager;
 import org.joml.Vector2f;
 
 import java.util.function.Supplier;

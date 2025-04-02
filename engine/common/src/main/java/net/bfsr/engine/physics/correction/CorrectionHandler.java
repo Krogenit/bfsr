@@ -1,12 +1,12 @@
 package net.bfsr.engine.physics.correction;
 
 import lombok.NoArgsConstructor;
-import net.bfsr.engine.entity.EntityDataHistoryManager;
-import net.bfsr.engine.entity.RigidBody;
-import net.bfsr.engine.entity.TransformData;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
-import net.bfsr.engine.network.packet.common.entity.PacketWorldSnapshot;
+import net.bfsr.engine.network.packet.common.world.PacketWorldSnapshot;
+import net.bfsr.engine.world.entity.EntityDataHistoryManager;
+import net.bfsr.engine.world.entity.RigidBody;
+import net.bfsr.engine.world.entity.TransformData;
 import org.jbox2d.common.Vector2;
 import org.joml.Vector2f;
 

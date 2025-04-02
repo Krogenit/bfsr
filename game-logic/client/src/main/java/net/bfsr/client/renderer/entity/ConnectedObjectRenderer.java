@@ -2,10 +2,10 @@ package net.bfsr.client.renderer.entity;
 
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.entity.GameObject;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.entity.Render;
+import net.bfsr.engine.world.entity.GameObject;
 
 public class ConnectedObjectRenderer extends Render {
     private final ConnectedObject<?> connectedObject;

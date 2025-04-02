@@ -8,8 +8,8 @@ import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.Module;
 import net.bfsr.event.module.ModuleAddEvent;
 import net.bfsr.event.module.ModuleDestroyEvent;
-import net.bfsr.network.packet.server.component.PacketAddModule;
-import net.bfsr.network.packet.server.component.PacketDestroyModule;
+import net.bfsr.network.packet.server.component.PacketModuleAdd;
+import net.bfsr.network.packet.server.component.PacketModuleRemove;
 import net.bfsr.server.entity.EntityTrackingManager;
 
 @RequiredArgsConstructor
@@ -22,7 +22,7 @@ public class ModuleEventListener {
             Ship ship = event.getShip();
             Module module = event.getModule();
             trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(),
-                    new PacketAddModule(ship.getId(), module, ship.getWorld().getTimestamp()));
+                    new PacketModuleAdd(ship.getId(), module, ship.getWorld().getTimestamp()));
         };
     }
 
@@ -31,7 +31,7 @@ public class ModuleEventListener {
         return event -> {
             DamageableModule module = event.getModule();
             Ship ship = module.getShip();
-            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketDestroyModule(ship.getId(), module.getId(),
+            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketModuleRemove(ship.getId(), module.getId(),
                     module.getType(), ship.getWorld().getTimestamp()));
         };
     }

@@ -13,13 +13,13 @@ import net.bfsr.editor.gui.control.Playble;
 import net.bfsr.editor.gui.inspection.InspectionEntry;
 import net.bfsr.editor.object.particle.ParticleEffectConverter;
 import net.bfsr.editor.object.particle.ParticleEffectProperties;
-import net.bfsr.engine.entity.GameObject;
-import net.bfsr.engine.entity.SpawnAccumulator;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.entity.Render;
+import net.bfsr.engine.world.entity.GameObject;
+import net.bfsr.engine.world.entity.SpawnAccumulator;
 import org.jetbrains.annotations.Nullable;
 import org.mapstruct.factory.Mappers;
 

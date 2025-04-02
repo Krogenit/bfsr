@@ -7,7 +7,7 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.RigidBodyUtils;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.network.packet.server.component.PacketWeaponShoot;
+import net.bfsr.network.packet.server.component.PacketWeaponSlotShoot;
 import net.bfsr.server.ai.AiFactory;
 import net.bfsr.server.entity.EntityTrackingManager;
 import org.joml.Vector2f;
@@ -46,7 +46,7 @@ public class PlayerInputController {
                 ship.shoot(weaponSlot -> {
                     weaponSlot.createBullet((float) (Engine.getClientRenderDelayInMills() +
                             player.getNetworkHandler().getPing()));
-                    trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketWeaponShoot(
+                    trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketWeaponSlotShoot(
                             ship.getId(), weaponSlot.getId(), ship.getWorld().getTimestamp()), player);
                 });
             }

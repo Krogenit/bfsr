@@ -5,14 +5,14 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.bfsr.engine.collection.UnorderedArrayList;
-import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.event.entity.RigidBodyRemovedFromWorldEvent;
 import net.bfsr.engine.network.packet.Packet;
-import net.bfsr.network.packet.server.entity.PacketRemoveObject;
-import net.bfsr.network.packet.server.entity.PacketSpawnEntity;
+import net.bfsr.engine.network.packet.common.world.entity.PacketEntityRemove;
+import net.bfsr.engine.network.packet.common.world.entity.PacketEntitySpawn;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.server.event.PlayerDisconnectEvent;
 import net.bfsr.server.event.PlayerJoinGameEvent;
 import net.bfsr.server.network.EntitySyncManager;
@@ -69,7 +69,7 @@ public class EntityTrackingManager {
                     if (distSq > TRACKING_DISTANCE_SQ) {
                         entitiesInRange.remove(id);
                         entityTrackingByPlayersMap.get(id).remove(player);
-                        network.sendTCPPacketTo(new PacketRemoveObject(id, time), player);
+                        network.sendTCPPacketTo(new PacketEntityRemove(id, time), player);
                     } else {
                         entitySyncManager.addToSyncQueue(rigidBody, time, player);
                     }
@@ -79,7 +79,7 @@ public class EntityTrackingManager {
                         ObjectOpenHashSet<Player> playersSet = entityTrackingByPlayersMap.computeIfAbsent(id,
                                 key -> new ObjectOpenHashSet<>(16));
                         playersSet.add(player);
-                        network.sendTCPPacketTo(new PacketSpawnEntity(rigidBody.createSpawnData(), time), player);
+                        network.sendTCPPacketTo(new PacketEntitySpawn(rigidBody, time), player);
                     }
                 }
             }
@@ -92,7 +92,7 @@ public class EntityTrackingManager {
     public EventListener<RigidBodyRemovedFromWorldEvent> rigidBodyDeathEvent() {
         return event -> {
             RigidBody rigidBody = event.rigidBody();
-            sendPacketToPlayersTrackingEntity(rigidBody.getId(), new PacketRemoveObject(rigidBody.getId(),
+            sendPacketToPlayersTrackingEntity(rigidBody.getId(), new PacketEntityRemove(rigidBody.getId(),
                     rigidBody.getWorld().getTimestamp()));
             entityTrackingByPlayersMap.remove(rigidBody.getId());
             playerEntitiesInRangeMap.values().forEach(set -> set.remove(rigidBody.getId()));
@@ -120,7 +120,9 @@ public class EntityTrackingManager {
         ObjectOpenHashSet<Player> players = entityTrackingByPlayersMap.get(id);
         if (players != null) {
             players.forEach(player -> {
-                if (player != except) network.sendUDPPacketTo(packet, player);
+                if (player != except) {
+                    network.sendUDPPacketTo(packet, player);
+                }
             });
         }
     }

@@ -3,8 +3,8 @@ package net.bfsr.event.module.weapon.beam;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.event.Event;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 
 @Getter

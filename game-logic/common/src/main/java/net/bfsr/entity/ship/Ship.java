@@ -9,12 +9,11 @@ import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.RotationHelper;
-import net.bfsr.engine.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.engine.world.World;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.cargo.Cargo;
@@ -299,8 +298,8 @@ public class Ship extends DamageableRigidBody {
     }
 
     @Override
-    public EntityPacketSpawnData createSpawnData() {
-        return new ShipSpawnData(this);
+    public ShipSpawnData createSpawnData() {
+        return new ShipSpawnData();
     }
 
     public void setHull(Hull hull) {

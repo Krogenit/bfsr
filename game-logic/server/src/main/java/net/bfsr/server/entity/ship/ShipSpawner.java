@@ -44,7 +44,7 @@ public class ShipSpawner {
             lastFaction = s.getFaction();
         }
 
-        if (botCount < 100 || sameFaction) {
+        if (botCount < 50 || sameFaction) {
             timer = 40;
             int maxCount = 1;
             int count = maxCount;

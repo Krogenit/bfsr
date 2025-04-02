@@ -1,13 +1,13 @@
 package net.bfsr.client.renderer.entity;
 
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
+import net.bfsr.engine.world.entity.RigidBody;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.common.Vector2;

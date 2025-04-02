@@ -1,10 +1,10 @@
 package net.bfsr.engine.renderer.particle;
 
 import lombok.Setter;
-import net.bfsr.engine.entity.Particle;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.entity.Render;
+import net.bfsr.engine.world.entity.Particle;
 
 import java.util.function.Consumer;
 
@@ -109,6 +109,7 @@ public class ParticleRender extends Render {
         spriteRenderer.setLastRotation(id, buffersHolder, particle.getSin(), particle.getCos());
     }
 
+    @Override
     public void setSize(float sizeX, float sizeY) {
         spriteRenderer.setSize(id, buffersHolder, sizeX, sizeY);
     }

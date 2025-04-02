@@ -1,6 +1,7 @@
 package net.bfsr.engine.network.packet;
 
 import io.netty.buffer.ByteBuf;
+import net.bfsr.engine.logic.GameLogic;
 
 import java.io.IOException;
 
@@ -9,7 +10,7 @@ public class PacketAdapter implements Packet {
     public void write(ByteBuf data) throws IOException {}
 
     @Override
-    public void read(ByteBuf data) throws IOException {}
+    public void read(ByteBuf data, GameLogic gameLogic) throws IOException {}
 
     @Override
     public boolean isAsync() {

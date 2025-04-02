@@ -1,6 +1,6 @@
 package net.bfsr.server.entity;
 
-import net.bfsr.engine.entity.RigidBody;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.CommonEntityManager;
 
 public class EntityManager extends CommonEntityManager {

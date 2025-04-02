@@ -144,7 +144,7 @@ public class NetworkSystem extends NetworkHandler {
 
         try {
             Packet packet = packetRegistry.createPacket(packetId);
-            packet.read(buffer);
+            packet.read(buffer, client);
             return packet;
         } catch (IOException e) {
             throw new IOException("Can't read packet with id " + packetId, e);

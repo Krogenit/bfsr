@@ -8,7 +8,6 @@ import net.bfsr.client.event.gui.SelectSecondaryShipEvent;
 import net.bfsr.client.event.gui.SelectShipEvent;
 import net.bfsr.client.event.player.ShipControlStartedEvent;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
@@ -22,13 +21,14 @@ import net.bfsr.engine.physics.correction.HistoryCorrectionHandler;
 import net.bfsr.engine.physics.correction.LocalPlayerInputCorrectionHandler;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.world.World;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.engine.Engines;
-import net.bfsr.network.packet.input.PacketMouseLeftClick;
-import net.bfsr.network.packet.input.PacketMouseLeftRelease;
-import net.bfsr.network.packet.input.PacketShipMove;
-import net.bfsr.network.packet.input.PacketShipStopMove;
-import net.bfsr.network.packet.input.PacketSyncPlayerMousePosition;
+import net.bfsr.network.packet.client.input.PacketMouseLeftClick;
+import net.bfsr.network.packet.client.input.PacketMouseLeftRelease;
+import net.bfsr.network.packet.client.input.PacketMouseSyncPosition;
+import net.bfsr.network.packet.client.input.PacketShipMove;
+import net.bfsr.network.packet.client.input.PacketShipStopMove;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Body;
@@ -168,7 +168,7 @@ public class PlayerInputController extends InputController {
         Vector2f mouseWorldPosition = mouse.getWorldPosition(camera);
         rigidBodyUtils.rotateToVector(ship, mouseWorldPosition, ship.getModules().getEngines().getAngularVelocity());
         if (mouseWorldPosition.x != lastMousePosition.x || mouseWorldPosition.y != lastMousePosition.y) {
-            client.sendUDPPacket(new PacketSyncPlayerMousePosition(mouseWorldPosition));
+            client.sendUDPPacket(new PacketMouseSyncPosition(mouseWorldPosition));
         }
 
         ship.getMoveDirections().forEach(ship::move);

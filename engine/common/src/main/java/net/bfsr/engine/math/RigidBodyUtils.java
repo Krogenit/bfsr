@@ -1,6 +1,6 @@
 package net.bfsr.engine.math;
 
-import net.bfsr.engine.entity.RigidBody;
+import net.bfsr.engine.world.entity.RigidBody;
 import org.jbox2d.dynamics.Body;
 import org.joml.Math;
 import org.joml.Vector2f;

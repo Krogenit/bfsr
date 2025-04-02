@@ -2,13 +2,12 @@ package net.bfsr.network.packet.common.entity.spawn;
 
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.geometry.GeometryUtils;
-import net.bfsr.engine.network.packet.common.entity.spawn.RigidBodySpawnData;
+import net.bfsr.engine.network.packet.common.world.entity.spawn.RigidBodySpawnData;
 import net.bfsr.engine.network.util.ByteBufUtils;
 import net.bfsr.network.packet.common.entity.spawn.connectedobject.ConnectedObjectSpawnData;
 import org.jbox2d.dynamics.Fixture;
@@ -19,8 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@NoArgsConstructor
-public abstract class DamageableRigidBodySpawnData extends RigidBodySpawnData {
+public abstract class DamageableRigidBodySpawnData<T extends DamageableRigidBody> extends RigidBodySpawnData<T> {
     protected Polygon polygon;
     protected List<Fixture> fixtures;
 
@@ -30,8 +28,9 @@ public abstract class DamageableRigidBodySpawnData extends RigidBodySpawnData {
     protected List<ConnectedObject<?>> connectedObjects;
     private List<ConnectedObjectSpawnData> connectedObjectSpawnData;
 
-    protected DamageableRigidBodySpawnData(DamageableRigidBody damageableRigidBody) {
-        super(damageableRigidBody);
+    @Override
+    public void setData(T damageableRigidBody) {
+        super.setData(damageableRigidBody);
         this.polygon = (Polygon) damageableRigidBody.getPolygon().copy();
         this.damageMaskBytes = damageableRigidBody.getDamageMask().copy();
 

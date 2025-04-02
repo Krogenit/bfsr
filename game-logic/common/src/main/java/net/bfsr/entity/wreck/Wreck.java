@@ -2,12 +2,11 @@ package net.bfsr.entity.wreck;
 
 import lombok.Getter;
 import net.bfsr.config.entity.wreck.WreckData;
-import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.event.EventBus;
-import net.bfsr.engine.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.engine.physics.PhysicsUtils;
 import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.engine.world.World;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.event.entity.wreck.WreckDeathEvent;
 import net.bfsr.network.packet.common.entity.spawn.WreckSpawnData;
 import net.bfsr.physics.CollisionMatrixType;
@@ -94,8 +93,8 @@ public class Wreck extends RigidBody {
     }
 
     @Override
-    public EntityPacketSpawnData createSpawnData() {
-        return new WreckSpawnData(this);
+    public WreckSpawnData createSpawnData() {
+        return new WreckSpawnData();
     }
 
     @Override

@@ -6,18 +6,18 @@ import net.bfsr.client.damage.DamageHandler;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.entity.RigidBody;
 import net.bfsr.engine.network.packet.PacketHandler;
-import net.bfsr.network.packet.server.entity.PacketSyncDamage;
+import net.bfsr.engine.world.entity.RigidBody;
+import net.bfsr.network.packet.server.entity.PacketEntitySyncDamage;
 
 import java.net.InetSocketAddress;
 
-public class PacketSyncDamageHandler extends PacketHandler<PacketSyncDamage, NetworkSystem> {
+public class PacketSyncDamageHandler extends PacketHandler<PacketEntitySyncDamage, NetworkSystem> {
     private final Client client = Client.get();
     private final DamageHandler damageHandler = client.getDamageHandler();
 
     @Override
-    public void handle(PacketSyncDamage packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
+    public void handle(PacketEntitySyncDamage packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
         RigidBody rigidBody = client.getWorld().getEntityById(packet.getId());
         if (rigidBody instanceof DamageableRigidBody damageableRigidBody) {

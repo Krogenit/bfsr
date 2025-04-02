@@ -2,7 +2,7 @@ package net.bfsr.server.player;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.engine.entity.RigidBody;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;

@@ -2,19 +2,18 @@ package net.bfsr.network.packet.common.entity.spawn;
 
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import net.bfsr.entity.wreck.ShipWreck;
 import org.jbox2d.common.Vector2;
 
-@NoArgsConstructor
 @Getter
-public class ShipWreckSpawnData extends DamageableRigidBodySpawnData {
+public class ShipWreckSpawnData extends DamageableRigidBodySpawnData<ShipWreck> {
     private float velocityX, velocityY;
     private float angularVelocity;
     private float localOffsetX, localOffsetY;
 
-    public ShipWreckSpawnData(ShipWreck wreck) {
-        super(wreck);
+    @Override
+    public void setData(ShipWreck wreck) {
+        super.setData(wreck);
         Vector2 linearVelocity = wreck.getLinearVelocity();
         this.velocityX = linearVelocity.x;
         this.velocityY = linearVelocity.y;

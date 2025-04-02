@@ -4,7 +4,10 @@ import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.bfsr.engine.logic.GameLogic;
+import net.bfsr.engine.network.packet.CommonPacketRegistry;
 import net.bfsr.engine.network.packet.PacketAdapter;
+import net.bfsr.engine.network.packet.PacketAnnotation;
 import net.bfsr.engine.util.Side;
 
 import java.io.IOException;
@@ -12,6 +15,7 @@ import java.io.IOException;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@PacketAnnotation(id = CommonPacketRegistry.PING)
 public class PacketPing extends PacketAdapter {
     private long originalSentTime;
     private long otherSideHandleTime;
@@ -38,7 +42,7 @@ public class PacketPing extends PacketAdapter {
     }
 
     @Override
-    public void read(ByteBuf data) throws IOException {
+    public void read(ByteBuf data, GameLogic gameLogic) throws IOException {
         originalSentTime = data.readLong();
         roundTripTime = System.nanoTime() - originalSentTime;
         otherSideHandleTime = data.readLong();

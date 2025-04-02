@@ -1,6 +1,6 @@
 package net.bfsr.entity;
 
-import net.bfsr.engine.entity.AbstractEntityManager;
+import net.bfsr.engine.world.entity.AbstractEntityManager;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.ShipWreck;

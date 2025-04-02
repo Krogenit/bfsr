@@ -2,7 +2,6 @@ package net.bfsr.network.packet.common.entity.spawn.ship;
 
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.network.util.ByteBufUtils;
 import net.bfsr.entity.ship.Ship;
@@ -18,8 +17,7 @@ import java.util.EnumMap;
 import java.util.List;
 
 @Getter
-@NoArgsConstructor
-public class ShipSpawnData extends DamageableRigidBodySpawnData {
+public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
     private boolean isSpawned;
     private String name;
     private byte faction;
@@ -36,8 +34,9 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData {
     private int cargoDataId;
     private int crewDataId;
 
-    public ShipSpawnData(Ship ship) {
-        super(ship);
+    @Override
+    public void setData(Ship ship) {
+        super.setData(ship);
         this.isSpawned = ship.isSpawned();
         this.name = ship.getName();
         this.faction = (byte) ship.getFaction().ordinal();

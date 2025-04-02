@@ -1,11 +1,11 @@
 package net.bfsr.engine.physics.correction;
 
-import net.bfsr.engine.entity.EntityDataHistory;
-import net.bfsr.engine.entity.PositionHistory;
-import net.bfsr.engine.entity.TransformData;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
-import net.bfsr.engine.network.packet.common.entity.PacketWorldSnapshot;
+import net.bfsr.engine.network.packet.common.world.PacketWorldSnapshot;
+import net.bfsr.engine.world.entity.EntityDataHistory;
+import net.bfsr.engine.world.entity.PositionHistory;
+import net.bfsr.engine.world.entity.TransformData;
 import org.jbox2d.common.Vector2;
 import org.joml.Vector2f;
 

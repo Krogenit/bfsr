@@ -3,10 +3,10 @@ package net.bfsr.client.particle.effect;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.client.config.particle.ParticleEffect;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
-import net.bfsr.engine.entity.Particle;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.math.RotationHelper;
+import net.bfsr.engine.world.entity.Particle;
 import org.joml.Vector2f;
 
 import java.util.function.Consumer;

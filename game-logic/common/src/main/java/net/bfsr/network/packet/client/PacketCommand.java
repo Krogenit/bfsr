@@ -4,14 +4,18 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.command.Command;
+import net.bfsr.engine.logic.GameLogic;
 import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.engine.network.packet.PacketAdapter;
+import net.bfsr.engine.network.packet.PacketAnnotation;
 import net.bfsr.engine.network.util.ByteBufUtils;
+import net.bfsr.network.packet.PacketIdRegistry;
 
 import java.io.IOException;
 
 @NoArgsConstructor
 @Getter
+@PacketAnnotation(id = PacketIdRegistry.COMMAND)
 public class PacketCommand extends PacketAdapter {
     private int command;
     private String[] args;
@@ -39,7 +43,7 @@ public class PacketCommand extends PacketAdapter {
     }
 
     @Override
-    public void read(ByteBuf data) throws IOException {
+    public void read(ByteBuf data, GameLogic gameLogic) throws IOException {
         command = data.readInt();
         int size = data.readInt();
         args = new String[size];
