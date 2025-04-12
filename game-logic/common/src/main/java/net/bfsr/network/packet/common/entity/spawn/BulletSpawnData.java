@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.engine.network.packet.common.world.entity.spawn.RigidBodySpawnData;
 import net.bfsr.entity.bullet.Bullet;
+import org.joml.Vector4f;
 
 @Getter
 @NoArgsConstructor
@@ -17,6 +18,15 @@ public class BulletSpawnData extends RigidBodySpawnData<Bullet> {
         super.setData(bullet);
         this.ownerId = bullet.getOwner().getId();
         this.clientId = bullet.getClientId();
+    }
+
+    @Override
+    protected void setTransform(Bullet bullet) {
+        Vector4f spawnTransform = bullet.getSpawnTransform();
+        posX = spawnTransform.x;
+        posY = spawnTransform.y;
+        sin = spawnTransform.z;
+        cos = spawnTransform.w;
     }
 
     @Override

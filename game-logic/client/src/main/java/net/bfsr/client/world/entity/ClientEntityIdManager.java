@@ -9,6 +9,10 @@ public class ClientEntityIdManager extends EntityIdManager {
 
     @Override
     public int getNextId() {
+        if (freeIdList.size() > 0) {
+            return freeIdList.removeInt(0);
+        }
+
         return nextId--;
     }
 }

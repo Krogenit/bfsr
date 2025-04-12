@@ -28,17 +28,20 @@ public class BulletSpawnLogic implements EntitySpawnLogic<BulletSpawnData> {
         if (clientId < 0 && ship != null && spawnData.getOwnerId() == ship.getId()) {
             Bullet bullet = world.getEntityById(clientId);
             if (bullet != null) {
-                bullet.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(4.0f), new CorrectionHandler(),
+                bullet.setCorrectionHandler(new DynamicCorrectionHandler(0.1f, Engine.convertToDeltaTime(4.0f), new CorrectionHandler(),
                         new HistoryCorrectionHandler()));
                 bullet.setId(spawnData.getEntityId());
             } else {
                 log.warn("Bullet with id {} not found in client world", clientId);
+//                world.getEntityIdManager().getNextId();
             }
         } else {
             GunData gunData = gunRegistry.get(spawnData.getDataId());
             Bullet bullet = new Bullet(spawnData.getPosX(), spawnData.getPosY(), spawnData.getSin(), spawnData.getCos(), gunData,
                     world.getEntityById(spawnData.getOwnerId()), gunData.getDamage());
             bullet.init(world, spawnData.getEntityId());
+            bullet.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(4.0f), new CorrectionHandler(),
+                    new HistoryCorrectionHandler()));
             world.add(bullet);
         }
     }

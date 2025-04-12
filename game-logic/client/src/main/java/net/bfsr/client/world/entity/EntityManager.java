@@ -14,7 +14,7 @@ public class EntityManager extends CommonEntityManager {
                 // Client predicted bullets.
                 // Only happens when client has not received actual bullet id from server.
                 if (rigidBody.getId() < 0) {
-                    rigidBody.getWorld().getEntityIdManager().increaseId();
+//                    rigidBody.getWorld().getEntityIdManager().returnBackId(rigidBody.getId());
                 }
             } else {
                 rigidBody.update();
