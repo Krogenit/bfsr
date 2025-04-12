@@ -2,6 +2,8 @@ package net.bfsr.client.network;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -29,7 +31,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 @RequiredArgsConstructor
 public class NetworkSystem extends NetworkHandler {
-    private static final long PING_CHECK_INTERVAL = 5000;
+    private static final long PING_CHECK_INTERVAL = 1000;
 
     private final Client client;
 
@@ -48,6 +50,12 @@ public class NetworkSystem extends NetworkHandler {
     @Setter
     @Getter
     private int connectionId;
+
+    @Getter
+    private double clientToServerTimeDiffInNanos;
+    @Getter
+    private double averageClientToServerTimeDiffInNanos;
+    private final DoubleList clientToServerTimeResults = new DoubleArrayList();
 
     private String login;
 
@@ -110,6 +118,22 @@ public class NetworkSystem extends NetworkHandler {
 
     public void sendPacketUDP(Packet packet) {
         networkManagerUDP.sendPacket(packet);
+    }
+
+    public void addClientToServerTimeDiffResult(long clientToServerTimeDiff) {
+        this.clientToServerTimeDiffInNanos = (double) clientToServerTimeDiff;
+        this.clientToServerTimeResults.add(clientToServerTimeDiffInNanos);
+
+        if (clientToServerTimeResults.size() > 100) {
+            clientToServerTimeResults.removeFirst();
+        }
+
+        double allTimeDiffs = 0.0f;
+        for (int i = 0; i < clientToServerTimeResults.size(); i++) {
+            allTimeDiffs += clientToServerTimeResults.getDouble(i);
+        }
+
+        this.averageClientToServerTimeDiffInNanos = allTimeDiffs / clientToServerTimeResults.size();
     }
 
     public void onDisconnect(String reason) {

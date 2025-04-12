@@ -16,12 +16,11 @@ public class MessageHandlerUDP extends SimpleChannelInboundHandler<DefaultAddres
     private final NetworkSystem networkSystem;
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, DefaultAddressedEnvelope<Packet, InetSocketAddress> msg) {
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, DefaultAddressedEnvelope<Packet, InetSocketAddress> msg) {
         Packet packet = msg.content();
         long address = NetworkSystem.convertAddress(msg.recipient());
         if (packet.isAsync()) {
-            networkSystem.handle(packet, networkSystem.getHandler(address), ctx,
-                    msg.recipient());
+            networkSystem.handle(packet, networkSystem.getHandler(address), channelHandlerContext, msg.recipient());
         } else {
             networkSystem.getHandler(address).addPacketToQueue(packet);
         }

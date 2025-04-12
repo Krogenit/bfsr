@@ -51,7 +51,7 @@ public class PlayerInputController {
             });
             if (mouseLeftDown) {
                 float fastForwardTimeInMillis = (float) (Engine.getClientRenderDelayInMills() +
-                        player.getNetworkHandler().getPing());
+                        player.getNetworkHandler().getAveragePing());
                 List<RigidBody> bullets = new ArrayList<>(16);
                 List<WeaponSlot> weaponSlots = new ArrayList<>(8);
                 ship.shoot(weaponSlot -> {

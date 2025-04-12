@@ -1,8 +1,6 @@
 package net.bfsr.client.network.packet.handler;
 
 import io.netty.channel.ChannelHandlerContext;
-import net.bfsr.client.Client;
-import net.bfsr.client.event.PingEvent;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.engine.network.packet.PacketHandler;
 import net.bfsr.engine.network.packet.common.PacketPing;
@@ -15,10 +13,15 @@ public class PacketPingHandler extends PacketHandler<PacketPing, NetworkSystem> 
     public void handle(PacketPing packet, NetworkSystem netHandler, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
         long nanoTime = System.nanoTime();
         if (packet.getSide() == Side.CLIENT) {
-            long roundTripTimeNanos = packet.getRoundTripTime();
-            Client client = Client.get();
-            client.getEventBus().publish(new PingEvent(roundTripTimeNanos / 2_000_000.0f));
-            client.setClientToServerTimeDiff(nanoTime - packet.getOtherSideHandleTime());
+            long roundTripTimeNanos = nanoTime - packet.getOriginalSentTime();
+            long pingNanos = roundTripTimeNanos / 2;
+            double pingMillis = pingNanos / 1_000_000.0;
+            long timeDiff = nanoTime - packet.getOtherSideHandleTime();
+            double timeDiffMs = timeDiff / 1_000_000.0;
+            long clientToServerTimeDiff = timeDiff - pingNanos;
+            double clientToServerTimeDiffMs = timeDiffMs - pingMillis;
+            netHandler.addPingResult(pingMillis);
+            netHandler.addClientToServerTimeDiffResult(clientToServerTimeDiff);
         } else {
             netHandler.sendPacketUDP(new PacketPing(packet.getOriginalSentTime(), nanoTime, packet.getSide()));
         }

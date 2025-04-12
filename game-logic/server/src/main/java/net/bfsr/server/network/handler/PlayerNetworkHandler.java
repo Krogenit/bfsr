@@ -68,8 +68,6 @@ public class PlayerNetworkHandler extends NetworkHandler {
     private String terminationReason;
 
     private Player player;
-    @Setter
-    private double ping;
 
     public void update() {
         if (connectionState != ConnectionState.DISCONNECTED) {

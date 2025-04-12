@@ -1,10 +1,10 @@
 package net.bfsr.client.gui.ingame;
 
-import lombok.Setter;
 import net.bfsr.client.Client;
 import net.bfsr.client.font.FontType;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.input.PlayerInputController;
+import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.BlankGuiObject;
@@ -56,8 +56,6 @@ public class DebugInfoElement extends MinimizableGuiObject {
     private final ScrollPane scrollPane = new ScrollPane(300 - STATIC_STRING_X_OFFSET, 500, 10);
     private final Label profilerLabel = new Label(FONT, "", 0, 0, FONT_SIZE);
 
-    @Setter
-    private float ping;
     private int sortTimer;
 
     public DebugInfoElement(HUD hud) {
@@ -100,8 +98,19 @@ public class DebugInfoElement extends MinimizableGuiObject {
         }).getHeight();
         y -= addMinimizableWithLabel(width, height, y, "Profiler", profilerLabel).getHeight();
         y -= addMinimizableWithLabel(width, height, y, "Network", createLabel(0, "",
-                label1 -> label1.setString("Ping: " + DecimalUtils.strictFormatWithToDigits(ping) + "ms" +
-                        "\nClient render delay: " + client.getClientRenderDelay() / 1_000_000 + "ms"))).getHeight();
+                label1 -> {
+                    NetworkSystem networkSystem = client.getNetworkSystem();
+                    double ping = networkSystem.getPing();
+                    double averagePing = networkSystem.getAveragePing();
+                    float clientToServerTimeDiffInMills = (float) networkSystem.getClientToServerTimeDiffInNanos() / 1_000_000.0f;
+                    float averageClientToServerTimeDiffInMills =
+                            (float) networkSystem.getAverageClientToServerTimeDiffInNanos() / 1_000_000.0f;
+                    label1.setString("Ping: " + DecimalUtils.strictFormatWithToDigits(ping) + "ms" +
+                            "\nAverage ping (100 results): " + DecimalUtils.strictFormatWithToDigits(averagePing) + "ms" +
+                            "\nClient render delay: " + client.getClientRenderDelay() / 1_000_000 + "ms" +
+                            "\nTime diff: " + DecimalUtils.strictFormatWithToDigits(clientToServerTimeDiffInMills) + "ms" +
+                            "\nAverage time diff: " + DecimalUtils.strictFormatWithToDigits(averageClientToServerTimeDiffInMills) + "ms");
+                })).getHeight();
         y -= addMinimizableWithLabel(width, height, y, "Render", createLabel(0, "",
                 label1 -> {
                     Vector2f camPos = camera.getPosition();

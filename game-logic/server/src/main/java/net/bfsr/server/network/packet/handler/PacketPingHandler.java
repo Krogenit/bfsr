@@ -16,7 +16,7 @@ public class PacketPingHandler extends PacketHandler<PacketPing, PlayerNetworkHa
         if (packet.getSide() == Side.CLIENT) {
             playerNetworkHandler.sendUDPPacket(new PacketPing(packet.getOriginalSentTime(), nanoTime, packet.getSide()));
         } else {
-            playerNetworkHandler.setPing((nanoTime - packet.getOriginalSentTime()) / 2_000_000.0);
+            playerNetworkHandler.addPingResult((nanoTime - packet.getOriginalSentTime()) / 2_000_000.0);
         }
     }
 }

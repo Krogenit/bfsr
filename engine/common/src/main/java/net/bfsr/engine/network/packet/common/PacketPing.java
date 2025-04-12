@@ -21,14 +21,6 @@ public class PacketPing extends PacketAdapter {
     private long otherSideHandleTime;
     private Side side;
 
-    private long roundTripTime;
-
-    public PacketPing(long originalSentTime, long otherSideHandleTime, Side side) {
-        this.originalSentTime = originalSentTime;
-        this.otherSideHandleTime = otherSideHandleTime;
-        this.side = side;
-    }
-
     public PacketPing(Side side) {
         this.originalSentTime = System.nanoTime();
         this.side = side;
@@ -44,7 +36,6 @@ public class PacketPing extends PacketAdapter {
     @Override
     public void read(ByteBuf data, GameLogic gameLogic) throws IOException {
         originalSentTime = data.readLong();
-        roundTripTime = System.nanoTime() - originalSentTime;
         otherSideHandleTime = data.readLong();
         side = Side.get(data.readByte());
     }

@@ -1,7 +1,6 @@
 package net.bfsr.client;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.damage.DamageHandler;
@@ -103,8 +102,6 @@ public class Client extends ClientGameLogic {
     private LocalServer localServer;
     private ThreadLocalServer threadLocalServer;
 
-    @Setter
-    private double clientToServerTimeDiff;
     @Getter
     private double renderTime;
     @Getter
@@ -159,10 +156,9 @@ public class Client extends ClientGameLogic {
         inputHandler.update();
         profiler.endStart("soundManager");
         soundManager.updateListenerPosition(camera.getPosition());
-        soundManager.updateGain(ClientSettings.SOUND_VOLUME.getFloat());
         profiler.end();
 
-        renderTime = time - clientToServerTimeDiff - clientRenderDelay;
+        renderTime = time - networkSystem.getAverageClientToServerTimeDiffInNanos() - clientRenderDelay;
 
         profiler.start("network");
         networkSystem.update(renderTime);
