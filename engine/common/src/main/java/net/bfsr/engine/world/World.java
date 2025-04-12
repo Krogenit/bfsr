@@ -31,6 +31,7 @@ public class World {
     private final EventBus eventBus;
     @Getter
     private double timestamp;
+    @Getter
     private final EntityIdManager entityIdManager;
     @Getter
     private final GameLogic gameLogic;

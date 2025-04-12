@@ -2,8 +2,8 @@ package net.bfsr.server.player;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.bfsr.engine.world.entity.EntityIdManager;
 import net.bfsr.engine.world.entity.RigidBody;
-import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.packet.server.player.PacketSetPlayerShip;
@@ -19,13 +19,21 @@ import java.util.List;
 @Getter
 public class Player {
     private final String id;
-    private PlayerNetworkHandler networkHandler;
     private final List<Ship> ships = new ArrayList<>();
     private final String username;
     private final Vector2f position = new Vector2f();
+    private final EntityIdManager localIdManager = new EntityIdManager(-1) {
+        @Override
+        public int getNextId() {
+            return nextId--;
+        }
+    };
+
+    private PlayerNetworkHandler networkHandler;
+    private PlayerInputController playerInputController;
+
     @Setter
     private Faction faction;
-    private PlayerInputController playerInputController;
 
     @Default
     public Player(String id, String username) {
@@ -74,7 +82,6 @@ public class Player {
     }
 
     public boolean canTrackEntity(RigidBody rigidBody) {
-        Ship ship = playerInputController.getShip();
-        return ship == null || !(rigidBody instanceof Bullet bullet) || bullet.getOwner() != ship;
+        return true;
     }
 }

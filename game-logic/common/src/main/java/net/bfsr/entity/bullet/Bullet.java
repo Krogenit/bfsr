@@ -28,6 +28,9 @@ public class Bullet extends RigidBody {
     private final GunData gunData;
 
     private Runnable postPhysicsRotationUpdater = RunnableUtils.EMPTY_RUNNABLE;
+    @Setter
+    @Getter
+    private int clientId;
 
     public Bullet(float x, float y, float sin, float cos, GunData gunData, RigidBody owner, BulletDamage damage) {
         super(x, y, sin, cos, gunData.getBulletSizeX(), gunData.getBulletSizeY(), gunData);

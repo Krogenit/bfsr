@@ -7,6 +7,7 @@ import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.physics.collision.RayCastSource;
 import net.bfsr.engine.world.entity.RigidBody;
+import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.reactor.Reactor;
@@ -148,7 +149,9 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     }
 
     @Override
-    public void createBullet(float fastForwardTimeInMillis) {}
+    public Bullet createBullet(float fastForwardTimeInMillis) {
+        return null;
+    }
 
     @Override
     public ConnectedObjectType getConnectedObjectType() {

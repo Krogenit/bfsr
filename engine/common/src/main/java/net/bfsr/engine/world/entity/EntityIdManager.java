@@ -11,4 +11,8 @@ public class EntityIdManager {
     public int getNextId() {
         return nextId++;
     }
+
+    public void increaseId() {
+        nextId++;
+    }
 }

@@ -32,6 +32,7 @@ import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.client.settings.ConfigSettings;
 import net.bfsr.client.world.BlankWorld;
 import net.bfsr.client.world.entity.ClientEntityIdManager;
+import net.bfsr.client.world.entity.EntityManager;
 import net.bfsr.client.world.entity.EntitySpawnDataRegistry;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.engine.Engine;
@@ -47,7 +48,6 @@ import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.sound.AbstractSoundManager;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.ParticleManager;
-import net.bfsr.entity.CommonEntityManager;
 import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.logic.LogicType;
@@ -277,7 +277,7 @@ public class Client extends ClientGameLogic {
     }
 
     public void createWorld(long seed) {
-        world = new World(profiler, seed, eventBus, new CommonEntityManager(), new ClientEntityIdManager(), this,
+        world = new World(profiler, seed, eventBus, new EntityManager(), new ClientEntityIdManager(), this,
                 new CollisionMatrix(new CollisionHandler(this)));
         world.init();
     }

@@ -6,11 +6,18 @@ import net.bfsr.ai.Ai;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.RigidBodyUtils;
+import net.bfsr.engine.network.LagCompensation;
+import net.bfsr.engine.world.entity.RigidBody;
+import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.network.packet.server.component.PacketWeaponSlotShoot;
 import net.bfsr.server.ai.AiFactory;
 import net.bfsr.server.entity.EntityTrackingManager;
 import org.joml.Vector2f;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class PlayerInputController {
@@ -43,12 +50,30 @@ public class PlayerInputController {
                 }
             });
             if (mouseLeftDown) {
+                float fastForwardTimeInMillis = (float) (Engine.getClientRenderDelayInMills() +
+                        player.getNetworkHandler().getPing());
+                List<RigidBody> bullets = new ArrayList<>(16);
+                List<WeaponSlot> weaponSlots = new ArrayList<>(8);
                 ship.shoot(weaponSlot -> {
-                    weaponSlot.createBullet((float) (Engine.getClientRenderDelayInMills() +
-                            player.getNetworkHandler().getPing()));
-                    trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketWeaponSlotShoot(
-                            ship.getId(), weaponSlot.getId(), ship.getWorld().getTimestamp()), player);
+                    Bullet bullet = weaponSlot.createBullet(fastForwardTimeInMillis);
+                    if (bullet != null) {
+                        bullet.setClientId(player.getLocalIdManager().getNextId());
+                        System.out.println("Create bullet on server side with local id " + bullet.getClientId());
+                        bullets.add(bullet);
+                        weaponSlots.add(weaponSlot);
+                    }
                 });
+
+                if (bullets.size() > 0) {
+                    LagCompensation.fastForwardBullets(bullets, fastForwardTimeInMillis, ship.getWorld());
+                }
+
+                double timestamp = ship.getWorld().getTimestamp();
+                for (int i = 0; i < weaponSlots.size(); i++) {
+                    WeaponSlot weaponSlot = weaponSlots.get(i);
+                    trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketWeaponSlotShoot(
+                            ship.getId(), weaponSlot.getId(), timestamp), player);
+                }
             }
         }
     }
