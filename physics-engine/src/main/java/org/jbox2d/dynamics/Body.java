@@ -926,7 +926,9 @@ public class Body {
         sweep.center0.set(sweep.center);
         sweep.angle0 = sweep.angle;
 
-        synchronizeFixtures(world.contactManager.broadPhase);
+        if (world != null) {
+            synchronizeFixtures(world.contactManager.broadPhase);
+        }
     }
 
     public void synchronizeFixtures(BroadPhase broadPhase) {
