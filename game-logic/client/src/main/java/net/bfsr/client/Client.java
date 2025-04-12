@@ -130,9 +130,6 @@ public class Client extends ClientGameLogic {
         if (ClientSettings.IS_DEBUG.getBoolean()) {
             Engine.getRenderer().setDebugWindow();
         }
-
-        profiler.setEnable(ClientSettings.IS_PROFILING.getBoolean());
-        soundManager.setGain(ClientSettings.SOUND_VOLUME.getFloat());
     }
 
     private void registerListeners() {
