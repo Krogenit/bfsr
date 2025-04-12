@@ -189,6 +189,10 @@ public class RigidBody extends GameObject {
         body.setRotation(sin, cos);
     }
 
+    public void setTransform(float x, float y, float sin, float cos) {
+        body.setTransform(x, y, sin, cos);
+    }
+
     public void setVelocity(float x, float y) {
         body.setLinearVelocity(x, y);
     }

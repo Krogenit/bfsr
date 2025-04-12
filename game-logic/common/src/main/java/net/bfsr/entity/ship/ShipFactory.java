@@ -61,8 +61,7 @@ public class ShipFactory {
 
     public Ship create(float x, float y, float sin, float cos, Faction faction, ShipData shipData) {
         Ship ship = create(faction, shipData);
-        ship.setPosition(x, y);
-        ship.setRotation(sin, cos);
+        ship.setTransform(x, y, sin, cos);
         return ship;
     }
 

@@ -10,8 +10,7 @@ public class HistoryCorrectionHandler extends CorrectionHandler {
         TransformData transformData = dataHistoryManager.getTransformData(rigidBody.getId(), timestamp);
         if (transformData != null) {
             Vector2f serverPosition = transformData.getPosition();
-            rigidBody.setPosition(serverPosition.x, serverPosition.y);
-            rigidBody.setRotation(transformData.getSin(), transformData.getCos());
+            rigidBody.setTransform(serverPosition.x, serverPosition.y, transformData.getSin(), transformData.getCos());
         }
     }
 

@@ -23,9 +23,9 @@ public class DynamicCorrectionHandler extends CorrectionHandler {
         if (correctionAmount >= 1.0f) {
             correctionAmount = 1.0f;
             rigidBody.setCorrectionHandler(nextCorrectionHandler);
+        } else {
+            interpolatedCorrectionHandler.correctionAmount = correctionAmount;
         }
-
-        interpolatedCorrectionHandler.correctionAmount = correctionAmount;
     }
 
     @Override
