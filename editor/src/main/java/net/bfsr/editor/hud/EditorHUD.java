@@ -149,15 +149,21 @@ public class EditorHUD extends HUD {
                     bullet.getBody().setActive(true);
                     world.add(bullet);
 
+                    float additionalSeconds = 0.5f;
+                    float fastForwardTimeInNanos = (float) (Client.get().getClientRenderDelay() +
+                            additionalSeconds * 1_000_000_000.0f);
+
+                    float updateDeltaTime = Engine.getUpdateDeltaTime();
+                    float updateDeltaTimeInMills = updateDeltaTime * 1000.0f;
+                    float updateDeltaTimeInNanos = updateDeltaTimeInMills * 1_000_000.0f;
+                    int iterations = Math.round(fastForwardTimeInNanos / 1_000_000.0f / updateDeltaTimeInMills);
+
                     float bulletX = bullet.getX();
                     float bulletY = bullet.getY();
-                    GunData gunData = bullet.getGunData();
-                    float sin = bullet.getSin();
-                    float cos = bullet.getCos();
-                    float bulletSpeed = gunData.getBulletSpeed();
-                    float offset = 1.0f + Math.max(gunData.getBulletSizeX(), gunData.getBulletSizeY());
-                    float endX = bulletX + cos * bulletSpeed;
-                    float endY = bulletY + sin * bulletSpeed;
+                    Vector2 linearVelocity = bullet.getLinearVelocity();
+                    float offset = 1.0f + Math.max(bullet.getSizeX(), bullet.getSizeY());
+                    float endX = bulletX + linearVelocity.x * updateDeltaTime * iterations;
+                    float endY = bulletY + linearVelocity.y * updateDeltaTime * iterations;
                     float minX = Math.min(bulletX, endX) - offset;
                     float minY = Math.min(bulletY, endY) - offset;
                     float maxX = Math.max(bulletX, endX) + offset;
@@ -191,14 +197,6 @@ public class EditorHUD extends HUD {
                         affectedBodies.add(body);
                         return true;
                     }, aabb);
-
-                    float additionalSeconds = 2.0f;
-                    float fastForwardTimeInNanos = (float) (Client.get().getClientRenderDelay() +
-                            additionalSeconds * 1_000_000_000.0f);
-
-                    float updateDeltaTimeInMills = Engine.getUpdateDeltaTime() * 1000.0f;
-                    float updateDeltaTimeInNanos = updateDeltaTimeInMills * 1_000_000.0f;
-                    int iterations = Math.round(fastForwardTimeInNanos / 1_000_000.0f / updateDeltaTimeInMills);
 
                     if (iterations > 0) {
                         EntityDataHistoryManager entityDataHistoryManager = new EntityDataHistoryManager();
@@ -256,8 +254,10 @@ public class EditorHUD extends HUD {
                 bullet.update();
                 world.getPhysicWorld().fastForwardStep(Engine.getUpdateDeltaTime(), Collections.singletonList(bullet.getBody()));
                 bullet.postPhysicsUpdate();
+                fastForwardShip.postPhysicsUpdate();
 
                 if (i + 1 == max) {
+                    remove(bulletAABB);
                     world.getPhysicWorld().endFastForward();
                     update = true;
 
