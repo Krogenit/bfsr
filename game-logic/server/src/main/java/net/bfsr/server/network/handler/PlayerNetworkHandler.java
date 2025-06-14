@@ -222,6 +222,9 @@ public class PlayerNetworkHandler extends NetworkHandler {
             }
 
             eventBus.publish(new PlayerDisconnectEvent(player));
+            log.info("Player with username {} removed", player.getUsername());
+        } else {
+            log.info("Skip removing player {}", socketChannel.remoteAddress());
         }
     }
 
