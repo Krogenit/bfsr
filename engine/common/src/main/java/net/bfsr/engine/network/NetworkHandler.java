@@ -29,4 +29,9 @@ public abstract class NetworkHandler {
 
         this.averagePing = allPings / pingResults.size();
     }
+
+    protected void clear() {
+        pingResults.clear();
+        averagePing = 0;
+    }
 }

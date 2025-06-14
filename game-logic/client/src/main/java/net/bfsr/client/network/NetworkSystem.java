@@ -195,8 +195,12 @@ public class NetworkSystem extends NetworkHandler {
         networkManagerUDP.closeChannel();
     }
 
+    @Override
     public void clear() {
+        super.clear();
         inboundPacketQueue.clear();
         setConnectionState(ConnectionState.DISCONNECTED);
+        clientToServerTimeResults.clear();
+        averageClientToServerTimeDiffInNanos = 0;
     }
 }
