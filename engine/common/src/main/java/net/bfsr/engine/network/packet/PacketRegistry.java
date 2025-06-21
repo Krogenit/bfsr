@@ -26,7 +26,7 @@ public class PacketRegistry<NET_HANDLER extends NetworkHandler> {
 
     public void registerPackets(Side side) {
         Reflections reflections = new Reflections("net.bfsr");
-        Set<Class<?>> subTypes = reflections.get(Scanners.SubTypes.of(Scanners.TypesAnnotated.with(PacketAnnotation.class)).asClass());
+        Set<Class<?>> subTypes = reflections.get(SubTypes.of(Scanners.TypesAnnotated.with(PacketAnnotation.class)).asClass());
         subTypes.forEach(aClass -> {
             if (Modifier.isAbstract(aClass.getModifiers())) {
                 return;
@@ -71,8 +71,10 @@ public class PacketRegistry<NET_HANDLER extends NetworkHandler> {
             throw new RuntimeException("Can't find annotation for packet class " + packetClass.getSimpleName());
         }
 
-        if (packetRegistry.get(annotation.id()) != null) {
-            throw new IllegalStateException("Packet with id " + annotation.id() + " already registered!");
+        Class<? extends Packet> registeredPacket = packetRegistry.get(annotation.id());
+        if (registeredPacket != null) {
+            throw new IllegalStateException("Packet " + packetClass.getName() + " with id " + annotation.id() + " already registered! " +
+                    "Registered packet " + registeredPacket.getName());
         }
 
         packetRegistry.put(annotation.id(), packetClass);

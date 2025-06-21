@@ -33,6 +33,9 @@ public class GameLogic {
     @Getter
     private boolean paused;
 
+    @Getter
+    protected int tick;
+
     /**
      * Queue of Runnable which will execute in next game logic update step
      *
@@ -45,6 +48,8 @@ public class GameLogic {
     private final ObjectPools objectPools = new ObjectPools();
 
     public void update(double time) {
+        tick++;
+
         profiler.start("tasks");
         while (!futureTasks.isEmpty()) {
             futureTasks.poll().run();

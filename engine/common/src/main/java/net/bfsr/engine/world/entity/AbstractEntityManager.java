@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractEntityManager {
+    @Getter
     private final TIntObjectMap<RigidBody> entitiesById = new TIntObjectHashMap<>();
     @SuppressWarnings("rawtypes")
     private final TMap<Class<? extends RigidBody>, List<RigidBody>> entitiesByClass = new THashMap<>();
@@ -18,7 +19,7 @@ public abstract class AbstractEntityManager {
     @Getter
     private final EntityDataHistoryManager dataHistoryManager = new EntityDataHistoryManager();
 
-    public AbstractEntityManager() {
+    protected AbstractEntityManager() {
         this.entitiesByClass.put(RigidBody.class, new ArrayList<>());
         registerEntities();
     }

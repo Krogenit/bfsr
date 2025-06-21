@@ -1,5 +1,7 @@
 package net.bfsr.engine.network;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.EntityDataHistoryManager;
@@ -11,12 +13,13 @@ import org.jbox2d.dynamics.Body;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public final class LagCompensation {
-    public static void fastForwardBullets(List<RigidBody> bullets, float fastForwardTimeInMillis, World world) {
+    private final AABB aabb = new AABB();
+    private final ObjectSet<Body> affectedBodies = new ObjectOpenHashSet<>();
+
+    public void fastForwardBullets(List<RigidBody> bullets, float fastForwardTimeInMillis, World world, double time) {
         float updateDeltaTime = Engine.getUpdateDeltaTime();
         float updateDeltaTimeInMills = updateDeltaTime * 1000.0f;
         int iterations = Math.round(fastForwardTimeInMillis / updateDeltaTimeInMills);
@@ -52,9 +55,7 @@ public final class LagCompensation {
                 maxY = Math.max(maxY, Math.max(y, endY) + offset);
             }
 
-            AABB aabb = new AABB(new Vector2(minX, minY), new Vector2(maxX, maxY));
-
-            Set<Body> affectedBodies = new HashSet<>();
+            aabb.set(minX, minY, maxX, maxY);
 
             org.jbox2d.dynamics.World physicWorld = world.getPhysicWorld();
             physicWorld.queryAABB(fixture -> {
@@ -81,16 +82,15 @@ public final class LagCompensation {
 
             physicWorld.beginFastForward();
 
-            double timestamp = world.getTimestamp();
             float fastForwardTimeInNanos = fastForwardTimeInMillis * 1_000_000.0f;
             float updateDeltaTimeInNanos = updateDeltaTimeInMills * 1_000_000.0f;
-            for (int i = 0; i < iterations; i++) {
-                EntityDataHistoryManager dataHistoryManager = world.getEntityManager().getDataHistoryManager();
+            EntityDataHistoryManager dataHistoryManager = world.getEntityManager().getDataHistoryManager();
 
+            for (int i = 0; i < iterations; i++) {
                 for (Body body : affectedBodies) {
                     rigidBody = (RigidBody) body.getUserData();
                     TransformData transformData = dataHistoryManager.getTransformData(rigidBody.getId(),
-                            timestamp - fastForwardTimeInNanos);
+                            time - fastForwardTimeInNanos);
                     if (transformData != null) {
                         Vector2f position = transformData.getPosition();
                         body.setTransform(position.x, position.y, transformData.getSin(), transformData.getCos());
@@ -111,12 +111,15 @@ public final class LagCompensation {
             }
 
             physicWorld.endFastForward();
+
             for (Body body : affectedBodies) {
                 rigidBody = (RigidBody) body.getUserData();
                 TransformData transformData = entityDataHistoryManager.getFirstTransformData(rigidBody.getId());
                 Vector2f position = transformData.getPosition();
                 body.setTransform(position.x, position.y, transformData.getSin(), transformData.getCos());
             }
+
+            affectedBodies.clear();
         }
     }
 }

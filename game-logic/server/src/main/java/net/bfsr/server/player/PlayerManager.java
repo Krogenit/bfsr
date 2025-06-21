@@ -48,7 +48,7 @@ public class PlayerManager {
         playerRepository.saveAllSync(players);
     }
 
-    public void update() {
+    public void update(double time) {
         for (int i = 0; i < players.size(); i++) {
             Player player = players.get(i);
 
@@ -70,7 +70,7 @@ public class PlayerManager {
                 player.getNetworkHandler().sendUDPPacket(new PacketOpenGui(GuiType.DESTROYED, attacker));
             }
 
-            player.getPlayerInputController().update();
+            player.getPlayerInputController().update(time);
         }
     }
 

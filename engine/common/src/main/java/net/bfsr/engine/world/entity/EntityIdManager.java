@@ -1,21 +1,36 @@
 package net.bfsr.engine.world.entity;
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
-@NoArgsConstructor
 public class EntityIdManager {
-    protected int nextId;
-    protected final IntList freeIdList = new IntArrayList();
+    private final int startId;
+    protected int id;
 
-    public int getNextId() {
-        return nextId++;
+    public EntityIdManager(int startId) {
+        this.startId = startId;
+        this.id = startId;
     }
 
-    public void returnBackId(int id) {
-        freeIdList.add(id);
+    public EntityIdManager() {
+        this(0);
+    }
+
+    public void add(RigidBody rigidBody) {}
+
+    public void remove(int index, RigidBody rigidBody) {}
+
+    public void update(double timestamp) {}
+
+    public int getNextId() {
+        return id++;
+    }
+
+    public int getCurrentId() {
+        return id;
+    }
+
+    public void clear() {
+        id = startId;
     }
 }

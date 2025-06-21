@@ -31,18 +31,22 @@ public class BulletSpawnLogic implements EntitySpawnLogic<BulletSpawnData> {
                 bullet.setCorrectionHandler(new DynamicCorrectionHandler(0.1f, Engine.convertToDeltaTime(2.0f), new CorrectionHandler(),
                         new HistoryCorrectionHandler()));
                 bullet.setId(spawnData.getEntityId());
+                return;
             } else {
                 log.warn("Bullet with id {} not found in client world", clientId);
-//                world.getEntityIdManager().getNextId();
             }
-        } else {
-            GunData gunData = gunRegistry.get(spawnData.getDataId());
-            Bullet bullet = new Bullet(spawnData.getPosX(), spawnData.getPosY(), spawnData.getSin(), spawnData.getCos(), gunData,
-                    world.getEntityById(spawnData.getOwnerId()), gunData.getDamage());
-            bullet.init(world, spawnData.getEntityId());
-            bullet.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(4.0f), new CorrectionHandler(),
-                    new HistoryCorrectionHandler()));
-            world.add(bullet);
         }
+
+        spawnBullet(spawnData, world);
+    }
+
+    private void spawnBullet(BulletSpawnData spawnData, World world) {
+        GunData gunData = gunRegistry.get(spawnData.getDataId());
+        Bullet bullet = new Bullet(spawnData.getPosX(), spawnData.getPosY(), spawnData.getSin(), spawnData.getCos(), gunData,
+                world.getEntityById(spawnData.getOwnerId()), gunData.getDamage());
+        bullet.init(world, spawnData.getEntityId());
+        bullet.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(4.0f), new CorrectionHandler(),
+                new HistoryCorrectionHandler()));
+        world.add(bullet);
     }
 }

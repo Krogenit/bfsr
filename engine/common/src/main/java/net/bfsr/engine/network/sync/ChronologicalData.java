@@ -1,4 +1,4 @@
-package net.bfsr.engine.world.entity;
+package net.bfsr.engine.network.sync;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChronologicalEntityData {
+public class ChronologicalData {
     protected double time;
 }

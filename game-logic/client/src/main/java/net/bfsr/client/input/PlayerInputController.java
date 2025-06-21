@@ -22,9 +22,9 @@ import net.bfsr.engine.physics.correction.LocalPlayerInputCorrectionHandler;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.RigidBody;
-import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.engine.Engines;
+import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.network.packet.client.input.PacketMouseLeftClick;
 import net.bfsr.network.packet.client.input.PacketMouseLeftRelease;
 import net.bfsr.network.packet.client.input.PacketMouseSyncPosition;
@@ -164,7 +164,9 @@ public class PlayerInputController extends InputController {
 
     private void controlShip() {
         Body body = ship.getBody();
-        if (!body.isAwake()) body.setAwake(true);
+        if (!body.isAwake()) {
+            body.setAwake(true);
+        }
 
         Vector2f mouseWorldPosition = mouse.getWorldPosition(camera);
         rigidBodyUtils.rotateToVector(ship, mouseWorldPosition, ship.getModules().getEngines().getAngularVelocity());
@@ -175,12 +177,7 @@ public class PlayerInputController extends InputController {
         ship.getMoveDirections().forEach(ship::move);
 
         if (mouseLeftDown) {
-            ship.shoot(weaponSlot -> {
-                Bullet bullet = weaponSlot.createBullet(0);
-                if (bullet != null) {
-                    System.out.println("Create bullet on client side with local id " + bullet.getId());
-                }
-            });
+            ship.shoot(WeaponSlot::createBullet);
         }
     }
 

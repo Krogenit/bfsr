@@ -9,8 +9,8 @@ import net.bfsr.engine.logic.GameLogic;
 import net.bfsr.engine.network.packet.CommonPacketRegistry;
 import net.bfsr.engine.network.packet.PacketAnnotation;
 import net.bfsr.engine.network.packet.PacketScheduled;
+import net.bfsr.engine.network.sync.ChronologicalData;
 import net.bfsr.engine.network.util.ByteBufUtils;
-import net.bfsr.engine.world.entity.ChronologicalEntityData;
 import net.bfsr.engine.world.entity.RigidBody;
 import org.jbox2d.common.Vector2;
 import org.joml.Vector2f;
@@ -56,13 +56,13 @@ public class PacketWorldSnapshot extends PacketScheduled {
 
     @Getter
     @RequiredArgsConstructor
-    public static class EntityData extends ChronologicalEntityData {
+    public static class EntityData extends ChronologicalData {
         private final int entityId;
         private final float x, y;
         private final float sin;
         private final float cos;
         private final Vector2f velocity;
-        private final float angularVelocity;
+        private float angularVelocity;
 
         public EntityData(RigidBody rigidBody, double time) {
             super(time);
@@ -96,6 +96,11 @@ public class PacketWorldSnapshot extends PacketScheduled {
             data.writeFloat(cos);
             ByteBufUtils.writeVector(data, velocity);
             data.writeFloat(angularVelocity);
+        }
+
+        public void correction(float dx, float dy, float angularVelocityDelta) {
+            velocity.add(dx, dy);
+            angularVelocity += angularVelocityDelta;
         }
     }
 }

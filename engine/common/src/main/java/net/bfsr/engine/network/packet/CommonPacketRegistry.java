@@ -12,4 +12,6 @@ public final class CommonPacketRegistry {
     public static final int WORLD_SNAPSHOT = 8;
     public static final int ENTITY_SPAWN = 9;
     public static final int ENTITY_REMOVE = 10;
+    public static final int PLAYER_SYNC_LOCAL_ID = 11;
+    public static final int SYNC_TICK = 12;
 }

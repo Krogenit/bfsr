@@ -25,7 +25,7 @@ import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.renderer.font.string.StringOffsetType;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.EntityDataHistoryManager;
-import net.bfsr.engine.world.entity.PositionHistory;
+import net.bfsr.engine.world.entity.EntityPositionHistory;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.engine.world.entity.TransformData;
 import net.bfsr.entity.bullet.Bullet;
@@ -55,7 +55,7 @@ public class EditorHUD extends HUD {
     private Ship fastForwardShip;
     private ShipRender shipRender;
     private final Vector2f shipVelocity = new Vector2f(0.01f, 0.01f);
-    private final PositionHistory positionHistory = new PositionHistory(5000L);
+    private final EntityPositionHistory positionHistory = new EntityPositionHistory(5000L);
     private World world;
     private Bullet bullet;
     private final Vector2f maxPosition = new Vector2f(4, 4);
@@ -79,11 +79,12 @@ public class EditorHUD extends HUD {
                     fastForwardTesting = !fastForwardTesting;
 
                     if (fastForwardTesting) {
-                        world = new World(new Profiler(), 0L, new EventBus(), new EntityManager(), new ClientEntityIdManager(),
-                                Client.get(), new CollisionMatrix(new CollisionHandler(Client.get())));
+                        Client client = Client.get();
+                        world = new World(new Profiler(), 0L, new EventBus(), new EntityManager(),
+                                new ClientEntityIdManager(client.getClientRenderDelay()), client,
+                                new CollisionMatrix(new CollisionHandler(client)));
                         world.init();
 
-                        Client client = Client.get();
                         ShipRegistry shipRegistry = client.getConfigConverterManager().getConverter(ShipRegistry.class);
                         fastForwardShip = new Ship(shipRegistry.get(3));
                         fastForwardShip.init(world, 0);

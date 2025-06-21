@@ -70,6 +70,8 @@ public class World {
         physicWorld.step(Engine.getUpdateDeltaTime(), VELOCITY_ITERATIONS, POSITION_ITERATIONS);
         profiler.endStart("postPhysicsUpdate");
         entityManager.postPhysicsUpdate();
+        profiler.endStart("entityIdManager");
+        entityIdManager.update(timestamp);
         profiler.end();
     }
 
@@ -88,11 +90,13 @@ public class World {
         }
 
         entityManager.add(entity);
+        entityIdManager.add(entity);
         entity.onAddedToWorld();
     }
 
     public void remove(int index, RigidBody entity) {
         entityManager.remove(index, entity);
+        entityIdManager.remove(index, entity);
         physicWorld.removeBody(entity.getBody());
         entity.onRemovedFromWorld();
     }
@@ -100,6 +104,7 @@ public class World {
     public void clear() {
         eventBus.unregister(entityManager.getDataHistoryManager());
         entityManager.clear();
+        entityIdManager.clear();
 
         // Only happens when server is crashed
         if (!physicWorld.isLocked()) {

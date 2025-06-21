@@ -1,15 +1,16 @@
-package net.bfsr.engine.world.entity;
+package net.bfsr.engine.network.sync;
 
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
-public class EntityDataHistory<T extends ChronologicalEntityData> {
-    final List<T> dataList = new ArrayList<>();
-    final double historyLengthMillis;
+public class DataHistory<T extends ChronologicalData> {
+    protected final List<T> dataList = new ArrayList<>();
+    protected final double historyLengthMillis;
 
-    public EntityDataHistory(double historyLengthMillis) {
+    public DataHistory(double historyLengthMillis) {
         this.historyLengthMillis = historyLengthMillis * 1_000_000;
     }
 
@@ -29,6 +30,12 @@ public class EntityDataHistory<T extends ChronologicalEntityData> {
         }
 
         removeOld(data.getTime());
+    }
+
+    public void forEach(Consumer<T> consumer) {
+        for (int i = 0; i < dataList.size(); i++) {
+            consumer.accept(dataList.get(i));
+        }
     }
 
     protected void removeOld(double timeOfEntryAdded) {
@@ -58,7 +65,7 @@ public class EntityDataHistory<T extends ChronologicalEntityData> {
         for (int i = 0, size = dataList.size(); i < size; i++) {
             T secondEPD = dataList.get(i);
             if (firstEPD != null) {
-                if (firstEPD.getTime() >= time && secondEPD.getTime() <= time) {
+                if (firstEPD.getTime() >= time && secondEPD.getTime() < time) {
                     return secondEPD;
                 }
             }
@@ -70,7 +77,11 @@ public class EntityDataHistory<T extends ChronologicalEntityData> {
     }
 
     public @Nullable T getFirst() {
-        return dataList.isEmpty() ? null : dataList.getFirst();
+        return dataList.isEmpty() ? null : dataList.get(0);
+    }
+
+    public @Nullable T getAndRemoveFirst() {
+        return dataList.isEmpty() ? null : dataList.remove(0);
     }
 
     public void clear() {

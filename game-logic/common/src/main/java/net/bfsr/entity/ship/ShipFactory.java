@@ -67,7 +67,6 @@ public class ShipFactory {
 
     public Ship createBot(World world, float x, float y, float angle, Faction faction, ShipData shipData, Ai ai) {
         Ship ship = create(world, world.getNextId(), x, y, angle, faction, shipData);
-        ship.init(world, world.getNextId());
         ship.setName("[BOT] " + ship.getFaction().toString());
         shipOutfitter.outfit(ship);
         ship.setAi(ai);

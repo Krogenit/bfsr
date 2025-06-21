@@ -37,9 +37,11 @@ public class GuiFactionSelect extends Gui {
             client.closeGui();
         }).atCenter(309, -230));
 
-        add(new GuiShip(TextureRegister.shipHumanSmall0, 120, 120).atCenter(-309, -70));
-        add(new GuiShip(TextureRegister.shipSaimonSmall0, 170, 170).atCenter(0, -70));
-        add(new GuiShip(TextureRegister.shipEngiSmall0, 180, 180).atCenter(309, -70));
+        add(new GuiShip(TextureRegister.shipHumanSmall0, 103, 118).atCenter(-309, -70));
+        float scale = 1.33f;
+        add(new GuiShip(TextureRegister.shipSaimonSmall0, (int) (100 * scale), (int) (65 * scale)).atCenter(0, -70));
+        scale = 1.66f;
+        add(new GuiShip(TextureRegister.shipEngiSmall0, (int) (69 * scale), (int) (42 * scale)).atCenter(309, -70));
 
         Font font = Engine.getFontManager().getFont(FontType.XOLONIUM.getFontName());
         Label label = new Label(font, languageManager.getString("gui.selectFaction.maintext"), 24);

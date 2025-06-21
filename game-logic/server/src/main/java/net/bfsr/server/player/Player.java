@@ -25,7 +25,7 @@ public class Player {
     private final EntityIdManager localIdManager = new EntityIdManager(-1) {
         @Override
         public int getNextId() {
-            return nextId--;
+            return id--;
         }
     };
 

@@ -1,13 +1,14 @@
 package net.bfsr.engine.world.entity;
 
+import net.bfsr.engine.network.sync.DataHistory;
 import net.bfsr.engine.util.ObjectPool;
 import org.jetbrains.annotations.Nullable;
 
-public class PositionHistory extends EntityDataHistory<TransformData> {
+public class EntityPositionHistory extends DataHistory<TransformData> {
     private final ObjectPool<TransformData> cache = new ObjectPool<>(TransformData::new);
     private final TransformData cachedTransformData = new TransformData();
 
-    public PositionHistory(double historyLengthMillis) {
+    public EntityPositionHistory(double historyLengthMillis) {
         super(historyLengthMillis);
     }
 
@@ -22,7 +23,9 @@ public class PositionHistory extends EntityDataHistory<TransformData> {
 
     @Override
     public TransformData get(double time) {
-        if (dataList.isEmpty()) return null;
+        if (dataList.isEmpty()) {
+            return null;
+        }
 
         if (dataList.getFirst().getTime() < time) {
             return null;// Extrapolation
@@ -34,7 +37,7 @@ public class PositionHistory extends EntityDataHistory<TransformData> {
         for (int i = 0, positionDataSize = dataList.size(); i < positionDataSize; i++) {
             TransformData secondEPD = dataList.get(i);
             if (firstEPD != null) {
-                if (firstEPD.getTime() >= time && secondEPD.getTime() <= time) {
+                if (firstEPD.getTime() >= time && secondEPD.getTime() < time) {
                     firstEPD.getInterpol(secondEPD, time, cachedTransformData);
                     return cachedTransformData;
                 }
@@ -59,8 +62,8 @@ public class PositionHistory extends EntityDataHistory<TransformData> {
             TransformData older = dataList.get(i);
             if (older.getTime() <= time) {
                 TransformData newer = dataList.get(i - 1);
-                double olderTime = Math.abs(time - older.time);
-                double newerTime = Math.abs(time - newer.time);
+                double olderTime = Math.abs(time - older.getTime());
+                double newerTime = Math.abs(time - newer.getTime());
                 if (newerTime <= olderTime) {
                     return older;
                 } else {
@@ -72,9 +75,9 @@ public class PositionHistory extends EntityDataHistory<TransformData> {
         return null;
     }
 
-    @Nullable
-    public TransformData getFirst() {
-        return dataList.isEmpty() ? null : dataList.getFirst();
+    @Override
+    public @Nullable TransformData getFirst() {
+        return dataList.isEmpty() ? null : dataList.get(0);
     }
 
     @Override
@@ -90,6 +93,7 @@ public class PositionHistory extends EntityDataHistory<TransformData> {
         }
     }
 
+    @Override
     public void clear() {
         dataList.clear();
         cache.clear();

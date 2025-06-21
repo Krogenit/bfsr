@@ -11,6 +11,7 @@ import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.config.ConfigConverterManager;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.logic.GameLogic;
+import net.bfsr.engine.network.packet.server.PacketSyncTick;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.engine.util.Side;
@@ -109,8 +110,10 @@ public abstract class ServerGameLogic extends GameLogic {
     @Override
     public void update(double time) {
         super.update(time);
+        networkSystem.sendUDPPacketToAll(new PacketSyncTick(tick, time));
+
         profiler.start("playerManager");
-        playerManager.update();
+        playerManager.update(time);
         profiler.endStart("world");
         updateWorld(time);
         profiler.endStart("network");

@@ -149,7 +149,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     }
 
     @Override
-    public Bullet createBullet(float fastForwardTimeInMillis) {
+    public Bullet createBullet() {
         return null;
     }
 

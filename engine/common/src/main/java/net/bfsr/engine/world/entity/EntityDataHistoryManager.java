@@ -6,25 +6,26 @@ import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.event.entity.RigidBodyRemovedFromWorldEvent;
 import net.bfsr.engine.network.packet.common.world.PacketWorldSnapshot;
+import net.bfsr.engine.network.sync.DataHistory;
 import org.jetbrains.annotations.Nullable;
 
 public class EntityDataHistoryManager {
     private static final long HISTORY_DURATION_MILLIS = 2500;
-    private static final PositionHistory EMPTY_POSITION_HISTORY = new PositionHistory(0) {
+    private static final EntityPositionHistory EMPTY_POSITION_HISTORY = new EntityPositionHistory(0) {
         @Override
         public @Nullable TransformData get(double time) {
             return null;
         }
     };
-    private static final EntityDataHistory<PacketWorldSnapshot.EntityData> EMPTY_DATA_HISTORY = new EntityDataHistory<>(0) {
+    private static final DataHistory<PacketWorldSnapshot.EntityData> EMPTY_DATA_HISTORY = new DataHistory<>(0) {
         @Override
         public @Nullable PacketWorldSnapshot.EntityData get(double time) {
             return null;
         }
     };
 
-    private final Int2ObjectMap<PositionHistory> positionHistoryMap = new Int2ObjectOpenHashMap<>();
-    private final Int2ObjectMap<EntityDataHistory<PacketWorldSnapshot.EntityData>> dataHistoryMap = new Int2ObjectOpenHashMap<>();
+    private final Int2ObjectMap<EntityPositionHistory> positionHistoryMap = new Int2ObjectOpenHashMap<>();
+    private final Int2ObjectMap<DataHistory<PacketWorldSnapshot.EntityData>> dataHistoryMap = new Int2ObjectOpenHashMap<>();
 
     public EntityDataHistoryManager() {
         positionHistoryMap.defaultReturnValue(EMPTY_POSITION_HISTORY);
@@ -34,11 +35,11 @@ public class EntityDataHistoryManager {
     public void addData(PacketWorldSnapshot.EntityData entityData, double timestamp) {
         int id = entityData.getEntityId();
         addPositionData(id, entityData.getX(), entityData.getY(), entityData.getSin(), entityData.getCos(), timestamp);
-        dataHistoryMap.computeIfAbsent(id, key -> new EntityDataHistory<>(HISTORY_DURATION_MILLIS)).addData(entityData);
+        dataHistoryMap.computeIfAbsent(id, key -> new DataHistory<>(HISTORY_DURATION_MILLIS)).addData(entityData);
     }
 
     public void addPositionData(int id, float x, float y, float sin, float cos, double timestamp) {
-        positionHistoryMap.computeIfAbsent(id, key -> new PositionHistory(HISTORY_DURATION_MILLIS))
+        positionHistoryMap.computeIfAbsent(id, key -> new EntityPositionHistory(HISTORY_DURATION_MILLIS))
                 .addPositionData(x, y, sin, cos, timestamp);
     }
 
@@ -50,8 +51,12 @@ public class EntityDataHistoryManager {
         return positionHistoryMap.get(id).getFirst();
     }
 
-    public PacketWorldSnapshot.EntityData getFirstData(int id) {
-        return dataHistoryMap.get(id).getFirst();
+    public TransformData getAndRemoveFirstTransformData(int id) {
+        return positionHistoryMap.get(id).getAndRemoveFirst();
+    }
+
+    public PacketWorldSnapshot.EntityData getAndRemoveFirstData(int id) {
+        return dataHistoryMap.get(id).getAndRemoveFirst();
     }
 
     public PacketWorldSnapshot.EntityData getData(int id, double timestamp) {

@@ -42,6 +42,7 @@ import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.logic.ClientGameLogic;
 import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.engine.network.packet.common.world.entity.spawn.EntityPacketSpawnData;
+import net.bfsr.engine.network.sync.IntegerSync;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.sound.AbstractSoundManager;
@@ -107,6 +108,9 @@ public class Client extends ClientGameLogic {
     @Getter
     private final double clientRenderDelay = Engine.getClientRenderDelayInMills() * 1_000_000.0;
 
+    private final ClientEntityIdManager entityIdManager = new ClientEntityIdManager(clientRenderDelay);
+    private final IntegerSync ticksSync = new IntegerSync(2500);
+
     public Client(Profiler profiler, EventBus eventBus) {
         super(profiler, eventBus);
         instance = this;
@@ -143,9 +147,23 @@ public class Client extends ClientGameLogic {
         }
     }
 
+    public void addServerTickData(int tick, double timestamp) {
+        ticksSync.addRemoteData(tick, timestamp);
+    }
+
     @Override
     public void update(double time) {
         super.update(time);
+        renderTime = time - networkSystem.getAverageClientToServerTimeDiffInNanos() - clientRenderDelay;
+
+        int tickCorrection = ticksSync.correction();
+        if (tickCorrection != 0) {
+            log.info("Correction ticks with value {}", tickCorrection);
+        }
+
+        tick += tickCorrection;
+        ticksSync.addLocalData(tick, renderTime + clientRenderDelay);
+
         profiler.start("renderManager");
 
         if (!isPaused()) {
@@ -156,12 +174,6 @@ public class Client extends ClientGameLogic {
         inputHandler.update();
         profiler.endStart("soundManager");
         soundManager.updateListenerPosition(camera.getPosition());
-        profiler.end();
-
-        renderTime = time - networkSystem.getAverageClientToServerTimeDiffInNanos() - clientRenderDelay;
-
-        profiler.start("network");
-        networkSystem.update(renderTime);
 
         if (!isPaused()) {
             profiler.endStart("world");
@@ -178,6 +190,8 @@ public class Client extends ClientGameLogic {
             entityRenderer.postWorldUpdate();
         }
 
+        profiler.endStart("network");
+        networkSystem.update(renderTime);
         profiler.end();
     }
 
@@ -270,7 +284,7 @@ public class Client extends ClientGameLogic {
     }
 
     public void createWorld(long seed) {
-        world = new World(profiler, seed, eventBus, new EntityManager(), new ClientEntityIdManager(), this,
+        world = new World(profiler, seed, eventBus, new EntityManager(), entityIdManager, this,
                 new CollisionMatrix(new CollisionHandler(this)));
         world.init();
     }
