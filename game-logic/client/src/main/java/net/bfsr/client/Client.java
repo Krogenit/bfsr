@@ -40,6 +40,7 @@ import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.logic.ClientGameLogic;
+import net.bfsr.engine.network.NetworkHandler;
 import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.engine.network.packet.common.world.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.engine.network.sync.IntegerSync;
@@ -109,7 +110,7 @@ public class Client extends ClientGameLogic {
     private final double clientRenderDelay = Engine.getClientRenderDelayInMills() * 1_000_000.0;
 
     private final ClientEntityIdManager entityIdManager = new ClientEntityIdManager(clientRenderDelay);
-    private final IntegerSync ticksSync = new IntegerSync(2500);
+    private final IntegerSync ticksSync = new IntegerSync(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS);
 
     public Client(Profiler profiler, EventBus eventBus) {
         super(profiler, eventBus);
@@ -231,14 +232,10 @@ public class Client extends ClientGameLogic {
     private void connectToLocalServerTCP() {
         try {
             InetAddress inetaddress = InetAddress.getByName("127.0.0.1");
-            connectToServer(inetaddress, 34000, "Local Player");
+            networkSystem.connect(inetaddress, 34000, "Local Player");
         } catch (Exception e) {
             log.error("Couldn't connect to local server", e);
         }
-    }
-
-    public void connectToServer(InetAddress inetaddress, int port, String login) {
-        networkSystem.connect(inetaddress, port, login);
     }
 
     public void quitToMainMenu() {
@@ -312,6 +309,12 @@ public class Client extends ClientGameLogic {
 
     public HUD createHUD() {
         return hud = new HUD();
+    }
+
+    public void onClientToServerTimeDiffChange() {
+        playerInputController.onClientToServerTimeDiffChange();
+        entityIdManager.onClientToServerTimeDiffChange();
+        ticksSync.clear();
     }
 
     @Override

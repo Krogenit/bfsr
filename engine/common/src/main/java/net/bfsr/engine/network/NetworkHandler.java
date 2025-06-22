@@ -6,6 +6,8 @@ import lombok.Getter;
 import net.bfsr.engine.network.packet.Packet;
 
 public abstract class NetworkHandler {
+    public static final int GLOBAL_HISTORY_LENGTH_MILLIS = 750;
+    
     @Getter
     private double ping;
     @Getter

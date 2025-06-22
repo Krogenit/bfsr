@@ -38,4 +38,9 @@ public class IntegerSync {
         localDataHistory.forEach(worldEntityDataId -> worldEntityDataId.offset(deltaId));
         return deltaId;
     }
+
+    public void clear() {
+        localDataHistory.clear();
+        remoteDataHistory.clear();
+    }
 }

@@ -3,6 +3,7 @@ package net.bfsr.client.world.entity;
 import gnu.trove.map.TIntObjectMap;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.Client;
+import net.bfsr.engine.network.NetworkHandler;
 import net.bfsr.engine.network.sync.IntegerSync;
 import net.bfsr.engine.world.entity.EntityIdManager;
 import net.bfsr.engine.world.entity.RigidBody;
@@ -19,7 +20,7 @@ public class ClientEntityIdManager extends EntityIdManager {
 
     private final List<RigidBody> entities = new ArrayList<>();
 
-    private final IntegerSync idSync = new IntegerSync(2500);
+    private final IntegerSync idSync = new IntegerSync(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS);
 
     public ClientEntityIdManager(double clientRenderDelay) {
         super(-1);
@@ -64,6 +65,10 @@ public class ClientEntityIdManager extends EntityIdManager {
         }
     }
 
+    public void onClientToServerTimeDiffChange() {
+        idSync.clear();
+    }
+
     @Override
     public int getNextId() {
         return id--;
@@ -73,5 +78,6 @@ public class ClientEntityIdManager extends EntityIdManager {
     public void clear() {
         super.clear();
         entities.clear();
+        idSync.clear();
     }
 }

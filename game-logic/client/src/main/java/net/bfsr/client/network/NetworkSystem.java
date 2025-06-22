@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @RequiredArgsConstructor
 public class NetworkSystem extends NetworkHandler {
     private static final long PING_CHECK_INTERVAL = 1000;
+    private static final double CHANGE_TIME_EVENT_THRESHOLD = 1_000_000;
 
     private final Client client;
 
@@ -121,7 +122,7 @@ public class NetworkSystem extends NetworkHandler {
     }
 
     public void addClientToServerTimeDiffResult(long clientToServerTimeDiff) {
-        this.clientToServerTimeDiffInNanos = (double) clientToServerTimeDiff;
+        this.clientToServerTimeDiffInNanos = clientToServerTimeDiff;
         this.clientToServerTimeResults.add(clientToServerTimeDiffInNanos);
 
         if (clientToServerTimeResults.size() > 100) {
@@ -133,7 +134,13 @@ public class NetworkSystem extends NetworkHandler {
             allTimeDiffs += clientToServerTimeResults.getDouble(i);
         }
 
+        double oldAverageClientToServerTimeDiffInNanos = averageClientToServerTimeDiffInNanos;
         this.averageClientToServerTimeDiffInNanos = allTimeDiffs / clientToServerTimeResults.size();
+
+        double timeDiff = Math.abs(oldAverageClientToServerTimeDiffInNanos - averageClientToServerTimeDiffInNanos);
+        if (timeDiff > CHANGE_TIME_EVENT_THRESHOLD) {
+            client.onClientToServerTimeDiffChange();
+        }
     }
 
     public void onDisconnect(String reason) {

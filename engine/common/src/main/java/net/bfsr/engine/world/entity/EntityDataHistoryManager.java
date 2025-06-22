@@ -5,12 +5,12 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.event.entity.RigidBodyRemovedFromWorldEvent;
+import net.bfsr.engine.network.NetworkHandler;
 import net.bfsr.engine.network.packet.common.world.PacketWorldSnapshot;
 import net.bfsr.engine.network.sync.DataHistory;
 import org.jetbrains.annotations.Nullable;
 
 public class EntityDataHistoryManager {
-    private static final long HISTORY_DURATION_MILLIS = 2500;
     private static final EntityPositionHistory EMPTY_POSITION_HISTORY = new EntityPositionHistory(0) {
         @Override
         public @Nullable TransformData get(double time) {
@@ -35,11 +35,11 @@ public class EntityDataHistoryManager {
     public void addData(PacketWorldSnapshot.EntityData entityData, double timestamp) {
         int id = entityData.getEntityId();
         addPositionData(id, entityData.getX(), entityData.getY(), entityData.getSin(), entityData.getCos(), timestamp);
-        dataHistoryMap.computeIfAbsent(id, key -> new DataHistory<>(HISTORY_DURATION_MILLIS)).addData(entityData);
+        dataHistoryMap.computeIfAbsent(id, key -> new DataHistory<>(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS)).addData(entityData);
     }
 
     public void addPositionData(int id, float x, float y, float sin, float cos, double timestamp) {
-        positionHistoryMap.computeIfAbsent(id, key -> new EntityPositionHistory(HISTORY_DURATION_MILLIS))
+        positionHistoryMap.computeIfAbsent(id, key -> new EntityPositionHistory(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS))
                 .addPositionData(x, y, sin, cos, timestamp);
     }
 

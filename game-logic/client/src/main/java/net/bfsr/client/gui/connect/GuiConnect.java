@@ -71,7 +71,7 @@ public class GuiConnect extends Gui {
 
                         try {
                             inetaddress = InetAddress.getByName(host);
-                            client.connectToServer(inetaddress, port, playerName);
+                            client.getNetworkSystem().connect(inetaddress, port, playerName);
                         } catch (UnknownHostException unknownhostexception) {
                             log.error("Couldn't connect to server", unknownhostexception);
                             client.addFutureTask(() -> setErrorMessage(languageManager.getString("connect.failed") + " Unknown Host"));

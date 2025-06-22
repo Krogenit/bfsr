@@ -279,6 +279,10 @@ public class PlayerInputController extends InputController {
         localPlayerInputCorrectionHandler.clear();
     }
 
+    public void onClientToServerTimeDiffChange() {
+        localPlayerInputCorrectionHandler.clear();
+    }
+
     @EventHandler
     public EventListener<ExitToMainMenuEvent> exitToMainMenuEvent() {
         return event -> resetControlledShip();
