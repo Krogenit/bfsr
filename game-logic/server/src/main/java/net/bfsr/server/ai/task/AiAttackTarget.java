@@ -2,15 +2,16 @@ package net.bfsr.server.ai.task;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.RequiredArgsConstructor;
-import net.bfsr.ai.task.AiTask;
 import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.ai.task.AiTask;
 import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.math.RigidBodyUtils;
 import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.RigidBody;
+import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
@@ -44,6 +45,14 @@ public class AiAttackTarget extends AiTask {
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
     private final Vector2 rayStart = new Vector2();
     private final Vector2 rayDirection = new Vector2();
+
+    private Ship ship;
+
+    @Override
+    public void init(RigidBody rigidBody) {
+        super.init(rigidBody);
+        this.ship = (Ship) rigidBody;
+    }
 
     @Override
     public void execute() {

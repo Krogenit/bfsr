@@ -4,6 +4,7 @@ import net.bfsr.client.Client;
 import net.bfsr.client.font.FontType;
 import net.bfsr.client.language.LanguageManager;
 import net.bfsr.client.settings.ClientSettings;
+import net.bfsr.client.settings.SettingsCategory;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
@@ -12,7 +13,6 @@ import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.settings.SettingsOption;
-import net.bfsr.settings.SettingsCategory;
 
 import java.util.ArrayList;
 import java.util.EnumMap;

@@ -2,8 +2,8 @@ package net.bfsr.server.player;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.bfsr.ai.Ai;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.ai.Ai;
 import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.RigidBodyUtils;
 import net.bfsr.engine.network.LagCompensation;

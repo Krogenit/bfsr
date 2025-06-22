@@ -1,13 +1,13 @@
 package net.bfsr.benchmark;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
-import net.bfsr.ai.Ai;
 import net.bfsr.client.Client;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.config.component.weapon.beam.BeamRegistry;
 import net.bfsr.config.component.weapon.gun.GunRegistry;
 import net.bfsr.config.entity.bullet.DamageConfigurable;
 import net.bfsr.config.entity.wreck.WreckRegistry;
+import net.bfsr.engine.ai.Ai;
 import net.bfsr.engine.config.ConfigConverterManager;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.network.packet.Packet;

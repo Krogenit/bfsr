@@ -2,9 +2,9 @@ package net.bfsr.server.network.packet.handler.play;
 
 import io.netty.channel.ChannelHandlerContext;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
-import net.bfsr.ai.Ai;
 import net.bfsr.command.Command;
 import net.bfsr.config.entity.ship.ShipRegistry;
+import net.bfsr.engine.ai.Ai;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.network.packet.PacketHandler;
 import net.bfsr.engine.world.World;

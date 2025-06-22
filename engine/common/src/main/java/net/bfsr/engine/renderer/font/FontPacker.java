@@ -18,7 +18,7 @@ public abstract class FontPacker<BITMAP extends FontBitMap> {
     protected final Int2ObjectOpenHashMap<BITMAP> bitmapByCharMap = new Int2ObjectOpenHashMap<>();
     protected final String fontName;
 
-    public FontPacker(DynamicFont<?> glyphsBuilder, int bitmapWidth, int bitmapHeight, int fontSize, String fontName) {
+    protected FontPacker(DynamicFont<?> glyphsBuilder, int bitmapWidth, int bitmapHeight, int fontSize, String fontName) {
         this.glyphsBuilder = glyphsBuilder;
         this.bitmapWidth = bitmapWidth;
         this.bitmapHeight = bitmapHeight;

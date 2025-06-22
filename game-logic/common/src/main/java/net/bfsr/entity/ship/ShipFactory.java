@@ -2,9 +2,9 @@ package net.bfsr.entity.ship;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import lombok.Getter;
-import net.bfsr.ai.Ai;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.config.entity.ship.ShipRegistry;
+import net.bfsr.engine.ai.Ai;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.world.World;
 import net.bfsr.faction.Faction;

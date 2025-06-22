@@ -1,4 +1,4 @@
-package net.bfsr.settings;
+package net.bfsr.client.settings;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

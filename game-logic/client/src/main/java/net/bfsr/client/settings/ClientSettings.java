@@ -8,7 +8,6 @@ import net.bfsr.engine.settings.FloatOption;
 import net.bfsr.engine.settings.IntegerOption;
 import net.bfsr.engine.settings.SettingsOption;
 import net.bfsr.engine.settings.StringOption;
-import net.bfsr.settings.SettingsCategory;
 
 public enum ClientSettings {
     SOUND_VOLUME(SettingsCategory.SOUND, 0.0f, 1.0f, new FloatOption(0.05f).addListener(value -> {
