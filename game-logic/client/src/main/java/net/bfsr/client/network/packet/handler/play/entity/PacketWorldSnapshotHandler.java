@@ -17,7 +17,7 @@ public class PacketWorldSnapshotHandler extends PacketHandler<PacketWorldSnapsho
         UnorderedArrayList<PacketWorldSnapshot.EntityData> entityDataList = packet.getEntityDataList();
         EntityDataHistoryManager historyManager = Client.get().getWorld().getEntityManager().getDataHistoryManager();
         for (int i = 0; i < entityDataList.size(); i++) {
-            historyManager.addData(entityDataList.get(i), packet.getTimestamp());
+            historyManager.addData(entityDataList.get(i), packet.getTick());
         }
     }
 }

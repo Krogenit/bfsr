@@ -9,7 +9,7 @@ import net.bfsr.engine.logic.GameLogic;
 import net.bfsr.engine.network.packet.CommonPacketRegistry;
 import net.bfsr.engine.network.packet.PacketAnnotation;
 import net.bfsr.engine.network.packet.PacketScheduled;
-import net.bfsr.engine.network.sync.ChronologicalData;
+import net.bfsr.engine.network.sync.ChronologicalTickData;
 import net.bfsr.engine.network.util.ByteBufUtils;
 import net.bfsr.engine.world.entity.RigidBody;
 import org.jbox2d.common.Vector2;
@@ -23,8 +23,8 @@ import java.io.IOException;
 public class PacketWorldSnapshot extends PacketScheduled {
     private UnorderedArrayList<EntityData> entityDataList;
 
-    public PacketWorldSnapshot(UnorderedArrayList<EntityData> entityDataList, double timestamp) {
-        super(timestamp);
+    public PacketWorldSnapshot(UnorderedArrayList<EntityData> entityDataList, int tick) {
+        super(tick);
         this.entityDataList = new UnorderedArrayList<>(entityDataList);
     }
 
@@ -50,13 +50,13 @@ public class PacketWorldSnapshot extends PacketScheduled {
     }
 
     @Override
-    public boolean canProcess(double time) {
+    public boolean canProcess(int tick) {
         return true;
     }
 
     @Getter
     @RequiredArgsConstructor
-    public static class EntityData extends ChronologicalData {
+    public static class EntityData extends ChronologicalTickData {
         private final int entityId;
         private final float x, y;
         private final float sin;
@@ -64,8 +64,8 @@ public class PacketWorldSnapshot extends PacketScheduled {
         private final Vector2f velocity;
         private float angularVelocity;
 
-        public EntityData(RigidBody rigidBody, double time) {
-            super(time);
+        public EntityData(RigidBody rigidBody, int tick) {
+            super(tick);
             entityId = rigidBody.getId();
             x = rigidBody.getX();
             y = rigidBody.getY();
@@ -77,7 +77,7 @@ public class PacketWorldSnapshot extends PacketScheduled {
         }
 
         EntityData(ByteBuf data) {
-            super(data.readDouble());
+            super(data.readInt());
             entityId = data.readInt();
             x = data.readFloat();
             y = data.readFloat();
@@ -88,7 +88,7 @@ public class PacketWorldSnapshot extends PacketScheduled {
         }
 
         public void write(ByteBuf data) {
-            data.writeDouble(time);
+            data.writeInt(tick);
             data.writeInt(entityId);
             data.writeFloat(x);
             data.writeFloat(y);

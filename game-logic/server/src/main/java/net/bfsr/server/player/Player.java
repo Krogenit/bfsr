@@ -51,9 +51,9 @@ public class Player {
         this.playerInputController = new PlayerInputController(this, entityTrackingManager, playerManager, aiFactory);
     }
 
-    public void setShip(Ship ship) {
+    public void setShip(Ship ship, int tick) {
         playerInputController.setShip(ship);
-        networkHandler.sendTCPPacket(new PacketSetPlayerShip(ship, ship.getWorld().getTimestamp()));
+        networkHandler.sendTCPPacket(new PacketSetPlayerShip(ship, tick));
     }
 
     public void setPosition(float x, float y) {

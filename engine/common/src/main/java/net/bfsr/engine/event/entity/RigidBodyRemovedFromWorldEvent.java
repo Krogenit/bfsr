@@ -11,4 +11,5 @@ import net.bfsr.engine.world.entity.RigidBody;
 @AllArgsConstructor
 public class RigidBodyRemovedFromWorldEvent extends Event {
     private final RigidBody rigidBody;
+    private final int tick;
 }

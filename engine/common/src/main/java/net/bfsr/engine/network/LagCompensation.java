@@ -19,10 +19,9 @@ public final class LagCompensation {
     private final AABB aabb = new AABB();
     private final ObjectSet<Body> affectedBodies = new ObjectOpenHashSet<>();
 
-    public void fastForwardBullets(List<RigidBody> bullets, float fastForwardTimeInMillis, World world, double time) {
+    public void fastForwardBullets(List<RigidBody> bullets, int fastForwardTimeInTicks, World world, int tick) {
         float updateDeltaTime = Engine.getUpdateDeltaTime();
-        float updateDeltaTimeInMills = updateDeltaTime * 1000.0f;
-        int iterations = Math.round(fastForwardTimeInMillis / updateDeltaTimeInMills);
+        int iterations = fastForwardTimeInTicks;
         if (iterations > 0) {
             List<Body> bulletsBodies = new ArrayList<>(bullets.size());
             for (int i = 0; i < bullets.size(); i++) {
@@ -82,15 +81,13 @@ public final class LagCompensation {
 
             physicWorld.beginFastForward();
 
-            float fastForwardTimeInNanos = fastForwardTimeInMillis * 1_000_000.0f;
-            float updateDeltaTimeInNanos = updateDeltaTimeInMills * 1_000_000.0f;
             EntityDataHistoryManager dataHistoryManager = world.getEntityManager().getDataHistoryManager();
 
             for (int i = 0; i < iterations; i++) {
                 for (Body body : affectedBodies) {
                     rigidBody = (RigidBody) body.getUserData();
                     TransformData transformData = dataHistoryManager.getTransformData(rigidBody.getId(),
-                            time - fastForwardTimeInNanos);
+                            tick - fastForwardTimeInTicks);
                     if (transformData != null) {
                         Vector2f position = transformData.getPosition();
                         body.setTransform(position.x, position.y, transformData.getSin(), transformData.getCos());
@@ -107,7 +104,7 @@ public final class LagCompensation {
                     bullets.get(i1).postPhysicsUpdate();
                 }
 
-                fastForwardTimeInNanos -= updateDeltaTimeInNanos;
+                fastForwardTimeInTicks -= 1;
             }
 
             physicWorld.endFastForward();

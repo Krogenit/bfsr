@@ -18,7 +18,7 @@ public class PacketAdapter implements Packet {
     }
 
     @Override
-    public boolean canProcess(double time) {
+    public boolean canProcess(int tick) {
         return true;
     }
 }

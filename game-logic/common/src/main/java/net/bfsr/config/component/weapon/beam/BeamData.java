@@ -12,6 +12,6 @@ public class BeamData extends GunData {
     BeamData(BeamConfig config, String fileName, int id, int registryId) {
         super(config, fileName, id, registryId);
         this.beamMaxRange = config.getBeamMaxRange();
-        this.aliveTimeInTicks = Engine.convertToTicks(config.getAliveTimeInSeconds());
+        this.aliveTimeInTicks = Engine.convertSecondsToTicks(config.getAliveTimeInSeconds());
     }
 }

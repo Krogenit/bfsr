@@ -23,6 +23,7 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.network.GuiType;
 import net.bfsr.network.packet.server.gui.PacketOpenGui;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.ai.AiFactory;
 import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.event.PlayerDisconnectEvent;
@@ -47,6 +48,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
     private final SocketChannel socketChannel;
     private final DatagramChannel datagramChannel;
     private final boolean singlePlayer;
+    private final ServerGameLogic gameLogic;
     private final World world;
     private final PlayerManager playerManager;
     private final EntityTrackingManager entityTrackingManager;
@@ -150,7 +152,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
         player.init(this, entityTrackingManager, playerManager, aiFactory);
         playerManager.addPlayer(player);
 
-        sendTCPPacket(new PacketLoginSuccess());
+        sendTCPPacket(new PacketLoginSuccess(gameLogic.getTick()));
     }
 
     public void joinGame() {
@@ -159,11 +161,11 @@ public class PlayerNetworkHandler extends NetworkHandler {
         if (player.getFaction() != null) {
             List<Ship> ships = player.getShips();
             if (ships.isEmpty()) {
-                playerManager.respawnPlayer(world, player, 0, 0);
+                playerManager.respawnPlayer(world, player, 0, 0, gameLogic.getTick());
             } else {
                 initShips(player);
                 spawnShips(player);
-                player.setShip(player.getShip(0));
+                player.setShip(player.getShip(0), gameLogic.getTick());
             }
         } else {
             sendTCPPacket(new PacketOpenGui(GuiType.SELECT_FACTION));

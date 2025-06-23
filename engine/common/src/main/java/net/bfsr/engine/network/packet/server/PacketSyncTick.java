@@ -5,36 +5,32 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.engine.logic.GameLogic;
 import net.bfsr.engine.network.packet.CommonPacketRegistry;
+import net.bfsr.engine.network.packet.PacketAdapter;
 import net.bfsr.engine.network.packet.PacketAnnotation;
-import net.bfsr.engine.network.packet.PacketScheduled;
 
 import java.io.IOException;
 
 @Getter
 @NoArgsConstructor
 @PacketAnnotation(id = CommonPacketRegistry.SYNC_TICK)
-public class PacketSyncTick extends PacketScheduled {
+public class PacketSyncTick extends PacketAdapter {
     private int tick;
+    private double time;
 
-    public PacketSyncTick(int tick, double timestamp) {
-        super(timestamp);
+    public PacketSyncTick(int tick, double time) {
         this.tick = tick;
+        this.time = time;
     }
 
     @Override
     public void write(ByteBuf data) throws IOException {
-        super.write(data);
         data.writeInt(tick);
+        data.writeDouble(time);
     }
 
     @Override
     public void read(ByteBuf data, GameLogic gameLogic) throws IOException {
-        super.read(data, gameLogic);
         tick = data.readInt();
-    }
-
-    @Override
-    public boolean canProcess(double time) {
-        return true;
+        time = data.readDouble();
     }
 }

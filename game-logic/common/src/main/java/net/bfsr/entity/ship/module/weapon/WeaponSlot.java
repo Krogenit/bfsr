@@ -124,14 +124,14 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
         weaponSlotEventBus.publish(new WeaponShotEvent(this));
     }
 
-    public Bullet createBullet() {
+    public Bullet createBullet(boolean forceSpawn) {
         float cos = ship.getCos();
         float sin = ship.getSin();
         float x = getX() + getSizeX() * cos;
         float y = getY() + getSizeX() * sin;
         Bullet bullet = new Bullet(x, y, sin, cos, gunData, ship, gunData.getDamage().copy());
         bullet.init(world, world.getNextId());
-        world.add(bullet);
+        world.add(bullet, true, forceSpawn);
         return bullet;
     }
 

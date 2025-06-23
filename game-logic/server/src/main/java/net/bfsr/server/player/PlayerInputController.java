@@ -43,7 +43,7 @@ public class PlayerInputController {
         ship.removeMoveDirection(direction);
     }
 
-    public void update(double time) {
+    public void update(int tick) {
         if (ship != null) {
             rigidBodyUtils.rotateToVector(ship, mousePosition, ship.getModules().getEngines().getAngularVelocity());
             ship.getMoveDirections().forEach(direction -> {
@@ -53,12 +53,12 @@ public class PlayerInputController {
             });
 
             if (mouseLeftDown) {
-                float fastForwardTimeInMillis = (float) (Engine.getClientRenderDelayInMills() +
+                int fastForwardTimeInTicks = Engine.convertMillisecondsToTicks(Engine.getClientRenderDelayInMills() +
                         player.getNetworkHandler().getAveragePing());
                 List<RigidBody> bullets = new ArrayList<>(16);
                 List<WeaponSlot> weaponSlots = new ArrayList<>(8);
                 ship.shoot(weaponSlot -> {
-                    Bullet bullet = weaponSlot.createBullet();
+                    Bullet bullet = weaponSlot.createBullet(false);
                     if (bullet != null) {
                         bullet.setClientId(player.getLocalIdManager().getNextId());
                         bullets.add(bullet);
@@ -67,14 +67,15 @@ public class PlayerInputController {
                 });
 
                 if (bullets.size() > 0) {
-                    player.getNetworkHandler().sendUDPPacket(new PacketPlayerSyncLocalId(player.getLocalIdManager().getCurrentId(), time));
-                    lagCompensation.fastForwardBullets(bullets, fastForwardTimeInMillis, ship.getWorld(), time);
+                    player.getNetworkHandler().sendUDPPacket(new PacketPlayerSyncLocalId(player.getLocalIdManager().getCurrentId(), tick));
+//                    System.out.println("Server send local id " + player.getLocalIdManager().getCurrentId() + " on tick " + tick);
+                    lagCompensation.fastForwardBullets(bullets, fastForwardTimeInTicks, ship.getWorld(), tick);
                 }
 
                 for (int i = 0; i < weaponSlots.size(); i++) {
                     WeaponSlot weaponSlot = weaponSlots.get(i);
                     trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketWeaponSlotShoot(
-                            ship.getId(), weaponSlot.getId(), time), player);
+                            ship.getId(), weaponSlot.getId(), tick), player);
                 }
             }
         }

@@ -5,12 +5,12 @@ import net.bfsr.entity.CommonEntityManager;
 
 public class EntityManager extends CommonEntityManager {
     @Override
-    public void update(double timestamp) {
+    public void update(double timestamp, int tick) {
         for (int i = 0; i < entities.size(); i++) {
             RigidBody rigidBody = entities.get(i);
 
             if (rigidBody.isDead()) {
-                rigidBody.getWorld().remove(i--, rigidBody);
+                rigidBody.getWorld().remove(i--, rigidBody, tick);
             } else {
                 rigidBody.update();
 
@@ -18,7 +18,7 @@ public class EntityManager extends CommonEntityManager {
                     rigidBody.setDead();
                 } else {
                     getDataHistoryManager().addPositionData(rigidBody.getId(), rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(),
-                            rigidBody.getCos(), timestamp);
+                            rigidBody.getCos(), tick);
                 }
             }
         }

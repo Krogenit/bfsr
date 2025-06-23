@@ -107,7 +107,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
                             (float) networkSystem.getAverageClientToServerTimeDiffInNanos() / 1_000_000.0f;
                     label1.setString("Ping: " + DecimalUtils.strictFormatWithToDigits(ping) + "ms" +
                             "\nAverage ping (100 results): " + DecimalUtils.strictFormatWithToDigits(averagePing) + "ms" +
-                            "\nClient render delay: " + client.getClientRenderDelay() / 1_000_000 + "ms" +
+                            "\nClient render delay: " + client.getClientRenderDelayInNanos() / 1_000_000 + "ms" +
                             "\nTime diff: " + DecimalUtils.strictFormatWithToDigits(clientToServerTimeDiffInMills) + "ms" +
                             "\nAverage time diff: " + DecimalUtils.strictFormatWithToDigits(averageClientToServerTimeDiffInMills) + "ms");
                 })).getHeight();

@@ -27,8 +27,8 @@ public class PacketShipInfo extends PacketScheduled {
     private float energy;
     private float shield;
 
-    public PacketShipInfo(Ship ship, double timestamp) {
-        super(timestamp);
+    public PacketShipInfo(Ship ship, int tick) {
+        super(tick);
         this.id = ship.getId();
 
         Modules modules = ship.getModules();

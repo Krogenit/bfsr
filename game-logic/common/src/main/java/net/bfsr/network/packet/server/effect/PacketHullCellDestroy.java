@@ -17,8 +17,8 @@ public class PacketHullCellDestroy extends PacketScheduled {
     private int entityId;
     private short cellX, cellY;
 
-    public PacketHullCellDestroy(int entityId, int cellX, int cellY, double timestamp) {
-        super(timestamp);
+    public PacketHullCellDestroy(int entityId, int cellX, int cellY, int tick) {
+        super(tick);
         this.entityId = entityId;
         this.cellX = (short) cellX;
         this.cellY = (short) cellY;

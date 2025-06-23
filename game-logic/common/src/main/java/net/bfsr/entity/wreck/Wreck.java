@@ -104,8 +104,8 @@ public class Wreck extends RigidBody {
     }
 
     @Override
-    public void onRemovedFromWorld() {
-        super.onRemovedFromWorld();
+    public void onRemovedFromWorld(int tick) {
+        super.onRemovedFromWorld(tick);
         wreckPool.returnBack(this);
     }
 

@@ -22,9 +22,9 @@ import net.bfsr.engine.physics.correction.LocalPlayerInputCorrectionHandler;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.RigidBody;
+import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.engine.Engines;
-import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.network.packet.client.input.PacketMouseLeftClick;
 import net.bfsr.network.packet.client.input.PacketMouseLeftRelease;
 import net.bfsr.network.packet.client.input.PacketMouseSyncPosition;
@@ -65,7 +65,7 @@ public class PlayerInputController extends InputController {
 
     public PlayerInputController(Client client) {
         this.client = client;
-        this.localPlayerInputCorrectionHandler = new LocalPlayerInputCorrectionHandler(client.getClientRenderDelay());
+        this.localPlayerInputCorrectionHandler = new LocalPlayerInputCorrectionHandler(client.getClientRenderDelayInTicks());
         this.eventBus = client.getEventBus();
         this.eventBus.register(this);
     }
@@ -177,7 +177,18 @@ public class PlayerInputController extends InputController {
         ship.getMoveDirections().forEach(ship::move);
 
         if (mouseLeftDown) {
-            ship.shoot(WeaponSlot::createBullet);
+            int currentId = client.getEntityIdManager().getCurrentId();
+            ship.shoot(weaponSlot -> {
+                Bullet bullet = weaponSlot.createBullet(true);
+                if (bullet != null) {
+                    System.out.println("Client spawn bullet with id " + bullet.getId());
+                }
+            });
+
+            int newCurrentId = client.getEntityIdManager().getCurrentId();
+            if (newCurrentId != currentId) {
+                client.getEntityIdManager().addLocalData(client.getTick());
+            }
         }
     }
 

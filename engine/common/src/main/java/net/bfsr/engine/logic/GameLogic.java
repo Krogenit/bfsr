@@ -33,6 +33,7 @@ public class GameLogic {
     @Getter
     private boolean paused;
 
+    @Setter
     @Getter
     protected int tick;
 

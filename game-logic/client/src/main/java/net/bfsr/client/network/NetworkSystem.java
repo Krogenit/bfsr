@@ -79,9 +79,9 @@ public class NetworkSystem extends NetworkHandler {
         sendPacketTCP(new PacketLogin(login));
     }
 
-    public void update(double time) {
+    public void update(double time, int tick) {
         if (connectionState != ConnectionState.DISCONNECTED) {
-            processReceivedPackets(time);
+            processReceivedPackets(time, tick);
 
             if (connectionState == ConnectionState.CONNECTED) {
                 long now = System.currentTimeMillis();
@@ -93,11 +93,11 @@ public class NetworkSystem extends NetworkHandler {
         }
     }
 
-    private void processReceivedPackets(double time) {
+    private void processReceivedPackets(double time, int tick) {
         int size = inboundPacketQueue.size();
         for (int i = 0; !inboundPacketQueue.isEmpty() && i < size; i++) {
             Packet packet = inboundPacketQueue.poll();
-            if (packet.canProcess(time)) {
+            if (packet.canProcess(tick)) {
                 processPacket(packet);
             } else {
                 inboundPacketQueue.add(packet);

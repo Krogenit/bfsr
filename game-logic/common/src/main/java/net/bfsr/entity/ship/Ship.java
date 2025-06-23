@@ -101,7 +101,8 @@ public class Ship extends DamageableRigidBody {
         this.configData = shipData;
         this.timeToDestroy = shipData.getDestroyTimeInTicks();
         this.maxSparksTimer = timeToDestroy / 3;
-        this.jumpTimeInTicks = Math.round(Engine.convertToTicks(0.6f) * ((Math.max(Math.max(getSizeX(), getSizeY()) / 150.0f, 1.0f))));
+        this.jumpTimeInTicks = Math.round(Engine.convertSecondsToTicks(0.6f) * ((Math.max(Math.max(getSizeX(), getSizeY()) / 150.0f,
+                1.0f))));
         this.jumpTimer = jumpTimeInTicks;
         setJumpPosition();
     }

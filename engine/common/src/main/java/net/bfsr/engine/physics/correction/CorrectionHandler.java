@@ -26,13 +26,13 @@ public class CorrectionHandler {
         this.correctionAmount = correctionAmount;
     }
 
-    public void update(double timestamp) {
-        updateTransform(timestamp);
-        updateData(timestamp);
+    public void update(double timestamp, int tick) {
+        updateTransform(timestamp, tick);
+        updateData(timestamp, tick);
     }
 
-    public void updateTransform(double timestamp) {
-        TransformData transformData = dataHistoryManager.getTransformData(rigidBody.getId(), timestamp);
+    public void updateTransform(double timestamp, int tick) {
+        TransformData transformData = dataHistoryManager.getTransformData(rigidBody.getId(), tick);
         if (transformData != null) {
             Vector2f serverPosition = transformData.getPosition();
             correction(serverPosition, rigidBody.getX(), rigidBody.getY(), (dx, dy) -> {
@@ -48,8 +48,8 @@ public class CorrectionHandler {
         }
     }
 
-    public void updateData(double timestamp) {
-        PacketWorldSnapshot.EntityData entityData = dataHistoryManager.getData(rigidBody.getId(), timestamp);
+    public void updateData(double timestamp, int tick) {
+        PacketWorldSnapshot.EntityData entityData = dataHistoryManager.getData(rigidBody.getId(), tick);
         if (entityData != null) {
             Vector2f serverVelocity = entityData.getVelocity();
             Vector2 linearVelocity = rigidBody.getLinearVelocity();

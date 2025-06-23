@@ -18,6 +18,7 @@ import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.entity.ship.module.weapon.WeaponType;
 import net.bfsr.network.packet.server.component.PacketWeaponSlotShoot;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.EntityTrackingManager;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.common.Vector2;
@@ -28,6 +29,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 public class AiAttackTarget extends AiTask {
+    private final ServerGameLogic gameLogic = ServerGameLogic.get();
     private final float maxAttackRange;
     private int changeDirTimer;
     private final List<Direction> directionsToAdd = new ArrayList<>(5);
@@ -149,9 +151,9 @@ public class AiAttackTarget extends AiTask {
                 if (finalDistanceToTarget <= gunEffectiveDistance) {
                     if (Math.abs(rigidBodyUtils.getRotationDifference(ship, targetFinalPos)) <= 0.05f) {
                         slot.tryShoot(weaponSlot -> {
-                            weaponSlot.createBullet();
+                            weaponSlot.createBullet(false);
                             trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketWeaponSlotShoot(
-                                    ship.getId(), weaponSlot.getId(), ship.getWorld().getTimestamp()));
+                                    ship.getId(), weaponSlot.getId(), gameLogic.getTick()));
                         }, modules.getReactor());
                     }
                 }
@@ -218,7 +220,7 @@ public class AiAttackTarget extends AiTask {
                             sideDirection = Direction.RIGHT;
                         }
 
-                        changeDirTimer = Engine.convertToTicks(1 + random.nextFloat() * 2);
+                        changeDirTimer = Engine.convertSecondsToTicks(1 + random.nextFloat() * 2);
                     }
                 } else {
                     if (isLeftEnginesAlive) {
@@ -241,7 +243,7 @@ public class AiAttackTarget extends AiTask {
                             sideDirection = Direction.RIGHT;
                         }
 
-                        changeDirTimer = Engine.convertToTicks(1 + random.nextFloat() * 2);
+                        changeDirTimer = Engine.convertSecondsToTicks(1 + random.nextFloat() * 2);
                     }
                 } else {
                     if (isLeftEnginesAlive) {

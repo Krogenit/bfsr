@@ -4,7 +4,7 @@ import gnu.trove.map.TIntObjectMap;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.Client;
 import net.bfsr.engine.network.NetworkHandler;
-import net.bfsr.engine.network.sync.IntegerSync;
+import net.bfsr.engine.network.sync.IntegerTickSync;
 import net.bfsr.engine.world.entity.EntityIdManager;
 import net.bfsr.engine.world.entity.RigidBody;
 
@@ -16,15 +16,17 @@ import java.util.List;
 public class ClientEntityIdManager extends EntityIdManager {
     private final Client client = Client.get();
 
-    private final double clientRenderDelay;
+    private final double clientRenderDelayInNanos;
+    private final int clientRenderDelayInTicks;
 
     private final List<RigidBody> entities = new ArrayList<>();
 
-    private final IntegerSync idSync = new IntegerSync(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS);
+    private final IntegerTickSync idSync = new IntegerTickSync(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS);
 
-    public ClientEntityIdManager(double clientRenderDelay) {
+    public ClientEntityIdManager(double clientRenderDelayInNanos, int clientRenderDelayInTicks) {
         super(-1);
-        this.clientRenderDelay = clientRenderDelay;
+        this.clientRenderDelayInNanos = clientRenderDelayInNanos;
+        this.clientRenderDelayInTicks = clientRenderDelayInTicks;
     }
 
     @Override
@@ -39,19 +41,27 @@ public class ClientEntityIdManager extends EntityIdManager {
 //        entities.remove(rigidBody);
     }
 
-    public void addRemoteData(int localId, double timestamp) {
-        idSync.addRemoteData(localId, timestamp);
+    public void addRemoteData(int localId, int tick) {
+        idSync.addRemoteData(localId, tick);
+    }
+
+    public void addLocalData(int tick) {
+        idSync.addLocalData(id, tick);
     }
 
     @Override
-    public void update(double timestamp) {
+    public void update(double timestamp, int tick) {
         int idCorrection = idSync.correction();
         if (idCorrection != 0) {
-            log.info("Correction local ids with value {}", idCorrection);
+            log.info("Correction local ids with value {}, new value {}", idCorrection, id + idCorrection);
         }
 
         id += idCorrection;
-        idSync.addLocalData(id, timestamp + clientRenderDelay);
+//        idSync.addLocalData(id, tick + clientRenderDelayInTicks);
+
+//        if (idCorrection > 0) {
+//            correctEntityIds(idCorrection);
+//        }
     }
 
     private void correctEntityIds(int delta) {

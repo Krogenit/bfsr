@@ -149,7 +149,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     }
 
     @Override
-    public Bullet createBullet() {
+    public Bullet createBullet(boolean forceSpawn) {
         return null;
     }
 

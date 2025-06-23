@@ -13,6 +13,6 @@ public class PacketSyncTickHandler extends PacketHandler<PacketSyncTick, Network
 
     @Override
     public void handle(PacketSyncTick packet, NetworkSystem networkSystem, ChannelHandlerContext ctx, InetSocketAddress remoteAddress) {
-        client.addServerTickData(packet.getTick(), packet.getTimestamp());
+        client.addServerTickData(packet.getTick(), packet.getTime());
     }
 }

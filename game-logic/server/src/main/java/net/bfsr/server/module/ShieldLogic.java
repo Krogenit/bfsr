@@ -7,10 +7,12 @@ import net.bfsr.module.CommonShieldLogic;
 import net.bfsr.network.packet.server.component.PacketShieldRebuild;
 import net.bfsr.network.packet.server.component.PacketShieldRebuildingTime;
 import net.bfsr.network.packet.server.component.PacketShieldRemove;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.EntityTrackingManager;
 
 @RequiredArgsConstructor
 public class ShieldLogic extends CommonShieldLogic {
+    private final ServerGameLogic gameLogic = ServerGameLogic.get();
     private final EntityTrackingManager trackingManager;
 
     @Override
@@ -24,8 +26,7 @@ public class ShieldLogic extends CommonShieldLogic {
                 shield.rebuildShield();
 
                 Ship ship = shield.getShip();
-                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRebuild(ship.getId(),
-                        ship.getWorld().getTimestamp()));
+                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRebuild(ship.getId(), gameLogic.getTick()));
             }
         }
     }
@@ -33,14 +34,13 @@ public class ShieldLogic extends CommonShieldLogic {
     @Override
     public void onShieldRemove(Shield shield) {
         Ship ship = shield.getShip();
-        trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRemove(ship.getId(),
-                ship.getWorld().getTimestamp()));
+        trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRemove(ship.getId(), gameLogic.getTick()));
     }
 
     @Override
     public void onRebuildingTimeUpdate(Shield shield) {
         Ship ship = shield.getShip();
-        trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRebuildingTime(
-                ship.getId(), 0, ship.getWorld().getTimestamp()));
+        trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(),
+                new PacketShieldRebuildingTime(ship.getId(), 0, gameLogic.getTick()));
     }
 }

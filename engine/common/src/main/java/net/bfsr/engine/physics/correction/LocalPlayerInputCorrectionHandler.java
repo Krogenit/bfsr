@@ -4,7 +4,7 @@ import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.network.NetworkHandler;
 import net.bfsr.engine.network.packet.common.world.PacketWorldSnapshot;
-import net.bfsr.engine.network.sync.DataHistory;
+import net.bfsr.engine.network.sync.DataTickHistory;
 import net.bfsr.engine.world.entity.EntityPositionHistory;
 import net.bfsr.engine.world.entity.TransformData;
 import org.jbox2d.common.Vector2;
@@ -17,21 +17,22 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
     private static final float FORCE_CORRECTION_TO_SERVER_THRESHOLD = 5.0f;
 
     private final EntityPositionHistory positionHistory = new EntityPositionHistory(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS);
-    private final DataHistory<PacketWorldSnapshot.EntityData> dataHistory = new DataHistory<>(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS);
-    private final double clientRenderDelayInNanos;
+    private final DataTickHistory<PacketWorldSnapshot.EntityData> dataHistory = new DataTickHistory<>(
+            NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS);
+    private final int clientRenderDelayInTicks;
 
-    public LocalPlayerInputCorrectionHandler(double clientRenderDelayInNanos) {
-        this.clientRenderDelayInNanos = clientRenderDelayInNanos;
+    public LocalPlayerInputCorrectionHandler(int clientRenderDelayInTicks) {
+        this.clientRenderDelayInTicks = clientRenderDelayInTicks;
     }
 
     @Override
-    public void updateTransform(double timestamp) {
+    public void updateTransform(double timestamp, int tick) {
         TransformData serverTransformData = dataHistoryManager.getAndRemoveFirstTransformData(rigidBody.getId());
         if (serverTransformData == null) {
             return;
         }
 
-        TransformData localTransformData = positionHistory.getNonInterpolated(serverTransformData.getTime());
+        TransformData localTransformData = positionHistory.getNonInterpolated(serverTransformData.getTick());
         if (localTransformData != null) {
             Vector2f serverPosition = serverTransformData.getPosition();
             Vector2f localPosition = localTransformData.getPosition();
@@ -94,7 +95,7 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
             return;
         }
 
-        PacketWorldSnapshot.EntityData localData = dataHistory.get(serverTransformData.getTime());
+        PacketWorldSnapshot.EntityData localData = dataHistory.get(serverTransformData.getTick());
         if (localData != null) {
             Vector2f serverVelocity = serverData.getVelocity();
             Vector2f localVelocity = localData.getVelocity();
@@ -141,13 +142,13 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
             }
         }
 
-        double time = timestamp + clientRenderDelayInNanos;
-        positionHistory.addPositionData(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), time);
-        dataHistory.addData(new PacketWorldSnapshot.EntityData(rigidBody, time));
+        int tickWithoutDelay = tick + clientRenderDelayInTicks;
+        positionHistory.addPositionData(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), tickWithoutDelay);
+        dataHistory.addData(new PacketWorldSnapshot.EntityData(rigidBody, tickWithoutDelay));
     }
 
     @Override
-    public void updateData(double timestamp) {}
+    public void updateData(double timestamp, int tick) {}
 
     public void clear() {
         positionHistory.clear();

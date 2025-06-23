@@ -59,7 +59,8 @@ public abstract class ServerGameLogic extends GameLogic {
     private final ShipOutfitter shipOutfitter = new ShipOutfitter(configConverterManager);
     private final WreckSpawner wreckSpawner = new WreckSpawner(configConverterManager.getConverter(WreckRegistry.class),
             addObjectPool(Wreck.class, new ObjectPool<>(Wreck::new)));
-    private final CollisionHandler collisionHandler = new CollisionHandler(eventBus, damageSystem, entityTrackingManager, wreckSpawner);
+    private final CollisionHandler collisionHandler = new CollisionHandler(this, eventBus, damageSystem, entityTrackingManager,
+            wreckSpawner);
 
     private int ups;
     private World world;
@@ -85,7 +86,7 @@ public abstract class ServerGameLogic extends GameLogic {
 
     private void initListeners() {
         eventBus.register(new ShipEventListener());
-        eventBus.register(new WeaponEventListener(entityTrackingManager, world));
+        eventBus.register(new WeaponEventListener(entityTrackingManager));
         eventBus.register(new ModuleEventListener(entityTrackingManager));
     }
 
@@ -113,7 +114,7 @@ public abstract class ServerGameLogic extends GameLogic {
         networkSystem.sendUDPPacketToAll(new PacketSyncTick(tick, time));
 
         profiler.start("playerManager");
-        playerManager.update(time);
+        playerManager.update(tick);
         profiler.endStart("world");
         updateWorld(time);
         profiler.endStart("network");
@@ -122,14 +123,14 @@ public abstract class ServerGameLogic extends GameLogic {
     }
 
     protected void updateWorld(double time) {
-        world.update(time);
+        world.update(time, tick);
         shipSpawner.update(world);
-        entityTrackingManager.update(time, world.getEntities());
+        entityTrackingManager.update(tick, world.getEntities());
     }
 
     public PlayerNetworkHandler createPlayerNetworkHandler(int connectionId, SocketChannel socketChannel, DatagramChannel datagramChannel,
                                                            boolean singlePlayer) {
-        return new PlayerNetworkHandler(connectionId, socketChannel, datagramChannel, singlePlayer, world, playerManager,
+        return new PlayerNetworkHandler(connectionId, socketChannel, datagramChannel, singlePlayer, this, world, playerManager,
                 entityTrackingManager, aiFactory, eventBus, networkSystem.getPacketRegistry(), shipOutfitter);
     }
 

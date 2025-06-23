@@ -43,7 +43,7 @@ import net.bfsr.engine.logic.ClientGameLogic;
 import net.bfsr.engine.network.NetworkHandler;
 import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.engine.network.packet.common.world.entity.spawn.EntityPacketSpawnData;
-import net.bfsr.engine.network.sync.IntegerSync;
+import net.bfsr.engine.network.sync.IntegerTimeSync;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.sound.AbstractSoundManager;
@@ -107,10 +107,13 @@ public class Client extends ClientGameLogic {
     @Getter
     private double renderTime;
     @Getter
-    private final double clientRenderDelay = Engine.getClientRenderDelayInMills() * 1_000_000.0;
+    private int renderTick;
+    @Getter
+    private final double clientRenderDelayInNanos = Engine.getClientRenderDelayInMills() * 1_000_000.0;
+    private final int clientRenderDelayInTicks = Engine.convertMillisecondsToTicks(Engine.getClientRenderDelayInMills());
 
-    private final ClientEntityIdManager entityIdManager = new ClientEntityIdManager(clientRenderDelay);
-    private final IntegerSync ticksSync = new IntegerSync(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS);
+    private final ClientEntityIdManager entityIdManager = new ClientEntityIdManager(clientRenderDelayInNanos, clientRenderDelayInTicks);
+    private final IntegerTimeSync ticksSync = new IntegerTimeSync(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS, true);
 
     public Client(Profiler profiler, EventBus eventBus) {
         super(profiler, eventBus);
@@ -155,7 +158,7 @@ public class Client extends ClientGameLogic {
     @Override
     public void update(double time) {
         super.update(time);
-        renderTime = time - networkSystem.getAverageClientToServerTimeDiffInNanos() - clientRenderDelay;
+        renderTime = time - networkSystem.getAverageClientToServerTimeDiffInNanos() - clientRenderDelayInNanos;
 
         int tickCorrection = ticksSync.correction();
         if (tickCorrection != 0) {
@@ -163,7 +166,9 @@ public class Client extends ClientGameLogic {
         }
 
         tick += tickCorrection;
-        ticksSync.addLocalData(tick, renderTime + clientRenderDelay);
+        ticksSync.addLocalData(tick, renderTime + clientRenderDelayInNanos);
+
+        renderTick = tick - clientRenderDelayInTicks;
 
         profiler.start("renderManager");
 
@@ -178,7 +183,7 @@ public class Client extends ClientGameLogic {
 
         if (!isPaused()) {
             profiler.endStart("world");
-            world.update(renderTime);
+            world.update(renderTime, renderTick);
             profiler.endStart("particles");
             particleManager.update();
         }
@@ -192,7 +197,7 @@ public class Client extends ClientGameLogic {
         }
 
         profiler.endStart("network");
-        networkSystem.update(renderTime);
+        networkSystem.update(renderTime, renderTick);
         profiler.end();
     }
 

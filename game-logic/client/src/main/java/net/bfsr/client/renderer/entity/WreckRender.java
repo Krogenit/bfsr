@@ -58,7 +58,7 @@ public class WreckRender extends RigidBodyRender {
         this.lastColorFire.set(colorFire);
         this.colorLight.set(1.0f, 1.0f, 1.0f, 0.0f);
         this.lastColorLight.set(colorLight);
-        this.sparkleActivationTimerInTicks = object.isLight() ? Engine.convertToTicks(200.0f + random.nextInt(200)) : 0;
+        this.sparkleActivationTimerInTicks = object.isLight() ? Engine.convertSecondsToTicks(200.0f + random.nextInt(200)) : 0;
         this.fire = object.isFire();
         this.light = object.isLight();
 
@@ -205,7 +205,7 @@ public class WreckRender extends RigidBodyRender {
             }
 
             if (sparkleBlinkTimer >= 100.0f) {
-                sparkleActivationTimerInTicks = Engine.convertToTicks(200.0f + random.nextInt(200));
+                sparkleActivationTimerInTicks = Engine.convertSecondsToTicks(200.0f + random.nextInt(200));
                 sparkleBlinkTimer = 0.0f;
             }
 

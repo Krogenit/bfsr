@@ -15,6 +15,6 @@ public class PacketPlayerSyncLocalIdHandler extends PacketHandler<PacketPlayerSy
     @Override
     public void handle(PacketPlayerSyncLocalId packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
-        entityIdManager.addRemoteData(packet.getLocalId(), packet.getTimestamp());
+        entityIdManager.addRemoteData(packet.getLocalId(), packet.getTick());
     }
 }

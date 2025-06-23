@@ -6,12 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class DataHistory<T extends ChronologicalData> {
+public class DataTimeHistory<T extends ChronologicalTimeData> {
     protected final List<T> dataList = new ArrayList<>();
-    protected final double historyLengthMillis;
+    protected final double historyLengthInNanos;
 
-    public DataHistory(double historyLengthMillis) {
-        this.historyLengthMillis = historyLengthMillis * 1_000_000;
+    public DataTimeHistory(double historyLengthMillis) {
+        this.historyLengthInNanos = historyLengthMillis * 1_000_000;
     }
 
     public void addData(T data) {
@@ -39,8 +39,8 @@ public class DataHistory<T extends ChronologicalData> {
     }
 
     protected void removeOld(double timeOfEntryAdded) {
-        double thresh = timeOfEntryAdded - historyLengthMillis;
-        while (dataList.size() > 100) {
+        double thresh = timeOfEntryAdded - historyLengthInNanos;
+        while (dataList.size() > 0) {
             T epd = dataList.getLast();
             if (epd.getTime() < thresh) {
                 dataList.removeLast();

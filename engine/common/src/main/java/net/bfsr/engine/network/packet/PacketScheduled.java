@@ -12,20 +12,20 @@ import java.io.IOException;
 @NoArgsConstructor
 @AllArgsConstructor
 public abstract class PacketScheduled extends PacketAdapter {
-    private double timestamp;
+    private int tick;
 
     @Override
     public void write(ByteBuf data) throws IOException {
-        data.writeDouble(timestamp);
+        data.writeInt(tick);
     }
 
     @Override
     public void read(ByteBuf data, GameLogic gameLogic) throws IOException {
-        timestamp = data.readDouble();
+        tick = data.readInt();
     }
 
     @Override
-    public boolean canProcess(double time) {
-        return time >= timestamp;
+    public boolean canProcess(int tick) {
+        return tick >= this.tick;
     }
 }

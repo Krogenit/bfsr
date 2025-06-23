@@ -17,8 +17,8 @@ public class PacketShieldRebuildingTime extends PacketScheduled {
     private int id;
     private int time;
 
-    public PacketShieldRebuildingTime(int id, int time, double timestamp) {
-        super(timestamp);
+    public PacketShieldRebuildingTime(int id, int time, int tick) {
+        super(tick);
         this.id = id;
         this.time = time;
     }

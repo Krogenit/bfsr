@@ -14,6 +14,6 @@ public class ShieldData extends ConfigData {
         super(fileName, id, registryId);
         this.maxShield = config.maxShield();
         this.regenAmount = Engine.convertToDeltaTime(config.regenInSeconds());
-        this.rebuildTimeInTicks = Engine.convertToTicks(config.rebuildTimeInSeconds());
+        this.rebuildTimeInTicks = Engine.convertSecondsToTicks(config.rebuildTimeInSeconds());
     }
 }

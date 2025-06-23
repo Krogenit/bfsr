@@ -28,14 +28,14 @@ public class GunData extends GameObjectConfigData {
 
     public GunData(GunConfig config, String fileName, int id, int registryId) {
         super(config, fileName, id, registryId);
-        this.reloadTimeInTicks = Engine.convertToTicks(config.getReloadTimeInSeconds());
+        this.reloadTimeInTicks = Engine.convertSecondsToTicks(config.getReloadTimeInSeconds());
         this.energyCost = config.getEnergyCost();
         this.damage = new BulletDamage(config.getDamage());
         this.color = convert(config.getColor());
         this.polygon = convertToPolygon(config.getVertices());
         this.sounds = convert(config.getSounds());
         this.bulletSpeed = config.getBulletSpeed();
-        this.bulletLifeTimeInTicks = Engine.convertToTicks(config.getBulletLifeTimeInSeconds());
+        this.bulletLifeTimeInTicks = Engine.convertSecondsToTicks(config.getBulletLifeTimeInSeconds());
         this.bulletSizeX = config.getBulletSize().x();
         this.bulletSizeY = config.getBulletSize().y();
         this.bulletTexture = PathHelper.CLIENT_CONTENT.resolve(config.getBulletTexture());

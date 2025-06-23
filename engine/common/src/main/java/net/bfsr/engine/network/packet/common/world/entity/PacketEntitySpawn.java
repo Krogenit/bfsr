@@ -19,8 +19,8 @@ public class PacketEntitySpawn extends PacketScheduled {
     @SuppressWarnings("rawtypes")
     private EntityPacketSpawnData entityPacketSpawnData;
 
-    public PacketEntitySpawn(RigidBody rigidBody, double timestamp) {
-        super(timestamp);
+    public PacketEntitySpawn(RigidBody rigidBody, int tick) {
+        super(tick);
         this.entityPacketSpawnData = rigidBody.createSpawnData();
         //noinspection unchecked
         this.entityPacketSpawnData.setData(rigidBody);

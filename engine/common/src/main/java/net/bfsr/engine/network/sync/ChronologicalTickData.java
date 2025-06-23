@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChronologicalData {
-    protected double time;
+public class ChronologicalTickData {
+    protected int tick;
 }

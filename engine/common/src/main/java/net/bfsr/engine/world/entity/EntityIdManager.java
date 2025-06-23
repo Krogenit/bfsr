@@ -20,7 +20,7 @@ public class EntityIdManager {
 
     public void remove(int index, RigidBody rigidBody) {}
 
-    public void update(double timestamp) {}
+    public void update(double timestamp, int tick) {}
 
     public int getNextId() {
         return id++;

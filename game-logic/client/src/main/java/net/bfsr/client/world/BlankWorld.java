@@ -15,7 +15,7 @@ public final class BlankWorld extends World {
     public void init() {}
 
     @Override
-    public void update(double timestamp) {}
+    public void update(double timestamp, int tick) {}
 
     @Override
     public void clear() {}

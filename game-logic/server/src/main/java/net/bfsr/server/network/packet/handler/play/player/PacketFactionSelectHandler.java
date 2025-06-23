@@ -16,8 +16,9 @@ import net.bfsr.server.player.Player;
 import java.net.InetSocketAddress;
 
 public class PacketFactionSelectHandler extends PacketHandler<PacketFactionSelect, PlayerNetworkHandler> {
+    private final ServerGameLogic gameLogic = ServerGameLogic.get();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
-    private final ShipFactory shipFactory = ServerGameLogic.get().getShipFactory();
+    private final ShipFactory shipFactory = gameLogic.getShipFactory();
 
     @Override
     public void handle(PacketFactionSelect packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx,
@@ -35,10 +36,10 @@ public class PacketFactionSelectHandler extends PacketHandler<PacketFactionSelec
         Player player = playerNetworkHandler.getPlayer();
         playerShip.setOwner(player.getUsername());
         playerShip.setName(player.getUsername());
-        world.add(playerShip, false);
+        world.add(playerShip, false, false);
 
         player.setFaction(faction);
         player.addShip(playerShip);
-        player.setShip(playerShip);
+        player.setShip(playerShip, gameLogic.getTick());
     }
 }

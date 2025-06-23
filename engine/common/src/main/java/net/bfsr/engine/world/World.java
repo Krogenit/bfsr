@@ -61,44 +61,48 @@ public class World {
         eventBus.publish(new WorldInitEvent(this));
     }
 
-    public void update(double timestamp) {
+    public void update(double timestamp, int tick) {
         this.timestamp = timestamp;
 
         profiler.start("entityManager");
-        entityManager.update(timestamp);
+        entityManager.update(timestamp, tick);
         profiler.endStart("physics");
         physicWorld.step(Engine.getUpdateDeltaTime(), VELOCITY_ITERATIONS, POSITION_ITERATIONS);
         profiler.endStart("postPhysicsUpdate");
         entityManager.postPhysicsUpdate();
         profiler.endStart("entityIdManager");
-        entityIdManager.update(timestamp);
+        entityIdManager.update(timestamp, tick);
         profiler.end();
     }
 
     public void add(RigidBody entity) {
-        add(entity, true);
+        add(entity, true, false);
     }
 
     public void add(RigidBody entity, boolean addToPhysicWorld) {
+        add(entity, addToPhysicWorld, false);
+    }
+
+    public void add(RigidBody entity, boolean addToPhysicWorld, boolean force) {
         if (addToPhysicWorld) {
             if (physicWorld.isLocked()) {
-                gameLogic.addFutureTask(() -> add(entity, true));
+                gameLogic.addFutureTask(() -> add(entity, true, force));
                 return;
             } else {
                 physicWorld.addBody(entity.getBody());
             }
         }
 
-        entityManager.add(entity);
+        entityManager.add(entity, force);
         entityIdManager.add(entity);
         entity.onAddedToWorld();
     }
 
-    public void remove(int index, RigidBody entity) {
+    public void remove(int index, RigidBody entity, int tick) {
         entityManager.remove(index, entity);
         entityIdManager.remove(index, entity);
         physicWorld.removeBody(entity.getBody());
-        entity.onRemovedFromWorld();
+        entity.onRemovedFromWorld(tick);
     }
 
     public void clear() {

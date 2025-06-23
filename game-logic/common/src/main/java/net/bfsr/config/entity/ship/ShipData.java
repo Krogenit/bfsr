@@ -27,7 +27,7 @@ public class ShipData extends DamageableRigidBodyConfigData {
 
     public ShipData(ShipConfig shipConfig, String fileName, int id, int registryId) {
         super(shipConfig, fileName, id, registryId);
-        this.destroyTimeInTicks = Engine.convertToTicks(shipConfig.getDestroyTimeInSeconds());
+        this.destroyTimeInTicks = Engine.convertSecondsToTicks(shipConfig.getDestroyTimeInSeconds());
         this.effectsColor = convert(shipConfig.getEffectsColor());
 
         Vector2fConfigurable[] slotPositions = shipConfig.getWeaponSlotPositions();
