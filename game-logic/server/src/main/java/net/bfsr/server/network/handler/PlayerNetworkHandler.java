@@ -43,6 +43,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class PlayerNetworkHandler extends NetworkHandler {
     private static final int LOGIN_TIMEOUT_IN_MILLS = 5000;
     private static final int PING_PERIOD_IN_MILLS = 2000;
+    private static final int CONNECTION_TIMEOUT_IN_MILLIS = 5000 + PING_PERIOD_IN_MILLS;
 
     private final int connectionId;
     private final SocketChannel socketChannel;
@@ -66,10 +67,17 @@ public class PlayerNetworkHandler extends NetworkHandler {
 
     @Setter
     private long loginStartTime;
+    private long lastPingReceiveTime;
     private long lastPingCheckTime;
     private String terminationReason;
 
     private Player player;
+
+    @Override
+    public void addPingResult(double ping) {
+        super.addPingResult(ping);
+        lastPingReceiveTime = System.currentTimeMillis();
+    }
 
     public void update() {
         if (connectionState != ConnectionState.DISCONNECTED) {
@@ -80,6 +88,10 @@ public class PlayerNetworkHandler extends NetworkHandler {
                 if (now - lastPingCheckTime > PING_PERIOD_IN_MILLS) {
                     sendUDPPacket(new PacketPing(Side.SERVER));
                     lastPingCheckTime = now;
+                }
+
+                if (now - lastPingReceiveTime > CONNECTION_TIMEOUT_IN_MILLIS) {
+                    disconnect("connection timeout");
                 }
             } else if (connectionState == ConnectionState.LOGIN) {
                 long now = System.currentTimeMillis();
@@ -172,6 +184,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
         }
 
         world.getEventBus().publish(new PlayerJoinGameEvent(player));
+        lastPingReceiveTime = System.currentTimeMillis();
     }
 
     private void initShips(Player player) {
