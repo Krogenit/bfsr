@@ -6,8 +6,8 @@ import net.bfsr.engine.loop.AbstractGameLoop;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.config.ServerSettings;
-import net.bfsr.server.database.FileSystemPlayerRepository;
 import net.bfsr.server.database.PlayerRepository;
+import net.bfsr.server.database.RemotePlayerRepository;
 
 @Log4j2
 public class DedicatedServerGameLogic extends ServerGameLogic {
