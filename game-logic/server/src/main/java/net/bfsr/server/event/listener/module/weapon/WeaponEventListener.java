@@ -21,7 +21,7 @@ public class WeaponEventListener {
             WeaponSlot weaponSlot = event.getWeaponSlot();
             Ship ship = weaponSlot.getShip();
             trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketWeaponSlotRemove(ship.getId(), weaponSlot.getId(),
-                    gameLogic.getTick()));
+                    gameLogic.getFrame()));
         };
     }
 }

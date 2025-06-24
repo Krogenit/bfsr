@@ -1,14 +1,26 @@
 package net.bfsr.engine.loop;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.Engine;
 
 @Log4j2
 public abstract class AbstractGameLoop implements GameLoop {
+    @Setter
+    @Getter
+    private double gameTime;
+
+    @Setter
+    @Getter
+    private int gameFrame;
+
     @Override
     public void run() {
         final int maxUpdatesBeforeRender = 40;
         double lastUpdateTime = System.nanoTime();
+        gameTime = lastUpdateTime;
+        gameFrame = 0;
 
         int lastSecondTime = (int) (lastUpdateTime / 1_000_000_000.0f);
         int framesCount = 0;
@@ -21,7 +33,9 @@ public abstract class AbstractGameLoop implements GameLoop {
                 double timeBetweenUpdates = Engine.getTimeBetweenUpdatesInNanos();
                 while (now - lastUpdateTime >= timeBetweenUpdates) {
                     lastUpdateTime += timeBetweenUpdates;
-                    update(lastUpdateTime);
+                    gameTime += timeBetweenUpdates;
+                    update(gameTime);
+                    gameFrame++;
 
                     if (++updateCount == maxUpdatesBeforeRender) {
                         if (now - lastUpdateTime > timeBetweenUpdates) {

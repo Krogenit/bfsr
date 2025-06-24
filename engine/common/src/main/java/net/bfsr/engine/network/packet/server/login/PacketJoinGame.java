@@ -17,14 +17,20 @@ import java.io.IOException;
 @PacketAnnotation(id = CommonPacketRegistry.JOIN_GAME)
 public class PacketJoinGame extends PacketAdapter {
     private long seed;
+    private int frame;
+    private double serverTime;
 
     @Override
     public void write(ByteBuf data) throws IOException {
         data.writeLong(seed);
+        data.writeInt(frame);
+        data.writeDouble(serverTime);
     }
 
     @Override
     public void read(ByteBuf data, GameLogic gameLogic) throws IOException {
-        this.seed = data.readLong();
+        seed = data.readLong();
+        frame = data.readInt();
+        serverTime = data.readDouble();
     }
 }

@@ -56,8 +56,8 @@ public class IntegerTimeSync {
 
         double timeDiffMillis = (remoteData.getTime() - localData.getTime()) / 1_000_000.0;
         int ticks = Engine.convertMillisecondsToTicks(timeDiffMillis);
-        if (ticks > 0) {
-//            System.out.println("Skip correction for time diff: " + ticks + "ticks, diff: " + (remoteValue - localValue));
+        if (ticks != 0) {
+            System.out.println("Skip correction for time diff: " + ticks + "ticks, diff: " + (remoteValue - localValue));
             return 0;
         }
 

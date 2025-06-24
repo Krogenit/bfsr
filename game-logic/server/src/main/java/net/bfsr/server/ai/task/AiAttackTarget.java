@@ -153,7 +153,7 @@ public class AiAttackTarget extends AiTask {
                         slot.tryShoot(weaponSlot -> {
                             weaponSlot.createBullet(false);
                             trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketWeaponSlotShoot(
-                                    ship.getId(), weaponSlot.getId(), gameLogic.getTick()));
+                                    ship.getId(), weaponSlot.getId(), gameLogic.getFrame()));
                         }, modules.getReactor());
                     }
                 }

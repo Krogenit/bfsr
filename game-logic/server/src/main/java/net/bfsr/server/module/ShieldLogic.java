@@ -26,7 +26,8 @@ public class ShieldLogic extends CommonShieldLogic {
                 shield.rebuildShield();
 
                 Ship ship = shield.getShip();
-                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRebuild(ship.getId(), gameLogic.getTick()));
+                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(),
+                        new PacketShieldRebuild(ship.getId(), gameLogic.getFrame()));
             }
         }
     }
@@ -34,13 +35,13 @@ public class ShieldLogic extends CommonShieldLogic {
     @Override
     public void onShieldRemove(Shield shield) {
         Ship ship = shield.getShip();
-        trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRemove(ship.getId(), gameLogic.getTick()));
+        trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShieldRemove(ship.getId(), gameLogic.getFrame()));
     }
 
     @Override
     public void onRebuildingTimeUpdate(Shield shield) {
         Ship ship = shield.getShip();
         trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(),
-                new PacketShieldRebuildingTime(ship.getId(), 0, gameLogic.getTick()));
+                new PacketShieldRebuildingTime(ship.getId(), 0, gameLogic.getFrame()));
     }
 }

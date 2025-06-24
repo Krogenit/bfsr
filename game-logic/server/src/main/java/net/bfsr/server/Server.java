@@ -1,17 +1,22 @@
 package net.bfsr.server;
 
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.loop.AbstractGameLoop;
 import net.bfsr.engine.profiler.Profiler;
 
 @Log4j2
 public abstract class Server extends AbstractGameLoop {
     protected final ServerGameLogic gameLogic;
-    private final Profiler profiler;
+    private final Profiler profiler = new Profiler();
 
-    protected Server(ServerGameLogic gameLogic) {
-        this.gameLogic = gameLogic;
-        profiler = gameLogic.getProfiler();
+    protected Server(Class<? extends ServerGameLogic> gameLogicClass) {
+        try {
+            gameLogic = gameLogicClass.getConstructor(AbstractGameLoop.class, Profiler.class, EventBus.class)
+                    .newInstance(this, profiler, new EventBus());
+        } catch (Exception e) {
+            throw new RuntimeException("Couldn't create game logic instance", e);
+        }
     }
 
     @Override

@@ -73,7 +73,8 @@ public class LWJGL3Engine extends AbstractGameLoop {
         Engine.setGuiManager(new GuiManager(eventBus));
 
         try {
-            gameLogic = gameLogicClass.getConstructor(Profiler.class, EventBus.class).newInstance(profiler, eventBus);
+            gameLogic = gameLogicClass.getConstructor(AbstractGameLoop.class, Profiler.class, EventBus.class)
+                    .newInstance(this, profiler, eventBus);
             gameLogic.init();
             gameLogic.setRunning(true);
         } catch (Exception e) {

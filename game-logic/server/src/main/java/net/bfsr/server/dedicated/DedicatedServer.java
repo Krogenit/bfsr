@@ -11,8 +11,8 @@ import java.nio.charset.StandardCharsets;
 
 @Log4j2
 public class DedicatedServer extends Server {
-    public DedicatedServer(ServerGameLogic gameLogic) {
-        super(gameLogic);
+    public DedicatedServer(Class<? extends ServerGameLogic> gameLogicClass) {
+        super(gameLogicClass);
     }
 
     @Override

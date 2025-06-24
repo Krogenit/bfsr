@@ -15,6 +15,6 @@ public class PacketRespawnHandler extends PacketHandler<PacketRespawn, PlayerNet
     public void handle(PacketRespawn packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
         playerNetworkHandler.getPlayerManager().respawnPlayer(playerNetworkHandler.getWorld(), playerNetworkHandler.getPlayer(),
-                packet.getCamPosX(), packet.getCamPosY(), gameLogic.getTick());
+                packet.getCamPosX(), packet.getCamPosY(), gameLogic.getFrame());
     }
 }

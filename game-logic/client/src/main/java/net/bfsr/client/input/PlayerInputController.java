@@ -187,7 +187,7 @@ public class PlayerInputController extends InputController {
 
             int newCurrentId = client.getEntityIdManager().getCurrentId();
             if (newCurrentId != currentId) {
-                client.getEntityIdManager().addLocalData(client.getTick());
+                client.getEntityIdManager().addLocalData(client.getFrame());
             }
         }
     }

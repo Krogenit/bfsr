@@ -25,7 +25,6 @@ import net.bfsr.client.renderer.EntityRenderer;
 import net.bfsr.client.renderer.GlobalRenderer;
 import net.bfsr.client.renderer.WorldRenderer;
 import net.bfsr.client.server.LocalServer;
-import net.bfsr.client.server.LocalServerGameLogic;
 import net.bfsr.client.server.ThreadLocalServer;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.client.settings.ConfigSettings;
@@ -40,6 +39,7 @@ import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.logic.ClientGameLogic;
+import net.bfsr.engine.loop.AbstractGameLoop;
 import net.bfsr.engine.network.NetworkHandler;
 import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.engine.network.packet.common.world.entity.spawn.EntityPacketSpawnData;
@@ -115,8 +115,8 @@ public class Client extends ClientGameLogic {
     private final ClientEntityIdManager entityIdManager = new ClientEntityIdManager(clientRenderDelayInNanos, clientRenderDelayInTicks);
     private final IntegerTimeSync ticksSync = new IntegerTimeSync(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS, true);
 
-    public Client(Profiler profiler, EventBus eventBus) {
-        super(profiler, eventBus);
+    public Client(AbstractGameLoop gameLoop, Profiler profiler, EventBus eventBus) {
+        super(gameLoop, profiler, eventBus);
         instance = this;
     }
 
@@ -165,10 +165,12 @@ public class Client extends ClientGameLogic {
             log.info("Correction ticks with value {}", tickCorrection);
         }
 
-        tick += tickCorrection;
-        ticksSync.addLocalData(tick, renderTime + clientRenderDelayInNanos);
+        int frame = getFrame();
+        frame += tickCorrection;
+        setFrame(frame);
+        ticksSync.addLocalData(frame, renderTime + clientRenderDelayInNanos);
 
-        renderTick = tick - clientRenderDelayInTicks;
+        renderTick = frame - clientRenderDelayInTicks;
 
         profiler.start("renderManager");
 
@@ -216,7 +218,7 @@ public class Client extends ClientGameLogic {
 
     private void startLocalServer() {
         playerName = "Local Player";
-        localServer = new LocalServer(new LocalServerGameLogic(new Profiler(), new EventBus()));
+        localServer = new LocalServer();
         threadLocalServer = new ThreadLocalServer(localServer);
         threadLocalServer.setName("Local Server");
         threadLocalServer.start();

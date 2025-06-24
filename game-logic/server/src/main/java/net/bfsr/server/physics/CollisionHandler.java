@@ -276,9 +276,9 @@ public class CollisionHandler extends CommonCollisionHandler {
         float cos = rigidBody.getCos();
         damageSystem.damage(rigidBody, contactX, contactY, clipPolygon, Math.min(rhombusWidth, rhombusHeight) * 0.5f,
                 rigidBody.getX(), rigidBody.getY(), sin, cos, () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
-                        new PacketEntitySyncDamage(rigidBody, gameLogic.getTick())));
+                        new PacketEntitySyncDamage(rigidBody, gameLogic.getFrame())));
         trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
-                new PacketHullCellDestroy(rigidBody.getId(), cell.getColumn(), cell.getRow(), gameLogic.getTick()));
+                new PacketHullCellDestroy(rigidBody.getId(), cell.getColumn(), cell.getRow(), gameLogic.getFrame()));
 
         float rotatedX = posX * cos - posY * sin;
         float rotatedY = posY * cos + posX * sin;
@@ -394,7 +394,7 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         damageSystem.damage(rigidBody, contactX, contactY, clipPolygon, maskClipRadius, x, y, sin, cos,
                 () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
-                        new PacketEntitySyncDamage(rigidBody, gameLogic.getTick())));
+                        new PacketEntitySyncDamage(rigidBody, gameLogic.getFrame())));
     }
 
     @Getter

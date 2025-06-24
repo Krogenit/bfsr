@@ -40,6 +40,6 @@ public class PacketFactionSelectHandler extends PacketHandler<PacketFactionSelec
 
         player.setFaction(faction);
         player.addShip(playerShip);
-        player.setShip(playerShip, gameLogic.getTick());
+        player.setShip(playerShip, gameLogic.getFrame());
     }
 }

@@ -24,7 +24,7 @@ public class ModuleEventListener {
             Ship ship = event.getShip();
             Module module = event.getModule();
             trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(),
-                    new PacketModuleAdd(ship.getId(), module, gameLogic.getTick()));
+                    new PacketModuleAdd(ship.getId(), module, gameLogic.getFrame()));
         };
     }
 
@@ -34,7 +34,7 @@ public class ModuleEventListener {
             DamageableModule module = event.getModule();
             Ship ship = module.getShip();
             trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketModuleRemove(ship.getId(), module.getId(),
-                    module.getType(), gameLogic.getTick()));
+                    module.getType(), gameLogic.getFrame()));
         };
     }
 }

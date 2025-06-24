@@ -1,5 +1,8 @@
 package net.bfsr.engine.network.sync;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class IntegerTickSync {
     private final DataTickHistory<IntegerTickData> localDataHistory;
     private final DataTickHistory<IntegerTickData> remoteDataHistory;
@@ -22,6 +25,7 @@ public class IntegerTickSync {
     }
 
     public int correction(boolean debug) {
+        ArrayList<IntegerTickData> remoteDataList = new ArrayList<>(remoteDataHistory.dataList);
         IntegerTickData remoteData = remoteDataHistory.getAndRemoveFirst();
         if (remoteData == null) {
             return 0;
@@ -39,26 +43,34 @@ public class IntegerTickSync {
         }
 
         int deltaTick = remoteData.getTick() - localData.getTick();
-        if (deltaTick > 0) {
-            System.out.println("Skip correction for delta tick: " + deltaTick + "ticks, diff: " + (remoteValue - localValue));
+        if (deltaTick != 0) {
+            int valueDiff = remoteValue - localValue;
+            System.out.println("Skip correction for delta tick: " + deltaTick + "ticks, diff: " + valueDiff);
+
+            boolean smoothCorrection = true;
+            if (smoothCorrection && deltaTick > 0) {
+                int smoothCorrectionAmount = Math.round(valueDiff / (float) deltaTick);
+                System.out.println("Smooth correction " + smoothCorrectionAmount);
+                return smoothCorrectionAmount;
+            }
+
             return 0;
         }
 
         if (debug) {
-//            System.out.println("Removed remote data " + remoteData);
-//            System.out.println("Find local data " + localData);
-//
-//            List<IntegerTickData> dataList = remoteDataHistory.dataList;
-//            for (int i = 0; i < dataList.size(); i++) {
-//                IntegerTickData integerTickData = dataList.get(i);
-//                System.out.println("Remote data " + integerTickData);
-//            }
-//
-//            dataList = localDataHistory.dataList;
-//            for (int i = 0; i < dataList.size(); i++) {
-//                IntegerTickData integerTickData = dataList.get(i);
-//                System.out.println("Local data " + integerTickData);
-//            }
+            System.out.println("Removed remote data " + remoteData);
+            System.out.println("Find local data " + localData);
+
+            for (int i = 0; i < remoteDataList.size(); i++) {
+                IntegerTickData integerTickData = remoteDataList.get(i);
+                System.out.println("Remote data " + integerTickData);
+            }
+
+            List<IntegerTickData> dataList = localDataHistory.dataList;
+            for (int i = 0; i < dataList.size(); i++) {
+                IntegerTickData integerTickData = dataList.get(i);
+                System.out.println("Local data " + integerTickData);
+            }
         }
 
         int deltaId = remoteValue - localValue;

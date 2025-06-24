@@ -164,20 +164,20 @@ public class PlayerNetworkHandler extends NetworkHandler {
         player.init(this, entityTrackingManager, playerManager, aiFactory);
         playerManager.addPlayer(player);
 
-        sendTCPPacket(new PacketLoginSuccess(gameLogic.getTick()));
+        sendTCPPacket(new PacketLoginSuccess());
     }
 
     public void joinGame() {
         connectionState = ConnectionState.CONNECTED;
-        sendTCPPacket(new PacketJoinGame(world.getSeed()));
+        sendTCPPacket(new PacketJoinGame(world.getSeed(), gameLogic.getFrame(), gameLogic.getTime()));
         if (player.getFaction() != null) {
             List<Ship> ships = player.getShips();
             if (ships.isEmpty()) {
-                playerManager.respawnPlayer(world, player, 0, 0, gameLogic.getTick());
+                playerManager.respawnPlayer(world, player, 0, 0, gameLogic.getFrame());
             } else {
                 initShips(player);
                 spawnShips(player);
-                player.setShip(player.getShip(0), gameLogic.getTick());
+                player.setShip(player.getShip(0), gameLogic.getFrame());
             }
         } else {
             sendTCPPacket(new PacketOpenGui(GuiType.SELECT_FACTION));

@@ -31,13 +31,12 @@ public class BulletSpawnLogic implements EntitySpawnLogic<BulletSpawnData> {
                 bullet.setCorrectionHandler(new DynamicCorrectionHandler(0.1f, Engine.convertToDeltaTime(2.0f), new CorrectionHandler(),
                         new HistoryCorrectionHandler()));
                 bullet.setId(spawnData.getEntityId());
-                return;
             } else {
                 log.warn("Bullet with id {} not found in client world", clientId);
             }
+        } else {
+            spawnBullet(spawnData, world);
         }
-
-        spawnBullet(spawnData, world);
     }
 
     private void spawnBullet(BulletSpawnData spawnData, World world) {

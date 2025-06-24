@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.loop.AbstractGameLoop;
 import net.bfsr.engine.network.packet.common.world.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.engine.network.packet.common.world.entity.spawn.RigidBodySpawnData;
 import net.bfsr.engine.profiler.Profiler;
@@ -20,6 +21,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Log4j2
 @RequiredArgsConstructor
 public class GameLogic {
+    private final AbstractGameLoop gameLoop;
     private final Side side;
     @Getter
     protected final Profiler profiler;
@@ -33,10 +35,6 @@ public class GameLogic {
     @Getter
     private boolean paused;
 
-    @Setter
-    @Getter
-    protected int tick;
-
     /**
      * Queue of Runnable which will execute in next game logic update step
      *
@@ -49,8 +47,6 @@ public class GameLogic {
     private final ObjectPools objectPools = new ObjectPools();
 
     public void update(double time) {
-        tick++;
-
         profiler.start("tasks");
         while (!futureTasks.isEmpty()) {
             futureTasks.poll().run();
@@ -95,6 +91,22 @@ public class GameLogic {
 
     public EntityPacketSpawnData<?> getEntitySpawnData(int entityId) {
         return new RigidBodySpawnData<>();
+    }
+
+    public void setFrame(int frame) {
+        gameLoop.setGameFrame(frame);
+    }
+
+    public void setTime(double gameTime) {
+        gameLoop.setGameTime(gameTime);
+    }
+
+    public int getFrame() {
+        return gameLoop.getGameFrame();
+    }
+
+    public double getTime() {
+        return gameLoop.getGameTime();
     }
 
     public void shutdown() {

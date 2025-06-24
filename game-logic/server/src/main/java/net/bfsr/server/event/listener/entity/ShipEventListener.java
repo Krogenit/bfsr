@@ -42,10 +42,10 @@ public class ShipEventListener {
             if (ship.isControlledByPlayer()) {
                 Player player = playerManager.getPlayerControllingShip(ship);
                 trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketShipSyncMoveDirection(ship.getId(),
-                        event.direction().ordinal(), false, gameLogic.getTick()), player);
+                        event.direction().ordinal(), false, gameLogic.getFrame()), player);
             } else {
                 trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShipSyncMoveDirection(ship.getId(),
-                        event.direction().ordinal(), false, gameLogic.getTick()));
+                        event.direction().ordinal(), false, gameLogic.getFrame()));
             }
         };
     }
@@ -57,10 +57,10 @@ public class ShipEventListener {
             if (ship.isControlledByPlayer()) {
                 Player player = playerManager.getPlayerControllingShip(ship);
                 trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketShipSyncMoveDirection(ship.getId(),
-                        event.direction().ordinal(), true, gameLogic.getTick()), player);
+                        event.direction().ordinal(), true, gameLogic.getFrame()), player);
             } else {
                 trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShipSyncMoveDirection(ship.getId(),
-                        event.direction().ordinal(), true, gameLogic.getTick()));
+                        event.direction().ordinal(), true, gameLogic.getFrame()));
             }
         };
     }
@@ -69,7 +69,7 @@ public class ShipEventListener {
     public EventListener<ShipPostPhysicsUpdate> shipPostPhysicsUpdateEvent() {
         return event -> {
             Ship ship = event.ship();
-            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShipInfo(ship, gameLogic.getTick()));
+            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShipInfo(ship, gameLogic.getFrame()));
         };
     }
 
@@ -78,7 +78,7 @@ public class ShipEventListener {
         return event -> {
             Ship ship = event.ship();
             trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(),
-                    new PacketShipSetDestroying(ship, gameLogic.getTick()));
+                    new PacketShipSetDestroying(ship, gameLogic.getFrame()));
         };
     }
 
