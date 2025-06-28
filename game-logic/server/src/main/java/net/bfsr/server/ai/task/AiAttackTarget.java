@@ -90,8 +90,8 @@ public class AiAttackTarget extends AiTask {
         float x = ship.getX();
         float y = ship.getY();
         float distanceToTarget = targetPos.distance(x, y);
-        if (distanceToTarget >= maxAttackRange || target.isDead() || Math.abs(targetPos.x) > 1000 ||
-                Math.abs(targetPos.y) > 1000) {
+        if (distanceToTarget >= maxAttackRange || target.isDead() || Math.abs(targetPos.x) > 100 ||
+                Math.abs(targetPos.y) > 100) {
             ship.setTarget(null);
             return;
         }
@@ -133,7 +133,7 @@ public class AiAttackTarget extends AiTask {
                     float totalVelocityY = -sin * bulletSpeed * Engine.getUpdateDeltaTimeInSeconds() * totalIterations;
                     bulletFinalPos.set(x + xPos + totalVelocityX, y + yPos + totalVelocityY);
 
-                    gunEffectiveDistance = bulletFinalPos.distance(x, y) - 2.0f;
+                    gunEffectiveDistance = bulletFinalPos.distance(x, y) - 0.2f;
 
                     if (distanceToTarget < gunEffectiveDistance) {
                         float iterations = distanceToTarget / gunEffectiveDistance;
