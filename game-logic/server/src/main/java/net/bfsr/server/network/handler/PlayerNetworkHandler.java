@@ -64,6 +64,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
     private ConnectionState connectionState = ConnectionState.CONNECTING;
     private ConnectionState connectionStateBeforeDisconnect;
     private final Queue<Packet> inboundPacketQueue = new ConcurrentLinkedQueue<>();
+    private final long connectionStartTime = System.currentTimeMillis();
 
     @Setter
     private long loginStartTime;
@@ -97,6 +98,11 @@ public class PlayerNetworkHandler extends NetworkHandler {
                 long now = System.currentTimeMillis();
                 if (now - loginStartTime >= LOGIN_TIMEOUT_IN_MILLS) {
                     disconnect("login timeout");
+                }
+            } else if (connectionState == ConnectionState.CONNECTING) {
+                long now = System.currentTimeMillis();
+                if (now - connectionStartTime >= CONNECTION_TIMEOUT_IN_MILLIS) {
+                    disconnect("connecting timeout");
                 }
             }
         }
@@ -208,7 +214,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
         }
     }
 
-    private void disconnect(String reason) {
+    public void disconnect(String reason) {
         try {
             log.info("Disconnecting {}: {}", socketChannel.remoteAddress(), reason);
             socketChannel.eventLoop().execute(() -> socketChannel.writeAndFlush(new PacketDisconnectLogin(reason))
