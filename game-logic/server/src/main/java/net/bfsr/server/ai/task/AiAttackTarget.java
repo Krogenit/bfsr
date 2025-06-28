@@ -127,10 +127,10 @@ public class AiAttackTarget extends AiTask {
                 } else {
                     GunData gunData = slot.getGunData();
                     float bulletSpeed = gunData.getBulletSpeed();
-                    int totalIterations = gunData.getBulletLifeTimeInTicks();
+                    int totalIterations = gunData.getBulletLifeTimeInFrames();
 
-                    float totalVelocityX = -cos * bulletSpeed * Engine.getUpdateDeltaTime() * totalIterations;
-                    float totalVelocityY = -sin * bulletSpeed * Engine.getUpdateDeltaTime() * totalIterations;
+                    float totalVelocityX = -cos * bulletSpeed * Engine.getUpdateDeltaTimeInSeconds() * totalIterations;
+                    float totalVelocityY = -sin * bulletSpeed * Engine.getUpdateDeltaTimeInSeconds() * totalIterations;
                     bulletFinalPos.set(x + xPos + totalVelocityX, y + yPos + totalVelocityY);
 
                     gunEffectiveDistance = bulletFinalPos.distance(x, y) - 2.0f;
@@ -140,8 +140,8 @@ public class AiAttackTarget extends AiTask {
                         totalIterations = Math.round(totalIterations * iterations);
                     }
 
-                    totalTargetVelocity.set(targetVelocity.x * Engine.getUpdateDeltaTime(),
-                            targetVelocity.y * Engine.getUpdateDeltaTime()).mul(totalIterations);
+                    totalTargetVelocity.set(targetVelocity.x * Engine.getUpdateDeltaTimeInSeconds(),
+                            targetVelocity.y * Engine.getUpdateDeltaTimeInSeconds()).mul(totalIterations);
                     targetFinalPos.set(targetPos.x + totalTargetVelocity.x - xPos,
                             targetPos.y + totalTargetVelocity.y - yPos);
                 }
@@ -220,7 +220,7 @@ public class AiAttackTarget extends AiTask {
                             sideDirection = Direction.RIGHT;
                         }
 
-                        changeDirTimer = Engine.convertSecondsToTicks(1 + random.nextFloat() * 2);
+                        changeDirTimer = Engine.convertSecondsToFrames(1 + random.nextFloat() * 2);
                     }
                 } else {
                     if (isLeftEnginesAlive) {
@@ -243,7 +243,7 @@ public class AiAttackTarget extends AiTask {
                             sideDirection = Direction.RIGHT;
                         }
 
-                        changeDirTimer = Engine.convertSecondsToTicks(1 + random.nextFloat() * 2);
+                        changeDirTimer = Engine.convertSecondsToFrames(1 + random.nextFloat() * 2);
                     }
                 } else {
                     if (isLeftEnginesAlive) {

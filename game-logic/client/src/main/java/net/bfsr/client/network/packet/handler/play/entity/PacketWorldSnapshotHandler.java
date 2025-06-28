@@ -11,13 +11,18 @@ import net.bfsr.engine.world.entity.EntityDataHistoryManager;
 import java.net.InetSocketAddress;
 
 public class PacketWorldSnapshotHandler extends PacketHandler<PacketWorldSnapshot, NetworkSystem> {
+    private final Client client = Client.get();
+
     @Override
     public void handle(PacketWorldSnapshot packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
+        client.setTime(packet.getTime());
+        client.setFrame(packet.getFrame());
+
         UnorderedArrayList<PacketWorldSnapshot.EntityData> entityDataList = packet.getEntityDataList();
         EntityDataHistoryManager historyManager = Client.get().getWorld().getEntityManager().getDataHistoryManager();
         for (int i = 0; i < entityDataList.size(); i++) {
-            historyManager.addData(entityDataList.get(i), packet.getTick());
+            historyManager.addData(entityDataList.get(i), packet.getFrame());
         }
     }
 }

@@ -9,6 +9,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChronologicalTickData {
-    protected int tick;
+public abstract class ChronologicalData<T extends ChronologicalData<T>> {
+    protected int frame;
+
+    public abstract void getInterpolated(T other, int frame, float interpolation, T destination);
 }

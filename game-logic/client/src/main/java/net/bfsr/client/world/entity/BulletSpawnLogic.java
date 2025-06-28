@@ -28,7 +28,7 @@ public class BulletSpawnLogic implements EntitySpawnLogic<BulletSpawnData> {
         if (clientId < 0 && ship != null && spawnData.getOwnerId() == ship.getId()) {
             Bullet bullet = world.getEntityById(clientId);
             if (bullet != null) {
-                bullet.setCorrectionHandler(new DynamicCorrectionHandler(0.1f, Engine.convertToDeltaTime(2.0f), new CorrectionHandler(),
+                bullet.setCorrectionHandler(new DynamicCorrectionHandler(0.05f, Engine.convertToDeltaTime(0.5f), new CorrectionHandler(),
                         new HistoryCorrectionHandler()));
                 bullet.setId(spawnData.getEntityId());
             } else {

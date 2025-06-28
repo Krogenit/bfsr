@@ -26,37 +26,41 @@ public class CorrectionHandler {
         this.correctionAmount = correctionAmount;
     }
 
-    public void update(double timestamp, int tick) {
-        updateTransform(timestamp, tick);
-        updateData(timestamp, tick);
+    public void update(double time, int frame) {
+        updateTransform(time, frame);
+        updateData(time, frame);
     }
 
-    public void updateTransform(double timestamp, int tick) {
-        TransformData transformData = dataHistoryManager.getTransformData(rigidBody.getId(), tick);
-        if (transformData != null) {
-            Vector2f serverPosition = transformData.getPosition();
-            correction(serverPosition, rigidBody.getX(), rigidBody.getY(), (dx, dy) -> {
-                transform.x = rigidBody.getX() + dx;
-                transform.y = rigidBody.getY() + dy;
-            });
-            angleCorrection(transformData.getCos(), transformData.getSin(), rigidBody.getCos(), rigidBody.getSin(), (sin, cos) -> {
-                transform.z = sin;
-                transform.w = cos;
-            });
-
-            rigidBody.setTransform(transform.x, transform.y, transform.z, transform.w);
+    public void updateTransform(double time, int frame) {
+        TransformData transformData = dataHistoryManager.getTransformData(rigidBody.getId(), frame);
+        if (transformData == null) {
+            return;
         }
+
+        Vector2f serverPosition = transformData.getPosition();
+        correction(serverPosition, rigidBody.getX(), rigidBody.getY(), (dx, dy) -> {
+            transform.x = rigidBody.getX() + dx;
+            transform.y = rigidBody.getY() + dy;
+        });
+        angleCorrection(transformData.getCos(), transformData.getSin(), rigidBody.getCos(), rigidBody.getSin(), (sin, cos) -> {
+            transform.z = sin;
+            transform.w = cos;
+        });
+
+        rigidBody.setTransform(transform.x, transform.y, transform.z, transform.w);
     }
 
-    public void updateData(double timestamp, int tick) {
-        PacketWorldSnapshot.EntityData entityData = dataHistoryManager.getData(rigidBody.getId(), tick);
-        if (entityData != null) {
-            Vector2f serverVelocity = entityData.getVelocity();
-            Vector2 linearVelocity = rigidBody.getLinearVelocity();
-            correction(serverVelocity, linearVelocity.x, linearVelocity.y,
-                    (dx, dy) -> rigidBody.setVelocity(linearVelocity.x + dx, linearVelocity.y + dy));
-            correction(entityData.getAngularVelocity(), rigidBody.getAngularVelocity(), rigidBody::setAngularVelocity);
+    public void updateData(double time, int frame) {
+        PacketWorldSnapshot.EntityData entityData = dataHistoryManager.getData(rigidBody.getId(), frame);
+        if (entityData == null) {
+            return;
         }
+
+        Vector2f serverVelocity = entityData.getVelocity();
+        Vector2 linearVelocity = rigidBody.getLinearVelocity();
+        correction(serverVelocity, linearVelocity.x, linearVelocity.y,
+                (dx, dy) -> rigidBody.setVelocity(linearVelocity.x + dx, linearVelocity.y + dy));
+        correction(entityData.getAngularVelocity(), rigidBody.getAngularVelocity(), rigidBody::setAngularVelocity);
     }
 
     private void correction(Vector2f serverVector, float localX, float localY, BiConsumer<Float, Float> correctionConsumer) {

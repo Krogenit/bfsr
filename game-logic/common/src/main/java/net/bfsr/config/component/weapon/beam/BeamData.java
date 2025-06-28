@@ -7,11 +7,11 @@ import net.bfsr.engine.Engine;
 @Getter
 public class BeamData extends GunData {
     private final float beamMaxRange;
-    private final float aliveTimeInTicks;
+    private final float aliveTimeInFrames;
 
     BeamData(BeamConfig config, String fileName, int id, int registryId) {
         super(config, fileName, id, registryId);
         this.beamMaxRange = config.getBeamMaxRange();
-        this.aliveTimeInTicks = Engine.convertSecondsToTicks(config.getAliveTimeInSeconds());
+        this.aliveTimeInFrames = Engine.convertSecondsToFrames(config.getAliveTimeInSeconds());
     }
 }

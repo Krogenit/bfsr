@@ -22,7 +22,6 @@ import net.bfsr.engine.physics.correction.LocalPlayerInputCorrectionHandler;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.RigidBody;
-import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.network.packet.client.input.PacketMouseLeftClick;
@@ -65,14 +64,16 @@ public class PlayerInputController extends InputController {
 
     public PlayerInputController(Client client) {
         this.client = client;
-        this.localPlayerInputCorrectionHandler = new LocalPlayerInputCorrectionHandler(client.getClientRenderDelayInTicks());
+        this.localPlayerInputCorrectionHandler = new LocalPlayerInputCorrectionHandler(client.getClientRenderDelayInFrames());
         this.eventBus = client.getEventBus();
         this.eventBus.register(this);
     }
 
     @Override
     public void update() {
-        if (guiManager.isActive()) return;
+        if (guiManager.isActive()) {
+            return;
+        }
 
         if (ship == null) {
             if (controlledShipId == NOT_CONTROLLED_SHIP_ID) {
@@ -101,7 +102,9 @@ public class PlayerInputController extends InputController {
 
     @Override
     public boolean input(int key) {
-        if (ship == null) return false;
+        if (ship == null) {
+            return false;
+        }
 
         Engines engines = ship.getModules().getEngines();
         if (key == KEY_W && engines.isEngineAlive(Direction.FORWARD)) {
@@ -134,7 +137,9 @@ public class PlayerInputController extends InputController {
 
     @Override
     public void release(int key) {
-        if (ship == null) return;
+        if (ship == null) {
+            return;
+        }
 
         if (key == KEY_W) {
             client.sendUDPPacket(new PacketShipStopMove(Direction.FORWARD));
@@ -177,18 +182,7 @@ public class PlayerInputController extends InputController {
         ship.getMoveDirections().forEach(ship::move);
 
         if (mouseLeftDown) {
-            int currentId = client.getEntityIdManager().getCurrentId();
-            ship.shoot(weaponSlot -> {
-                Bullet bullet = weaponSlot.createBullet(true);
-                if (bullet != null) {
-                    System.out.println("Client spawn bullet with id " + bullet.getId());
-                }
-            });
-
-            int newCurrentId = client.getEntityIdManager().getCurrentId();
-            if (newCurrentId != currentId) {
-                client.getEntityIdManager().addLocalData(client.getFrame());
-            }
+            ship.shoot(weaponSlot -> weaponSlot.createBullet(true));
         }
     }
 
@@ -287,10 +281,6 @@ public class PlayerInputController extends InputController {
     public void resetControlledShip() {
         setShip(null);
         controlledShipId = NOT_CONTROLLED_SHIP_ID;
-        localPlayerInputCorrectionHandler.clear();
-    }
-
-    public void onClientToServerTimeDiffChange() {
         localPlayerInputCorrectionHandler.clear();
     }
 

@@ -32,7 +32,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @RequiredArgsConstructor
 public class NetworkSystem extends NetworkHandler {
     private static final long PING_CHECK_INTERVAL = 1000;
-    private static final double CHANGE_TIME_EVENT_THRESHOLD = 1_000_000;
 
     private final Client client;
 
@@ -79,9 +78,9 @@ public class NetworkSystem extends NetworkHandler {
         sendPacketTCP(new PacketLogin(login));
     }
 
-    public void update(double time, int tick) {
+    public void update(int frame) {
         if (connectionState != ConnectionState.DISCONNECTED) {
-            processReceivedPackets(time, tick);
+            processReceivedPackets(frame);
 
             if (connectionState == ConnectionState.CONNECTED) {
                 long now = System.currentTimeMillis();
@@ -93,11 +92,11 @@ public class NetworkSystem extends NetworkHandler {
         }
     }
 
-    private void processReceivedPackets(double time, int tick) {
+    private void processReceivedPackets(int frame) {
         int size = inboundPacketQueue.size();
         for (int i = 0; !inboundPacketQueue.isEmpty() && i < size; i++) {
             Packet packet = inboundPacketQueue.poll();
-            if (packet.canProcess(tick)) {
+            if (packet.canProcess(frame)) {
                 processPacket(packet);
             } else {
                 inboundPacketQueue.add(packet);
@@ -121,9 +120,9 @@ public class NetworkSystem extends NetworkHandler {
         networkManagerUDP.sendPacket(packet);
     }
 
-    public void addClientToServerTimeDiffResult(long clientToServerTimeDiff) {
-        this.clientToServerTimeDiffInNanos = clientToServerTimeDiff;
-        this.clientToServerTimeResults.add(clientToServerTimeDiffInNanos);
+    public void addClientToServerTimeDiffResult(long clientToServerTimeDiffInNanos) {
+        this.clientToServerTimeDiffInNanos = clientToServerTimeDiffInNanos;
+        clientToServerTimeResults.add(clientToServerTimeDiffInNanos);
 
         if (clientToServerTimeResults.size() > 100) {
             clientToServerTimeResults.removeFirst();
@@ -134,13 +133,7 @@ public class NetworkSystem extends NetworkHandler {
             allTimeDiffs += clientToServerTimeResults.getDouble(i);
         }
 
-        double oldAverageClientToServerTimeDiffInNanos = averageClientToServerTimeDiffInNanos;
-        this.averageClientToServerTimeDiffInNanos = allTimeDiffs / clientToServerTimeResults.size();
-
-        double timeDiff = Math.abs(oldAverageClientToServerTimeDiffInNanos - averageClientToServerTimeDiffInNanos);
-        if (timeDiff > CHANGE_TIME_EVENT_THRESHOLD) {
-            client.onClientToServerTimeDiffChange();
-        }
+        averageClientToServerTimeDiffInNanos = allTimeDiffs / clientToServerTimeResults.size();
     }
 
     public void onDisconnect(String reason) {

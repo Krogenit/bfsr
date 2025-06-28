@@ -87,13 +87,13 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         if (impactPower > 0.25f) {
             if (ship1.getCollisionTimer() <= 0) {
-                ship1.setCollisionTimer(Engine.convertSecondsToTicks(0.5f));
+                ship1.setCollisionTimer(Engine.convertSecondsToFrames(0.5f));
                 ship1.setLastAttacker(ship2);
                 damageShipByCollision(ship1, contactX, contactY, -normalX, -normalY);
             }
 
             if (ship2.getCollisionTimer() <= 0) {
-                ship2.setCollisionTimer(Engine.convertSecondsToTicks(0.5f));
+                ship2.setCollisionTimer(Engine.convertSecondsToFrames(0.5f));
                 ship2.setLastAttacker(ship1);
                 damageShipByCollision(ship2, contactX, contactY, normalX, normalY);
             }
@@ -112,7 +112,7 @@ public class CollisionHandler extends CommonCollisionHandler {
     public void shipWreck(Ship ship, Wreck wreck, Fixture shipFixture, Fixture wreckFixture, float contactX,
                           float contactY, float normalX, float normalY) {
         if (ship.getCollisionTimer() <= 0) {
-            ship.setCollisionTimer(Engine.convertSecondsToTicks(0.5f));
+            ship.setCollisionTimer(Engine.convertSecondsToFrames(0.5f));
             Shield shield = ship.getModules().getShield();
             if (shield != null && isShieldAlive(shield)) {
                 Vector4f color = ship.getConfigData().getEffectsColor();

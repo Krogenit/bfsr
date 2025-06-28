@@ -24,7 +24,7 @@ import java.util.List;
 
 @NoArgsConstructor
 public class RigidBody extends GameObject {
-    protected static final int DEFAULT_MAX_LIFE_TIME_IN_TICKS = Engine.convertSecondsToTicks(20);
+    protected static final int DEFAULT_MAX_LIFE_TIME_IN_FRAMES = Engine.convertIntSecondsToFrames(20);
 
     @Getter
     protected World world;
@@ -34,7 +34,7 @@ public class RigidBody extends GameObject {
     @Setter
     protected int id;
     @Getter
-    protected int lifeTime, maxLifeTime = DEFAULT_MAX_LIFE_TIME_IN_TICKS;
+    protected int lifeTime, maxLifeTime = DEFAULT_MAX_LIFE_TIME_IN_FRAMES;
     protected EventBus eventBus;
     @Setter
     @Getter
@@ -133,8 +133,8 @@ public class RigidBody extends GameObject {
         eventBus.publish(new RigidBodyAddToWorldEvent(this));
     }
 
-    public void onRemovedFromWorld(int tick) {
-        eventBus.publish(new RigidBodyRemovedFromWorldEvent(this, tick));
+    public void onRemovedFromWorld(int frame) {
+        eventBus.publish(new RigidBodyRemovedFromWorldEvent(this, frame));
     }
 
     public void addFixture(Fixture fixture) {

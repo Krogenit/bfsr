@@ -16,8 +16,8 @@ import java.io.IOException;
 public class PacketShieldRebuild extends PacketScheduled {
     private int id;
 
-    public PacketShieldRebuild(int id, int tick) {
-        super(tick);
+    public PacketShieldRebuild(int id, int frame) {
+        super(frame);
         this.id = id;
     }
 

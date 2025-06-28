@@ -21,8 +21,8 @@ public class PacketModuleAdd extends PacketScheduled {
     private int dataId;
     private ModuleType type;
 
-    public PacketModuleAdd(int entityId, Module module, int tick) {
-        super(tick);
+    public PacketModuleAdd(int entityId, Module module, int frame) {
+        super(frame);
         this.entityId = entityId;
         this.id = module.getId();
         this.type = module.getType();

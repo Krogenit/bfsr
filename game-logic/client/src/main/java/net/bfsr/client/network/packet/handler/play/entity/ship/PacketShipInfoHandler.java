@@ -48,7 +48,7 @@ public class PacketShipInfoHandler extends PacketHandler<PacketShipInfo, Network
 
             modules.getCrew().setCrewSize(packet.getCrew());
 
-            if (!ship.isControlledByPlayer()) {//Fixed desync in fire speed
+            if (!ship.isControlledByPlayer()) {// Fixed desync in fire speed
                 modules.getReactor().setEnergy(packet.getEnergy());
             }
 

@@ -18,6 +18,6 @@ public class WorldEventListener {
 
     @EventHandler
     public EventListener<RigidBodyPostPhysicsUpdateEvent> postPhysicsUpdateEvent() {
-        return event -> event.getRigidBody().getCorrectionHandler().update(client.getRenderTime(), client.getRenderTick());
+        return event -> event.getRigidBody().getCorrectionHandler().update(client.getRenderTime(), client.getRenderFrame());
     }
 }

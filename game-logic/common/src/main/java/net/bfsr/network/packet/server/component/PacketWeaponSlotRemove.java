@@ -17,8 +17,8 @@ public class PacketWeaponSlotRemove extends PacketScheduled {
     private int shipId;
     private int slotId;
 
-    public PacketWeaponSlotRemove(int shipId, int slotId, int tick) {
-        super(tick);
+    public PacketWeaponSlotRemove(int shipId, int slotId, int frame) {
+        super(frame);
         this.shipId = shipId;
         this.slotId = slotId;
     }

@@ -41,15 +41,15 @@ public final class Engine {
     private static final double TIME_BETWEEN_UPDATES_IN_NANOS = 1_000_000_000.0 / UPDATES_PER_SECOND;
     private static final double CLIENT_RENDER_DELAY_IN_MILLS = 100;
 
-    public static int convertSecondsToTicks(int value) {
+    public static int convertIntSecondsToFrames(int value) {
         return value * UPDATES_PER_SECOND;
     }
 
-    public static int convertSecondsToTicks(float value) {
+    public static int convertSecondsToFrames(float value) {
         return Math.round(value * UPDATES_PER_SECOND);
     }
 
-    public static int convertMillisecondsToTicks(double valueInMillis) {
+    public static int convertMillisecondsToFrames(double valueInMillis) {
         return (int) Math.round((valueInMillis / 1000.0) * UPDATES_PER_SECOND);
     }
 
@@ -57,7 +57,7 @@ public final class Engine {
         return value * UPDATE_DELTA_TIME_IN_SECONDS;
     }
 
-    public static float getUpdateDeltaTime() {
+    public static float getUpdateDeltaTimeInSeconds() {
         return UPDATE_DELTA_TIME_IN_SECONDS;
     }
 

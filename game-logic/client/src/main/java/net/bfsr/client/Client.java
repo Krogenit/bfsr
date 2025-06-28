@@ -40,10 +40,8 @@ import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.logic.ClientGameLogic;
 import net.bfsr.engine.loop.AbstractGameLoop;
-import net.bfsr.engine.network.NetworkHandler;
 import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.engine.network.packet.common.world.entity.spawn.EntityPacketSpawnData;
-import net.bfsr.engine.network.sync.IntegerTimeSync;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.sound.AbstractSoundManager;
@@ -62,6 +60,15 @@ import java.net.InetAddress;
 public class Client extends ClientGameLogic {
     public static final String GAME_VERSION = "Dev 0.1.7";
     private static Client instance;
+
+    @Getter
+    private double renderTime;
+    @Getter
+    private int renderFrame;
+
+    @Getter
+    private final double clientRenderDelayInNanos = Engine.getClientRenderDelayInMills() * 1_000_000.0;
+    private final int clientRenderDelayInFrames = Engine.convertMillisecondsToFrames(Engine.getClientRenderDelayInMills());
 
     private final LanguageManager languageManager = new LanguageManager().load();
 
@@ -93,6 +100,8 @@ public class Client extends ClientGameLogic {
     private final EntitySpawnDataRegistry entitySpawnDataRegistry = new EntitySpawnDataRegistry(configConverterManager, shipFactory,
             damageHandler, this);
 
+    private final ClientEntityIdManager entityIdManager = new ClientEntityIdManager();
+
     private final NetworkSystem networkSystem = new NetworkSystem(this);
 
     protected HUD hud;
@@ -103,17 +112,6 @@ public class Client extends ClientGameLogic {
     @Getter
     private LocalServer localServer;
     private ThreadLocalServer threadLocalServer;
-
-    @Getter
-    private double renderTime;
-    @Getter
-    private int renderTick;
-    @Getter
-    private final double clientRenderDelayInNanos = Engine.getClientRenderDelayInMills() * 1_000_000.0;
-    private final int clientRenderDelayInTicks = Engine.convertMillisecondsToTicks(Engine.getClientRenderDelayInMills());
-
-    private final ClientEntityIdManager entityIdManager = new ClientEntityIdManager(clientRenderDelayInNanos, clientRenderDelayInTicks);
-    private final IntegerTimeSync ticksSync = new IntegerTimeSync(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS, true);
 
     public Client(AbstractGameLoop gameLoop, Profiler profiler, EventBus eventBus) {
         super(gameLoop, profiler, eventBus);
@@ -151,26 +149,14 @@ public class Client extends ClientGameLogic {
         }
     }
 
-    public void addServerTickData(int tick, double timestamp) {
-        ticksSync.addRemoteData(tick, timestamp);
-    }
-
     @Override
     public void update(double time) {
         super.update(time);
-        renderTime = time - networkSystem.getAverageClientToServerTimeDiffInNanos() - clientRenderDelayInNanos;
+        renderTime = time
+                + networkSystem.getAveragePing() * 1_000_000.0
+                - clientRenderDelayInNanos;
 
-        int tickCorrection = ticksSync.correction();
-        if (tickCorrection != 0) {
-            log.info("Correction ticks with value {}", tickCorrection);
-        }
-
-        int frame = getFrame();
-        frame += tickCorrection;
-        setFrame(frame);
-        ticksSync.addLocalData(frame, renderTime + clientRenderDelayInNanos);
-
-        renderTick = frame - clientRenderDelayInTicks;
+        renderFrame = getFrame() - clientRenderDelayInFrames + networkSystem.getAveragePingInFrames();
 
         profiler.start("renderManager");
 
@@ -185,7 +171,7 @@ public class Client extends ClientGameLogic {
 
         if (!isPaused()) {
             profiler.endStart("world");
-            world.update(renderTime, renderTick);
+            world.update(renderTime, renderFrame);
             profiler.endStart("particles");
             particleManager.update();
         }
@@ -199,7 +185,7 @@ public class Client extends ClientGameLogic {
         }
 
         profiler.endStart("network");
-        networkSystem.update(renderTime, renderTick);
+        networkSystem.update(renderFrame);
         profiler.end();
     }
 
@@ -316,12 +302,6 @@ public class Client extends ClientGameLogic {
 
     public HUD createHUD() {
         return hud = new HUD();
-    }
-
-    public void onClientToServerTimeDiffChange() {
-        playerInputController.onClientToServerTimeDiffChange();
-        entityIdManager.onClientToServerTimeDiffChange();
-        ticksSync.clear();
     }
 
     @Override

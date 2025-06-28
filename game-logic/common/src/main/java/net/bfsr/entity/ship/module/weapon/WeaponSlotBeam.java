@@ -40,31 +40,31 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     private final float beamRangeAnimationSpeed = Engine.convertToDeltaTime(6.0f);
 
     @Getter
-    private float aliveTimerInTicks;
-    private final float maxAliveTimerInTicks;
+    private float aliveTimerInFrames;
+    private final float maxAliveTimerInFrames;
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
-    private int damageTicks;
-    private int ticksPerDamage;
+    private int damageFrames;
+    private int framesPerDamage;
 
     public WeaponSlotBeam(BeamData beamData) {
         super(beamData, WeaponType.BEAM);
         this.beamMaxRange = beamData.getBeamMaxRange();
         this.damage = beamData.getDamage().copy();
-        this.maxAliveTimerInTicks = beamData.getAliveTimeInTicks();
+        this.maxAliveTimerInFrames = beamData.getAliveTimeInFrames();
     }
 
     @Override
     public void init(int id, Ship ship) {
         super.init(id, ship);
-        ticksPerDamage = ship.getWorld().isServer() ? 10 : 1;
-        damage.multiply(ticksPerDamage);
+        framesPerDamage = ship.getWorld().isServer() ? 10 : 1;
+        damage.multiply(framesPerDamage);
     }
 
     @Override
     public void update() {
-        if (aliveTimerInTicks > 0) {
-            aliveTimerInTicks--;
+        if (aliveTimerInFrames > 0) {
+            aliveTimerInFrames--;
 
             if (beamPower < 1.0f) {
                 beamPower += powerAnimationSpeed;
@@ -101,7 +101,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     @Override
     public void shoot(Consumer<WeaponSlot> onShotConsumer, Reactor reactor) {
         super.shoot(onShotConsumer, reactor);
-        aliveTimerInTicks = maxAliveTimerInTicks;
+        aliveTimerInFrames = maxAliveTimerInFrames;
     }
 
     private void rayCast() {
@@ -139,12 +139,12 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
         if (rayCastResultFixture != null) {
             currentBeamRange = collisionPoint.distance(rayStart.x, rayStart.y);
 
-            if (damageTicks == 0) {
+            if (damageFrames == 0) {
                 world.getCollisionMatrix().rayCast(this, rayCastResultFixture, collisionPoint.x, collisionPoint.y, rayCastResultNormal.x,
                         rayCastResultNormal.y);
             }
 
-            damageTicks = (damageTicks + 1) % ticksPerDamage;
+            damageFrames = (damageFrames + 1) % framesPerDamage;
         }
     }
 

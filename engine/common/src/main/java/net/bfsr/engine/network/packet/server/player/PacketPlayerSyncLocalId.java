@@ -16,8 +16,8 @@ import java.io.IOException;
 public class PacketPlayerSyncLocalId extends PacketScheduled {
     private int localId;
 
-    public PacketPlayerSyncLocalId(int localId, int tick) {
-        super(tick);
+    public PacketPlayerSyncLocalId(int localId, int frame) {
+        super(frame);
         this.localId = localId;
     }
 
@@ -34,7 +34,7 @@ public class PacketPlayerSyncLocalId extends PacketScheduled {
     }
 
     @Override
-    public boolean canProcess(int tick) {
+    public boolean canProcess(int frame) {
         return true;
     }
 }

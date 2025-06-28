@@ -18,8 +18,8 @@ public class PacketShipSyncMoveDirection extends PacketScheduled {
     private int direction;
     private boolean remove;
 
-    public PacketShipSyncMoveDirection(int id, int direction, boolean remove, int tick) {
-        super(tick);
+    public PacketShipSyncMoveDirection(int id, int direction, boolean remove, int frame) {
+        super(frame);
         this.id = id;
         this.direction = direction;
         this.remove = remove;

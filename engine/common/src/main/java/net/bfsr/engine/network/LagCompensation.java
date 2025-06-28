@@ -19,9 +19,9 @@ public final class LagCompensation {
     private final AABB aabb = new AABB();
     private final ObjectSet<Body> affectedBodies = new ObjectOpenHashSet<>();
 
-    public void fastForwardBullets(List<RigidBody> bullets, int fastForwardTimeInTicks, World world, int tick) {
-        float updateDeltaTime = Engine.getUpdateDeltaTime();
-        int iterations = fastForwardTimeInTicks;
+    public void fastForwardBullets(List<RigidBody> bullets, int fastForwardTimeInFrames, World world, int frame) {
+        float updateDeltaTime = Engine.getUpdateDeltaTimeInSeconds();
+        int iterations = fastForwardTimeInFrames;
         if (iterations > 0) {
             List<Body> bulletsBodies = new ArrayList<>(bullets.size());
             for (int i = 0; i < bullets.size(); i++) {
@@ -87,7 +87,7 @@ public final class LagCompensation {
                 for (Body body : affectedBodies) {
                     rigidBody = (RigidBody) body.getUserData();
                     TransformData transformData = dataHistoryManager.getTransformData(rigidBody.getId(),
-                            tick - fastForwardTimeInTicks);
+                            frame - fastForwardTimeInFrames);
                     if (transformData != null) {
                         Vector2f position = transformData.getPosition();
                         body.setTransform(position.x, position.y, transformData.getSin(), transformData.getCos());
@@ -104,7 +104,7 @@ public final class LagCompensation {
                     bullets.get(i1).postPhysicsUpdate();
                 }
 
-                fastForwardTimeInTicks -= 1;
+                fastForwardTimeInFrames -= 1;
             }
 
             physicWorld.endFastForward();

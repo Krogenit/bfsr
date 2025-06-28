@@ -4,7 +4,7 @@ import gnu.trove.map.TIntObjectMap;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.Client;
 import net.bfsr.engine.network.NetworkHandler;
-import net.bfsr.engine.network.sync.IntegerTickSync;
+import net.bfsr.engine.network.sync.IntegerSync;
 import net.bfsr.engine.world.entity.EntityIdManager;
 import net.bfsr.engine.world.entity.RigidBody;
 
@@ -14,19 +14,12 @@ import java.util.List;
 @Log4j2
 //TODO: entities
 public class ClientEntityIdManager extends EntityIdManager {
-    private final Client client = Client.get();
-
-    private final double clientRenderDelayInNanos;
-    private final int clientRenderDelayInTicks;
-
     private final List<RigidBody> entities = new ArrayList<>();
 
-    private final IntegerTickSync idSync = new IntegerTickSync(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS);
+    private final IntegerSync idSync = new IntegerSync(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS);
 
-    public ClientEntityIdManager(double clientRenderDelayInNanos, int clientRenderDelayInTicks) {
+    public ClientEntityIdManager() {
         super(-1);
-        this.clientRenderDelayInNanos = clientRenderDelayInNanos;
-        this.clientRenderDelayInTicks = clientRenderDelayInTicks;
     }
 
     @Override
@@ -41,23 +34,19 @@ public class ClientEntityIdManager extends EntityIdManager {
 //        entities.remove(rigidBody);
     }
 
-    public void addRemoteData(int localId, int tick) {
-        idSync.addRemoteData(localId, tick);
-    }
-
-    public void addLocalData(int tick) {
-        idSync.addLocalData(id, tick);
+    public void addRemoteData(int localId, int frame) {
+        idSync.addRemoteData(localId, frame);
     }
 
     @Override
-    public void update(double timestamp, int tick) {
+    public void update(double timestamp, int frame) {
         int idCorrection = idSync.correction();
         if (idCorrection != 0) {
             log.info("Correction local ids with value {}, new value {}", idCorrection, id + idCorrection);
         }
 
         id += idCorrection;
-//        idSync.addLocalData(id, tick + clientRenderDelayInTicks);
+        idSync.addLocalData(id, frame + Client.get().getClientRenderDelayInFrames());
 
 //        if (idCorrection > 0) {
 //            correctEntityIds(idCorrection);
@@ -65,7 +54,7 @@ public class ClientEntityIdManager extends EntityIdManager {
     }
 
     private void correctEntityIds(int delta) {
-        TIntObjectMap<RigidBody> entitiesById = client.getWorld().getEntityManager().getEntitiesById();
+        TIntObjectMap<RigidBody> entitiesById = Client.get().getWorld().getEntityManager().getEntitiesById();
 
         for (int i = 0; i < entities.size(); i++) {
             RigidBody rigidBody = entities.get(i);
@@ -73,10 +62,6 @@ public class ClientEntityIdManager extends EntityIdManager {
             rigidBody.setId(rigidBody.getId() + delta);
             entitiesById.put(rigidBody.getId(), rigidBody);
         }
-    }
-
-    public void onClientToServerTimeDiffChange() {
-        idSync.clear();
     }
 
     @Override

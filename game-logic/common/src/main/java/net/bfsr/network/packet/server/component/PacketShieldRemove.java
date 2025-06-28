@@ -16,8 +16,8 @@ import java.io.IOException;
 public class PacketShieldRemove extends PacketScheduled {
     private int id;
 
-    public PacketShieldRemove(int id, int tick) {
-        super(tick);
+    public PacketShieldRemove(int id, int frame) {
+        super(frame);
         this.id = id;
     }
 

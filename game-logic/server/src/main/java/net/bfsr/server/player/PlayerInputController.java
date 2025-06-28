@@ -43,7 +43,7 @@ public class PlayerInputController {
         ship.removeMoveDirection(direction);
     }
 
-    public void update(int tick) {
+    public void update(int frame) {
         if (ship != null) {
             rigidBodyUtils.rotateToVector(ship, mousePosition, ship.getModules().getEngines().getAngularVelocity());
             ship.getMoveDirections().forEach(direction -> {
@@ -53,7 +53,7 @@ public class PlayerInputController {
             });
 
             if (mouseLeftDown) {
-                int fastForwardTimeInTicks = Engine.convertMillisecondsToTicks(Engine.getClientRenderDelayInMills() +
+                int fastForwardTimeInFrames = Engine.convertMillisecondsToFrames(Engine.getClientRenderDelayInMills() +
                         player.getNetworkHandler().getAveragePing());
                 List<RigidBody> bullets = new ArrayList<>(16);
                 List<WeaponSlot> weaponSlots = new ArrayList<>(8);
@@ -67,15 +67,14 @@ public class PlayerInputController {
                 });
 
                 if (bullets.size() > 0) {
-                    player.getNetworkHandler().sendUDPPacket(new PacketPlayerSyncLocalId(player.getLocalIdManager().getCurrentId(), tick));
-//                    System.out.println("Server send local id " + player.getLocalIdManager().getCurrentId() + " on tick " + tick);
-                    lagCompensation.fastForwardBullets(bullets, fastForwardTimeInTicks, ship.getWorld(), tick);
+                    player.getNetworkHandler().sendUDPPacket(new PacketPlayerSyncLocalId(player.getLocalIdManager().getCurrentId(), frame));
+                    lagCompensation.fastForwardBullets(bullets, fastForwardTimeInFrames, ship.getWorld(), frame);
                 }
 
                 for (int i = 0; i < weaponSlots.size(); i++) {
                     WeaponSlot weaponSlot = weaponSlots.get(i);
                     trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketWeaponSlotShoot(
-                            ship.getId(), weaponSlot.getId(), tick), player);
+                            ship.getId(), weaponSlot.getId(), frame), player);
                 }
             }
         }

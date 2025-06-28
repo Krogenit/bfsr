@@ -39,7 +39,7 @@ public class Bullet extends RigidBody {
         super(x, y, sin, cos, gunData.getBulletSizeX(), gunData.getBulletSizeY(), gunData);
         this.gunData = gunData;
         this.owner = owner;
-        this.maxLifeTime = gunData.getBulletLifeTimeInTicks();
+        this.maxLifeTime = gunData.getBulletLifeTimeInFrames();
         this.bulletSpeed = gunData.getBulletSpeed();
         this.damage = damage;
         this.health = damage.getAverage();

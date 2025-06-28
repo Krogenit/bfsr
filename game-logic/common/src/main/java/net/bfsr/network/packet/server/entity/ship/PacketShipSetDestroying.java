@@ -17,8 +17,8 @@ import java.io.IOException;
 public class PacketShipSetDestroying extends PacketScheduled {
     private int id;
 
-    public PacketShipSetDestroying(RigidBody obj, int tick) {
-        super(tick);
+    public PacketShipSetDestroying(RigidBody obj, int frame) {
+        super(frame);
         this.id = obj.getId();
     }
 

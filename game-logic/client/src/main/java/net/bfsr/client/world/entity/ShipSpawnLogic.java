@@ -35,15 +35,15 @@ public class ShipSpawnLogic extends DamageableRigidBodySpawnLogic<ShipSpawnData>
         ship.init(world, spawnData.getEntityId());
         outfit(ship, spawnData, shipFactory);
 
-        //Should be called before adding to world for proper ShipRender with connected objects initialization
+        // Should be called before adding to world for proper ShipRender with connected objects initialization
         addFixturesAndConnectedObjects(ship, spawnData, configConverterManager);
 
         world.add(ship, false);
 
-        //This method should be called after ship added to world
+        // This method should be called after ship added to world
         if (spawnData.isSpawned()) ship.setSpawned();
 
-        //Render instance with mask texture only available after ShipRender created when ship has added to world
+        // Render instance with mask texture only available after ShipRender created when ship has added to world
         updateDamage(damageHandler, ship, spawnData);
     }
 

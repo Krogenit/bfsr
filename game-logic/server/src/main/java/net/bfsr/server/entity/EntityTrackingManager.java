@@ -23,7 +23,7 @@ import org.joml.Vector2f;
 import java.util.List;
 
 public class EntityTrackingManager {
-    private static final float TRACKING_DISTANCE = 600;
+    private static final float TRACKING_DISTANCE = 60;
     private static final float TRACKING_DISTANCE_SQ = TRACKING_DISTANCE * TRACKING_DISTANCE;
 
     private final UnorderedArrayList<Player> players = new UnorderedArrayList<>();
@@ -52,7 +52,7 @@ public class EntityTrackingManager {
         entityTrackingByPlayersMap.values().forEach(players1 -> players1.remove(player));
     }
 
-    public void update(int tick, List<? extends RigidBody> entities) {
+    public void update(int frame, double time, List<? extends RigidBody> entities) {
         playerEntitiesInRangeMap.object2ObjectEntrySet().fastForEach(entry -> {
             Player player = entry.getKey();
             Vector2f position = player.getPosition();
@@ -69,9 +69,9 @@ public class EntityTrackingManager {
                     if (distSq > TRACKING_DISTANCE_SQ) {
                         entitiesInRange.remove(id);
                         entityTrackingByPlayersMap.get(id).remove(player);
-                        network.sendTCPPacketTo(new PacketEntityRemove(id, tick), player);
+                        network.sendTCPPacketTo(new PacketEntityRemove(id, frame), player);
                     } else {
-                        entitySyncManager.addToSyncQueue(rigidBody, tick, player);
+                        entitySyncManager.addToSyncQueue(rigidBody, frame, time, player);
                     }
                 } else {
                     if (!rigidBody.isDead() && player.canTrackEntity(rigidBody) && distSq <= TRACKING_DISTANCE_SQ) {
@@ -79,12 +79,12 @@ public class EntityTrackingManager {
                         ObjectOpenHashSet<Player> playersSet = entityTrackingByPlayersMap.computeIfAbsent(id,
                                 key -> new ObjectOpenHashSet<>(16));
                         playersSet.add(player);
-                        network.sendTCPPacketTo(new PacketEntitySpawn(rigidBody, tick), player);
+                        network.sendTCPPacketTo(new PacketEntitySpawn(rigidBody, frame), player);
                     }
                 }
             }
 
-            entitySyncManager.flush(player, tick);
+            entitySyncManager.flush(player, frame, time);
         });
     }
 
@@ -93,7 +93,7 @@ public class EntityTrackingManager {
         return event -> {
             RigidBody rigidBody = event.rigidBody();
             sendPacketToPlayersTrackingEntity(rigidBody.getId(), new PacketEntityRemove(rigidBody.getId(),
-                    event.tick()));
+                    event.frame()));
             entityTrackingByPlayersMap.remove(rigidBody.getId());
             playerEntitiesInRangeMap.values().forEach(set -> set.remove(rigidBody.getId()));
         };

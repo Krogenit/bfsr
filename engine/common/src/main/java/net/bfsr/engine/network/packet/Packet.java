@@ -9,5 +9,5 @@ public interface Packet {
     void write(ByteBuf data) throws IOException;
     void read(ByteBuf data, GameLogic gameLogic) throws IOException;
     boolean isAsync();
-    boolean canProcess(int tick);
+    boolean canProcess(int frame);
 }

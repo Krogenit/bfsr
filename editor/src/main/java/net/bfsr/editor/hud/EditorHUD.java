@@ -81,7 +81,7 @@ public class EditorHUD extends HUD {
                     if (fastForwardTesting) {
                         Client client = Client.get();
                         world = new World(new Profiler(), 0L, new EventBus(), new EntityManager(),
-                                new ClientEntityIdManager(client.getClientRenderDelayInNanos(), client.getClientRenderDelayInTicks()),
+                                new ClientEntityIdManager(),
                                 client,
                                 new CollisionMatrix(new CollisionHandler(client)));
                         world.init();
@@ -141,8 +141,8 @@ public class EditorHUD extends HUD {
             float y = fastForwardShip.getY();
 
             double renderTime = Client.get().getRenderTime();
-            int renderTick = Client.get().getRenderTick();
-            positionHistory.addPositionData(x, y, fastForwardShip.getSin(), fastForwardShip.getCos(), renderTick);
+            int renderFrame = Client.get().getRenderFrame();
+            positionHistory.addPositionData(x, y, fastForwardShip.getSin(), fastForwardShip.getCos(), renderFrame);
 
             fastForwardShip.setPosition(x + shipVelocity.x, y + shipVelocity.y);
 
@@ -155,10 +155,10 @@ public class EditorHUD extends HUD {
                     float additionalSeconds = 0.5f;
                     float fastForwardTimeInNanos = (float) (Client.get().getClientRenderDelayInNanos() +
                             additionalSeconds * 1_000_000_000.0f);
-                    int fastForwardTimeInTicks = Client.get().getClientRenderDelayInTicks() +
-                            Engine.convertSecondsToTicks(additionalSeconds);
+                    int fastForwardTimeInFrames = Client.get().getClientRenderDelayInFrames() +
+                            Engine.convertSecondsToFrames(additionalSeconds);
 
-                    float updateDeltaTime = Engine.getUpdateDeltaTime();
+                    float updateDeltaTime = Engine.getUpdateDeltaTimeInSeconds();
                     float updateDeltaTimeInMills = updateDeltaTime * 1000.0f;
                     float updateDeltaTimeInNanos = updateDeltaTimeInMills * 1_000_000.0f;
                     int iterations = Math.round(fastForwardTimeInNanos / 1_000_000.0f / updateDeltaTimeInMills);
@@ -216,8 +216,8 @@ public class EditorHUD extends HUD {
 
                         world.getPhysicWorld().beginFastForward();
 
-                        fastForwardIteration(0, iterations, affectedBodies, renderTime, fastForwardTimeInNanos,
-                                updateDeltaTimeInNanos, entityDataHistoryManager, renderTick, fastForwardTimeInTicks);
+                        fastForwardIteration(0, iterations, affectedBodies, fastForwardTimeInNanos,
+                                updateDeltaTimeInNanos, entityDataHistoryManager, renderFrame, fastForwardTimeInFrames);
                         return;
                     }
                 }
@@ -230,13 +230,13 @@ public class EditorHUD extends HUD {
                 }
             }
 
-            world.update(renderTime, renderTick);
+            world.update(renderTime, renderFrame);
         }
     }
 
-    private void fastForwardIteration(int i, int max, Set<Body> affectedBodies, double renderTime, double fastForwardTimeInNanos,
+    private void fastForwardIteration(int i, int max, Set<Body> affectedBodies, double fastForwardTimeInNanos,
                                       float updateDeltaTimeInNanos, EntityDataHistoryManager entityDataHistoryManager,
-                                      int renderTick, int fastForwardTimeInTicks) {
+                                      int renderFrame, int fastForwardTimeInFrames) {
         Thread thread = new Thread(() -> {
             try {
                 Thread.sleep(50L);
@@ -250,7 +250,7 @@ public class EditorHUD extends HUD {
                 for (Body body : affectedBodies) {
                     RigidBody rigidBody = (RigidBody) body.getUserData();
                     TransformData transformData = dataHistoryManager.getTransformData(rigidBody.getId(),
-                            renderTick - fastForwardTimeInTicks);
+                            renderFrame - fastForwardTimeInFrames);
                     if (transformData != null) {
                         Vector2f position = transformData.getPosition();
                         body.setTransform(position.x, position.y, transformData.getSin(), transformData.getCos());
@@ -258,7 +258,7 @@ public class EditorHUD extends HUD {
                 }
 
                 bullet.update();
-                world.getPhysicWorld().fastForwardStep(Engine.getUpdateDeltaTime(), Collections.singletonList(bullet.getBody()));
+                world.getPhysicWorld().fastForwardStep(Engine.getUpdateDeltaTimeInSeconds(), Collections.singletonList(bullet.getBody()));
                 bullet.postPhysicsUpdate();
                 fastForwardShip.postPhysicsUpdate();
 
@@ -274,8 +274,8 @@ public class EditorHUD extends HUD {
                         body.setTransform(position.x, position.y, transformData.getSin(), transformData.getCos());
                     }
                 } else {
-                    fastForwardIteration(i + 1, max, affectedBodies, renderTime, fastForwardTimeInNanos - updateDeltaTimeInNanos,
-                            updateDeltaTimeInNanos, entityDataHistoryManager, renderTick, fastForwardTimeInTicks - 1);
+                    fastForwardIteration(i + 1, max, affectedBodies, fastForwardTimeInNanos - updateDeltaTimeInNanos,
+                            updateDeltaTimeInNanos, entityDataHistoryManager, renderFrame, fastForwardTimeInFrames - 1);
                 }
             });
         });

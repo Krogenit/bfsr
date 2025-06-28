@@ -131,13 +131,13 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         if (impactPower > 0.25f) {
             if (ship1.getCollisionTimer() <= 0) {
-                ship1.setCollisionTimer(Engine.convertSecondsToTicks(0.5f));
+                ship1.setCollisionTimer(Engine.convertSecondsToFrames(0.5f));
                 ship1.setLastAttacker(ship2);
                 damageShipByCollision(ship1, ship1Fixture, impactPower, contactX, contactY);
             }
 
             if (ship2.getCollisionTimer() <= 0) {
-                ship2.setCollisionTimer(Engine.convertSecondsToTicks(0.5f));
+                ship2.setCollisionTimer(Engine.convertSecondsToFrames(0.5f));
                 ship2.setLastAttacker(ship1);
                 damageShipByCollision(ship2, ship2Fixture, impactPower, contactX, contactY);
             }
@@ -161,7 +161,8 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         Polygon clipPolygon = createBeamClipPolygon(clipRectangleWidth, clipRectangleHeight, localContactX, localContactY, localSin,
                 localCos, penetration);
-        damageShip(ship, weaponSlot.getDamage(), weaponSlot.getBeamPower() * Engine.getUpdateDeltaTime(), contactX, contactY, fixture,
+        damageShip(ship, weaponSlot.getDamage(), weaponSlot.getBeamPower() * Engine.getUpdateDeltaTimeInSeconds(), contactX, contactY,
+                fixture,
                 RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, clipPolygon, clipRectangleHeight);
     }
 
@@ -204,7 +205,7 @@ public class CollisionHandler extends CommonCollisionHandler {
     public void weaponSlotBeamWreck(WeaponSlotBeam weaponSlotBeam, Wreck wreck, Fixture wreckFixture, float contactX,
                                     float contactY, float normalX, float normalY) {
         super.weaponSlotBeamWreck(weaponSlotBeam, wreck, wreckFixture, contactX, contactY, normalX, normalY);
-        damageWreck(wreck, weaponSlotBeam.getDamage().getHull() * weaponSlotBeam.getBeamPower() * Engine.getUpdateDeltaTime());
+        damageWreck(wreck, weaponSlotBeam.getDamage().getHull() * weaponSlotBeam.getBeamPower() * Engine.getUpdateDeltaTimeInSeconds());
     }
 
     private void damageShip(Ship ship, BulletDamage damage, float multiplayer, float contactX, float contactY,

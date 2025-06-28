@@ -61,17 +61,17 @@ public class World {
         eventBus.publish(new WorldInitEvent(this));
     }
 
-    public void update(double timestamp, int tick) {
+    public void update(double timestamp, int frame) {
         this.timestamp = timestamp;
 
         profiler.start("entityManager");
-        entityManager.update(timestamp, tick);
+        entityManager.update(timestamp, frame);
         profiler.endStart("physics");
-        physicWorld.step(Engine.getUpdateDeltaTime(), VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+        physicWorld.step(Engine.getUpdateDeltaTimeInSeconds(), VELOCITY_ITERATIONS, POSITION_ITERATIONS);
         profiler.endStart("postPhysicsUpdate");
         entityManager.postPhysicsUpdate();
         profiler.endStart("entityIdManager");
-        entityIdManager.update(timestamp, tick);
+        entityIdManager.update(timestamp, frame);
         profiler.end();
     }
 
@@ -98,11 +98,11 @@ public class World {
         entity.onAddedToWorld();
     }
 
-    public void remove(int index, RigidBody entity, int tick) {
+    public void remove(int index, RigidBody entity, int frame) {
         entityManager.remove(index, entity);
         entityIdManager.remove(index, entity);
         physicWorld.removeBody(entity.getBody());
-        entity.onRemovedFromWorld(tick);
+        entity.onRemovedFromWorld(frame);
     }
 
     public void clear() {

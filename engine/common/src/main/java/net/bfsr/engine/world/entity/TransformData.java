@@ -3,22 +3,22 @@ package net.bfsr.engine.world.entity;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.engine.math.LUT;
-import net.bfsr.engine.network.sync.ChronologicalTickData;
+import net.bfsr.engine.network.sync.ChronologicalData;
 import org.joml.Vector2f;
 
 @Getter
-public class TransformData extends ChronologicalTickData {
+public class TransformData extends ChronologicalData<TransformData> {
     private final Vector2f position = new Vector2f();
     @Setter
     private float sin, cos;
 
-    void getInterpol(TransformData other, int tick, TransformData destination) {
-        float interpolation = (this.tick - tick) / (float) (this.tick - other.tick);
+    @Override
+    public void getInterpolated(TransformData other, int frame, float interpolation, TransformData destination) {
         destination.position.set(position.x + (other.position.x - position.x) * interpolation,
                 position.y + (other.position.y - position.y) * interpolation);
         destination.setSin(sin + (other.sin - sin) * interpolation);
         destination.setCos(cos + (other.cos - cos) * interpolation);
-        destination.tick = tick;
+        destination.frame = frame;
     }
 
     public void setPosition(float x, float y) {

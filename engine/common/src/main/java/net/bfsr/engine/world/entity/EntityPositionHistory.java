@@ -1,74 +1,54 @@
 package net.bfsr.engine.world.entity;
 
-import net.bfsr.engine.network.sync.DataTickHistory;
+import net.bfsr.engine.network.sync.DataHistory;
 import net.bfsr.engine.util.ObjectPool;
 import org.jetbrains.annotations.Nullable;
 
-public class EntityPositionHistory extends DataTickHistory<TransformData> {
+public class EntityPositionHistory extends DataHistory<TransformData> {
     private final ObjectPool<TransformData> cache = new ObjectPool<>(TransformData::new);
-    private final TransformData cachedTransformData = new TransformData();
 
     public EntityPositionHistory(double historyLengthMillis) {
-        super(historyLengthMillis);
+        super(historyLengthMillis, new TransformData());
     }
 
-    public void addPositionData(float x, float y, float sin, float cos, int tick) {
+    public void addPositionData(float x, float y, float sin, float cos, int frame) {
         TransformData positionData = cache.get();
         positionData.setPosition(x, y);
         positionData.setSin(sin);
         positionData.setCos(cos);
-        positionData.setTick(tick);
+        positionData.setFrame(frame);
         addData(positionData);
     }
 
     @Override
-    public TransformData get(int tick) {
+    public TransformData getInterpolated(int frame) {
         if (dataList.isEmpty()) {
             return null;
         }
 
-        if (dataList.getFirst().getTick() < tick) {
+        if (dataList.getFirst().getFrame() < frame) {
             return null;// Extrapolation
-        } else if (dataList.getLast().getTick() > tick) {
+        } else if (dataList.getLast().getFrame() > frame) {
             return dataList.getLast();
         }
 
-        TransformData firstEPD = null;
-        for (int i = 0, positionDataSize = dataList.size(); i < positionDataSize; i++) {
-            TransformData secondEPD = dataList.get(i);
-            if (firstEPD != null) {
-                if (firstEPD.getTick() >= tick && secondEPD.getTick() < tick) {
-                    firstEPD.getInterpol(secondEPD, tick, cachedTransformData);
-                    return cachedTransformData;
-                }
-            }
-
-            firstEPD = secondEPD;
-        }
-
-        return null;
+        return findInterpolated(frame);
     }
 
-    public TransformData getNonInterpolated(int tick) {
+    @Override
+    public TransformData get(int frame) {
         if (dataList.isEmpty()) {
             return null;
         }
 
-        if (dataList.getFirst().getTick() < tick) {
+        if (dataList.getFirst().getFrame() < frame) {
             return dataList.getFirst();
         }
 
-        for (int i = 1, positionDataSize = dataList.size(); i < positionDataSize; i++) {
-            TransformData older = dataList.get(i);
-            if (older.getTick() <= tick) {
-                TransformData newer = dataList.get(i - 1);
-                double olderTime = Math.abs(tick - older.getTick());
-                double newerTime = Math.abs(tick - newer.getTick());
-                if (newerTime <= olderTime) {
-                    return older;
-                } else {
-                    return newer;
-                }
+        for (int i = 0, positionDataSize = dataList.size(); i < positionDataSize; i++) {
+            TransformData transformData = dataList.get(i);
+            if (transformData.getFrame() <= frame) {
+                return transformData;
             }
         }
 
@@ -81,11 +61,11 @@ public class EntityPositionHistory extends DataTickHistory<TransformData> {
     }
 
     @Override
-    protected void removeOld(int tickOfEntryAdded) {
-        double thresh = tickOfEntryAdded - historyLengthTicks;
+    protected void removeOld(int frameOfEntryAdded) {
+        double thresh = frameOfEntryAdded - historyLengthFrames;
         while (dataList.size() > 100) {
             TransformData epd = dataList.getLast();
-            if (epd.getTick() < thresh) {
+            if (epd.getFrame() < thresh) {
                 cache.returnBack(dataList.removeLast());
             } else {
                 break;

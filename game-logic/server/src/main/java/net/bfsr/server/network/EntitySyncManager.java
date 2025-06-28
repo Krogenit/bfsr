@@ -13,18 +13,18 @@ public class EntitySyncManager {
     private final NetworkSystem network;
     private final UnorderedArrayList<PacketWorldSnapshot.EntityData> entityDataList = new UnorderedArrayList<>(128);
 
-    public void addToSyncQueue(RigidBody entity, int tick, Player player) {
-        entityDataList.add(new PacketWorldSnapshot.EntityData(entity, tick));
+    public void addToSyncQueue(RigidBody entity, int frame, double time, Player player) {
+        entityDataList.add(new PacketWorldSnapshot.EntityData(entity));
 
         if (entityDataList.size() == MAX_ENTITY_DATA_IN_PACKET) {
-            network.sendUDPPacketTo(new PacketWorldSnapshot(entityDataList, tick), player);
+            network.sendUDPPacketTo(new PacketWorldSnapshot(entityDataList, frame, time), player);
             entityDataList.clear();
         }
     }
 
-    public void flush(Player player, int tick) {
+    public void flush(Player player, int frame, double time) {
         if (entityDataList.size() > 0) {
-            network.sendUDPPacketTo(new PacketWorldSnapshot(entityDataList, tick), player);
+            network.sendUDPPacketTo(new PacketWorldSnapshot(entityDataList, frame, time), player);
             entityDataList.clear();
         }
     }

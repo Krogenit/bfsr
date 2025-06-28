@@ -9,7 +9,7 @@ import net.bfsr.engine.logic.GameLogic;
 import net.bfsr.engine.network.packet.CommonPacketRegistry;
 import net.bfsr.engine.network.packet.PacketAnnotation;
 import net.bfsr.engine.network.packet.PacketScheduled;
-import net.bfsr.engine.network.sync.ChronologicalTickData;
+import net.bfsr.engine.network.sync.ChronologicalData;
 import net.bfsr.engine.network.util.ByteBufUtils;
 import net.bfsr.engine.world.entity.RigidBody;
 import org.jbox2d.common.Vector2;
@@ -21,16 +21,19 @@ import java.io.IOException;
 @NoArgsConstructor
 @PacketAnnotation(id = CommonPacketRegistry.WORLD_SNAPSHOT)
 public class PacketWorldSnapshot extends PacketScheduled {
+    private double time;
     private UnorderedArrayList<EntityData> entityDataList;
 
-    public PacketWorldSnapshot(UnorderedArrayList<EntityData> entityDataList, int tick) {
-        super(tick);
+    public PacketWorldSnapshot(UnorderedArrayList<EntityData> entityDataList, int frame, double time) {
+        super(frame);
+        this.time = time;
         this.entityDataList = new UnorderedArrayList<>(entityDataList);
     }
 
     @Override
     public void write(ByteBuf data) throws IOException {
         super.write(data);
+        data.writeDouble(time);
         data.writeShort(entityDataList.size());
 
         for (int i = 0; i < entityDataList.size(); i++) {
@@ -42,6 +45,7 @@ public class PacketWorldSnapshot extends PacketScheduled {
     @Override
     public void read(ByteBuf data, GameLogic gameLogic) throws IOException {
         super.read(data, gameLogic);
+        time = data.readDouble();
         int size = data.readShort();
         entityDataList = new UnorderedArrayList<>(size);
         for (int i = 0; i < size; i++) {
@@ -50,13 +54,13 @@ public class PacketWorldSnapshot extends PacketScheduled {
     }
 
     @Override
-    public boolean canProcess(int tick) {
+    public boolean canProcess(int frame) {
         return true;
     }
 
     @Getter
     @RequiredArgsConstructor
-    public static class EntityData extends ChronologicalTickData {
+    public static class EntityData extends ChronologicalData<EntityData> {
         private final int entityId;
         private final float x, y;
         private final float sin;
@@ -64,8 +68,8 @@ public class PacketWorldSnapshot extends PacketScheduled {
         private final Vector2f velocity;
         private float angularVelocity;
 
-        public EntityData(RigidBody rigidBody, int tick) {
-            super(tick);
+        public EntityData(RigidBody rigidBody, int frame) {
+            super(frame);
             entityId = rigidBody.getId();
             x = rigidBody.getX();
             y = rigidBody.getY();
@@ -76,8 +80,11 @@ public class PacketWorldSnapshot extends PacketScheduled {
             angularVelocity = rigidBody.getAngularVelocity();
         }
 
+        public EntityData(RigidBody rigidBody) {
+            this(rigidBody, 0);
+        }
+
         EntityData(ByteBuf data) {
-            super(data.readInt());
             entityId = data.readInt();
             x = data.readFloat();
             y = data.readFloat();
@@ -88,7 +95,6 @@ public class PacketWorldSnapshot extends PacketScheduled {
         }
 
         public void write(ByteBuf data) {
-            data.writeInt(tick);
             data.writeInt(entityId);
             data.writeFloat(x);
             data.writeFloat(y);
@@ -101,6 +107,14 @@ public class PacketWorldSnapshot extends PacketScheduled {
         public void correction(float dx, float dy, float angularVelocityDelta) {
             velocity.add(dx, dy);
             angularVelocity += angularVelocityDelta;
+        }
+
+        @Override
+        public void getInterpolated(EntityData other, int frame, float interpolation, EntityData destination) {
+            destination.velocity.set(velocity.x + (other.velocity.x - velocity.x) * interpolation,
+                    velocity.y + (other.velocity.y - velocity.y) * interpolation);
+            destination.angularVelocity = (angularVelocity + (other.angularVelocity - angularVelocity) * interpolation);
+            destination.frame = frame;
         }
     }
 }

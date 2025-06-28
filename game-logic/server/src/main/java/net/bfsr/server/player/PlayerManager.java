@@ -48,7 +48,7 @@ public class PlayerManager {
         playerRepository.saveAllSync(players);
     }
 
-    public void update(int tick) {
+    public void update(int frame) {
         for (int i = 0; i < players.size(); i++) {
             Player player = players.get(i);
 
@@ -70,11 +70,11 @@ public class PlayerManager {
                 player.getNetworkHandler().sendUDPPacket(new PacketOpenGui(GuiType.DESTROYED, attacker));
             }
 
-            player.getPlayerInputController().update(tick);
+            player.getPlayerInputController().update(frame);
         }
     }
 
-    public void respawnPlayer(World world, Player player, float x, float y, int tick) {
+    public void respawnPlayer(World world, Player player, float x, float y, int frame) {
         Faction faction = player.getFaction();
 
         Ship playerShip;
@@ -92,7 +92,7 @@ public class PlayerManager {
         world.add(playerShip, false, false);
 
         player.addShip(playerShip);
-        player.setShip(playerShip, tick);
+        player.setShip(playerShip, frame);
     }
 
     public boolean hasPlayer(String username) {

@@ -17,9 +17,7 @@ public class PacketPingHandler extends PacketHandler<PacketPing, NetworkSystem> 
             long pingNanos = roundTripTimeNanos / 2;
             double pingMillis = pingNanos / 1_000_000.0;
             long timeDiff = nanoTime - packet.getOtherSideHandleTime();
-            double timeDiffMs = timeDiff / 1_000_000.0;
             long clientToServerTimeDiff = timeDiff - pingNanos;
-            double clientToServerTimeDiffMs = timeDiffMs - pingMillis;
             netHandler.addPingResult(pingMillis);
             netHandler.addClientToServerTimeDiffResult(clientToServerTimeDiff);
         } else {

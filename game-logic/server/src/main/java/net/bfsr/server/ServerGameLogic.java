@@ -12,7 +12,6 @@ import net.bfsr.engine.config.ConfigConverterManager;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.logic.GameLogic;
 import net.bfsr.engine.loop.AbstractGameLoop;
-import net.bfsr.engine.network.packet.server.PacketSyncTick;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.engine.util.Side;
@@ -113,7 +112,6 @@ public abstract class ServerGameLogic extends GameLogic {
     public void update(double time) {
         super.update(time);
         int frame = getFrame();
-        networkSystem.sendUDPPacketToAll(new PacketSyncTick(frame, time));
 
         profiler.start("playerManager");
         playerManager.update(frame);
@@ -127,7 +125,7 @@ public abstract class ServerGameLogic extends GameLogic {
     protected void updateWorld(double time, int frame) {
         world.update(time, frame);
         shipSpawner.update(world);
-        entityTrackingManager.update(frame, world.getEntities());
+        entityTrackingManager.update(frame, time, world.getEntities());
     }
 
     public PlayerNetworkHandler createPlayerNetworkHandler(int connectionId, SocketChannel socketChannel, DatagramChannel datagramChannel,

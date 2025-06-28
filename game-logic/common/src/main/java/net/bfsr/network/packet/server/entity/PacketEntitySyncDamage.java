@@ -34,8 +34,8 @@ public class PacketEntitySyncDamage extends PacketScheduled {
     private int width, height;
     private List<Fixture> fixtures;
 
-    public PacketEntitySyncDamage(DamageableRigidBody damageable, int tick) {
-        super(tick);
+    public PacketEntitySyncDamage(DamageableRigidBody damageable, int frame) {
+        super(frame);
         this.damageable = damageable;
         DamageMask damageMask = damageable.getDamageMask();
         x = damageMask.getX();
