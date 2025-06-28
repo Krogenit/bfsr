@@ -10,6 +10,7 @@ import net.bfsr.config.entity.wreck.WreckRegistry;
 import net.bfsr.engine.ai.Ai;
 import net.bfsr.engine.config.ConfigConverterManager;
 import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.loop.AbstractGameLoop;
 import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.util.ObjectPool;
@@ -27,10 +28,10 @@ import java.util.List;
 
 public class BenchmarkGameLogic extends Client {
     private final XoRoShiRo128PlusPlusRandom random = new XoRoShiRo128PlusPlusRandom();
-    private int pauseAfterTicks = 10;
+    private int pauseAfterFrames = 10;
 
-    public BenchmarkGameLogic(Profiler profiler, EventBus eventBus) {
-        super(profiler, eventBus);
+    public BenchmarkGameLogic(AbstractGameLoop gameLoop, Profiler profiler, EventBus eventBus) {
+        super(gameLoop, profiler, eventBus);
     }
 
     @Override
@@ -50,7 +51,7 @@ public class BenchmarkGameLogic extends Client {
         World world = getWorld();
 
         int shipsCount = 1000;
-        float offset = 14.0f;
+        float offset = 1.4f;
         float rectangleSpawnHalfWidth = (float) (offset * Math.sqrt(shipsCount)) / 2;
         float rectangleSpawnHalfHeight = (float) (offset * Math.sqrt(shipsCount)) / 2;
         float x = -rectangleSpawnHalfWidth;
@@ -94,7 +95,7 @@ public class BenchmarkGameLogic extends Client {
 
         WreckRegistry wreckRegistry = configManager.getConverter(WreckRegistry.class);
         int wreckCount = 1000;
-        offset = 10.0f;
+        offset = 1.0f;
         rectangleSpawnHalfWidth = (float) (offset * Math.sqrt(wreckCount)) / 2;
         rectangleSpawnHalfHeight = (float) (offset * Math.sqrt(wreckCount)) / 2;
         x = -rectangleSpawnHalfWidth;
@@ -102,7 +103,7 @@ public class BenchmarkGameLogic extends Client {
         ObjectPool<Wreck> wreckPool = getObjectPool(Wreck.class);
         for (int i = 0; i < wreckCount; i++) {
             Wreck wreck = wreckPool.get();
-            wreck.init(world, world.getNextId(), 0, true, true, true, x, y, 0, 0, 0, 1, 0, 5, 5, 1200, WreckType.DEFAULT,
+            wreck.init(world, world.getNextId(), 0, true, true, true, x, y, 0, 0, 0, 1, 0, 0.5f, 0.5f, 1200, WreckType.DEFAULT,
                     wreckRegistry.getWreck(WreckType.DEFAULT, 0));
             world.add(wreck);
             x += offset;
@@ -113,7 +114,7 @@ public class BenchmarkGameLogic extends Client {
         }
 
         int bulletsCount = 1000;
-        offset = 4.0f;
+        offset = 0.4f;
         rectangleSpawnHalfWidth = (float) (offset * Math.sqrt(bulletsCount)) / 2;
         rectangleSpawnHalfHeight = (float) (offset * Math.sqrt(bulletsCount)) / 2;
         x = -rectangleSpawnHalfWidth;
@@ -143,9 +144,9 @@ public class BenchmarkGameLogic extends Client {
     @Override
     public void update(double time) {
         super.update(time);
-        if (pauseAfterTicks > 0) {
-            pauseAfterTicks--;
-            if (pauseAfterTicks == 0) {
+        if (pauseAfterFrames > 0) {
+            pauseAfterFrames--;
+            if (pauseAfterFrames == 0) {
                 setPaused(true);
             }
         }
