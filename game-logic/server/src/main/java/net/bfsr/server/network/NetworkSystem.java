@@ -70,8 +70,7 @@ public class NetworkSystem {
         }
     }
 
-    public void handle(Packet packet, PlayerNetworkHandler networkHandler, ChannelHandlerContext ctx,
-                       InetSocketAddress recipient) {
+    public void handle(Packet packet, PlayerNetworkHandler networkHandler, ChannelHandlerContext ctx, InetSocketAddress recipient) {
         packetRegistry.getPacketHandler(packet).handle(packet, networkHandler, ctx, recipient);
     }
 
@@ -99,7 +98,9 @@ public class NetworkSystem {
         List<Player> players = playerManager.getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
             Player player1 = players.get(i);
-            if (player1 != player) protocol.accept(player1.getNetworkHandler());
+            if (player1 != player) {
+                protocol.accept(player1.getNetworkHandler());
+            }
         }
     }
 

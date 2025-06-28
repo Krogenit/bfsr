@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.server.network.NetworkSystem;
+import net.bfsr.server.network.handler.PlayerNetworkHandler;
 
 import java.net.InetSocketAddress;
 
@@ -16,13 +17,19 @@ public class MessageHandlerUDP extends SimpleChannelInboundHandler<DefaultAddres
     private final NetworkSystem networkSystem;
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, DefaultAddressedEnvelope<Packet, InetSocketAddress> msg) {
+    protected void channelRead0(ChannelHandlerContext ctx, DefaultAddressedEnvelope<Packet, InetSocketAddress> msg) {
         Packet packet = msg.content();
         long address = NetworkSystem.convertAddress(msg.recipient());
+
         if (packet.isAsync()) {
-            networkSystem.handle(packet, networkSystem.getHandler(address), channelHandlerContext, msg.recipient());
+            networkSystem.handle(packet, networkSystem.getHandler(address), ctx, msg.recipient());
         } else {
-            networkSystem.getHandler(address).addPacketToQueue(packet);
+            PlayerNetworkHandler playerNetworkHandler = networkSystem.getHandler(address);
+            if (playerNetworkHandler == null) {
+                return;
+            }
+
+            playerNetworkHandler.addPacketToQueue(packet);
         }
     }
 
