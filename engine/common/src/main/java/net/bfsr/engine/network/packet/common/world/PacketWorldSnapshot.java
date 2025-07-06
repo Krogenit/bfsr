@@ -54,7 +54,7 @@ public class PacketWorldSnapshot extends PacketScheduled {
     }
 
     @Override
-    public boolean canProcess(int frame) {
+    public boolean isAsync() {
         return true;
     }
 

@@ -43,6 +43,8 @@ public class EntityPositionHistory extends DataHistory<TransformData> {
 
         if (dataList.getFirst().getFrame() < frame) {
             return dataList.getFirst();
+        } else if (dataList.getLast().getFrame() > frame) {
+            return dataList.getLast();
         }
 
         for (int i = 0, positionDataSize = dataList.size(); i < positionDataSize; i++) {

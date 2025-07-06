@@ -38,7 +38,7 @@ public class GameLogic {
     /**
      * Queue of Runnable which will execute in next game logic update step
      *
-     * @see GameLogic#update(double)
+     * @see GameLogic#update(int, double)
      */
     private final Queue<Runnable> futureTasks = new ConcurrentLinkedQueue<>();
 
@@ -46,7 +46,7 @@ public class GameLogic {
 
     private final ObjectPools objectPools = new ObjectPools();
 
-    public void update(double time) {
+    public void update(int frame, double time) {
         profiler.start("tasks");
         while (!futureTasks.isEmpty()) {
             futureTasks.poll().run();
@@ -94,19 +94,19 @@ public class GameLogic {
     }
 
     public void setFrame(int frame) {
-        gameLoop.setGameFrame(frame);
+        gameLoop.setFrame(frame);
     }
 
     public void setTime(double gameTime) {
-        gameLoop.setGameTime(gameTime);
+        gameLoop.setTime(gameTime);
     }
 
     public int getFrame() {
-        return gameLoop.getGameFrame();
+        return gameLoop.getFrame();
     }
 
     public double getTime() {
-        return gameLoop.getGameTime();
+        return gameLoop.getTime();
     }
 
     public void shutdown() {

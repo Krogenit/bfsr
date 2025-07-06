@@ -30,6 +30,7 @@ import net.bfsr.server.event.PlayerDisconnectEvent;
 import net.bfsr.server.event.PlayerJoinGameEvent;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -71,8 +72,10 @@ public class PlayerNetworkHandler extends NetworkHandler {
     private long lastPingReceiveTime;
     private long lastPingCheckTime;
     private String terminationReason;
+    @Setter
+    private int renderDelayInFrames;
 
-    private Player player;
+    private @Nullable Player player;
 
     @Override
     public void addPingResult(double ping) {
@@ -171,6 +174,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
         playerManager.addPlayer(player);
 
         sendTCPPacket(new PacketLoginSuccess());
+        log.info("Player with username {} successful logged in", player.getUsername());
     }
 
     public void joinGame() {
@@ -191,6 +195,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
 
         world.getEventBus().publish(new PlayerJoinGameEvent(player));
         lastPingReceiveTime = System.currentTimeMillis();
+        log.info("Player with username {} successful joined game", player.getUsername());
     }
 
     private void initShips(Player player) {

@@ -40,6 +40,7 @@ import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.logic.ClientGameLogic;
 import net.bfsr.engine.loop.AbstractGameLoop;
+import net.bfsr.engine.network.RenderDelayManager;
 import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.engine.network.packet.common.world.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.engine.profiler.Profiler;
@@ -66,17 +67,13 @@ public class Client extends ClientGameLogic {
     @Getter
     private int renderFrame;
 
-    @Getter
-    private final double clientRenderDelayInNanos = Engine.getClientRenderDelayInMills() * 1_000_000.0;
-    private final int clientRenderDelayInFrames = Engine.convertMillisecondsToFrames(Engine.getClientRenderDelayInMills());
-
     private final LanguageManager languageManager = new LanguageManager().load();
 
     private final ConfigSettings settings = new ConfigSettings();
 
     private final PlayerInputController playerInputController = new PlayerInputController(this);
-    private final InputHandler inputHandler = new InputHandler(new GuiInputController(), playerInputController,
-            new CameraInputController(this, playerInputController), new DebugInputController(this));
+    private final InputHandler inputHandler = new InputHandler(new GuiInputController(),
+            new CameraInputController(this, playerInputController), playerInputController, new DebugInputController(this));
 
     private final GuiManager guiManager = Engine.getGuiManager();
 
@@ -100,9 +97,10 @@ public class Client extends ClientGameLogic {
     private final EntitySpawnDataRegistry entitySpawnDataRegistry = new EntitySpawnDataRegistry(configConverterManager, shipFactory,
             damageHandler, this);
 
-    private final ClientEntityIdManager entityIdManager = new ClientEntityIdManager();
+    private final ClientEntityIdManager entityIdManager = new ClientEntityIdManager(this);
 
-    private final NetworkSystem networkSystem = new NetworkSystem(this);
+    private final RenderDelayManager renderDelayManager = new RenderDelayManager();
+    private final NetworkSystem networkSystem = new NetworkSystem(this, renderDelayManager);
 
     protected HUD hud;
 
@@ -150,13 +148,13 @@ public class Client extends ClientGameLogic {
     }
 
     @Override
-    public void update(double time) {
-        super.update(time);
+    public void update(int frame, double time) {
+        super.update(frame, time);
         renderTime = time
                 + networkSystem.getAveragePing() * 1_000_000.0
-                - clientRenderDelayInNanos;
+                - renderDelayManager.getRenderDelayInNanos();
 
-        renderFrame = getFrame() - clientRenderDelayInFrames + networkSystem.getAveragePingInFrames();
+        renderFrame = frame - renderDelayManager.getRenderDelayInFrames() + networkSystem.getAveragePingInFrames();
 
         profiler.start("renderManager");
 
@@ -165,7 +163,7 @@ public class Client extends ClientGameLogic {
         }
 
         profiler.endStart("inputHandler");
-        inputHandler.update();
+        inputHandler.update(frame);
         profiler.endStart("soundManager");
         soundManager.updateListenerPosition(camera.getPosition());
 
@@ -246,6 +244,7 @@ public class Client extends ClientGameLogic {
         networkSystem.closeChannels();
         networkSystem.shutdown();
         networkSystem.clear();
+        renderDelayManager.reset();
     }
 
     public void stopLocalServer() {

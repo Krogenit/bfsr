@@ -1,6 +1,7 @@
 package net.bfsr.engine.physics.correction;
 
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.network.NetworkHandler;
@@ -21,7 +22,8 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
     private final EntityPositionHistory positionHistory = new EntityPositionHistory(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS);
     private final DataHistory<PacketWorldSnapshot.EntityData> dataHistory = new DataHistory<>(
             NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS, new PacketWorldSnapshot.EntityData(0, 0, 0, 0, 0, new Vector2f()));
-    private final int clientRenderDelayInFrames;
+    @Setter
+    private int renderDelayInFrames;
 
     private void updateTransform() {
         TransformData serverTransformData = dataHistoryManager.getAndRemoveFirstTransformData(rigidBody.getId());
@@ -29,7 +31,7 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
             return;
         }
 
-        TransformData localTransformData = positionHistory.getInterpolated(serverTransformData.getFrame());
+        TransformData localTransformData = positionHistory.get(serverTransformData.getFrame());
         if (localTransformData == null) {
             return;
         }
@@ -51,7 +53,7 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
             if (dxAbs > FORCE_CORRECTION_TO_SERVER_THRESHOLD) {
                 correctionX = dx;
             } else {
-                correctionX = dx * (dxAbs - MIN_VALUE_TO_CORRECTION) * SMALL_CORRECTION_FACTOR * correctionAmount;
+                correctionX = dx * SMALL_CORRECTION_FACTOR * correctionAmount;
             }
 
             rigidBody.setPosition(rigidBody.getX() + correctionX, rigidBody.getY());
@@ -65,7 +67,7 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
             if (dyAbs > FORCE_CORRECTION_TO_SERVER_THRESHOLD) {
                 correctionY = dy;
             } else {
-                correctionY = dy * (dyAbs - MIN_VALUE_TO_CORRECTION) * SMALL_CORRECTION_FACTOR * correctionAmount;
+                correctionY = dy * SMALL_CORRECTION_FACTOR * correctionAmount;
             }
 
             rigidBody.setPosition(rigidBody.getX(), rigidBody.getY() + correctionY);
@@ -83,7 +85,7 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
         float angleCorrection;
 
         if (angleDiff > MIN_ANGLE_VALUE_TO_CORRECTION) {
-            angleCorrection = (angleDiff - MIN_ANGLE_VALUE_TO_CORRECTION) * SMALL_CORRECTION_FACTOR * correctionAmount;
+            angleCorrection = angleDiff * SMALL_CORRECTION_FACTOR * correctionAmount;
             float newAngle = localAngle + angleCorrection;
             rigidBody.setRotation(LUT.sin(newAngle), LUT.cos(newAngle));
         } else {
@@ -91,7 +93,9 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
         }
 
         if (correctionX != 0.0f || correctionY != 0.0f || angleCorrection != 0.0f) {
-            positionHistory.forEach(transformData -> transformData.correction(correctionX, correctionY, angleCorrection));
+            positionHistory.forEach(transformData -> {
+                transformData.correction(correctionX, correctionY, angleCorrection);
+            });
         }
     }
 
@@ -103,6 +107,11 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
 
         PacketWorldSnapshot.EntityData localData = dataHistory.getInterpolated(serverData.getFrame());
         if (localData == null) {
+            return;
+        }
+
+        int deltaFrame = serverData.getFrame() - localData.getFrame();
+        if (deltaFrame != 0) {
             return;
         }
 
@@ -118,8 +127,7 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
         float dxAbs = Math.abs(dx);
 
         if (dxAbs > MIN_VALUE_TO_CORRECTION) {
-            float xCorrectionAmount = (dxAbs - MIN_VALUE_TO_CORRECTION) * SMALL_CORRECTION_FACTOR * correctionAmount;
-            correctionX = dx * xCorrectionAmount;
+            correctionX = dx * SMALL_CORRECTION_FACTOR * correctionAmount;
             rigidBody.setVelocity(linearVelocity.x + correctionX, linearVelocity.y);
         } else {
             correctionX = 0.0f;
@@ -127,8 +135,7 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
 
         float dyAbs = Math.abs(dy);
         if (dyAbs > MIN_VALUE_TO_CORRECTION) {
-            float yCorrectionAmount = (dyAbs - MIN_VALUE_TO_CORRECTION) * SMALL_CORRECTION_FACTOR * correctionAmount;
-            correctionY = dy * yCorrectionAmount;
+            correctionY = dy * SMALL_CORRECTION_FACTOR * correctionAmount;
             rigidBody.setVelocity(linearVelocity.x, linearVelocity.y + correctionY);
         } else {
             correctionY = 0.0f;
@@ -139,8 +146,7 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
         float velocityDiff = serverAngularVelocity - localAngularVelocity;
 
         if (velocityDiff > MIN_ANGLE_VALUE_TO_CORRECTION) {
-            angularVelocityCorrectionAmount = (velocityDiff - MIN_ANGLE_VALUE_TO_CORRECTION) * SMALL_CORRECTION_FACTOR *
-                    correctionAmount;
+            angularVelocityCorrectionAmount = velocityDiff * SMALL_CORRECTION_FACTOR * correctionAmount;
             rigidBody.setAngularVelocity(localAngularVelocity + angularVelocityCorrectionAmount);
         } else {
             angularVelocityCorrectionAmount = 0.0f;
@@ -153,12 +159,12 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
 
     @Override
     public void updateTransform(double time, int frame) {
-        updateTransform();
-        updateVelocity();
-
-        int frameWithoutDelay = frame + clientRenderDelayInFrames;
+        int frameWithoutDelay = frame + renderDelayInFrames;
         positionHistory.addPositionData(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), frameWithoutDelay);
         dataHistory.addData(new PacketWorldSnapshot.EntityData(rigidBody, frameWithoutDelay));
+
+        updateTransform();
+        updateVelocity();
     }
 
     @Override

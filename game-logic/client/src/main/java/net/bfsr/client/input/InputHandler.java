@@ -18,9 +18,9 @@ public class InputHandler extends AbstractInputHandler {
         inputControllers.add(controller);
     }
 
-    public void update() {
+    public void update(int frame) {
         for (int i = 0; i < inputControllers.size(); i++) {
-            inputControllers.get(i).update();
+            inputControllers.get(i).update(frame);
         }
     }
 

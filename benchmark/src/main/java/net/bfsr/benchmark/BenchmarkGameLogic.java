@@ -142,8 +142,8 @@ public class BenchmarkGameLogic extends Client {
     }
 
     @Override
-    public void update(double time) {
-        super.update(time);
+    public void update(int frame, double time) {
+        super.update(frame, time);
         if (pauseAfterFrames > 0) {
             pauseAfterFrames--;
             if (pauseAfterFrames == 0) {

@@ -2,8 +2,6 @@ package net.bfsr.client.network;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.doubles.DoubleList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -16,6 +14,7 @@ import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.NoGui;
 import net.bfsr.engine.network.ConnectionState;
 import net.bfsr.engine.network.NetworkHandler;
+import net.bfsr.engine.network.RenderDelayManager;
 import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.engine.network.packet.PacketRegistry;
 import net.bfsr.engine.network.packet.client.PacketHandshake;
@@ -34,6 +33,7 @@ public class NetworkSystem extends NetworkHandler {
     private static final long PING_CHECK_INTERVAL = 1000;
 
     private final Client client;
+    private final RenderDelayManager renderDelayManager;
 
     private final NetworkManagerTCP networkManagerTCP = new NetworkManagerTCP();
     private final NetworkManagerUDP networkManagerUDP = new NetworkManagerUDP();
@@ -50,12 +50,6 @@ public class NetworkSystem extends NetworkHandler {
     @Setter
     @Getter
     private int connectionId;
-
-    @Getter
-    private double clientToServerTimeDiffInNanos;
-    @Getter
-    private double averageClientToServerTimeDiffInNanos;
-    private final DoubleList clientToServerTimeResults = new DoubleArrayList();
 
     private String login;
 
@@ -76,6 +70,12 @@ public class NetworkSystem extends NetworkHandler {
     public void onChannelsRegistered() {
         sendPacketTCP(new PacketHandshake());
         sendPacketTCP(new PacketLogin(login));
+    }
+
+    @Override
+    public void addPingResult(double ping) {
+        super.addPingResult(ping);
+        renderDelayManager.addPingResult(ping, getAveragePing());
     }
 
     public void update(int frame) {
@@ -118,22 +118,6 @@ public class NetworkSystem extends NetworkHandler {
 
     public void sendPacketUDP(Packet packet) {
         networkManagerUDP.sendPacket(packet);
-    }
-
-    public void addClientToServerTimeDiffResult(long clientToServerTimeDiffInNanos) {
-        this.clientToServerTimeDiffInNanos = clientToServerTimeDiffInNanos;
-        clientToServerTimeResults.add(clientToServerTimeDiffInNanos);
-
-        if (clientToServerTimeResults.size() > 100) {
-            clientToServerTimeResults.removeFirst();
-        }
-
-        double allTimeDiffs = 0.0f;
-        for (int i = 0; i < clientToServerTimeResults.size(); i++) {
-            allTimeDiffs += clientToServerTimeResults.getDouble(i);
-        }
-
-        averageClientToServerTimeDiffInNanos = allTimeDiffs / clientToServerTimeResults.size();
     }
 
     public void onDisconnect(String reason) {
@@ -200,7 +184,5 @@ public class NetworkSystem extends NetworkHandler {
         super.clear();
         inboundPacketQueue.clear();
         setConnectionState(ConnectionState.DISCONNECTED);
-        clientToServerTimeResults.clear();
-        averageClientToServerTimeDiffInNanos = 0;
     }
 }

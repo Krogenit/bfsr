@@ -14,12 +14,14 @@ import java.util.List;
 @Log4j2
 //TODO: entities
 public class ClientEntityIdManager extends EntityIdManager {
+    private final Client client;
     private final List<RigidBody> entities = new ArrayList<>();
 
     private final IntegerSync idSync = new IntegerSync(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS);
 
-    public ClientEntityIdManager() {
+    public ClientEntityIdManager(Client client) {
         super(-1);
+        this.client = client;
     }
 
     @Override
@@ -46,7 +48,7 @@ public class ClientEntityIdManager extends EntityIdManager {
         }
 
         id += idCorrection;
-        idSync.addLocalData(id, frame + Client.get().getClientRenderDelayInFrames());
+        idSync.addLocalData(id, frame + client.getRenderDelayManager().getRenderDelayInFrames());
 
 //        if (idCorrection > 0) {
 //            correctEntityIds(idCorrection);

@@ -9,12 +9,7 @@ public final class PacketIdRegistry {
     /**
      * Client
      */
-    public static final int MOUSE_LEFT_CLICK = 101;
-    public static final int MOUSE_LEFT_RELEASE = 102;
-    public static final int MOUSE_POSITION = 103;
-    public static final int SHIP_MOVE = 104;
-    public static final int SHIP_STOP_MOVE = 105;
-    public static final int CAMERA_POSITION = 106;
+    public static final int CLIENT_PLAYER_INPUT = 101;
 
     public static final int FACTION_SELECT = 107;
 

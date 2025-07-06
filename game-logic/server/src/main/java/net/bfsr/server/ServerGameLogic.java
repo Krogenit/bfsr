@@ -109,9 +109,8 @@ public abstract class ServerGameLogic extends GameLogic {
     }
 
     @Override
-    public void update(double time) {
-        super.update(time);
-        int frame = getFrame();
+    public void update(int frame, double time) {
+        super.update(frame, time);
 
         profiler.start("playerManager");
         playerManager.update(frame);

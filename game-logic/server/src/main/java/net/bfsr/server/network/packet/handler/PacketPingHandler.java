@@ -12,11 +12,10 @@ public class PacketPingHandler extends PacketHandler<PacketPing, PlayerNetworkHa
     @Override
     public void handle(PacketPing packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
-        long nanoTime = System.nanoTime();
         if (packet.getSide() == Side.CLIENT) {
-            playerNetworkHandler.sendUDPPacket(new PacketPing(packet.getOriginalSentTime(), nanoTime, packet.getSide()));
+            playerNetworkHandler.sendUDPPacket(new PacketPing(packet.getOriginalSentTime(), packet.getSide()));
         } else {
-            playerNetworkHandler.addPingResult((nanoTime - packet.getOriginalSentTime()) / 2_000_000.0);
+            playerNetworkHandler.addPingResult((System.nanoTime() - packet.getOriginalSentTime()) / 2_000_000.0);
         }
     }
 }

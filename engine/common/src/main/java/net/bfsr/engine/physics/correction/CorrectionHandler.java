@@ -1,5 +1,6 @@
 package net.bfsr.engine.physics.correction;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
@@ -20,6 +21,7 @@ public class CorrectionHandler {
 
     protected RigidBody rigidBody;
     EntityDataHistoryManager dataHistoryManager;
+    @Getter
     float correctionAmount = 1.0f;
 
     CorrectionHandler(float correctionAmount) {

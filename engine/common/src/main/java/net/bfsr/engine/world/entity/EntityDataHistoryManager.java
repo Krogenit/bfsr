@@ -37,46 +37,68 @@ public class EntityDataHistoryManager {
     public void addData(PacketWorldSnapshot.EntityData entityData, int frame) {
         int id = entityData.getEntityId();
         addPositionData(id, entityData.getX(), entityData.getY(), entityData.getSin(), entityData.getCos(), frame);
-        dataHistoryMap.computeIfAbsent(id, key -> new DataHistory<>(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS,
-                new PacketWorldSnapshot.EntityData(0, 0, 0, 0, 0, new Vector2f()))).addData(entityData);
+        synchronized (dataHistoryMap) {
+            dataHistoryMap.computeIfAbsent(id, key -> new DataHistory<>(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS,
+                    new PacketWorldSnapshot.EntityData(0, 0, 0, 0, 0, new Vector2f()))).addData(entityData);
+        }
     }
 
     public void addPositionData(int id, float x, float y, float sin, float cos, int frame) {
-        positionHistoryMap.computeIfAbsent(id, key -> new EntityPositionHistory(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS))
-                .addPositionData(x, y, sin, cos, frame);
+        synchronized (positionHistoryMap) {
+            positionHistoryMap.computeIfAbsent(id, key -> new EntityPositionHistory(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS))
+                    .addPositionData(x, y, sin, cos, frame);
+        }
     }
 
     public TransformData getTransformData(int id, int frame) {
-        return positionHistoryMap.get(id).getInterpolated(frame);
+        synchronized (positionHistoryMap) {
+            return positionHistoryMap.get(id).getInterpolated(frame);
+        }
     }
 
     public TransformData getFirstTransformData(int id) {
-        return positionHistoryMap.get(id).getFirst();
+        synchronized (positionHistoryMap) {
+            return positionHistoryMap.get(id).getFirst();
+        }
     }
 
     public TransformData getAndRemoveFirstTransformData(int id) {
-        return positionHistoryMap.get(id).getAndRemoveFirst();
+        synchronized (positionHistoryMap) {
+            return positionHistoryMap.get(id).getAndRemoveFirst();
+        }
     }
 
     public PacketWorldSnapshot.EntityData getAndRemoveFirstData(int id) {
-        return dataHistoryMap.get(id).getAndRemoveFirst();
+        synchronized (dataHistoryMap) {
+            return dataHistoryMap.get(id).getAndRemoveFirst();
+        }
     }
 
     public PacketWorldSnapshot.EntityData getData(int id, int frame) {
-        return dataHistoryMap.get(id).getInterpolated(frame);
+        synchronized (dataHistoryMap) {
+            return dataHistoryMap.get(id).getInterpolated(frame);
+        }
     }
 
     @EventHandler
     public EventListener<RigidBodyRemovedFromWorldEvent> rigidBodyDeathEvent() {
         return event -> {
             int id = event.rigidBody().getId();
-            positionHistoryMap.remove(id);
-            dataHistoryMap.remove(id);
+            synchronized (positionHistoryMap) {
+                positionHistoryMap.remove(id);
+            }
+            synchronized (dataHistoryMap) {
+                dataHistoryMap.remove(id);
+            }
         };
     }
 
     public void clear() {
-        positionHistoryMap.clear();
-        dataHistoryMap.clear();
+        synchronized (positionHistoryMap) {
+            positionHistoryMap.clear();
+        }
+        synchronized (dataHistoryMap) {
+            dataHistoryMap.clear();
+        }
     }
 }

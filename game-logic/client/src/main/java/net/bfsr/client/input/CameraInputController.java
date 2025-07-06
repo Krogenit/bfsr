@@ -12,7 +12,6 @@ import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.network.packet.client.PacketCameraPosition;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 
@@ -37,7 +36,6 @@ public class CameraInputController extends InputController {
     private final PlayerInputController playerInputController;
 
     private @Nullable Ship followShip;
-    private long lastSendTime;
 
     public CameraInputController(Client client, PlayerInputController playerInputController) {
         this.client = client;
@@ -47,11 +45,15 @@ public class CameraInputController extends InputController {
     }
 
     @Override
-    public void update() {
-        if (!client.isInWorld()) return;
+    public void update(int frame) {
+        if (!client.isInWorld()) {
+            return;
+        }
 
         if (!guiManager.isActive()) {
-            if (ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS.getBoolean()) moveByScreenBorders();
+            if (ClientSettings.CAMERA_MOVE_BY_SCREEN_BORDERS.getBoolean()) {
+                moveByScreenBorders();
+            }
 
             boolean noShip = !playerInputController.isControllingShip();
             float keyMoveSpeed = ClientSettings.CAMERA_MOVE_BY_KEY_SPEED.getFloat() * Engine.convertToDeltaTime(60.0f);
@@ -68,16 +70,8 @@ public class CameraInputController extends InputController {
             }
         }
 
-        if (ClientSettings.CAMERA_FOLLOW_PLAYER.getBoolean()) followShip();
-
-        Vector2f position = camera.getPosition();
-        Vector2f lastPosition = camera.getLastPosition();
-        if (position.x != lastPosition.x || position.y != lastPosition.y) {
-            long time = System.currentTimeMillis();
-            if (time - lastSendTime > 500) {
-                client.sendUDPPacket(new PacketCameraPosition(position.x, position.y));
-                lastSendTime = time;
-            }
+        if (ClientSettings.CAMERA_FOLLOW_PLAYER.getBoolean()) {
+            followShip();
         }
     }
 

@@ -9,18 +9,18 @@ import net.bfsr.engine.Engine;
 public abstract class AbstractGameLoop implements GameLoop {
     @Setter
     @Getter
-    private double gameTime;
+    private double time;
 
     @Setter
     @Getter
-    private int gameFrame;
+    private int frame;
 
     @Override
     public void run() {
         final int maxUpdatesBeforeRender = 40;
         double lastUpdateTime = System.nanoTime();
-        gameTime = lastUpdateTime;
-        gameFrame = 0;
+        time = lastUpdateTime;
+        frame = 0;
 
         int lastSecondTime = (int) (lastUpdateTime / 1_000_000_000.0f);
         int framesCount = 0;
@@ -33,9 +33,9 @@ public abstract class AbstractGameLoop implements GameLoop {
                 double timeBetweenUpdates = Engine.getTimeBetweenUpdatesInNanos();
                 while (now - lastUpdateTime >= timeBetweenUpdates) {
                     lastUpdateTime += timeBetweenUpdates;
-                    gameTime += timeBetweenUpdates;
-                    update(gameTime);
-                    gameFrame++;
+                    time += timeBetweenUpdates;
+                    update(frame, time);
+                    frame++;
 
                     if (++updateCount == maxUpdatesBeforeRender) {
                         if (now - lastUpdateTime > timeBetweenUpdates) {

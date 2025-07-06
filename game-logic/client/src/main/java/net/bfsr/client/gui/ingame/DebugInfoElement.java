@@ -13,6 +13,7 @@ import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.MinimizableGuiObject;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.input.AbstractMouse;
+import net.bfsr.engine.network.RenderDelayManager;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
@@ -100,16 +101,14 @@ public class DebugInfoElement extends MinimizableGuiObject {
         y -= addMinimizableWithLabel(width, height, y, "Network", createLabel(0, "",
                 label1 -> {
                     NetworkSystem networkSystem = client.getNetworkSystem();
+                    RenderDelayManager renderDelayManager = client.getRenderDelayManager();
                     double ping = networkSystem.getPing();
                     double averagePing = networkSystem.getAveragePing();
-                    float clientToServerTimeDiffInMills = (float) networkSystem.getClientToServerTimeDiffInNanos() / 1_000_000.0f;
-                    float averageClientToServerTimeDiffInMills =
-                            (float) networkSystem.getAverageClientToServerTimeDiffInNanos() / 1_000_000.0f;
                     label1.setString("Ping: " + DecimalUtils.strictFormatWithToDigits(ping) + "ms" +
-                            "\nAverage ping (100 results): " + DecimalUtils.strictFormatWithToDigits(averagePing) + "ms" +
-                            "\nClient render delay: " + client.getClientRenderDelayInNanos() / 1_000_000 + "ms" +
-                            "\nTime diff: " + DecimalUtils.strictFormatWithToDigits(clientToServerTimeDiffInMills) + "ms" +
-                            "\nAverage time diff: " + DecimalUtils.strictFormatWithToDigits(averageClientToServerTimeDiffInMills) + "ms");
+                            "\nAverage ping: " + DecimalUtils.strictFormatWithToDigits(averagePing) + "ms" +
+                            "\nClient render delay: " + renderDelayManager.getRenderDelayInNanos() / 1_000_000 + "ms" +
+                            "\nClient render delay: " + renderDelayManager.getRenderDelayInFrames() + "frames"
+                    );
                 })).getHeight();
         y -= addMinimizableWithLabel(width, height, y, "Render", createLabel(0, "",
                 label1 -> {

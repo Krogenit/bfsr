@@ -33,9 +33,9 @@ public abstract class Server extends AbstractGameLoop {
     }
 
     @Override
-    public void update(double time) {
+    public void update(int frame, double time) {
         profiler.start("update");
-        gameLogic.update(time);
+        gameLogic.update(frame, time);
         profiler.end();
     }
 

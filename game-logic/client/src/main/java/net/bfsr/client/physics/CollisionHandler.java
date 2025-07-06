@@ -183,17 +183,21 @@ public class CollisionHandler extends CommonCollisionHandler {
     }
 
     private void setDynamicCorrectionForLocalPlayer(RigidBody rigidBody) {
-        setDynamicCorrection(rigidBody, rigidBody.getCorrectionHandler(), 0.25f);
+//        setDynamicCorrection(rigidBody, rigidBody.getCorrectionHandler(), 0.25f);
     }
 
     private void setDynamicCorrection(RigidBody rigidBody) {
-        setDynamicCorrection(rigidBody, new CorrectionHandler(), 0.1f);
+//        setDynamicCorrection(rigidBody, new CorrectionHandler(), 0.25f);
     }
 
     private void setDynamicCorrection(RigidBody rigidBody, CorrectionHandler interpolatingCorrectionHandler, float correctionChanging) {
         CorrectionHandler correctionHandler = rigidBody.getCorrectionHandler();
         if (correctionHandler.getClass() == DynamicCorrectionHandler.class) {
-            ((DynamicCorrectionHandler) correctionHandler).setCorrectionAmount(0.0f);
+            DynamicCorrectionHandler dynamicCorrectionHandler = (DynamicCorrectionHandler) correctionHandler;
+            float correctionAmount = dynamicCorrectionHandler.getCorrectionAmount();
+            if (correctionAmount > 0.1f) {
+                dynamicCorrectionHandler.setCorrectionAmount(correctionAmount - 0.1f);
+            }
         } else {
             rigidBody.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(correctionChanging),
                     interpolatingCorrectionHandler, correctionHandler));

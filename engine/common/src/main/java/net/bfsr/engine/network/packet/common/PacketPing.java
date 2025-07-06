@@ -18,7 +18,6 @@ import java.io.IOException;
 @PacketAnnotation(id = CommonPacketRegistry.PING)
 public class PacketPing extends PacketAdapter {
     private long originalSentTime;
-    private long otherSideHandleTime;
     private Side side;
 
     public PacketPing(Side side) {
@@ -29,14 +28,12 @@ public class PacketPing extends PacketAdapter {
     @Override
     public void write(ByteBuf data) throws IOException {
         data.writeLong(originalSentTime);
-        data.writeLong(otherSideHandleTime);
         data.writeByte(side.ordinal());
     }
 
     @Override
     public void read(ByteBuf data, GameLogic gameLogic) throws IOException {
         originalSentTime = data.readLong();
-        otherSideHandleTime = data.readLong();
         side = Side.get(data.readByte());
     }
 

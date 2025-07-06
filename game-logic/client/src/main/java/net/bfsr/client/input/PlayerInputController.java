@@ -12,6 +12,7 @@ import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.gui.GuiManager;
+import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.RigidBodyUtils;
@@ -24,11 +25,7 @@ import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.engine.Engines;
-import net.bfsr.network.packet.client.input.PacketMouseLeftClick;
-import net.bfsr.network.packet.client.input.PacketMouseLeftRelease;
-import net.bfsr.network.packet.client.input.PacketMouseSyncPosition;
-import net.bfsr.network.packet.client.input.PacketShipMove;
-import net.bfsr.network.packet.client.input.PacketShipStopMove;
+import net.bfsr.network.packet.client.input.PacketPlayerInput;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Body;
@@ -49,7 +46,7 @@ public class PlayerInputController extends InputController {
     private final GuiManager guiManager = Engine.getGuiManager();
     private final AbstractCamera camera = Engine.getRenderer().getCamera();
     private final AbstractMouse mouse = Engine.getMouse();
-    private final Vector2f lastMousePosition = new Vector2f();
+    private final AbstractKeyboard keyboard = Engine.getKeyboard();
     private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
     private final EventBus eventBus;
     private final LocalPlayerInputCorrectionHandler localPlayerInputCorrectionHandler;
@@ -59,18 +56,17 @@ public class PlayerInputController extends InputController {
     @Getter
     private Ship ship;
 
-    private boolean mouseLeftDown;
-    private Fixture selectedFixture;
+    private @Nullable Fixture selectedFixture;
 
     public PlayerInputController(Client client) {
         this.client = client;
-        this.localPlayerInputCorrectionHandler = new LocalPlayerInputCorrectionHandler(client.getClientRenderDelayInFrames());
+        this.localPlayerInputCorrectionHandler = new LocalPlayerInputCorrectionHandler();
         this.eventBus = client.getEventBus();
         this.eventBus.register(this);
     }
 
     @Override
-    public void update() {
+    public void update(int frame) {
         if (guiManager.isActive()) {
             return;
         }
@@ -96,7 +92,7 @@ public class PlayerInputController extends InputController {
         }
 
         if (!client.isPaused() && ship.isSpawned() && ship.getLifeTime() == 0) {
-            controlShip();
+            controlShip(frame);
         }
     }
 
@@ -108,27 +104,22 @@ public class PlayerInputController extends InputController {
 
         Engines engines = ship.getModules().getEngines();
         if (key == KEY_W && engines.isEngineAlive(Direction.FORWARD)) {
-            client.sendUDPPacket(new PacketShipMove(Direction.FORWARD));
             ship.addMoveDirection(Direction.FORWARD);
         }
 
         if (key == KEY_S && engines.isEngineAlive(Direction.BACKWARD)) {
-            client.sendUDPPacket(new PacketShipMove(Direction.BACKWARD));
             ship.addMoveDirection(Direction.BACKWARD);
         }
 
         if (key == KEY_A && engines.isEngineAlive(Direction.RIGHT)) {
-            client.sendUDPPacket(new PacketShipMove(Direction.RIGHT));
             ship.addMoveDirection(Direction.RIGHT);
         }
 
         if (key == KEY_D && engines.isEngineAlive(Direction.LEFT)) {
-            client.sendUDPPacket(new PacketShipMove(Direction.LEFT));
             ship.addMoveDirection(Direction.LEFT);
         }
 
         if (key == KEY_X && engines.isSomeEngineAlive()) {
-            client.sendUDPPacket(new PacketShipMove(Direction.STOP));
             ship.addMoveDirection(Direction.STOP);
         }
 
@@ -142,46 +133,57 @@ public class PlayerInputController extends InputController {
         }
 
         if (key == KEY_W) {
-            client.sendUDPPacket(new PacketShipStopMove(Direction.FORWARD));
             ship.removeMoveDirection(Direction.FORWARD);
         }
 
         if (key == KEY_S) {
-            client.sendUDPPacket(new PacketShipStopMove(Direction.BACKWARD));
             ship.removeMoveDirection(Direction.BACKWARD);
         }
 
         if (key == KEY_A) {
-            client.sendUDPPacket(new PacketShipStopMove(Direction.RIGHT));
             ship.removeMoveDirection(Direction.RIGHT);
         }
 
         if (key == KEY_D) {
-            client.sendUDPPacket(new PacketShipStopMove(Direction.LEFT));
             ship.removeMoveDirection(Direction.LEFT);
         }
 
         if (key == KEY_X) {
-            client.sendUDPPacket(new PacketShipStopMove(Direction.STOP));
             ship.removeMoveDirection(Direction.STOP);
         }
     }
 
-    private void controlShip() {
+    private void controlShip(int frame) {
+        localPlayerInputCorrectionHandler.setRenderDelayInFrames(client.getRenderDelayManager().getRenderDelayInFrames());
+
+        Vector2f cameraPosition = camera.getPosition();
+        Vector2f mouseWorldPosition = mouse.getWorldPosition(camera);
+
+        client.sendUDPPacket(new PacketPlayerInput(
+                client.getRenderDelayManager().getRenderDelayInFrames(),
+                frame,
+                mouseWorldPosition.x, mouseWorldPosition.y,
+                new boolean[]{mouse.isLeftDown(), mouse.isRightDown()},
+                new boolean[]{
+                        keyboard.isKeyDown(KEY_W),
+                        keyboard.isKeyDown(KEY_A),
+                        keyboard.isKeyDown(KEY_S),
+                        keyboard.isKeyDown(KEY_D),
+                        keyboard.isKeyDown(KEY_X),
+                },
+                cameraPosition.x, cameraPosition.y
+        ));
+
         Body body = ship.getBody();
         if (!body.isAwake()) {
             body.setAwake(true);
         }
 
-        Vector2f mouseWorldPosition = mouse.getWorldPosition(camera);
         rigidBodyUtils.rotateToVector(ship, mouseWorldPosition, ship.getModules().getEngines().getAngularVelocity());
-        if (mouseWorldPosition.x != lastMousePosition.x || mouseWorldPosition.y != lastMousePosition.y) {
-            client.sendUDPPacket(new PacketMouseSyncPosition(mouseWorldPosition));
-        }
 
         ship.getMoveDirections().forEach(ship::move);
 
-        if (mouseLeftDown) {
+        if (mouse.isLeftDown()) {
             ship.shoot(weaponSlot -> weaponSlot.createBullet(true));
         }
     }
@@ -200,9 +202,6 @@ public class PlayerInputController extends InputController {
             }
 
             eventBus.publish(new SelectShipEvent(null));
-        } else {
-            client.sendUDPPacket(new PacketMouseLeftClick());
-            mouseLeftDown = true;
         }
 
         return false;
@@ -231,17 +230,6 @@ public class PlayerInputController extends InputController {
         }, mouseAABB);
 
         return selectedFixture;
-    }
-
-    @Override
-    public boolean mouseLeftRelease() {
-        if (ship == null) {
-            return false;
-        }
-
-        client.sendUDPPacket(new PacketMouseLeftRelease());
-        mouseLeftDown = false;
-        return false;
     }
 
     @Override

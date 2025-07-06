@@ -80,10 +80,8 @@ public class EditorHUD extends HUD {
 
                     if (fastForwardTesting) {
                         Client client = Client.get();
-                        world = new World(new Profiler(), 0L, new EventBus(), new EntityManager(),
-                                new ClientEntityIdManager(),
-                                client,
-                                new CollisionMatrix(new CollisionHandler(client)));
+                        world = new World(new Profiler(), 0L, new EventBus(), new EntityManager(), new ClientEntityIdManager(client),
+                                client, new CollisionMatrix(new CollisionHandler(client)));
                         world.init();
 
                         ShipRegistry shipRegistry = client.getConfigConverterManager().getConverter(ShipRegistry.class);
@@ -153,15 +151,13 @@ public class EditorHUD extends HUD {
                     world.add(bullet);
 
                     float additionalSeconds = 0.5f;
-                    float fastForwardTimeInNanos = (float) (Client.get().getClientRenderDelayInNanos() +
-                            additionalSeconds * 1_000_000_000.0f);
-                    int fastForwardTimeInFrames = Client.get().getClientRenderDelayInFrames() +
+                    int fastForwardTimeInFrames = Client.get().getRenderDelayManager().getRenderDelayInFrames() +
                             Engine.convertSecondsToFrames(additionalSeconds);
 
                     float updateDeltaTime = Engine.getUpdateDeltaTimeInSeconds();
                     float updateDeltaTimeInMills = updateDeltaTime * 1000.0f;
                     float updateDeltaTimeInNanos = updateDeltaTimeInMills * 1_000_000.0f;
-                    int iterations = Math.round(fastForwardTimeInNanos / 1_000_000.0f / updateDeltaTimeInMills);
+                    int iterations = Math.round(fastForwardTimeInFrames / 1_000_000.0f / updateDeltaTimeInMills);
 
                     float bulletX = bullet.getX();
                     float bulletY = bullet.getY();
@@ -216,7 +212,7 @@ public class EditorHUD extends HUD {
 
                         world.getPhysicWorld().beginFastForward();
 
-                        fastForwardIteration(0, iterations, affectedBodies, fastForwardTimeInNanos,
+                        fastForwardIteration(0, iterations, affectedBodies, fastForwardTimeInFrames,
                                 updateDeltaTimeInNanos, entityDataHistoryManager, renderFrame, fastForwardTimeInFrames);
                         return;
                     }
