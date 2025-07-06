@@ -34,7 +34,7 @@ public class RenderDelayManager {
 
     private void updateDelay() {
         renderDelayInNanos = maxPing * 1_000_000.0 + ADDITIONAL_DELAY_IN_MILLIS;
-        renderDelayInFrames = Engine.convertMillisecondsToFrames(maxPing);
+        renderDelayInFrames = Engine.convertMillisecondsToFrames(maxPing) + 1;
     }
 
     public void reset() {
