@@ -181,6 +181,10 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
                     if (direction == Direction.FORWARD) {
                         runnable = () -> {
+                            if (!ship.isSpawned()) {
+                                return;
+                            }
+
                             float shipX = ship.getX();
                             float shipY = ship.getY();
                             float sin = ship.getSin();
@@ -198,6 +202,10 @@ public class ShipRender extends DamageableRigidBodyRenderer {
                         };
                     } else {
                         runnable = () -> {
+                            if (!ship.isSpawned()) {
+                                return;
+                            }
+
                             float shipX = ship.getX();
                             float shipY = ship.getY();
                             float sin = ship.getSin();
