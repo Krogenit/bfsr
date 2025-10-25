@@ -13,6 +13,7 @@ import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Fixture;
+import org.joml.Vector4f;
 
 public class Bullet extends RigidBody {
     @Getter
@@ -26,14 +27,19 @@ public class Bullet extends RigidBody {
     private RigidBody lastCollidedRigidBody;
     @Getter
     private final GunData gunData;
+    @Getter
+    private final Vector4f spawnTransform;
 
     private Runnable postPhysicsRotationUpdater = RunnableUtils.EMPTY_RUNNABLE;
+    @Setter
+    @Getter
+    private int clientId;
 
     public Bullet(float x, float y, float sin, float cos, GunData gunData, RigidBody owner, BulletDamage damage) {
         super(x, y, sin, cos, gunData.getBulletSizeX(), gunData.getBulletSizeY(), gunData);
         this.gunData = gunData;
         this.owner = owner;
-        this.maxLifeTime = gunData.getBulletLifeTimeInTicks();
+        this.maxLifeTime = gunData.getBulletLifeTimeInFrames();
         this.bulletSpeed = gunData.getBulletSpeed();
         this.damage = damage;
         this.health = damage.getAverage();
@@ -41,6 +47,7 @@ public class Bullet extends RigidBody {
         this.body.setLinearVelocity(cos * bulletSpeed, sin * bulletSpeed);
         this.body.setBullet(true);
         this.lastCollidedRigidBody = owner;
+        this.spawnTransform = new Vector4f(x, y, sin, cos);
     }
 
     @Override

@@ -2,13 +2,14 @@ package net.bfsr.engine.logic;
 
 import lombok.Getter;
 import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.loop.AbstractGameLoop;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.util.Side;
 
 @Getter
 public abstract class ClientGameLogic extends GameLogic {
-    protected ClientGameLogic(Profiler profiler, EventBus eventBus) {
-        super(Side.CLIENT, profiler, eventBus);
+    protected ClientGameLogic(AbstractGameLoop gameLoop, Profiler profiler, EventBus eventBus) {
+        super(gameLoop, Side.CLIENT, profiler, eventBus);
     }
 
     public abstract void init();

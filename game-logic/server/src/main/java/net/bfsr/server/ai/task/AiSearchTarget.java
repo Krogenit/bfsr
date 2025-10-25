@@ -1,22 +1,30 @@
 package net.bfsr.server.ai.task;
 
 import lombok.RequiredArgsConstructor;
-import net.bfsr.ai.AiAggressiveType;
-import net.bfsr.ai.task.AiTask;
+import net.bfsr.engine.ai.task.AiTask;
 import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.server.ai.AiAggressiveType;
 
 import java.util.List;
 
 @RequiredArgsConstructor
 public class AiSearchTarget extends AiTask {
+    private final AiAggressiveType type;
     private final float maxSearchRange;
+
+    private Ship ship;
+
+    @Override
+    public void init(RigidBody rigidBody) {
+        super.init(rigidBody);
+        this.ship = ((Ship) rigidBody);
+    }
 
     @Override
     public void execute() {
-        AiAggressiveType type = ship.getAi().getAggressiveType();
         if (type == AiAggressiveType.ATTACK) {
             RigidBody attacker = ship.getLastAttacker();
             if (attacker != null && !attacker.isDead() && attacker instanceof Ship && isEnemy((Ship) attacker) &&

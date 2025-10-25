@@ -2,9 +2,9 @@ package net.bfsr.server.network.packet.handler.play;
 
 import io.netty.channel.ChannelHandlerContext;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
-import net.bfsr.ai.Ai;
 import net.bfsr.command.Command;
 import net.bfsr.config.entity.ship.ShipRegistry;
+import net.bfsr.engine.ai.Ai;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.network.packet.PacketHandler;
 import net.bfsr.engine.world.World;
@@ -18,7 +18,6 @@ import net.bfsr.faction.Faction;
 import net.bfsr.network.packet.client.PacketCommand;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.ai.AiFactory;
-import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.physics.CollisionHandler;
 import org.jetbrains.annotations.Nullable;
@@ -34,7 +33,6 @@ public class PacketCommandHandler extends PacketHandler<PacketCommand, PlayerNet
     private final ShipRegistry shipRegistry = serverGameLogic.getConfigConverterManager().getConverter(ShipRegistry.class);
     private final AiFactory aiFactory = serverGameLogic.getAiFactory();
     private final CollisionHandler collisionHandler = serverGameLogic.getCollisionHandler();
-    private final EntityTrackingManager trackingManager = serverGameLogic.getEntityTrackingManager();
 
     @Override
     public void handle(PacketCommand packet, PlayerNetworkHandler playerNetworkHandler, ChannelHandlerContext ctx,
@@ -51,7 +49,7 @@ public class PacketCommandHandler extends PacketHandler<PacketCommand, PlayerNet
             Ai ai = Ai.NO_AI;
 
             Ship ship = shipFactory.createBot(world, x, y, random.nextFloat() * MathUtils.TWO_PI, faction, shipRegistry.get(shipId), ai);
-            world.add(ship, false);
+            world.add(ship, false, false);
             ship.setSpawned();
         } else if (cmd == Command.SET_DESTROYING) {
             Ship ship = getShipByArgumentId(world, packet.getArgs()[0]);

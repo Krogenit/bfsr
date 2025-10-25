@@ -1,14 +1,30 @@
 package net.bfsr.engine.world.entity;
 
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
 
 @AllArgsConstructor
-@NoArgsConstructor
 public class EntityIdManager {
-    protected int nextId;
+    private final int startId;
+    @Getter
+    protected int id;
+
+    public EntityIdManager(int startId) {
+        this.startId = startId;
+        this.id = startId;
+    }
+
+    public EntityIdManager() {
+        this(0);
+    }
+
+    public void update(int frame) {}
 
     public int getNextId() {
-        return nextId++;
+        return id++;
+    }
+
+    public void clear() {
+        id = startId;
     }
 }

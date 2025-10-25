@@ -8,10 +8,11 @@ import net.bfsr.engine.settings.FloatOption;
 import net.bfsr.engine.settings.IntegerOption;
 import net.bfsr.engine.settings.SettingsOption;
 import net.bfsr.engine.settings.StringOption;
-import net.bfsr.settings.SettingsCategory;
 
 public enum ClientSettings {
-    SOUND_VOLUME(SettingsCategory.SOUND, 0.0f, 1.0f, new FloatOption(0.05f), ConsumerUtils.FLOAT_DEFAULT_CONSUMER),
+    SOUND_VOLUME(SettingsCategory.SOUND, 0.0f, 1.0f, new FloatOption(0.05f).addListener(value -> {
+        Client.get().getSoundManager().setGain(value);
+    }), ConsumerUtils.FLOAT_DEFAULT_CONSUMER),
 
     CAMERA_MOVE_BY_SCREEN_BORDERS(SettingsCategory.CAMERA, new BooleanOption(true), ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
     CAMERA_MOVE_BY_SCREEN_BORDERS_SPEED(SettingsCategory.CAMERA, 0.1f, 5.0f, new FloatOption(0.f),

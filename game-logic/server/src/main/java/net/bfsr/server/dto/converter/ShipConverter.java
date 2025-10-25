@@ -34,7 +34,8 @@ public abstract class ShipConverter {
             @Mapping(target = "crew", ignore = true), @Mapping(target = "lastAttacker", ignore = true),
             @Mapping(target = "ai", ignore = true),
             @Mapping(target = "body", ignore = true), @Mapping(target = "jumpPosition", ignore = true),
-            @Mapping(target = "shipEventBus", ignore = true), @Mapping(target = "world", ignore = true)
+            @Mapping(target = "shipEventBus", ignore = true), @Mapping(target = "world", ignore = true),
+            @Mapping(target = "rayCastManager", ignore = true)
     })
     public abstract Ship from(ShipModel shipModel);
 

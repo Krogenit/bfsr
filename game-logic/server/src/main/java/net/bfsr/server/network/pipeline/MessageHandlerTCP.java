@@ -32,7 +32,7 @@ public class MessageHandlerTCP extends SimpleChannelInboundHandler<Packet> {
             log.error("Error during handling TCP packet on server", cause);
         }
 
-        playerNetworkHandler.closeChannel("Channel exception");
+        playerNetworkHandler.disconnect("Channel exception");
     }
 
     private boolean shouldLogException(ChannelHandlerContext ctx, Throwable cause) {
@@ -46,6 +46,6 @@ public class MessageHandlerTCP extends SimpleChannelInboundHandler<Packet> {
 
     @Override
     public void channelInactive(@NotNull ChannelHandlerContext ctx) {
-        playerNetworkHandler.closeChannel("Channel inactive");
+        playerNetworkHandler.disconnect("Channel inactive");
     }
 }

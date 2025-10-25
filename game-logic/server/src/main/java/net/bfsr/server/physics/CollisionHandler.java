@@ -30,6 +30,7 @@ import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.network.packet.server.effect.PacketHullCellDestroy;
 import net.bfsr.network.packet.server.entity.PacketEntitySyncDamage;
 import net.bfsr.physics.collision.CommonCollisionHandler;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.wreck.WreckSpawner;
 import org.jbox2d.collision.AABB;
@@ -45,6 +46,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class CollisionHandler extends CommonCollisionHandler {
+    private final ServerGameLogic gameLogic;
     private final DamageSystem damageSystem;
     private final EntityTrackingManager trackingManager;
     private final WreckSpawner wreckSpawner;
@@ -53,9 +55,10 @@ public class CollisionHandler extends CommonCollisionHandler {
     private final AABB aabb = new AABB();
     private final Set<BodyDistance> affectedBodies = new HashSet<>();
 
-    public CollisionHandler(EventBus eventBus, DamageSystem damageSystem, EntityTrackingManager trackingManager,
+    public CollisionHandler(ServerGameLogic gameLogic, EventBus eventBus, DamageSystem damageSystem, EntityTrackingManager trackingManager,
                             WreckSpawner wreckSpawner) {
         super(eventBus);
+        this.gameLogic = gameLogic;
         this.damageSystem = damageSystem;
         this.trackingManager = trackingManager;
         this.wreckSpawner = wreckSpawner;
@@ -128,13 +131,13 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         if (impactPower > 0.25f) {
             if (ship1.getCollisionTimer() <= 0) {
-                ship1.setCollisionTimer(Engine.convertToTicks(0.5f));
+                ship1.setCollisionTimer(Engine.convertSecondsToFrames(0.5f));
                 ship1.setLastAttacker(ship2);
                 damageShipByCollision(ship1, ship1Fixture, impactPower, contactX, contactY);
             }
 
             if (ship2.getCollisionTimer() <= 0) {
-                ship2.setCollisionTimer(Engine.convertToTicks(0.5f));
+                ship2.setCollisionTimer(Engine.convertSecondsToFrames(0.5f));
                 ship2.setLastAttacker(ship1);
                 damageShipByCollision(ship2, ship2Fixture, impactPower, contactX, contactY);
             }
@@ -158,7 +161,8 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         Polygon clipPolygon = createBeamClipPolygon(clipRectangleWidth, clipRectangleHeight, localContactX, localContactY, localSin,
                 localCos, penetration);
-        damageShip(ship, weaponSlot.getDamage(), weaponSlot.getBeamPower() * Engine.getUpdateDeltaTime(), contactX, contactY, fixture,
+        damageShip(ship, weaponSlot.getDamage(), weaponSlot.getBeamPower() * Engine.getUpdateDeltaTimeInSeconds(), contactX, contactY,
+                fixture,
                 RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, RunnableUtils.EMPTY_RUNNABLE, clipPolygon, clipRectangleHeight);
     }
 
@@ -201,7 +205,7 @@ public class CollisionHandler extends CommonCollisionHandler {
     public void weaponSlotBeamWreck(WeaponSlotBeam weaponSlotBeam, Wreck wreck, Fixture wreckFixture, float contactX,
                                     float contactY, float normalX, float normalY) {
         super.weaponSlotBeamWreck(weaponSlotBeam, wreck, wreckFixture, contactX, contactY, normalX, normalY);
-        damageWreck(wreck, weaponSlotBeam.getDamage().getHull() * weaponSlotBeam.getBeamPower() * Engine.getUpdateDeltaTime());
+        damageWreck(wreck, weaponSlotBeam.getDamage().getHull() * weaponSlotBeam.getBeamPower() * Engine.getUpdateDeltaTimeInSeconds());
     }
 
     private void damageShip(Ship ship, BulletDamage damage, float multiplayer, float contactX, float contactY,
@@ -273,9 +277,9 @@ public class CollisionHandler extends CommonCollisionHandler {
         float cos = rigidBody.getCos();
         damageSystem.damage(rigidBody, contactX, contactY, clipPolygon, Math.min(rhombusWidth, rhombusHeight) * 0.5f,
                 rigidBody.getX(), rigidBody.getY(), sin, cos, () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
-                        new PacketEntitySyncDamage(rigidBody, rigidBody.getWorld().getTimestamp())));
+                        new PacketEntitySyncDamage(rigidBody, gameLogic.getFrame())));
         trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
-                new PacketHullCellDestroy(rigidBody.getId(), cell.getColumn(), cell.getRow(), rigidBody.getWorld().getTimestamp()));
+                new PacketHullCellDestroy(rigidBody.getId(), cell.getColumn(), cell.getRow(), gameLogic.getFrame()));
 
         float rotatedX = posX * cos - posY * sin;
         float rotatedY = posY * cos + posX * sin;
@@ -391,7 +395,7 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         damageSystem.damage(rigidBody, contactX, contactY, clipPolygon, maskClipRadius, x, y, sin, cos,
                 () -> trackingManager.sendPacketToPlayersTrackingEntity(rigidBody.getId(),
-                        new PacketEntitySyncDamage(rigidBody, rigidBody.getWorld().getTimestamp())));
+                        new PacketEntitySyncDamage(rigidBody, gameLogic.getFrame())));
     }
 
     @Getter

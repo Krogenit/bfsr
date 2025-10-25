@@ -65,9 +65,9 @@ public class Particle extends GameObject {
         this.velocity.set(Engine.convertToDeltaTime(velocityX), Engine.convertToDeltaTime(velocityY));
         this.sin = sin;
         this.cos = cos;
-        float angularVelocityInTick = Engine.convertToDeltaTime(angularVelocity);
-        this.angularVelocitySin = LUT.sin(angularVelocityInTick);
-        this.angularVelocityCos = LUT.cos(angularVelocityInTick);
+        float angularVelocityInFrames = Engine.convertToDeltaTime(angularVelocity);
+        this.angularVelocitySin = LUT.sin(angularVelocityInFrames);
+        this.angularVelocityCos = LUT.cos(angularVelocityInFrames);
         super.setSize(scaleX, scaleY);
         this.sizeVelocity = Engine.convertToDeltaTime(sizeVelocity);
         this.zeroVelocity = velocity.lengthSquared() <= 0.01f;

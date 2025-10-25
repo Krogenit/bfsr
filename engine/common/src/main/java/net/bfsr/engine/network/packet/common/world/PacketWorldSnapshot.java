@@ -9,8 +9,8 @@ import net.bfsr.engine.logic.GameLogic;
 import net.bfsr.engine.network.packet.CommonPacketRegistry;
 import net.bfsr.engine.network.packet.PacketAnnotation;
 import net.bfsr.engine.network.packet.PacketScheduled;
+import net.bfsr.engine.network.sync.ChronologicalData;
 import net.bfsr.engine.network.util.ByteBufUtils;
-import net.bfsr.engine.world.entity.ChronologicalEntityData;
 import net.bfsr.engine.world.entity.RigidBody;
 import org.jbox2d.common.Vector2;
 import org.joml.Vector2f;
@@ -21,16 +21,19 @@ import java.io.IOException;
 @NoArgsConstructor
 @PacketAnnotation(id = CommonPacketRegistry.WORLD_SNAPSHOT)
 public class PacketWorldSnapshot extends PacketScheduled {
+    private double time;
     private UnorderedArrayList<EntityData> entityDataList;
 
-    public PacketWorldSnapshot(UnorderedArrayList<EntityData> entityDataList, double timestamp) {
-        super(timestamp);
+    public PacketWorldSnapshot(UnorderedArrayList<EntityData> entityDataList, int frame, double time) {
+        super(frame);
+        this.time = time;
         this.entityDataList = new UnorderedArrayList<>(entityDataList);
     }
 
     @Override
     public void write(ByteBuf data) throws IOException {
         super.write(data);
+        data.writeDouble(time);
         data.writeShort(entityDataList.size());
 
         for (int i = 0; i < entityDataList.size(); i++) {
@@ -42,6 +45,7 @@ public class PacketWorldSnapshot extends PacketScheduled {
     @Override
     public void read(ByteBuf data, GameLogic gameLogic) throws IOException {
         super.read(data, gameLogic);
+        time = data.readDouble();
         int size = data.readShort();
         entityDataList = new UnorderedArrayList<>(size);
         for (int i = 0; i < size; i++) {
@@ -50,22 +54,22 @@ public class PacketWorldSnapshot extends PacketScheduled {
     }
 
     @Override
-    public boolean canProcess(double time) {
+    public boolean isAsync() {
         return true;
     }
 
     @Getter
     @RequiredArgsConstructor
-    public static class EntityData extends ChronologicalEntityData {
+    public static class EntityData extends ChronologicalData<EntityData> {
         private final int entityId;
         private final float x, y;
         private final float sin;
         private final float cos;
         private final Vector2f velocity;
-        private final float angularVelocity;
+        private float angularVelocity;
 
-        public EntityData(RigidBody rigidBody, double time) {
-            super(time);
+        public EntityData(RigidBody rigidBody, int frame) {
+            super(frame);
             entityId = rigidBody.getId();
             x = rigidBody.getX();
             y = rigidBody.getY();
@@ -76,8 +80,11 @@ public class PacketWorldSnapshot extends PacketScheduled {
             angularVelocity = rigidBody.getAngularVelocity();
         }
 
+        public EntityData(RigidBody rigidBody) {
+            this(rigidBody, 0);
+        }
+
         EntityData(ByteBuf data) {
-            super(data.readDouble());
             entityId = data.readInt();
             x = data.readFloat();
             y = data.readFloat();
@@ -88,7 +95,6 @@ public class PacketWorldSnapshot extends PacketScheduled {
         }
 
         public void write(ByteBuf data) {
-            data.writeDouble(time);
             data.writeInt(entityId);
             data.writeFloat(x);
             data.writeFloat(y);
@@ -96,6 +102,19 @@ public class PacketWorldSnapshot extends PacketScheduled {
             data.writeFloat(cos);
             ByteBufUtils.writeVector(data, velocity);
             data.writeFloat(angularVelocity);
+        }
+
+        public void correction(float dx, float dy, float angularVelocityDelta) {
+            velocity.add(dx, dy);
+            angularVelocity += angularVelocityDelta;
+        }
+
+        @Override
+        public void getInterpolated(EntityData other, int frame, float interpolation, EntityData destination) {
+            destination.velocity.set(velocity.x + (other.velocity.x - velocity.x) * interpolation,
+                    velocity.y + (other.velocity.y - velocity.y) * interpolation);
+            destination.angularVelocity = (angularVelocity + (other.angularVelocity - angularVelocity) * interpolation);
+            destination.frame = frame;
         }
     }
 }

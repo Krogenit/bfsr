@@ -16,7 +16,7 @@ import java.util.List;
 
 @Getter
 public class ShipData extends DamageableRigidBodyConfigData {
-    private final int destroyTimeInTicks;
+    private final int destroyTimeInFrames;
     private final Vector4f effectsColor;
     private final Vector2f[] weaponSlotPositions;
     private final Polygon reactorPolygon;
@@ -27,7 +27,7 @@ public class ShipData extends DamageableRigidBodyConfigData {
 
     public ShipData(ShipConfig shipConfig, String fileName, int id, int registryId) {
         super(shipConfig, fileName, id, registryId);
-        this.destroyTimeInTicks = Engine.convertToTicks(shipConfig.getDestroyTimeInSeconds());
+        this.destroyTimeInFrames = Engine.convertSecondsToFrames(shipConfig.getDestroyTimeInSeconds());
         this.effectsColor = convert(shipConfig.getEffectsColor());
 
         Vector2fConfigurable[] slotPositions = shipConfig.getWeaponSlotPositions();

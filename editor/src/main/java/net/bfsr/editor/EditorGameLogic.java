@@ -5,13 +5,14 @@ import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.editor.gui.input.EditorInputController;
 import net.bfsr.editor.hud.EditorHUD;
 import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.loop.AbstractGameLoop;
 import net.bfsr.engine.profiler.Profiler;
 import net.engio.mbassy.listener.Listener;
 
 @Listener
 public class EditorGameLogic extends Client {
-    public EditorGameLogic(Profiler profiler, EventBus eventBus) {
-        super(profiler, eventBus);
+    public EditorGameLogic(AbstractGameLoop gameLoop, Profiler profiler, EventBus eventBus) {
+        super(gameLoop, profiler, eventBus);
     }
 
     @Override

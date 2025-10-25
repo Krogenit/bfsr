@@ -84,6 +84,8 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     public ShipRender(Ship ship) {
         super(Engine.getAssetsManager().getTexture(ship.getConfigData().getTexture()), ship);
         this.ship = ship;
+        this.jumpPosition.set(ship.getJumpPosition());
+        this.lastJumpPosition.set(jumpPosition);
 
         createWeaponSlotsRenders(ship);
         initEngineEffectsRunnable(ship);
@@ -179,6 +181,10 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
                     if (direction == Direction.FORWARD) {
                         runnable = () -> {
+                            if (!ship.isSpawned()) {
+                                return;
+                            }
+
                             float shipX = ship.getX();
                             float shipY = ship.getY();
                             float sin = ship.getSin();
@@ -196,6 +202,10 @@ public class ShipRender extends DamageableRigidBodyRenderer {
                         };
                     } else {
                         runnable = () -> {
+                            if (!ship.isSpawned()) {
+                                return;
+                            }
+
                             float shipX = ship.getX();
                             float shipY = ship.getY();
                             float sin = ship.getSin();
@@ -281,7 +291,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
         if (!ship.isSpawned()) {
             Vector2f objectJumpPosition = ship.getJumpPosition();
-            jumpDelta = 1.0f - ship.getJumpTimer() / (float) ship.getJumpTimeInTicks();
+            jumpDelta = 1.0f - ship.getJumpTimer() / (float) ship.getJumpTimeInFrames();
             jumpPosition.set(objectJumpPosition.x + (ship.getX() - objectJumpPosition.x) * jumpDelta * 0.9f,
                     objectJumpPosition.y + (ship.getY() - objectJumpPosition.y) * jumpDelta * 0.9f);
         } else {

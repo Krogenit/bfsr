@@ -16,6 +16,8 @@ public class PacketJoinGameHandler extends PacketHandler<PacketJoinGame, Network
     @Override
     public void handle(PacketJoinGame packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
+        client.setFrame(packet.getFrame());
+        client.setTime(packet.getServerTime());
         client.createWorld(packet.getSeed());
         client.closeGui();
         client.getNetworkSystem().setConnectionState(ConnectionState.CONNECTED);

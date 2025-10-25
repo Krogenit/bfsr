@@ -3,15 +3,16 @@ package net.bfsr.entity.ship;
 import gnu.trove.set.hash.THashSet;
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.ai.Ai;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.ai.Ai;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.RotationHelper;
+import net.bfsr.engine.physics.CommonRayCastManager;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.module.Modules;
@@ -62,7 +63,7 @@ public class Ship extends DamageableRigidBody {
     @Getter
     protected boolean spawned;
     @Getter
-    private final int jumpTimeInTicks;
+    private final int jumpTimeInFrames;
     @Getter
     private int jumpTimer;
     @Getter
@@ -96,20 +97,26 @@ public class Ship extends DamageableRigidBody {
     @Getter
     private final ShipData configData;
 
+    @Getter
+    @Setter
+    private CommonRayCastManager rayCastManager;
+
     public Ship(ShipData shipData) {
         super(shipData.getSizeX(), shipData.getSizeY(), shipData, shipData.getPolygonJTS());
         this.configData = shipData;
-        this.timeToDestroy = shipData.getDestroyTimeInTicks();
+        this.timeToDestroy = shipData.getDestroyTimeInFrames();
         this.maxSparksTimer = timeToDestroy / 3;
-        this.jumpTimeInTicks = Math.round(Engine.convertToTicks(0.6f) * ((Math.max(Math.max(getSizeX(), getSizeY()) / 150.0f, 1.0f))));
-        this.jumpTimer = jumpTimeInTicks;
-        setJumpPosition();
+        this.jumpTimeInFrames = Math.round(Engine.convertSecondsToFrames(0.6f) * ((Math.max(Math.max(getSizeX(), getSizeY()) / 150.0f,
+                1.0f))));
+        this.jumpTimer = jumpTimeInFrames;
     }
 
     @Override
     public void init(World world, int id) {
         super.init(world, id);
         modules.init(this);
+        setJumpPosition();
+        rayCastManager = world.getRayCastManager();
     }
 
     @Override
@@ -380,7 +387,7 @@ public class Ship extends DamageableRigidBody {
     }
 
     public void setDestroying() {
-        if (maxLifeTime == DEFAULT_MAX_LIFE_TIME_IN_TICKS) {
+        if (maxLifeTime == DEFAULT_MAX_LIFE_TIME_IN_FRAMES) {
             maxLifeTime = timeToDestroy;
             eventBus.publish(new ShipDestroyingEvent(this));
             updateRunnable = this::updateDestroying;
@@ -394,7 +401,7 @@ public class Ship extends DamageableRigidBody {
     }
 
     public boolean isDestroying() {
-        return maxLifeTime != DEFAULT_MAX_LIFE_TIME_IN_TICKS;
+        return maxLifeTime != DEFAULT_MAX_LIFE_TIME_IN_FRAMES;
     }
 
     public boolean isBot() {

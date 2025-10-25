@@ -19,8 +19,8 @@ public class PacketModuleRemove extends PacketScheduled {
     private int id;
     private ModuleType type;
 
-    public PacketModuleRemove(int entityId, int id, ModuleType type, double timestamp) {
-        super(timestamp);
+    public PacketModuleRemove(int entityId, int id, ModuleType type, int frame) {
+        super(frame);
         this.entityId = entityId;
         this.id = id;
         this.type = type;

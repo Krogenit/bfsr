@@ -17,15 +17,15 @@ public class DynamicCorrectionHandler extends CorrectionHandler {
     }
 
     @Override
-    public void update(double timestamp) {
-        interpolatedCorrectionHandler.update(timestamp);
+    public void update(double time, int frame) {
+        interpolatedCorrectionHandler.update(time, frame);
         correctionAmount += correctionChanging;
         if (correctionAmount >= 1.0f) {
             correctionAmount = 1.0f;
             rigidBody.setCorrectionHandler(nextCorrectionHandler);
+        } else {
+            interpolatedCorrectionHandler.correctionAmount = correctionAmount;
         }
-
-        interpolatedCorrectionHandler.correctionAmount = correctionAmount;
     }
 
     @Override

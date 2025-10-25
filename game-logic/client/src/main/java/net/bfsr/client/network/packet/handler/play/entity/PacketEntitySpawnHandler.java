@@ -10,7 +10,7 @@ import net.bfsr.engine.world.World;
 
 import java.net.InetSocketAddress;
 
-public class PacketSpawnEntityHandler extends PacketHandler<PacketEntitySpawn, NetworkSystem> {
+public class PacketEntitySpawnHandler extends PacketHandler<PacketEntitySpawn, NetworkSystem> {
     private final EntitySpawnDataRegistry entitySpawnDataRegistry = Client.get().getEntitySpawnDataRegistry();
 
     @Override

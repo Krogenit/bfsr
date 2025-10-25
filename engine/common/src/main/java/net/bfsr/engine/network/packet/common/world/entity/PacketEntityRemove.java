@@ -16,8 +16,8 @@ import java.io.IOException;
 public class PacketEntityRemove extends PacketScheduled {
     private int id;
 
-    public PacketEntityRemove(int id, double timestamp) {
-        super(timestamp);
+    public PacketEntityRemove(int id, int frame) {
+        super(frame);
         this.id = id;
     }
 

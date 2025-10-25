@@ -49,7 +49,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
 
     public WeaponSlot(GunData gunData, WeaponType weaponType) {
         super(gunData, gunData.getHp(), gunData.getSizeX(), gunData.getSizeY());
-        this.timeToReload = gunData.getReloadTimeInTicks();
+        this.timeToReload = gunData.getReloadTimeInFrames();
         this.energyCost = gunData.getEnergyCost();
         this.weaponType = weaponType;
         this.polygon = new Polygon(gunData.getPolygon().getVertices());
@@ -124,24 +124,15 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
         weaponSlotEventBus.publish(new WeaponShotEvent(this));
     }
 
-    public void createBullet(float fastForwardTime) {
+    public Bullet createBullet(boolean forceSpawn) {
         float cos = ship.getCos();
         float sin = ship.getSin();
         float x = getX() + getSizeX() * cos;
         float y = getY() + getSizeX() * sin;
-
-        // TODO: implement collision detection
-//        float updateDeltaTime = ship.getWorld().getUpdateDeltaTime();
-//        float updateDeltaTimeInMills = updateDeltaTime * 1000;
-//        while (fastForwardTime > 0) {
-//            x += cos * gunData.getBulletSpeed() * updateDeltaTime;
-//            y += sin * gunData.getBulletSpeed() * updateDeltaTime;
-//            fastForwardTime -= updateDeltaTimeInMills;
-//        }
-
         Bullet bullet = new Bullet(x, y, sin, cos, gunData, ship, gunData.getDamage().copy());
         bullet.init(world, world.getNextId());
-        world.add(bullet);
+        world.add(bullet, true, forceSpawn);
+        return bullet;
     }
 
     @Override

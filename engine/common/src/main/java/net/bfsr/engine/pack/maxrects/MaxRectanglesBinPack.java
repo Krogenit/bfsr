@@ -62,7 +62,8 @@ public class MaxRectanglesBinPack implements RectanglesPackingAlgorithm {
     }
 
     @Override
-    public @Nullable Rectangle insert(int width, int height) {
+    @Nullable
+    public Rectangle insert(int width, int height) {
         Rectangle newNode = scoreRect(width, height, FreeRectChoiceHeuristic.RECT_BOTTOM_LEFT_RULE, new ScoreResult());
 
         if (newNode == null)

@@ -7,6 +7,7 @@ import net.bfsr.faction.Faction;
 import net.bfsr.server.database.RemotePlayerRepository;
 import net.bfsr.server.dedicated.DedicatedServerGameLogic;
 import net.bfsr.server.dto.PlayerModel;
+import net.bfsr.server.engine.EmptyGameLoop;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.rsocket.RSocketClient;
 import org.junit.jupiter.api.BeforeAll;
@@ -50,7 +51,7 @@ public class RemotePlayerRepositoryTest {
                       @Autowired RSocketStrategies strategies) {
         rSocketClient.connect("localhost", port);
         System.setProperty("assets.path", "../../");
-        new DedicatedServerGameLogic(new Profiler(), new EventBus());
+        new DedicatedServerGameLogic(new EmptyGameLoop(), new Profiler(), new EventBus());
     }
 
     @BeforeEach

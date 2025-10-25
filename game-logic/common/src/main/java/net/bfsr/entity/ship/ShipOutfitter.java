@@ -107,16 +107,24 @@ public class ShipOutfitter {
     }
 
     private void addRandomWeapons(Ship ship, String gunName) {
-        Vector2f[] weaponSlotPositions = ship.getConfigData().getWeaponSlotPositions();
-
         if (random.nextInt(3) == 0) {
-            for (int i = 0; i < weaponSlotPositions.length; i++) {
-                initAndAddWeaponToShip(ship, WeaponFactory.createBeam("beam_small", beamRegistry), i);
-            }
+            addBeamGuns(ship);
         } else {
-            for (int i = 0; i < weaponSlotPositions.length; i++) {
-                initAndAddWeaponToShip(ship, WeaponFactory.createGun(gunName, gunRegistry), i);
-            }
+            addProjectileGuns(ship, gunName);
+        }
+    }
+
+    public void addBeamGuns(Ship ship) {
+        Vector2f[] weaponSlotPositions = ship.getConfigData().getWeaponSlotPositions();
+        for (int i = 0; i < weaponSlotPositions.length; i++) {
+            initAndAddWeaponToShip(ship, WeaponFactory.createBeam("beam_small", beamRegistry), i);
+        }
+    }
+
+    public void addProjectileGuns(Ship ship, String gunName) {
+        Vector2f[] weaponSlotPositions = ship.getConfigData().getWeaponSlotPositions();
+        for (int i = 0; i < weaponSlotPositions.length; i++) {
+            initAndAddWeaponToShip(ship, WeaponFactory.createGun(gunName, gunRegistry), i);
         }
     }
 

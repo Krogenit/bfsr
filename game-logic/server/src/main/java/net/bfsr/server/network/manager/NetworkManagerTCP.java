@@ -40,6 +40,7 @@ public class NetworkManagerTCP {
         bootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(@NotNull SocketChannel socketChannel) {
+                log.info("New connection with id {} from {}", connectionIds, socketChannel.remoteAddress());
                 PlayerNetworkHandler playerNetworkHandler = serverGameLogic.createPlayerNetworkHandler(connectionIds++, socketChannel,
                         datagramChannelSupplier.get(), true);
                 socketChannel.pipeline().addLast("slicer", new FrameDecoder());

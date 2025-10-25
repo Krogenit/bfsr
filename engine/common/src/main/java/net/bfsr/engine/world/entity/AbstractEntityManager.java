@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractEntityManager {
+    @Getter
     private final TIntObjectMap<RigidBody> entitiesById = new TIntObjectHashMap<>();
     @SuppressWarnings("rawtypes")
     private final TMap<Class<? extends RigidBody>, List<RigidBody>> entitiesByClass = new THashMap<>();
@@ -18,7 +19,7 @@ public abstract class AbstractEntityManager {
     @Getter
     private final EntityDataHistoryManager dataHistoryManager = new EntityDataHistoryManager();
 
-    public AbstractEntityManager() {
+    protected AbstractEntityManager() {
         this.entitiesByClass.put(RigidBody.class, new ArrayList<>());
         registerEntities();
     }
@@ -29,11 +30,11 @@ public abstract class AbstractEntityManager {
         this.entitiesByClass.put(entityClass, new ArrayList<>());
     }
 
-    public void update() {
+    public void update(int frame) {
         for (int i = 0; i < entities.size(); i++) {
             RigidBody rigidBody = entities.get(i);
             if (rigidBody.isDead()) {
-                rigidBody.world.remove(i--, rigidBody);
+                rigidBody.world.remove(i--, rigidBody, frame);
             } else {
                 rigidBody.update();
             }
@@ -54,8 +55,8 @@ public abstract class AbstractEntityManager {
         }
     }
 
-    public void add(RigidBody entity) {
-        if (entitiesById.containsKey(entity.getId())) {
+    public void add(RigidBody entity, boolean force) {
+        if (!force && entitiesById.containsKey(entity.getId())) {
             throw new RuntimeException("Entity with id " + entity.getId() + " already registered!");
         }
 
@@ -72,7 +73,7 @@ public abstract class AbstractEntityManager {
 
     public void clear() {
         for (int i = 0; i < entities.size(); i++) {
-            entities.get(i).onRemovedFromWorld();
+            entities.get(i).onRemovedFromWorld(0);
         }
 
         entitiesByClass.forEachValue(rigidBodies -> {

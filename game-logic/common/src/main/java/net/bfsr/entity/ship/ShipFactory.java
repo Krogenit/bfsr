@@ -2,9 +2,9 @@ package net.bfsr.entity.ship;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import lombok.Getter;
-import net.bfsr.ai.Ai;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.config.entity.ship.ShipRegistry;
+import net.bfsr.engine.ai.Ai;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.world.World;
 import net.bfsr.faction.Faction;
@@ -61,14 +61,12 @@ public class ShipFactory {
 
     public Ship create(float x, float y, float sin, float cos, Faction faction, ShipData shipData) {
         Ship ship = create(faction, shipData);
-        ship.setPosition(x, y);
-        ship.setRotation(sin, cos);
+        ship.setTransform(x, y, sin, cos);
         return ship;
     }
 
     public Ship createBot(World world, float x, float y, float angle, Faction faction, ShipData shipData, Ai ai) {
         Ship ship = create(world, world.getNextId(), x, y, angle, faction, shipData);
-        ship.init(world, world.getNextId());
         ship.setName("[BOT] " + ship.getFaction().toString());
         shipOutfitter.outfit(ship);
         ship.setAi(ai);

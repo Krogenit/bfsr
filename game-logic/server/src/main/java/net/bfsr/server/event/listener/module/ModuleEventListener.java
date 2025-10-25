@@ -10,10 +10,12 @@ import net.bfsr.event.module.ModuleAddEvent;
 import net.bfsr.event.module.ModuleDestroyEvent;
 import net.bfsr.network.packet.server.component.PacketModuleAdd;
 import net.bfsr.network.packet.server.component.PacketModuleRemove;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.EntityTrackingManager;
 
 @RequiredArgsConstructor
 public class ModuleEventListener {
+    private final ServerGameLogic gameLogic = ServerGameLogic.get();
     private final EntityTrackingManager trackingManager;
 
     @EventHandler
@@ -22,7 +24,7 @@ public class ModuleEventListener {
             Ship ship = event.getShip();
             Module module = event.getModule();
             trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(),
-                    new PacketModuleAdd(ship.getId(), module, ship.getWorld().getTimestamp()));
+                    new PacketModuleAdd(ship.getId(), module, gameLogic.getFrame()));
         };
     }
 
@@ -32,7 +34,7 @@ public class ModuleEventListener {
             DamageableModule module = event.getModule();
             Ship ship = module.getShip();
             trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketModuleRemove(ship.getId(), module.getId(),
-                    module.getType(), ship.getWorld().getTimestamp()));
+                    module.getType(), gameLogic.getFrame()));
         };
     }
 }

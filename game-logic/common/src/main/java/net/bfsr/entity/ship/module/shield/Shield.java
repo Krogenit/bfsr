@@ -33,7 +33,7 @@ public class Shield extends DamageableModule {
         super(shieldData, 5.0f, 1.0f, 1.0f);
         this.shieldHp = shieldMaxHp = shieldData.getMaxShield();
         this.shieldRegen = shieldData.getRegenAmount();
-        this.timeToRebuild = shieldData.getRebuildTimeInTicks();
+        this.timeToRebuild = shieldData.getRebuildTimeInFrames();
         this.rebuildingTime = timeToRebuild;
         this.shieldShape = shieldShape;
         this.logic = logic;

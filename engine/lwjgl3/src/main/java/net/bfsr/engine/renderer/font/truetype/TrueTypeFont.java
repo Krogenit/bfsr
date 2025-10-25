@@ -130,6 +130,7 @@ public class TrueTypeFont extends DynamicFont<TrueTypeFontPacker> {
 
             Glyph glyph = getGlyph(cp, fontSize);
             if (glyph == null) {
+                index++;
                 continue;
             }
 
@@ -213,6 +214,7 @@ public class TrueTypeFont extends DynamicFont<TrueTypeFontPacker> {
         while (index < string.length() && advance <= mouseX) {
             Glyph glyph = getGlyph(string.charAt(index), fontSize);
             if (glyph == null) {
+                index++;
                 continue;
             }
 

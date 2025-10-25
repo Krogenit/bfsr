@@ -12,7 +12,7 @@ public class SpawnAccumulator {
     }
 
     public void update() {
-        accumulatedTime += Engine.getUpdateDeltaTime();
+        accumulatedTime += Engine.getUpdateDeltaTimeInSeconds();
     }
 
     public void consume(double spawnTime) {

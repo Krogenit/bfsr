@@ -34,7 +34,7 @@ public class WreckRender extends RigidBodyRender {
     @Getter
     private final Vector4f lastColorFire = new Vector4f(), lastColorLight = new Vector4f();
     private boolean fireFadingOut;
-    private int sparkleActivationTimerInTicks;
+    private int sparkleActivationTimerInFrames;
     private boolean fire;
     private boolean light;
     private float sparkleBlinkTimer;
@@ -58,7 +58,7 @@ public class WreckRender extends RigidBodyRender {
         this.lastColorFire.set(colorFire);
         this.colorLight.set(1.0f, 1.0f, 1.0f, 0.0f);
         this.lastColorLight.set(colorLight);
-        this.sparkleActivationTimerInTicks = object.isLight() ? Engine.convertToTicks(200.0f + random.nextInt(200)) : 0;
+        this.sparkleActivationTimerInFrames = object.isLight() ? Engine.convertSecondsToFrames(200.0f + random.nextInt(200)) : 0;
         this.fire = object.isFire();
         this.light = object.isLight();
 
@@ -182,8 +182,8 @@ public class WreckRender extends RigidBodyRender {
 
     private void updateSparkle() {
         if (light) {
-            sparkleActivationTimerInTicks -= 1;
-            if (sparkleActivationTimerInTicks <= 0.0f) {
+            sparkleActivationTimerInFrames -= 1;
+            if (sparkleActivationTimerInFrames <= 0.0f) {
                 if (changeLight) {
                     if (colorLight.w > 0.0f) {
                         colorLight.w -= lightAnimationSpeed;
@@ -205,7 +205,7 @@ public class WreckRender extends RigidBodyRender {
             }
 
             if (sparkleBlinkTimer >= 100.0f) {
-                sparkleActivationTimerInTicks = Engine.convertToTicks(200.0f + random.nextInt(200));
+                sparkleActivationTimerInFrames = Engine.convertSecondsToFrames(200.0f + random.nextInt(200));
                 sparkleBlinkTimer = 0.0f;
             }
 

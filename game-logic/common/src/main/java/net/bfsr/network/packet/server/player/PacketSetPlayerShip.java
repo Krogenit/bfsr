@@ -19,8 +19,8 @@ public class PacketSetPlayerShip extends PacketScheduled {
     private float x;
     private float y;
 
-    public PacketSetPlayerShip(Ship ship, double timestamp) {
-        super(timestamp);
+    public PacketSetPlayerShip(Ship ship, int frame) {
+        super(frame);
         this.id = ship.getId();
         this.x = ship.getX();
         this.y = ship.getY();

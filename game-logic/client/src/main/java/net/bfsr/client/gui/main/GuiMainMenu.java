@@ -24,7 +24,7 @@ public class GuiMainMenu extends Gui {
                 (mouseX, mouseY) -> client.openGui(new GuiConnect(this))).atCenter(0, -40));
         add(new Button(buttonWidth, buttonHeight, languageManager.getString("gui.mainmenu.options"),
                 (mouseX, mouseY) -> client.openGui(new GuiSettings(this))).atCenter(0, -85));
-        add(new Button(buttonWidth, buttonHeight, languageManager.getString("gui.mainmenu.quit"), (mouseX, mouseY) -> client.shutdown())
-                .atCenter(0, -130));
+        add(new Button(buttonWidth, buttonHeight, languageManager.getString("gui.mainmenu.quit"),
+                (mouseX, mouseY) -> client.shutdown()).atCenter(0, -130));
     }
 }

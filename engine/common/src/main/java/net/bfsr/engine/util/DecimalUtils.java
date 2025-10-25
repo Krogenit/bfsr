@@ -6,11 +6,11 @@ public final class DecimalUtils {
     private static final DecimalFormat FORMATTER = new DecimalFormat("#.##");
     private static final DecimalFormat STRICT_FORMATTER = new DecimalFormat("0.00");
 
-    public static String formatWithToDigits(float value) {
+    public static String formatWithTwoDigits(float value) {
         return FORMATTER.format(value);
     }
 
-    public static String formatWithToDigits(double value) {
+    public static String formatWithTwoDigits(double value) {
         return FORMATTER.format(value);
     }
 

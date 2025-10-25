@@ -36,24 +36,28 @@ public final class Engine {
     @Setter
     private static GuiManager guiManager;
 
-    private static final int UPDATES_PER_SECOND = 60;
+    public static final int UPDATES_PER_SECOND = 60;
     private static final float UPDATE_DELTA_TIME_IN_SECONDS = 1.0f / UPDATES_PER_SECOND;
     private static final double TIME_BETWEEN_UPDATES_IN_NANOS = 1_000_000_000.0 / UPDATES_PER_SECOND;
-    private static final int CLIENT_RENDER_DELAY_IN_MILLS = 100;
+    private static final double CLIENT_RENDER_DELAY_IN_MILLS = 100;
 
-    public static int convertToTicks(int value) {
+    public static int convertIntSecondsToFrames(int value) {
         return value * UPDATES_PER_SECOND;
     }
 
-    public static int convertToTicks(float value) {
-        return (int) (value * UPDATES_PER_SECOND);
+    public static int convertSecondsToFrames(float value) {
+        return Math.round(value * UPDATES_PER_SECOND);
+    }
+
+    public static int convertMillisecondsToFrames(double valueInMillis) {
+        return (int) Math.round((valueInMillis / 1000.0) * UPDATES_PER_SECOND);
     }
 
     public static float convertToDeltaTime(float value) {
         return value * UPDATE_DELTA_TIME_IN_SECONDS;
     }
 
-    public static float getUpdateDeltaTime() {
+    public static float getUpdateDeltaTimeInSeconds() {
         return UPDATE_DELTA_TIME_IN_SECONDS;
     }
 
@@ -61,7 +65,7 @@ public final class Engine {
         return TIME_BETWEEN_UPDATES_IN_NANOS;
     }
 
-    public static int getClientRenderDelayInMills() {
+    public static double getClientRenderDelayInMills() {
         return CLIENT_RENDER_DELAY_IN_MILLS;
     }
 

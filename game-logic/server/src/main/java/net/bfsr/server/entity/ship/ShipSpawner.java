@@ -145,6 +145,10 @@ public class ShipSpawner {
         List<Ship> ships = world.getEntitiesByType(Ship.class);
         for (int i = 0; i < ships.size(); i++) {
             Ship ship = ships.get(i);
+            if (ship.isControlledByPlayer()) {
+                continue;
+            }
+
             if (Math.abs(ship.getX()) >= 100 || Math.abs(ship.getY()) >= 100) {
                 ship.setDead();
             }

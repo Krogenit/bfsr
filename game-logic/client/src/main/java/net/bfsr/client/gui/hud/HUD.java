@@ -52,10 +52,6 @@ public class HUD extends HUDAdapter {
         chat.addChatMessage(message);
     }
 
-    public void setPing(float ping) {
-        debugInfoElement.setPing(ping);
-    }
-
     public void selectShip(Ship ship) {
         shipOverlay.selectShip(ship);
 

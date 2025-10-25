@@ -17,8 +17,8 @@ public class PacketWeaponSlotShoot extends PacketScheduled {
     private int id;
     private int slot;
 
-    public PacketWeaponSlotShoot(int id, int slot, double timestamp) {
-        super(timestamp);
+    public PacketWeaponSlotShoot(int id, int slot, int frame) {
+        super(frame);
         this.id = id;
         this.slot = slot;
     }

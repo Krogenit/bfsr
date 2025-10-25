@@ -12,6 +12,10 @@ public abstract class EntityPacketSpawnData<T extends RigidBody> {
 
     public void setData(T rigidBody) {
         this.entityId = rigidBody.getId();
+        setTransform(rigidBody);
+    }
+
+    protected void setTransform(T rigidBody) {
         this.posX = rigidBody.getX();
         this.posY = rigidBody.getY();
         this.sin = rigidBody.getSin();

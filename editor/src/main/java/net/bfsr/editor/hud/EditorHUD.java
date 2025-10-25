@@ -22,6 +22,7 @@ import static net.bfsr.editor.gui.EditorTheme.setupContextMenuButton;
 
 public class EditorHUD extends HUD {
     private final Rectangle commandsRectangle = new Rectangle(100, 100);
+    private final FastForwardHUDTest fastForwardHUDTest = new FastForwardHUDTest(this);
 
     public EditorHUD() {
         int buttonWidth = 240;
@@ -32,6 +33,9 @@ public class EditorHUD extends HUD {
         y += buttonHeight;
         add(EditorTheme.setupButton(new Button(buttonWidth, buttonHeight, "Ship Editor", 22,
                 (mouseX, mouseY) -> Client.get().openGui(new GuiShipEditor()))).atLeft(0, y));
+        y += buttonHeight;
+        add(EditorTheme.setupButton(new Button(buttonWidth, buttonHeight, "Fast Forward Test", 22,
+                (mouseX, mouseY) -> fastForwardHUDTest.toggle())).atLeft(0, y));
 
         commandsRectangle.atTopRight(-otherShipOverlay.getWidth(), -20);
         commandsRectangle.setAllColors(0.2f, 0.2f, 0.2f, 0.75f);
@@ -60,6 +64,12 @@ public class EditorHUD extends HUD {
     }
 
     @Override
+    public void update(int mouseX, int mouseY) {
+        super.update(mouseX, mouseY);
+        fastForwardHUDTest.update();
+    }
+
+    @Override
     public void selectShipSecondary(Ship ship) {
         super.selectShipSecondary(ship);
 
@@ -68,5 +78,11 @@ public class EditorHUD extends HUD {
         } else {
             remove(commandsRectangle);
         }
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+        fastForwardHUDTest.remove();
     }
 }

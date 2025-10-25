@@ -5,28 +5,42 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.engine.network.packet.common.world.entity.spawn.RigidBodySpawnData;
 import net.bfsr.entity.bullet.Bullet;
+import org.joml.Vector4f;
 
 @Getter
 @NoArgsConstructor
 public class BulletSpawnData extends RigidBodySpawnData<Bullet> {
     private int ownerId;
+    private int clientId;
 
     @Override
     public void setData(Bullet bullet) {
         super.setData(bullet);
         this.ownerId = bullet.getOwner().getId();
+        this.clientId = bullet.getClientId();
+    }
+
+    @Override
+    protected void setTransform(Bullet bullet) {
+        Vector4f spawnTransform = bullet.getSpawnTransform();
+        posX = spawnTransform.x;
+        posY = spawnTransform.y;
+        sin = spawnTransform.z;
+        cos = spawnTransform.w;
     }
 
     @Override
     public void writeData(ByteBuf data) {
         super.writeData(data);
         data.writeInt(ownerId);
+        data.writeInt(clientId);
     }
 
     @Override
     public void readData(ByteBuf data) {
         super.readData(data);
         ownerId = data.readInt();
+        clientId = data.readInt();
     }
 
     @Override

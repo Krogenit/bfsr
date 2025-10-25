@@ -1,41 +1,29 @@
-package net.bfsr.ai;
+package net.bfsr.engine.ai;
 
-import lombok.Getter;
-import lombok.Setter;
-import net.bfsr.ai.task.AiTask;
-import net.bfsr.entity.ship.Ship;
+import net.bfsr.engine.ai.task.AiTask;
+import net.bfsr.engine.world.entity.RigidBody;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Ai {
     public static final Ai NO_AI = new Ai() {
-        {
-            setAggressiveType(AiAggressiveType.NOTHING);
-        }
-
         @Override
         public void addTask(AiTask task) {
             throw new RuntimeException("Can't add task to NO_AI field");
         }
 
         @Override
-        public void update() {}
+        public void update() {
+            // No execution without AI
+        }
     };
 
-    private final List<AiTask> tasks;
+    private final List<AiTask> tasks = new ArrayList<>();
 
-    @Getter
-    @Setter
-    private AiAggressiveType aggressiveType;
-
-    public Ai() {
-        this.tasks = new ArrayList<>();
-    }
-
-    public void init(Ship ship) {
+    public void init(RigidBody rigidBody) {
         for (int i = 0; i < tasks.size(); i++) {
-            tasks.get(i).init(ship);
+            tasks.get(i).init(rigidBody);
         }
     }
 
@@ -46,8 +34,9 @@ public class Ai {
     public void update() {
         for (int i = 0, tasksSize = tasks.size(); i < tasksSize; i++) {
             AiTask task = tasks.get(i);
-            if (task.shouldExecute())
+            if (task.shouldExecute()) {
                 task.execute();
+            }
         }
     }
 }

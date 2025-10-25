@@ -1,7 +1,7 @@
 package net.bfsr.client.input;
 
 public class InputController {
-    public void update() {}
+    public void update(int frame) {}
 
     public boolean mouseLeftClick() {
         return false;

@@ -40,7 +40,7 @@ public final class WreckSpawner {
             float angle = random.nextFloat() * MathUtils.TWO_PI;
             float angleVel = (-0.005f + random.nextFloat() / 200.0f) * 60.0f;
             float size2 = RandomHelper.randomFloat(random, 0.132f, 0.2f) * size;
-            int maxLifeTime = Engine.convertToTicks(30);
+            int maxLifeTime = Engine.convertIntSecondsToFrames(30);
             boolean isFire = random.nextInt(3) == 0;
             boolean isFireExplosion = isFire && random.nextInt(5) == 0;
             int wreckIndex = random.nextInt(6);
@@ -56,7 +56,7 @@ public final class WreckSpawner {
             float angle = random.nextFloat() * MathUtils.TWO_PI;
             float angleVel = (-0.005f + random.nextFloat() / 200.0f) * 60.0f;
             float size = RandomHelper.randomFloat(random, 0.25f, 0.4f);
-            int maxLifeTime = Engine.convertToTicks(60);
+            int maxLifeTime = Engine.convertIntSecondsToFrames(60);
             boolean isFireExplosion = random.nextInt(4) == 0;
             int wreckIndex = random.nextInt(3);
             world.add(wreckPool.get().init(world, world.getNextId(), wreckIndex, true, true, isFireExplosion, x, y,

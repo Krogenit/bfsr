@@ -23,12 +23,14 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.network.GuiType;
 import net.bfsr.network.packet.server.gui.PacketOpenGui;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.ai.AiFactory;
 import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.event.PlayerDisconnectEvent;
 import net.bfsr.server.event.PlayerJoinGameEvent;
 import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -42,11 +44,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class PlayerNetworkHandler extends NetworkHandler {
     private static final int LOGIN_TIMEOUT_IN_MILLS = 5000;
     private static final int PING_PERIOD_IN_MILLS = 2000;
+    private static final int CONNECTION_TIMEOUT_IN_MILLIS = 5000 + PING_PERIOD_IN_MILLS;
 
     private final int connectionId;
     private final SocketChannel socketChannel;
     private final DatagramChannel datagramChannel;
     private final boolean singlePlayer;
+    private final ServerGameLogic gameLogic;
     private final World world;
     private final PlayerManager playerManager;
     private final EntityTrackingManager entityTrackingManager;
@@ -61,15 +65,23 @@ public class PlayerNetworkHandler extends NetworkHandler {
     private ConnectionState connectionState = ConnectionState.CONNECTING;
     private ConnectionState connectionStateBeforeDisconnect;
     private final Queue<Packet> inboundPacketQueue = new ConcurrentLinkedQueue<>();
+    private final long connectionStartTime = System.currentTimeMillis();
 
     @Setter
     private long loginStartTime;
+    private long lastPingReceiveTime;
     private long lastPingCheckTime;
     private String terminationReason;
-
-    private Player player;
     @Setter
-    private double ping;
+    private int renderDelayInFrames;
+
+    private @Nullable Player player;
+
+    @Override
+    public void addPingResult(double ping) {
+        super.addPingResult(ping);
+        lastPingReceiveTime = System.currentTimeMillis();
+    }
 
     public void update() {
         if (connectionState != ConnectionState.DISCONNECTED) {
@@ -81,10 +93,19 @@ public class PlayerNetworkHandler extends NetworkHandler {
                     sendUDPPacket(new PacketPing(Side.SERVER));
                     lastPingCheckTime = now;
                 }
+
+                if (now - lastPingReceiveTime > CONNECTION_TIMEOUT_IN_MILLIS) {
+                    disconnect("connection timeout");
+                }
             } else if (connectionState == ConnectionState.LOGIN) {
                 long now = System.currentTimeMillis();
                 if (now - loginStartTime >= LOGIN_TIMEOUT_IN_MILLS) {
                     disconnect("login timeout");
+                }
+            } else if (connectionState == ConnectionState.CONNECTING) {
+                long now = System.currentTimeMillis();
+                if (now - connectionStartTime >= CONNECTION_TIMEOUT_IN_MILLIS) {
+                    disconnect("connecting timeout");
                 }
             }
         }
@@ -153,25 +174,28 @@ public class PlayerNetworkHandler extends NetworkHandler {
         playerManager.addPlayer(player);
 
         sendTCPPacket(new PacketLoginSuccess());
+        log.info("Player with username {} successful logged in", player.getUsername());
     }
 
     public void joinGame() {
         connectionState = ConnectionState.CONNECTED;
-        sendTCPPacket(new PacketJoinGame(world.getSeed()));
+        sendTCPPacket(new PacketJoinGame(world.getSeed(), gameLogic.getFrame(), gameLogic.getTime()));
         if (player.getFaction() != null) {
             List<Ship> ships = player.getShips();
             if (ships.isEmpty()) {
-                playerManager.respawnPlayer(world, player, 0, 0);
+                playerManager.respawnPlayer(world, player, 0, 0, gameLogic.getFrame());
             } else {
                 initShips(player);
                 spawnShips(player);
-                player.setShip(player.getShip(0));
+                player.setShip(player.getShip(0), gameLogic.getFrame());
             }
         } else {
             sendTCPPacket(new PacketOpenGui(GuiType.SELECT_FACTION));
         }
 
         world.getEventBus().publish(new PlayerJoinGameEvent(player));
+        lastPingReceiveTime = System.currentTimeMillis();
+        log.info("Player with username {} successful joined game", player.getUsername());
     }
 
     private void initShips(Player player) {
@@ -195,7 +219,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
         }
     }
 
-    private void disconnect(String reason) {
+    public void disconnect(String reason) {
         try {
             log.info("Disconnecting {}: {}", socketChannel.remoteAddress(), reason);
             socketChannel.eventLoop().execute(() -> socketChannel.writeAndFlush(new PacketDisconnectLogin(reason))
@@ -224,6 +248,9 @@ public class PlayerNetworkHandler extends NetworkHandler {
             }
 
             eventBus.publish(new PlayerDisconnectEvent(player));
+            log.info("Player with username {} removed", player.getUsername());
+        } else {
+            log.info("Skip removing player {}", socketChannel.remoteAddress());
         }
     }
 

@@ -14,6 +14,7 @@ import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.NoGui;
 import net.bfsr.engine.network.ConnectionState;
 import net.bfsr.engine.network.NetworkHandler;
+import net.bfsr.engine.network.RenderDelayManager;
 import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.engine.network.packet.PacketRegistry;
 import net.bfsr.engine.network.packet.client.PacketHandshake;
@@ -29,9 +30,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 @RequiredArgsConstructor
 public class NetworkSystem extends NetworkHandler {
-    private static final long PING_CHECK_INTERVAL = 5000;
+    private static final long PING_CHECK_INTERVAL = 1000;
 
     private final Client client;
+    private final RenderDelayManager renderDelayManager;
 
     private final NetworkManagerTCP networkManagerTCP = new NetworkManagerTCP();
     private final NetworkManagerUDP networkManagerUDP = new NetworkManagerUDP();
@@ -70,9 +72,15 @@ public class NetworkSystem extends NetworkHandler {
         sendPacketTCP(new PacketLogin(login));
     }
 
-    public void update(double time) {
+    @Override
+    public void addPingResult(double ping) {
+        super.addPingResult(ping);
+        renderDelayManager.addPingResult(ping, getAveragePing());
+    }
+
+    public void update(int frame) {
         if (connectionState != ConnectionState.DISCONNECTED) {
-            processReceivedPackets(time);
+            processReceivedPackets(frame);
 
             if (connectionState == ConnectionState.CONNECTED) {
                 long now = System.currentTimeMillis();
@@ -84,11 +92,11 @@ public class NetworkSystem extends NetworkHandler {
         }
     }
 
-    private void processReceivedPackets(double time) {
+    private void processReceivedPackets(int frame) {
         int size = inboundPacketQueue.size();
         for (int i = 0; !inboundPacketQueue.isEmpty() && i < size; i++) {
             Packet packet = inboundPacketQueue.poll();
-            if (packet.canProcess(time)) {
+            if (packet.canProcess(frame)) {
                 processPacket(packet);
             } else {
                 inboundPacketQueue.add(packet);
@@ -171,7 +179,9 @@ public class NetworkSystem extends NetworkHandler {
         networkManagerUDP.closeChannel();
     }
 
+    @Override
     public void clear() {
+        super.clear();
         inboundPacketQueue.clear();
         setConnectionState(ConnectionState.DISCONNECTED);
     }

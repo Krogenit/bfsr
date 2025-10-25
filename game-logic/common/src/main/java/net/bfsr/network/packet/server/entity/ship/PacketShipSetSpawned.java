@@ -16,8 +16,8 @@ import java.io.IOException;
 public class PacketShipSetSpawned extends PacketScheduled {
     private int id;
 
-    public PacketShipSetSpawned(int id, double timestamp) {
-        super(timestamp);
+    public PacketShipSetSpawned(int id, int frame) {
+        super(frame);
         this.id = id;
     }
 

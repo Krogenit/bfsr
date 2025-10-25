@@ -7,6 +7,7 @@ import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.physics.collision.RayCastSource;
 import net.bfsr.engine.world.entity.RigidBody;
+import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.reactor.Reactor;
@@ -14,6 +15,7 @@ import net.bfsr.physics.RayCastType;
 import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Fixture;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 
 import java.util.function.Consumer;
@@ -32,38 +34,38 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
 
     private final Vector2 rayStart = new Vector2();
     private final Vector2 rayDirection = new Vector2();
-    private Fixture rayCastResultFixture;
+    private @Nullable Fixture rayCastResultFixture;
     private Vector2 rayCastResultNormal;
 
     private final float powerAnimationSpeed = Engine.convertToDeltaTime(3.5f);
     private final float beamRangeAnimationSpeed = Engine.convertToDeltaTime(6.0f);
 
     @Getter
-    private float aliveTimerInTicks;
-    private final float maxAliveTimerInTicks;
+    private float aliveTimerInFrames;
+    private final float maxAliveTimerInFrames;
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
-    private int damageTicks;
-    private int ticksPerDamage;
+    private int damageFrames;
+    private int framesPerDamage;
 
     public WeaponSlotBeam(BeamData beamData) {
         super(beamData, WeaponType.BEAM);
         this.beamMaxRange = beamData.getBeamMaxRange();
         this.damage = beamData.getDamage().copy();
-        this.maxAliveTimerInTicks = beamData.getAliveTimeInTicks();
+        this.maxAliveTimerInFrames = beamData.getAliveTimeInFrames();
     }
 
     @Override
     public void init(int id, Ship ship) {
         super.init(id, ship);
-        ticksPerDamage = ship.getWorld().isServer() ? 10 : 1;
-        damage.multiply(ticksPerDamage);
+        framesPerDamage = ship.getWorld().isServer() ? 10 : 1;
+        damage.multiply(framesPerDamage);
     }
 
     @Override
     public void update() {
-        if (aliveTimerInTicks > 0) {
-            aliveTimerInTicks--;
+        if (aliveTimerInFrames > 0) {
+            aliveTimerInFrames--;
 
             if (beamPower < 1.0f) {
                 beamPower += powerAnimationSpeed;
@@ -100,27 +102,30 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     @Override
     public void shoot(Consumer<WeaponSlot> onShotConsumer, Reactor reactor) {
         super.shoot(onShotConsumer, reactor);
-        aliveTimerInTicks = maxAliveTimerInTicks;
+        aliveTimerInFrames = maxAliveTimerInFrames;
     }
 
     private void rayCast() {
         if (currentBeamRange < beamMaxRange) {
             currentBeamRange += beamRangeAnimationSpeed;
+            if (currentBeamRange > beamMaxRange) {
+                currentBeamRange = beamMaxRange;
+            }
         }
 
         float cos = ship.getCos();
         float sin = ship.getSin();
         float startRange = -getSizeX();
-
         float startX = cos * startRange;
         float startY = sin * startRange;
+
         rayStart.x = startX + getX();
         rayStart.y = startY + getY();
         collisionPoint.set(0.0f);
         rayDirection.set(rayStart.x + cos * currentBeamRange, rayStart.y + sin * currentBeamRange);
         rayCastResultFixture = null;
 
-        world.getPhysicWorld().raycast((fixture, point, normal, fraction) -> {
+        ship.getRayCastManager().rayCast(ship, (fixture, point, normal, fraction) -> {
             if (!world.getContactFilter().shouldCollide(fixture.getFilter(), Filters.BEAM_FILTER)) {
                 return -1.0f;
             }
@@ -138,17 +143,19 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
         if (rayCastResultFixture != null) {
             currentBeamRange = collisionPoint.distance(rayStart.x, rayStart.y);
 
-            if (damageTicks == 0) {
+            if (damageFrames == 0) {
                 world.getCollisionMatrix().rayCast(this, rayCastResultFixture, collisionPoint.x, collisionPoint.y, rayCastResultNormal.x,
                         rayCastResultNormal.y);
             }
 
-            damageTicks = (damageTicks + 1) % ticksPerDamage;
+            damageFrames = (damageFrames + 1) % framesPerDamage;
         }
     }
 
     @Override
-    public void createBullet(float fastForwardTime) {}
+    public Bullet createBullet(boolean forceSpawn) {
+        return null;
+    }
 
     @Override
     public ConnectedObjectType getConnectedObjectType() {
