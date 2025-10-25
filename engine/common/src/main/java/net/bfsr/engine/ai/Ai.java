@@ -14,7 +14,9 @@ public class Ai {
         }
 
         @Override
-        public void update() {}
+        public void update() {
+            // No execution without AI
+        }
     };
 
     private final List<AiTask> tasks = new ArrayList<>();
