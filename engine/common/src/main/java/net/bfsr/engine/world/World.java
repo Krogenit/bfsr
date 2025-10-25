@@ -67,7 +67,7 @@ public class World {
         profiler.endStart("postPhysicsUpdate");
         entityManager.postPhysicsUpdate();
         profiler.endStart("entityIdManager");
-        entityIdManager.update(timestamp, frame);
+        entityIdManager.update(frame);
         profiler.end();
     }
 
@@ -90,13 +90,11 @@ public class World {
         }
 
         entityManager.add(entity, force);
-        entityIdManager.add(entity);
         entity.onAddedToWorld();
     }
 
     public void remove(int index, RigidBody entity, int frame) {
         entityManager.remove(index, entity);
-        entityIdManager.remove(index, entity);
         physicWorld.removeBody(entity.getBody());
         entity.onRemovedFromWorld(frame);
     }

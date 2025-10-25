@@ -105,7 +105,7 @@ public class PlayerInputController {
                 });
 
                 if (bullets.size() > 0) {
-                    networkHandler.sendUDPPacket(new PacketPlayerSyncLocalId(player.getLocalIdManager().getCurrentId(), frame));
+                    networkHandler.sendUDPPacket(new PacketPlayerSyncLocalId(player.getLocalIdManager().getId(), frame));
                     lagCompensation.compensateBullets(bullets, fastForwardTimeInFrames, ship.getWorld(), frame);
                 }
 
