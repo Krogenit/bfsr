@@ -36,7 +36,7 @@ public final class Engine {
     @Setter
     private static GuiManager guiManager;
 
-    private static final int UPDATES_PER_SECOND = 60;
+    public static final int UPDATES_PER_SECOND = 60;
     private static final float UPDATE_DELTA_TIME_IN_SECONDS = 1.0f / UPDATES_PER_SECOND;
     private static final double TIME_BETWEEN_UPDATES_IN_NANOS = 1_000_000_000.0 / UPDATES_PER_SECOND;
     private static final double CLIENT_RENDER_DELAY_IN_MILLS = 100;
