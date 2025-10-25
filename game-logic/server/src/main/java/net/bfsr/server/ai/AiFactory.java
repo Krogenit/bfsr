@@ -12,8 +12,8 @@ public class AiFactory {
 
     public Ai createAi() {
         Ai ai = new Ai();
-        ai.addTask(new AiSearchTarget(AiAggressiveType.ATTACK, 4000.0f));
-        ai.addTask(new AiAttackTarget(4000.0f, entityTrackingManager));
+        ai.addTask(new AiSearchTarget(AiAggressiveType.ATTACK, 400.0f));
+        ai.addTask(new AiAttackTarget(400.0f, entityTrackingManager));
         return ai;
     }
 }
