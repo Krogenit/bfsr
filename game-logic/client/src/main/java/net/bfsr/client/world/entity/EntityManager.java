@@ -5,7 +5,7 @@ import net.bfsr.entity.CommonEntityManager;
 
 public class EntityManager extends CommonEntityManager {
     @Override
-    public void update(double timestamp, int frame) {
+    public void update(int frame) {
         for (int i = 0; i < entities.size(); i++) {
             RigidBody rigidBody = entities.get(i);
             if (rigidBody.isDead()) {

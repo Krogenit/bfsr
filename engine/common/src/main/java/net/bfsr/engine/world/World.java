@@ -61,7 +61,7 @@ public class World {
         this.timestamp = timestamp;
 
         profiler.start("entityManager");
-        entityManager.update(timestamp, frame);
+        entityManager.update(frame);
         profiler.endStart("physics");
         physicWorld.step(Engine.getUpdateDeltaTimeInSeconds(), VELOCITY_ITERATIONS, POSITION_ITERATIONS);
         profiler.endStart("postPhysicsUpdate");

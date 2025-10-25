@@ -30,7 +30,7 @@ public abstract class AbstractEntityManager {
         this.entitiesByClass.put(entityClass, new ArrayList<>());
     }
 
-    public void update(double timestamp, int frame) {
+    public void update(int frame) {
         for (int i = 0; i < entities.size(); i++) {
             RigidBody rigidBody = entities.get(i);
             if (rigidBody.isDead()) {
