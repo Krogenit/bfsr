@@ -59,7 +59,7 @@ import java.net.InetAddress;
 @Log4j2
 @Getter
 public class Client extends ClientGameLogic {
-    public static final String GAME_VERSION = "Dev 0.1.7";
+    public static final String GAME_VERSION = "Dev 0.1.8";
     private static Client instance;
 
     @Getter
