@@ -7,12 +7,11 @@ import net.bfsr.entity.ship.module.ModuleType;
 
 @Getter
 public class Cargo extends Module {
-    private final CargoData data;
     private int capacity;
     private final int maxCapacity;
 
     public Cargo(CargoData cargoData) {
-        this.data = cargoData;
+        super(cargoData);
         this.maxCapacity = cargoData.getMaxCapacity();
     }
 

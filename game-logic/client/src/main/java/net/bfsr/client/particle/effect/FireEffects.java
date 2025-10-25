@@ -2,12 +2,16 @@ package net.bfsr.client.particle.effect;
 
 import net.bfsr.client.config.particle.ParticleEffect;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
-import net.bfsr.client.particle.SpawnAccumulator;
+import net.bfsr.engine.world.entity.SpawnAccumulator;
 
-public final class FireEffects {
-    private static final ParticleEffect smallFire = ParticleEffectsRegistry.INSTANCE.get("fire/small");
+public class FireEffects {
+    private final ParticleEffect smallFire;
 
-    public static void emitFire(float x, float y, SpawnAccumulator spawnAccumulator) {
+    FireEffects(ParticleEffectsRegistry effectsRegistry) {
+        smallFire = effectsRegistry.get("fire/small");
+    }
+
+    public void emitFire(float x, float y, SpawnAccumulator spawnAccumulator) {
         smallFire.emit(x, y, spawnAccumulator);
     }
 }

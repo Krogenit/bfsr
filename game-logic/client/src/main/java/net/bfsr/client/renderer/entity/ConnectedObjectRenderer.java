@@ -1,17 +1,17 @@
 package net.bfsr.client.renderer.entity;
 
-import net.bfsr.client.renderer.Render;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
-import net.bfsr.entity.GameObject;
+import net.bfsr.engine.renderer.entity.Render;
+import net.bfsr.engine.world.entity.GameObject;
 
 public class ConnectedObjectRenderer extends Render {
     private final ConnectedObject<?> connectedObject;
 
     ConnectedObjectRenderer(ConnectedObject<?> connectedObject) {
-        super(Engine.assetsManager.getTexture(connectedObject.getConfigData().getTexture()), new GameObject());
+        super(Engine.getAssetsManager().getTexture(connectedObject.getConfigData().getTexture()), new GameObject());
         this.connectedObject = connectedObject;
     }
 
@@ -40,7 +40,7 @@ public class ConnectedObjectRenderer extends Render {
     }
 
     @Override
-    public void renderAlpha() {
+    public void render() {
         spriteRenderer.addDrawCommand(id, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ALPHA);
     }
 }

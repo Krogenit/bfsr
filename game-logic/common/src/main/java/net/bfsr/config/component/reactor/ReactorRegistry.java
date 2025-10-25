@@ -1,7 +1,7 @@
 package net.bfsr.config.component.reactor;
 
-import net.bfsr.config.ConfigConverter;
-import net.bfsr.config.ConfigToDataConverter;
+import net.bfsr.engine.config.ConfigConverter;
+import net.bfsr.engine.config.ConfigToDataConverter;
 
 @ConfigConverter
 public final class ReactorRegistry extends ConfigToDataConverter<ReactorConfig, ReactorData> {

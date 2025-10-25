@@ -2,10 +2,10 @@ package net.bfsr.config.component;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.config.Configurable;
-import net.bfsr.config.PolygonConfigurable;
 import net.bfsr.config.entity.ship.EnginesConfig;
-import net.bfsr.math.Direction;
+import net.bfsr.engine.config.Configurable;
+import net.bfsr.engine.config.PolygonConfigurable;
+import net.bfsr.engine.math.Direction;
 
 import java.util.Map;
 

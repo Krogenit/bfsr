@@ -1,25 +1,30 @@
 package net.bfsr.entity.ship.module;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.bfsr.entity.GameObject;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.config.ConfigData;
+import net.bfsr.engine.world.entity.GameObject;
+import net.bfsr.engine.world.entity.RigidBody;
 
 import java.util.List;
 
 @Setter
 @Getter
-@NoArgsConstructor
 public abstract class Module extends GameObject {
+    protected final ConfigData data;
     protected int id;
 
-    Module(float sizeX, float sizeY) {
-        super(sizeX, sizeY);
+    protected Module(ConfigData data) {
+        this(data, 0.0f, 0.0f);
     }
 
-    Module(float x, float y, float sizeX, float sizeY) {
+    Module(ConfigData data, float sizeX, float sizeY) {
+        this(data, 0.0f, 0.0f, sizeX, sizeY);
+    }
+
+    Module(ConfigData data, float x, float y, float sizeX, float sizeY) {
         super(x, y, sizeX, sizeY);
+        this.data = data;
     }
 
     public abstract ModuleType getType();
@@ -33,5 +38,9 @@ public abstract class Module extends GameObject {
     @Override
     public void postPhysicsUpdate() {
         throw new RuntimeException("Use postPhysicsUpdate with RigidBody param instead");
+    }
+
+    public int getDataId() {
+        return data.getId();
     }
 }

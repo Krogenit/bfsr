@@ -25,7 +25,7 @@ public class TexturedRectangle extends GuiObject {
     }
 
     public TexturedRectangle(TextureRegister textureRegister, int x, int y, int width, int height) {
-        this(Engine.assetsManager.getTexture(textureRegister), x, y, width, height);
+        this(Engine.getAssetsManager().getTexture(textureRegister), x, y, width, height);
     }
 
     public TexturedRectangle(AbstractTexture texture, int x, int y, int width, int height) {

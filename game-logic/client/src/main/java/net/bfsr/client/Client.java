@@ -1,46 +1,57 @@
 package net.bfsr.client;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.damage.DamageHandler;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
+import net.bfsr.client.font.FontType;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.gui.main.GuiMainMenu;
+import net.bfsr.client.input.CameraInputController;
+import net.bfsr.client.input.DebugInputController;
+import net.bfsr.client.input.GuiInputController;
 import net.bfsr.client.input.InputHandler;
-import net.bfsr.client.language.Lang;
+import net.bfsr.client.input.PlayerInputController;
+import net.bfsr.client.language.LanguageManager;
 import net.bfsr.client.listener.entity.ShipEventListener;
 import net.bfsr.client.listener.gui.GuiEventListener;
-import net.bfsr.client.listener.gui.HUDEventListener;
 import net.bfsr.client.listener.world.WorldEventListener;
 import net.bfsr.client.module.ShieldLogic;
 import net.bfsr.client.network.NetworkSystem;
-import net.bfsr.client.particle.ParticleManager;
+import net.bfsr.client.particle.effect.ParticleEffects;
 import net.bfsr.client.physics.CollisionHandler;
 import net.bfsr.client.renderer.EntityRenderer;
 import net.bfsr.client.renderer.GlobalRenderer;
 import net.bfsr.client.renderer.WorldRenderer;
 import net.bfsr.client.server.LocalServer;
-import net.bfsr.client.server.LocalServerGameLogic;
 import net.bfsr.client.server.ThreadLocalServer;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.client.settings.ConfigSettings;
 import net.bfsr.client.world.BlankWorld;
 import net.bfsr.client.world.entity.ClientEntityIdManager;
-import net.bfsr.client.world.entity.EntitySpawnLoginRegistry;
-import net.bfsr.config.ConfigConverterManager;
+import net.bfsr.client.world.entity.EntityManager;
+import net.bfsr.client.world.entity.EntitySpawnDataRegistry;
+import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.config.ConfigConverterManager;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.logic.ClientGameLogic;
+import net.bfsr.engine.loop.AbstractGameLoop;
+import net.bfsr.engine.network.RenderDelayManager;
+import net.bfsr.engine.network.packet.Packet;
+import net.bfsr.engine.network.packet.common.world.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.engine.profiler.Profiler;
+import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.sound.AbstractSoundManager;
-import net.bfsr.engine.util.Side;
-import net.bfsr.entity.CommonEntityManager;
+import net.bfsr.engine.world.World;
+import net.bfsr.engine.world.entity.ParticleManager;
+import net.bfsr.entity.ship.ShipFactory;
+import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.logic.LogicType;
-import net.bfsr.network.packet.Packet;
-import net.bfsr.world.World;
+import net.bfsr.physics.collision.CollisionMatrix;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;
@@ -48,71 +59,103 @@ import java.net.InetAddress;
 @Log4j2
 @Getter
 public class Client extends ClientGameLogic {
-    public static final String GAME_VERSION = "Dev 0.1.6";
+    public static final String GAME_VERSION = "Dev 0.1.7";
     private static Client instance;
 
-    private final ConfigConverterManager configConverterManager = new ConfigConverterManager();
-    private final AbstractSoundManager soundManager = Engine.soundManager;
-    private final NetworkSystem networkSystem = new NetworkSystem();
-    private final EntitySpawnLoginRegistry entitySpawnLoginRegistry = new EntitySpawnLoginRegistry();
-    private final GuiManager guiManager = Engine.guiManager;
-    private final InputHandler inputHandler = new InputHandler();
-    private final ParticleManager particleManager = new ParticleManager();
-    private final EntityRenderer entityRenderer = new EntityRenderer();
-    private final DamageHandler damageHandler = new DamageHandler(entityRenderer);
-    private final ConfigSettings settings = new ConfigSettings();
-    private final GlobalRenderer globalRenderer = new GlobalRenderer(
-            guiManager, profiler, entityRenderer, particleManager, new WorldRenderer(profiler, entityRenderer)
-    );
-
-    private World world = BlankWorld.get();
-    private String playerName;
-    private LocalServer localServer;
-    private ThreadLocalServer threadLocalServer;
-
-    @Setter
-    private double clientToServerTimeDiff;
     @Getter
     private double renderTime;
     @Getter
-    private final double clientRenderDelay = Engine.getClientRenderDelayInMills() * 1_000_000.0;
+    private int renderFrame;
 
-    public Client(Profiler profiler) {
-        super(profiler);
+    private final LanguageManager languageManager = new LanguageManager().load();
+
+    private final ConfigSettings settings = new ConfigSettings();
+
+    private final PlayerInputController playerInputController = new PlayerInputController(this);
+    private final InputHandler inputHandler = new InputHandler(new GuiInputController(),
+            new CameraInputController(this, playerInputController), playerInputController, new DebugInputController(this));
+
+    private final GuiManager guiManager = Engine.getGuiManager();
+
+    private final AbstractSoundManager soundManager = Engine.getSoundManager();
+
+    private final ParticleManager particleManager = new ParticleManager();
+    private final ParticleEffectsRegistry particleEffectsRegistry = new ParticleEffectsRegistry(particleManager);
+    private final ConfigConverterManager configConverterManager = new ConfigConverterManager(particleEffectsRegistry);
+    private final ParticleEffects particleEffects = new ParticleEffects(particleManager, particleEffectsRegistry);
+
+    private final ShipOutfitter shipOutfitter = new ShipOutfitter(configConverterManager);
+    private final ShipFactory shipFactory = new ShipFactory(configConverterManager.getConverter(ShipRegistry.class), shipOutfitter);
+
+    private final EntityRenderer entityRenderer = new EntityRenderer(this);
+    private final GlobalRenderer globalRenderer = new GlobalRenderer(profiler, entityRenderer, particleManager,
+            new WorldRenderer(profiler, entityRenderer, eventBus));
+    private final AbstractCamera camera = Engine.getRenderer().getCamera();
+
+    private final DamageHandler damageHandler = new DamageHandler(entityRenderer);
+
+    private final EntitySpawnDataRegistry entitySpawnDataRegistry = new EntitySpawnDataRegistry(configConverterManager, shipFactory,
+            damageHandler, this);
+
+    private final ClientEntityIdManager entityIdManager = new ClientEntityIdManager(this);
+
+    private final RenderDelayManager renderDelayManager = new RenderDelayManager();
+    private final NetworkSystem networkSystem = new NetworkSystem(this, renderDelayManager);
+
+    protected HUD hud;
+
+    private World world = BlankWorld.get();
+    private String playerName;
+
+    @Getter
+    private LocalServer localServer;
+    private ThreadLocalServer threadLocalServer;
+
+    public Client(AbstractGameLoop gameLoop, Profiler profiler, EventBus eventBus) {
+        super(gameLoop, profiler, eventBus);
         instance = this;
     }
 
     @Override
     public void init() {
-        Lang.load();
-        inputHandler.init();
         settings.load();
-        configConverterManager.init();
-        configConverterManager.registerConfigRegistry(ParticleEffectsRegistry.INSTANCE);
+        applySettings();
         networkSystem.init();
-        entitySpawnLoginRegistry.init(configConverterManager);
-        globalRenderer.init();
-        entityRenderer.init();
-        guiManager.init(eventBus);
-        profiler.setEnable(ClientSettings.IS_PROFILING.getBoolean());
-        soundManager.setGain(ClientSettings.SOUND_VOLUME.getFloat());
-        particleManager.init();
         registerListeners();
-        super.init();
-        guiManager.openGui(new GuiMainMenu());
+        registerFonts();
         registerLogic(LogicType.SHIELD_UPDATE.ordinal(), new ShieldLogic());
+        guiManager.openGui(new GuiMainMenu());
+    }
+
+    private void applySettings() {
+        if (ClientSettings.IS_DEBUG.getBoolean()) {
+            Engine.getRenderer().setDebugWindow();
+        }
     }
 
     private void registerListeners() {
         eventBus.register(new ShipEventListener());
         eventBus.register(new WorldEventListener());
         eventBus.register(new GuiEventListener());
-        eventBus.register(new HUDEventListener());
+    }
+
+    private void registerFonts() {
+        FontType[] fonts = FontType.values();
+        for (int i = 0; i < fonts.length; i++) {
+            FontType font = fonts[i];
+            Engine.getFontManager().registerFont(this, font.getFontName(), font.getFontFile());
+        }
     }
 
     @Override
-    public void update(double time) {
-        super.update(time);
+    public void update(int frame, double time) {
+        super.update(frame, time);
+        renderTime = time
+                + networkSystem.getAveragePing() * 1_000_000.0
+                - renderDelayManager.getRenderDelayInNanos();
+
+        renderFrame = frame - renderDelayManager.getRenderDelayInFrames() + networkSystem.getAveragePingInFrames();
+
         profiler.start("renderManager");
 
         if (!isPaused()) {
@@ -120,20 +163,13 @@ public class Client extends ClientGameLogic {
         }
 
         profiler.endStart("inputHandler");
-        inputHandler.update();
+        inputHandler.update(frame);
         profiler.endStart("soundManager");
-        soundManager.updateListenerPosition(Engine.renderer.camera.getPosition());
-        soundManager.updateGain(ClientSettings.SOUND_VOLUME.getFloat());
-        profiler.end();
-
-        renderTime = time - clientToServerTimeDiff - clientRenderDelay;
-
-        profiler.start("network");
-        networkSystem.update(renderTime);
+        soundManager.updateListenerPosition(camera.getPosition());
 
         if (!isPaused()) {
             profiler.endStart("world");
-            world.update(renderTime);
+            world.update(renderTime, renderFrame);
             profiler.endStart("particles");
             particleManager.update();
         }
@@ -146,6 +182,8 @@ public class Client extends ClientGameLogic {
             entityRenderer.postWorldUpdate();
         }
 
+        profiler.endStart("network");
+        networkSystem.update(renderFrame);
         profiler.end();
     }
 
@@ -164,7 +202,7 @@ public class Client extends ClientGameLogic {
 
     private void startLocalServer() {
         playerName = "Local Player";
-        localServer = new LocalServer(new LocalServerGameLogic(new Profiler()));
+        localServer = new LocalServer();
         threadLocalServer = new ThreadLocalServer(localServer);
         threadLocalServer.setName("Local Server");
         threadLocalServer.start();
@@ -185,24 +223,14 @@ public class Client extends ClientGameLogic {
     private void connectToLocalServerTCP() {
         try {
             InetAddress inetaddress = InetAddress.getByName("127.0.0.1");
-            connectToServer(inetaddress, 34000, "Local Player");
+            networkSystem.connect(inetaddress, 34000, "Local Player");
         } catch (Exception e) {
             log.error("Couldn't connect to local server", e);
         }
     }
 
-    public void connectToServer(InetAddress inetaddress, int port, String login) {
-        networkSystem.connect(inetaddress, port, login);
-    }
-
-    public void stopLocalServer() {
-        if (localServer != null) {
-            localServer.stop();
-            localServer = null;
-        }
-    }
-
     public void quitToMainMenu() {
+        particleManager.clear();
         eventBus.publish(new ExitToMainMenuEvent());
         clearNetwork();
         stopLocalServer();
@@ -216,6 +244,14 @@ public class Client extends ClientGameLogic {
         networkSystem.closeChannels();
         networkSystem.shutdown();
         networkSystem.clear();
+        renderDelayManager.reset();
+    }
+
+    public void stopLocalServer() {
+        if (localServer != null) {
+            localServer.stop();
+            localServer = null;
+        }
     }
 
     private void waitServerStop() {
@@ -237,17 +273,17 @@ public class Client extends ClientGameLogic {
     }
 
     public void createWorld(long seed) {
-        world = new World(profiler, Side.CLIENT, seed, eventBus, new CommonEntityManager(), new ClientEntityIdManager(), this,
-                new CollisionHandler(eventBus));
+        world = new World(profiler, seed, eventBus, new EntityManager(), entityIdManager, this,
+                new CollisionMatrix(new CollisionHandler(this)));
         world.init();
-    }
-
-    public void closeGui() {
-        guiManager.closeGui();
     }
 
     public void openGui(@NotNull Gui gui) {
         guiManager.openGui(gui);
+    }
+
+    public void closeGui() {
+        guiManager.closeGui();
     }
 
     public void sendTCPPacket(Packet packet) {
@@ -258,29 +294,18 @@ public class Client extends ClientGameLogic {
         networkSystem.sendPacketUDP(packet);
     }
 
-    @Override
-    public void clear() {
-        clearNetwork();
-        stopLocalServer();
-    }
-
     private void setBlankWorld() {
         world.clear();
         world = BlankWorld.get();
     }
 
-    public static Client get() {
-        return instance;
-    }
-
     public HUD createHUD() {
-        return new HUD();
+        return hud = new HUD();
     }
 
     @Override
     public boolean isVSync() {
-        return ClientSettings.V_SYNC.getBoolean() && ClientSettings.MAX_FPS.getMaxValue() - ClientSettings.MAX_FPS.getInteger()
-                <= 0;
+        return ClientSettings.V_SYNC.getBoolean() && ClientSettings.MAX_FPS.getMaxValue() - ClientSettings.MAX_FPS.getInteger() <= 0;
     }
 
     @Override
@@ -299,5 +324,21 @@ public class Client extends ClientGameLogic {
 
     public boolean isInWorld() {
         return world != BlankWorld.get();
+    }
+
+    @Override
+    public EntityPacketSpawnData<?> getEntitySpawnData(int entityId) {
+        return entitySpawnDataRegistry.createSpawnData(entityId);
+    }
+
+    public static Client get() {
+        return instance;
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        clearNetwork();
+        stopLocalServer();
     }
 }

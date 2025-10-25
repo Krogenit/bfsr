@@ -1,18 +1,20 @@
 package net.bfsr.client.world.entity;
 
-import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.RequiredArgsConstructor;
-import net.bfsr.client.Client;
-import net.bfsr.damage.DamageMask;
+import net.bfsr.client.damage.DamageHandler;
+import net.bfsr.config.entity.ship.ShipData;
+import net.bfsr.engine.config.ConfigConverterManager;
+import net.bfsr.engine.math.Direction;
+import net.bfsr.engine.renderer.AbstractRenderer;
+import net.bfsr.engine.world.World;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.entity.ship.module.engine.Engine;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.faction.Faction;
-import net.bfsr.math.Direction;
-import net.bfsr.network.packet.common.entity.spawn.ShipSpawnData;
-import net.bfsr.world.World;
+import net.bfsr.network.packet.common.entity.spawn.ship.EngineSpawnData;
+import net.bfsr.network.packet.common.entity.spawn.ship.ShipSpawnData;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -20,45 +22,48 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ShipSpawnLogic extends DamageableRigidBodySpawnLogic<ShipSpawnData> {
     private final ShipFactory shipFactory;
+    private final DamageHandler damageHandler;
 
     @Override
-    public void spawn(ShipSpawnData spawnData) {
-        World world = Client.get().getWorld();
-
+    public void spawn(ShipSpawnData spawnData, World world, ConfigConverterManager configConverterManager, AbstractRenderer renderer) {
+        ShipData shipData = shipFactory.getShipRegistry().get(spawnData.getDataId());
         Ship ship = shipFactory.create(spawnData.getPosX(), spawnData.getPosY(), spawnData.getSin(), spawnData.getCos(),
-                Faction.get(spawnData.getFaction()), shipFactory.getShipRegistry().get(spawnData.getDataId()),
-                new DamageMask(32, 32, null));
+                Faction.get(spawnData.getFaction()), shipData);
         ship.setName(spawnData.getName());
         ship.setPolygon(spawnData.getPolygon());
 
         ship.init(world, spawnData.getEntityId());
         outfit(ship, spawnData, shipFactory);
 
-        //Should be called before adding to world for proper ShipRender with connected objects initialization
-        addFixturesAndConnectedObjects(ship, spawnData);
+        // Should be called before adding to world for proper ShipRender with connected objects initialization
+        addFixturesAndConnectedObjects(ship, spawnData, configConverterManager);
 
         world.add(ship, false);
 
-        //This method should be called after ship added to world
+        // This method should be called after ship added to world
         if (spawnData.isSpawned()) ship.setSpawned();
 
-        //Render instance with mask texture only available after ShipRender created when ship has added to world
-        updateDamage(ship, spawnData);
+        // Render instance with mask texture only available after ShipRender created when ship has added to world
+        updateDamage(damageHandler, ship, spawnData);
     }
 
     private void outfit(Ship ship, ShipSpawnData shipSpawnData, ShipFactory shipFactory) {
-        EnumMap<Direction, BooleanArrayList> enginesMap = shipSpawnData.getEnginesMap();
+        EnumMap<Direction, List<EngineSpawnData>> enginesMap = shipSpawnData.getEnginesMap();
 
-        shipFactory.getShipOutfitter().outfit(ship, shipSpawnData.getReactorDataId(), shipSpawnData.getEnginesDataId(), enginesMap,
+        shipFactory.getShipOutfitter().outfit(ship, shipSpawnData.getReactorDataId(), shipSpawnData.getEnginesDataId(),
                 shipSpawnData.getHullDataId(), shipSpawnData.getArmorDataId(), shipSpawnData.getCrewDataId(),
                 shipSpawnData.getCargoDataId(), shipSpawnData.getShieldDataId());
 
         Engines engines = ship.getModules().getEngines();
-        enginesMap.forEach((direction, booleans) -> {
+        enginesMap.forEach((direction, engineSpawnDataList) -> {
             List<Engine> engineList = engines.getEngines(direction);
             for (int i = 0; i < engineList.size(); i++) {
-                if (booleans.getBoolean(i))
-                    engineList.get(i).setDead();
+                EngineSpawnData engineSpawnData = engineSpawnDataList.get(i);
+                Engine engine = engineList.get(i);
+                engine.setId(engineSpawnData.id());
+                if (engineSpawnData.isDead()) {
+                    engine.setDead();
+                }
             }
         });
 

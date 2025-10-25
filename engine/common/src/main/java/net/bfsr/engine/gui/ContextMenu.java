@@ -1,15 +1,18 @@
 package net.bfsr.engine.gui;
 
-import lombok.RequiredArgsConstructor;
 import net.bfsr.engine.gui.component.GuiObject;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.function.Consumer;
-
-@RequiredArgsConstructor
 public class ContextMenu extends GuiObject {
-    private final Consumer<ContextMenu> closeListener;
+    void add(GuiObject[] objects) {
+        for (int i = 0, size = guiObjects.size(); i < size; i++) {
+            guiObjects.get(i).clear();
+        }
 
-    void open(GuiObject[] objects) {
+        while (guiObjects.size() > 0) {
+            remove(guiObjects.get(0));
+        }
+
         GuiObject guiObject = objects[0];
         int minX = guiObject.getX();
         int maxX = guiObject.getX() + guiObject.getWidth();
@@ -29,17 +32,17 @@ public class ContextMenu extends GuiObject {
         }
     }
 
-    void close() {
+    private void close() {
         clear();
-        closeListener.accept(this);
+        removeFromParent();
     }
 
     @Override
-    public GuiObject mouseLeftClick() {
-        GuiObject guiObject = super.mouseLeftClick();
+    public GuiObject mouseLeftClick(int mouseX, int mouseY) {
+        GuiObject guiObject = super.mouseLeftClick(mouseX, mouseY);
 
         if (guiObject == null) {
-            close();
+            clear();
             return this;
         }
 
@@ -47,8 +50,27 @@ public class ContextMenu extends GuiObject {
     }
 
     @Override
-    public GuiObject mouseLeftRelease() {
-        GuiObject guiObject = super.mouseLeftRelease();
+    public GuiObject mouseLeftRelease(int mouseX, int mouseY) {
+        GuiObject guiObject = super.mouseLeftRelease(mouseX, mouseY);
+        close();
+        return guiObject != null ? guiObject : this;
+    }
+
+    @Override
+    public @Nullable GuiObject mouseRightClick(int mouseX, int mouseY) {
+        GuiObject guiObject = super.mouseRightClick(mouseX, mouseY);
+
+        if (guiObject == null) {
+            clear();
+            return this;
+        }
+
+        return guiObject;
+    }
+
+    @Override
+    public GuiObject mouseRightRelease(int mouseX, int mouseY) {
+        GuiObject guiObject = super.mouseRightRelease(mouseX, mouseY);
         close();
         return guiObject != null ? guiObject : this;
     }
@@ -60,8 +82,12 @@ public class ContextMenu extends GuiObject {
     }
 
     @Override
-    public boolean mouseScroll(float y) {
-        super.mouseScroll(y);
+    public boolean mouseScroll(int mouseX, int mouseY, float scrollY) {
+        super.mouseScroll(mouseX, mouseY, scrollY);
         return true;
+    }
+
+    boolean isOpen() {
+        return guiObjects.size() > 0;
     }
 }

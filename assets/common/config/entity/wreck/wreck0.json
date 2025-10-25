@@ -25,5 +25,6 @@
       "x": 0.3388,
       "y": -0.2785
     }
-  ]
+  ],
+  "minDistanceBetweenVerticesSq": 0.3
 }

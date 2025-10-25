@@ -1,18 +1,16 @@
 package net.bfsr.client.input;
 
-import net.bfsr.client.Client;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.gui.component.GuiObject;
+import net.bfsr.engine.input.AbstractMouse;
+import org.joml.Vector2i;
 
 import java.util.List;
 
-class GuiInputController extends InputController {
-    private GuiManager guiManager;
-
-    @Override
-    public void init() {
-        guiManager = Client.get().getGuiManager();
-    }
+public class GuiInputController extends InputController {
+    private final GuiManager guiManager = Engine.getGuiManager();
+    private final AbstractMouse mouse = Engine.getMouse();
 
     @Override
     public boolean input(int key) {
@@ -25,8 +23,9 @@ class GuiInputController extends InputController {
     }
 
     @Override
-    public boolean scroll(float y) {
-        return guiManager.getLast().mouseScroll(y);
+    public boolean scroll(float scrollY) {
+        Vector2i mousePosition = mouse.getGuiPosition();
+        return guiManager.getLast().mouseScroll(mousePosition.x, mousePosition.y, scrollY);
     }
 
     @Override
@@ -36,46 +35,61 @@ class GuiInputController extends InputController {
 
     @Override
     public boolean mouseLeftClick() {
-        GuiObject hoveredGuiObject = guiManager.findHoveredGuiObject();
-        guiManager.forEach(GuiObject::mouseLeftClick);
-        if (hoveredGuiObject == null) return false;
-        hoveredGuiObject.getLeftClickRunnable().run();
-        return true;
+        Vector2i mousePosition = mouse.getGuiPosition();
+        GuiObject hoveredGuiObject = guiManager.findHoveredGuiObject(mousePosition.x, mousePosition.y);
+
+        boolean contextMenuWasOpen = guiManager.isContextMenuOpen();
+        guiManager.forEach(guiObject -> guiObject.mouseLeftClick(mousePosition.x, mousePosition.y));
+        if (hoveredGuiObject != null) {
+            hoveredGuiObject.getLeftClickConsumer().accept(mousePosition.x, mousePosition.y);
+            return true;
+        }
+
+        return contextMenuWasOpen;
     }
 
     @Override
     public boolean mouseLeftRelease() {
-        GuiObject hoveredGuiObject = guiManager.findHoveredGuiObject();
+        Vector2i mousePosition = mouse.getGuiPosition();
+        GuiObject hoveredGuiObject = guiManager.findHoveredGuiObject(mousePosition.x, mousePosition.y);
         List<GuiObject> guiStack = guiManager.getGuiStack();
 
         GuiObject guiObject = null;
         for (int i = 0; i < guiStack.size(); i++) {
-            guiObject = guiStack.get(i).mouseLeftRelease();
+            guiObject = guiStack.get(i).mouseLeftRelease(mousePosition.x, mousePosition.y);
         }
 
         if (hoveredGuiObject == null || guiObject != hoveredGuiObject) {
             return false;
         }
 
-        hoveredGuiObject.getLeftReleaseRunnable().run();
+        hoveredGuiObject.getLeftReleaseConsumer().accept(mousePosition.x, mousePosition.y);
         return true;
     }
 
     @Override
     public boolean mouseRightClick() {
-        GuiObject hoveredGuiObject = guiManager.findHoveredGuiObject();
-        guiManager.forEach(GuiObject::mouseRightClick);
-        if (hoveredGuiObject == null) return false;
-        hoveredGuiObject.getRightClickRunnable().run();
+        Vector2i mousePosition = mouse.getGuiPosition();
+        GuiObject hoveredGuiObject = guiManager.findHoveredGuiObject(mousePosition.x, mousePosition.y);
+        guiManager.forEach(guiObject -> guiObject.mouseRightClick(mousePosition.x, mousePosition.y));
+        if (hoveredGuiObject == null) {
+            return false;
+        }
+
+        hoveredGuiObject.getRightClickConsumer().accept(mousePosition.x, mousePosition.y);
         return true;
     }
 
     @Override
     public boolean mouseRightRelease() {
-        GuiObject hoveredGuiObject = guiManager.findHoveredGuiObject();
-        guiManager.forEach(GuiObject::mouseRightRelease);
-        if (hoveredGuiObject == null) return false;
-        hoveredGuiObject.getRightReleaseRunnable().run();
+        Vector2i mousePosition = mouse.getGuiPosition();
+        GuiObject hoveredGuiObject = guiManager.findHoveredGuiObject(mousePosition.x, mousePosition.y);
+        guiManager.forEach(guiObject -> guiObject.mouseRightRelease(mousePosition.x, mousePosition.y));
+        if (hoveredGuiObject == null) {
+            return false;
+        }
+
+        hoveredGuiObject.getRightReleaseConsumer().accept(mousePosition.x, mousePosition.y);
         return true;
     }
 }

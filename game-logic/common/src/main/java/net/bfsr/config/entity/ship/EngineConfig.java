@@ -2,9 +2,9 @@ package net.bfsr.config.entity.ship;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.config.Configurable;
-import net.bfsr.config.PolygonConfigurable;
-import net.bfsr.config.Vector2fConfigurable;
+import net.bfsr.engine.config.Configurable;
+import net.bfsr.engine.config.PolygonConfigurable;
+import net.bfsr.engine.config.Vector2fConfigurable;
 
 import java.util.List;
 

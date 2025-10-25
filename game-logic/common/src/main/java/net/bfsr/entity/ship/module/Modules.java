@@ -1,6 +1,7 @@
 package net.bfsr.entity.ship.module;
 
 import lombok.Getter;
+import net.bfsr.engine.event.EventBus;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.cargo.Cargo;
@@ -10,6 +11,7 @@ import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
+import net.bfsr.event.module.ModuleAddEvent;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -36,9 +38,11 @@ public class Modules {
     @Getter
     private final List<WeaponSlot> weaponSlots = new ArrayList<>();
     private Ship ship;
+    private EventBus eventBus;
 
     public void init(Ship ship) {
         this.ship = ship;
+        this.eventBus = ship.getWorld().getEventBus();
     }
 
     public void update() {
@@ -110,9 +114,17 @@ public class Modules {
     }
 
     private void addModule(Module module) {
-        moduleList.removeIf(module1 -> module1.getType() == module.getType());
+        for (int i = 0; i < moduleList.size(); i++) {
+            Module module1 = moduleList.get(i);
+            if (module1.getType() == module.getType()) {
+                throw new RuntimeException("Module with type " + module.getType() + " already exists");
+            }
+        }
+
         moduleList.add(module);
         module.addToList(modulesByType.computeIfAbsent(module.getType(), moduleType -> new ArrayList<>(1)));
+        ModuleAddEvent event = new ModuleAddEvent(ship, module);
+        eventBus.publish(event);
     }
 
     public void removeWeaponSlot(int id) {
@@ -140,8 +152,31 @@ public class Modules {
             if (module.getId() == id) {
                 module.setDead();
                 modules.remove(i);
-                return;
+                break;
             }
         }
+
+        for (int i = 0; i < moduleList.size(); i++) {
+            Module module = moduleList.get(i);
+            if (module.getType() == type && module.getId() == id) {
+                moduleList.remove(i);
+                break;
+            }
+        }
+    }
+
+    public void removeShield() {
+        destroyModule(shield.getId(), shield.getType());
+        shield = null;
+    }
+
+    public void disableShield() {
+        if (shield != null) {
+            shield.removeShield();
+        }
+    }
+
+    public List<Module> getModulesByType(ModuleType moduleType) {
+        return modulesByType.get(moduleType);
     }
 }

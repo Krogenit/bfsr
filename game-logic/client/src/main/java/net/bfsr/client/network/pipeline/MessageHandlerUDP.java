@@ -6,7 +6,7 @@ import io.netty.handler.timeout.TimeoutException;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.network.NetworkSystem;
-import net.bfsr.network.packet.Packet;
+import net.bfsr.engine.network.packet.Packet;
 import org.jetbrains.annotations.NotNull;
 
 @Log4j2

@@ -1,11 +1,12 @@
 package net.bfsr.engine.renderer.camera;
 
 import lombok.Getter;
-import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.util.MatrixBufferUtils;
 import org.jbox2d.collision.AABB;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.lwjgl.opengl.GL15C;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
@@ -22,8 +23,8 @@ import static net.bfsr.engine.renderer.Renderer.UBO_VIEW_DATA;
 public class Camera implements AbstractCamera {
     private static final float Z_NEAR = -1.0f;
     private static final float Z_FAR = 1.0f;
-    private static final float ZOOM_MAX = 30.0f;
-    private static final float ZOOM_MIN = 2.0f;
+    private static final float ZOOM_MAX = 300.0f;
+    private static final float ZOOM_MIN = 20.0f;
 
     private final Matrix4f orthographicMatrix = new Matrix4f();
     @Getter
@@ -37,7 +38,7 @@ public class Camera implements AbstractCamera {
     @Getter
     private final Vector2f origin = new Vector2f();
     @Getter
-    private float zoom = 10.0f;
+    private float zoom = 100.0f;
     @Getter
     private float lastZoom = zoom;
     private float zoomAccumulator;
@@ -57,12 +58,15 @@ public class Camera implements AbstractCamera {
     private long guiViewBufferAddress;
     private int guiViewUBO;
 
+    private AbstractRenderer renderer;
+
     @Override
-    public void init(int width, int height) {
+    public void init(int width, int height, AbstractRenderer renderer) {
         this.width = width;
         this.height = height;
+        this.renderer = renderer;
 
-        origin.set(-width / 2.0f, -height / 2.0f);
+        origin.set(-width * 0.5f, -height * 0.5f);
         boundingBox.set(position.x + origin.x, position.y + origin.y, position.x - origin.x, position.y - origin.y);
 
         worldProjectionMatrixUBO = GL45.glCreateBuffers();
@@ -72,27 +76,27 @@ public class Camera implements AbstractCamera {
 
         GL45.glNamedBufferStorage(GUIProjectionMatrixUBO, orthographicMatrix.setOrtho(0.0f, width, 0.0f, height, Z_NEAR, Z_FAR)
                 .get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
-        GL45.glNamedBufferStorage(worldProjectionMatrixUBO, orthographicMatrix.setOrtho(-width / 2.0f, width / 2.0f,
-                        -height / 2.0f, height / 2.0f, Z_NEAR, Z_FAR)
+        GL45.glNamedBufferStorage(worldProjectionMatrixUBO, orthographicMatrix.setOrtho(-width * 0.5f, width * 0.5f,
+                        -height * 0.5f, height * 0.5f, Z_NEAR, Z_FAR)
                 .get(MatrixBufferUtils.MATRIX_BUFFER), GL44.GL_DYNAMIC_STORAGE_BIT);
 
         viewBuffer = MemoryUtil.memAllocFloat(5);
         viewBufferAddress = MemoryUtil.memAddress(viewBuffer);
-        Engine.renderer.putValue(viewBufferAddress, 0);
-        Engine.renderer.putValue(viewBufferAddress + 4, 0);
-        Engine.renderer.putValue(viewBufferAddress + 8, zoom);
-        Engine.renderer.putValue(viewBufferAddress + 12, width);
-        Engine.renderer.putValue(viewBufferAddress + 16, height);
+        renderer.putValue(viewBufferAddress, 0);
+        renderer.putValue(viewBufferAddress + 4, 0);
+        renderer.putValue(viewBufferAddress + 8, zoom);
+        renderer.putValue(viewBufferAddress + 12, width);
+        renderer.putValue(viewBufferAddress + 16, height);
 
         GL45C.nglNamedBufferStorage(viewUBO, (long) viewBuffer.capacity() << 2, viewBufferAddress, GL44.GL_DYNAMIC_STORAGE_BIT);
 
         guiViewBuffer = MemoryUtil.memAllocFloat(5);
         guiViewBufferAddress = MemoryUtil.memAddress(guiViewBuffer);
-        Engine.renderer.putValue(guiViewBufferAddress, 0);
-        Engine.renderer.putValue(guiViewBufferAddress + 4, 0);
-        Engine.renderer.putValue(guiViewBufferAddress + 8, 1.0f);
-        Engine.renderer.putValue(guiViewBufferAddress + 12, width);
-        Engine.renderer.putValue(guiViewBufferAddress + 16, height);
+        renderer.putValue(guiViewBufferAddress, 0);
+        renderer.putValue(guiViewBufferAddress + 4, 0);
+        renderer.putValue(guiViewBufferAddress + 8, 1.0f);
+        renderer.putValue(guiViewBufferAddress + 12, width);
+        renderer.putValue(guiViewBufferAddress + 16, height);
 
         GL45C.nglNamedBufferStorage(guiViewUBO, (long) guiViewBuffer.capacity() << 2, guiViewBufferAddress, GL44.GL_DYNAMIC_STORAGE_BIT);
     }
@@ -165,33 +169,34 @@ public class Camera implements AbstractCamera {
         this.width = width;
         this.height = height;
 
-        origin.x = -width / 2.0f;
-        origin.y = -height / 2.0f;
+        origin.x = -width * 0.5f;
+        origin.y = -height * 0.5f;
 
         updateBoundingBox();
 
-        Engine.renderer.putValue(viewBufferAddress + 12L, width);
-        Engine.renderer.putValue(viewBufferAddress + 16L, height);
+        renderer.putValue(viewBufferAddress + 12L, width);
+        renderer.putValue(viewBufferAddress + 16L, height);
         GL45C.nglNamedBufferSubData(viewUBO, 12L, 8L, viewBufferAddress + 12L);
 
-        Engine.renderer.putValue(guiViewBufferAddress + 12L, width);
-        Engine.renderer.putValue(guiViewBufferAddress + 16L, height);
+        renderer.putValue(guiViewBufferAddress + 12L, width);
+        renderer.putValue(guiViewBufferAddress + 16L, height);
         GL45C.nglNamedBufferSubData(guiViewUBO, 12L, 8L, guiViewBufferAddress + 12L);
 
         GL45C.glNamedBufferSubData(GUIProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(0.0f, width, 0.0f, height, Z_NEAR, Z_FAR)
                 .get(MatrixBufferUtils.MATRIX_BUFFER));
-        GL45C.glNamedBufferSubData(worldProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(-width / 2.0f, width / 2.0f,
-                -height / 2.0f, height / 2.0f, Z_NEAR, Z_FAR).get(MatrixBufferUtils.MATRIX_BUFFER));
+        GL45C.glNamedBufferSubData(worldProjectionMatrixUBO, 0, orthographicMatrix.setOrtho(-width * 0.5f, width * 0.5f,
+                -height * 0.5f, height * 0.5f, Z_NEAR, Z_FAR).get(MatrixBufferUtils.MATRIX_BUFFER));
     }
 
     @Override
-    public Vector2f getWorldVector(Vector2f position) {
+    public Vector2f getWorldVector(Vector2i position) {
         return getWorldVector(position.x, position.y);
     }
 
+    @Override
     public Vector2f getWorldVector(float x, float y) {
         vectorInCamSpace.x = (x + origin.x) / zoom + position.x;
-        vectorInCamSpace.y = (-y - origin.y) / zoom + position.y;
+        vectorInCamSpace.y = (y + origin.y) / zoom + position.y;
         return vectorInCamSpace;
     }
 
@@ -201,9 +206,9 @@ public class Camera implements AbstractCamera {
         float interpolatedPositionY = lastPosition.y + (position.y - lastPosition.y) * interpolation;
         float interpolatedZoom = lastZoom + (zoom - lastZoom) * interpolation;
 
-        Engine.renderer.putValue(viewBufferAddress, -interpolatedPositionX);
-        Engine.renderer.putValue(viewBufferAddress + 4, -interpolatedPositionY);
-        Engine.renderer.putValue(viewBufferAddress + 8, interpolatedZoom);
+        renderer.putValue(viewBufferAddress, -interpolatedPositionX);
+        renderer.putValue(viewBufferAddress + 4, -interpolatedPositionY);
+        renderer.putValue(viewBufferAddress + 8, interpolatedZoom);
 
         GL45C.nglNamedBufferSubData(viewUBO, 0, 12L, viewBufferAddress);
     }
@@ -211,6 +216,12 @@ public class Camera implements AbstractCamera {
     @Override
     public void setBoundingBox(float minX, float minY, float maxX, float maxY) {
         boundingBox.set(minX, minY, maxX, maxY);
+    }
+
+    @Override
+    public void setPosition(float x, float y) {
+        position.set(x, y);
+        updateBoundingBox();
     }
 
     @Override

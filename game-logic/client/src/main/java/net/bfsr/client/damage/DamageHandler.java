@@ -2,9 +2,9 @@ package net.bfsr.client.damage;
 
 import lombok.RequiredArgsConstructor;
 import net.bfsr.client.renderer.EntityRenderer;
-import net.bfsr.client.renderer.Render;
 import net.bfsr.client.renderer.entity.DamageableRigidBodyRenderer;
 import net.bfsr.damage.DamageableRigidBody;
+import net.bfsr.engine.renderer.entity.Render;
 
 import java.nio.ByteBuffer;
 

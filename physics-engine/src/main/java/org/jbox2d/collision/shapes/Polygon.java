@@ -143,12 +143,12 @@ public class Polygon extends Shape {
     }
 
     @Override
-    public final boolean testPoint(final Transform xf, final Vector2 p) {
+    public final boolean testPoint(final Transform xf, float x, float y) {
         float tempx, tempy;
         final Rotation xfq = xf.rotation;
 
-        tempx = p.x - xf.position.x;
-        tempy = p.y - xf.position.y;
+        tempx = x - xf.position.x;
+        tempy = y - xf.position.y;
         final float pLocalx = xfq.cos * tempx + xfq.sin * tempy;
         final float pLocaly = -xfq.sin * tempx + xfq.cos * tempy;
 
@@ -176,24 +176,19 @@ public class Polygon extends Shape {
     }
 
     @Override
-    public final void computeAABB(final AABB aabb, final Transform transform, int childIndex) {
+    public final void computeAABB(final AABB aabb, float x, float y, float sin, float cos, int childIndex) {
         final Vector2 lower = aabb.lowerBound;
         final Vector2 upper = aabb.upperBound;
         final Vector2 v1 = vertices[0];
-        final float xfqc = transform.rotation.cos;
-        final float xfqs = transform.rotation.sin;
-        final float xfpx = transform.position.x;
-        final float xfpy = transform.position.y;
-        lower.x = (xfqc * v1.x - xfqs * v1.y) + xfpx;
-        lower.y = (xfqs * v1.x + xfqc * v1.y) + xfpy;
+        lower.x = (cos * v1.x - sin * v1.y) + x;
+        lower.y = (sin * v1.x + cos * v1.y) + y;
         upper.x = lower.x;
         upper.y = lower.y;
 
         for (int i = 1; i < count; ++i) {
             Vector2 v2 = vertices[i];
-            // Vec2 v = Mul(xf, m_vertices[i]);
-            float vx = (xfqc * v2.x - xfqs * v2.y) + xfpx;
-            float vy = (xfqs * v2.x + xfqc * v2.y) + xfpy;
+            float vx = (cos * v2.x - sin * v2.y) + x;
+            float vy = (sin * v2.x + cos * v2.y) + y;
             lower.x = lower.x < vx ? lower.x : vx;
             lower.y = lower.y < vy ? lower.y : vy;
             upper.x = upper.x > vx ? upper.x : vx;

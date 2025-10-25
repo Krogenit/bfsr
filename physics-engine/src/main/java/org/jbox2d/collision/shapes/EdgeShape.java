@@ -75,7 +75,7 @@ public class EdgeShape extends Shape {
     }
 
     @Override
-    public boolean testPoint(Transform xf, Vector2 p) {
+    public boolean testPoint(Transform xf, float x, float y) {
         return false;
     }
 
@@ -209,15 +209,14 @@ public class EdgeShape extends Shape {
     }
 
     @Override
-    public void computeAABB(AABB aabb, Transform transform, int childIndex) {
+    public void computeAABB(AABB aabb, float x, float y, float sin, float cos, int childIndex) {
         final Vector2 lowerBound = aabb.lowerBound;
         final Vector2 upperBound = aabb.upperBound;
-        final Rotation xfq = transform.rotation;
 
-        final float v1x = (xfq.cos * m_vertex1.x - xfq.sin * m_vertex1.y) + transform.position.x;
-        final float v1y = (xfq.sin * m_vertex1.x + xfq.cos * m_vertex1.y) + transform.position.y;
-        final float v2x = (xfq.cos * m_vertex2.x - xfq.sin * m_vertex2.y) + transform.position.x;
-        final float v2y = (xfq.sin * m_vertex2.x + xfq.cos * m_vertex2.y) + transform.position.y;
+        final float v1x = (cos * m_vertex1.x - sin * m_vertex1.y) + x;
+        final float v1y = (sin * m_vertex1.x + cos * m_vertex1.y) + y;
+        final float v2x = (cos * m_vertex2.x - sin * m_vertex2.y) + x;
+        final float v2y = (sin * m_vertex2.x + cos * m_vertex2.y) + y;
 
         lowerBound.x = v1x < v2x ? v1x : v2x;
         lowerBound.y = v1y < v2y ? v1y : v2y;

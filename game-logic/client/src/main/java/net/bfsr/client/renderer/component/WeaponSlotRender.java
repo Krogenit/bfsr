@@ -1,16 +1,19 @@
 package net.bfsr.client.renderer.component;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
+import net.bfsr.client.Client;
 import net.bfsr.client.particle.effect.WeaponEffects;
-import net.bfsr.client.renderer.Render;
-import net.bfsr.config.SoundData;
 import net.bfsr.config.component.weapon.gun.GunData;
+import net.bfsr.engine.AssetsManager;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.config.SoundData;
+import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.entity.Render;
+import net.bfsr.engine.sound.AbstractSoundManager;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
-import net.bfsr.math.RotationHelper;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -18,9 +21,12 @@ public class WeaponSlotRender extends Render {
     private final Vector2f rotationHelper = new Vector2f();
     private final WeaponSlot weaponSlot;
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
+    private final WeaponEffects weaponEffects = Client.get().getParticleEffects().getWeaponEffects();
+    private final AbstractSoundManager soundManager = Engine.getSoundManager();
+    private final AssetsManager assetsManager = Engine.getAssetsManager();
 
     WeaponSlotRender(WeaponSlot object) {
-        super(Engine.assetsManager.getTexture(object.getGunData().getTexture()), object);
+        super(Engine.getAssetsManager().getTexture(object.getGunData().getTexture()), object);
         this.weaponSlot = object;
     }
 
@@ -48,7 +54,7 @@ public class WeaponSlotRender extends Render {
     }
 
     @Override
-    public void renderAlpha() {
+    public void render() {
         spriteRenderer.addDrawCommand(id, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ALPHA);
     }
 
@@ -59,8 +65,8 @@ public class WeaponSlotRender extends Render {
         Ship ship = weaponSlot.getShip();
         float sin = ship.getSin();
         float cos = ship.getCos();
-        RotationHelper.rotate(sin, cos, 1.0f, 0, rotationHelper);
-        WeaponEffects.spawnWeaponShoot(x, y, rotationHelper.x, rotationHelper.y, sin, cos, 8.0f, color.x,
+        RotationHelper.rotate(sin, cos, 0.1f, 0, rotationHelper);
+        weaponEffects.spawnWeaponShoot(x, y, rotationHelper.x, rotationHelper.y, sin, cos, weaponSlot.getSizeY() * 4.0f, color.x,
                 color.y, color.z, color.w, particle -> {
                     particle.setRotation(ship.getSin(), ship.getCos());
                     particle.setPosition(object.getX() + rotationHelper.x, object.getY() + rotationHelper.y);
@@ -72,7 +78,7 @@ public class WeaponSlotRender extends Render {
         SoundData[] sounds = gunData.getSounds();
         if (sounds.length > 0) {
             SoundData sound = sounds[random.nextInt(sounds.length)];
-            Engine.soundManager.play(Engine.assetsManager.getSound(sound.path()), sound.volume(), x, y);
+            soundManager.play(assetsManager.getSound(sound.path()), sound.volume(), x, y);
         }
     }
 }

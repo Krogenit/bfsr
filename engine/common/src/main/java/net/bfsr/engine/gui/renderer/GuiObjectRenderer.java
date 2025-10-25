@@ -15,8 +15,8 @@ import java.util.List;
 @Getter
 @RequiredArgsConstructor
 public class GuiObjectRenderer {
-    protected AbstractRenderer renderer = Engine.renderer;
-    protected AbstractGUIRenderer guiRenderer = renderer.guiRenderer;
+    protected final AbstractRenderer renderer = Engine.getRenderer();
+    protected final AbstractGUIRenderer guiRenderer = renderer.getGuiRenderer();
 
     protected final GuiObject guiObject;
 
@@ -47,7 +47,7 @@ public class GuiObjectRenderer {
 
     protected void create() {}
 
-    public void update() {
+    public void update(int mouseX, int mouseY) {
         updateLastValues();
     }
 
@@ -60,15 +60,15 @@ public class GuiObjectRenderer {
 
     protected void setLastUpdateValues() {}
 
-    public void render() {
-        renderChild();
+    public void render(int mouseX, int mouseY) {
+        renderChild(mouseX, mouseY);
     }
 
-    protected void renderChild() {
+    protected void renderChild(int mouseX, int mouseY) {
         List<GuiObject> guiObjects = guiObject.getGuiObjects();
         for (int i = 0; i < guiObjects.size(); i++) {
             GuiObject guiObject = guiObjects.get(i);
-            guiObject.getRenderer().render();
+            guiObject.getRenderer().render(mouseX, mouseY);
         }
     }
 

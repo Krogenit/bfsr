@@ -86,7 +86,7 @@ public class CircleShape extends Shape {
     }
 
     @Override
-    public final boolean testPoint(final Transform transform, final Vector2 p) {
+    public final boolean testPoint(final Transform transform, float x, float y) {
         // Rot.mulToOutUnsafe(transform.q, m_p, center);
         // center.addLocal(transform.p);
         //
@@ -94,8 +94,8 @@ public class CircleShape extends Shape {
         // return Vec2.dot(d, d) <= m_radius * m_radius;
         Rotation q = transform.rotation;
         Vector2 tp = transform.position;
-        float centerx = -(q.cos * m_p.x - q.sin * m_p.y + tp.x - p.x);
-        float centery = -(q.sin * m_p.x + q.cos * m_p.y + tp.y - p.y);
+        float centerx = -(q.cos * m_p.x - q.sin * m_p.y + tp.x - x);
+        float centery = -(q.sin * m_p.x + q.cos * m_p.y + tp.y - y);
 
         return centerx * centerx + centery * centery <= radius * radius;
     }
@@ -167,11 +167,9 @@ public class CircleShape extends Shape {
     }
 
     @Override
-    public final void computeAABB(final AABB aabb, final Transform transform, int childIndex) {
-        final Rotation tq = transform.rotation;
-        final Vector2 tp = transform.position;
-        final float px = tq.cos * m_p.x - tq.sin * m_p.y + tp.x;
-        final float py = tq.sin * m_p.x + tq.cos * m_p.y + tp.y;
+    public final void computeAABB(final AABB aabb, float x, float y, float sin, float cos, int childIndex) {
+        final float px = cos * m_p.x - sin * m_p.y + x;
+        final float py = sin * m_p.x + cos * m_p.y + y;
 
         aabb.lowerBound.x = px - radius;
         aabb.lowerBound.y = py - radius;

@@ -25,7 +25,6 @@ package org.jbox2d.dynamics;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.jbox2d.collision.broadphase.BroadPhase;
 import org.jbox2d.collision.shapes.MassData;
 import org.jbox2d.common.MathUtils;
@@ -101,15 +100,6 @@ public class Body {
 
     public float linearDamping;
     public float angularDamping;
-    /**
-     * -- GETTER --
-     * Get the gravity scale of the body.
-     * -- SETTER --
-     * Set the gravity scale of the body.
-     */
-    @Setter
-    @Getter
-    public float gravityScale;
 
     public float sleepTime;
 
@@ -558,11 +548,12 @@ public class Body {
      * body if 'wake' is set to true. If the body is sleeping and 'wake' is false, then there is no
      * effect.
      *
-     * @param impulse the world impulse vector, usually in N-seconds or kg-m/s.
-     * @param point   the world position of the point of application.
-     * @param wake    also wake up the body
+     * @param x     the x component of impulse vector, usually in N-seconds or kg-m/s.
+     * @param y     the y component of impulse vector, usually in N-seconds or kg-m/s.
+     * @param point the world position of the point of application.
+     * @param wake  also wake up the body
      */
-    public final void applyLinearImpulse(Vector2 impulse, Vector2 point, boolean wake) {
+    public final void applyLinearImpulse(float x, float y, Vector2 point, boolean wake) {
         if (type != BodyType.DYNAMIC) {
             return;
         }
@@ -575,10 +566,10 @@ public class Body {
             }
         }
 
-        linearVelocity.x += impulse.x * invMass;
-        linearVelocity.y += impulse.y * invMass;
+        linearVelocity.x += x * invMass;
+        linearVelocity.y += y * invMass;
 
-        angularVelocity += invI * ((point.x - sweep.center.x) * impulse.y - (point.y - sweep.center.y) * impulse.x);
+        angularVelocity += invI * ((point.x - sweep.center.x) * y - (point.y - sweep.center.y) * x);
     }
 
     /**
@@ -908,10 +899,7 @@ public class Body {
         sweep.center0.set(sweep.center);
 
         if (fixtures.size() > 0) {
-            BroadPhase broadPhase = world.contactManager.broadPhase;
-            for (int i = 0; i < fixtures.size(); i++) {
-                fixtures.get(i).synchronize(broadPhase, transform, transform);
-            }
+            synchronizeFixtures(world.contactManager.broadPhase);
         }
     }
 
@@ -925,10 +913,27 @@ public class Body {
         sweep.angle0 = sweep.angle;
 
         if (fixtures.size() > 0) {
-            BroadPhase broadPhase = world.contactManager.broadPhase;
-            for (int i = 0; i < fixtures.size(); i++) {
-                fixtures.get(i).synchronize(broadPhase, transform, transform);
-            }
+            synchronizeFixtures(world.contactManager.broadPhase);
+        }
+    }
+
+    public void setTransform(float x, float y, float sin, float cos) {
+        transform.rotation.set(sin, cos);
+        transform.position.set(x, y);
+
+        Transform.mulToOutUnsafe(transform, sweep.localCenter, sweep.center);
+        sweep.angle = MathUtils.atan2(sin, cos);
+        sweep.center0.set(sweep.center);
+        sweep.angle0 = sweep.angle;
+
+        if (world != null) {
+            synchronizeFixtures(world.contactManager.broadPhase);
+        }
+    }
+
+    public void synchronizeFixtures(BroadPhase broadPhase) {
+        for (int i = 0; i < fixtures.size(); i++) {
+            fixtures.get(i).synchronize(broadPhase, transform, transform);
         }
     }
 

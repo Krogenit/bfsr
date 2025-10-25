@@ -1,13 +1,11 @@
 package net.bfsr.engine.renderer;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.renderer.culling.AbstractGPUFrustumCullingSystem;
 import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
-import net.bfsr.engine.renderer.font.StringGeometryBuilder;
-import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
+import net.bfsr.engine.renderer.font.string.StringGeometryBuilder;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.shader.AbstractShaderProgram;
@@ -19,55 +17,63 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-@RequiredArgsConstructor
+@Getter
 public abstract class AbstractRenderer {
-    protected long window;
-    @Getter
+    protected final long window;
     @Setter
     protected int screenWidth, screenHeight;
-    @Getter
     private int drawCalls;
-    @Getter
     private int lastFrameDrawCalls;
-    @Getter
     @Setter
     private int fps;
-    @Getter
     @Setter
     protected float interpolation;
-    @Getter
     protected boolean persistentMappedBuffers;
-    @Getter
     protected boolean particlesGPUFrustumCulling;
     @Setter
-    @Getter
     protected boolean entitiesGPUFrustumCulling;
 
-    public final AbstractCamera camera;
-    public final AbstractShaderProgram shader;
-    public final StringGeometryBuilder stringGeometryBuilder;
-    public final AbstractSpriteRenderer spriteRenderer;
-    public final AbstractGUIRenderer guiRenderer;
-    public final AbstractDebugRenderer debugRenderer;
-    public final AbstractTextureGenerator textureGenerator;
-    public final AbstractGPUFrustumCullingSystem cullingSystem;
-    public final ParticleRenderer particleRenderer;
+    protected final AbstractTexture dummyTexture;
+    protected final AbstractCamera camera;
+    protected final AbstractShaderProgram shader;
+    protected final StringGeometryBuilder stringGeometryBuilder;
+    protected final AbstractSpriteRenderer spriteRenderer;
+    protected final AbstractGUIRenderer guiRenderer;
+    protected final AbstractDebugRenderer debugRenderer;
+    protected final AbstractTextureGenerator textureGenerator;
+    protected final AbstractGPUFrustumCullingSystem cullingSystem;
+    protected final ParticleRenderer particleRenderer;
 
-    public void init(long window, int width, int height) {
+    protected AbstractRenderer(long window, int screenWidth, int screenHeight, AbstractTexture dummyTexture, AbstractCamera camera,
+                               AbstractShaderProgram shader, StringGeometryBuilder stringGeometryBuilder,
+                               AbstractSpriteRenderer spriteRenderer, AbstractGUIRenderer guiRenderer, AbstractDebugRenderer debugRenderer,
+                               AbstractTextureGenerator textureGenerator, AbstractGPUFrustumCullingSystem cullingSystem,
+                               ParticleRenderer particleRenderer) {
         this.window = window;
-        this.screenWidth = width;
-        this.screenHeight = height;
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+        this.dummyTexture = dummyTexture;
+        this.camera = camera;
+        this.shader = shader;
+        this.stringGeometryBuilder = stringGeometryBuilder;
+        this.spriteRenderer = spriteRenderer;
+        this.guiRenderer = guiRenderer;
+        this.debugRenderer = debugRenderer;
+        this.textureGenerator = textureGenerator;
+        this.cullingSystem = cullingSystem;
+        this.particleRenderer = particleRenderer;
 
         setupOpenGL();
 
-        camera.init(width, height);
-        spriteRenderer.init();
-        guiRenderer.init();
+        camera.init(screenWidth, screenHeight, this);
+        spriteRenderer.init(this);
+        guiRenderer.init(this);
         debugRenderer.init();
-        particleRenderer.init();
+        particleRenderer.init(this);
         shader.load();
         shader.init();
-        cullingSystem.init(shader);
+        cullingSystem.init(shader, this);
+        textureGenerator.init();
     }
 
     public abstract void setupOpenGL();
@@ -100,9 +106,7 @@ public abstract class AbstractRenderer {
                                        IntBuffer buffer);
     public abstract void uploadFilledTexture(AbstractTexture texture, int internalFormat, int format, ByteBuffer value);
     public abstract void fullTexture(AbstractTexture texture, int internalFormat, int format, ByteBuffer value);
-
-    public abstract GlyphsBuilder createSTBTrueTypeGlyphsBuilder(String fontFile);
-    public abstract GlyphsBuilder createTrueTypeGlyphsBuilder(String fontFile);
+    public abstract void setDefaultClearColor();
 
     public void resetDrawCalls() {
         lastFrameDrawCalls = drawCalls;
@@ -136,6 +140,7 @@ public abstract class AbstractRenderer {
     }
 
     public void clear() {
+        dummyTexture.delete();
         camera.clear();
         shader.delete();
         spriteRenderer.clear();

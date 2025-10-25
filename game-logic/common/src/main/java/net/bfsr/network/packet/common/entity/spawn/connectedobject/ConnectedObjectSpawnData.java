@@ -2,8 +2,8 @@ package net.bfsr.network.packet.common.entity.spawn.connectedobject;
 
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
-import net.bfsr.config.ConfigData;
 import net.bfsr.damage.ConnectedObject;
+import net.bfsr.engine.config.ConfigData;
 
 @Getter
 public abstract class ConnectedObjectSpawnData {

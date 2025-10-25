@@ -2,7 +2,7 @@ package net.bfsr.server.config;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.config.ConfigLoader;
+import net.bfsr.engine.config.ConfigLoader;
 
 import java.nio.file.Path;
 
@@ -18,7 +18,7 @@ public class ServerSettings {
     private int databaseServicePort = 7000;
 
     public void saveSettings(Path path) {
-        ConfigLoader.save(path, this, ServerSettings.class);
+        ConfigLoader.save(path, this);
     }
 
     public static ServerSettings load() {

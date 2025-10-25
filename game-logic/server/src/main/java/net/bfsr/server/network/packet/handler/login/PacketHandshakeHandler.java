@@ -1,9 +1,9 @@
 package net.bfsr.server.network.packet.handler.login;
 
 import io.netty.channel.ChannelHandlerContext;
-import net.bfsr.network.ConnectionState;
-import net.bfsr.network.packet.PacketHandler;
-import net.bfsr.network.packet.client.PacketHandshake;
+import net.bfsr.engine.network.ConnectionState;
+import net.bfsr.engine.network.packet.PacketHandler;
+import net.bfsr.engine.network.packet.client.PacketHandshake;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 
 import java.net.InetSocketAddress;

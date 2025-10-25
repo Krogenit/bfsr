@@ -11,8 +11,8 @@ import java.nio.charset.StandardCharsets;
 
 @Log4j2
 public class DedicatedServer extends Server {
-    public DedicatedServer(ServerGameLogic gameLogic) {
-        super(gameLogic);
+    public DedicatedServer(Class<? extends ServerGameLogic> gameLogicClass) {
+        super(gameLogicClass);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class DedicatedServer extends Server {
                 try {
                     name = reader.readLine();
                     if ("stop".equals(name)) {
-                        gameLogic.stop();
+                        gameLogic.shutdown();
                     }
                 } catch (IOException e) {
                     log.error("Can't read line from console input", e);

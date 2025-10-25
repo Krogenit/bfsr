@@ -32,9 +32,9 @@ public class NetworkManagerUDP {
         bootstrap.handler(new ChannelInitializer<DatagramChannel>() {
             @Override
             protected void initChannel(@NotNull DatagramChannel datagramChannel) {
-                datagramChannel.pipeline().addLast("decoder", new MessageDecoderUDP());
+                datagramChannel.pipeline().addLast("decoder", new MessageDecoderUDP(networkSystem));
                 datagramChannel.pipeline().addLast("encoder", new PacketEncoderUDP(networkSystem));
-                datagramChannel.pipeline().addLast("handler", new MessageHandlerUDP());
+                datagramChannel.pipeline().addLast("handler", new MessageHandlerUDP(networkSystem));
             }
         });
 

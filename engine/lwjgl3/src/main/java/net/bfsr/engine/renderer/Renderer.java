@@ -6,10 +6,7 @@ import net.bfsr.engine.renderer.camera.Camera;
 import net.bfsr.engine.renderer.culling.GPUFrustumCullingSystem;
 import net.bfsr.engine.renderer.debug.DebugRenderer;
 import net.bfsr.engine.renderer.debug.OpenGLDebugUtils;
-import net.bfsr.engine.renderer.font.StringGeometryBuilder;
-import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
-import net.bfsr.engine.renderer.font.stb.STBTrueTypeGlyphsBuilder;
-import net.bfsr.engine.renderer.font.truetype.TrueTypeGlyphsBuilder;
+import net.bfsr.engine.renderer.font.string.StringGeometryBuilder;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.shader.BaseShader;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
@@ -74,9 +71,10 @@ public class Renderer extends AbstractRenderer {
     private FloatBuffer interpolationBuffer;
     private long interpolationBufferAddress;
 
-    public Renderer(Profiler profiler) {
-        super(new Camera(), new BaseShader(), new StringGeometryBuilder(), new SpriteRenderer(), new GuiRenderer(),
-                new DebugRenderer(), new TextureGenerator(), new GPUFrustumCullingSystem(), new ParticleRenderer());
+    public Renderer(Profiler profiler, long window, int screenWidth, int screenHeight, AbstractTexture dummyTexture) {
+        super(window, screenWidth, screenHeight, dummyTexture, new Camera(), new BaseShader(), new StringGeometryBuilder(),
+                new SpriteRenderer(), new GuiRenderer(), new DebugRenderer(), new TextureGenerator(), new GPUFrustumCullingSystem(),
+                new ParticleRenderer());
         this.profiler = profiler;
     }
 
@@ -99,7 +97,7 @@ public class Renderer extends AbstractRenderer {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glAlphaFunc(GL_GREATER, 0.0001f);
-        glClearColor(0.05F, 0.1F, 0.2F, 1.0F);
+        setDefaultClearColor();
 
         interpolationUBO = GL45.glCreateBuffers();
         interpolationBuffer = createFloatBuffer(1);
@@ -273,16 +271,6 @@ public class Renderer extends AbstractRenderer {
     }
 
     @Override
-    public GlyphsBuilder createSTBTrueTypeGlyphsBuilder(String fontFile) {
-        return new STBTrueTypeGlyphsBuilder(fontFile);
-    }
-
-    @Override
-    public GlyphsBuilder createTrueTypeGlyphsBuilder(String fontFile) {
-        return new TrueTypeGlyphsBuilder(fontFile);
-    }
-
-    @Override
     public void setVSync(boolean value) {
         glfwSwapInterval(value ? 1 : 0);
     }
@@ -294,6 +282,11 @@ public class Renderer extends AbstractRenderer {
         int height = screenHeight;
         glfwSetWindowSize(window, 1280, 720);
         glfwSetWindowPos(window, (width - 1280) / 2, (height - 720) / 2);
+    }
+
+    @Override
+    public void setDefaultClearColor() {
+        glClearColor(0.05F, 0.1F, 0.2F, 1.0F);
     }
 
     @Override

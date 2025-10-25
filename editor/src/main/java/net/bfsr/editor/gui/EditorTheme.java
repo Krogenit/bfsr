@@ -1,5 +1,7 @@
 package net.bfsr.editor.gui;
 
+import net.bfsr.client.font.FontType;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.CheckBox;
 import net.bfsr.engine.gui.component.ComboBox;
@@ -8,7 +10,7 @@ import net.bfsr.engine.gui.component.MinimizableGuiObject;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.gui.renderer.RectangleOutlinedRenderer;
 import net.bfsr.engine.gui.renderer.inputbox.InputBoxOutlinedRenderer;
-import net.bfsr.engine.renderer.font.Font;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import org.joml.Vector4f;
 
 public final class EditorTheme {
@@ -41,10 +43,15 @@ public final class EditorTheme {
 
     public static final Vector4f SELECTION_BLUE_COLOR = new Vector4f(35 / 255.0f, 74 / 255.0f, 108 / 255.0f, 1.0f);
 
+    public static final int SCROLL_WIDTH = 16;
     private static final Vector4f SCROLL_COLOR = new Vector4f(77 / 255.0f, 78 / 255.0f, 81 / 255.0f, 1.0f);
     private static final Vector4f SCROLL_HOVER_COLOR = new Vector4f(92 / 255.0f, 93 / 255.0f, 94 / 255.0f, 1.0f);
 
-    public static final Font FONT_TYPE = Font.Segoe_UI_FT;
+    public static final Font FONT = Engine.getFontManager().getFont(FontType.SEGOE_UI.getFontName());
+    public static final int FONT_SIZE = 13;
+
+    public static final int CONTEXT_MENU_STRING_OFFSET_X = 8;
+    public static final int CONTEXT_MENU_BUTTON_HEIGHT = 20;
 
     public static MinimizableGuiObject setup(MinimizableGuiObject object) {
         object.setTextColor(TEXT_COLOR).setHoverColor(MINIMIZABLE_HOVER_COLOR);

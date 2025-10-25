@@ -1,6 +1,9 @@
 package net.bfsr.network.packet.common.entity.spawn;
 
 import lombok.AllArgsConstructor;
+import net.bfsr.engine.network.packet.common.world.entity.spawn.EntityPacketSpawnData;
+import net.bfsr.engine.network.packet.common.world.entity.spawn.RigidBodySpawnData;
+import net.bfsr.network.packet.common.entity.spawn.ship.ShipSpawnData;
 
 import java.util.function.Supplier;
 
@@ -12,12 +15,13 @@ public enum EntityPacketSpawnType {
     WRECK(WreckSpawnData::new),
     BULLET(BulletSpawnData::new);
 
-    private static final EntityPacketSpawnType[] VALUES = values();
+    @SuppressWarnings("PublicStaticArrayField")
+    public static final EntityPacketSpawnType[] VALUES = values();
 
     private final Supplier<EntityPacketSpawnData> supplier;
 
-    public EntityPacketSpawnData createSpawnData() {
-        return supplier.get();
+    public Supplier<EntityPacketSpawnData> get() {
+        return supplier;
     }
 
     public static EntityPacketSpawnType get(byte index) {

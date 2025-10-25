@@ -41,4 +41,26 @@ public class CheckBoxRenderer extends RectangleOutlinedRenderer {
             renderer.lineWidth(1.0f);
         }
     }
+
+    @Override
+    protected void setLastUpdateValues() {
+        super.setLastUpdateValues();
+
+        int x = guiObject.getSceneX();
+        int y = guiObject.getSceneY();
+        int width = guiObject.getWidth();
+        int height = guiObject.getHeight();
+        guiRenderer.setLastPosition(checkId, x + 4 + (width - 8) / 2, y + 4 + (height - 8) / 2);
+    }
+
+    @Override
+    public void updatePosition() {
+        super.updatePosition();
+
+        int x = guiObject.getSceneX();
+        int y = guiObject.getSceneY();
+        int width = guiObject.getWidth();
+        int height = guiObject.getHeight();
+        guiRenderer.setPosition(checkId, x + 4 + (width - 8) / 2, y + 4 + (height - 8) / 2);
+    }
 }

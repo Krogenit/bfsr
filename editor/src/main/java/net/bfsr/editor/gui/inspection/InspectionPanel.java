@@ -15,15 +15,17 @@ import net.bfsr.engine.gui.component.MinimizableGuiObject;
 import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.renderer.AbstractRenderer;
-import net.bfsr.engine.renderer.font.Font;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.util.MutableInt;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static net.bfsr.editor.gui.EditorTheme.SCROLL_WIDTH;
 import static net.bfsr.editor.gui.EditorTheme.TEXT_COLOR;
 import static net.bfsr.editor.gui.EditorTheme.setupButton;
 import static net.bfsr.editor.gui.EditorTheme.setupScrollPane;
@@ -31,14 +33,14 @@ import static net.bfsr.editor.gui.EditorTheme.setupScrollPane;
 public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends Rectangle {
     private static final long HOVER_TIME_FOR_MAXIMIZE = 500L;
 
-    private final AbstractRenderer renderer = Engine.renderer;
+    private final AbstractRenderer renderer = Engine.getRenderer();
+    @Getter
     private final GuiManager guiManager = Client.get().getGuiManager();
     private final Gui gui;
     @Getter
     private final ScrollPane scrollPane;
     private final Font font;
     private final int fontSize;
-    private final int stringOffsetY;
     @Getter
     private final int elementHeight = 20;
     @Getter
@@ -55,23 +57,22 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
     private long hoverTime;
     private final List<Button> bottomButtons = new ArrayList<>();
 
-    public InspectionPanel(Gui gui, String name, int width, int height, Font font, int fontSize, int stringOffsetY) {
+    public InspectionPanel(Gui gui, String name, int width, int height, Font font, int fontSize) {
         super(width, height);
         this.gui = gui;
-        this.scrollPane = setupScrollPane(new ScrollPane(width, height - elementHeight, 16));
+        this.scrollPane = setupScrollPane(new ScrollPane(width, height - elementHeight, SCROLL_WIDTH));
         this.font = font;
         this.fontSize = fontSize;
-        this.stringOffsetY = stringOffsetY;
         setWidthFunction((width1, height1) -> getPanelWidth()).updatePositionAndSize();
         Label label = new Label(font, name, fontSize, TEXT_COLOR.x, TEXT_COLOR.y, TEXT_COLOR.z, TEXT_COLOR.w);
-        add(label.atBottomLeft(0, height - elementHeight + label.getCenteredOffsetY(elementHeight)));
+        add(label.atBottomLeft(() -> 0, () -> this.height - elementHeight + label.getCenteredOffsetY(elementHeight)));
         add(scrollPane.atBottomLeft(0, 0).setWidthFunction((width1, height1) -> getPanelWidth())
                 .setHeightFunction((width1, height1) -> this.height - elementHeight));
         setRenderer(new InspectionPanelRenderer<>(this));
     }
 
-    public void addBottomButton(int x, int y, String name, Runnable runnable) {
-        Button button = new Button(scrollPane.getWidth(), elementHeight, name, font, fontSize, stringOffsetY, runnable);
+    public void addBottomButton(int x, int y, String name, BiConsumer<Integer, Integer> consumer) {
+        Button button = new Button(scrollPane.getWidth(), elementHeight, name, font, fontSize, consumer);
         add(setupButton(button).atBottomLeft(x, y).setWidthFunction((width1, height1) -> getPanelWidth()));
         bottomButtons.add(button);
 
@@ -87,13 +88,13 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
     }
 
     public void removeEntry(InspectionEntry<PROPERTIES_TYPE> entry) {
-        entry.getParent().remove(entry);
+        entry.removeFromParent();
         updatePositionAndSize();
     }
 
     @Override
-    public GuiObject mouseLeftClick() {
-        GuiObject guiObject = super.mouseLeftClick();
+    public GuiObject mouseLeftClick(int mouseX, int mouseY) {
+        GuiObject guiObject = super.mouseLeftClick(mouseX, mouseY);
         if (guiObject == scrollPane) {
             wantUnselect = true;
         }
@@ -102,12 +103,12 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
     }
 
     @Override
-    public GuiObject mouseLeftRelease() {
-        GuiObject child = super.mouseLeftRelease();
+    public GuiObject mouseLeftRelease(int mouseX, int mouseY) {
+        GuiObject child = super.mouseLeftRelease(mouseX, mouseY);
 
         if (movableObject != null) {
-            if (isIntersectsWithMouse()) {
-                onEntryMoved(movableObject);
+            if (isIntersectsWithMouse(mouseX, mouseY)) {
+                onEntryMoved(movableObject, mouseY);
                 child = this;
             } else {
                 GuiObject hoveredGuiObject = guiManager.getHoveredGuiObject();
@@ -125,15 +126,14 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
         return child;
     }
 
-    private void onEntryMoved(InspectionEntry<PROPERTIES_TYPE> entry) {
+    private void onEntryMoved(InspectionEntry<PROPERTIES_TYPE> entry, int mouseY) {
         GuiObject guiObject = guiManager.getHoveredGuiObject();
         if (guiObject instanceof InspectionEntry<?> inspectionEntry) {
-            int mouseY = (int) gui.getMousePosition().y;
             if (mouseY < inspectionEntry.getSceneY() + exactObjectSelectionOffsetY) {
                 GuiObject parent = inspectionEntry.getParent();
                 List<GuiObject> guiObjects = parent.getGuiObjects();
                 int index = guiObjects.indexOf(inspectionEntry) + 1;
-                entry.getParent().remove(entry);
+                entry.removeFromParent();
                 if (index >= guiObjects.size()) {
                     parent.add(entry);
                 } else {
@@ -155,7 +155,7 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
 
                 List<GuiObject> guiObjects = parent.getGuiObjects();
                 int index = guiObjects.indexOf(inspectionEntry);
-                entry.getParent().remove(entry);
+                entry.removeFromParent();
                 parent.addAt(index, entry);
 
                 if (parent == scrollPane) {
@@ -165,21 +165,21 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
                 updatePositionAndSize();
             } else if (inspectionEntry != movableObject &&
                     !isInHierarchy(movableObject, (InspectionEntry<PROPERTIES_TYPE>) inspectionEntry)) {
-                entry.getParent().remove(entry);
+                entry.removeFromParent();
                 inspectionEntry.add(entry);
                 inspectionEntry.tryMaximize();
                 updatePositionAndSize();
             }
         } else {
-            entry.getParent().remove(entry);
+            entry.removeFromParent();
             add(entry);
             updatePositionAndSize();
         }
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void update(int mouseX, int mouseY) {
+        super.update(mouseX, mouseY);
 
         if (wantUnselect) {
             wantUnselect = false;
@@ -195,16 +195,16 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
             lastHoverObject = hoverObject;
             hoverObject = null;
 
-            findHoverObjectToMaximize(gui.getGuiObjects(), (int) Engine.mouse.getPosition().y);
-            disableCurrentGuiObjectHover();
+            findHoverObjectToMaximize(gui.getGuiObjects(), mouseX, mouseY);
+            disableCurrentGuiObjectHover(mouseX, mouseY);
         }
     }
 
     /**
      * This if for correct rendering of target entry for movable object
      */
-    private void disableCurrentGuiObjectHover() {
-        if (isIntersectsWithMouse()) {
+    private void disableCurrentGuiObjectHover(int mouseX, int mouseY) {
+        if (isIntersectsWithMouse(mouseX, mouseY)) {
             GuiObject hoveredGuiObject = guiManager.getHoveredGuiObject();
             if (hoveredGuiObject != null) {
                 hoveredGuiObject.setMouseHover(false);
@@ -212,10 +212,10 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
         }
     }
 
-    private <GUI_OBJECT_TYPE extends GuiObject> void findHoverObjectToMaximize(List<GUI_OBJECT_TYPE> guiObjects, int mouseY) {
+    private <GUI_OBJECT_TYPE extends GuiObject> void findHoverObjectToMaximize(List<GUI_OBJECT_TYPE> guiObjects, int mouseX, int mouseY) {
         for (int i = 0; i < guiObjects.size(); i++) {
             GUI_OBJECT_TYPE guiObject = guiObjects.get(i);
-            if (guiObject.isIntersectsWithMouse() && guiObject instanceof MinimizableGuiObject minimizableGuiObject &&
+            if (guiObject.isIntersectsWithMouse(mouseX, mouseY) && guiObject instanceof MinimizableGuiObject minimizableGuiObject &&
                     !minimizableGuiObject.isMaximized() && minimizableGuiObject.isCanMaximize() &&
                     mouseY >= guiObject.getSceneY() + exactObjectSelectionOffsetY &&
                     mouseY < guiObject.getSceneY() + elementHeight - exactObjectSelectionOffsetY) {
@@ -232,7 +232,7 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
                 return;
             }
 
-            findHoverObjectToMaximize(guiObject.getGuiObjects(), mouseY);
+            findHoverObjectToMaximize(guiObject.getGuiObjects(), mouseX, mouseY);
         }
     }
 
@@ -313,8 +313,14 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
     }
 
     @Override
-    public InspectionPanel<PROPERTIES_TYPE> setRightClickRunnable(Runnable runnable) {
-        scrollPane.setRightClickRunnable(runnable);
+    public InspectionPanel<PROPERTIES_TYPE> setRightClickConsumer(BiConsumer<Integer, Integer> consumer) {
+        scrollPane.setRightClickConsumer(consumer);
+        return this;
+    }
+
+    @Override
+    public GuiObject setRightReleaseConsumer(BiConsumer<Integer, Integer> consumer) {
+        scrollPane.setRightReleaseConsumer(consumer);
         return this;
     }
 

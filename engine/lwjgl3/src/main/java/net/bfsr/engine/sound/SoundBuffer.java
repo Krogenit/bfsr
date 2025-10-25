@@ -1,14 +1,16 @@
 package net.bfsr.engine.sound;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.lwjgl.openal.AL10;
 
-public class SoundBuffer extends AbstractSoundBuffer {
-    SoundBuffer(int buffer) {
-        super(buffer);
-    }
+@Getter
+@RequiredArgsConstructor
+class SoundBuffer extends AbstractSoundBuffer {
+    protected final int buffer;
 
     @Override
-    public void cleanup() {
+    public void clear() {
         AL10.alDeleteBuffers(buffer);
     }
 }

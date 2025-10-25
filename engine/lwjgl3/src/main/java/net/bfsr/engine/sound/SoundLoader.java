@@ -3,7 +3,6 @@ package net.bfsr.engine.sound;
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.engine.Engine;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.stb.STBVorbis;
@@ -30,9 +29,7 @@ public final class SoundLoader extends AbstractSoundLoader {
             int bufferId = AL10.alGenBuffers();
             AL10.alBufferData(bufferId, info.channels() == 1 ? AL10.AL_FORMAT_MONO16 : AL10.AL_FORMAT_STEREO16, pcm, info.sample_rate());
             MemoryUtil.memFree(pcm);
-            SoundBuffer soundBuffer = new SoundBuffer(bufferId);
-            Engine.soundManager.addSoundBuffer(soundBuffer);
-            return soundBuffer;
+            return new SoundBuffer(bufferId);
         } catch (IOException e) {
             log.error("Can't load sound {}", path, e);
             throw new RuntimeException(e);
@@ -77,5 +74,15 @@ public final class SoundLoader extends AbstractSoundLoader {
     @Override
     public AbstractSoundBuffer getBuffer(Path path) {
         return loadedSounds.computeIfAbsent(path.toString(), soundRegistry -> loadSound(path));
+    }
+
+    @Override
+    public void clear() {
+        loadedSounds.forEachValue(soundBuffer -> {
+            soundBuffer.clear();
+            return true;
+        });
+
+        loadedSounds.clear();
     }
 }

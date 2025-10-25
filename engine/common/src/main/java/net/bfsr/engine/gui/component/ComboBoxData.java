@@ -2,8 +2,8 @@ package net.bfsr.engine.gui.component;
 
 import lombok.Getter;
 import net.bfsr.engine.gui.renderer.RectangleOutlinedRenderer;
-import net.bfsr.engine.renderer.font.Font;
-import net.bfsr.engine.renderer.font.StringOffsetType;
+import net.bfsr.engine.renderer.font.glyph.Font;
+import net.bfsr.engine.renderer.font.string.StringOffsetType;
 
 @Getter
 public class ComboBoxData<V> extends GuiObject {

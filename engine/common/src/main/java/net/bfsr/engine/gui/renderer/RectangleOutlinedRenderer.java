@@ -21,6 +21,7 @@ public class RectangleOutlinedRenderer extends RectangleRenderer {
     protected void setLastUpdateValues() {
         super.setLastUpdateValues();
         guiRenderer.setLastPosition(bodyId, guiObject.getSceneX() + 1, guiObject.getSceneY() + 1);
+        guiRenderer.setLastSize(bodyId, guiObject.getWidth() - 2, guiObject.getHeight() - 2);
     }
 
     @Override

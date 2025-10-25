@@ -1,7 +1,7 @@
 package net.bfsr.config.component;
 
 import lombok.Getter;
-import net.bfsr.config.Configurable;
+import net.bfsr.engine.config.Configurable;
 
 @Getter
 @Configurable

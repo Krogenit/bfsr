@@ -43,7 +43,11 @@ public final class Settings {
     public static boolean FAST_FLOOR = true;
     public static boolean FAST_CEIL = true;
     public static boolean FAST_ROUND = true;
-    public static boolean FAST_ATAN2 = true;
+
+    /**
+     * Not recommended, cause ship rotation issues with low angular velocity
+     */
+    public static boolean FAST_ATAN2;
     public static boolean FAST_POW = true;
     public static int CONTACT_STACK_INIT_SIZE = 10;
     public static boolean SINCOS_LUT_ENABLED = true;
@@ -190,37 +194,4 @@ public final class Settings {
      * A body cannot sleep if its angular velocity is above this tolerance.
      */
     public static float angularSleepTolerance = (2.0f / 180.0f * PI);
-
-    // Particle
-
-    /**
-     * A symbolic constant that stands for particle allocation error.
-     */
-    public static final int invalidParticleIndex = (-1);
-
-    /**
-     * The standard distance between particles, divided by the particle radius.
-     */
-    public static final float particleStride = 0.75f;
-
-    /**
-     * The minimum particle weight that produces pressure.
-     */
-    public static final float minParticleWeight = 1.0f;
-
-    /**
-     * The upper limit for particle weight used in pressure calculation.
-     */
-    public static final float maxParticleWeight = 5.0f;
-
-    /**
-     * The maximum distance between particles in a triad, divided by the particle radius.
-     */
-    public static final int maxTriadDistance = 2;
-    public static final int maxTriadDistanceSquared = (maxTriadDistance * maxTriadDistance);
-
-    /**
-     * The initial size of particle data buffers.
-     */
-    public static final int minParticleBufferCapacity = 256;
 }

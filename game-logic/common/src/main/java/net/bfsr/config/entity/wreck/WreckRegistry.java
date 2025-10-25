@@ -1,7 +1,7 @@
 package net.bfsr.config.entity.wreck;
 
-import net.bfsr.config.ConfigConverter;
-import net.bfsr.config.ConfigToDataConverter;
+import net.bfsr.engine.config.ConfigConverter;
+import net.bfsr.engine.config.ConfigToDataConverter;
 import net.bfsr.entity.wreck.WreckType;
 
 import java.util.ArrayList;

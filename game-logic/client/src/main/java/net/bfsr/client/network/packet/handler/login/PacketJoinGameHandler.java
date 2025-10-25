@@ -4,9 +4,9 @@ import io.netty.channel.ChannelHandlerContext;
 import net.bfsr.client.Client;
 import net.bfsr.client.event.PlayerJoinGameEvent;
 import net.bfsr.client.network.NetworkSystem;
-import net.bfsr.network.ConnectionState;
-import net.bfsr.network.packet.PacketHandler;
-import net.bfsr.network.packet.server.login.PacketJoinGame;
+import net.bfsr.engine.network.ConnectionState;
+import net.bfsr.engine.network.packet.PacketHandler;
+import net.bfsr.engine.network.packet.server.login.PacketJoinGame;
 
 import java.net.InetSocketAddress;
 
@@ -16,6 +16,8 @@ public class PacketJoinGameHandler extends PacketHandler<PacketJoinGame, Network
     @Override
     public void handle(PacketJoinGame packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
+        client.setFrame(packet.getFrame());
+        client.setTime(packet.getServerTime());
         client.createWorld(packet.getSeed());
         client.closeGui();
         client.getNetworkSystem().setConnectionState(ConnectionState.CONNECTED);

@@ -1,0 +1,6 @@
+{
+  "name": "engi",
+  "maxEnergyCapacity": 300.0,
+  "regenAmountInSeconds": 18.0,
+  "hp": 20
+}

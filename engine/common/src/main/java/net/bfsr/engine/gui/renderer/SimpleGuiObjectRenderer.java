@@ -27,9 +27,9 @@ public class SimpleGuiObjectRenderer extends GuiObjectRenderer {
     }
 
     @Override
-    public void render() {
+    public void render(int mouseX, int mouseY) {
         renderBody();
-        super.render();
+        super.render(mouseX, mouseY);
     }
 
     protected void renderBody() {

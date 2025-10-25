@@ -3,14 +3,16 @@ package net.bfsr.engine.gui.component;
 import lombok.Getter;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
+import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.gui.renderer.combobox.ComboBoxRenderer;
-import net.bfsr.engine.renderer.font.Font;
-import net.bfsr.engine.renderer.font.StringOffsetType;
+import net.bfsr.engine.renderer.font.glyph.Font;
+import net.bfsr.engine.renderer.font.string.StringOffsetType;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ComboBox<V> extends GuiObject {
+    private final GuiManager guiManager = Engine.getGuiManager();
     @Getter
     private int selectedIndex;
     @Getter
@@ -32,7 +34,7 @@ public class ComboBox<V> extends GuiObject {
         label.atBottomLeft(width / 2, label.getCenteredOffsetY(height));
 
         setRenderer(new ComboBoxRenderer(this));
-        setLeftReleaseRunnable(() -> {
+        setLeftReleaseConsumer((mouseX, mouseY) -> {
             if (opened) {
                 opened = false;
                 removeNotSelected();
@@ -46,7 +48,7 @@ public class ComboBox<V> extends GuiObject {
         ComboBoxData<V> data = new ComboBoxData<>(width, height, value, value.toString(), font, fontSize, stringOffsetY);
         this.data.add(data);
         data.setWidthFunction((width, height) -> this.width);
-        data.setLeftReleaseRunnable(() -> {
+        data.setLeftReleaseConsumer((mouseX, mouseY) -> {
             opened = false;
             removeNotSelected();
             setSelectedIndex(this.data.indexOf(data));
@@ -59,7 +61,7 @@ public class ComboBox<V> extends GuiObject {
 
     private void open() {
         opened = true;
-        Gui gui = Engine.guiManager.getGui();
+        Gui gui = guiManager.getGui();
         int y = -height;
         for (int i = 0; i < data.size(); i++) {
             if (i != selectedIndex) {
@@ -70,7 +72,7 @@ public class ComboBox<V> extends GuiObject {
     }
 
     private void removeNotSelected() {
-        Gui gui = Engine.guiManager.getGui();
+        Gui gui = guiManager.getGui();
         for (int i = 0; i < data.size(); i++) {
             if (i != selectedIndex) {
                 gui.remove(data.get(i));

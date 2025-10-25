@@ -38,4 +38,11 @@ public class BulletDamage {
     public BulletDamage copy() {
         return new BulletDamage(armor, hull, shield);
     }
+
+    public BulletDamage multiply(float multiplier) {
+        armor *= multiplier;
+        hull *= multiplier;
+        shield *= multiplier;
+        return this;
+    }
 }

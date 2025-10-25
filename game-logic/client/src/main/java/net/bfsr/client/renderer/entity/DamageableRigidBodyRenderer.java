@@ -5,9 +5,9 @@ import net.bfsr.client.renderer.texture.DamageMaskTexture;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
+import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
-import net.bfsr.math.RotationHelper;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.locationtech.jts.geom.Coordinate;
@@ -29,7 +29,7 @@ public class DamageableRigidBodyRenderer extends RigidBodyRender {
         super(texture, object, r, g, b, a);
         this.damageableRigidBody = object;
 
-        DamageMask mask = object.getMask();
+        DamageMask mask = object.getDamageMask();
         maskTexture = new DamageMaskTexture(mask.getWidth(), mask.getHeight());
         maskTexture.createEmpty();
     }
@@ -102,7 +102,8 @@ public class DamageableRigidBodyRenderer extends RigidBodyRender {
     }
 
     private void renderRingOffset(float x, float y, float sin, float cos, Polygon polygon) {
-        Polygon polygon1 = (Polygon) BufferOp.bufferOp(polygon, DamageSystem.BUFFER_DISTANCE, DamageSystem.BUFFER_PARAMETERS);
+        Polygon polygon1 = (Polygon) BufferOp.bufferOp(polygon, damageableRigidBody.getConfigData().getBufferDistance(),
+                DamageSystem.BUFFER_PARAMETERS);
         CoordinateSequence coordinates = polygon1.getExteriorRing().getCoordinateSequence();
         int size = coordinates.size() - 1;
 

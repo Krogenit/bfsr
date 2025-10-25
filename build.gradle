@@ -1,9 +1,9 @@
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
-    id 'org.springframework.boot' version '3.4.1'
+    id 'org.springframework.boot' version '3.4.4'
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'me.champeau.jmh' version '0.7.2'
+    id 'me.champeau.jmh' version '0.7.3'
 }
 
 dependencies {
@@ -13,7 +13,7 @@ dependencies {
 allprojects {
     repositories {
         mavenCentral()
-        maven { url 'https://jitpack.io' }
+        maven { url = 'https://jitpack.io' }
     }
 }
 
@@ -23,33 +23,36 @@ subprojects {
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'me.champeau.jmh'
 
-    compileJava.options.encoding = compileTestJava.options.encoding = "UTF-8"
-    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_21
-
-    project.ext.lwjglVersion = "3.3.3"
-    project.ext.lwjglNatives = "natives-windows"
-    project.ext.jomlVersion = "1.10.5"
+    project.ext.lwjglVersion = '3.3.6'
+    project.ext.lwjglNatives = 'natives-windows'
+    project.ext.jomlVersion = '1.10.8'
 
     dependencies {
-        compileOnly 'org.projectlombok:lombok:1.18.36'
-        annotationProcessor 'org.projectlombok:lombok:1.18.36'
+        compileOnly 'org.projectlombok:lombok:1.18.38'
+        annotationProcessor 'org.projectlombok:lombok:1.18.38'
 
-        testCompileOnly 'org.projectlombok:lombok:1.18.36'
-        testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'
+        testCompileOnly 'org.projectlombok:lombok:1.18.38'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.38'
 
         testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
         testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
-        testImplementation 'org.junit.platform:junit-platform-commons:1.11.4'
-        testImplementation 'org.junit.platform:junit-platform-engine:1.11.4'
-        testImplementation 'org.mockito:mockito-core:5.15.2'
-        testImplementation 'org.mockito:mockito-junit-jupiter:5.15.2'
-        testImplementation 'org.assertj:assertj-core:3.27.2'
+        testImplementation 'org.junit.platform:junit-platform-commons:1.12.1'
+        testImplementation 'org.junit.platform:junit-platform-engine:1.12.1'
+        testImplementation 'org.mockito:mockito-core:5.20.0'
+        testImplementation 'org.mockito:mockito-junit-jupiter:5.20.0'
+        testImplementation 'org.assertj:assertj-core:3.27.6'
 
         jmh 'org.openjdk.jmh:jmh-core:1.37'
         jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
         jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+    }
+
+    compileJava.options.encoding = compileTestJava.options.encoding = 'UTF-8'
+
+    java {
+        sourceCompatibility = targetCompatibility = JavaVersion.VERSION_21
     }
 
     configurations.configureEach {
@@ -65,6 +68,14 @@ subprojects {
     }
 }
 
+tasks.register('createTestDirectories') {
+    mkdir 'test/client'
+    mkdir 'test/server'
+    mkdir 'test/mongodb-service'
+    mkdir 'test/editor'
+    mkdir 'test/benchmark'
+}
+
 import com.github.jengelman.gradle.plugins.shadow.transformers.PropertiesFileTransformer
 
 shadowJar {
@@ -75,7 +86,7 @@ shadowJar {
     append 'META-INF/spring.tooling'
     transform(PropertiesFileTransformer) {
         paths = ['META-INF/spring.factories']
-        mergeStrategy = "append"
+        mergeStrategy = 'append'
     }
 }
 

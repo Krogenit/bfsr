@@ -1,18 +1,20 @@
 package net.bfsr.client.renderer.component;
 
 import lombok.Getter;
+import net.bfsr.client.Client;
 import net.bfsr.client.particle.BeamParticles;
-import net.bfsr.client.particle.SpawnAccumulator;
 import net.bfsr.client.particle.effect.BeamEffects;
 import net.bfsr.client.particle.effect.GarbageSpawner;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.util.RunnableUtils;
+import net.bfsr.engine.world.entity.RigidBody;
+import net.bfsr.engine.world.entity.SpawnAccumulator;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.entity.wreck.Wreck;
+import net.bfsr.event.module.weapon.beam.BeamDamageHullEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageShipArmorEvent;
-import net.bfsr.event.module.weapon.beam.BeamDamageShipHullEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageShipShieldEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageWreckEvent;
 import org.joml.Vector4f;
@@ -23,6 +25,9 @@ public class WeaponSlotBeamRender extends WeaponSlotRender {
     private final BeamParticles beamParticles;
     @Getter
     private final Vector4f effectsColor = new Vector4f();
+    private final BeamEffects beamEffects = Client.get().getParticleEffects().getBeamEffects();
+    private final GarbageSpawner garbageSpawner = Client.get().getParticleEffects().getGarbageSpawner();
+
     private Runnable particlesUpdateRunnable = RunnableUtils.EMPTY_RUNNABLE;
 
     WeaponSlotBeamRender(WeaponSlotBeam weaponSlotBeam) {
@@ -57,7 +62,7 @@ public class WeaponSlotBeamRender extends WeaponSlotRender {
     }
 
     private void onDamage(float normalX, float normalY, float hitX, float hitY) {
-        BeamEffects.beamDamage(hitX, hitY, normalX, normalY, object.getSizeX(), effectsColor, damageSpawnAccumulator);
+        beamEffects.beamDamage(hitX, hitY, normalX, normalY, object.getSizeX(), effectsColor, damageSpawnAccumulator);
     }
 
     @EventHandler
@@ -71,19 +76,19 @@ public class WeaponSlotBeamRender extends WeaponSlotRender {
             Ship ship = event.ship();
             onDamage(event.normalX(), event.normalY(), event.hitX(), event.hitY());
 
-            GarbageSpawner.beamArmorDamage(event.hitX(), event.hitY(), ship.getLinearVelocity().x * 0.005f,
+            garbageSpawner.beamArmorDamage(event.hitX(), event.hitY(), ship.getLinearVelocity().x * 0.005f,
                     ship.getLinearVelocity().y * 0.005f);
         };
     }
 
     @EventHandler
-    public EventListener<BeamDamageShipHullEvent> beamDamageShipHullEvent() {
+    public EventListener<BeamDamageHullEvent> beamDamageShipHullEvent() {
         return event -> {
-            Ship ship = event.ship();
+            RigidBody rigidBody = event.rigidBody();
             onDamage(event.normalX(), event.normalY(), event.hitX(), event.hitY());
 
-            GarbageSpawner.beamHullDamage(event.hitX(), event.hitY(), ship.getLinearVelocity().x * 0.005f,
-                    ship.getLinearVelocity().y * 0.005f);
+            garbageSpawner.beamHullDamage(event.hitX(), event.hitY(), rigidBody.getLinearVelocity().x * 0.005f,
+                    rigidBody.getLinearVelocity().y * 0.005f);
         };
     }
 
@@ -92,7 +97,7 @@ public class WeaponSlotBeamRender extends WeaponSlotRender {
         return event -> {
             Wreck wreck = event.wreck();
             onDamage(event.normalX(), event.normalY(), event.hitX(), event.hitY());
-            GarbageSpawner.beamHullDamage(event.hitX(), event.hitY(), wreck.getLinearVelocity().x * 0.005f,
+            garbageSpawner.beamHullDamage(event.hitX(), event.hitY(), wreck.getLinearVelocity().x * 0.005f,
                     wreck.getLinearVelocity().y * 0.005f);
         };
     }

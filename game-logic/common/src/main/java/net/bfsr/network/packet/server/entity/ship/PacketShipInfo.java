@@ -3,18 +3,22 @@ package net.bfsr.network.packet.server.entity.ship;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.bfsr.engine.logic.GameLogic;
+import net.bfsr.engine.network.packet.PacketAnnotation;
+import net.bfsr.engine.network.packet.PacketScheduled;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.armor.ArmorPlate;
 import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.entity.ship.module.hull.HullCell;
-import net.bfsr.network.packet.common.PacketScheduled;
+import net.bfsr.network.packet.PacketIdRegistry;
 
 import java.io.IOException;
 
 @Getter
 @NoArgsConstructor
+@PacketAnnotation(id = PacketIdRegistry.SHIP_INFO)
 public class PacketShipInfo extends PacketScheduled {
     private int id;
     private float[][] armor;
@@ -23,8 +27,8 @@ public class PacketShipInfo extends PacketScheduled {
     private float energy;
     private float shield;
 
-    public PacketShipInfo(Ship ship, double timestamp) {
-        super(timestamp);
+    public PacketShipInfo(Ship ship, int frame) {
+        super(frame);
         this.id = ship.getId();
 
         Modules modules = ship.getModules();
@@ -83,8 +87,8 @@ public class PacketShipInfo extends PacketScheduled {
     }
 
     @Override
-    public void read(ByteBuf data) throws IOException {
-        super.read(data);
+    public void read(ByteBuf data, GameLogic gameLogic) throws IOException {
+        super.read(data, gameLogic);
         id = data.readInt();
 
         int width = data.readShort();

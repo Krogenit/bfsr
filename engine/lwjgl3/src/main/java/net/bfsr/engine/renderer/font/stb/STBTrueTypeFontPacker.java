@@ -17,7 +17,7 @@ class STBTrueTypeFontPacker extends FontPacker<STBBitMap> {
     private final STBTTFontinfo fontInfo;
     private final ByteBuffer fontByteBuffer;
 
-    STBTrueTypeFontPacker(String fontName, STBTrueTypeGlyphsBuilder trueTypeGlyphsBuilder, STBTTFontinfo fontInfo,
+    STBTrueTypeFontPacker(String fontName, STBTrueTypeFont trueTypeGlyphsBuilder, STBTTFontinfo fontInfo,
                           ByteBuffer fontByteBuffer, int bitmapWidth, int bitmapHeight, int fontSize) {
         super(trueTypeGlyphsBuilder, bitmapWidth, bitmapHeight, fontSize, fontName);
         this.fontInfo = fontInfo;

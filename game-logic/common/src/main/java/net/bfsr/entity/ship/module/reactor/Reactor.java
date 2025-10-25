@@ -3,11 +3,11 @@ package net.bfsr.entity.ship.module.reactor;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.reactor.ReactorData;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.physics.PhysicsUtils;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
-import net.bfsr.physics.PhysicsUtils;
-import net.bfsr.physics.filter.Filters;
+import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.dynamics.Fixture;
 
@@ -19,12 +19,9 @@ public class Reactor extends DamageableModule {
     private final float maxEnergy;
     private final float regenEnergy;
     private final Shape shape;
-    @Getter
-    private final ReactorData reactorData;
 
     public Reactor(ReactorData reactorData, Shape shape) {
-        super(reactorData.getHp());
-        this.reactorData = reactorData;
+        super(reactorData, reactorData.getHp());
         this.energy = reactorData.getMaxEnergyCapacity();
         this.maxEnergy = reactorData.getMaxEnergyCapacity();
         this.regenEnergy = reactorData.getRegenAmount();

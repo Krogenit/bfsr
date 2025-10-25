@@ -1,15 +1,15 @@
 package net.bfsr.engine.gui.renderer;
 
 import lombok.Getter;
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
+import net.bfsr.engine.renderer.MaterialType;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
-import net.bfsr.engine.renderer.font.StringGeometryBuilder;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.font.glyph.GlyphData;
-import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
 import net.bfsr.engine.renderer.font.string.StringGeometry;
+import net.bfsr.engine.renderer.font.string.StringGeometryBuilder;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -17,42 +17,36 @@ import java.util.List;
 import static net.bfsr.engine.renderer.AbstractSpriteRenderer.COMMAND_SIZE_IN_BYTES;
 
 public class LabelRenderer extends GuiObjectRenderer {
-    private final AbstractSpriteRenderer spriteRenderer = Engine.renderer.spriteRenderer;
-    private final StringGeometryBuilder stringGeometryBuilder = Engine.renderer.stringGeometryBuilder;
+    private final AbstractSpriteRenderer spriteRenderer = renderer.getSpriteRenderer();
+    private final StringGeometryBuilder stringGeometryBuilder = renderer.getStringGeometryBuilder();
     @Getter
     private final StringGeometry stringGeometry = new StringGeometry();
     private final Label label;
-    private final GlyphsBuilder glyphsBuilder;
+    private final Font font;
 
     private ByteBuffer commandBuffer;
     private long commandBufferAddress;
 
     private final BufferType bufferType;
 
-    public LabelRenderer(Label label, GlyphsBuilder glyphsBuilder, BufferType bufferType) {
+    public LabelRenderer(Label label, Font font, BufferType bufferType) {
         super(label);
         this.label = label;
-        this.glyphsBuilder = glyphsBuilder;
+        this.font = font;
         this.bufferType = bufferType;
     }
 
     public void packGlyphs(float x, float y) {
         stringGeometry.clear();
 
-        int topOffset = Math.round(glyphsBuilder.getTopOffset(label.getString(), label.getFontSize()));
-        if (label.getMaxWidth() > 0) {
-            stringGeometryBuilder.createString(stringGeometry, glyphsBuilder, label.getString(), x, y + label.getHeight() - topOffset,
-                    label.getFontSize(), color.x, color.y, color.z, color.w, label.getMaxWidth(), label.getOffsetType(), 0,
-                    label.isShadow(), label.getShadowOffsetX(), label.getShadowOffsetY(), spriteRenderer);
-        } else {
-            stringGeometryBuilder.createString(stringGeometry, glyphsBuilder, label.getString(), x, y + label.getHeight() - topOffset,
-                    label.getFontSize(), color.x, color.y, color.z, color.w, label.getOffsetType(), label.isShadow(),
-                    label.getShadowOffsetX(), label.getShadowOffsetY(), spriteRenderer);
-        }
+        int topOffset = Math.round(font.getTopOffset(label.getString(), label.getFontSize()));
+        stringGeometryBuilder.createString(stringGeometry, font, label.getString(), x, y + label.getHeight() - topOffset,
+                label.getFontSize(), color.x, color.y, color.z, color.w, label.getMaxWidth(), label.getOffsetType(),
+                label.isShadow(), label.getShadowOffsetX(), label.getShadowOffsetY(), spriteRenderer);
     }
 
     private void putCommandData(int offset, int value) {
-        Engine.renderer.putValue(commandBufferAddress + (offset & 0xFFFF_FFFFL), value);
+        renderer.putValue(commandBufferAddress + (offset & 0xFFFF_FFFFL), value);
     }
 
     @Override
@@ -75,14 +69,14 @@ public class LabelRenderer extends GuiObjectRenderer {
     public void create(AbstractBuffersHolder buffersHolder, float x, float y) {
         List<GlyphData> glyphsData = stringGeometry.getGlyphsData();
         if (glyphsData.size() > 0) {
-            commandBuffer = Engine.renderer.createByteBuffer(glyphsData.size() * COMMAND_SIZE_IN_BYTES);
-            commandBufferAddress = Engine.renderer.getAddress(commandBuffer);
+            commandBuffer = renderer.createByteBuffer(glyphsData.size() * COMMAND_SIZE_IN_BYTES);
+            commandBufferAddress = renderer.getAddress(commandBuffer);
 
             for (int i = 0, commandDataOffset = 0; i < glyphsData.size(); i++, commandDataOffset += COMMAND_SIZE_IN_BYTES) {
                 GlyphData glyphData = glyphsData.get(i);
                 int id = spriteRenderer.add(x + glyphData.getX(), y + glyphData.getY(), glyphData.getWidth(),
                         glyphData.getHeight(), glyphData.getR(), glyphData.getG(), glyphData.getB(), glyphData.getA(),
-                        glyphData.getTextureHandle(), 1, buffersHolder);
+                        glyphData.getTextureHandle(), MaterialType.FONT, buffersHolder);
                 glyphData.setBaseInstance(id);
                 putCommandData(commandDataOffset, AbstractSpriteRenderer.QUAD_INDEX_COUNT);
                 putCommandData(commandDataOffset + AbstractSpriteRenderer.INSTANCE_COUNT_OFFSET, 1);
@@ -95,9 +89,9 @@ public class LabelRenderer extends GuiObjectRenderer {
     }
 
     @Override
-    public void render() {
+    public void render(int mouseX, int mouseY) {
         if (idList.size() > 0) {
-            spriteRenderer.addDrawCommand(commandBufferAddress, stringGeometry.getGlyphsCount(), bufferType);
+            spriteRenderer.addDrawCommand(commandBufferAddress, idList.size(), bufferType);
         }
     }
 
@@ -149,7 +143,7 @@ public class LabelRenderer extends GuiObjectRenderer {
         super.remove();
 
         if (commandBuffer != null) {
-            Engine.renderer.memFree(commandBuffer);
+            renderer.memFree(commandBuffer);
             commandBuffer = null;
         }
     }

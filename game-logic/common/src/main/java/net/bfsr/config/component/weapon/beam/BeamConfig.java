@@ -1,8 +1,8 @@
 package net.bfsr.config.component.weapon.beam;
 
 import lombok.Getter;
-import net.bfsr.config.Configurable;
 import net.bfsr.config.component.weapon.gun.GunConfig;
+import net.bfsr.engine.config.Configurable;
 
 @Getter
 @Configurable

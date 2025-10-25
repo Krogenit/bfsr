@@ -2,7 +2,7 @@ package net.bfsr.editor.gui.component.receive;
 
 import net.bfsr.editor.gui.component.ComponentHolder;
 import net.bfsr.engine.gui.component.InputBox;
-import net.bfsr.engine.renderer.font.Font;
+import net.bfsr.engine.renderer.font.glyph.Font;
 
 public class InputBoxPropertyReceiver extends InputBox implements DragTarget {
     private final PropertyReceiver propertyReceiver;

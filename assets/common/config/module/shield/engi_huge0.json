@@ -1,0 +1,7 @@
+{
+  "name": "engi_huge0",
+  "texture": "texture/component/shield/station0.png",
+  "maxShield": 125,
+  "regenInSeconds": 0.6,
+  "rebuildTimeInSeconds": 3.75
+}

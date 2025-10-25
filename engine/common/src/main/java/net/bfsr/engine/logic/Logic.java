@@ -1,4 +1,3 @@
 package net.bfsr.engine.logic;
 
-public interface Logic {
-}
+public interface Logic {}

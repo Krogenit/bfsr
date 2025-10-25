@@ -1,8 +1,9 @@
 package net.bfsr.damage;
 
 import io.netty.buffer.ByteBuf;
-import net.bfsr.config.GameObjectConfigData;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.config.entity.GameObjectConfigData;
+import net.bfsr.engine.geometry.GeometryUtils;
+import net.bfsr.engine.world.entity.RigidBody;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Polygon;
 
@@ -15,8 +16,7 @@ public interface ConnectedObject<CONFIG_DATA extends GameObjectConfigData> {
         return isInside(polygon, 0, 0);
     }
     default boolean isInside(Polygon polygon, float offsetX, float offsetY) {
-        return polygon.contains(
-                DamageSystem.GEOMETRY_FACTORY.createPoint(new Coordinate(getConnectPointX() + offsetX, getConnectPointY() + offsetY)));
+        return polygon.contains(GeometryUtils.createPoint(new Coordinate(getConnectPointX() + offsetX, getConnectPointY() + offsetY)));
     }
     void addPositionOffset(float x, float y);
     float getConnectPointX();

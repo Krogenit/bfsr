@@ -1,35 +1,35 @@
 package net.bfsr.engine.input;
 
 import lombok.Getter;
-import net.bfsr.engine.Engine;
+import lombok.RequiredArgsConstructor;
+import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFW;
 
+@RequiredArgsConstructor
 public final class Mouse extends AbstractMouse {
-    private long window;
+    private final long window;
+    private final AbstractRenderer renderer;
+
     @Getter
-    private final Vector2f position = new Vector2f();
+    private final Vector2f screenPosition = new Vector2f();
     private final Vector2f lastPosition = new Vector2f();
     @Getter
-    private final Vector2f guiPosition = new Vector2f();
+    private final Vector2i guiPosition = new Vector2i();
     @Getter
     public final long inputCursor = GLFW.glfwCreateStandardCursor(GLFW.GLFW_IBEAM_CURSOR);
     @Getter
     public final long defaultCursor = GLFW.glfwCreateStandardCursor(GLFW.GLFW_ARROW_CURSOR);
 
     @Override
-    public void init(long window) {
-        this.window = window;
-    }
-
-    @Override
     public void setInputHandler(AbstractInputHandler inputHandler) {
         GLFW.glfwSetCursorPosCallback(window, (windowHandle, xPos, yPos) -> {
-            lastPosition.set(position.x, position.y);
-            position.set((float) xPos, (float) yPos);
-            guiPosition.set((float) xPos, Engine.renderer.getScreenHeight() - (float) yPos);
-            inputHandler.mouseMove(position.x - lastPosition.x, position.y - lastPosition.y);
+            lastPosition.set(screenPosition.x, screenPosition.y);
+            screenPosition.set((float) xPos, (float) yPos);
+            guiPosition.set((int) xPos, renderer.getScreenHeight() - (int) yPos);
+            inputHandler.mouseMove(screenPosition.x - lastPosition.x, screenPosition.y - lastPosition.y);
         });
         GLFW.glfwSetCursorEnterCallback(window, (windowHandle, entered) -> {});
         GLFW.glfwSetMouseButtonCallback(window, (windowHandle, button, action, mode) -> {
@@ -61,6 +61,12 @@ public final class Mouse extends AbstractMouse {
 
     @Override
     public Vector2f getWorldPosition(AbstractCamera camera) {
-        return camera.getWorldVector(position);
+        return camera.getWorldVector(guiPosition);
+    }
+
+    @Override
+    public void clear() {
+        GLFW.glfwDestroyCursor(inputCursor);
+        GLFW.glfwDestroyCursor(defaultCursor);
     }
 }

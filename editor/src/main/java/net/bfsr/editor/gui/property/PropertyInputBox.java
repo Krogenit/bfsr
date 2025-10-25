@@ -22,9 +22,10 @@ public class PropertyInputBox extends PropertyComponent {
     final List<InputBox> inputBoxes = new ArrayList<>();
 
     public PropertyInputBox(int width, int height, String name, int propertyOffsetX, int fontSize, int stringOffsetY, Object object,
-                            List<Field> fields, Object[] values, List<Class<?>> types, BiConsumer<Object, Integer> valueConsumer) {
-        super(width, height, name, EditorTheme.FONT_TYPE, fontSize, propertyOffsetX, 0, stringOffsetY, object, fields, values,
-                valueConsumer);
+                            List<Field> fields, Object[] values, List<Class<?>> types, BiConsumer<Object, Integer> valueConsumer,
+                            Runnable changeValueListener) {
+        super(width, height, name, EditorTheme.FONT, fontSize, propertyOffsetX, 0, stringOffsetY, object, fields, values, valueConsumer,
+                changeValueListener);
         this.propertyOffsetX = label.getWidth() + MINIMIZABLE_STRING_X_OFFSET;
         int inputBoxWidth = (width - propertyOffsetX) / values.length;
         int offsetX = propertyOffsetX;
@@ -36,11 +37,11 @@ public class PropertyInputBox extends PropertyComponent {
             Property annotation = field.getAnnotation(Property.class);
             Class<? extends PropertyReceiver> receiveHandler = annotation.receiveHandler();
             try {
-                InputBoxPropertyReceiver inputBox = new InputBoxPropertyReceiver(inputBoxWidth, height, "", EditorTheme.FONT_TYPE,
-                        fontSize, 3, stringOffsetY, MAX_LINE_SIZE, receiveHandler.getConstructor().newInstance()) {
+                InputBoxPropertyReceiver inputBox = new InputBoxPropertyReceiver(inputBoxWidth, height, "",
+                        EditorTheme.FONT, fontSize, 3, stringOffsetY, MAX_LINE_SIZE, receiveHandler.getConstructor().newInstance()) {
                     @Override
-                    public boolean mouseScroll(float y) {
-                        boolean mouseScroll = super.mouseScroll(y);
+                    public boolean mouseScroll(int mouseX, int mouseY, float scrollY) {
+                        boolean mouseScroll = super.mouseScroll(mouseX, mouseY, scrollY);
 
                         if (!mouseScroll && typing) {
                             String string = getString();
@@ -49,9 +50,9 @@ public class PropertyInputBox extends PropertyComponent {
                                 Double.parseDouble(string);
 
                                 if (string.contains(".")) {
-                                    setString((Float.parseFloat(string) + y) + "");
+                                    setString((Float.parseFloat(string) + scrollY) + "");
                                 } else {
-                                    setString((Integer.parseInt(string.isEmpty() ? "0" : string) + (int) y) + "");
+                                    setString((Integer.parseInt(string.isEmpty() ? "0" : string) + (int) scrollY) + "");
                                 }
                             } catch (NumberFormatException e) {
                                 log.error("Error changing value in input box", e);

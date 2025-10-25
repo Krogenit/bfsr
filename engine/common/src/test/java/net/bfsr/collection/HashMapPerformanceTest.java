@@ -229,17 +229,16 @@ public final class HashMapPerformanceTest {
      */
     private static void testObjectHashMap() {
         int count = 100_000;
-        Map<Class, Entity> javaMap = new HashMap<>(count);
-        TMap<Class, Entity> troveMap = new THashMap<>(count);
-        Object2ObjectHashMap<Class, Entity> agronaMap = new Object2ObjectHashMap<>(count, 0.65f);
+        Map<Class<?>, Entity> javaMap = new HashMap<>(count);
+        TMap<Class<?>, Entity> troveMap = new THashMap<>(count);
+        Object2ObjectHashMap<Class<?>, Entity> agronaMap = new Object2ObjectHashMap<>(count, 0.65f);
 //        IntObjectMap<Entity> nettyMap = new IntObjectHashMap<>(count);
-        Object2ObjectMap<Class, Entity> fastUtilMap = new Object2ObjectOpenHashMap();
-        com.carrotsearch.hppc.ObjectObjectMap<Class, Entity> hppcMap = new com.carrotsearch.hppc.ObjectObjectHashMap<>(count);
-        MutableMap<Class, Entity> eclipseMap = new org.eclipse.collections.impl.map.mutable.UnifiedMap<>(count);
+        Object2ObjectMap<Class<?>, Entity> fastUtilMap = new Object2ObjectOpenHashMap<>();
+        com.carrotsearch.hppc.ObjectObjectMap<Class<?>, Entity> hppcMap = new com.carrotsearch.hppc.ObjectObjectHashMap<>(count);
+        MutableMap<Class<?>, Entity> eclipseMap = new org.eclipse.collections.impl.map.mutable.UnifiedMap<>(count);
 
-        List<Class> classes = new ArrayList<>();
-        Collection<URL> allPackagePrefixes = Arrays.stream(Package.getPackages()).map(p -> p.getName())
-                .map(s -> s.split("\\.")[0]).distinct().map(s -> ClasspathHelper.forPackage(s)).reduce((c1, c2) -> {
+        Collection<URL> allPackagePrefixes = Arrays.stream(Package.getPackages()).map(Package::getName)
+                .map(s -> s.split("\\.")[0]).distinct().map(ClasspathHelper::forPackage).reduce((c1, c2) -> {
                     Collection<URL> c3 = new HashSet<>();
                     c3.addAll(c1);
                     c3.addAll(c2);
@@ -249,11 +248,11 @@ public final class HashMapPerformanceTest {
                 .addScanners(Scanners.SubTypes, Scanners.TypesAnnotated);
         Reflections reflections = new Reflections(config);
         Set<Class> classSet = reflections.get(Scanners.SubTypes.of(List.class).as(Class.class));
-        classSet.forEach(classes::add);
+        List<Class> classes = new ArrayList<>(classSet);
         classSet = reflections.get(Scanners.SubTypes.of(Map.class).as(Class.class));
-        classSet.forEach(classes::add);
+        classes.addAll(classSet);
         classSet = reflections.get(Scanners.SubTypes.of(Set.class).as(Class.class));
-        classSet.forEach(classes::add);
+        classes.addAll(classSet);
 
         List<Entity> values = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {

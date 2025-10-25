@@ -1,11 +1,11 @@
 package net.bfsr.client.renderer.entity;
 
-import net.bfsr.client.renderer.Render;
 import net.bfsr.damage.ConnectedObject;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.entity.wreck.ShipWreck;
-import net.bfsr.math.RotationHelper;
 import org.joml.Vector2f;
 
 import java.nio.file.Path;
@@ -18,7 +18,7 @@ public class ShipWreckRenderer extends DamageableRigidBodyRenderer {
     private final Vector2f localOffsetRotated = new Vector2f();
 
     public ShipWreckRenderer(ShipWreck wreck, Path texturePath) {
-        super(Engine.assetsManager.getTexture(texturePath), wreck, 0.25f, 0.25f, 0.25f, 1.0f);
+        super(Engine.getAssetsManager().getTexture(texturePath), wreck, 0.25f, 0.25f, 0.25f, 1.0f);
         this.wreck = wreck;
 
         List<ConnectedObject<?>> connectedObjects = wreck.getConnectedObjects();
@@ -88,11 +88,19 @@ public class ShipWreckRenderer extends DamageableRigidBodyRenderer {
     }
 
     @Override
-    public void renderAlpha() {
-        super.renderAlpha();
+    protected void updateAABB() {
+        super.updateAABB();
+        float offset = 0.5f;
+        aabb.lowerBound.addLocal(-offset, -offset);
+        aabb.upperBound.addLocal(offset, offset);
+    }
+
+    @Override
+    public void render() {
+        super.render();
 
         for (int i = 0; i < connectedObjectRenders.size(); i++) {
-            connectedObjectRenders.get(i).renderAlpha();
+            connectedObjectRenders.get(i).render();
         }
     }
 

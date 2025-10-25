@@ -8,13 +8,12 @@ import net.bfsr.entity.ship.module.ModuleType;
 
 @Getter
 public class Crew extends Module {
-    private final CrewData data;
     private final int maxCrewSize;
     @Setter
     private int crewSize;
 
     public Crew(CrewData crewData) {
-        this.data = crewData;
+        super(crewData);
         this.maxCrewSize = crewData.getMaxCapacity();
     }
 

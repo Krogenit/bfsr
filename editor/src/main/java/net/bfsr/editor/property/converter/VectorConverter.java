@@ -1,6 +1,6 @@
 package net.bfsr.editor.property.converter;
 
-import net.bfsr.util.DecimalUtils;
+import net.bfsr.engine.util.DecimalUtils;
 
 import java.util.function.Function;
 
@@ -33,10 +33,10 @@ public class VectorConverter<T> implements PropertyConverter<T> {
     }
 
     private String toString(float... values) {
-        StringBuilder string = new StringBuilder(DecimalUtils.formatWithToDigits(values[0]));
+        StringBuilder string = new StringBuilder(DecimalUtils.formatWithTwoDigits(values[0]));
 
         for (int i = 1; i < values.length; i++) {
-            string.append(SEPARATOR).append(DecimalUtils.formatWithToDigits(values[i]));
+            string.append(SEPARATOR).append(DecimalUtils.formatWithTwoDigits(values[i]));
         }
 
         return string.toString();

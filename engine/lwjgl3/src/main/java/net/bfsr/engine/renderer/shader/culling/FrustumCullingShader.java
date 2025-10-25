@@ -7,6 +7,6 @@ import static org.lwjgl.opengl.GL43.GL_COMPUTE_SHADER;
 
 public class FrustumCullingShader extends ShaderProgram {
     public FrustumCullingShader() {
-        super(new Definition(GL_COMPUTE_SHADER, "culling/occlusion-culling.comp.glsl"));
+        super(new Definition(GL_COMPUTE_SHADER, "culling/frustum-culling.comp.glsl"));
     }
 }

@@ -1,7 +1,13 @@
 package net.bfsr.client.network.manager;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.FixedRecvByteBufAllocator;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
@@ -10,7 +16,7 @@ import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.network.pipeline.MessageDecoderUDP;
 import net.bfsr.client.network.pipeline.MessageHandlerUDP;
 import net.bfsr.client.network.pipeline.PacketEncoder;
-import net.bfsr.network.packet.Packet;
+import net.bfsr.engine.network.packet.Packet;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;
@@ -28,11 +34,12 @@ public class NetworkManagerUDP {
         bootstrap.handler(new ChannelInitializer<DatagramChannel>() {
             @Override
             protected void initChannel(@NotNull DatagramChannel datagramChannel) {
-                datagramChannel.pipeline().addLast("decoder", new MessageDecoderUDP());
+                datagramChannel.pipeline().addLast("decoder", new MessageDecoderUDP(networkSystem));
                 datagramChannel.pipeline().addLast("encoder", new PacketEncoder(networkSystem));
                 datagramChannel.pipeline().addLast("handler", new MessageHandlerUDP(networkSystem));
             }
         });
+        bootstrap.option(ChannelOption.RCVBUF_ALLOCATOR, new FixedRecvByteBufAllocator(65536));
 
         ChannelFuture channelFuture = bootstrap.connect(address, port).syncUninterruptibly();
         channel = channelFuture.channel();

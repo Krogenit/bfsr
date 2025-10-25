@@ -6,7 +6,7 @@ import net.bfsr.editor.gui.property.PropertyGuiElementType;
 import net.bfsr.editor.property.Property;
 import net.bfsr.editor.property.holder.PolygonPropertiesHolder;
 import net.bfsr.editor.property.holder.PropertiesHolderAdapter;
-import net.bfsr.math.Direction;
+import net.bfsr.engine.math.Direction;
 
 import java.util.HashMap;
 import java.util.Map;

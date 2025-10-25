@@ -232,7 +232,7 @@ public class Island {
     private final SolverData solverData = new SolverData();
     private final ContactSolver.ContactSolverDef solverDef = new ContactSolver.ContactSolverDef();
 
-    public void solve(Profile profile, TimeStep step, Vector2 gravity, boolean allowSleep) {
+    public void solve(Profile profile, TimeStep step, boolean allowSleep) {
 
         // System.out.println("Solving Island");
         float h = step.dt;
@@ -253,8 +253,8 @@ public class Island {
             if (b.type == BodyType.DYNAMIC) {
                 // Integrate velocities.
                 // v += h * (b.m_gravityScale * gravity + b.m_invMass * b.m_force);
-                v.x += h * (b.gravityScale * gravity.x + b.invMass * b.force.x);
-                v.y += h * (b.gravityScale * gravity.y + b.invMass * b.force.y);
+                v.x += h * (b.invMass * b.force.x);
+                v.y += h * (b.invMass * b.force.y);
                 w += h * b.invI * b.torque;
 
                 // Apply damping.
@@ -556,6 +556,13 @@ public class Island {
     public void add(Body body) {
         assert (m_bodyCount < m_bodyCapacity);
         body.islandIndex = m_bodyCount;
+
+        if (m_bodyCount >= m_bodies.length) {
+            Body[] lastBodies = m_bodies;
+            init(m_bodyCapacity + 1, m_contactCapacity, m_jointCapacity, m_listener);
+            System.arraycopy(lastBodies, 0, m_bodies, 0, lastBodies.length);
+        }
+
         m_bodies[m_bodyCount] = body;
         ++m_bodyCount;
     }

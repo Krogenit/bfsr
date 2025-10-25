@@ -8,13 +8,11 @@ import net.bfsr.entity.ship.module.ModuleWithCells;
 
 @Getter
 public class Hull extends ModuleWithCells<HullCell> {
-    private final HullData data;
     private final float maxValue;
     protected final float repairSpeed;
 
     public Hull(HullData hullData, Ship ship) {
-        super(ship, HullCell.class, HullCell::new);
-        this.data = hullData;
+        super(hullData, ship, HullCell.class, HullCell::new);
         this.maxValue = hullData.getMaxHullValue();
         this.repairSpeed = hullData.getRegenAmount();
 
@@ -49,8 +47,8 @@ public class Hull extends ModuleWithCells<HullCell> {
         }
     }
 
-    public HullCell damage(float amount, float contactX, float contactY, Ship ship) {
-        HullCell cell = getCell(contactX, contactY, ship);
+    public HullCell damage(float amount, float contactX, float contactY) {
+        HullCell cell = getCell(contactX, contactY);
         cell.damage(amount);
         return cell;
     }

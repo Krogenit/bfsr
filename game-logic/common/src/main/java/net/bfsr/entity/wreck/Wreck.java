@@ -3,20 +3,23 @@ package net.bfsr.entity.wreck;
 import lombok.Getter;
 import net.bfsr.config.entity.wreck.WreckData;
 import net.bfsr.engine.event.EventBus;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.physics.PhysicsUtils;
+import net.bfsr.engine.util.ObjectPool;
+import net.bfsr.engine.world.World;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.event.entity.wreck.WreckDeathEvent;
-import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.WreckSpawnData;
 import net.bfsr.physics.CollisionMatrixType;
-import net.bfsr.physics.PhysicsUtils;
-import net.bfsr.physics.filter.Filters;
-import net.bfsr.world.World;
+import net.bfsr.physics.collision.filter.Filters;
 import org.dyn4j.geometry.Geometry;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.dynamics.Fixture;
 
 @Getter
 public class Wreck extends RigidBody {
+    private final ObjectPool<Wreck> wreckPool;
+    private final EventBus wreckEventBus = new EventBus();
+
     private int wreckIndex;
 
     protected boolean fire;
@@ -28,19 +31,18 @@ public class Wreck extends RigidBody {
     private int destroyedShipId;
 
     private WreckType wreckType;
-    private final EventBus wreckEventBus = new EventBus();
     private WreckData wreckData;
 
-    public Wreck() {
+    public Wreck(ObjectPool<Wreck> wreckPool) {
+        this.wreckPool = wreckPool;
         body.setUserData(this);
         body.setLinearDamping(0.05f);
         body.setAngularDamping(0.005f);
     }
 
-    public Wreck init(World world, int id, float x, float y, float velocityX, float velocityY, float sin, float cos,
-                      float angularVelocity, float scaleX, float scaleY, int maxLifeTime, int wreckIndex, boolean fire,
-                      boolean light, boolean emitFire, float hull, int destroyedShipId, WreckType wreckType,
-                      WreckData wreckData) {
+    public Wreck init(World world, int id, float x, float y, float velocityX, float velocityY, float sin, float cos, float angularVelocity,
+                      float scaleX, float scaleY, int maxLifeTime, int wreckIndex, boolean fire, boolean light, boolean emitFire,
+                      float hull, int destroyedShipId, WreckType wreckType, WreckData wreckData) {
         this.wreckData = wreckData;
         this.body.setPosition(x, y);
         this.body.setRotation(sin, cos);
@@ -62,9 +64,9 @@ public class Wreck extends RigidBody {
         return this;
     }
 
-    public Wreck init(World world, int id, int wreckIndex, boolean light, boolean fire, boolean emitFire, float x, float y,
-                      float velocityX, float velocityY, float sin, float cos, float angularVelocity, float scaleX, float scaleY,
-                      int maxLifeTime, WreckType wreckType, WreckData wreckData) {
+    public Wreck init(World world, int id, int wreckIndex, boolean light, boolean fire, boolean emitFire, float x, float y, float velocityX,
+                      float velocityY, float sin, float cos, float angularVelocity, float scaleX, float scaleY, int maxLifeTime,
+                      WreckType wreckType, WreckData wreckData) {
         return init(world, id, x, y, velocityX, velocityY, sin, cos, angularVelocity, scaleX, scaleY, maxLifeTime,
                 wreckIndex, fire, light, emitFire, 10, 0, wreckType, wreckData);
     }
@@ -77,8 +79,8 @@ public class Wreck extends RigidBody {
     }
 
     private void createFixture() {
-        Polygon p = Geometry.scale(wreckData.getPolygon(), getSizeX());
-        addFixture(new Fixture(p, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
+        Polygon polygon = Geometry.scale(wreckData.getPolygon(), getSizeX());
+        addFixture(new Fixture(polygon, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
     }
 
     @Override
@@ -91,8 +93,8 @@ public class Wreck extends RigidBody {
     }
 
     @Override
-    public EntityPacketSpawnData createSpawnData() {
-        return new WreckSpawnData(this);
+    public WreckSpawnData createSpawnData() {
+        return new WreckSpawnData();
     }
 
     @Override
@@ -102,13 +104,13 @@ public class Wreck extends RigidBody {
     }
 
     @Override
-    public void onRemovedFromWorld() {
-        super.onRemovedFromWorld();
-        world.getObjectPools().getWrecksPool().returnBack(this);
+    public void onRemovedFromWorld(int frame) {
+        super.onRemovedFromWorld(frame);
+        wreckPool.returnBack(this);
     }
 
     @Override
-    public int getCollisionMatrixType() {
+    public int getCollisionMatrixId() {
         return CollisionMatrixType.WRECK.ordinal();
     }
 }

@@ -5,7 +5,7 @@ import net.bfsr.editor.gui.builder.ComponentBuilder;
 import net.bfsr.editor.gui.property.PropertyComponent;
 import net.bfsr.editor.gui.property.PropertyGuiElementType;
 import net.bfsr.editor.property.holder.PropertiesHolder;
-import net.bfsr.engine.renderer.font.Font;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
@@ -28,12 +28,13 @@ public final class PropertiesBuilder {
     }
 
     public static void createGuiProperties(Object object, int width, int height, Font font, int fontSize, int propertyOffsetX,
-                                           int stringYOffset, Consumer<PropertyComponent> consumer) {
-        createGuiProperties(object, width, height, font, fontSize, propertyOffsetX, stringYOffset, consumer, "");
+                                           int stringYOffset, Consumer<PropertyComponent> consumer, Runnable changeValueListener) {
+        createGuiProperties(object, width, height, font, fontSize, propertyOffsetX, stringYOffset, consumer, "", changeValueListener);
     }
 
     public static void createGuiProperties(Object object, int width, int height, Font font, int fontSize, int propertyOffsetX,
-                                           int stringYOffset, Consumer<PropertyComponent> consumer, String propertyName) {
+                                           int stringYOffset, Consumer<PropertyComponent> consumer, String propertyName,
+                                           Runnable changeValueListener) {
         List<Field> fields = getAllFields(new LinkedList<>(), object.getClass());
         int fieldsAmount = 0;
         List<Field> fieldsBulk = new ArrayList<>(4);
@@ -56,8 +57,8 @@ public final class PropertiesBuilder {
                     field.setAccessible(true);
 
                     try {
-                        createGuiProperties(field.get(object), width, height, font, fontSize, propertyOffsetX, stringYOffset,
-                                consumer, propertyName);
+                        createGuiProperties(field.get(object), width, height, font, fontSize, propertyOffsetX, stringYOffset, consumer,
+                                propertyName, changeValueListener);
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     }
@@ -71,7 +72,7 @@ public final class PropertiesBuilder {
                 if (fieldsBulk.size() == fieldsAmount) {
                     try {
                         consumer.accept(createProperty(object, width, height, propertyOffsetX, font, fontSize, stringYOffset,
-                                propertyName, elementType, new ArrayList<>(fieldsBulk)));
+                                propertyName, elementType, new ArrayList<>(fieldsBulk), changeValueListener));
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     }
@@ -83,9 +84,9 @@ public final class PropertiesBuilder {
         }
     }
 
-    private static PropertyComponent createProperty(Object object, int width, int height, int propertyOffsetX, Font font,
-                                                    int fontSize, int stringYOffset, String propertyName,
-                                                    PropertyGuiElementType elementType, List<Field> fields) throws IllegalAccessException {
+    private static PropertyComponent createProperty(Object object, int width, int height, int propertyOffsetX, Font font, int fontSize,
+                                                    int stringYOffset, String propertyName, PropertyGuiElementType elementType,
+                                                    List<Field> fields, Runnable changeValueListener) throws IllegalAccessException {
         Object[] values = new Object[fields.size()];
 
         for (int i = 0; i < fields.size(); i++) {
@@ -103,9 +104,10 @@ public final class PropertiesBuilder {
                 values, object, (o, integer) -> {
                     try {
                         fields.get(integer).set(object, o);
+                        changeValueListener.run();
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     }
-                });
+                }, changeValueListener);
     }
 }

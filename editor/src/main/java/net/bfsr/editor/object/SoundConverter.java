@@ -1,7 +1,7 @@
 package net.bfsr.editor.object;
 
-import net.bfsr.config.ConfigurableSound;
 import net.bfsr.editor.sound.SoundProperties;
+import net.bfsr.engine.config.ConfigurableSound;
 import org.mapstruct.Mapper;
 
 @Mapper

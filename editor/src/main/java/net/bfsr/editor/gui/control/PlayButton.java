@@ -12,7 +12,7 @@ public class PlayButton extends Button {
     public PlayButton(Playble playble, int width, int height) {
         super(width, height);
         this.playble = playble;
-        setLeftClickRunnable(() -> {
+        setLeftClickConsumer((mouseX, mouseY) -> {
             playble.setPlaying(!playble.isPlaying());
             ((PlayButtonRenderer) getRenderer()).setPlaying(playble.isPlaying());
         });
@@ -43,10 +43,10 @@ public class PlayButton extends Button {
             idList.add(outlineId = guiRenderer.add(x, y, width, height, outlineColor));
             idList.add(bodyId = guiRenderer.add(x + 1, y + 1, width - 2, height - 2, color.x, color.y, color.z, color.w));
 
-            renderer.spriteRenderer.addPrimitive(PLAY_SIGN_PRIMITIVE_PARAMS);
+            renderer.getSpriteRenderer().addPrimitive(PLAY_SIGN_PRIMITIVE_PARAMS);
 
             float color = 192 / 255.0f;
-            idList.add(playId = guiRenderer.add(centerX, centerY, width - 10, height - 10, color, color, color, 1.0f, 0));
+            idList.add(playId = guiRenderer.add(centerX, centerY, width - 10, height - 10, color, color, color, 1.0f));
         }
 
         void setPlaying(boolean playing) {
@@ -94,6 +94,20 @@ public class PlayButton extends Button {
         }
 
         @Override
+        public void updateLastValues() {
+            super.updateLastValues();
+            int x = guiObject.getSceneX();
+            int y = guiObject.getSceneY();
+            int width = guiObject.getWidth();
+            int height = guiObject.getHeight();
+            int centerX = x + width / 2;
+            int centerY = y + height / 2;
+            guiRenderer.setLastPosition(outlineId, x, y);
+            guiRenderer.setLastPosition(bodyId, x + 1, y + 1);
+            guiRenderer.setLastPosition(playId, centerX, centerY);
+        }
+
+        @Override
         public void updatePosition() {
             int x = guiObject.getSceneX();
             int y = guiObject.getSceneY();
@@ -107,7 +121,7 @@ public class PlayButton extends Button {
         }
 
         @Override
-        public void render() {
+        public void render(int mouseX, int mouseY) {
             guiRenderer.addDrawCommand(outlineId);
             guiRenderer.addDrawCommand(bodyId);
             guiRenderer.addDrawCommand(playId, PLAY_SIGN_PRIMITIVE_PARAMS.getBaseVertex());

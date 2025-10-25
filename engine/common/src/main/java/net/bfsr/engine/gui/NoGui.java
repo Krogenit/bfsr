@@ -8,4 +8,11 @@ public final class NoGui extends Gui {
     public static NoGui get() {
         return INSTANCE;
     }
+
+    @Override
+    public void updateLastValues() {
+        for (int i = 0; i < guiObjects.size(); i++) {
+            guiObjects.get(i).updateLastValues();
+        }
+    }
 }

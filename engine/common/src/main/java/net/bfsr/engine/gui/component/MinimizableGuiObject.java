@@ -2,7 +2,7 @@ package net.bfsr.engine.gui.component;
 
 import lombok.Getter;
 import net.bfsr.engine.gui.renderer.MinimizableGuiObjectRenderer;
-import net.bfsr.engine.renderer.font.Font;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import org.joml.Vector4f;
 
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class MinimizableGuiObject extends GuiObject {
         this.minimizableStringOffsetX = minimizableStringOffsetX;
         this.hideableObjectsOffsetX = hideableObjectsOffsetX;
         setRenderer(new MinimizableGuiObjectRenderer(this));
-        setLeftReleaseRunnable(() -> {
+        setLeftReleaseConsumer((mouseX, mouseY) -> {
             if (maximized) {
                 maximized = false;
                 minimize();

@@ -8,7 +8,9 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.pack.RectanglesPackingAlgorithm;
 import net.bfsr.engine.pack.maxrects.MaxRectanglesBinPack;
 import net.bfsr.engine.pack.maxrects.Rectangle;
+import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.font.FontBitMap;
+import net.bfsr.engine.renderer.font.FontManager;
 import net.bfsr.engine.renderer.font.FontPackResult;
 import net.bfsr.engine.renderer.font.glyph.Glyph;
 import net.bfsr.engine.renderer.opengl.GL;
@@ -28,16 +30,16 @@ import static org.lwjgl.util.freetype.FreeType.FT_Set_Pixel_Sizes;
 public class TrueTypeBitMap extends FontBitMap {
     private final RectanglesPackingAlgorithm rectanglesPackingAlgorithm;
     private final Char2ObjectMap<Glyph> glyphsByCharCodeMap = new Char2ObjectOpenHashMap<>();
+    private final AbstractRenderer renderer = Engine.getRenderer();
 
     TrueTypeBitMap(int width, int height) {
         super(width, height);
         this.rectanglesPackingAlgorithm = new MaxRectanglesBinPack(width, height, false);
-        this.bitmapTexture = Engine.assetsManager.createTexture(width, height);
-        Engine.renderer.uploadTexture(bitmapTexture, GL.GL_R8, GL.GL_RED, GL.GL_CLAMP_TO_BORDER, GL.GL_NEAREST, bitmap);
+        this.bitmapTexture = Engine.getAssetsManager().createTexture(width, height);
+        renderer.uploadTexture(bitmapTexture, GL.GL_R8, GL.GL_RED, GL.GL_CLAMP_TO_BORDER, GL.GL_NEAREST, bitmap);
     }
 
-    public FontPackResult packChars(String fontName, CharList charList, FT_Face ftFace, int fontSize,
-                                    int index) {
+    public FontPackResult packChars(String fontName, CharList charList, FT_Face ftFace, int fontSize, int index) {
         if (FT_Set_Pixel_Sizes(ftFace, 0, fontSize) != FT_Err_Ok) {
             throw new RuntimeException("Can't change font pixel size for font " + fontName);
         }
@@ -77,41 +79,51 @@ public class TrueTypeBitMap extends FontBitMap {
 
                 break;
             } else {
+                int placementX = placement.getX();
+                int placementY = placement.getY();
+                int placementWidth = placement.getWidth();
+                int placementHeight = placement.getHeight();
+
                 float x1 = glyph.bitmap_left();
                 int y1 = -glyph.bitmap_top();
                 float x2 = x1 + glyphBitMap.width();
                 int y2 = y1 + glyphBitMap.rows();
-                float u1 = (float) placement.getX() / width;
-                float v1 = (float) placement.getY() / height;
-                float u2 = (float) (placement.getX() + placement.getWidth()) / width;
-                float v2 = (float) (placement.getY() + placement.getHeight()) / height;
+                float u1 = (float) placementX / width;
+                float v1 = (float) placementY / height;
+                float u2 = (float) (placementX + placementWidth) / width;
+                float v2 = (float) (placementY + placementHeight) / height;
 
                 glyphsByCharCodeMap.put(charCode, new Glyph(x1, y1, x2, y2, u1, v1, u2, v2, bitmapTexture.getTextureHandle(),
                         (int) (glyph.advance().x() >> 6), charCode, false));
                 packedCharsList.add(charCode);
 
-                // TODO: optimize calls to one
                 ByteBuffer buffer = glyphBitMap.buffer(glyphBitMap.width() * glyphBitMap.rows());
-                Engine.renderer.subImage2D(bitmapTexture.getId(), placement.getX(), placement.getY(), placement.getWidth(),
-                        placement.getHeight(), GL.GL_RED, buffer);
 
-                // Debug
                 for (int y = 0; y < glyphBitMap.rows(); y++) {
                     for (int x = 0; x < glyphBitMap.width(); x++) {
-                        int pixelIndex = (placement.getX() + x) + (placement.getY() + y) * height;
+                        int pixelIndex = placementX + x + (placementY + y) * height;
                         bitmap.put(pixelIndex, buffer.get(x + y * glyphBitMap.pitch()));
                     }
                 }
             }
         }
 
-        // Debug
-        IOUtils.writePNGGrayScale(bitmap, width, height, "truetype_" + fontName + "_atlas_" + fontSize + "_" + index);
+        renderer.subImage2D(bitmapTexture.getId(), 0, 0, width, height, GL.GL_RED, bitmap);
+
+        if (FontManager.DEBUG) {
+            IOUtils.writePNGGrayScale(bitmap, width, height, "truetype_" + fontName + "_atlas_" + fontSize + "_" + index);
+        }
 
         return new FontPackResult(allCharsPacked, packedCharsList, unpackedCharsList);
     }
 
     Glyph getGlyph(char charCode) {
         return glyphsByCharCodeMap.get(charCode);
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        glyphsByCharCodeMap.clear();
     }
 }

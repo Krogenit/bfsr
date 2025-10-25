@@ -1,19 +1,17 @@
 package net.bfsr.client.renderer.component;
 
-import net.bfsr.client.renderer.Render;
+import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.engine.Engine;
-import net.bfsr.math.Direction;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.shapes.Polygon;
-import org.jbox2d.common.Rotation;
-import org.jbox2d.common.Transform;
 import org.jbox2d.common.Vector2;
 
 public class ModuleRenderer extends Render {
@@ -28,7 +26,7 @@ public class ModuleRenderer extends Render {
         Polygon polygon = (Polygon) module.getFixture().getShape();
         Vector2 center = polygon.centroid;
         AABB aabb1 = new AABB();
-        polygon.computeAABB(aabb1, new Transform(new Vector2(), new Rotation(0)), 0);
+        polygon.computeAABB(aabb1, 0, 0, 0, 1, 0);
         float dx = aabb1.getWidth();
         float dy = aabb1.getHeight();
 
@@ -60,15 +58,16 @@ public class ModuleRenderer extends Render {
         }
     }
 
-    public ModuleRenderer(Ship ship, Engine engine, AbstractTexture engineTexture, Direction direction) {
-        super(engineTexture, engine);
+    public ModuleRenderer(Ship ship, Engine engine, AbstractTexture texture, Direction direction) {
+        super(texture, engine);
 
         Polygon shape = (Polygon) engine.getFixture().getShape();
         Vector2 center = shape.centroid;
         AABB aabb1 = new AABB();
-        shape.computeAABB(aabb1, new Transform(new Vector2(), new Rotation(0)), 0);
-        float dx = aabb1.getWidth();
-        float dy = aabb1.getHeight();
+        shape.computeAABB(aabb1, 0, 0, 0, 1, 0);
+        float offset = -0.1f;
+        float dx = aabb1.getWidth() + offset;
+        float dy = aabb1.getHeight() + offset;
 
         if (dy > dx) {
             sizeX = dy;
@@ -78,7 +77,7 @@ public class ModuleRenderer extends Render {
             sizeY = dy;
         }
 
-        if (direction == Direction.RIGHT) {
+        if (direction == Direction.FORWARD) {
             updateRunnable = () -> {
                 sin = ship.getSin();
                 cos = ship.getCos();
@@ -88,13 +87,13 @@ public class ModuleRenderer extends Render {
         } else {
             float sin1;
             float cos1;
-            if (direction == Direction.FORWARD) {
+            if (direction == Direction.LEFT) {
                 sin1 = LUT.sin(-MathUtils.HALF_PI);
                 cos1 = LUT.cos(-MathUtils.HALF_PI);
-            } else if (direction == Direction.BACKWARD) {
+            } else if (direction == Direction.RIGHT) {
                 sin1 = LUT.sin(MathUtils.HALF_PI);
                 cos1 = LUT.cos(MathUtils.HALF_PI);
-            } else if (direction == Direction.LEFT) {
+            } else if (direction == Direction.BACKWARD) {
                 sin1 = LUT.sin(MathUtils.PI);
                 cos1 = LUT.cos(MathUtils.PI);
             } else {
@@ -139,7 +138,7 @@ public class ModuleRenderer extends Render {
     }
 
     @Override
-    public void renderAlpha() {
+    public void render() {
         spriteRenderer.addDrawCommand(id, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ALPHA);
     }
 }

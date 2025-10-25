@@ -2,22 +2,22 @@ package net.bfsr.client.config.particle;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.Getter;
-import net.bfsr.client.Client;
-import net.bfsr.client.particle.Particle;
-import net.bfsr.client.particle.ParticleManager;
-import net.bfsr.client.particle.SpawnAccumulator;
-import net.bfsr.client.renderer.particle.ParticleRender;
 import net.bfsr.client.sound.SoundEffect;
-import net.bfsr.config.ConfigData;
-import net.bfsr.config.ConfigurableSound;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.config.ConfigData;
+import net.bfsr.engine.config.ConfigurableSound;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.opengl.GL;
+import net.bfsr.engine.renderer.particle.ParticleRender;
 import net.bfsr.engine.renderer.particle.RenderLayer;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
+import net.bfsr.engine.sound.AbstractSoundManager;
 import net.bfsr.engine.util.PathHelper;
 import net.bfsr.engine.util.RandomHelper;
+import net.bfsr.engine.world.entity.Particle;
+import net.bfsr.engine.world.entity.ParticleManager;
+import net.bfsr.engine.world.entity.SpawnAccumulator;
 import org.jbox2d.common.Rotation;
 import org.joml.Vector4f;
 
@@ -26,10 +26,12 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static net.bfsr.client.particle.ParticleManager.PARTICLE_POOL;
-
 @Getter
 public class ParticleEffect extends ConfigData {
+    private final AbstractSoundManager soundManager = Engine.getSoundManager();
+    private final ParticleManager particleManager;
+    private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
+
     private AbstractTexture[] textures;
     private float spawnOverTime;
     private int minSpawnCount, maxSpawnCount;
@@ -48,19 +50,16 @@ public class ParticleEffect extends ConfigData {
     private float sourceVelocityXMultiplier, sourceVelocityYMultiplier;
     private String path;
     private int treeIndex;
-
     private double spawnTime;
 
     private final List<Particle> aliveParticles = new ArrayList<>();
-
-    private final List<ParticleEffectSpawnRunnable> spawnRunnables = new ArrayList<>();
+    private final List<ParticleEffectSpawnRunnable> spawnRunnableList = new ArrayList<>();
     private final List<ParticleEffect> childEffectsInstances = new ArrayList<>();
-    private final XoRoShiRo128PlusRandom rand = new XoRoShiRo128PlusRandom();
 
     @FunctionalInterface
     private interface ParticleEffectSpawnRunnable {
-        void spawn(float worldX, float worldY, float localX, float localY, float sizeX, float sizeY, float sin, float cos,
-                   float velocityX, float velocityY, float r, float g, float b, float a, Consumer<Particle> updateLogic,
+        void spawn(float worldX, float worldY, float localX, float localY, float sizeX, float sizeY, float sin, float cos, float velocityX,
+                   float velocityY, float r, float g, float b, float a, Consumer<Particle> updateLogic,
                    Consumer<ParticleRender> lastValuesUpdateConsumer);
     }
 
@@ -69,8 +68,9 @@ public class ParticleEffect extends ConfigData {
         float apply(float value);
     }
 
-    public ParticleEffect(ParticleEffectConfig config, String fileName, int dataIndex, int registryId) {
-        super(fileName, dataIndex, registryId);
+    public ParticleEffect(ParticleEffectConfig config, String fileName, int id, int registryId, ParticleManager particleManager) {
+        super(fileName, id, registryId);
+        this.particleManager = particleManager;
         applyConfig(config);
     }
 
@@ -78,7 +78,7 @@ public class ParticleEffect extends ConfigData {
         List<String> texturePaths = config.getTexturePaths();
         textures = new AbstractTexture[texturePaths.size()];
         for (int i = 0; i < texturePaths.size(); i++) {
-            textures[i] = Engine.assetsManager.getTexture(PathHelper.convertPath(texturePaths.get(i)), GL.GL_CLAMP_TO_EDGE,
+            textures[i] = Engine.getAssetsManager().getTexture(PathHelper.convertPath(texturePaths.get(i)), GL.GL_CLAMP_TO_EDGE,
                     GL.GL_LINEAR);
         }
 
@@ -119,7 +119,7 @@ public class ParticleEffect extends ConfigData {
             this.soundEffects = new SoundEffect[effects.size()];
             for (int i = 0; i < effects.size(); i++) {
                 ConfigurableSound soundEffect = effects.get(i);
-                this.soundEffects[i] = new SoundEffect(Engine.assetsManager.getSound(PathHelper.convertPath(soundEffect.path())),
+                this.soundEffects[i] = new SoundEffect(Engine.getAssetsManager().getSound(PathHelper.convertPath(soundEffect.path())),
                         soundEffect.volume());
             }
         } else {
@@ -128,7 +128,7 @@ public class ParticleEffect extends ConfigData {
     }
 
     public void init() {
-        spawnRunnables.clear();
+        spawnRunnableList.clear();
 
         if (spawnOverTime > 0) {
             spawnTime = 1.0 / spawnOverTime;
@@ -137,19 +137,17 @@ public class ParticleEffect extends ConfigData {
         }
 
         if (soundEffects != null && soundEffects.length > 0) {
-            spawnRunnables.add((worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
-                                updateLogic, lastValuesUpdateConsumer) -> {
+            spawnRunnableList.add((worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a, updateLogic,
+                                   lastValuesUpdateConsumer) -> {
                 for (int i = 0; i < soundEffects.length; i++) {
                     SoundEffect soundEffect = soundEffects[i];
-                    Engine.soundManager.play(soundEffect.soundBuffer(), soundEffect.volume(), worldX, worldY);
+                    soundManager.play(soundEffect.soundBuffer(), soundEffect.volume(), worldX, worldY);
                 }
             });
         }
 
-        Supplier<Float> localXSupplier =
-                minPosX == maxPosX ? () -> minPosX : () -> RandomHelper.randomFloat(rand, minPosX, maxPosX);
-        Supplier<Float> localYSupplier =
-                minPosY == maxPosY ? () -> minPosY : () -> RandomHelper.randomFloat(rand, minPosY, maxPosY);
+        Supplier<Float> localXSupplier = minPosX == maxPosX ? () -> minPosX : () -> RandomHelper.randomFloat(random, minPosX, maxPosX);
+        Supplier<Float> localYSupplier = minPosY == maxPosY ? () -> minPosY : () -> RandomHelper.randomFloat(random, minPosY, maxPosY);
         ParticleParamFunction velocityXFunc = makeFunction(minVelocityX, maxVelocityX, sourceVelocityXMultiplier);
         ParticleParamFunction velocityYFunc = makeFunction(minVelocityY, maxVelocityY, sourceVelocityYMultiplier);
         Supplier<Rotation> angleSupplier;
@@ -160,33 +158,33 @@ public class ParticleEffect extends ConfigData {
         } else {
             Rotation rotation = new Rotation();
             angleSupplier = () -> {
-                float angle = RandomHelper.randomFloat(rand, minAngle, maxAngle * MathUtils.TWO_PI);
+                float angle = RandomHelper.randomFloat(random, minAngle, maxAngle * MathUtils.TWO_PI);
                 float sin = LUT.sin(angle);
                 float cos = LUT.cos(angle);
                 return rotation.set(sin, cos);
             };
         }
         Supplier<Float> angularVelocitySupplier = minAngularVelocity == maxAngularVelocity ? () -> minAngularVelocity :
-                () -> RandomHelper.randomFloat(rand, minAngularVelocity, maxAngularVelocity);
+                () -> RandomHelper.randomFloat(random, minAngularVelocity, maxAngularVelocity);
         ParticleParamFunction sizeXFunc = makeFunction(minSizeX, maxSizeX, sourceSizeXMultiplier);
         ParticleParamFunction sizeYFunc = makeFunction(minSizeY, maxSizeY, sourceSizeYMultiplier);
         Supplier<Float> sizeVelocitySupplier = minSizeVelocity == maxSizeVelocity ? () -> minSizeVelocity :
-                () -> RandomHelper.randomFloat(rand, minSizeVelocity, maxSizeVelocity);
+                () -> RandomHelper.randomFloat(random, minSizeVelocity, maxSizeVelocity);
         Supplier<Float> alphaVellocitySupplier = minAlphaVelocity == maxAlphaVelocity ? () -> minAlphaVelocity :
-                () -> RandomHelper.randomFloat(rand, minAlphaVelocity, maxAlphaVelocity);
+                () -> RandomHelper.randomFloat(random, minAlphaVelocity, maxAlphaVelocity);
         long texture = textures.length > 0 ? textures[0].getTextureHandle() : 0;
         Supplier<Long> textureSupplier =
-                textures.length > 1 ? () -> textures[rand.nextInt(textures.length)].getTextureHandle() : () -> texture;
+                textures.length > 1 ? () -> textures[random.nextInt(textures.length)].getTextureHandle() : () -> texture;
 
         if (maxSpawnCount > minSpawnCount) {
-            spawnRunnables.add((worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
-                                updateLogic, lastValuesUpdateConsumer) -> {
-                int spawnCount = rand.nextInt(maxSpawnCount - minSpawnCount + 1) + minSpawnCount;
+            spawnRunnableList.add((worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a, updateLogic,
+                                   lastValuesUpdateConsumer) -> {
+                int spawnCount = random.nextInt(maxSpawnCount - minSpawnCount + 1) + minSpawnCount;
                 for (int i = 0; i < spawnCount; i++) {
                     Rotation rotation = angleSupplier.get();
                     float cos1 = cos * rotation.getCos() - sin * rotation.getSin();
                     float sin1 = sin * rotation.getCos() + cos * rotation.getSin();
-                    PARTICLE_POOL.get().init(textureSupplier.get(), worldX + localXSupplier.get(), worldY + localYSupplier.get(),
+                    createParticle().init(textureSupplier.get(), worldX + localXSupplier.get(), worldY + localYSupplier.get(),
                             localX, localY, velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), sin1, cos1,
                             angularVelocitySupplier.get(), sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY),
                             sizeVelocitySupplier.get(), r * color.x, g * color.y, b * color.z, a * color.w,
@@ -195,27 +193,26 @@ public class ParticleEffect extends ConfigData {
             });
         } else {
             if (minSpawnCount > 1) {
-                spawnRunnables.add((worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
-                                    updateLogic, lastValuesUpdateConsumer) -> {
+                spawnRunnableList.add((worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
+                                       updateLogic, lastValuesUpdateConsumer) -> {
                     for (int i = 0; i < minSpawnCount; i++) {
                         Rotation rotation = angleSupplier.get();
                         float cos1 = cos * rotation.getCos() - sin * rotation.getSin();
                         float sin1 = sin * rotation.getCos() + cos * rotation.getSin();
-                        PARTICLE_POOL.get().init(textureSupplier.get(), worldX + localXSupplier.get(),
-                                worldY + localYSupplier.get(), localX, localY, velocityXFunc.apply(velocityX),
-                                velocityYFunc.apply(velocityY), sin1, cos1, angularVelocitySupplier.get(), sizeXFunc.apply(sizeX),
-                                sizeYFunc.apply(sizeY), sizeVelocitySupplier.get(), r * color.x, g * color.y, b * color.z,
-                                a * color.w, alphaVellocitySupplier.get(), isAlphaFromZero, renderLayer, updateLogic,
-                                lastValuesUpdateConsumer);
+                        createParticle().init(textureSupplier.get(), worldX + localXSupplier.get(), worldY + localYSupplier.get(),
+                                localX, localY, velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), sin1, cos1,
+                                angularVelocitySupplier.get(), sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sizeVelocitySupplier.get(),
+                                r * color.x, g * color.y, b * color.z, a * color.w, alphaVellocitySupplier.get(), isAlphaFromZero,
+                                renderLayer, updateLogic, lastValuesUpdateConsumer);
                     }
                 });
             } else if (minSpawnCount > 0) {
-                spawnRunnables.add((worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
-                                    updateLogic, lastValuesUpdateConsumer) -> {
+                spawnRunnableList.add((worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
+                                       updateLogic, lastValuesUpdateConsumer) -> {
                     Rotation rotation = angleSupplier.get();
                     float cos1 = cos * rotation.getCos() - sin * rotation.getSin();
                     float sin1 = sin * rotation.getCos() + cos * rotation.getSin();
-                    PARTICLE_POOL.get().init(textureSupplier.get(), worldX + localXSupplier.get(), worldY + localYSupplier.get(),
+                    createParticle().init(textureSupplier.get(), worldX + localXSupplier.get(), worldY + localYSupplier.get(),
                             localX, localY, velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), sin1, cos1,
                             angularVelocitySupplier.get(), sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY),
                             sizeVelocitySupplier.get(), r * color.x, g * color.y, b * color.z, a * color.w,
@@ -227,12 +224,16 @@ public class ParticleEffect extends ConfigData {
         if (childEffectsInstances.size() > 0) {
             for (int i = 0; i < childEffectsInstances.size(); i++) {
                 ParticleEffect effect = childEffectsInstances.get(i);
-                spawnRunnables.add((worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
-                                    updateLogic, lastValuesUpdateConsumer) -> effect.play(worldX + localXSupplier.get(),
+                spawnRunnableList.add((worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
+                                       updateLogic, lastValuesUpdateConsumer) -> effect.play(worldX + localXSupplier.get(),
                         worldY + localYSupplier.get(), localX, localY, sizeXFunc.apply(sizeX), sizeYFunc.apply(sizeY), sin, cos,
                         velocityXFunc.apply(velocityX), velocityYFunc.apply(velocityY), r, g, b, a, updateLogic, lastValuesUpdateConsumer));
             }
         }
+    }
+
+    private Particle createParticle() {
+        return particleManager.createParticle();
     }
 
     private ParticleParamFunction makeFunction(float minValue, float maxValue, float sourceMultiplayer) {
@@ -240,19 +241,19 @@ public class ParticleEffect extends ConfigData {
             if (minValue == maxValue) {
                 return value -> minValue;
             } else {
-                return value -> RandomHelper.randomFloat(rand, minValue, maxValue);
+                return value -> RandomHelper.randomFloat(random, minValue, maxValue);
             }
         } else if (sourceMultiplayer == 1.0f) {
             if (minValue == maxValue) {
                 return value -> value + minValue;
             } else {
-                return value -> value + RandomHelper.randomFloat(rand, minValue, maxValue);
+                return value -> value + RandomHelper.randomFloat(random, minValue, maxValue);
             }
         } else {
             if (minValue == maxValue) {
                 return value -> value * sourceMultiplayer + minValue;
             } else {
-                return value -> value * sourceMultiplayer + RandomHelper.randomFloat(rand, minValue, maxValue);
+                return value -> value * sourceMultiplayer + RandomHelper.randomFloat(random, minValue, maxValue);
             }
         }
     }
@@ -277,8 +278,8 @@ public class ParticleEffect extends ConfigData {
                 ParticleRender::defaultUpdateLastValues);
     }
 
-    public void emit(float x, float y, float sizeX, float sizeY, float sin, float cos,
-                     float velocityX, float velocityY, float r, float g, float b, float a, SpawnAccumulator spawnAccumulator) {
+    public void emit(float x, float y, float sizeX, float sizeY, float sin, float cos, float velocityX, float velocityY,
+                     float r, float g, float b, float a, SpawnAccumulator spawnAccumulator) {
         emit(x, y, 0, 0, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a, spawnAccumulator,
                 Particle::defaultUpdateLogic, ParticleRender::defaultUpdateLastValues);
     }
@@ -308,7 +309,6 @@ public class ParticleEffect extends ConfigData {
     public void debug(float x, float y, float sizeX, float sizeY, float sin, float cos, float velocityX, float velocityY,
                       SpawnAccumulator spawnAccumulator) {
         removeDeadParticles();
-        ParticleManager particleManager = Client.get().getParticleManager();
         int particlesCount = particleManager.getParticlesCount();
 
         if (spawnTime > 0) {
@@ -361,8 +361,8 @@ public class ParticleEffect extends ConfigData {
     public void play(float worldX, float worldY, float localX, float localY, float sizeX, float sizeY, float sin, float cos,
                      float velocityX, float velocityY, float r, float g, float b, float a, Consumer<Particle> updateLogic,
                      Consumer<ParticleRender> lastValuesUpdateConsumer) {
-        for (int i = 0; i < spawnRunnables.size(); i++) {
-            spawnRunnables.get(i).spawn(worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
+        for (int i = 0; i < spawnRunnableList.size(); i++) {
+            spawnRunnableList.get(i).spawn(worldX, worldY, localX, localY, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a,
                     updateLogic, lastValuesUpdateConsumer);
         }
     }

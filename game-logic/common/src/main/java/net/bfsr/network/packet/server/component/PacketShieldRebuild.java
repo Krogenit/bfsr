@@ -3,17 +3,21 @@ package net.bfsr.network.packet.server.component;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.bfsr.network.packet.common.PacketScheduled;
+import net.bfsr.engine.logic.GameLogic;
+import net.bfsr.engine.network.packet.PacketAnnotation;
+import net.bfsr.engine.network.packet.PacketScheduled;
+import net.bfsr.network.packet.PacketIdRegistry;
 
 import java.io.IOException;
 
 @Getter
 @NoArgsConstructor
+@PacketAnnotation(id = PacketIdRegistry.SHIELD_REBUILD)
 public class PacketShieldRebuild extends PacketScheduled {
     private int id;
 
-    public PacketShieldRebuild(int id, double timestamp) {
-        super(timestamp);
+    public PacketShieldRebuild(int id, int frame) {
+        super(frame);
         this.id = id;
     }
 
@@ -24,8 +28,8 @@ public class PacketShieldRebuild extends PacketScheduled {
     }
 
     @Override
-    public void read(ByteBuf data) throws IOException {
-        super.read(data);
+    public void read(ByteBuf data, GameLogic gameLogic) throws IOException {
+        super.read(data, gameLogic);
         id = data.readInt();
     }
 }

@@ -1,19 +1,25 @@
 package net.bfsr.server.network.manager;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.network.pipeline.tcp.FrameDecoder;
-import net.bfsr.network.pipeline.tcp.LengthPrepender;
+import net.bfsr.engine.network.pipeline.tcp.FrameDecoder;
+import net.bfsr.engine.network.pipeline.tcp.LengthPrepender;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.pipeline.MessageDecoderTCP;
 import net.bfsr.server.network.pipeline.MessageHandlerTCP;
 import net.bfsr.server.network.pipeline.PacketEncoderTCP;
+import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;
 import java.util.function.Supplier;
@@ -25,7 +31,7 @@ public class NetworkManagerTCP {
     private final EventLoopGroup workerLoopGroup = new NioEventLoopGroup();
     private Channel channel;
 
-    public void startup(NetworkSystem networkSystem, InetAddress address, int port,
+    public void startup(ServerGameLogic serverGameLogic, NetworkSystem networkSystem, InetAddress address, int port,
                         Supplier<DatagramChannel> datagramChannelSupplier) {
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossLoopGroup, workerLoopGroup);
@@ -33,16 +39,17 @@ public class NetworkManagerTCP {
         bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
         bootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
             @Override
-            protected void initChannel(SocketChannel socketChannel) {
-                PlayerNetworkHandler playerNetworkHandler = new PlayerNetworkHandler(connectionIds++, socketChannel,
+            protected void initChannel(@NotNull SocketChannel socketChannel) {
+                log.info("New connection with id {} from {}", connectionIds, socketChannel.remoteAddress());
+                PlayerNetworkHandler playerNetworkHandler = serverGameLogic.createPlayerNetworkHandler(connectionIds++, socketChannel,
                         datagramChannelSupplier.get(), true);
                 socketChannel.pipeline().addLast("slicer", new FrameDecoder());
                 socketChannel.pipeline().addLast("prepender", new LengthPrepender());
 
-                socketChannel.pipeline().addLast("decoder", new MessageDecoderTCP());
+                socketChannel.pipeline().addLast("decoder", new MessageDecoderTCP(networkSystem));
                 socketChannel.pipeline().addLast("encoder", new PacketEncoderTCP(networkSystem));
 
-                socketChannel.pipeline().addLast("handler", new MessageHandlerTCP(playerNetworkHandler));
+                socketChannel.pipeline().addLast("handler", new MessageHandlerTCP(playerNetworkHandler, networkSystem));
                 networkSystem.registerHandler(playerNetworkHandler);
             }
         });

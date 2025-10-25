@@ -1,8 +1,8 @@
 package net.bfsr.network.packet.common.entity.spawn.connectedobject;
 
-import net.bfsr.config.ConfigData;
 import net.bfsr.config.component.weapon.beam.BeamData;
 import net.bfsr.damage.ConnectedObject;
+import net.bfsr.engine.config.ConfigData;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 
 public class BeamSlotConnectedObjectSpawnData extends WeaponSlotConnectObjectSpawnData {

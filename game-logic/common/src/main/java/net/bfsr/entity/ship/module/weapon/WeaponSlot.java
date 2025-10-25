@@ -9,7 +9,9 @@ import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.event.EventBus;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.physics.PhysicsUtils;
+import net.bfsr.engine.world.World;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
@@ -17,9 +19,7 @@ import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.event.module.weapon.WeaponShotEvent;
 import net.bfsr.event.module.weapon.WeaponSlotRemovedEvent;
-import net.bfsr.physics.PhysicsUtils;
-import net.bfsr.physics.filter.Filters;
-import net.bfsr.world.World;
+import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.Fixture;
@@ -48,8 +48,8 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
     protected final EventBus weaponSlotEventBus = new EventBus();
 
     public WeaponSlot(GunData gunData, WeaponType weaponType) {
-        super(gunData.getHp(), gunData.getSizeX(), gunData.getSizeY());
-        this.timeToReload = gunData.getReloadTimeInTicks();
+        super(gunData, gunData.getHp(), gunData.getSizeX(), gunData.getSizeY());
+        this.timeToReload = gunData.getReloadTimeInFrames();
         this.energyCost = gunData.getEnergyCost();
         this.weaponType = weaponType;
         this.polygon = new Polygon(gunData.getPolygon().getVertices());
@@ -124,24 +124,15 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
         weaponSlotEventBus.publish(new WeaponShotEvent(this));
     }
 
-    public void createBullet(float fastForwardTime) {
+    public Bullet createBullet(boolean forceSpawn) {
         float cos = ship.getCos();
         float sin = ship.getSin();
         float x = getX() + getSizeX() * cos;
         float y = getY() + getSizeX() * sin;
-
-        // TODO: implement collision detection
-//        float updateDeltaTime = ship.getWorld().getUpdateDeltaTime();
-//        float updateDeltaTimeInMills = updateDeltaTime * 1000;
-//        while (fastForwardTime > 0) {
-//            x += cos * gunData.getBulletSpeed() * updateDeltaTime;
-//            y += sin * gunData.getBulletSpeed() * updateDeltaTime;
-//            fastForwardTime -= updateDeltaTimeInMills;
-//        }
-
         Bullet bullet = new Bullet(x, y, sin, cos, gunData, ship, gunData.getDamage().copy());
         bullet.init(world, world.getNextId());
-        world.add(bullet);
+        world.add(bullet, true, forceSpawn);
+        return bullet;
     }
 
     @Override
@@ -230,12 +221,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
 
     @Override
     public int getRegistryId() {
-        return gunData.getRegistryId();
-    }
-
-    @Override
-    public int getDataId() {
-        return gunData.getId();
+        return data.getRegistryId();
     }
 
     @Override

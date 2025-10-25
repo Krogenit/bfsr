@@ -1,6 +1,7 @@
 package net.bfsr.client.listener.entity;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
+import net.bfsr.client.Client;
 import net.bfsr.client.particle.effect.ExplosionEffects;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
@@ -10,10 +11,11 @@ import net.bfsr.event.entity.ship.ShipDestroyingExplosionEvent;
 
 public class ShipEventListener {
     private final XoRoShiRo128PlusRandom rand = new XoRoShiRo128PlusRandom();
+    private final ExplosionEffects explosionEffects = Client.get().getParticleEffects().getExplosionEffects();
 
     @EventHandler
     public EventListener<ShipDestroyEvent> shipDestroyEvent() {
-        return event -> ExplosionEffects.spawnDestroyShipSmall(event.ship());
+        return event -> explosionEffects.spawnDestroyShipSmall(event.ship());
     }
 
     @EventHandler
@@ -24,7 +26,7 @@ public class ShipEventListener {
             float sizeY = ship.getSizeY();
             float randomVectorX = -sizeX * 0.4f + sizeX * 0.8f * rand.nextFloat();
             float randomVectorY = -sizeY * 0.4f + sizeY * 0.8f * rand.nextFloat();
-            ExplosionEffects.spawnSmallExplosion(ship.getX() + randomVectorX, ship.getY() + randomVectorY, 2.0f);
+            explosionEffects.spawnSmallExplosion(ship.getX() + randomVectorX, ship.getY() + randomVectorY, 0.2f);
         };
     }
 }

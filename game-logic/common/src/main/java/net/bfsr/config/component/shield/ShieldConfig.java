@@ -1,10 +1,9 @@
 package net.bfsr.config.component.shield;
 
-import net.bfsr.config.Configurable;
+import net.bfsr.engine.config.Configurable;
 
 @Configurable
 public record ShieldConfig(
-        String texture,
         float maxShield,
         float regenInSeconds,
         float rebuildTimeInSeconds

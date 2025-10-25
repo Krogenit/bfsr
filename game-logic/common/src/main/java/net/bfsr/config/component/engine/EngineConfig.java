@@ -1,6 +1,6 @@
 package net.bfsr.config.component.engine;
 
-import net.bfsr.config.Configurable;
+import net.bfsr.engine.config.Configurable;
 
 @Configurable
 public record EngineConfig(

@@ -1,10 +1,11 @@
 package net.bfsr.editor.gui.property;
 
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.gui.GuiManager;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.renderer.RectangleOutlinedRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
-import net.bfsr.engine.renderer.font.Font;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.primitive.Primitive;
 
 import java.lang.reflect.Field;
@@ -16,17 +17,20 @@ import static net.bfsr.editor.gui.EditorTheme.TEXT_COLOR_GRAY;
 import static net.bfsr.editor.gui.EditorTheme.setupButton;
 
 abstract class PropertyList<T extends PropertyComponent, O> extends PropertyObject<T> {
+    final GuiManager guiManager = Engine.getGuiManager();
     private final Button addButton;
     final Supplier<O> supplier;
     final int contextMenuStringXOffset = 8;
 
     PropertyList(int width, int height, String name, Font font, int fontSize, int propertyOffsetX, int stringOffsetY,
-                 Supplier<O> supplier, Object object, List<Field> fields, Object[] values, BiConsumer<Object, Integer> valueConsumer) {
-        super(width, height, name, font, fontSize, propertyOffsetX, stringOffsetY, object, fields, values, valueConsumer);
+                 Supplier<O> supplier, Object object, List<Field> fields, Object[] values, BiConsumer<Object, Integer> valueConsumer,
+                 Runnable changeValueListener) {
+        super(width, height, name, font, fontSize, propertyOffsetX, stringOffsetY, object, fields, values, valueConsumer,
+                changeValueListener);
         this.supplier = supplier;
         int addButtonSize = 20;
-        add(addButton = new Button(width - addButtonSize, height - baseHeight, addButtonSize, addButtonSize, "", font,
-                fontSize, stringOffsetY, () -> addProperty(createObject())));
+        add(addButton = new Button(addButtonSize, addButtonSize, "", font, fontSize,
+                stringOffsetY, (mouseX, mouseY) -> addObject(createObject())));
         setupButton(addButton).atBottomRight(0, 0);
         addButton.setRenderer(new RectangleOutlinedRenderer(addButton) {
             private static final Primitive PLUS_1_PRIMITIVE = new Primitive(-0.0833f, 0.5f, 0.0f, 1.0f, -0.0833f, -0.5f, 1.0f, 1.0f,
@@ -39,8 +43,8 @@ abstract class PropertyList<T extends PropertyComponent, O> extends PropertyObje
             @Override
             protected void create() {
                 super.create();
-                Engine.renderer.spriteRenderer.addPrimitive(PLUS_1_PRIMITIVE);
-                Engine.renderer.spriteRenderer.addPrimitive(PLUS_2_PRIMITIVE);
+                renderer.getSpriteRenderer().addPrimitive(PLUS_1_PRIMITIVE);
+                renderer.getSpriteRenderer().addPrimitive(PLUS_2_PRIMITIVE);
 
                 int x = guiObject.getSceneX() + guiObject.getWidth() / 2;
                 int y = guiObject.getSceneY() + guiObject.getHeight() / 2;
@@ -74,7 +78,7 @@ abstract class PropertyList<T extends PropertyComponent, O> extends PropertyObje
             }
         });
 
-        Button removeButton = new Button(0, 0, 20, 20, "", font, fontSize, stringOffsetY, () -> {
+        Button removeButton = new Button(20, 20, "", font, fontSize, stringOffsetY, (mouseX, mouseY) -> {
             if (properties.size() > 0) {
                 removeProperty(properties.get(properties.size() - 1));
             }
@@ -123,7 +127,9 @@ abstract class PropertyList<T extends PropertyComponent, O> extends PropertyObje
 
     protected abstract O createObject();
 
-    public abstract void addProperty(O propertiesHolder);
+    public abstract void addObject(O object);
+    public abstract void addObjectAt(int index, O object);
+    public abstract void removeObject(O object);
 
     protected void removeProperty(T guiObject) {
         properties.remove(guiObject);

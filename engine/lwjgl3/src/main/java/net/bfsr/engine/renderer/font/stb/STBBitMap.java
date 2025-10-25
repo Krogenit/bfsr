@@ -5,8 +5,11 @@ import it.unimi.dsi.fastutil.chars.CharArraySet;
 import it.unimi.dsi.fastutil.chars.CharList;
 import it.unimi.dsi.fastutil.chars.CharSet;
 import lombok.Getter;
+import net.bfsr.engine.AssetsManager;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.font.FontBitMap;
+import net.bfsr.engine.renderer.font.FontManager;
 import net.bfsr.engine.renderer.font.FontPackResult;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.util.IOUtils;
@@ -38,6 +41,8 @@ class STBBitMap extends FontBitMap {
 
     private STBTTPackedchar.Buffer packedChars;
     private final STBTTPackContext packContext;
+    private final AbstractRenderer renderer = Engine.getRenderer();
+    private final AssetsManager assetsManager = Engine.getAssetsManager();
 
     STBBitMap(int width, int height) {
         super(width, height);
@@ -70,13 +75,15 @@ class STBBitMap extends FontBitMap {
             boolean packed = stbtt_PackFontRanges(packContext, fontByteBuffer, 0, ranges);
 
             if (bitmapTexture == null) {
-                bitmapTexture = Engine.assetsManager.createTexture(width, height);
-                Engine.renderer.uploadTexture(bitmapTexture, GL.GL_R8, GL.GL_RED, GL.GL_CLAMP_TO_BORDER, GL.GL_NEAREST, bitmap);
+                bitmapTexture = assetsManager.createTexture(width, height);
+                renderer.uploadTexture(bitmapTexture, GL.GL_R8, GL.GL_RED, GL.GL_CLAMP_TO_BORDER, GL.GL_NEAREST, bitmap);
             } else {
-                Engine.renderer.subImage2D(bitmapTexture.getId(), 0, 0, width, height, GL.GL_RED, bitmap);
+                renderer.subImage2D(bitmapTexture.getId(), 0, 0, width, height, GL.GL_RED, bitmap);
             }
 
-            IOUtils.writePNGGrayScale(bitmap, width, height, "stb_" + fontName + "_atlas_" + fontSize + "_" + index);
+            if (FontManager.DEBUG) {
+                IOUtils.writePNGGrayScale(bitmap, width, height, "stb_" + fontName + "_atlas_" + fontSize + "_" + index);
+            }
 
             IntBuffer advance = memoryStack.mallocInt(1);
             IntBuffer leftSideBearing = memoryStack.mallocInt(1);

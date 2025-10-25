@@ -2,11 +2,11 @@ package net.bfsr.network.packet.common.entity.spawn.connectedobject;
 
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
-import net.bfsr.config.ConfigData;
 import net.bfsr.config.component.weapon.gun.GunData;
 import net.bfsr.damage.ConnectedObject;
+import net.bfsr.engine.config.ConfigData;
+import net.bfsr.engine.network.util.ByteBufUtils;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
-import net.bfsr.network.util.ByteBufUtils;
 import org.joml.Vector2f;
 
 @Getter

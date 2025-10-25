@@ -3,7 +3,12 @@ package net.bfsr.engine.sound;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import org.lwjgl.openal.*;
+import org.lwjgl.openal.AL;
+import org.lwjgl.openal.AL10;
+import org.lwjgl.openal.AL11;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALC10;
+import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
@@ -12,18 +17,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SoundManager extends AbstractSoundManager {
-    private long device;
-    private long context;
+    private final long device;
+    private final long context;
     private AbstractSoundListener listener;
 
-    private final List<AbstractSoundBuffer> soundBufferList = new ArrayList<>();
     private final Matrix4f cameraMatrix = new Matrix4f();
     private final List<SoundSource> playingSounds = new ArrayList<>();
 
     private float lastSoundVolume;
 
-    @Override
-    public void init() {
+    public SoundManager() {
         this.device = ALC10.alcOpenDevice((ByteBuffer) null);
         if (device == MemoryUtil.NULL) {
             throw new IllegalStateException("Failed to open the default OpenAL device.");
@@ -77,13 +80,8 @@ public class SoundManager extends AbstractSoundManager {
     }
 
     @Override
-    public void addSoundBuffer(AbstractSoundBuffer soundBuffer) {
-        this.soundBufferList.add(soundBuffer);
-    }
-
-    @Override
-    public void setListener(AbstractSoundListener listener) {
-        this.listener = listener;
+    public void setListener(AbstractSoundListener soundListener) {
+        this.listener = soundListener;
         this.listener.setExponentClampedDistanceModel();
 
         Vector3f at = new Vector3f();
@@ -169,22 +167,18 @@ public class SoundManager extends AbstractSoundManager {
     }
 
     @Override
-    public void cleanup() {
-        int size = playingSounds.size();
-        for (int i = 0; i < size; i++) {
+    public void clear() {
+        for (int i = 0, size = playingSounds.size(); i < size; i++) {
             SoundSource soundSource = playingSounds.get(i);
             soundSource.clear();
         }
+
         playingSounds.clear();
-        size = soundBufferList.size();
-        for (int i = 0; i < size; i++) {
-            AbstractSoundBuffer soundBuffer = soundBufferList.get(i);
-            soundBuffer.cleanup();
-        }
-        soundBufferList.clear();
+
         if (context != MemoryUtil.NULL) {
             ALC10.alcDestroyContext(context);
         }
+
         if (device != MemoryUtil.NULL) {
             ALC10.alcCloseDevice(device);
         }

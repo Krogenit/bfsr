@@ -1,13 +1,17 @@
 package net.bfsr.engine.renderer.texture;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
-import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.FrameBuffer;
+import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.renderer.shader.NebulaShader;
 import net.bfsr.engine.renderer.shader.StarsShader;
+import net.bfsr.engine.renderer.shader.postprocessing.GaussianBlurShader;
+import net.bfsr.engine.renderer.shader.postprocessing.OutlineShader;
+import net.bfsr.engine.renderer.shader.postprocessing.SimpleShader;
 import net.bfsr.engine.util.RandomHelper;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -21,20 +25,25 @@ import static org.lwjgl.opengl.ARBBindlessTexture.glMakeTextureHandleResidentARB
 import static org.lwjgl.opengl.EXTDirectStateAccess.glBindMultiTextureEXT;
 import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT;
 import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT;
+import static org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11C.GL_LINEAR;
 import static org.lwjgl.opengl.GL11C.GL_NEAREST;
 import static org.lwjgl.opengl.GL11C.GL_NEAREST_MIPMAP_NEAREST;
 import static org.lwjgl.opengl.GL11C.GL_REPEAT;
 import static org.lwjgl.opengl.GL11C.GL_RGB;
 import static org.lwjgl.opengl.GL11C.GL_RGB8;
+import static org.lwjgl.opengl.GL11C.GL_RGBA8;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_BINDING_2D;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_T;
+import static org.lwjgl.opengl.GL11C.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
 import static org.lwjgl.opengl.GL11C.glBindTexture;
+import static org.lwjgl.opengl.GL11C.glClear;
+import static org.lwjgl.opengl.GL11C.glClearColor;
 import static org.lwjgl.opengl.GL11C.glGetFloat;
 import static org.lwjgl.opengl.GL11C.glGetInteger;
 import static org.lwjgl.opengl.GL11C.glViewport;
@@ -48,6 +57,20 @@ import static org.lwjgl.opengl.GL45C.glTextureStorage2D;
 import static org.lwjgl.opengl.GL45C.glTextureSubImage2D;
 
 public final class TextureGenerator extends AbstractTextureGenerator {
+    private final SimpleShader simpleShader = new SimpleShader();
+    private final OutlineShader outlineShader = new OutlineShader();
+    private final GaussianBlurShader gaussianBlurShader = new GaussianBlurShader();
+
+    @Override
+    public void init() {
+        simpleShader.load();
+        simpleShader.init();
+        outlineShader.load();
+        outlineShader.init();
+        gaussianBlurShader.load();
+        gaussianBlurShader.init();
+    }
+
     private Texture generateSpaceTexture(int width, int height, float density, float brightness, XoRoShiRo128PlusRandom random) {
         int count = Math.round(width * height * density);
 
@@ -102,20 +125,105 @@ public final class TextureGenerator extends AbstractTextureGenerator {
     }
 
     @Override
-    public Texture generateNebulaTexture(int width, int height, XoRoShiRo128PlusRandom random) {
-        AbstractGUIRenderer guiRenderer = Engine.renderer.guiRenderer;
+    public AbstractTexture generateShieldTexture(AbstractTexture texture, AbstractRenderer renderer, float outlineOffset, float blurSize) {
+        int currentBindTexture = glGetInteger(GL_TEXTURE_BINDING_2D);
+        AbstractSpriteRenderer spriteRenderer = renderer.getSpriteRenderer();
+        int rectangleRenderId = spriteRenderer.add(0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, BufferType.GUI);
+        int texturedRectangleRenderId = spriteRenderer.add(0.0f, 0.0f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 1.0f, texture.getTextureHandle(),
+                BufferType.GUI);
+
+        int textureOffset = 4;
+        int viewportWidth = texture.getWidth() + textureOffset;
+        int viewportHeight = texture.getHeight() + textureOffset;
+
+        FrameBuffer frameBuffer = new FrameBuffer();
+        frameBuffer.create();
+        frameBuffer.generateTextures(1, GL_RGBA8, viewportWidth, viewportHeight);
+
+        FrameBuffer secondFrameBuffer = new FrameBuffer();
+        secondFrameBuffer.create();
+        secondFrameBuffer.generateTextures(1, GL_RGBA8, viewportWidth, viewportHeight);
+
+        simpleShader.enable();
+        frameBuffer.bind();
+        frameBuffer.viewPort(viewportWidth, viewportHeight);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        spriteRenderer.addDrawCommand(texturedRectangleRenderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.GUI);
+        AbstractBuffersHolder buffersHolder = spriteRenderer.getBuffersHolder(BufferType.GUI);
+        spriteRenderer.updateBuffers();
+        spriteRenderer.updateCommandBufferAndRender(GL_TRIANGLES, buffersHolder.getRenderObjects(), buffersHolder);
+        buffersHolder.setRenderObjects(0);
+
+        AbstractTexture currentTexture = frameBuffer.getTexture(0);
+        currentTexture.bind();
+
+        outlineShader.enable();
+        outlineShader.setOffset(outlineOffset);
+        secondFrameBuffer.bind();
+
+        spriteRenderer.addDrawCommand(rectangleRenderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.GUI);
+        spriteRenderer.updateBuffers();
+        spriteRenderer.updateCommandBufferAndRender(GL_TRIANGLES, buffersHolder.getRenderObjects(), buffersHolder);
+        buffersHolder.setRenderObjects(0);
+
+        currentTexture = secondFrameBuffer.getTexture(0);
+        currentTexture.bind();
+
+        gaussianBlurShader.enable();
+        gaussianBlurShader.setSize(blurSize);
+        gaussianBlurShader.setResolution(viewportWidth, viewportHeight);
+
+        frameBuffer.bind();
+        frameBuffer.viewPort(viewportWidth, viewportHeight);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        spriteRenderer.addDrawCommand(rectangleRenderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.GUI);
+        spriteRenderer.updateBuffers();
+        spriteRenderer.updateCommandBufferAndRender(GL_TRIANGLES, buffersHolder.getRenderObjects(), buffersHolder);
+        buffersHolder.setRenderObjects(0);
+
+        gaussianBlurShader.disable();
+        FrameBuffer.unbind();
+        glViewport(0, 0, renderer.getScreenWidth(), renderer.getScreenHeight());
+
+        frameBuffer.delete();
+        secondFrameBuffer.deleteTexture(0);
+        secondFrameBuffer.delete();
+        currentTexture = frameBuffer.getTexture(0);
+
+        glTextureParameteri(currentTexture.getId(), GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(currentTexture.getId(), GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTextureParameteri(currentTexture.getId(), GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(currentTexture.getId(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameterf(currentTexture.getId(), GL_TEXTURE_MAX_ANISOTROPY_EXT, glGetFloat(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
+        long textureHandle = glGetTextureHandleARB(currentTexture.getId());
+        glMakeTextureHandleResidentARB(textureHandle);
+        currentTexture.setTextureHandle(textureHandle);
+        spriteRenderer.removeObject(texturedRectangleRenderId, BufferType.GUI);
+        spriteRenderer.removeObject(rectangleRenderId, BufferType.GUI);
+        glBindTexture(GL_TEXTURE_2D, currentBindTexture);
+        renderer.setDefaultClearColor();
+
+        return currentTexture;
+    }
+
+    @Override
+    public Texture generateNebulaTexture(int width, int height, XoRoShiRo128PlusRandom random, AbstractRenderer renderer) {
+        AbstractGUIRenderer guiRenderer = renderer.getGuiRenderer();
         int renderId = guiRenderer.add(0, 0, 1, 1, 1.0f, 1.0f, 1.0f, 1.0f);
         int currentBindTexture = glGetInteger(GL_TEXTURE_BINDING_2D);
         NebulaShader nebulaShader = new NebulaShader();
         StarsShader starsShader = new StarsShader();
         FrameBuffer buffer = new FrameBuffer();
 
-        buffer.generate();
+        buffer.create();
         nebulaShader.load();
         nebulaShader.init();
         starsShader.load();
         starsShader.init();
-        buffer.generateTexture(2, width, height);
+        buffer.generateTextures(2, width, height);
 
         Vector2f baseScale = new Vector2f(1.0f, 1.0f);
         Vector2f starsCountByTextureSize = new Vector2f(width / 2560.0f, height / 1440.0f);
@@ -278,7 +386,7 @@ public final class TextureGenerator extends AbstractTextureGenerator {
         starsShader.delete();
 
         FrameBuffer.unbind();
-        glViewport(0, 0, Engine.renderer.getScreenWidth(), Engine.renderer.getScreenHeight());
+        glViewport(0, 0, renderer.getScreenWidth(), renderer.getScreenHeight());
 
         buffer.delete();
         stars.delete();

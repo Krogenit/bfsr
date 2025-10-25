@@ -1,7 +1,7 @@
 package net.bfsr.editor.object;
 
-import net.bfsr.config.ColorConfigurable;
 import net.bfsr.editor.property.holder.ColorPropertiesHolder;
+import net.bfsr.engine.config.ColorConfigurable;
 import org.mapstruct.Mapper;
 
 @Mapper

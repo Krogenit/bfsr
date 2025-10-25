@@ -1,25 +1,34 @@
 package net.bfsr.entity.ship.module.engine;
 
-import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
+import net.bfsr.config.component.engine.EnginesData;
 import net.bfsr.config.entity.ship.EngineData;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.physics.PhysicsUtils;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
-import net.bfsr.physics.PhysicsUtils;
-import net.bfsr.physics.filter.Filters;
+import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Polygon;
+import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Fixture;
 
+import java.util.List;
+
+@Log4j2
 public class Engine extends DamageableModule {
-    @Getter
-    private final EngineData engineData;
     private final Polygon polygon;
 
-    public Engine(EngineData engineData) {
-        super(5.0f);
-        this.engineData = engineData;
-        this.polygon = engineData.polygons().get(0).clone();
+    public Engine(EnginesData enginesData, EngineData engineData) {
+        super(enginesData, 5.0f);
+        List<Polygon> polygons = engineData.polygons();
+        if (polygons.isEmpty()) {
+            this.polygon = new Polygon(new Vector2[]{new Vector2(-0.5f, -0.5f), new Vector2(0.5f, -0.5f), new Vector2(0.5f, 0.5f),
+                    new Vector2(-0.5f, 0.5f)});
+            log.error("Can't find polygon for ship engine in engine data {}", engineData);
+        } else {
+            this.polygon = polygons.get(0).clone();
+        }
     }
 
     public void init(Ship ship, int id) {

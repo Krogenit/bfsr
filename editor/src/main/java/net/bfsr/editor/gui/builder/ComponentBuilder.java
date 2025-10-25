@@ -2,7 +2,7 @@ package net.bfsr.editor.gui.builder;
 
 import net.bfsr.editor.gui.property.PropertyComponent;
 import net.bfsr.editor.gui.property.PropertyGuiElementType;
-import net.bfsr.engine.renderer.font.Font;
+import net.bfsr.engine.renderer.font.glyph.Font;
 
 import java.lang.reflect.Field;
 import java.util.EnumMap;
@@ -26,14 +26,15 @@ public abstract class ComponentBuilder {
 
     public abstract PropertyComponent build(int width, int height, String propertyName, int offsetX, Font font,
                                             int fontSize, int stringOffsetY, List<Field> fields, Object[] values, Object object,
-                                            BiConsumer<Object, Integer> valueSetterConsumer)
+                                            BiConsumer<Object, Integer> valueSetterConsumer, Runnable changeValueListener)
             throws IllegalAccessException;
 
-    public static PropertyComponent build(PropertyGuiElementType type, int width, int height, String propertyName, int offsetX,
-                                          Font font, int fontSize, int stringOffsetY, List<Field> fields, Object[] values,
-                                          Object object, BiConsumer<Object, Integer> valueSetterConsumer)
+    public static PropertyComponent build(PropertyGuiElementType type, int width, int height, String propertyName,
+                                          int offsetX, Font font, int fontSize, int stringOffsetY, List<Field> fields,
+                                          Object[] values, Object object, BiConsumer<Object, Integer> valueSetterConsumer,
+                                          Runnable changeValueListener)
             throws IllegalAccessException {
         return BUILDERS.get(type).build(width, height, propertyName, offsetX, font, fontSize, stringOffsetY, fields, values,
-                object, valueSetterConsumer);
+                object, valueSetterConsumer, changeValueListener);
     }
 }

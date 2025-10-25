@@ -3,12 +3,12 @@ package net.bfsr.entity.ship.module.engine;
 import lombok.Getter;
 import net.bfsr.config.component.engine.EnginesData;
 import net.bfsr.config.entity.ship.EngineData;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.math.Direction;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.Module;
 import net.bfsr.entity.ship.module.ModuleType;
-import net.bfsr.math.Direction;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -16,7 +16,6 @@ import java.util.List;
 
 @Getter
 public class Engines extends DamageableModule {
-    private final EnginesData enginesData;
     private final float forwardAcceleration, backwardAcceleration, sideAcceleration;
     private final float maxForwardVelocity;
     private final float maneuverability;
@@ -25,7 +24,7 @@ public class Engines extends DamageableModule {
     private final EnumMap<Direction, List<Engine>> enginesByDirection = new EnumMap<>(Direction.class);
 
     public Engines(EnginesData enginesData, Ship ship) {
-        this.enginesData = enginesData;
+        super(enginesData);
         this.forwardAcceleration = enginesData.getForwardAcceleration();
         this.backwardAcceleration = enginesData.getBackwardAcceleration();
         this.sideAcceleration = enginesData.getSideAcceleration();
@@ -33,12 +32,12 @@ public class Engines extends DamageableModule {
         this.maneuverability = enginesData.getManeuverability();
         this.angularVelocity = enginesData.getAngularVelocity();
 
-        ship.getShipData().getEngines().forEachEntry((direction, enginesData1) -> {
+        ship.getConfigData().getEngines().forEachEntry((direction, enginesData1) -> {
             List<EngineData> engines1 = enginesData1.engines();
             List<Engine> engineList = new ArrayList<>(engines1.size());
             for (int i = 0; i < engines1.size(); i++) {
                 EngineData engineData = engines1.get(i);
-                Engine engine = new Engine(engineData);
+                Engine engine = new Engine(enginesData, engineData);
                 engineList.add(engine);
                 engines.add(engine);
             }

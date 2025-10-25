@@ -1,26 +1,29 @@
 package net.bfsr.client.physics;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
+import net.bfsr.client.Client;
 import net.bfsr.client.particle.effect.GarbageSpawner;
 import net.bfsr.client.particle.effect.WeaponEffects;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.math.MathUtils;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.math.RotationHelper;
+import net.bfsr.engine.physics.correction.CorrectionHandler;
+import net.bfsr.engine.physics.correction.DynamicCorrectionHandler;
+import net.bfsr.engine.util.RandomHelper;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.armor.ArmorPlate;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
+import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
+import net.bfsr.event.module.weapon.beam.BeamDamageHullEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageShipArmorEvent;
-import net.bfsr.event.module.weapon.beam.BeamDamageShipHullEvent;
 import net.bfsr.event.module.weapon.beam.BeamDamageShipShieldEvent;
-import net.bfsr.math.RotationHelper;
-import net.bfsr.physics.CommonCollisionHandler;
-import net.bfsr.physics.correction.CorrectionHandler;
-import net.bfsr.physics.correction.DynamicCorrectionHandler;
+import net.bfsr.physics.collision.CommonCollisionHandler;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Fixture;
 import org.joml.Math;
@@ -31,14 +34,18 @@ public class CollisionHandler extends CommonCollisionHandler {
     private final Vector2f angleToVelocity = new Vector2f();
     private final BeamDamageShipShieldEvent beamDamageShipShieldEvent = new BeamDamageShipShieldEvent();
     private final BeamDamageShipArmorEvent beamDamageShipArmorEvent = new BeamDamageShipArmorEvent();
-    private final BeamDamageShipHullEvent beamDamageShipHullEvent = new BeamDamageShipHullEvent();
+    private final BeamDamageHullEvent beamDamageHullEvent = new BeamDamageHullEvent();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
+    private final WeaponEffects weaponEffects;
+    private final GarbageSpawner garbageSpawner;
 
-    public CollisionHandler(EventBus eventBus) {
-        super(eventBus);
+    public CollisionHandler(Client client) {
+        super(client.getEventBus());
         eventBus.optimizeEvent(beamDamageShipShieldEvent);
         eventBus.optimizeEvent(beamDamageShipArmorEvent);
-        eventBus.optimizeEvent(beamDamageShipHullEvent);
+        eventBus.optimizeEvent(beamDamageHullEvent);
+        weaponEffects = client.getParticleEffects().getWeaponEffects();
+        garbageSpawner = client.getParticleEffects().getGarbageSpawner();
     }
 
     @Override
@@ -52,17 +59,17 @@ public class CollisionHandler extends CommonCollisionHandler {
         float colorAlpha = (1.0f - bullet.getLifeTime() / (float) bullet.getMaxLifeTime()) * 1.5f;
         damageShip(ship, contactX, contactY, () -> {
             bullet.reflect(normalX, normalY);
-            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
+            weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
                     color.z, colorAlpha);
         }, () -> {
-            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
+            weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
                     color.z, colorAlpha);
-            GarbageSpawner.bulletArmorDamage(contactX, contactY, ship.getLinearVelocity().x, ship.getLinearVelocity().y, normalX, normalY);
+            garbageSpawner.bulletArmorDamage(contactX, contactY, ship.getLinearVelocity().x, ship.getLinearVelocity().y, normalX, normalY);
             bullet.setDead();
         }, () -> {
-            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
+            weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
                     color.z, colorAlpha);
-            GarbageSpawner.bulletHullDamage(contactX, contactY, ship.getLinearVelocity().x, ship.getLinearVelocity().y, normalX, normalY);
+            garbageSpawner.bulletHullDamage(contactX, contactY, ship.getLinearVelocity().x, ship.getLinearVelocity().y, normalX, normalY);
             bullet.setDead();
         });
     }
@@ -80,22 +87,24 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         if (impactPower > 0.25f) {
             if (ship1.getCollisionTimer() <= 0) {
-                ship1.setCollisionTimer(ship1.getWorld().convertToTicks(0.5f));
+                ship1.setCollisionTimer(Engine.convertSecondsToFrames(0.5f));
                 ship1.setLastAttacker(ship2);
                 damageShipByCollision(ship1, contactX, contactY, -normalX, -normalY);
             }
 
             if (ship2.getCollisionTimer() <= 0) {
-                ship2.setCollisionTimer(ship2.getWorld().convertToTicks(0.5f));
+                ship2.setCollisionTimer(Engine.convertSecondsToFrames(0.5f));
                 ship2.setLastAttacker(ship1);
                 damageShipByCollision(ship2, contactX, contactY, normalX, normalY);
             }
+        }
 
-            if (ship1.isControlledByPlayer()) {
-                setDynamicCorrection(ship2);
-            } else if (ship2.isControlledByPlayer()) {
-                setDynamicCorrection(ship1);
-            }
+        if (ship1.isControlledByPlayer()) {
+            setDynamicCorrectionForLocalPlayer(ship1);
+            setDynamicCorrection(ship2);
+        } else if (ship2.isControlledByPlayer()) {
+            setDynamicCorrectionForLocalPlayer(ship2);
+            setDynamicCorrection(ship1);
         }
     }
 
@@ -103,17 +112,18 @@ public class CollisionHandler extends CommonCollisionHandler {
     public void shipWreck(Ship ship, Wreck wreck, Fixture shipFixture, Fixture wreckFixture, float contactX,
                           float contactY, float normalX, float normalY) {
         if (ship.getCollisionTimer() <= 0) {
-            ship.setCollisionTimer(ship.getWorld().convertToTicks(0.5f));
+            ship.setCollisionTimer(Engine.convertSecondsToFrames(0.5f));
             Shield shield = ship.getModules().getShield();
             if (shield != null && isShieldAlive(shield)) {
-                Vector4f color = ship.getShipData().getEffectsColor();
-                WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
+                Vector4f color = ship.getConfigData().getEffectsColor();
+                weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 0.45f, color.x, color.y, color.z, color.w);
             } else {
-                WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f, 1.0f, 1.0f, 1.0f);
+                weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 0.375f, 1.0f, 1.0f, 1.0f, 1.0f);
             }
         }
 
         if (ship.isControlledByPlayer()) {
+            setDynamicCorrectionForLocalPlayer(ship);
             setDynamicCorrection(wreck);
         }
     }
@@ -126,8 +136,15 @@ public class CollisionHandler extends CommonCollisionHandler {
                         ship, contactX, contactY, normalX, normalY)),
                 () -> weaponSlotEventBus.publishOptimized(beamDamageShipArmorEvent.set(weaponSlot, ship, contactX, contactY,
                         normalX, normalY)),
-                () -> weaponSlotEventBus.publishOptimized(beamDamageShipHullEvent.set(weaponSlot, ship, contactX, contactY,
+                () -> weaponSlotEventBus.publishOptimized(beamDamageHullEvent.set(weaponSlot, ship, contactX, contactY,
                         normalX, normalY)));
+    }
+
+    @Override
+    public void weaponSlotBeamShipWreck(WeaponSlotBeam weaponSlot, ShipWreck wreck, Fixture fixture, float contactX, float contactY,
+                                        float normalX, float normalY) {
+        weaponSlot.getWeaponSlotEventBus().publishOptimized(beamDamageHullEvent.set(weaponSlot, wreck, contactX, contactY,
+                normalX, normalY));
     }
 
     private void damageShip(Ship ship, float contactX, float contactY, Runnable onShieldDamageRunnable,
@@ -139,7 +156,7 @@ public class CollisionHandler extends CommonCollisionHandler {
             return;
         }
 
-        ArmorPlate armorPlate = modules.getArmor().getCell(contactX, contactY, ship);
+        ArmorPlate armorPlate = modules.getArmor().getCell(contactX, contactY);
         if (armorPlate != null && armorPlate.getValue() > 0) {
             onArmorDamageRunnable.run();
         } else {
@@ -151,31 +168,46 @@ public class CollisionHandler extends CommonCollisionHandler {
         Modules modules = ship.getModules();
         Shield shield = modules.getShield();
         if (shield != null && isShieldAlive(shield)) {
-            Vector4f color = ship.getShipData().getEffectsColor();
-            WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 4.5f, color.x, color.y, color.z, color.w);
+            Vector4f color = ship.getConfigData().getEffectsColor();
+            weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 0.45f, color.x, color.y, color.z, color.w);
             return;
         }
 
         Vector2 velocity = ship.getLinearVelocity();
-        WeaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 3.75f, 1.0f,
+        weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 0.375f, 1.0f,
                 1.0f, 1.0f, 1.0f);
         RotationHelper.angleToVelocity(MathUtils.TWO_PI * random.nextFloat(), 0.15f, angleToVelocity);
-        GarbageSpawner.smallGarbage(random.nextInt(4), contactX, contactY,
-                velocity.x * 0.25f + angleToVelocity.x, velocity.y * 0.25f + angleToVelocity.y, 2.0f * random.nextFloat());
+        garbageSpawner.smallGarbage(random.nextInt(4), contactX, contactY,
+                velocity.x * 0.25f + angleToVelocity.x, velocity.y * 0.25f + angleToVelocity.y,
+                RandomHelper.randomFloat(random, 0.02f, 0.2f));
+    }
+
+    private void setDynamicCorrectionForLocalPlayer(RigidBody rigidBody) {
+//        setDynamicCorrection(rigidBody, rigidBody.getCorrectionHandler(), 0.25f);
     }
 
     private void setDynamicCorrection(RigidBody rigidBody) {
+//        setDynamicCorrection(rigidBody, new CorrectionHandler(), 0.25f);
+    }
+
+    private void setDynamicCorrection(RigidBody rigidBody, CorrectionHandler interpolatingCorrectionHandler, float correctionChanging) {
         CorrectionHandler correctionHandler = rigidBody.getCorrectionHandler();
         if (correctionHandler.getClass() == DynamicCorrectionHandler.class) {
-            ((DynamicCorrectionHandler) correctionHandler).setCorrectionAmount(0.0f);
+            DynamicCorrectionHandler dynamicCorrectionHandler = (DynamicCorrectionHandler) correctionHandler;
+            float correctionAmount = dynamicCorrectionHandler.getCorrectionAmount();
+            if (correctionAmount > 0.1f) {
+                dynamicCorrectionHandler.setCorrectionAmount(correctionAmount - 0.1f);
+            }
         } else {
-            rigidBody.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.1f),
-                    correctionHandler, correctionHandler));
+            rigidBody.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(correctionChanging),
+                    interpolatingCorrectionHandler, correctionHandler));
         }
     }
 
     private boolean isShieldAlive(Shield shield) {
-        if (shield.isDead()) return false;
+        if (shield.isDead()) {
+            return false;
+        }
 
         return shield.getShieldHp() > 0;
     }

@@ -8,10 +8,11 @@ import net.bfsr.client.renderer.entity.RigidBodyRender;
 import net.bfsr.client.renderer.entity.ShipRender;
 import net.bfsr.client.renderer.entity.ShipWreckRenderer;
 import net.bfsr.client.renderer.entity.WreckRender;
-import net.bfsr.config.ConfigConverterManager;
-import net.bfsr.config.GameObjectConfigData;
 import net.bfsr.config.entity.ship.ShipRegistry;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.config.ConfigConverterManager;
+import net.bfsr.engine.config.entity.GameObjectConfigData;
+import net.bfsr.engine.renderer.entity.Render;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.ShipWreck;
@@ -22,21 +23,16 @@ import java.util.function.Function;
 class EntityRenderRegistry {
     private final TMap<Class<? extends RigidBody>, Function<RigidBody, RigidBodyRender>> renderRegistry = new THashMap<>();
 
-    private ConfigConverterManager configConverterManager;
-    private ShipRegistry shipRegistry;
+    EntityRenderRegistry(Client client) {
+        ConfigConverterManager configConverterManager = client.getConfigConverterManager();
+        ShipRegistry shipRegistry = configConverterManager.getConverter(ShipRegistry.class);
 
-    EntityRenderRegistry() {
         put(RigidBody.class, rigidBody -> new RigidBodyRender(rigidBody, ((GameObjectConfigData) configConverterManager
                 .getConverter(rigidBody.getRegistryId()).get(rigidBody.getDataId())).getTexture()));
         put(Ship.class, ShipRender::new);
         put(ShipWreck.class, rigidBody -> new ShipWreckRenderer(rigidBody, shipRegistry.get(rigidBody.getDataId()).getTexture()));
         put(Wreck.class, WreckRender::new);
         put(Bullet.class, BulletRender::new);
-    }
-
-    public void init() {
-        configConverterManager = Client.get().getConfigConverterManager();
-        shipRegistry = configConverterManager.getConverter(ShipRegistry.class);
     }
 
     private <T> void put(Class<T> rigidBodyClass, Function<T, RigidBodyRender> function) {

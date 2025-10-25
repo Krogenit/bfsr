@@ -1,21 +1,22 @@
 package net.bfsr.client.gui.ingame;
 
 import lombok.Getter;
-import lombok.Setter;
 import net.bfsr.client.Client;
+import net.bfsr.client.font.FontType;
 import net.bfsr.client.renderer.EntityRenderer;
-import net.bfsr.client.renderer.Render;
 import net.bfsr.client.renderer.entity.ShipRender;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.gui.component.TexturedRectangle;
 import net.bfsr.engine.gui.component.TexturedRotatedRectangle;
 import net.bfsr.engine.math.MathUtils;
-import net.bfsr.engine.renderer.font.Font;
+import net.bfsr.engine.math.RotationHelper;
+import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
-import net.bfsr.engine.renderer.texture.AbstractTextureLoader;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.ModuleWithCells;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.armor.ArmorPlate;
 import net.bfsr.entity.ship.module.hull.Hull;
@@ -23,23 +24,19 @@ import net.bfsr.entity.ship.module.hull.HullCell;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
-import net.bfsr.math.RotationHelper;
 import org.joml.Vector2f;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * TODO: use renderer instead of overriding render method
- */
 public abstract class CommonShipOverlay extends TexturedRectangle {
     protected final Client client = Client.get();
     private final EntityRenderer entityRenderer = client.getEntityRenderer();
     private final Vector2f rotationVector = new Vector2f();
 
-    private final Label textShield = new Label(Font.CONSOLA_FT);
-    private final TexturedRotatedRectangle shipGuiObject = new TexturedRotatedRectangle(AbstractTextureLoader.dummyTexture, 100, 100);
+    private final Label textShield = new Label(Engine.getFontManager().getFont(FontType.CONSOLA.getFontName()));
+    private final TexturedRotatedRectangle shipGuiObject = new TexturedRotatedRectangle(Engine.getRenderer().getDummyTexture(), 100, 100);
 
     private final List<Rectangle> hullCells = new ArrayList<>();
     private final List<Rectangle> armorCells = new ArrayList<>();
@@ -49,9 +46,13 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
     private final TexturedRectangle shieldGuiObject = new TexturedRectangle(TextureRegister.guiShield, 210, 210);
     private final TexturedRectangle shieldValueGuiObject = new TexturedRectangle(TextureRegister.shieldSmall0, textShield.getWidth() + 8,
             18);
-    private float lastShieldValue;
+    private final float fixedShipScale = 145.0f;
+    private final float fixedCellSize = 150.0f;
+    private final float fixedOffsetSize = 7.5f;
 
-    @Setter
+    private float lastShieldValue;
+    private float dynamicShipScale = 1.0f;
+
     @Getter
     @Nullable
     protected Ship ship;
@@ -64,10 +65,13 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
 
     void addShip() {
         remove(shipGuiObject);
-        int width = (int) (ship.getSizeX() / shipGuiObject.getTexture().getWidth() * 60);
-        int height = (int) (ship.getSizeY() / shipGuiObject.getTexture().getHeight() * 60);
-        add(shipGuiObject.setSize(width, height).atCenter(0, 0).setAllColors(0.1f, 0.1f, 0.1f, 0.6f).setRotation(MathUtils.HALF_PI));
-        shipGuiObject.setTexture(client.getEntityRenderer().getRender(ship.getId()).getTexture());
+        AbstractTexture texture = client.getEntityRenderer().getRender(ship.getId()).getTexture();
+        int width = Math.round(dynamicShipScale * ship.getSizeX() * fixedShipScale);
+        int height = Math.round(dynamicShipScale * ship.getSizeY() * fixedShipScale);
+
+        add(shipGuiObject.setSize(width, height).atCenter(0, 0).setAllColors(0.1f, 0.1f, 0.1f, 0.6f)
+                .setRotation(MathUtils.HALF_PI));
+        shipGuiObject.setTexture(texture);
     }
 
     void addHullCells() {
@@ -79,12 +83,14 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
             hullCells.clear();
         }
 
-        int cellSize = 28;
-        int offset = 1;
         Hull hull = ship.getModules().getHull();
+        float cellSizeScale = calculateHullCellSize(hull);
+        float cellSize = fixedCellSize * cellSizeScale;
+        float offset = fixedOffsetSize * cellSizeScale;
+
         HullCell[][] cells = hull.getCells();
-        int startX = cells[0].length * cellSize / 2 + (cells[0].length - 1) * offset / 2 - cellSize / 2;
-        int y1 = -cells.length * cellSize / 2 - (cells.length - 1) * offset / 2 + cellSize / 2;
+        float startX = cells[0].length * cellSize / 2.0f + (cells[0].length - 1) * offset / 2 - cellSize / 2.0f;
+        float y1 = -cells.length * cellSize / 2.0f - (cells.length - 1) * offset / 2 + cellSize / 2.0f;
         float x1;
 
         for (int i = 0, size = cells.length; i < size; i++) {
@@ -93,8 +99,9 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
                 HullCell cell = cells[i][j];
                 if (cell != null) {
                     float armorPlateValue = cell.getValue() / cell.getMaxValue();
-                    Rectangle cellRectangle = new Rectangle(cellSize, cellSize);
-                    add(cellRectangle.atCenter((int) x1, y1).setColor(1.0f - armorPlateValue,
+                    int cellSizeInt = Math.round(cellSize);
+                    Rectangle cellRectangle = new Rectangle(cellSizeInt, cellSizeInt);
+                    add(cellRectangle.atCenter(Math.round(x1), Math.round(y1)).setColor(1.0f - armorPlateValue,
                             armorPlateValue, 0.0f, 0.25f));
                     hullCells.add(cellRectangle);
                     x1 -= cellSize + offset;
@@ -103,6 +110,19 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
 
             y1 += cellSize + offset;
         }
+    }
+
+    private float calculateHullCellSize(ModuleWithCells<?> module) {
+        float shipWidth = ship.getSizeX();
+        float shipHeight = ship.getSizeY();
+        float cellSizeScale;
+        if (shipWidth > shipHeight) {
+            cellSizeScale = shipWidth / module.getCells().length * dynamicShipScale;
+        } else {
+            cellSizeScale = shipHeight / module.getCells()[0].length * dynamicShipScale;
+        }
+
+        return cellSizeScale;
     }
 
     void addArmorPlates() {
@@ -114,9 +134,11 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
             armorCells.clear();
         }
 
-        float cellSize = 28 / 1.75f;
-        float offset = 13;
         Armor armor = ship.getModules().getArmor();
+        float cellSizeScale = calculateHullCellSize(armor);
+        float cellSize = fixedCellSize * 0.5f * cellSizeScale * dynamicShipScale;
+        float offset = fixedOffsetSize * 10.0f * cellSizeScale * dynamicShipScale;
+
         ArmorPlate[][] cells = armor.getCells();
         float startX = cells[0].length * cellSize * 0.5f + (cells[0].length - 1) * offset * 0.5f - cellSize / 2;
         float y1 = -cells.length * cellSize * 0.5f - (cells.length - 1) * offset * 0.5f + cellSize / 2;
@@ -156,7 +178,7 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
             weaponSlotGuiObjects.clear();
         }
 
-        float shipSize = 14.5f;
+        float shipScale = fixedShipScale * dynamicShipScale;
         List<WeaponSlot> weaponSlots = ship.getModules().getWeaponSlots();
         int size = weaponSlots.size();
         for (int i = 0; i < size; i++) {
@@ -164,14 +186,14 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
             float reload = slot.getReloadTimer() / (float) slot.getTimeToReload();
             Vector2f pos = slot.getLocalPosition();
             RotationHelper.rotate(MathUtils.HALF_PI, pos.x, pos.y, rotationVector);
-            int slotWidth = (int) (slot.getSizeX() * shipSize);
-            int slothHeight = (int) (slot.getSizeY() * shipSize);
+            int slotWidth = (int) (slot.getSizeX() * shipScale);
+            int slothHeight = (int) (slot.getSizeY() * shipScale);
             Render render = entityRenderer.getRender(ship.getId());
             if (render instanceof ShipRender shipRender) {
                 AbstractTexture texture = shipRender.getWeaponSlotTexture(i);
 
                 TexturedRotatedRectangle texturedRectangle = new TexturedRotatedRectangle(texture, slotWidth, slothHeight);
-                add(texturedRectangle.atCenter(Math.round(rotationVector.x * shipSize), Math.round(rotationVector.y * shipSize))
+                add(texturedRectangle.atCenter(Math.round(rotationVector.x * shipScale), Math.round(rotationVector.y * shipScale))
                         .setColor(reload, 0.0f, 1.0f - reload, 0.75f).setRotation(MathUtils.HALF_PI));
                 weaponSlotGuiObjects.add(texturedRectangle);
             }
@@ -212,8 +234,8 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void update(int mouseX, int mouseY) {
+        super.update(mouseX, mouseY);
 
         if (ship != null) {
             if (ship.isDead()) {
@@ -231,6 +253,9 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
     private void updateShield() {
         Shield shield = ship.getModules().getShield();
         if (shield != null && shield.isAlive()) {
+            addIfAbsent(shieldGuiObject);
+            addIfAbsent(shieldValueGuiObject);
+
             float shieldValue = shield.getShieldHp() / shield.getShieldMaxHp();
             shieldGuiObject.setAllColors(1.0f - shieldValue, shieldValue, 0.0f, 1.0f);
 
@@ -238,6 +263,9 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
                 textShield.setString(String.valueOf(Math.round(shield.getShieldHp())));
                 lastShieldValue = shieldValue;
             }
+        } else {
+            remove(shieldGuiObject);
+            remove(shieldValueGuiObject);
         }
     }
 
@@ -312,7 +340,30 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
 
     protected abstract void rebuildScene();
 
+    private void calculateScale() {
+        dynamicShipScale = 1.0f;
+
+        /*
+         * We use height instead of width because ship is rotated in GUI
+         */
+        int maxWidth = height - 70;
+        int maxHeight = width - 70;
+
+        float width = ship.getSizeX() * fixedShipScale;
+        float height = ship.getSizeY() * fixedShipScale;
+
+        if (width > maxWidth) {
+            dynamicShipScale = maxWidth / width;
+        }
+
+        if (height * dynamicShipScale > maxHeight) {
+            dynamicShipScale = maxHeight / (height * dynamicShipScale);
+        }
+    }
+
     protected void onCurrentShipSelected() {
+        calculateScale();
+
         if (isOnScene) {
             rebuildScene();
         }

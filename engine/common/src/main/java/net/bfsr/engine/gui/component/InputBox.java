@@ -8,8 +8,7 @@ import net.bfsr.engine.gui.renderer.inputbox.InputBoxRenderer;
 import net.bfsr.engine.gui.renderer.inputbox.TexturedInputBoxRenderer;
 import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
-import net.bfsr.engine.renderer.font.Font;
-import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.util.RunnableUtils;
 import org.jetbrains.annotations.Nullable;
@@ -34,84 +33,104 @@ import static net.bfsr.engine.input.Keys.KEY_LEFT_CONTROL;
 import static net.bfsr.engine.input.Keys.KEY_LEFT_SHIFT;
 import static net.bfsr.engine.input.Keys.KEY_RIGHT;
 import static net.bfsr.engine.input.Keys.KEY_V;
+import static net.bfsr.engine.renderer.font.AbstractFontManager.DEFAULT_FONT_NAME;
 
 public class InputBox extends GuiObject {
+    private final AbstractKeyboard keyboard = Engine.getKeyboard();
+    private final AbstractMouse mouse = Engine.getMouse();
+
+    private final Font font;
+    @Getter
+    protected final Vector2i stringOffset;
+    private final int maxStringOffsetX;
     @Getter
     protected final Label label;
     private final Label emptyLabel;
-    @Getter
-    protected boolean typing;
-    private int cursorTimer;
     private final int cursorMaxTimer = 30;
     @Getter
-    private int cursorPosition, cursorPositionEnd;
+    protected final Vector4f textColor = new Vector4f(1.0f);
+    private final long doubleClickTime = 300;
+    private final long timeBeforeSelectionAvailable = 500;
+    private final int stringOffsetMovingThreshold = 2;
+
     @Setter
     private int maxLineSize;
-    @Getter
-    protected final Vector2i stringOffset;
-    @Getter
-    protected final Vector4f textColor = new Vector4f(1.0f);
     @Setter
     @Getter
     private int cursorHeight;
-    private final int maxStringOffsetX;
+    @Getter
+    protected boolean typing;
+    private int cursorTimer;
+    @Getter
+    private int cursorPosition, cursorPositionEnd;
     private long lastSelectTime;
-    private final long doubleClickTime = 300;
     private long lastDoubleClickTime;
-    private final long timeBeforeSelectionAvailable = 500;
-    private final int stringOffsetMovingThreshold = 2;
     @Setter
     private Runnable onUnselectedRunnable = RunnableUtils.EMPTY_RUNNABLE;
-    private final AbstractKeyboard keyboard = Engine.keyboard;
-    private final AbstractMouse mouse = Engine.mouse;
     private InputBoxRenderer renderer;
-    private final GlyphsBuilder glyphsBuilder;
 
-    public InputBox(int width, int height, String string, Font font, int fontSize, int stringOffsetX, int stringOffsetY,
+    public InputBox(int width, int height, String string, String emptyString, Font font, int fontSize, int stringOffsetX, int stringOffsetY,
                     int maxLineSize) {
         super(width, height);
-        this.stringOffset = new Vector2i(stringOffsetX, font.getGlyphsBuilder().getCenteredOffsetY(string, height, fontSize) +
-                stringOffsetY);
+        this.font = font;
+        this.stringOffset = new Vector2i(stringOffsetX, font.getCenteredOffsetY(emptyString, height, fontSize) + stringOffsetY);
         this.maxStringOffsetX = stringOffset.x;
-        this.glyphsBuilder = font.getGlyphsBuilder();
 
         int stringX = stringOffset.x;
         int stringY = stringOffset.y;
-        this.label = new Label(font, fontSize, textColor.x, textColor.y, textColor.z, textColor.w).atBottomLeft(stringX,
-                stringY);
-        add(this.emptyLabel = new Label(font, string, fontSize, textColor.x, textColor.y, textColor.z, textColor.w).atBottomLeft(
-                stringX, stringY));
+
+        this.label = new Label(font, string, fontSize, textColor.x, textColor.y, textColor.z, textColor.w).atBottomLeft(stringX, stringY);
+        this.emptyLabel = new Label(font, emptyString, fontSize, textColor.x, textColor.y, textColor.z, textColor.w).atBottomLeft(
+                stringX, stringY);
+
+        if (string.isEmpty()) {
+            add(emptyLabel);
+        } else {
+            add(label);
+        }
 
         this.maxLineSize = maxLineSize;
         this.cursorHeight = (int) (height / 1.7f);
         this.renderer = new InputBoxRenderer(this);
     }
 
-    public InputBox(TextureRegister texture, int width, int height, String string, Font font, int fontSize, int stringOffsetX,
-                    int stringOffsetY) {
-        this(width, height, string, font, fontSize, stringOffsetX, stringOffsetY,
-                (int) (width / 1.2f));
+    public InputBox(int width, int height, String emptyString, Font font, int fontSize, int stringOffsetX, int stringOffsetY,
+                    int maxLineSize) {
+        this(width, height, "", emptyString, font, fontSize, stringOffsetX, stringOffsetY, maxLineSize);
+    }
+
+    public InputBox(TextureRegister texture, int width, int height, String string, String emptyString, Font font, int fontSize,
+                    int stringOffsetX, int stringOffsetY) {
+        this(width, height, string, emptyString, font, fontSize, stringOffsetX, stringOffsetY, (int) (width / 1.2f));
         setRenderer(renderer = new TexturedInputBoxRenderer(this, texture));
     }
 
-    public InputBox(TextureRegister texture, int width, int height, String string, int fontSize, int stringOffsetX, int stringOffsetY) {
-        this(texture, width, height, string, Font.XOLONIUM_FT, fontSize, stringOffsetX, stringOffsetY);
+    public InputBox(TextureRegister texture, int width, int height, String string, String emptyString, int fontSize, int stringOffsetX,
+                    int stringOffsetY) {
+        this(texture, width, height, string, emptyString, Engine.getFontManager().getFont(DEFAULT_FONT_NAME), fontSize, stringOffsetX,
+                stringOffsetY);
+    }
+
+    public InputBox(int width, int height, String string, String emptyString, Font font, int fontSize, int stringOffsetX,
+                    int stringOffsetY) {
+        this(width, height, string, emptyString, font, fontSize, stringOffsetX, stringOffsetY, (int) (width / 1.2f));
     }
 
     public InputBox(int width, int height, String string, Font font, int fontSize, int stringOffsetX, int stringOffsetY) {
-        this(width, height, string, font, fontSize, stringOffsetX, stringOffsetY, (int) (width / 1.2f));
+        this(width, height, string, "", font, fontSize, stringOffsetX, stringOffsetY, (int) (width / 1.2f));
     }
 
-    public InputBox(int width, int height, String string, int fontSize, int stringOffsetX, int stringOffsetY) {
-        this(width, height, string, Font.XOLONIUM_FT, fontSize, stringOffsetX, stringOffsetY);
+    public InputBox(int width, int height, String string, String emptyString, int fontSize, int stringOffsetX, int stringOffsetY) {
+        this(width, height, string, emptyString, Engine.getFontManager().getFont(DEFAULT_FONT_NAME), fontSize, stringOffsetX,
+                stringOffsetY);
     }
 
-    public InputBox(TextureRegister texture, String string, int fontSize, int stringOffsetX, int stringOffsetY) {
-        this(texture, 300, 50, string, fontSize, stringOffsetX, stringOffsetY);
+    public InputBox(TextureRegister texture, String string, String emptyString, int fontSize, int stringOffsetX, int stringOffsetY) {
+        this(texture, 300, 50, string, emptyString, fontSize, stringOffsetX, stringOffsetY);
     }
 
     @Override
-    public GuiObject mouseLeftClick() {
+    public GuiObject mouseLeftClick(int mouseX, int mouseY) {
         if (mouseHover) {
             long now = System.currentTimeMillis();
             if (now - lastSelectTime <= doubleClickTime) {
@@ -128,18 +147,18 @@ public class InputBox extends GuiObject {
             }
         }
 
-        return super.mouseLeftClick();
+        return super.mouseLeftClick(mouseX, mouseY);
     }
 
     @Nullable
     @Override
-    public GuiObject mouseRightClick() {
+    public GuiObject mouseRightClick(int mouseX, int mouseY) {
         if (!mouseHover && typing) {
             disableTyping();
             onUnselected();
         }
 
-        return super.mouseLeftClick();
+        return super.mouseLeftClick(mouseX, mouseY);
     }
 
     private void onUnselected() {
@@ -284,7 +303,7 @@ public class InputBox extends GuiObject {
     }
 
     private void checkCursorOutOfBoundsPosition(int cursorPosition) {
-        checkCursorOutOfBoundsPosition(glyphsBuilder.getWidth(label.getString().substring(0, cursorPosition), label.getFontSize()),
+        checkCursorOutOfBoundsPosition(font.getWidth(label.getString().substring(0, cursorPosition), label.getFontSize()),
                 stringOffsetMovingThreshold);
     }
 
@@ -318,7 +337,7 @@ public class InputBox extends GuiObject {
     }
 
     private void setCursorPositionByMouse() {
-        cursorPosition = cursorPositionEnd = label.getCursorPositionInLine(mouse.getPosition().x - getSceneX() - stringOffset.x);
+        cursorPosition = cursorPositionEnd = label.getCursorPositionInLine(mouse.getScreenPosition().x - getSceneX() - stringOffset.x);
         renderer.onCursorChanged();
     }
 
@@ -339,7 +358,7 @@ public class InputBox extends GuiObject {
 
         if (cursorPosition == cursorPositionEnd) {
             String newString = prevString.substring(0, cursorPosition) + string + prevString.substring(cursorPosition);
-            if (glyphsBuilder.getWidth(newString, label.getFontSize()) < maxLineSize) {
+            if (font.getWidth(newString, label.getFontSize()) < maxLineSize) {
                 label.setString(newString);
 
                 cursorPosition = cursorPositionEnd += string.length();
@@ -355,7 +374,7 @@ public class InputBox extends GuiObject {
                 newString = prevString.substring(0, cursorPositionEnd) + string + prevString.substring(cursorPosition);
                 cursorPosition = cursorPositionEnd;
             }
-            if (glyphsBuilder.getWidth(newString, label.getFontSize()) < maxLineSize) {
+            if (font.getWidth(newString, label.getFontSize()) < maxLineSize) {
                 label.setString(newString);
                 cursorPosition = cursorPositionEnd += string.length();
                 checkCursorOutOfBoundsPosition(cursorPosition);
@@ -385,12 +404,12 @@ public class InputBox extends GuiObject {
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void update(int mouseX, int mouseY) {
+        super.update(mouseX, mouseY);
 
         if (typing) {
             if (mouse.isLeftDown() && System.currentTimeMillis() - lastDoubleClickTime > timeBeforeSelectionAvailable) {
-                float selectionPositionX = mouse.getPosition().x - getSceneX() - stringOffset.x;
+                float selectionPositionX = mouse.getScreenPosition().x - getSceneX() - stringOffset.x;
                 cursorPositionEnd = label.getCursorPositionInLine(selectionPositionX);
                 checkCursorOutOfBoundsPosition((int) selectionPositionX, 10);
                 renderer.onCursorChanged();

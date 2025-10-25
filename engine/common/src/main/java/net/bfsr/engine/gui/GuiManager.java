@@ -1,6 +1,9 @@
 package net.bfsr.engine.gui;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.gui.CloseGuiEvent;
 import net.bfsr.engine.event.gui.CloseHUDEvent;
@@ -9,28 +12,30 @@ import net.bfsr.engine.event.gui.ShowHUDEvent;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.hud.HUDAdapter;
 import net.bfsr.engine.gui.hud.NoHUD;
+import net.bfsr.engine.input.AbstractMouse;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2i;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+@RequiredArgsConstructor
 public class GuiManager {
     @Getter
     private final List<GuiObject> guiStack = new ArrayList<>(3);
-    private final ContextMenu contextMenu = new ContextMenu(contextMenu1 -> getLast().remove(contextMenu1));
+    private final ContextMenu contextMenu = new ContextMenu();
     @Getter
     private GuiObject hoveredGuiObject;
     @Getter
     protected Gui gui = NoGui.get();
     @Getter
     protected HUDAdapter hud = NoHUD.get();
-    private EventBus eventBus;
-
-    public void init(EventBus eventBus) {
-        this.eventBus = eventBus;
-    }
+    private final EventBus eventBus;
+    private final AbstractMouse mouse = Engine.getMouse();
+    @Setter
+    private GuiObject activeGuiObject;
 
     public void showHUD(HUDAdapter hud) {
         if (this.hud != NoHUD.get()) {
@@ -73,7 +78,8 @@ public class GuiManager {
     }
 
     public void update() {
-        GuiObject hoveredObject = findHoveredGuiObject();
+        Vector2i mousePosition = mouse.getGuiPosition();
+        GuiObject hoveredObject = findHoveredGuiObject(mousePosition.x, mousePosition.y);
 
         if (hoveredObject != hoveredGuiObject) {
             if (hoveredGuiObject != null && hoveredGuiObject.isMouseHover()) {
@@ -90,7 +96,7 @@ public class GuiManager {
         }
 
         for (int i = 0; i < guiStack.size(); i++) {
-            guiStack.get(i).update();
+            guiStack.get(i).update(mousePosition.x, mousePosition.y);
         }
     }
 
@@ -100,23 +106,20 @@ public class GuiManager {
         }
     }
 
-    public void render() {
-        for (int i = 0; i < guiStack.size(); i++) {
-            guiStack.get(i).getRenderer().render();
-        }
-    }
-
     public void openContextMenu(GuiObject... objects) {
-        contextMenu.clear();
-        contextMenu.open(objects);
+        contextMenu.add(objects);
         getLast().addIfAbsent(contextMenu);
     }
 
     @Nullable
-    public GuiObject findHoveredGuiObject() {
+    public GuiObject findHoveredGuiObject(int mouseX, int mouseY) {
+        if (activeGuiObject != null) {
+            return activeGuiObject;
+        }
+
         GuiObject hoveredObject = null;
         for (int i = 0; i < guiStack.size(); i++) {
-            hoveredObject = guiStack.get(i).getHovered(hoveredObject);
+            hoveredObject = guiStack.get(i).getHovered(hoveredObject, mouseX, mouseY);
         }
 
         return hoveredObject;
@@ -142,5 +145,13 @@ public class GuiManager {
 
     public GuiObject getLast() {
         return guiStack.size() > 0 ? guiStack.get(guiStack.size() - 1) : NoGui.get();
+    }
+
+    public Vector2i getMousePosition() {
+        return mouse.getGuiPosition();
+    }
+
+    public boolean isContextMenuOpen() {
+        return contextMenu.isOpen();
     }
 }

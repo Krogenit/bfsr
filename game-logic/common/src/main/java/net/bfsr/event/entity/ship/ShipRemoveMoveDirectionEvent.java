@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import net.bfsr.engine.event.Event;
+import net.bfsr.engine.math.Direction;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.math.Direction;
 
 @RequiredArgsConstructor
 @Getter

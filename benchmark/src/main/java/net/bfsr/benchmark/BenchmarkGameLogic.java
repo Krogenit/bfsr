@@ -1,36 +1,37 @@
 package net.bfsr.benchmark;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
-import net.bfsr.ai.Ai;
 import net.bfsr.client.Client;
 import net.bfsr.client.gui.hud.HUD;
-import net.bfsr.config.ConfigConverterManager;
 import net.bfsr.config.component.weapon.beam.BeamRegistry;
 import net.bfsr.config.component.weapon.gun.GunRegistry;
 import net.bfsr.config.entity.bullet.DamageConfigurable;
-import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.config.entity.wreck.WreckRegistry;
+import net.bfsr.engine.ai.Ai;
+import net.bfsr.engine.config.ConfigConverterManager;
+import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.loop.AbstractGameLoop;
+import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.engine.profiler.Profiler;
+import net.bfsr.engine.util.ObjectPool;
+import net.bfsr.engine.world.World;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
-import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.entity.wreck.WreckType;
-import net.bfsr.network.packet.Packet;
-import net.bfsr.world.World;
 
 import java.util.List;
 
 public class BenchmarkGameLogic extends Client {
     private final XoRoShiRo128PlusPlusRandom random = new XoRoShiRo128PlusPlusRandom();
-    private int pauseAfterTicks = 10;
+    private int pauseAfterFrames = 10;
 
-    public BenchmarkGameLogic(Profiler profiler) {
-        super(profiler);
+    public BenchmarkGameLogic(AbstractGameLoop gameLoop, Profiler profiler, EventBus eventBus) {
+        super(gameLoop, profiler, eventBus);
     }
 
     @Override
@@ -43,16 +44,14 @@ public class BenchmarkGameLogic extends Client {
     }
 
     private void spawnObjects() {
+        ShipFactory shipFactory = getShipFactory();
         ConfigConverterManager configManager = getConfigConverterManager();
-        ShipOutfitter shipOutfitter = new ShipOutfitter(configManager);
-        ShipRegistry shipRegistry = configManager.getConverter(ShipRegistry.class);
         GunRegistry gunRegistry = configManager.getConverter(GunRegistry.class);
         BeamRegistry beamRegistry = configManager.getConverter(BeamRegistry.class);
-        ShipFactory shipFactory = new ShipFactory(shipRegistry, shipOutfitter);
         World world = getWorld();
 
         int shipsCount = 1000;
-        float offset = 14.0f;
+        float offset = 1.4f;
         float rectangleSpawnHalfWidth = (float) (offset * Math.sqrt(shipsCount)) / 2;
         float rectangleSpawnHalfHeight = (float) (offset * Math.sqrt(shipsCount)) / 2;
         float x = -rectangleSpawnHalfWidth;
@@ -96,14 +95,15 @@ public class BenchmarkGameLogic extends Client {
 
         WreckRegistry wreckRegistry = configManager.getConverter(WreckRegistry.class);
         int wreckCount = 1000;
-        offset = 10.0f;
+        offset = 1.0f;
         rectangleSpawnHalfWidth = (float) (offset * Math.sqrt(wreckCount)) / 2;
         rectangleSpawnHalfHeight = (float) (offset * Math.sqrt(wreckCount)) / 2;
         x = -rectangleSpawnHalfWidth;
         y = -rectangleSpawnHalfHeight;
+        ObjectPool<Wreck> wreckPool = getObjectPool(Wreck.class);
         for (int i = 0; i < wreckCount; i++) {
-            Wreck wreck = world.getObjectPools().getWrecksPool().get();
-            wreck.init(world, world.getNextId(), 0, true, true, true, x, y, 0, 0, 0, 1, 0, 5, 5, 1200, WreckType.DEFAULT,
+            Wreck wreck = wreckPool.get();
+            wreck.init(world, world.getNextId(), 0, true, true, true, x, y, 0, 0, 0, 1, 0, 0.5f, 0.5f, 1200, WreckType.DEFAULT,
                     wreckRegistry.getWreck(WreckType.DEFAULT, 0));
             world.add(wreck);
             x += offset;
@@ -114,7 +114,7 @@ public class BenchmarkGameLogic extends Client {
         }
 
         int bulletsCount = 1000;
-        offset = 4.0f;
+        offset = 0.4f;
         rectangleSpawnHalfWidth = (float) (offset * Math.sqrt(bulletsCount)) / 2;
         rectangleSpawnHalfHeight = (float) (offset * Math.sqrt(bulletsCount)) / 2;
         x = -rectangleSpawnHalfWidth;
@@ -142,11 +142,11 @@ public class BenchmarkGameLogic extends Client {
     }
 
     @Override
-    public void update(double time) {
-        super.update(time);
-        if (pauseAfterTicks > 0) {
-            pauseAfterTicks--;
-            if (pauseAfterTicks == 0) {
+    public void update(int frame, double time) {
+        super.update(frame, time);
+        if (pauseAfterFrames > 0) {
+            pauseAfterFrames--;
+            if (pauseAfterFrames == 0) {
                 setPaused(true);
             }
         }

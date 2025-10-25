@@ -1,33 +1,29 @@
 package net.bfsr.client.server;
 
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.loop.AbstractGameLoop;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.server.ServerGameLogic;
-import net.bfsr.server.player.Player;
-import net.bfsr.server.player.PlayerManager;
+import net.bfsr.server.config.ServerSettings;
+import net.bfsr.server.database.FileSystemPlayerRepository;
+import net.bfsr.server.database.PlayerRepository;
 
 @Log4j2
 public class LocalServerGameLogic extends ServerGameLogic {
-    public LocalServerGameLogic(Profiler profiler) {
-        super(profiler);
+    public LocalServerGameLogic(AbstractGameLoop gameLoop, Profiler profiler, EventBus eventBus) {
+        super(gameLoop, profiler, eventBus);
     }
 
     @Override
-    protected PlayerManager createPlayerManager() {
-        return new LocalPlayerManager();
+    protected PlayerRepository createPlayerRepository(ServerSettings settings) {
+        return new FileSystemPlayerRepository();
     }
 
     @Override
-    protected void updateWorld(double time) {
+    protected void updateWorld(double time, int frame) {
         if (!isPaused()) {
-            super.updateWorld(time);
+            super.updateWorld(time, frame);
         }
-    }
-
-    @Override
-    public void onPlayerDisconnected(Player player) {
-        super.onPlayerDisconnected(player);
-        log.info("Stopping local server");
-        stop();
     }
 }

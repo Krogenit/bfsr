@@ -1,9 +1,9 @@
 package net.bfsr.server.network.packet.handler.play.player.input;
 
 import io.netty.channel.ChannelHandlerContext;
-import net.bfsr.entity.GameObject;
+import net.bfsr.engine.network.packet.PacketHandler;
+import net.bfsr.engine.world.entity.GameObject;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.network.packet.PacketHandler;
 import net.bfsr.network.packet.client.PacketShipControl;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.player.Player;

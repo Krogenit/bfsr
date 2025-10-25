@@ -2,11 +2,10 @@ package net.bfsr.engine.gui.renderer.inputbox;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.InputBox;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.renderer.SimpleGuiObjectRenderer;
-import net.bfsr.engine.renderer.font.glyph.GlyphsBuilder;
+import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.opengl.GL;
 import org.joml.Vector2i;
 import org.joml.Vector4f;
@@ -17,14 +16,14 @@ public class InputBoxRenderer extends SimpleGuiObjectRenderer {
     @Getter
     private boolean renderCursor;
     private final InputBox inputBox;
-    private final GlyphsBuilder glyphsBuilder;
+    private final Font font;
 
     private int cursorId;
 
     public InputBoxRenderer(InputBox inputBox) {
         super(inputBox);
         this.inputBox = inputBox;
-        this.glyphsBuilder = inputBox.getLabel().getGlyphsBuilder();
+        this.font = inputBox.getLabel().getFont();
     }
 
     @Override
@@ -62,18 +61,18 @@ public class InputBoxRenderer extends SimpleGuiObjectRenderer {
                 int leftStringWidth;
                 int rightStringWidth;
                 if (cursorPosition < cursorPositionEnd) {
-                    leftStringWidth = glyphsBuilder.getWidth(string.substring(0, cursorPosition), fontSize);
-                    rightStringWidth = glyphsBuilder.getWidth(string.substring(cursorPosition, cursorPositionEnd), fontSize);
+                    leftStringWidth = font.getWidth(string.substring(0, cursorPosition), fontSize);
+                    rightStringWidth = font.getWidth(string.substring(cursorPosition, cursorPositionEnd), fontSize);
                 } else {
-                    leftStringWidth = glyphsBuilder.getWidth(string.substring(0, cursorPositionEnd), fontSize);
-                    rightStringWidth = glyphsBuilder.getWidth(string.substring(cursorPositionEnd, cursorPosition), fontSize);
+                    leftStringWidth = font.getWidth(string.substring(0, cursorPositionEnd), fontSize);
+                    rightStringWidth = font.getWidth(string.substring(cursorPositionEnd, cursorPosition), fontSize);
                 }
                 guiRenderer.setLastPosition(cursorId, x + leftStringWidth + stringOffset.x, cursorY);
                 guiRenderer.setLastSize(cursorId, rightStringWidth, cursorHeight);
                 guiRenderer.setLastColor(cursorId, selectionColor.x, selectionColor.y, selectionColor.z, selectionColor.w);
                 return;
             } else {
-                lineWidth = glyphsBuilder.getWidth(string.substring(0, cursorPosition), fontSize);
+                lineWidth = font.getWidth(string.substring(0, cursorPosition), fontSize);
             }
         } else {
             lineWidth = 0;
@@ -101,18 +100,18 @@ public class InputBoxRenderer extends SimpleGuiObjectRenderer {
                 int leftStringWidth;
                 int rightStringWidth;
                 if (cursorPosition < cursorPositionEnd) {
-                    leftStringWidth = glyphsBuilder.getWidth(string.substring(0, cursorPosition), fontSize);
-                    rightStringWidth = glyphsBuilder.getWidth(string.substring(cursorPosition, cursorPositionEnd), fontSize);
+                    leftStringWidth = font.getWidth(string.substring(0, cursorPosition), fontSize);
+                    rightStringWidth = font.getWidth(string.substring(cursorPosition, cursorPositionEnd), fontSize);
                 } else {
-                    leftStringWidth = glyphsBuilder.getWidth(string.substring(0, cursorPositionEnd), fontSize);
-                    rightStringWidth = glyphsBuilder.getWidth(string.substring(cursorPositionEnd, cursorPosition), fontSize);
+                    leftStringWidth = font.getWidth(string.substring(0, cursorPositionEnd), fontSize);
+                    rightStringWidth = font.getWidth(string.substring(cursorPositionEnd, cursorPosition), fontSize);
                 }
                 guiRenderer.setPosition(cursorId, x + leftStringWidth + stringOffset.x, cursorY);
                 guiRenderer.setSize(cursorId, rightStringWidth, cursorHeight);
                 guiRenderer.setColor(cursorId, selectionColor.x, selectionColor.y, selectionColor.z, selectionColor.w);
                 return;
             } else {
-                lineWidth = glyphsBuilder.getWidth(string.substring(0, cursorPosition), fontSize);
+                lineWidth = font.getWidth(string.substring(0, cursorPosition), fontSize);
             }
         } else {
             lineWidth = 0;
@@ -125,18 +124,18 @@ public class InputBoxRenderer extends SimpleGuiObjectRenderer {
     }
 
     @Override
-    public void render() {
+    public void render(int mouseX, int mouseY) {
         renderBody();
 
         boolean stringOffsetBelowZero = inputBox.getStringOffset().x < 0;
         if (stringOffsetBelowZero) {
             guiRenderer.render();
             renderer.glEnable(GL.GL_SCISSOR_TEST);
-            renderer.glScissor(guiObject.getSceneX() + 1, Engine.renderer.getScreenHeight() - guiObject.getSceneY() - guiObject.getHeight(),
+            renderer.glScissor(guiObject.getSceneX() + 1, renderer.getScreenHeight() - guiObject.getSceneY() - guiObject.getHeight(),
                     guiObject.getWidth() - 2, guiObject.getHeight());
         }
 
-        renderChild();
+        renderChild(mouseX, mouseY);
         renderCursor();
 
         if (stringOffsetBelowZero) {

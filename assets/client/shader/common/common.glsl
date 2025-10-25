@@ -7,21 +7,26 @@
 #define SSBO_MATERIAL_DATA             2
 #define SSBO_LAST_UPDATE_MATERIAL_DATA 3
 
-#define MIN_CAMERA_ZOOM                2.0
-#define MAX_CAMERA_ZOOM                30.0
+#define MIN_CAMERA_ZOOM                20.0
+#define MAX_CAMERA_ZOOM                300.0
+
+#define SHIP_SHIELD_SIZE               1.25
+
+// Material types
+#define NOT_TEXTURED 0
+#define TEXTURED     1
+#define MASKED       2
+#define FONT         3
+#define SHIELD       4
 
 struct Material {
     vec4 color;
     uvec2 textureHandle;
-    bool useTexture;
-    bool useMask;
     uvec2 maskTextureHandle;
+    int materialType;
     float fireAmount;
     float fireUVAnimation;
-    bool font;
     float zoomFactor;
-    bool padding1;
-    bool padding2;
 };
 
 struct LastUpdateMaterial {

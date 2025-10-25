@@ -1,22 +1,18 @@
 package net.bfsr.server.dto.converter;
 
-import net.bfsr.config.entity.ship.ShipRegistry;
-import net.bfsr.damage.DamageMask;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
-import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.dto.ShipModel;
+import net.bfsr.server.dto.factory.ShipFactory;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Mappings;
-import org.mapstruct.ObjectFactory;
-import org.mapstruct.TargetType;
 
 import java.util.List;
 
-@Mapper(uses = ModulesConverter.class)
+@Mapper(uses = {ModulesConverter.class, ShipFactory.class})
 public abstract class ShipConverter {
     @Mapping(target = "name", expression = "java(ship.getConfigData().getFileName())")
     public abstract ShipModel to(Ship ship);
@@ -33,10 +29,13 @@ public abstract class ShipConverter {
             @Mapping(target = "engine", ignore = true), @Mapping(target = "health", ignore = true),
             @Mapping(target = "hull", ignore = true), @Mapping(target = "reactor", ignore = true),
             @Mapping(target = "connectedObjects", ignore = true), @Mapping(target = "collisionTimer", ignore = true),
-            @Mapping(target = "updateRunnable", ignore = true), @Mapping(target = "mask", ignore = true),
+            @Mapping(target = "updateRunnable", ignore = true), @Mapping(target = "damageMask", ignore = true),
             @Mapping(target = "angularVelocity", ignore = true), @Mapping(target = "correctionHandler", ignore = true),
             @Mapping(target = "crew", ignore = true), @Mapping(target = "lastAttacker", ignore = true),
-            @Mapping(target = "ai", ignore = true), @Mapping(target = "shipData", ignore = true)
+            @Mapping(target = "ai", ignore = true),
+            @Mapping(target = "body", ignore = true), @Mapping(target = "jumpPosition", ignore = true),
+            @Mapping(target = "shipEventBus", ignore = true), @Mapping(target = "world", ignore = true),
+            @Mapping(target = "rayCastManager", ignore = true)
     })
     public abstract Ship from(ShipModel shipModel);
 
@@ -46,12 +45,5 @@ public abstract class ShipConverter {
         for (int i = 0; i < weaponSlots.size(); i++) {
             weaponSlots.get(i).init(i, ship);
         }
-    }
-
-    @ObjectFactory
-    public <T extends Ship> T to(ShipModel shipModel, @TargetType Class<T> entityClass) {
-        return (T) new Ship(
-                ServerGameLogic.getInstance().getConfigConverterManager().getConverter(ShipRegistry.class).get(shipModel.name()),
-                new DamageMask(32, 32));
     }
 }

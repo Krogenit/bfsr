@@ -1,8 +1,8 @@
 package net.bfsr.config.component.reactor;
 
 import lombok.Getter;
-import net.bfsr.config.Configurable;
 import net.bfsr.config.component.DamageableModuleConfig;
+import net.bfsr.engine.config.Configurable;
 
 @Getter
 @Configurable

@@ -1,7 +1,7 @@
 package net.bfsr.editor.property.converter;
 
-import net.bfsr.config.PolygonConfigurable;
 import net.bfsr.editor.property.holder.PolygonPropertiesHolder;
+import net.bfsr.engine.config.PolygonConfigurable;
 import org.mapstruct.Mapper;
 
 @Mapper

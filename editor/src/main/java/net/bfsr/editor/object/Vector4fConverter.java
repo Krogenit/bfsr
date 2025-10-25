@@ -1,7 +1,7 @@
 package net.bfsr.editor.object;
 
-import net.bfsr.config.Vector4fConfigurable;
 import net.bfsr.editor.property.holder.Vector4fPropertiesHolder;
+import net.bfsr.engine.config.Vector4fConfigurable;
 import org.mapstruct.Mapper;
 
 @Mapper

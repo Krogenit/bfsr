@@ -3,19 +3,22 @@ package net.bfsr.entity.ship;
 import gnu.trove.set.hash.THashSet;
 import lombok.Getter;
 import lombok.Setter;
-import net.bfsr.ai.Ai;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.damage.ConnectedObject;
-import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
+import net.bfsr.engine.Engine;
+import net.bfsr.engine.ai.Ai;
 import net.bfsr.engine.event.EventBus;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.math.Direction;
+import net.bfsr.engine.math.RotationHelper;
+import net.bfsr.engine.physics.CommonRayCastManager;
+import net.bfsr.engine.world.World;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.cargo.Cargo;
 import net.bfsr.entity.ship.module.crew.Crew;
-import net.bfsr.entity.ship.module.engine.Engine;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.hull.Hull;
 import net.bfsr.entity.ship.module.reactor.Reactor;
@@ -29,14 +32,12 @@ import net.bfsr.event.entity.ship.ShipNewMoveDirectionEvent;
 import net.bfsr.event.entity.ship.ShipPostPhysicsUpdate;
 import net.bfsr.event.entity.ship.ShipRemoveMoveDirectionEvent;
 import net.bfsr.faction.Faction;
-import net.bfsr.math.Direction;
-import net.bfsr.math.RotationHelper;
-import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnData;
-import net.bfsr.network.packet.common.entity.spawn.ShipSpawnData;
+import net.bfsr.network.packet.common.entity.spawn.ship.ShipSpawnData;
 import net.bfsr.physics.CollisionMatrixType;
-import net.bfsr.world.World;
+import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Vector2;
+import org.jbox2d.dynamics.Filter;
 import org.jbox2d.dynamics.Fixture;
 import org.joml.Vector2f;
 import org.locationtech.jts.geom.Polygon;
@@ -62,7 +63,7 @@ public class Ship extends DamageableRigidBody {
     @Getter
     protected boolean spawned;
     @Getter
-    private final int jumpTimeInTicks = net.bfsr.engine.Engine.convertToTicks(0.6f);
+    private final int jumpTimeInFrames;
     @Getter
     private int jumpTimer;
     @Getter
@@ -84,7 +85,6 @@ public class Ship extends DamageableRigidBody {
     @Getter
     private final THashSet<Direction> moveDirections = new THashSet<>();
     @Getter
-    @Setter
     private Ai ai = Ai.NO_AI;
     @Getter
     @Setter
@@ -95,21 +95,28 @@ public class Ship extends DamageableRigidBody {
     @Setter
     private Runnable updateRunnable = this::updateAlive;
     @Getter
-    private final ShipData shipData;
+    private final ShipData configData;
 
-    public Ship(ShipData shipData, DamageMask mask) {
-        super(shipData.getSizeX(), shipData.getSizeY(), shipData, mask, shipData.getPolygonJTS());
-        this.shipData = shipData;
-        this.timeToDestroy = shipData.getDestroyTimeInTicks();
+    @Getter
+    @Setter
+    private CommonRayCastManager rayCastManager;
+
+    public Ship(ShipData shipData) {
+        super(shipData.getSizeX(), shipData.getSizeY(), shipData, shipData.getPolygonJTS());
+        this.configData = shipData;
+        this.timeToDestroy = shipData.getDestroyTimeInFrames();
         this.maxSparksTimer = timeToDestroy / 3;
-        this.jumpTimer = jumpTimeInTicks;
-        setJumpPosition();
+        this.jumpTimeInFrames = Math.round(Engine.convertSecondsToFrames(0.6f) * ((Math.max(Math.max(getSizeX(), getSizeY()) / 150.0f,
+                1.0f))));
+        this.jumpTimer = jumpTimeInFrames;
     }
 
     @Override
     public void init(World world, int id) {
         super.init(world, id);
         modules.init(this);
+        setJumpPosition();
+        rayCastManager = world.getRayCastManager();
     }
 
     @Override
@@ -197,6 +204,15 @@ public class Ship extends DamageableRigidBody {
     }
 
     @Override
+    public void removeConnectedObject(int index) {
+        ConnectedObject<?> connectedObject = getConnectedObjects().get(index);
+        super.removeConnectedObject(index);
+        if (connectedObject instanceof WeaponSlot weaponSlot) {
+            modules.removeWeaponSlot(weaponSlot.getId());
+        }
+    }
+
+    @Override
     public void update() {
         if (spawned) {
             updateConnectedObjects();
@@ -268,14 +284,14 @@ public class Ship extends DamageableRigidBody {
 
     @Override
     public void onContourReconstructed(Polygon polygon) {
-        if (!DamageSystem.isPolygonConnectedToContour(shipData.getReactorPolygon().getVertices(), polygon)) {
+        if (!DamageSystem.isPolygonConnectedToContour(configData.getReactorPolygon().getVertices(), polygon)) {
             modules.getReactor().setDead();
             return;
         }
 
-        List<Engine> engines = modules.getEngines().getEngines();
+        List<net.bfsr.entity.ship.module.engine.Engine> engines = modules.getEngines().getEngines();
         for (int i = 0; i < engines.size(); i++) {
-            Engine engine = engines.get(i);
+            net.bfsr.entity.ship.module.engine.Engine engine = engines.get(i);
             Vector2[] vertices = ((org.jbox2d.collision.shapes.Polygon) engine.getFixture().getShape()).getVertices();
             if (!DamageSystem.isPolygonConnectedToContour(vertices, polygon)) {
                 engine.setDead();
@@ -283,14 +299,14 @@ public class Ship extends DamageableRigidBody {
         }
 
         Shield shield = modules.getShield();
-        if (!DamageSystem.isPolygonConnectedToContour(shipData.getShieldPolygon().getVertices(), polygon)) {
+        if (!DamageSystem.isPolygonConnectedToContour(configData.getShieldPolygon().getVertices(), polygon)) {
             shield.setDead();
         }
     }
 
     @Override
-    public EntityPacketSpawnData createSpawnData() {
-        return new ShipSpawnData(this);
+    public ShipSpawnData createSpawnData() {
+        return new ShipSpawnData();
     }
 
     public void setHull(Hull hull) {
@@ -322,7 +338,7 @@ public class Ship extends DamageableRigidBody {
     }
 
     public Vector2f getWeaponSlotPosition(int id) {
-        return shipData.getWeaponSlotPositions()[id];
+        return configData.getWeaponSlotPositions()[id];
     }
 
     public void addWeaponToSlot(int id, WeaponSlot slot) {
@@ -340,6 +356,11 @@ public class Ship extends DamageableRigidBody {
         }
 
         return null;
+    }
+
+    public void setAi(Ai ai) {
+        ai.init(this);
+        this.ai = ai;
     }
 
     public void setSpawned() {
@@ -360,20 +381,17 @@ public class Ship extends DamageableRigidBody {
     }
 
     private void setJumpPosition() {
-        RotationHelper.angleToVelocity(getSin(), getCos(), -100.0f, jumpPosition);
+        float jumpLength = Math.max(getSizeX(), getSizeY()) * 1.25f + 2.5f;
+        RotationHelper.angleToVelocity(getSin(), getCos(), -jumpLength, jumpPosition);
         jumpPosition.add(getX(), getY());
     }
 
     public void setDestroying() {
-        if (maxLifeTime == DEFAULT_MAX_LIFE_TIME_IN_TICKS) {
+        if (maxLifeTime == DEFAULT_MAX_LIFE_TIME_IN_FRAMES) {
             maxLifeTime = timeToDestroy;
             eventBus.publish(new ShipDestroyingEvent(this));
             updateRunnable = this::updateDestroying;
         }
-    }
-
-    public boolean isDestroying() {
-        return maxLifeTime != DEFAULT_MAX_LIFE_TIME_IN_TICKS;
     }
 
     @Override
@@ -382,12 +400,21 @@ public class Ship extends DamageableRigidBody {
         eventBus.publish(new ShipDestroyEvent(this));
     }
 
+    public boolean isDestroying() {
+        return maxLifeTime != DEFAULT_MAX_LIFE_TIME_IN_FRAMES;
+    }
+
     public boolean isBot() {
         return owner == null;
     }
 
     @Override
-    public int getCollisionMatrixType() {
+    public int getCollisionMatrixId() {
         return CollisionMatrixType.SHIP.ordinal();
+    }
+
+    @Override
+    public Filter getCollisionFilter(Fixture fixture) {
+        return Filters.SHIP_FILTER;
     }
 }

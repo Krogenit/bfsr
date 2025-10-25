@@ -62,7 +62,7 @@ public class DebugRenderer implements AbstractDebugRenderer {
             vao.updateBuffer(1, cmdBuffer.limit(cmdBufferIndex.get()), GL44C.GL_DYNAMIC_STORAGE_BIT);
             vao.bindBuffer(GL40C.GL_DRAW_INDIRECT_BUFFER, 1);
             glMultiDrawArraysIndirect(mode, 0, objectsCount, 0);
-            Engine.renderer.increaseDrawCalls();
+            Engine.getRenderer().increaseDrawCalls();
         }
     }
 
@@ -117,6 +117,7 @@ public class DebugRenderer implements AbstractDebugRenderer {
         debugShader.init();
     }
 
+    @Override
     public void reset() {
         objectsCount = 0;
         vertexBufferIndex.set(0);

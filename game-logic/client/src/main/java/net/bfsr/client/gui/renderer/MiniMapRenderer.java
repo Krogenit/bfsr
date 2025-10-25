@@ -6,17 +6,16 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.bfsr.client.Client;
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
+import net.bfsr.engine.event.entity.RigidBodyAddToWorldEvent;
+import net.bfsr.engine.event.entity.RigidBodyRemovedFromWorldEvent;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.renderer.RectangleTexturedRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
-import net.bfsr.event.entity.RigidBodyAddToWorldEvent;
-import net.bfsr.event.entity.RigidBodyRemovedFromWorldEvent;
 import net.bfsr.faction.Faction;
 import org.jbox2d.collision.AABB;
 import org.joml.Vector2f;
@@ -27,10 +26,10 @@ public class MiniMapRenderer extends RectangleTexturedRenderer {
     private final Client client = Client.get();
     private final AABB boundingBox = new AABB();
     private final AABB shipAABB = new AABB();
-    private final float mapOffsetX = 600;
-    private final float mapOffsetY = 600;
-    private final float mapScaleX = 5.0f;
-    private final float mapScaleY = 7.0f;
+    private final float mapOffsetX = 60;
+    private final float mapOffsetY = 60;
+    private final float mapScaleX = 0.5f;
+    private final float mapScaleY = 0.7f;
     private final Int2ObjectMap<MapEntity> entityIdToDrawIdMap = new Int2ObjectOpenHashMap<>();
 
     @Getter
@@ -53,7 +52,7 @@ public class MiniMapRenderer extends RectangleTexturedRenderer {
         int width = guiObject.getWidth();
         int height = guiObject.getHeight();
 
-        Vector2f camPos = Engine.renderer.camera.getPosition();
+        Vector2f camPos = renderer.getCamera().getPosition();
         int miniMapX = guiObject.getX() + width / 2;
         int miniMapY = guiObject.getY() + height / 2;
 
@@ -72,13 +71,13 @@ public class MiniMapRenderer extends RectangleTexturedRenderer {
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void update(int mouseX, int mouseY) {
+        super.update(mouseX, mouseY);
 
         int width = guiObject.getWidth();
         int height = guiObject.getHeight();
 
-        Vector2f camPos = Engine.renderer.camera.getPosition();
+        Vector2f camPos = renderer.getCamera().getPosition();
         boundingBox.set(camPos.x - mapOffsetX, camPos.y - mapOffsetY, camPos.x + mapOffsetX, camPos.y + mapOffsetY);
 
         int miniMapX = guiObject.getX() + width / 2;
@@ -114,7 +113,7 @@ public class MiniMapRenderer extends RectangleTexturedRenderer {
 
                 float shipX = ship.getX();
                 float shipY = ship.getY();
-                Vector2f camPos = Engine.renderer.camera.getPosition();
+                Vector2f camPos = renderer.getCamera().getPosition();
                 int x1 = (int) (miniMapX + (shipX - camPos.x) / mapScaleX);
                 int y1 = (int) (miniMapY + (shipY - camPos.y) / mapScaleY);
 
@@ -149,17 +148,17 @@ public class MiniMapRenderer extends RectangleTexturedRenderer {
     }
 
     @Override
-    public void render() {
+    public void render(int mouseX, int mouseY) {
         int width = guiObject.getWidth();
         int height = guiObject.getHeight();
 
         guiRenderer.render();
         List<Ship> ships = client.getWorld().getEntitiesByType(Ship.class);
 
-        Engine.renderer.glEnable(GL.GL_SCISSOR_TEST);
+        renderer.glEnable(GL.GL_SCISSOR_TEST);
         int offsetY = 17;
         int offsetX = 22;
-        Engine.renderer.glScissor(guiObject.getX() + offsetX, Engine.renderer.getScreenHeight() - height + offsetY,
+        renderer.glScissor(guiObject.getX() + offsetX, renderer.getScreenHeight() - height + offsetY,
                 width - (offsetX << 1), height - (offsetY << 1));
 
         for (int i = 0; i < ships.size(); i++) {
@@ -170,9 +169,9 @@ public class MiniMapRenderer extends RectangleTexturedRenderer {
         }
 
         guiRenderer.render();
-        Engine.renderer.glDisable(GL.GL_SCISSOR_TEST);
+        renderer.glDisable(GL.GL_SCISSOR_TEST);
 
-        super.render();
+        super.render(mouseX, mouseY);
     }
 
     @Override

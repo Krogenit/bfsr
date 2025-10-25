@@ -3,24 +3,26 @@ package net.bfsr.editor.object.ship;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.bfsr.config.entity.damageable.DamageableRigidBodyConfigData;
 import net.bfsr.editor.gui.property.PropertyGuiElementType;
 import net.bfsr.editor.gui.ship.ModulesPolygonsPropertiesHolder;
 import net.bfsr.editor.object.ObjectProperties;
 import net.bfsr.editor.property.Property;
 import net.bfsr.editor.property.holder.ColorPropertiesHolder;
 import net.bfsr.editor.property.holder.Vector2fPropertiesHolder;
+import net.bfsr.editor.property.holder.Vector2iPropertiesHolder;
 import net.bfsr.server.dto.Default;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@AllArgsConstructor(onConstructor_ = {@Default})
+@AllArgsConstructor(onConstructor_ = @Default)
 @NoArgsConstructor
 public class ShipProperties extends ObjectProperties {
-    @Property(elementType = PropertyGuiElementType.INPUT_BOX)
+    @Property
     private Vector2fPropertiesHolder size;
-    @Property(elementType = PropertyGuiElementType.INPUT_BOX)
+    @Property
     private float destroyTimeInSeconds;
     @Property(elementType = PropertyGuiElementType.FILE_SELECTOR)
     private String texture;
@@ -32,8 +34,20 @@ public class ShipProperties extends ObjectProperties {
     @Property(elementType = PropertyGuiElementType.POLYGON, arrayElementType = PropertyGuiElementType.INPUT_BOX,
             arrayElementName = "vertex")
     private List<Vector2fPropertiesHolder> vertices;
+    @Property(name = "verticesMinDistSq")
+    private float minDistanceBetweenVerticesSq;
+    @Property
+    private Vector2iPropertiesHolder damageMaskSize;
     @Property(elementType = PropertyGuiElementType.OBJECT)
     private ModulesPolygonsPropertiesHolder modules;
+    @Property
+    private float bufferDistance;
+    @Property
+    private float bufferYOffset;
+    @Property
+    private float shieldOutlineOffset;
+    @Property
+    private float shieldBlurSize;
 
     @Override
     public void setDefaultValues() {
@@ -53,6 +67,12 @@ public class ShipProperties extends ObjectProperties {
         vertices.add(new Vector2fPropertiesHolder(2.7f, 0.1f));
         vertices.add(new Vector2fPropertiesHolder(0.6f, 3.1f));
         vertices.add(new Vector2fPropertiesHolder(-1.0f, 3.1f));
+        minDistanceBetweenVerticesSq = DamageableRigidBodyConfigData.MIN_DISTANCE_BETWEEN_VERTICES_SQ;
+        bufferDistance = 0.3f;
+        bufferYOffset = -0.32f;
+        shieldOutlineOffset = 1.0f / 64.0f;
+        shieldBlurSize = 4.0f;
+        damageMaskSize = new Vector2iPropertiesHolder(32, 32);
         modules = new ModulesPolygonsPropertiesHolder();
         modules.setDefaultValues();
     }

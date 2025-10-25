@@ -3,8 +3,8 @@ package net.bfsr.client.network.packet.handler.login;
 import io.netty.channel.ChannelHandlerContext;
 import net.bfsr.client.Client;
 import net.bfsr.client.network.NetworkSystem;
-import net.bfsr.network.packet.PacketHandler;
-import net.bfsr.network.packet.server.login.PacketDisconnectLogin;
+import net.bfsr.engine.network.packet.PacketHandler;
+import net.bfsr.engine.network.packet.server.login.PacketDisconnectLogin;
 
 import java.net.InetSocketAddress;
 

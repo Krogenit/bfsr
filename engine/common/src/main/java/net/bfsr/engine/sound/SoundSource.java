@@ -5,16 +5,18 @@ import net.bfsr.engine.Engine;
 
 @Getter
 public class SoundSource {
+    private final AbstractSoundManager soundManager = Engine.getSoundManager();
     private final int source;
 
     public SoundSource(AbstractSoundBuffer soundBuffer, float volume, boolean loop, boolean relative) {
-        this.source = Engine.soundManager.createSoundSource(soundBuffer.getBuffer(), loop, relative);
+        source = soundManager.createSoundSource(soundBuffer.getBuffer(), loop, relative);
         setGain(volume);
         setRolloffFactor(3.0f);
         setReferenceDistance(90.0f);
     }
 
-    public SoundSource(AbstractSoundBuffer soundBuffer, float volume, boolean loop, boolean relative, float x, float y) {
+    public SoundSource(AbstractSoundBuffer soundBuffer, float volume, boolean loop,
+                       boolean relative, float x, float y) {
         this(soundBuffer, volume, loop, relative);
         setPosition(x, y);
     }
@@ -24,39 +26,39 @@ public class SoundSource {
     }
 
     public SoundSource(SoundRegistry soundName) {
-        this(Engine.assetsManager.getSound(soundName), soundName.getVolume(), false, true);
+        this(Engine.getAssetsManager().getSound(soundName), soundName.getVolume(), false, true);
     }
 
     public void setPosition(float x, float y) {
-        Engine.soundManager.setPosition(source, x, y);
+        soundManager.setPosition(source, x, y);
     }
 
     public void setGain(float gain) {
-        Engine.soundManager.setGain(source, gain);
+        soundManager.setGain(source, gain);
     }
 
     public void setRolloffFactor(float value) {
-        Engine.soundManager.setRollOffFactor(source, value);
+        soundManager.setRollOffFactor(source, value);
     }
 
     public void setReferenceDistance(float value) {
-        Engine.soundManager.setReferenceDistance(source, value);
+        soundManager.setReferenceDistance(source, value);
     }
 
     public boolean isPlaying() {
-        return Engine.soundManager.isPlaying(source);
+        return soundManager.isPlaying(source);
     }
 
     public void pause() {
-        Engine.soundManager.pause(source);
+        soundManager.pause(source);
     }
 
     public void stop() {
-        Engine.soundManager.stop(source);
+        soundManager.stop(source);
     }
 
     public void clear() {
         stop();
-        Engine.soundManager.delete(source);
+        soundManager.delete(source);
     }
 }

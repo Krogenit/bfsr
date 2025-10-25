@@ -4,12 +4,14 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.TLongObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.bfsr.engine.network.packet.Packet;
+import net.bfsr.engine.network.packet.PacketRegistry;
 import net.bfsr.engine.util.Side;
-import net.bfsr.network.packet.Packet;
-import net.bfsr.network.packet.PacketRegistry;
+import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 import net.bfsr.server.network.manager.NetworkManagerTCP;
 import net.bfsr.server.network.manager.NetworkManagerUDP;
@@ -17,6 +19,7 @@ import net.bfsr.server.player.Player;
 import net.bfsr.server.player.PlayerManager;
 import org.joml.Vector2f;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -37,13 +40,14 @@ public class NetworkSystem {
     private final TIntObjectMap<PlayerNetworkHandler> networkHandlerMap = new TIntObjectHashMap<>();
     private final TLongObjectMap<PlayerNetworkHandler> networkHandlerByAddressMap = new TLongObjectHashMap<>();
     private final PlayerManager playerManager;
+    private final ServerGameLogic serverGameLogic;
 
     public void init() {
         packetRegistry.registerPackets(Side.SERVER);
     }
 
-    public void startup(InetAddress address, int port) {
-        networkManagerTCP.startup(this, address, port, networkManagerUDP::getChannel);
+    public void startup(ServerGameLogic serverGameLogic, InetAddress address, int port) {
+        networkManagerTCP.startup(serverGameLogic, this, address, port, networkManagerUDP::getChannel);
         networkManagerUDP.startup(this, address, port);
     }
 
@@ -66,8 +70,7 @@ public class NetworkSystem {
         }
     }
 
-    public void handle(Packet packet, PlayerNetworkHandler networkHandler, ChannelHandlerContext ctx,
-                       InetSocketAddress recipient) {
+    public void handle(Packet packet, PlayerNetworkHandler networkHandler, ChannelHandlerContext ctx, InetSocketAddress recipient) {
         packetRegistry.getPacketHandler(packet).handle(packet, networkHandler, ctx, recipient);
     }
 
@@ -95,7 +98,9 @@ public class NetworkSystem {
         List<Player> players = playerManager.getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
             Player player1 = players.get(i);
-            if (player1 != player) protocol.accept(player1.getNetworkHandler());
+            if (player1 != player) {
+                protocol.accept(player1.getNetworkHandler());
+            }
         }
     }
 
@@ -203,5 +208,17 @@ public class NetworkSystem {
         int ip = socketAddress.getAddress().hashCode();
         int port = socketAddress.getPort();
         return (((long) ip) << 32) | (port & 0xffffffffL);
+    }
+
+    public Packet decodePacket(ByteBuf buffer) throws IOException {
+        int packetId = buffer.readByte();
+
+        try {
+            Packet packet = createPacket(packetId);
+            packet.read(buffer, serverGameLogic);
+            return packet;
+        } catch (Exception e) {
+            throw new IOException("Can't decode packet with id " + packetId, e);
+        }
     }
 }

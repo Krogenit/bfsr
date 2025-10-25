@@ -12,26 +12,28 @@ import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
-import net.bfsr.entity.RigidBody;
+import net.bfsr.engine.renderer.entity.Render;
+import net.bfsr.engine.world.entity.RigidBody;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
 public class EntityRenderer {
-    private final AbstractRenderer renderer = Engine.renderer;
-    private final AbstractCamera camera = renderer.camera;
+    private final AbstractRenderer renderer = Engine.getRenderer();
+    private final AbstractCamera camera = renderer.getCamera();
 
-    private final EntityRenderRegistry entityRenderRegistry = new EntityRenderRegistry();
+    private final EntityRenderRegistry entityRenderRegistry;
     @Getter
-    private final WeaponRenderRegistry weaponRenderRegistry = new WeaponRenderRegistry();
+    private final WeaponRenderRegistry weaponRenderRegistry;
 
     private final List<Render> renders = new ArrayList<>();
     private final TIntObjectMap<Render> rendersMap = new TIntObjectHashMap<>();
 
-    public void init() {
-        Client.get().getEventBus().register(this);
-        entityRenderRegistry.init();
+    public EntityRenderer(Client client) {
+        this.entityRenderRegistry = new EntityRenderRegistry(client);
+        this.weaponRenderRegistry = new WeaponRenderRegistry();
+        client.getEventBus().register(this);
     }
 
     public void update() {
@@ -54,31 +56,16 @@ public class EntityRenderer {
         }
     }
 
-    public void renderAlpha() {
+    public void render() {
         if (renderer.isEntitiesGPUFrustumCulling()) {
             for (int i = 0, size = renders.size(); i < size; i++) {
-                renders.get(i).renderAlpha();
+                renders.get(i).render();
             }
         } else {
             for (int i = 0, size = renders.size(); i < size; i++) {
                 Render render = renders.get(i);
                 if (render.getAabb().overlaps(camera.getBoundingBox())) {
-                    render.renderAlpha();
-                }
-            }
-        }
-    }
-
-    void renderAdditive() {
-        if (renderer.isEntitiesGPUFrustumCulling()) {
-            for (int i = 0, size = renders.size(); i < size; i++) {
-                renders.get(i).renderAdditive();
-            }
-        } else {
-            for (int i = 0, size = renders.size(); i < size; i++) {
-                Render render = renders.get(i);
-                if (render.getAabb().overlaps(camera.getBoundingBox())) {
-                    render.renderAdditive();
+                    render.render();
                 }
             }
         }

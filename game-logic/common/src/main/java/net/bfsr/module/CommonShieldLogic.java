@@ -12,4 +12,8 @@ public class CommonShieldLogic implements Logic {
     }
 
     protected void onShieldAlive(Shield shield) {}
+
+    public void onShieldRemove(Shield shield) {}
+
+    public void onRebuildingTimeUpdate(Shield shield) {}
 }
