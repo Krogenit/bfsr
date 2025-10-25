@@ -158,7 +158,7 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
     }
 
     @Override
-    public void updateTransform(double time, int frame) {
+    public void updateTransform(int frame) {
         int frameWithoutDelay = frame + renderDelayInFrames;
         positionHistory.addPositionData(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), frameWithoutDelay);
         dataHistory.addData(new PacketWorldSnapshot.EntityData(rigidBody, frameWithoutDelay));
@@ -168,7 +168,7 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
     }
 
     @Override
-    public void updateData(double time, int frame) {}
+    public void updateData(int frame) {}
 
     public void clear() {
         positionHistory.clear();

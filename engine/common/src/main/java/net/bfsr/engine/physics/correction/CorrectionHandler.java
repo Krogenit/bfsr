@@ -29,11 +29,11 @@ public class CorrectionHandler {
     }
 
     public void update(double time, int frame) {
-        updateTransform(time, frame);
-        updateData(time, frame);
+        updateTransform(frame);
+        updateData(frame);
     }
 
-    public void updateTransform(double time, int frame) {
+    public void updateTransform(int frame) {
         TransformData transformData = dataHistoryManager.getTransformData(rigidBody.getId(), frame);
         if (transformData == null) {
             return;
@@ -52,7 +52,7 @@ public class CorrectionHandler {
         rigidBody.setTransform(transform.x, transform.y, transform.z, transform.w);
     }
 
-    public void updateData(double time, int frame) {
+    public void updateData(int frame) {
         PacketWorldSnapshot.EntityData entityData = dataHistoryManager.getData(rigidBody.getId(), frame);
         if (entityData == null) {
             return;
