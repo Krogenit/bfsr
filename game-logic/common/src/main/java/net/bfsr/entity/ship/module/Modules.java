@@ -175,4 +175,8 @@ public class Modules {
             shield.removeShield();
         }
     }
+
+    public List<Module> getModulesByType(ModuleType moduleType) {
+        return modulesByType.get(moduleType);
+    }
 }
