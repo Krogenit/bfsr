@@ -5,6 +5,8 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.world.WorldInitEvent;
 import net.bfsr.engine.logic.GameLogic;
+import net.bfsr.engine.physics.CommonRayCastManager;
+import net.bfsr.engine.physics.DefaultRayCastManager;
 import net.bfsr.engine.physics.collision.AbstractCollisionMatrix;
 import net.bfsr.engine.physics.collision.ContactListener;
 import net.bfsr.engine.physics.collision.filter.ContactFilter;
@@ -16,28 +18,22 @@ import org.jbox2d.common.Settings;
 
 import java.util.List;
 
+@Getter
 public class World {
     private static final int VELOCITY_ITERATIONS = 1;
     private static final int POSITION_ITERATIONS = 1;
 
-    @Getter
     private final org.jbox2d.dynamics.World physicWorld = new org.jbox2d.dynamics.World();
-    @Getter
+    private final CommonRayCastManager rayCastManager = new DefaultRayCastManager(physicWorld);
+
     private final long seed;
     private final Profiler profiler;
-    @Getter
     private final AbstractEntityManager entityManager;
-    @Getter
     private final EventBus eventBus;
-    @Getter
     private double timestamp;
-    @Getter
     private final EntityIdManager entityIdManager;
-    @Getter
     private final GameLogic gameLogic;
-    @Getter
     private final AbstractCollisionMatrix collisionMatrix;
-    @Getter
     private final ContactFilter contactFilter;
 
     public World(Profiler profiler, long seed, EventBus eventBus, AbstractEntityManager entityManager,

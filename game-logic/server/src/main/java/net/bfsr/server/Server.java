@@ -1,5 +1,6 @@
 package net.bfsr.server;
 
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.loop.AbstractGameLoop;
@@ -7,8 +8,9 @@ import net.bfsr.engine.profiler.Profiler;
 
 @Log4j2
 public abstract class Server extends AbstractGameLoop {
-    protected final ServerGameLogic gameLogic;
     private final Profiler profiler = new Profiler();
+    @Getter
+    protected final ServerGameLogic gameLogic;
 
     protected Server(Class<? extends ServerGameLogic> gameLogicClass) {
         try {

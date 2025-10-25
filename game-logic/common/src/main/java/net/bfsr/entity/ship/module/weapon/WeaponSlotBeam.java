@@ -15,6 +15,7 @@ import net.bfsr.physics.RayCastType;
 import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Fixture;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 
 import java.util.function.Consumer;
@@ -33,7 +34,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
 
     private final Vector2 rayStart = new Vector2();
     private final Vector2 rayDirection = new Vector2();
-    private Fixture rayCastResultFixture;
+    private @Nullable Fixture rayCastResultFixture;
     private Vector2 rayCastResultNormal;
 
     private final float powerAnimationSpeed = Engine.convertToDeltaTime(3.5f);
@@ -107,21 +108,24 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     private void rayCast() {
         if (currentBeamRange < beamMaxRange) {
             currentBeamRange += beamRangeAnimationSpeed;
+            if (currentBeamRange > beamMaxRange) {
+                currentBeamRange = beamMaxRange;
+            }
         }
 
         float cos = ship.getCos();
         float sin = ship.getSin();
         float startRange = -getSizeX();
-
         float startX = cos * startRange;
         float startY = sin * startRange;
+
         rayStart.x = startX + getX();
         rayStart.y = startY + getY();
         collisionPoint.set(0.0f);
         rayDirection.set(rayStart.x + cos * currentBeamRange, rayStart.y + sin * currentBeamRange);
         rayCastResultFixture = null;
 
-        world.getPhysicWorld().raycast((fixture, point, normal, fraction) -> {
+        ship.getRayCastManager().rayCast(ship, (fixture, point, normal, fraction) -> {
             if (!world.getContactFilter().shouldCollide(fixture.getFilter(), Filters.BEAM_FILTER)) {
                 return -1.0f;
             }

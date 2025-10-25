@@ -12,6 +12,7 @@ import net.bfsr.engine.ai.Ai;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.RotationHelper;
+import net.bfsr.engine.physics.CommonRayCastManager;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.module.Modules;
@@ -96,6 +97,10 @@ public class Ship extends DamageableRigidBody {
     @Getter
     private final ShipData configData;
 
+    @Getter
+    @Setter
+    private CommonRayCastManager rayCastManager;
+
     public Ship(ShipData shipData) {
         super(shipData.getSizeX(), shipData.getSizeY(), shipData, shipData.getPolygonJTS());
         this.configData = shipData;
@@ -111,6 +116,7 @@ public class Ship extends DamageableRigidBody {
         super.init(world, id);
         modules.init(this);
         setJumpPosition();
+        rayCastManager = world.getRayCastManager();
     }
 
     @Override

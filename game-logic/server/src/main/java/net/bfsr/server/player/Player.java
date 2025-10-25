@@ -48,7 +48,7 @@ public class Player {
     public void init(PlayerNetworkHandler networkHandler, EntityTrackingManager entityTrackingManager, PlayerManager playerManager,
                      AiFactory aiFactory) {
         this.networkHandler = networkHandler;
-        this.playerInputController = new PlayerInputController(this, entityTrackingManager, playerManager, aiFactory);
+        this.playerInputController = new PlayerInputController(this, networkHandler, entityTrackingManager, playerManager, aiFactory);
     }
 
     public void setShip(Ship ship, int frame) {
