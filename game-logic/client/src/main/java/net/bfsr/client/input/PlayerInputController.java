@@ -73,11 +73,13 @@ public class PlayerInputController extends InputController {
 
         if (ship == null) {
             if (controlledShipId == NOT_CONTROLLED_SHIP_ID) {
+                sendCameraPosition();
                 return;
             }
 
             RigidBody entity = client.getWorld().getEntityById(controlledShipId);
             if (!(entity instanceof Ship ship)) {
+                sendCameraPosition();
                 return;
             }
 
@@ -94,6 +96,17 @@ public class PlayerInputController extends InputController {
         if (!client.isPaused() && ship.isSpawned() && ship.getLifeTime() == 0) {
             controlShip(frame);
         }
+    }
+
+    private void sendCameraPosition() {
+        Vector2f cameraPosition = camera.getPosition();
+
+        client.sendUDPPacket(new PacketPlayerInput(
+                0, 0, 0, 0,
+                new boolean[]{false, false},
+                new boolean[]{false, false, false, false, false,},
+                cameraPosition.x, cameraPosition.y
+        ));
     }
 
     @Override
