@@ -28,6 +28,10 @@ public final class ConfigLoader {
     }
 
     public static <T> void loadFromFiles(Path folder, Class<T> configClass, LoadedFileConsumer<T> fileConsumer) {
+        if (!folder.toFile().exists()) {
+            return;
+        }
+
         try {
             Files.walkFileTree(folder, new SimpleFileVisitor<>() {
                 @Override
