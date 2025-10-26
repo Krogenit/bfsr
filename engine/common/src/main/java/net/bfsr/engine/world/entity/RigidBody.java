@@ -255,4 +255,8 @@ public class RigidBody extends GameObject {
     public float getFixtureDensity(Fixture fixture) {
         return PhysicsUtils.DEFAULT_FIXTURE_DENSITY;
     }
+
+    public int getEntityType() {
+        return 0;
+    }
 }

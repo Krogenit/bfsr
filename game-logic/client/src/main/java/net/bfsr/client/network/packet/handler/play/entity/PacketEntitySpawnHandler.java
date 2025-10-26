@@ -18,8 +18,7 @@ public class PacketEntitySpawnHandler extends PacketHandler<PacketEntitySpawn, N
                        InetSocketAddress remoteAddress) {
         World world = Client.get().getWorld();
         if (world.getEntityById(packet.getEntityPacketSpawnData().getEntityId()) == null) {
-            entitySpawnDataRegistry.spawn(packet.getEntityPacketSpawnData().getTypeId(),
-                    packet.getEntityPacketSpawnData(), world);
+            entitySpawnDataRegistry.spawn(packet.getEntityType(), packet.getEntityPacketSpawnData(), world);
         }
     }
 }

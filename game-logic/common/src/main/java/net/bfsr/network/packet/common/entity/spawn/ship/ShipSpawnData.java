@@ -10,7 +10,6 @@ import net.bfsr.entity.ship.module.engine.Engine;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.network.packet.common.entity.spawn.DamageableRigidBodySpawnData;
-import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnType;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -147,10 +146,5 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
         crewDataId = data.readInt();
 
         super.readData(data);
-    }
-
-    @Override
-    public int getTypeId() {
-        return EntityPacketSpawnType.SHIP.ordinal();
     }
 }

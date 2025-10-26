@@ -15,6 +15,7 @@ import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.physics.CommonRayCastManager;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.RigidBody;
+import net.bfsr.entity.EntityTypes;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.armor.Armor;
 import net.bfsr.entity.ship.module.cargo.Cargo;
@@ -224,7 +225,9 @@ public class Ship extends DamageableRigidBody {
     }
 
     private void updateAlive() {
-        if (collisionTimer > 0) collisionTimer -= 1;
+        if (collisionTimer > 0) {
+            collisionTimer -= 1;
+        }
 
         ai.update();
     }
@@ -416,5 +419,10 @@ public class Ship extends DamageableRigidBody {
     @Override
     public Filter getCollisionFilter(Fixture fixture) {
         return Filters.SHIP_FILTER;
+    }
+
+    @Override
+    public int getEntityType() {
+        return EntityTypes.SHIP.ordinal();
     }
 }

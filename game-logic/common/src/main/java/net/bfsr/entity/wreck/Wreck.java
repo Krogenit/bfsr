@@ -7,6 +7,7 @@ import net.bfsr.engine.physics.PhysicsUtils;
 import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.RigidBody;
+import net.bfsr.entity.EntityTypes;
 import net.bfsr.event.entity.wreck.WreckDeathEvent;
 import net.bfsr.network.packet.common.entity.spawn.WreckSpawnData;
 import net.bfsr.physics.CollisionMatrixType;
@@ -112,5 +113,10 @@ public class Wreck extends RigidBody {
     @Override
     public int getCollisionMatrixId() {
         return CollisionMatrixType.WRECK.ordinal();
+    }
+
+    @Override
+    public int getEntityType() {
+        return EntityTypes.WRECK.ordinal();
     }
 }

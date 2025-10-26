@@ -42,9 +42,4 @@ public class BulletSpawnData extends RigidBodySpawnData<Bullet> {
         ownerId = data.readInt();
         clientId = data.readInt();
     }
-
-    @Override
-    public int getTypeId() {
-        return EntityPacketSpawnType.BULLET.ordinal();
-    }
 }

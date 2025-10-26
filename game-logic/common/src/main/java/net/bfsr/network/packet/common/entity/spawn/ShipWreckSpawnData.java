@@ -45,9 +45,4 @@ public class ShipWreckSpawnData extends DamageableRigidBodySpawnData<ShipWreck> 
         velocityY = data.readFloat();
         angularVelocity = data.readFloat();
     }
-
-    @Override
-    public int getTypeId() {
-        return EntityPacketSpawnType.SHIP_WRECK.ordinal();
-    }
 }

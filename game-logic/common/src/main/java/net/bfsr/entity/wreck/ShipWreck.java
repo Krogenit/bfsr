@@ -3,6 +3,7 @@ package net.bfsr.entity.wreck;
 import net.bfsr.config.entity.damageable.DamageableRigidBodyConfigData;
 import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageableRigidBody;
+import net.bfsr.entity.EntityTypes;
 import net.bfsr.network.packet.common.entity.spawn.ShipWreckSpawnData;
 import net.bfsr.physics.CollisionMatrixType;
 import org.locationtech.jts.geom.Polygon;
@@ -35,5 +36,10 @@ public class ShipWreck extends DamageableRigidBody {
     @Override
     public int getCollisionMatrixId() {
         return CollisionMatrixType.SHIP_WRECK.ordinal();
+    }
+
+    @Override
+    public int getEntityType() {
+        return EntityTypes.SHIP_WRECK.ordinal();
     }
 }

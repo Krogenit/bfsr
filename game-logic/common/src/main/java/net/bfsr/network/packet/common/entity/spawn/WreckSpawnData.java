@@ -73,9 +73,4 @@ public class WreckSpawnData extends RigidBodySpawnData<Wreck> {
         sizeX = data.readFloat();
         sizeY = data.readFloat();
     }
-
-    @Override
-    public int getTypeId() {
-        return EntityPacketSpawnType.WRECK.ordinal();
-    }
 }

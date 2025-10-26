@@ -7,6 +7,7 @@ import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.engine.world.entity.RigidBody;
+import net.bfsr.entity.EntityTypes;
 import net.bfsr.network.packet.common.entity.spawn.BulletSpawnData;
 import net.bfsr.physics.CollisionMatrixType;
 import net.bfsr.physics.collision.filter.Filters;
@@ -103,5 +104,10 @@ public class Bullet extends RigidBody {
     @Override
     public int getCollisionMatrixId() {
         return CollisionMatrixType.BULLET.ordinal();
+    }
+
+    @Override
+    public int getEntityType() {
+        return EntityTypes.BULLET.ordinal();
     }
 }
