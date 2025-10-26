@@ -59,9 +59,9 @@ public abstract class GuiEditor<CONFIG_TYPE extends Config, PROPERTIES_TYPE exte
     protected final PropertiesPanel propertiesPanel;
 
     protected final ConfigToDataConverter<CONFIG_TYPE, ?> configRegistry;
-    private final EditorObjectConverter<CONFIG_TYPE, PROPERTIES_TYPE> converter;
+    protected final EditorObjectConverter<CONFIG_TYPE, PROPERTIES_TYPE> converter;
     private final Class<CONFIG_TYPE> configClass;
-    private final Class<PROPERTIES_TYPE> propertiesClass;
+    final Class<PROPERTIES_TYPE> propertiesClass;
 
     protected GuiEditor(String inspectionPanelName, ConfigToDataConverter<CONFIG_TYPE, ?> configRegistry,
                         EditorObjectConverter<CONFIG_TYPE, PROPERTIES_TYPE> converter, Class<CONFIG_TYPE> configClass,
