@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.RigidBody;
@@ -17,6 +18,7 @@ import net.bfsr.faction.Faction;
 import net.bfsr.network.GuiType;
 import net.bfsr.network.packet.server.gui.PacketOpenGui;
 import net.bfsr.server.database.PlayerRepository;
+import net.bfsr.server.entity.ship.ShipSpawner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +32,96 @@ public class PlayerManager {
     private final Object2ObjectMap<Ship, Player> playerByShipMap = new Object2ObjectOpenHashMap<>();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
     private final ShipFactory shipFactory;
+
     private PlayerRepository playerRepository;
 
     public void init(PlayerRepository playerRepository) {
         this.playerRepository = playerRepository;
+    }
+
+    public void joinGame(World world, Player player, ShipSpawner shipSpawner, int frame) {
+        List<Ship> ships = player.getShips();
+        if (ships.isEmpty()) {
+            respawnPlayer(world, player, 0, 0, frame, shipSpawner);
+        } else {
+            initShips(player, world);
+            spawnShips(player, world, shipSpawner);
+            player.setShip(player.getShip(0), frame);
+        }
+    }
+
+    public void respawnPlayer(World world, Player player, float x, float y, int frame, ShipSpawner shipSpawner) {
+        Ship ship = createPlayerShip(world, x, y, random.nextFloat() * MathUtils.TWO_PI, player);
+        player.addShip(ship);
+        player.setShip(ship, frame);
+        shipSpawner.spawnShip(world, ship);
+    }
+
+    private Ship createPlayerShip(World world, float x, float y, float angle, Player player) {
+        Faction faction = player.getFaction();
+
+        Ship playerShip = switch (faction) {
+            case HUMAN -> shipFactory.createPlayerShipHumanSmall(world, x, y, angle);
+            case SAIMON -> shipFactory.createPlayerShipSaimonSmall(world, x, y, angle);
+            case ENGI -> shipFactory.createPlayerShipEngiSmall(world, x, y, angle);
+        };
+
+        initShip(player, playerShip);
+        return playerShip;
+    }
+
+    private void initShips(Player player, World world) {
+        List<Ship> ships = player.getShips();
+        for (int i = 0; i < ships.size(); i++) {
+            Ship ship = ships.get(i);
+            float angle = random.nextFloat() * MathUtils.TWO_PI;
+            ship.setRotation(LUT.sin(angle), LUT.cos(angle));
+            shipFactory.initShip(ship, world, world.getNextId());
+            ship.setFaction(player.getFaction());
+            initShip(player, ship);
+        }
+    }
+
+    private void initShip(Player player, Ship ship) {
+        ship.setName(player.getUsername());
+        ship.setOwner(player.getUsername());
+        shipFactory.getShipOutfitter().outfit(ship);
+    }
+
+    private void spawnShips(Player player, World world, ShipSpawner shipSpawner) {
+        List<Ship> ships = player.getShips();
+        for (int i = 0; i < ships.size(); i++) {
+            Ship ship = ships.get(i);
+            shipSpawner.spawnShip(world, ship);
+        }
+    }
+
+    public void update(int frame) {
+        for (int i = 0; i < players.size(); i++) {
+            Player player = players.get(i);
+            updatePlayerShips(player);
+            player.getPlayerInputController().update(frame);
+        }
+    }
+
+    private void updatePlayerShips(Player player) {
+        List<Ship> ships = player.getShips();
+        RigidBody lastAttacker = null;
+        for (int i1 = 0; i1 < ships.size(); i1++) {
+            Ship ship = ships.get(i1);
+            if (ship.isDead()) {
+                ships.remove(i1--);
+                lastAttacker = ship.getLastAttacker();
+            }
+        }
+
+        if (ships.isEmpty() && lastAttacker != null) {
+            String attacker = "";
+            if (lastAttacker instanceof Ship attackerShip) {
+                attacker = attackerShip.getName();
+            }
+            player.getNetworkHandler().sendUDPPacket(new PacketOpenGui(GuiType.DESTROYED, attacker));
+        }
     }
 
     public Player get(String username) {
@@ -46,53 +134,6 @@ public class PlayerManager {
 
     public void saveAllSync() {
         playerRepository.saveAllSync(players);
-    }
-
-    public void update(int frame) {
-        for (int i = 0; i < players.size(); i++) {
-            Player player = players.get(i);
-
-            List<Ship> ships = player.getShips();
-            RigidBody lastAttacker = null;
-            for (int i1 = 0; i1 < ships.size(); i1++) {
-                Ship ship = ships.get(i1);
-                if (ship.isDead()) {
-                    ships.remove(i1--);
-                    lastAttacker = ship.getLastAttacker();
-                }
-            }
-
-            if (ships.isEmpty() && lastAttacker != null) {
-                String attacker = "";
-                if (lastAttacker instanceof Ship attackerShip) {
-                    attacker = attackerShip.getName();
-                }
-                player.getNetworkHandler().sendUDPPacket(new PacketOpenGui(GuiType.DESTROYED, attacker));
-            }
-
-            player.getPlayerInputController().update(frame);
-        }
-    }
-
-    public void respawnPlayer(World world, Player player, float x, float y, int frame) {
-        Faction faction = player.getFaction();
-
-        Ship playerShip;
-        if (faction == Faction.HUMAN) {
-            playerShip = shipFactory.createPlayerShipHumanSmall(world, x, y, random.nextFloat() * MathUtils.TWO_PI);
-        } else if (faction == Faction.SAIMON) {
-            playerShip = shipFactory.createPlayerShipSaimonSmall(world, x, y, random.nextFloat() * MathUtils.TWO_PI);
-        } else {
-            playerShip = shipFactory.createPlayerShipEngiSmall(world, x, y, random.nextFloat() * MathUtils.TWO_PI);
-        }
-
-        shipFactory.getShipOutfitter().outfit(playerShip);
-        playerShip.setOwner(player.getUsername());
-        playerShip.setName(player.getUsername());
-        world.add(playerShip, false, false);
-
-        player.addShip(playerShip);
-        player.setShip(playerShip, frame);
     }
 
     public boolean hasPlayer(String username) {

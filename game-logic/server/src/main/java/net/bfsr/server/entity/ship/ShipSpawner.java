@@ -156,4 +156,8 @@ public class ShipSpawner {
 
         spawnShips(world);
     }
+
+    public void spawnShip(World world, Ship ship) {
+        world.add(ship, false);
+    }
 }

@@ -26,6 +26,7 @@ import net.bfsr.network.packet.server.gui.PacketOpenGui;
 import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.ai.AiFactory;
 import net.bfsr.server.entity.EntityTrackingManager;
+import net.bfsr.server.entity.ship.ShipSpawner;
 import net.bfsr.server.event.PlayerDisconnectEvent;
 import net.bfsr.server.event.PlayerJoinGameEvent;
 import net.bfsr.server.player.Player;
@@ -58,6 +59,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
     private final EventBus eventBus;
     private final PacketRegistry<PlayerNetworkHandler> packetRegistry;
     private final ShipOutfitter shipOutfitter;
+    private final ShipSpawner shipSpawner;
 
     @Setter
     private InetSocketAddress remoteAddress;
@@ -181,14 +183,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
         connectionState = ConnectionState.CONNECTED;
         sendTCPPacket(new PacketJoinGame(world.getSeed(), gameLogic.getFrame(), gameLogic.getTime()));
         if (player.getFaction() != null) {
-            List<Ship> ships = player.getShips();
-            if (ships.isEmpty()) {
-                playerManager.respawnPlayer(world, player, 0, 0, gameLogic.getFrame());
-            } else {
-                initShips(player);
-                spawnShips(player);
-                player.setShip(player.getShip(0), gameLogic.getFrame());
-            }
+            playerManager.joinGame(world, player, shipSpawner, gameLogic.getFrame());
         } else {
             sendTCPPacket(new PacketOpenGui(GuiType.SELECT_FACTION));
         }
@@ -196,27 +191,6 @@ public class PlayerNetworkHandler extends NetworkHandler {
         world.getEventBus().publish(new PlayerJoinGameEvent(player));
         lastPingReceiveTime = System.currentTimeMillis();
         log.info("Player with username {} successful joined game", player.getUsername());
-    }
-
-    private void initShips(Player player) {
-        List<Ship> ships = player.getShips();
-        for (int i = 0; i < ships.size(); i++) {
-            Ship ship = ships.get(i);
-            ship.getDamageMask().init();
-            ship.init(world, world.getNextId());
-            ship.setName(player.getUsername());
-            ship.setOwner(player.getUsername());
-            ship.setFaction(player.getFaction());
-            shipOutfitter.outfit(ship);
-        }
-    }
-
-    private void spawnShips(Player player) {
-        List<Ship> ships = player.getShips();
-        for (int i = 0; i < ships.size(); i++) {
-            Ship ship = ships.get(i);
-            world.add(ship, false);
-        }
     }
 
     public void disconnect(String reason) {

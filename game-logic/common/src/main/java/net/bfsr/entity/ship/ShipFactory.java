@@ -52,24 +52,28 @@ public class ShipFactory {
         return createBot(world, x, y, angle, Faction.ENGI, shipRegistry.get("engi_small0"), ai);
     }
 
-    private Ship create(World world, int id, float x, float y, float angle, Faction faction, ShipData shipData) {
-        Ship ship = create(x, y, LUT.sin(angle), LUT.cos(angle), faction, shipData);
-        ship.getDamageMask().init();
-        ship.init(world, id);
-        return ship;
-    }
-
-    public Ship create(float x, float y, float sin, float cos, Faction faction, ShipData shipData) {
-        Ship ship = create(faction, shipData);
-        ship.setTransform(x, y, sin, cos);
-        return ship;
-    }
-
     public Ship createBot(World world, float x, float y, float angle, Faction faction, ShipData shipData, Ai ai) {
         Ship ship = create(world, world.getNextId(), x, y, angle, faction, shipData);
         ship.setName("[BOT] " + ship.getFaction().toString());
         shipOutfitter.outfit(ship);
         ship.setAi(ai);
+        return ship;
+    }
+
+    private Ship create(World world, int id, float x, float y, float angle, Faction faction, ShipData shipData) {
+        Ship ship = create(x, y, LUT.sin(angle), LUT.cos(angle), faction, shipData);
+        initShip(ship, world, id);
+        return ship;
+    }
+
+    public void initShip(Ship ship, World world, int id) {
+        ship.getDamageMask().init();
+        ship.init(world, id);
+    }
+
+    public Ship create(float x, float y, float sin, float cos, Faction faction, ShipData shipData) {
+        Ship ship = create(faction, shipData);
+        ship.setTransform(x, y, sin, cos);
         return ship;
     }
 
