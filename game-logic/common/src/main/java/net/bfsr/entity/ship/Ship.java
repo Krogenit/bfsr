@@ -34,7 +34,6 @@ import net.bfsr.event.entity.ship.ShipPostPhysicsUpdate;
 import net.bfsr.event.entity.ship.ShipRemoveMoveDirectionEvent;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.packet.common.entity.spawn.ship.ShipSpawnData;
-import net.bfsr.physics.CollisionMatrixType;
 import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Vector2;
@@ -409,11 +408,6 @@ public class Ship extends DamageableRigidBody {
 
     public boolean isBot() {
         return owner == null;
-    }
-
-    @Override
-    public int getCollisionMatrixId() {
-        return CollisionMatrixType.SHIP.ordinal();
     }
 
     @Override

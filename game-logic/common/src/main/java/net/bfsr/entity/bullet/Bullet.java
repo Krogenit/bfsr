@@ -9,7 +9,6 @@ import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.EntityTypes;
 import net.bfsr.network.packet.common.entity.spawn.BulletSpawnData;
-import net.bfsr.physics.CollisionMatrixType;
 import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.common.Vector2;
@@ -99,11 +98,6 @@ public class Bullet extends RigidBody {
     @Override
     public BulletSpawnData createSpawnData() {
         return new BulletSpawnData();
-    }
-
-    @Override
-    public int getCollisionMatrixId() {
-        return CollisionMatrixType.BULLET.ordinal();
     }
 
     @Override

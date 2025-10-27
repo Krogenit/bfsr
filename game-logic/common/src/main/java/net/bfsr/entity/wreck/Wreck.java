@@ -10,7 +10,6 @@ import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.EntityTypes;
 import net.bfsr.event.entity.wreck.WreckDeathEvent;
 import net.bfsr.network.packet.common.entity.spawn.WreckSpawnData;
-import net.bfsr.physics.CollisionMatrixType;
 import net.bfsr.physics.collision.filter.Filters;
 import org.dyn4j.geometry.Geometry;
 import org.jbox2d.collision.shapes.Polygon;
@@ -108,11 +107,6 @@ public class Wreck extends RigidBody {
     public void onRemovedFromWorld(int frame) {
         super.onRemovedFromWorld(frame);
         wreckPool.returnBack(this);
-    }
-
-    @Override
-    public int getCollisionMatrixId() {
-        return CollisionMatrixType.WRECK.ordinal();
     }
 
     @Override

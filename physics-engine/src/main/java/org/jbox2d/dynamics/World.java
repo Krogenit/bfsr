@@ -28,7 +28,6 @@ import lombok.Setter;
 import org.jbox2d.callbacks.ContactFilter;
 import org.jbox2d.callbacks.ContactListener;
 import org.jbox2d.callbacks.DestructionListener;
-import org.jbox2d.callbacks.ParticleQueryCallback;
 import org.jbox2d.callbacks.ParticleRaycastCallback;
 import org.jbox2d.callbacks.QueryCallback;
 import org.jbox2d.callbacks.RayCastCallback;
@@ -610,19 +609,6 @@ public class World {
      * @param aabb     the query box.
      */
     public void queryAABB(QueryCallback callback, AABB aabb) {
-        wqwrapper.broadPhase = contactManager.broadPhase;
-        wqwrapper.callback = callback;
-        contactManager.broadPhase.query(wqwrapper, aabb);
-    }
-
-    /**
-     * Query the world for all fixtures and particles that potentially overlap the provided AABB.
-     *
-     * @param callback         a user implemented callback class.
-     * @param particleCallback callback for particles.
-     * @param aabb             the query box.
-     */
-    public void queryAABB(QueryCallback callback, ParticleQueryCallback particleCallback, AABB aabb) {
         wqwrapper.broadPhase = contactManager.broadPhase;
         wqwrapper.callback = callback;
         contactManager.broadPhase.query(wqwrapper, aabb);

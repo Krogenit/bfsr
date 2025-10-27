@@ -5,7 +5,6 @@ import net.bfsr.damage.DamageMask;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.entity.EntityTypes;
 import net.bfsr.network.packet.common.entity.spawn.ShipWreckSpawnData;
-import net.bfsr.physics.CollisionMatrixType;
 import org.locationtech.jts.geom.Polygon;
 
 public class ShipWreck extends DamageableRigidBody {
@@ -31,11 +30,6 @@ public class ShipWreck extends DamageableRigidBody {
     @Override
     public ShipWreckSpawnData createSpawnData() {
         return new ShipWreckSpawnData();
-    }
-
-    @Override
-    public int getCollisionMatrixId() {
-        return CollisionMatrixType.SHIP_WRECK.ordinal();
     }
 
     @Override

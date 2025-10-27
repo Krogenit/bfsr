@@ -244,10 +244,6 @@ public class RigidBody extends GameObject {
         return configData.getId();
     }
 
-    public int getCollisionMatrixId() {
-        return 0;
-    }
-
     public Filter getCollisionFilter(Fixture fixture) {
         return PhysicsUtils.DEFAULT_COLLISION_FILTER;
     }
