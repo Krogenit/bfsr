@@ -48,7 +48,7 @@ public class PlayerInputController {
     }
 
     public void update(int frame) {
-        if (ship != null) {
+        if (ship != null && ship.isSpawned()) {
             rigidBodyUtils.rotateToVector(ship, mousePosition, ship.getModules().getEngines().getAngularVelocity());
 
             Engines engines = ship.getModules().getEngines();
