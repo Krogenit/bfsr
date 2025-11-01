@@ -32,7 +32,8 @@ import net.bfsr.client.settings.ConfigSettings;
 import net.bfsr.client.world.BlankWorld;
 import net.bfsr.client.world.entity.ClientEntityIdManager;
 import net.bfsr.client.world.entity.EntityManager;
-import net.bfsr.client.world.entity.EntitySpawnDataRegistry;
+import net.bfsr.client.world.entity.PlayerShipManager;
+import net.bfsr.client.world.entity.spawn.EntitySpawnDataRegistry;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.config.ConfigConverterManager;
@@ -101,7 +102,7 @@ public class Client extends ClientGameLogic {
 
     private final ClientEntityIdManager entityIdManager = new ClientEntityIdManager(this);
 
-    private final RenderDelayManager renderDelayManager = new RenderDelayManager();
+    private final RenderDelayManager renderDelayManager = new RenderDelayManager(eventBus);
     private final NetworkSystem networkSystem = new NetworkSystem(this, renderDelayManager);
     private final TimeSyncManager timeSyncManager = new TimeSyncManager(this);
 
@@ -277,7 +278,7 @@ public class Client extends ClientGameLogic {
     }
 
     public void createWorld(long seed) {
-        world = new World(profiler, seed, eventBus, new EntityManager(), entityIdManager, this,
+        world = new World(profiler, seed, eventBus, new EntityManager(eventBus), entityIdManager, this,
                 new CollisionMatrix(new CollisionHandler(this)));
         world.init();
     }

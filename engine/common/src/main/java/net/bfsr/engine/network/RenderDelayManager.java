@@ -1,12 +1,16 @@
 package net.bfsr.engine.network;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.event.engine.RenderDelayChangeEvent;
 
+@RequiredArgsConstructor
 public class RenderDelayManager {
-    private static final float ADDITIONAL_DELAY_IN_MILLIS = 1.0f;
     private static final float PING_SMOOTH_FACTOR = 0.1f;
 
+    private final EventBus eventBus;
     private double maxPing = Engine.getClientRenderDelayInMills();
     @Getter
     private double renderDelayInNanos = maxPing * 1_000_000.0;
@@ -33,8 +37,12 @@ public class RenderDelayManager {
     }
 
     private void updateDelay() {
-        renderDelayInNanos = maxPing * 1_000_000.0 + ADDITIONAL_DELAY_IN_MILLIS;
+        renderDelayInNanos = maxPing * 1_000_000.0;
+        int lastRenderDelayInFrames = renderDelayInFrames;
         renderDelayInFrames = Engine.convertMillisecondsToFrames(maxPing) + 1;
+        if (renderDelayInFrames != lastRenderDelayInFrames) {
+            eventBus.publish(new RenderDelayChangeEvent(renderDelayInFrames));
+        }
     }
 
     public void reset() {
