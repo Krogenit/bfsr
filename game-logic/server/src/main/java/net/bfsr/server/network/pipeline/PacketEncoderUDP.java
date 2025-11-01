@@ -22,7 +22,7 @@ public class PacketEncoderUDP extends MessageToMessageEncoder<AddressedEnvelope<
             throws IOException {
         Packet packet = msg.content();
         ByteBuf buffer = ctx.alloc().buffer();
-        buffer.writeByte(networkSystem.getPacketId(packet));
+        buffer.writeShort(networkSystem.getPacketId(packet));
         packet.write(buffer);
         out.add(new DatagramPacket(buffer, msg.recipient(), msg.sender()));
     }

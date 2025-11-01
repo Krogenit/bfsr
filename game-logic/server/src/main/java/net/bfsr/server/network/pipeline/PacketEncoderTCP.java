@@ -15,7 +15,7 @@ public class PacketEncoderTCP extends MessageToByteEncoder<Packet> {
 
     @Override
     protected void encode(ChannelHandlerContext ctx, Packet msg, ByteBuf out) throws IOException {
-        out.writeByte(networkSystem.getPacketId(msg));
+        out.writeShort(networkSystem.getPacketId(msg));
         msg.write(out);
     }
 }

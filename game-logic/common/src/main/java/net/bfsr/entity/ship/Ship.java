@@ -101,6 +101,9 @@ public class Ship extends DamageableRigidBody {
     @Setter
     private CommonRayCastManager rayCastManager;
 
+    @Getter
+    private boolean warpDrive;
+
     public Ship(ShipData shipData) {
         super(shipData.getSizeX(), shipData.getSizeY(), shipData, shipData.getPolygonJTS());
         this.configData = shipData;
@@ -133,8 +136,8 @@ public class Ship extends DamageableRigidBody {
         body.setAngularDamping(0.005f);
     }
 
-    private void addForce(Vector2f rotationVector, float speed) {
-        body.applyForceToCenter(rotationVector.x * speed, rotationVector.y * speed);
+    public void addForce(Vector2f normalizedForce, float power) {
+        body.applyForceToCenter(normalizedForce.x * power, normalizedForce.y * power);
     }
 
     public void move(Direction dir) {
@@ -256,17 +259,19 @@ public class Ship extends DamageableRigidBody {
     public void postPhysicsUpdate() {
         super.postPhysicsUpdate();
 
-        float maxForwardSpeed = modules.getEngines().getMaxForwardVelocity();
-        float maxForwardSpeedSquared = maxForwardSpeed * maxForwardSpeed;
-        float magnitudeSquared = body.getLinearVelocity().lengthSquared();
+        if (!warpDrive) {
+            float maxForwardSpeed = modules.getEngines().getMaxForwardVelocity();
+            float maxForwardSpeedSquared = maxForwardSpeed * maxForwardSpeed;
+            float magnitudeSquared = body.getLinearVelocity().lengthSquared();
 
-        float maxSideSpeed = maxForwardSpeedSquared * 0.8f;
-        if (moveDirections.size() > 0 && !moveDirections.contains(Direction.FORWARD) && magnitudeSquared > maxSideSpeed) {
-            float percent = maxSideSpeed / magnitudeSquared;
-            getLinearVelocity().mulLocal(percent);
-        } else if (magnitudeSquared > maxForwardSpeedSquared) {
-            float percent = maxForwardSpeedSquared / magnitudeSquared;
-            getLinearVelocity().mulLocal(percent);
+            float maxSideSpeed = maxForwardSpeedSquared * 0.8f;
+            if (moveDirections.size() > 0 && !moveDirections.contains(Direction.FORWARD) && magnitudeSquared > maxSideSpeed) {
+                float percent = (float) Math.sqrt(maxSideSpeed / magnitudeSquared);
+                getLinearVelocity().mulLocal(percent);
+            } else if (magnitudeSquared > maxForwardSpeedSquared) {
+                float percent = (float) Math.sqrt(maxForwardSpeedSquared / magnitudeSquared);
+                getLinearVelocity().mulLocal(percent);
+            }
         }
 
         modules.update();
@@ -373,19 +378,15 @@ public class Ship extends DamageableRigidBody {
         shipEventBus.publish(event);
     }
 
-    @Override
-    public void setRotation(float sin, float cos) {
-        super.setRotation(sin, cos);
-
-        if (!spawned) {
-            setJumpPosition();
-        }
-    }
-
     private void setJumpPosition() {
         float jumpLength = Math.max(getSizeX(), getSizeY()) * 1.25f + 2.5f;
         RotationHelper.angleToVelocity(getSin(), getCos(), -jumpLength, jumpPosition);
         jumpPosition.add(getX(), getY());
+    }
+
+    public void setWarpDrive(boolean warpDrive) {
+        this.warpDrive = warpDrive;
+        body.setActive(!warpDrive);
     }
 
     public void setDestroying() {

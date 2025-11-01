@@ -163,11 +163,11 @@ public class ShipRender extends DamageableRigidBodyRenderer {
                     float velocityX = -(float) body.getLinearVelocity().x;
                     float velocityY = -(float) body.getLinearVelocity().y;
 
-                    if (Math.abs(velocityX) > 0.5f) {
+                    if (Math.abs(velocityX) > 0.01f) {
                         engineEffectsRunnable.get(rigidBodyUtils.calculateDirectionToPoint(ship, velocityX + shipX, shipY)).run();
                     }
 
-                    if (Math.abs(velocityY) > 0.5f) {
+                    if (Math.abs(velocityY) > 0.01f) {
                         engineEffectsRunnable.get(rigidBodyUtils.calculateDirectionToPoint(ship, shipX, velocityY + shipY)).run();
                     }
                 };

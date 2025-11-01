@@ -41,7 +41,13 @@ public class ShipSpawnLogic extends DamageableRigidBodySpawnLogic<ShipSpawnData>
         world.add(ship, false);
 
         // This method should be called after ship added to world
-        if (spawnData.isSpawned()) ship.setSpawned();
+        if (spawnData.isSpawned()) {
+            ship.setSpawned();
+        }
+
+        if (spawnData.isWarpDrive()) {
+            ship.setWarpDrive(true);
+        }
 
         // Render instance with mask texture only available after ShipRender created when ship has added to world
         updateDamage(damageHandler, ship, spawnData);

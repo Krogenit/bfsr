@@ -211,7 +211,7 @@ public class NetworkSystem {
     }
 
     public Packet decodePacket(ByteBuf buffer) throws IOException {
-        int packetId = buffer.readByte();
+        int packetId = buffer.readShort();
 
         try {
             Packet packet = createPacket(packetId);
