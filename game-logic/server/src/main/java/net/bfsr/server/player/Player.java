@@ -36,10 +36,10 @@ public class Player {
     public void init(PlayerNetworkHandler networkHandler, EntityTrackingManager entityTrackingManager, PlayerManager playerManager,
                      AiFactory aiFactory) {
         this.networkHandler = networkHandler;
-        this.playerInputController = new PlayerInputController(this, networkHandler, entityTrackingManager, playerManager, aiFactory);
+        this.playerInputController = new PlayerInputController(this, networkHandler, entityTrackingManager, aiFactory);
     }
 
-    public void setShip(Ship ship, int frame) {
+    void setShip(Ship ship, int frame) {
         this.ship = ship;
         playerInputController.setShip(ship);
         networkHandler.sendTCPPacket(new PacketSetPlayerShip(ship, frame));

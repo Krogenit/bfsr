@@ -30,7 +30,6 @@ public class PlayerInputController {
     private final boolean[] buttonsStates = {false, false, false, false, false};
     private final RigidBodyUtils rigidBodyUtils = new RigidBodyUtils();
     private final EntityTrackingManager trackingManager;
-    private final PlayerManager playerManager;
     private final AiFactory aiFactory;
     private final LagCompensation lagCompensation = new LagCompensation();
     private final LagCompensationRayCastManager lagCompensationRayCastManager;
@@ -45,11 +44,10 @@ public class PlayerInputController {
     private Ship ship;
 
     PlayerInputController(Player player, PlayerNetworkHandler networkHandler, EntityTrackingManager trackingManager,
-                          PlayerManager playerManager, AiFactory aiFactory) {
+                          AiFactory aiFactory) {
         this.player = player;
         this.networkHandler = networkHandler;
         this.trackingManager = trackingManager;
-        this.playerManager = playerManager;
         this.aiFactory = aiFactory;
         this.lagCompensationRayCastManager = new LagCompensationRayCastManager(networkHandler.getWorld(), lagCompensation);
     }
@@ -135,7 +133,6 @@ public class PlayerInputController {
             this.ship.removeAllMoveDirections();
             this.ship.setControlledByPlayer(false);
             this.ship.setRayCastManager(networkHandler.getWorld().getRayCastManager());
-            playerManager.setPlayerControlledShip(player, null);
         }
 
         this.ship = ship;
@@ -146,7 +143,6 @@ public class PlayerInputController {
             ship.setControlledByPlayer(true);
             lagCompensationRayCastManager.setCompensateTimeInFrames(getClientDelayInFrames());
             ship.setRayCastManager(lagCompensationRayCastManager);
-            playerManager.setPlayerControlledShip(player, ship);
         }
     }
 

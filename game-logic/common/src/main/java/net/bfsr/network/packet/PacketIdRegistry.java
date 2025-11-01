@@ -16,7 +16,6 @@ public final class PacketIdRegistry {
     public static final int COMMAND = 108;
     public static final int PAUSE_GAME = 109;
     public static final int RESPAWN = 110;
-    public static final int SHIP_CONTROL = 111;
 
     public static final int SHIP_JUMP = 112;
 
