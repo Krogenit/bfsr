@@ -34,4 +34,10 @@ public final class MathUtils {
     public static void computeAABB(AABB aabb, Body body, AABB cache) {
         computeAABB(aabb, body, 0, 0, 0, 1, cache);
     }
+
+    public static float getAngle(float x1, float y1, float x2, float y2) {
+        float dot = x1 * x2 + y1 * y2;
+        float det = x1 * y2 - y1 * x2;
+        return Math.atan2(det, dot);
+    }
 }
