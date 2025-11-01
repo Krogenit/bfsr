@@ -13,6 +13,7 @@ import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.GuiType;
 import net.bfsr.network.packet.server.gui.PacketOpenGui;
+import net.bfsr.network.packet.server.player.PacketSetPlayerShip;
 import net.bfsr.server.database.PlayerRepository;
 import net.bfsr.server.entity.ship.ShipSpawner;
 
@@ -40,13 +41,13 @@ public class PlayerManager {
         } else {
             initShips(player, world);
             spawnShips(player, world, shipSpawner);
-            player.setShip(ship, frame);
+            setShip(player, ship, frame);
         }
     }
 
     public void respawnPlayer(World world, Player player, float x, float y, int frame, ShipSpawner shipSpawner) {
         Ship ship = createPlayerShip(world, x, y, random.nextFloat() * MathUtils.TWO_PI, player);
-        player.setShip(ship, frame);
+        setShip(player, ship, frame);
         shipSpawner.spawnShip(world, ship);
     }
 
@@ -81,6 +82,12 @@ public class PlayerManager {
         shipSpawner.spawnShip(world, ship);
     }
 
+    private void setShip(Player player, Ship ship, int frame) {
+        player.setShip(ship);
+        player.getPlayerInputController().setShip(ship);
+        player.getNetworkHandler().sendTCPPacket(new PacketSetPlayerShip(ship, frame));
+    }
+
     public void update(int frame) {
         for (int i = 0; i < players.size(); i++) {
             Player player = players.get(i);
@@ -91,8 +98,12 @@ public class PlayerManager {
     private void updatePlayerShips(Player player, int frame) {
         RigidBody lastAttacker = null;
         Ship ship = player.getShip();
+        if (ship == null) {
+            return;
+        }
+
         if (ship.isDead()) {
-            player.setShip(null, frame);
+            setShip(player, ship, frame);
             lastAttacker = ship.getLastAttacker();
         }
 

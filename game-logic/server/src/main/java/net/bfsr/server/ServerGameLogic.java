@@ -125,7 +125,7 @@ public abstract class ServerGameLogic extends GameLogic {
         super.update(frame, time);
 
         profiler.start("playerManager");
-        playerManager.update();
+        playerManager.update(frame);
         profiler.endStart("world");
         updateWorld(time, frame);
         profiler.endStart("network");

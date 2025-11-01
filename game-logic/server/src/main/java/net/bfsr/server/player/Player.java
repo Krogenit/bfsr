@@ -5,7 +5,6 @@ import lombok.Setter;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
-import net.bfsr.network.packet.server.player.PacketSetPlayerShip;
 import net.bfsr.server.ai.AiFactory;
 import net.bfsr.server.dto.Default;
 import net.bfsr.server.entity.EntityTrackingManager;
@@ -21,6 +20,7 @@ public class Player {
 
     @Setter
     private Faction faction;
+    @Setter
     private Ship ship;
 
     @Default
@@ -37,12 +37,6 @@ public class Player {
                      AiFactory aiFactory) {
         this.networkHandler = networkHandler;
         this.playerInputController = new PlayerInputController(this, networkHandler, entityTrackingManager, aiFactory);
-    }
-
-    void setShip(Ship ship, int frame) {
-        this.ship = ship;
-        playerInputController.setShip(ship);
-        networkHandler.sendTCPPacket(new PacketSetPlayerShip(ship, frame));
     }
 
     public float getX() {
