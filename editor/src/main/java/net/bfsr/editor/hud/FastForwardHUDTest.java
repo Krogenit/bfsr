@@ -41,7 +41,7 @@ class FastForwardHUDTest {
 
     private boolean fastForwardTesting;
     private final Vector2f shipVelocity = new Vector2f(0.01f, 0.01f);
-    private final EntityPositionHistory positionHistory = new EntityPositionHistory(5000L);
+    private final EntityPositionHistory positionHistory = new EntityPositionHistory(Engine.convertSecondsToFrames(5));
     private Ship fastForwardShip;
     private World world;
     private Bullet bullet;
@@ -86,7 +86,7 @@ class FastForwardHUDTest {
 
             double renderTime = Client.get().getRenderTime();
             int renderFrame = Client.get().getRenderFrame();
-            positionHistory.addPositionData(x, y, fastForwardShip.getSin(), fastForwardShip.getCos(), renderFrame);
+            positionHistory.addData(x, y, fastForwardShip.getSin(), fastForwardShip.getCos(), renderFrame);
 
             fastForwardShip.setPosition(x + shipVelocity.x, y + shipVelocity.y);
 

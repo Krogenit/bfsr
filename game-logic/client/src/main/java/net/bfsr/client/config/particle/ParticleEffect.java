@@ -50,7 +50,7 @@ public class ParticleEffect extends ConfigData {
     private float sourceVelocityXMultiplier, sourceVelocityYMultiplier;
     private String path;
     private int treeIndex;
-    private double spawnTime;
+    private float spawnTime;
 
     private final List<Particle> aliveParticles = new ArrayList<>();
     private final List<ParticleEffectSpawnRunnable> spawnRunnableList = new ArrayList<>();
@@ -131,7 +131,7 @@ public class ParticleEffect extends ConfigData {
         spawnRunnableList.clear();
 
         if (spawnOverTime > 0) {
-            spawnTime = 1.0 / spawnOverTime;
+            spawnTime = 1.0f / spawnOverTime;
         } else {
             spawnTime = 0;
         }

@@ -7,7 +7,6 @@ import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.event.entity.RigidBodyRemovedFromWorldEvent;
 import net.bfsr.engine.network.NetworkHandler;
 import net.bfsr.engine.network.packet.common.world.PacketWorldSnapshot;
-import net.bfsr.engine.network.sync.DataHistory;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 
@@ -18,35 +17,38 @@ public class EntityDataHistoryManager {
             return null;
         }
     };
-    private static final DataHistory<PacketWorldSnapshot.EntityData> EMPTY_DATA_HISTORY = new DataHistory<>(0,
-            new PacketWorldSnapshot.EntityData(0, 0, 0, 0, 0, new Vector2f())) {
+    private static final EntityVelocityHistory EMPTY_VELOCITY_HISTORY = new EntityVelocityHistory(0) {
         @Override
-        public @Nullable PacketWorldSnapshot.EntityData get(int frame) {
+        public @Nullable VelocityData get(int frame) {
             return null;
         }
     };
 
     private final Int2ObjectMap<EntityPositionHistory> positionHistoryMap = new Int2ObjectOpenHashMap<>();
-    private final Int2ObjectMap<DataHistory<PacketWorldSnapshot.EntityData>> dataHistoryMap = new Int2ObjectOpenHashMap<>();
+    private final Int2ObjectMap<EntityVelocityHistory> velocityHistoryMap = new Int2ObjectOpenHashMap<>();
 
     public EntityDataHistoryManager() {
         positionHistoryMap.defaultReturnValue(EMPTY_POSITION_HISTORY);
-        dataHistoryMap.defaultReturnValue(EMPTY_DATA_HISTORY);
+        velocityHistoryMap.defaultReturnValue(EMPTY_VELOCITY_HISTORY);
     }
 
     public void addData(PacketWorldSnapshot.EntityData entityData, int frame) {
         int id = entityData.getEntityId();
         addPositionData(id, entityData.getX(), entityData.getY(), entityData.getSin(), entityData.getCos(), frame);
-        synchronized (dataHistoryMap) {
-            dataHistoryMap.computeIfAbsent(id, key -> new DataHistory<>(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS,
-                    new PacketWorldSnapshot.EntityData(0, 0, 0, 0, 0, new Vector2f()))).addData(entityData);
-        }
+        addVelocityData(id, entityData.getVelocity(), entityData.getAngularVelocity(), frame);
     }
 
     public void addPositionData(int id, float x, float y, float sin, float cos, int frame) {
         synchronized (positionHistoryMap) {
-            positionHistoryMap.computeIfAbsent(id, key -> new EntityPositionHistory(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS))
-                    .addPositionData(x, y, sin, cos, frame);
+            positionHistoryMap.computeIfAbsent(id, key -> new EntityPositionHistory(NetworkHandler.GLOBAL_HISTORY_LENGTH_FRAMES))
+                    .addData(x, y, sin, cos, frame);
+        }
+    }
+
+    private void addVelocityData(int id, Vector2f velocity, float angularVelocity, int frame) {
+        synchronized (velocityHistoryMap) {
+            velocityHistoryMap.computeIfAbsent(id, key -> new EntityVelocityHistory(NetworkHandler.GLOBAL_HISTORY_LENGTH_FRAMES))
+                    .addData(velocity, angularVelocity, frame);
         }
     }
 
@@ -68,15 +70,15 @@ public class EntityDataHistoryManager {
         }
     }
 
-    public PacketWorldSnapshot.EntityData getAndRemoveFirstData(int id) {
-        synchronized (dataHistoryMap) {
-            return dataHistoryMap.get(id).getAndRemoveFirst();
+    public VelocityData getAndRemoveFirstData(int id) {
+        synchronized (velocityHistoryMap) {
+            return velocityHistoryMap.get(id).getAndRemoveFirst();
         }
     }
 
-    public PacketWorldSnapshot.EntityData getData(int id, int frame) {
-        synchronized (dataHistoryMap) {
-            return dataHistoryMap.get(id).getInterpolated(frame);
+    public VelocityData getData(int id, int frame) {
+        synchronized (velocityHistoryMap) {
+            return velocityHistoryMap.get(id).getInterpolated(frame);
         }
     }
 
@@ -87,8 +89,8 @@ public class EntityDataHistoryManager {
             synchronized (positionHistoryMap) {
                 positionHistoryMap.remove(id);
             }
-            synchronized (dataHistoryMap) {
-                dataHistoryMap.remove(id);
+            synchronized (velocityHistoryMap) {
+                velocityHistoryMap.remove(id);
             }
         };
     }
@@ -97,8 +99,8 @@ public class EntityDataHistoryManager {
         synchronized (positionHistoryMap) {
             positionHistoryMap.clear();
         }
-        synchronized (dataHistoryMap) {
-            dataHistoryMap.clear();
+        synchronized (velocityHistoryMap) {
+            velocityHistoryMap.clear();
         }
     }
 }

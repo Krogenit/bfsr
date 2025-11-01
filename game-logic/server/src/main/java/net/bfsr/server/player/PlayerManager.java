@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.RigidBody;
@@ -74,8 +73,6 @@ public class PlayerManager {
         List<Ship> ships = player.getShips();
         for (int i = 0; i < ships.size(); i++) {
             Ship ship = ships.get(i);
-            float angle = random.nextFloat() * MathUtils.TWO_PI;
-            ship.setRotation(LUT.sin(angle), LUT.cos(angle));
             shipFactory.initShip(ship, world, world.getNextId());
             ship.setFaction(player.getFaction());
             initShip(player, ship);

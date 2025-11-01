@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class RigidBodyUtils {
-    public final Vector2f rotateToVector = new Vector2f();
-    public final Vector2f angleToVelocity = new Vector2f();
+    private final Vector2f rotateToVector = new Vector2f();
+    private final Vector2f angleToVelocity = new Vector2f();
     private final List<Direction> directions = new ArrayList<>();
 
     public float getRotationDifference(RigidBody gameObject, Vector2f vector) {

@@ -5,10 +5,10 @@ import lombok.Setter;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.network.NetworkHandler;
-import net.bfsr.engine.network.packet.common.world.PacketWorldSnapshot;
-import net.bfsr.engine.network.sync.DataHistory;
 import net.bfsr.engine.world.entity.EntityPositionHistory;
+import net.bfsr.engine.world.entity.EntityVelocityHistory;
 import net.bfsr.engine.world.entity.TransformData;
+import net.bfsr.engine.world.entity.VelocityData;
 import org.jbox2d.common.Vector2;
 import org.joml.Vector2f;
 
@@ -19,9 +19,8 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
     private static final float SMALL_CORRECTION_FACTOR = 0.1f;
     private static final float FORCE_CORRECTION_TO_SERVER_THRESHOLD = 5.0f;
 
-    private final EntityPositionHistory positionHistory = new EntityPositionHistory(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS);
-    private final DataHistory<PacketWorldSnapshot.EntityData> dataHistory = new DataHistory<>(
-            NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS, new PacketWorldSnapshot.EntityData(0, 0, 0, 0, 0, new Vector2f()));
+    private final EntityPositionHistory positionHistory = new EntityPositionHistory(NetworkHandler.GLOBAL_HISTORY_LENGTH_FRAMES);
+    private final EntityVelocityHistory velocityHistory = new EntityVelocityHistory(NetworkHandler.GLOBAL_HISTORY_LENGTH_FRAMES);
     @Setter
     private int renderDelayInFrames;
 
@@ -100,12 +99,12 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
     }
 
     private void updateVelocity() {
-        PacketWorldSnapshot.EntityData serverData = dataHistoryManager.getAndRemoveFirstData(rigidBody.getId());
+        VelocityData serverData = dataHistoryManager.getAndRemoveFirstData(rigidBody.getId());
         if (serverData == null) {
             return;
         }
 
-        PacketWorldSnapshot.EntityData localData = dataHistory.getInterpolated(serverData.getFrame());
+        VelocityData localData = velocityHistory.getInterpolated(serverData.getFrame());
         if (localData == null) {
             return;
         }
@@ -153,15 +152,20 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
         }
 
         if (correctionX != 0.0f || correctionY != 0.0f || angularVelocityCorrectionAmount != 0.0f) {
-            dataHistory.forEach(entityData -> entityData.correction(correctionX, correctionY, angularVelocityCorrectionAmount));
+            velocityHistory.forEach(entityData -> entityData.correction(correctionX, correctionY, angularVelocityCorrectionAmount));
         }
     }
 
     @Override
     public void updateTransform(int frame) {
         int frameWithoutDelay = frame + renderDelayInFrames;
-        positionHistory.addPositionData(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), frameWithoutDelay);
-        dataHistory.addData(new PacketWorldSnapshot.EntityData(rigidBody, frameWithoutDelay));
+        positionHistory.addData(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), frameWithoutDelay);
+        VelocityData velocityData = new VelocityData();
+        Vector2 linearVelocity = rigidBody.getLinearVelocity();
+        velocityData.setVelocity(linearVelocity.x, linearVelocity.y);
+        velocityData.setAngularVelocity(rigidBody.getAngularVelocity());
+        velocityData.setFrame(frameWithoutDelay);
+        velocityHistory.addData(velocityData);
 
         updateTransform();
         updateVelocity();
@@ -172,6 +176,6 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
 
     public void clear() {
         positionHistory.clear();
-        dataHistory.clear();
+        velocityHistory.clear();
     }
 }

@@ -1,7 +1,7 @@
 package net.bfsr.engine.physics.correction;
 
-import net.bfsr.engine.network.packet.common.world.PacketWorldSnapshot;
 import net.bfsr.engine.world.entity.TransformData;
+import net.bfsr.engine.world.entity.VelocityData;
 import org.joml.Vector2f;
 
 public class HistoryCorrectionHandler extends CorrectionHandler {
@@ -16,7 +16,7 @@ public class HistoryCorrectionHandler extends CorrectionHandler {
 
     @Override
     public void updateData(int frame) {
-        PacketWorldSnapshot.EntityData entityData = dataHistoryManager.getData(rigidBody.getId(), frame);
+        VelocityData entityData = dataHistoryManager.getData(rigidBody.getId(), frame);
         if (entityData != null) {
             Vector2f serverVelocity = entityData.getVelocity();
             rigidBody.setVelocity(serverVelocity.x, serverVelocity.y);

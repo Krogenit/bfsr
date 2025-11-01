@@ -4,10 +4,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
-import net.bfsr.engine.network.packet.common.world.PacketWorldSnapshot;
 import net.bfsr.engine.world.entity.EntityDataHistoryManager;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.engine.world.entity.TransformData;
+import net.bfsr.engine.world.entity.VelocityData;
 import org.jbox2d.common.Vector2;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -53,7 +53,7 @@ public class CorrectionHandler {
     }
 
     public void updateData(int frame) {
-        PacketWorldSnapshot.EntityData entityData = dataHistoryManager.getData(rigidBody.getId(), frame);
+        VelocityData entityData = dataHistoryManager.getData(rigidBody.getId(), frame);
         if (entityData == null) {
             return;
         }

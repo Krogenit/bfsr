@@ -1,38 +1,34 @@
 package net.bfsr.engine.network.sync;
 
-import net.bfsr.engine.Engine;
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+@RequiredArgsConstructor
 public class DataHistory<T extends ChronologicalData<T>> {
     protected final List<T> dataList = new ArrayList<>();
     protected final int historyLengthFrames;
     private final T cachedData;
 
-    public DataHistory(double historyLengthMillis, T cachedData) {
-        this.historyLengthFrames = Engine.convertMillisecondsToFrames(historyLengthMillis);
-        this.cachedData = cachedData;
-    }
-
-    public void addData(T data) {
+    public void addData(T newData) {
         boolean added = false;
         for (int i = 0; i < dataList.size(); i++) {
-            T epd = dataList.get(i);
-            if (data.getFrame() > epd.getFrame()) {
-                dataList.add(i, data);
+            T data = dataList.get(i);
+            if (newData.getFrame() > data.getFrame()) {
+                dataList.add(i, newData);
                 added = true;
                 break;
             }
         }
 
         if (!added) {
-            dataList.add(data);
+            dataList.add(newData);
         }
 
-        removeOld(data.getFrame());
+        removeOld(newData.getFrame());
     }
 
     public void forEach(Consumer<T> consumer) {
@@ -42,10 +38,10 @@ public class DataHistory<T extends ChronologicalData<T>> {
     }
 
     protected void removeOld(int frameOfEntryAdded) {
-        double thresh = frameOfEntryAdded - historyLengthFrames;
+        int removeThreshold = frameOfEntryAdded - historyLengthFrames;
         while (dataList.size() > 0) {
-            T epd = dataList.getLast();
-            if (epd.getFrame() < thresh) {
+            T data = dataList.getLast();
+            if (data.getFrame() < removeThreshold) {
                 dataList.removeLast();
             } else {
                 break;
@@ -67,8 +63,8 @@ public class DataHistory<T extends ChronologicalData<T>> {
         return find(frame);
     }
 
-    protected T find(int frame) {
-        for (int i = 0, positionDataSize = dataList.size(); i < positionDataSize; i++) {
+    private T find(int frame) {
+        for (int i = 0, dataSize = dataList.size(); i < dataSize; i++) {
             T data = dataList.get(i);
             if (data.getFrame() <= frame) {
                 return data;

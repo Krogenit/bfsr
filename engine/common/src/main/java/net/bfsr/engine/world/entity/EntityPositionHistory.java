@@ -7,11 +7,11 @@ import org.jetbrains.annotations.Nullable;
 public class EntityPositionHistory extends DataHistory<TransformData> {
     private final ObjectPool<TransformData> cache = new ObjectPool<>(TransformData::new);
 
-    public EntityPositionHistory(double historyLengthMillis) {
-        super(historyLengthMillis, new TransformData());
+    public EntityPositionHistory(int historyLengthFrames) {
+        super(historyLengthFrames, new TransformData());
     }
 
-    public void addPositionData(float x, float y, float sin, float cos, int frame) {
+    public void addData(float x, float y, float sin, float cos, int frame) {
         TransformData positionData = cache.get();
         positionData.setPosition(x, y);
         positionData.setSin(sin);
@@ -47,7 +47,7 @@ public class EntityPositionHistory extends DataHistory<TransformData> {
             return dataList.getLast();
         }
 
-        for (int i = 0, positionDataSize = dataList.size(); i < positionDataSize; i++) {
+        for (int i = 0, dataSize = dataList.size(); i < dataSize; i++) {
             TransformData transformData = dataList.get(i);
             if (transformData.getFrame() <= frame) {
                 return transformData;
@@ -64,10 +64,10 @@ public class EntityPositionHistory extends DataHistory<TransformData> {
 
     @Override
     protected void removeOld(int frameOfEntryAdded) {
-        double thresh = frameOfEntryAdded - historyLengthFrames;
+        int removeThreshold = frameOfEntryAdded - historyLengthFrames;
         while (dataList.size() > 100) {
-            TransformData epd = dataList.getLast();
-            if (epd.getFrame() < thresh) {
+            TransformData transformData = dataList.getLast();
+            if (transformData.getFrame() < removeThreshold) {
                 cache.returnBack(dataList.removeLast());
             } else {
                 break;

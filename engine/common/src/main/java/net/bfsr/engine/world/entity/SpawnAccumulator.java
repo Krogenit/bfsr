@@ -5,7 +5,7 @@ import net.bfsr.engine.Engine;
 
 @Getter
 public class SpawnAccumulator {
-    private double accumulatedTime;
+    private float accumulatedTime;
 
     public void resetTime() {
         accumulatedTime = 0.0f;
@@ -15,7 +15,7 @@ public class SpawnAccumulator {
         accumulatedTime += Engine.getUpdateDeltaTimeInSeconds();
     }
 
-    public void consume(double spawnTime) {
+    public void consume(float spawnTime) {
         accumulatedTime -= spawnTime;
     }
 }

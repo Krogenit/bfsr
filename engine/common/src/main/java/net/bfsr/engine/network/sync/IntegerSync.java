@@ -4,9 +4,9 @@ public class IntegerSync {
     private final DataHistory<IntegerData> localDataHistory;
     private final DataHistory<IntegerData> remoteDataHistory;
 
-    public IntegerSync(double historyLengthMillis) {
-        localDataHistory = new DataHistory<>(historyLengthMillis, new IntegerData(0, 0));
-        remoteDataHistory = new DataHistory<>(historyLengthMillis, new IntegerData(0, 0));
+    public IntegerSync(int historyLengthFrames) {
+        localDataHistory = new DataHistory<>(historyLengthFrames, new IntegerData(0, 0));
+        remoteDataHistory = new DataHistory<>(historyLengthFrames, new IntegerData(0, 0));
     }
 
     public void addLocalData(int value, int frame) {
