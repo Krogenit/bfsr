@@ -35,7 +35,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -213,12 +212,9 @@ public class PlayerNetworkHandler extends NetworkHandler {
         if (player != null) {
             playerManager.removePlayer(player);
             playerManager.save(player);
-            List<Ship> ships = player.getShips();
-            for (int i = 0, shipsSize = ships.size(); i < shipsSize; i++) {
-                Ship ship = ships.get(i);
-                if (ship.getWorld() != null) {
-                    ship.setDead();
-                }
+            Ship ship = player.getShip();
+            if (ship.getWorld() != null) {
+                ship.setDead();
             }
 
             eventBus.publish(new PlayerDisconnectEvent(player));
@@ -228,7 +224,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
         }
     }
 
-    public void closeChannel(String reason) {
+    private void closeChannel(String reason) {
         socketChannel.close();
         terminationReason = reason;
         connectionStateBeforeDisconnect = connectionState;

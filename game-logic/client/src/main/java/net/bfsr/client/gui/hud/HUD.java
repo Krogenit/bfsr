@@ -14,9 +14,8 @@ import net.bfsr.entity.ship.Ship;
 import static net.bfsr.engine.input.Keys.KEY_ESCAPE;
 
 public class HUD extends HUDAdapter {
-    private final ShipOverlay shipOverlay = new ShipOverlay(this);
+    private final ShipOverlay shipOverlay = new ShipOverlay();
     protected final OtherShipOverlay otherShipOverlay = new OtherShipOverlay();
-    private final DebugInfoElement debugInfoElement = new DebugInfoElement(this);
     private final Chat chat = new Chat();
     private final HUDEventListener eventListener = new HUDEventListener(this);
 
@@ -25,7 +24,7 @@ public class HUD extends HUDAdapter {
         otherShipOverlay.atTopRight(0, 0);
         add(new MiniMap().atTopLeft(0, 0));
         add(chat.atBottomLeft(0, 0));
-        add(debugInfoElement.atTopRight(-6, -6));
+        add(new DebugInfoElement(this).atTopRight(-6, -6));
         Client.get().getEventBus().register(eventListener);
     }
 
@@ -52,8 +51,8 @@ public class HUD extends HUDAdapter {
         chat.addChatMessage(message);
     }
 
-    public void selectShip(Ship ship) {
-        shipOverlay.selectShip(ship);
+    public void setPlayerShip(Ship ship) {
+        shipOverlay.setShip(ship);
 
         if (ship != null) {
             addIfAbsent(shipOverlay);
@@ -62,8 +61,8 @@ public class HUD extends HUDAdapter {
         }
     }
 
-    public void selectShipSecondary(Ship ship) {
-        otherShipOverlay.selectShip(ship);
+    public void selectShip(Ship ship) {
+        otherShipOverlay.setShip(ship);
 
         if (ship != null) {
             addIfAbsent(otherShipOverlay);
@@ -74,10 +73,6 @@ public class HUD extends HUDAdapter {
 
     public Ship getSelectedShip() {
         return otherShipOverlay.getShip();
-    }
-
-    public void onShipControlStarted() {
-        shipOverlay.onShipControlStarted();
     }
 
     @Override

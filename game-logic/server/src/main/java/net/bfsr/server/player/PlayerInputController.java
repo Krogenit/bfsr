@@ -6,6 +6,7 @@ import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.RigidBodyUtils;
 import net.bfsr.engine.network.LagCompensation;
 import net.bfsr.engine.network.packet.server.player.PacketPlayerSyncLocalId;
+import net.bfsr.engine.world.entity.EntityIdManager;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
@@ -33,6 +34,12 @@ public class PlayerInputController {
     private final AiFactory aiFactory;
     private final LagCompensation lagCompensation = new LagCompensation();
     private final LagCompensationRayCastManager lagCompensationRayCastManager;
+    private final EntityIdManager localIdManager = new EntityIdManager(-1) {
+        @Override
+        public int getNextId() {
+            return id--;
+        }
+    };
 
     @Getter
     private Ship ship;
@@ -98,14 +105,14 @@ public class PlayerInputController {
                 ship.shoot(weaponSlot -> {
                     Bullet bullet = weaponSlot.createBullet(false);
                     if (bullet != null) {
-                        bullet.setClientId(player.getLocalIdManager().getNextId());
+                        bullet.setClientId(localIdManager.getNextId());
                         bullets.add(bullet);
                         weaponSlots.add(weaponSlot);
                     }
                 });
 
                 if (bullets.size() > 0) {
-                    networkHandler.sendUDPPacket(new PacketPlayerSyncLocalId(player.getLocalIdManager().getId(), frame));
+                    networkHandler.sendUDPPacket(new PacketPlayerSyncLocalId(localIdManager.getId(), frame));
                     lagCompensation.compensateBullets(bullets, fastForwardTimeInFrames, ship.getWorld(), frame);
                 }
 

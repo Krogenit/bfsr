@@ -51,7 +51,6 @@ public class PlayerManager {
 
     public void respawnPlayer(World world, Player player, float x, float y, int frame, ShipSpawner shipSpawner) {
         Ship ship = createPlayerShip(world, x, y, random.nextFloat() * MathUtils.TWO_PI, player);
-        player.addShip(ship);
         player.setShip(ship, frame);
         shipSpawner.spawnShip(world, ship);
     }
@@ -93,11 +92,10 @@ public class PlayerManager {
         }
     }
 
-    public void update(int frame) {
+    public void update() {
         for (int i = 0; i < players.size(); i++) {
             Player player = players.get(i);
             updatePlayerShips(player);
-            player.getPlayerInputController().update(frame);
         }
     }
 

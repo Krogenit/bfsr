@@ -6,6 +6,9 @@ import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.event.entity.RigidBodyAddToWorldEvent;
 import net.bfsr.engine.event.entity.RigidBodyPostPhysicsUpdateEvent;
+import net.bfsr.engine.physics.correction.CorrectionHandler;
+import net.bfsr.engine.world.entity.RigidBody;
+import org.jbox2d.dynamics.BodyType;
 
 public class WorldEventListener {
     private final Client client = Client.get();
@@ -18,6 +21,14 @@ public class WorldEventListener {
 
     @EventHandler
     public EventListener<RigidBodyPostPhysicsUpdateEvent> postPhysicsUpdateEvent() {
-        return event -> event.getRigidBody().getCorrectionHandler().update(client.getRenderTime(), client.getRenderFrame());
+        return event -> {
+            RigidBody rigidBody = event.getRigidBody();
+            if (rigidBody.getBody().getType() == BodyType.STATIC) {
+                return;
+            }
+
+            CorrectionHandler correctionHandler = rigidBody.getCorrectionHandler();
+            correctionHandler.update(client.getRenderTime(), client.getRenderFrame());
+        };
     }
 }

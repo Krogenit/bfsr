@@ -8,6 +8,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.network.packet.Packet;
 import net.bfsr.engine.network.packet.PacketRegistry;
 import net.bfsr.engine.util.Side;
@@ -124,7 +125,7 @@ public class NetworkSystem {
         List<Player> players = playerManager.getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
             Player player = players.get(i);
-            if (player.getPosition().distance(x, y) <= dist) {
+            if (MathUtils.distance(player.getX(), player.getY(), x, y) <= dist) {
                 protocol.accept(player.getNetworkHandler());
             }
         }
@@ -145,7 +146,7 @@ public class NetworkSystem {
         List<Player> players = playerManager.getPlayers();
         for (int i = 0, playersSize = players.size(); i < playersSize; i++) {
             Player player = players.get(i);
-            if (player1 != player && player.getPosition().distance(x, y) <= dist) {
+            if (player1 != player && MathUtils.distance(player.getX(), player.getY(), x, y) <= dist) {
                 protocol.accept(player.getNetworkHandler());
             }
         }

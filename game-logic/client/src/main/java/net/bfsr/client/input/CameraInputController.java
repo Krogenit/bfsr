@@ -3,6 +3,7 @@ package net.bfsr.client.input;
 import net.bfsr.client.Client;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.settings.ClientSettings;
+import net.bfsr.client.world.entity.PlayerShipManager;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
@@ -17,14 +18,10 @@ import org.joml.Vector2f;
 
 import java.util.List;
 
-import static net.bfsr.engine.input.Keys.KEY_A;
-import static net.bfsr.engine.input.Keys.KEY_D;
 import static net.bfsr.engine.input.Keys.KEY_DOWN;
 import static net.bfsr.engine.input.Keys.KEY_LEFT;
 import static net.bfsr.engine.input.Keys.KEY_RIGHT;
-import static net.bfsr.engine.input.Keys.KEY_S;
 import static net.bfsr.engine.input.Keys.KEY_UP;
-import static net.bfsr.engine.input.Keys.KEY_W;
 
 public class CameraInputController extends InputController {
     private final Client client;
@@ -33,13 +30,13 @@ public class CameraInputController extends InputController {
     private final GuiManager guiManager = Engine.getGuiManager();
     private final AbstractMouse mouse = Engine.getMouse();
     private final AbstractKeyboard keyboard = Engine.getKeyboard();
-    private final PlayerInputController playerInputController;
+    private final PlayerShipManager playerShipManager;
 
     private @Nullable Ship followShip;
 
-    public CameraInputController(Client client, PlayerInputController playerInputController) {
+    public CameraInputController(Client client, PlayerShipManager playerShipManager) {
         this.client = client;
-        this.playerInputController = playerInputController;
+        this.playerShipManager = playerShipManager;
 
         client.getEventBus().register(this);
     }
@@ -55,17 +52,16 @@ public class CameraInputController extends InputController {
                 moveByScreenBorders();
             }
 
-            boolean noShip = !playerInputController.isControllingShip();
             float keyMoveSpeed = ClientSettings.CAMERA_MOVE_BY_KEY_SPEED.getFloat() * Engine.convertToDeltaTime(60.0f);
-            if (keyboard.isKeyDown(KEY_LEFT) || (noShip && keyboard.isKeyDown(KEY_A))) {
+            if (keyboard.isKeyDown(KEY_LEFT)) {
                 camera.move(-keyMoveSpeed, 0);
-            } else if (keyboard.isKeyDown(KEY_RIGHT) || (noShip && keyboard.isKeyDown(KEY_D))) {
+            } else if (keyboard.isKeyDown(KEY_RIGHT)) {
                 camera.move(keyMoveSpeed, 0);
             }
 
-            if (keyboard.isKeyDown(KEY_UP) || (noShip && keyboard.isKeyDown(KEY_W))) {
+            if (keyboard.isKeyDown(KEY_UP)) {
                 camera.move(0, keyMoveSpeed);
-            } else if (keyboard.isKeyDown(KEY_DOWN) || (noShip && keyboard.isKeyDown(KEY_S))) {
+            } else if (keyboard.isKeyDown(KEY_DOWN)) {
                 camera.move(0, -keyMoveSpeed);
             }
         }
@@ -77,7 +73,7 @@ public class CameraInputController extends InputController {
 
     private void followShip() {
         Vector2f position = camera.getPosition();
-        Ship playerShip = playerInputController.getShip();
+        Ship playerShip = playerShipManager.getShip();
         if (playerShip != null) {
             float x = playerShip.getX();
             float y = playerShip.getY();

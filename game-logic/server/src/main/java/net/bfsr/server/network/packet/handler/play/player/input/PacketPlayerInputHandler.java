@@ -20,8 +20,6 @@ public class PacketPlayerInputHandler extends PacketHandler<PacketPlayerInput, P
             return;
         }
 
-        player.setPosition(packet.getCameraX(), packet.getCameraY());
-
         PlayerInputController playerInputController = player.getPlayerInputController();
         playerInputController.setMousePosition(packet.getMouseWorldX(), packet.getMouseWorldY());
 

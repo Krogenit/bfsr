@@ -361,7 +361,7 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
         }
     }
 
-    protected void onCurrentShipSelected() {
+    protected void onShipAdd() {
         calculateScale();
 
         if (isOnScene) {
@@ -369,17 +369,17 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
         }
     }
 
-    protected void onCurrentShipDeselected() {}
+    protected void onShipRemove() {}
 
-    public void selectShip(Ship ship) {
+    public void setShip(Ship ship) {
         if (this.ship != null) {
-            onCurrentShipDeselected();
+            onShipRemove();
         }
 
         this.ship = ship;
 
         if (this.ship != null) {
-            onCurrentShipSelected();
+            onShipAdd();
         }
     }
 }

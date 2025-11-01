@@ -3,9 +3,9 @@ package net.bfsr.client.gui.ingame;
 import net.bfsr.client.Client;
 import net.bfsr.client.font.FontType;
 import net.bfsr.client.gui.hud.HUD;
-import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.settings.ClientSettings;
+import net.bfsr.client.world.entity.PlayerShipManager;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.BlankGuiObject;
 import net.bfsr.engine.gui.component.GuiObject;
@@ -42,7 +42,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
 
     private final Client client = Client.get();
     private final ParticleRenderer particleRenderer = client.getGlobalRenderer().getParticleRenderer();
-    private final PlayerInputController playerInputController = client.getPlayerInputController();
+    private final PlayerShipManager playerShipManager = client.getPlayerShipManager();
 
     private final AbstractRenderer renderer = Engine.getRenderer();
     private final AbstractCamera camera = renderer.getCamera();
@@ -156,7 +156,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
                 })).getHeight();
         y -= addMinimizableWithLabel(width, height, y, "Player ship", createLabel(0, "",
                 label1 -> {
-                    Ship playerShip = playerInputController.getShip();
+                    Ship playerShip = playerShipManager.getShip();
                     if (playerShip != null) {
                         Vector2 velocity = playerShip.getLinearVelocity();
                         Shield shield = playerShip.getModules().getShield();

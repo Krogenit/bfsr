@@ -1,4 +1,4 @@
-package net.bfsr.client.event.gui;
+package net.bfsr.client.event.player;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +7,6 @@ import net.bfsr.entity.ship.Ship;
 
 @Getter
 @RequiredArgsConstructor
-public class SelectSecondaryShipEvent extends Event {
+public class SetPlayerShipEvent extends Event {
     private final Ship ship;
 }

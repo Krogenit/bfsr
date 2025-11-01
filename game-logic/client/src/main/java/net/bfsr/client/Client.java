@@ -72,9 +72,10 @@ public class Client extends ClientGameLogic {
 
     private final ConfigSettings settings = new ConfigSettings();
 
+    private final PlayerShipManager playerShipManager = new PlayerShipManager(this);
     private final PlayerInputController playerInputController = new PlayerInputController(this);
     private final InputHandler inputHandler = new InputHandler(new GuiInputController(),
-            new CameraInputController(this, playerInputController), playerInputController, new DebugInputController(this));
+            new CameraInputController(this, playerShipManager), playerInputController, new DebugInputController(this));
 
     private final GuiManager guiManager = Engine.getGuiManager();
 
@@ -157,6 +158,7 @@ public class Client extends ClientGameLogic {
         renderFrame = frame - renderDelayManager.getRenderDelayInFrames() + networkSystem.getAveragePingInFrames();
 
         timeSyncManager.update();
+        playerShipManager.update();
 
         profiler.start("renderManager");
 

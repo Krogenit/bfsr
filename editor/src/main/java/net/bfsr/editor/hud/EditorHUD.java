@@ -74,8 +74,8 @@ public class EditorHUD extends HUD {
     }
 
     @Override
-    public void selectShipSecondary(Ship ship) {
-        super.selectShipSecondary(ship);
+    public void selectShip(Ship ship) {
+        super.selectShip(ship);
 
         if (ship != null) {
             addIfAbsent(commandsRectangle);

@@ -40,4 +40,10 @@ public final class MathUtils {
         float det = x1 * y2 - y1 * x2;
         return Math.atan2(det, dot);
     }
+
+    public static float distance(float x1, float y1, float x2, float y2) {
+        float dx = x1 - x2;
+        float dy = y1 - y2;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
 }

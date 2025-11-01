@@ -39,8 +39,6 @@ public class PacketPlayerInput extends PacketAdapter {
      */
     private boolean[] buttonsStates;
 
-    private float cameraX, cameraY;
-
     @Override
     public void write(ByteBuf data) throws IOException {
         data.writeInt(renderDelayInFrames);
@@ -56,9 +54,6 @@ public class PacketPlayerInput extends PacketAdapter {
         for (int i = 0; i < BUTTON_STATES_SIZE; i++) {
             data.writeBoolean(buttonsStates[i]);
         }
-
-        data.writeFloat(cameraX);
-        data.writeFloat(cameraY);
     }
 
     @Override
@@ -78,9 +73,6 @@ public class PacketPlayerInput extends PacketAdapter {
         for (int i = 0; i < buttonsStates.length; i++) {
             buttonsStates[i] = data.readBoolean();
         }
-
-        cameraX = data.readFloat();
-        cameraY = data.readFloat();
     }
 
     @Override

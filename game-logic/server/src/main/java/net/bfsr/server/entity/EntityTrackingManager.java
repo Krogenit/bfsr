@@ -18,7 +18,7 @@ import net.bfsr.server.event.PlayerJoinGameEvent;
 import net.bfsr.server.network.EntitySyncManager;
 import net.bfsr.server.network.NetworkSystem;
 import net.bfsr.server.player.Player;
-import org.joml.Vector2f;
+import org.jbox2d.dynamics.BodyType;
 
 import java.util.List;
 
@@ -55,14 +55,13 @@ public class EntityTrackingManager {
     public void update(int frame, double time, List<? extends RigidBody> entities) {
         playerEntitiesInRangeMap.object2ObjectEntrySet().fastForEach(entry -> {
             Player player = entry.getKey();
-            Vector2f position = player.getPosition();
             IntOpenHashSet entitiesInRange = entry.getValue();
 
             for (int i = 0, size = entities.size(); i < size; i++) {
                 RigidBody rigidBody = entities.get(i);
                 int id = rigidBody.getId();
-                float dx = rigidBody.getX() - position.x;
-                float dy = rigidBody.getY() - position.y;
+                float dx = rigidBody.getX() - player.getX();
+                float dy = rigidBody.getY() - player.getY();
                 float distSq = dx * dx + dy * dy;
 
                 if (entitiesInRange.contains(id)) {
@@ -71,7 +70,9 @@ public class EntityTrackingManager {
                         entityTrackingByPlayersMap.get(id).remove(player);
                         network.sendTCPPacketTo(new PacketEntityRemove(id, frame), player);
                     } else {
-                        entitySyncManager.addToSyncQueue(rigidBody, frame, time, player);
+                        if (rigidBody.getBody().getType() == BodyType.DYNAMIC) {
+                            entitySyncManager.addToSyncQueue(rigidBody, frame, time, player);
+                        }
                     }
                 } else {
                     if (!rigidBody.isDead() && player.canTrackEntity(rigidBody) && distSq <= TRACKING_DISTANCE_SQ) {
