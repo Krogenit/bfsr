@@ -3,6 +3,7 @@ package net.bfsr.client.world.entity;
 import net.bfsr.client.damage.DamageHandler;
 import net.bfsr.config.component.weapon.gun.GunRegistry;
 import net.bfsr.config.entity.ship.ShipRegistry;
+import net.bfsr.config.entity.station.StationRegistry;
 import net.bfsr.config.entity.wreck.WreckRegistry;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.config.ConfigConverterManager;
@@ -35,6 +36,7 @@ public class EntitySpawnDataRegistry {
         spawnLogics[EntityTypes.WRECK.ordinal()] = new WreckSpawnLogic(configConverterManager.getConverter(WreckRegistry.class),
                 gameLogic.addObjectPool(Wreck.class, new ObjectPool<>(Wreck::new)));
         spawnLogics[EntityTypes.BULLET.ordinal()] = new BulletSpawnLogic(configConverterManager.getConverter(GunRegistry.class));
+        spawnLogics[EntityTypes.STATION.ordinal()] = new StationSpawnLogic(configConverterManager.getConverter(StationRegistry.class));
     }
 
     public EntityPacketSpawnData<?> createSpawnData(int entityId) {

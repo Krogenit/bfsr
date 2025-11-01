@@ -5,6 +5,7 @@ import net.bfsr.engine.network.packet.common.world.entity.spawn.EntityPacketSpaw
 import net.bfsr.engine.network.packet.common.world.entity.spawn.RigidBodySpawnData;
 import net.bfsr.network.packet.common.entity.spawn.BulletSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.ShipWreckSpawnData;
+import net.bfsr.network.packet.common.entity.spawn.StationSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.WreckSpawnData;
 import net.bfsr.network.packet.common.entity.spawn.ship.ShipSpawnData;
 
@@ -16,7 +17,8 @@ public enum EntityTypes {
     SHIP(ShipSpawnData::new),
     SHIP_WRECK(ShipWreckSpawnData::new),
     WRECK(WreckSpawnData::new),
-    BULLET(BulletSpawnData::new);
+    BULLET(BulletSpawnData::new),
+    STATION(StationSpawnData::new);
 
     @SuppressWarnings("PublicStaticArrayField")
     public static final EntityTypes[] VALUES = values();

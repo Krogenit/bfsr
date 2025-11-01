@@ -7,12 +7,14 @@ import net.bfsr.client.renderer.entity.BulletRender;
 import net.bfsr.client.renderer.entity.RigidBodyRender;
 import net.bfsr.client.renderer.entity.ShipRender;
 import net.bfsr.client.renderer.entity.ShipWreckRenderer;
+import net.bfsr.client.renderer.entity.StationRender;
 import net.bfsr.client.renderer.entity.WreckRender;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.engine.config.ConfigConverterManager;
 import net.bfsr.engine.config.entity.GameObjectConfigData;
 import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.world.entity.RigidBody;
+import net.bfsr.entity.Station;
 import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.ShipWreck;
@@ -33,6 +35,7 @@ class EntityRenderRegistry {
         put(ShipWreck.class, rigidBody -> new ShipWreckRenderer(rigidBody, shipRegistry.get(rigidBody.getDataId()).getTexture()));
         put(Wreck.class, WreckRender::new);
         put(Bullet.class, BulletRender::new);
+        put(Station.class, StationRender::new);
     }
 
     private <T> void put(Class<T> rigidBodyClass, Function<T, RigidBodyRender> function) {

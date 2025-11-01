@@ -4,6 +4,7 @@ import net.bfsr.client.Client;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.command.Command;
 import net.bfsr.editor.gui.EditorTheme;
+import net.bfsr.editor.gui.GuiStationEditor;
 import net.bfsr.editor.gui.particle.GuiParticleEditor;
 import net.bfsr.editor.gui.ship.GuiShipEditor;
 import net.bfsr.engine.gui.component.Button;
@@ -33,6 +34,9 @@ public class EditorHUD extends HUD {
         y += buttonHeight;
         add(EditorTheme.setupButton(new Button(buttonWidth, buttonHeight, "Ship Editor", 22,
                 (mouseX, mouseY) -> Client.get().openGui(new GuiShipEditor()))).atLeft(0, y));
+        y += buttonHeight;
+        add(EditorTheme.setupButton(new Button(buttonWidth, buttonHeight, "Station Editor", 22,
+                (mouseX, mouseY) -> Client.get().openGui(new GuiStationEditor()))).atLeft(0, y));
         y += buttonHeight;
         add(EditorTheme.setupButton(new Button(buttonWidth, buttonHeight, "Fast Forward Test", 22,
                 (mouseX, mouseY) -> fastForwardHUDTest.toggle())).atLeft(0, y));

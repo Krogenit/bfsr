@@ -13,5 +13,6 @@ public class CommonEntityManager extends AbstractEntityManager {
         registerEntity(Bullet.class);
         registerEntity(ShipWreck.class);
         registerEntity(Wreck.class);
+        registerEntity(Station.class);
     }
 }
