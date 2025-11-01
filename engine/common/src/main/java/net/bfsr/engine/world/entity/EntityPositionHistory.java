@@ -2,7 +2,6 @@ package net.bfsr.engine.world.entity;
 
 import net.bfsr.engine.network.sync.DataHistory;
 import net.bfsr.engine.util.ObjectPool;
-import org.jetbrains.annotations.Nullable;
 
 public class EntityPositionHistory extends DataHistory<TransformData> {
     private final ObjectPool<TransformData> cache = new ObjectPool<>(TransformData::new);
@@ -47,37 +46,17 @@ public class EntityPositionHistory extends DataHistory<TransformData> {
             return dataList.getLast();
         }
 
-        for (int i = 0, dataSize = dataList.size(); i < dataSize; i++) {
-            TransformData transformData = dataList.get(i);
-            if (transformData.getFrame() <= frame) {
-                return transformData;
-            }
-        }
-
-        return null;
+        return find(frame);
     }
 
     @Override
-    public @Nullable TransformData getFirst() {
-        return dataList.isEmpty() ? null : dataList.get(0);
-    }
-
-    @Override
-    protected void removeOld(int frameOfEntryAdded) {
-        int removeThreshold = frameOfEntryAdded - historyLengthFrames;
-        while (dataList.size() > 100) {
-            TransformData transformData = dataList.getLast();
-            if (transformData.getFrame() < removeThreshold) {
-                cache.returnBack(dataList.removeLast());
-            } else {
-                break;
-            }
-        }
+    protected void onOldDataRemoved(TransformData data) {
+        cache.returnBack(data);
     }
 
     @Override
     public void clear() {
-        dataList.clear();
+        super.clear();
         cache.clear();
     }
 }

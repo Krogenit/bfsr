@@ -197,12 +197,12 @@ public class RigidBody extends GameObject {
         body.setLinearVelocity(x, y);
     }
 
-    public void setAngularVelocity(float angularVelocity) {
-        body.setAngularVelocity(angularVelocity);
+    public void setVelocity(Vector2 velocity) {
+        body.setLinearVelocity(velocity);
     }
 
-    public void setLinearVelocity(Vector2 velocity) {
-        body.setLinearVelocity(velocity);
+    public void setAngularVelocity(float angularVelocity) {
+        body.setAngularVelocity(angularVelocity);
     }
 
     public void setCorrectionHandler(CorrectionHandler correctionHandler) {

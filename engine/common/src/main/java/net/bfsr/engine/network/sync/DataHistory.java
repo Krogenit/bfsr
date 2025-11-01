@@ -37,17 +37,19 @@ public class DataHistory<T extends ChronologicalData<T>> {
         }
     }
 
-    protected void removeOld(int frameOfEntryAdded) {
+    private void removeOld(int frameOfEntryAdded) {
         int removeThreshold = frameOfEntryAdded - historyLengthFrames;
         while (dataList.size() > 0) {
             T data = dataList.getLast();
             if (data.getFrame() < removeThreshold) {
-                dataList.removeLast();
+                onOldDataRemoved(dataList.removeLast());
             } else {
                 break;
             }
         }
     }
+
+    protected void onOldDataRemoved(T data) {}
 
     public T get(int frame) {
         if (dataList.isEmpty()) {
@@ -63,7 +65,7 @@ public class DataHistory<T extends ChronologicalData<T>> {
         return find(frame);
     }
 
-    private T find(int frame) {
+    protected T find(int frame) {
         for (int i = 0, dataSize = dataList.size(); i < dataSize; i++) {
             T data = dataList.get(i);
             if (data.getFrame() <= frame) {

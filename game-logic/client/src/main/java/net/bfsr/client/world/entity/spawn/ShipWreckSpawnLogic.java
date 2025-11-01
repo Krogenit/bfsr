@@ -1,4 +1,4 @@
-package net.bfsr.client.world.entity;
+package net.bfsr.client.world.entity.spawn;
 
 import lombok.RequiredArgsConstructor;
 import net.bfsr.client.damage.DamageHandler;

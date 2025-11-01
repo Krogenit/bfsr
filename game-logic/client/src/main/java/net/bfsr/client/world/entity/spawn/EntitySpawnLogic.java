@@ -1,4 +1,4 @@
-package net.bfsr.client.world.entity;
+package net.bfsr.client.world.entity.spawn;
 
 import net.bfsr.engine.config.ConfigConverterManager;
 import net.bfsr.engine.network.packet.common.world.entity.spawn.EntityPacketSpawnData;

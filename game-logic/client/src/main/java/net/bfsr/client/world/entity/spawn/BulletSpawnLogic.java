@@ -1,4 +1,4 @@
-package net.bfsr.client.world.entity;
+package net.bfsr.client.world.entity.spawn;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -24,7 +24,7 @@ public class BulletSpawnLogic implements EntitySpawnLogic<BulletSpawnData> {
     @Override
     public void spawn(BulletSpawnData spawnData, World world, ConfigConverterManager configConverterManager, AbstractRenderer renderer) {
         int clientId = spawnData.getClientId();
-        Ship ship = Client.get().getPlayerInputController().getShip();
+        Ship ship = Client.get().getPlayerShipManager().getShip();
         if (clientId < 0 && ship != null && spawnData.getOwnerId() == ship.getId()) {
             Bullet bullet = world.getEntityById(clientId);
             if (bullet != null) {

@@ -16,8 +16,8 @@ public class TransformData extends ChronologicalData<TransformData> {
     public void getInterpolated(TransformData other, int frame, float interpolation, TransformData destination) {
         destination.position.set(position.x + (other.position.x - position.x) * interpolation,
                 position.y + (other.position.y - position.y) * interpolation);
-        destination.setSin(sin + (other.sin - sin) * interpolation);
-        destination.setCos(cos + (other.cos - cos) * interpolation);
+        destination.sin = sin + (other.sin - sin) * interpolation;
+        destination.cos = cos + (other.cos - cos) * interpolation;
         destination.frame = frame;
     }
 

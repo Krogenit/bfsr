@@ -15,12 +15,12 @@ public class HistoryCorrectionHandler extends CorrectionHandler {
     }
 
     @Override
-    public void updateData(int frame) {
-        VelocityData entityData = dataHistoryManager.getData(rigidBody.getId(), frame);
-        if (entityData != null) {
-            Vector2f serverVelocity = entityData.getVelocity();
+    public void updateVelocityData(int frame) {
+        VelocityData velocityData = dataHistoryManager.getVelocityData(rigidBody.getId(), frame);
+        if (velocityData != null) {
+            Vector2f serverVelocity = velocityData.getVelocity();
             rigidBody.setVelocity(serverVelocity.x, serverVelocity.y);
-            rigidBody.setAngularVelocity(entityData.getAngularVelocity());
+            rigidBody.setAngularVelocity(velocityData.getAngularVelocity());
         }
     }
 }

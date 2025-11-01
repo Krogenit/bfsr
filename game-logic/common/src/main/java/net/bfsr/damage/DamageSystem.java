@@ -246,7 +246,7 @@ public final class DamageSystem {
             Coordinate localCenter = polygon.getCentroid().getCoordinate();
             ShipWreck wreck = createWreck(world, x, y, sin, cos, sizeX, sizeY, polygon,
                     damageMask, configData, localCenter);
-            wreck.setLinearVelocity(rigidBody.getLinearVelocity());
+            wreck.setVelocity(rigidBody.getLinearVelocity());
             wreck.setAngularVelocity(rigidBody.getAngularVelocity());
 
             for (int j = 0; j < removedConnectedObjects.size(); j++) {

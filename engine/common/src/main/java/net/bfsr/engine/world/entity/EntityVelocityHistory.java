@@ -20,21 +20,13 @@ public class EntityVelocityHistory extends DataHistory<VelocityData> {
     }
 
     @Override
-    protected void removeOld(int frameOfEntryAdded) {
-        int removeThreshold = frameOfEntryAdded - historyLengthFrames;
-        while (dataList.size() > 100) {
-            VelocityData velocityData = dataList.getLast();
-            if (velocityData.getFrame() < removeThreshold) {
-                cache.returnBack(dataList.removeLast());
-            } else {
-                break;
-            }
-        }
+    protected void onOldDataRemoved(VelocityData data) {
+        cache.returnBack(data);
     }
 
     @Override
     public void clear() {
-        dataList.clear();
+        super.clear();
         cache.clear();
     }
 }

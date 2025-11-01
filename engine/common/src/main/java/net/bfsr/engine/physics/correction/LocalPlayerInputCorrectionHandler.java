@@ -99,7 +99,7 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
     }
 
     private void updateVelocity() {
-        VelocityData serverData = dataHistoryManager.getAndRemoveFirstData(rigidBody.getId());
+        VelocityData serverData = dataHistoryManager.getAndRemoveFirstVelocityData(rigidBody.getId());
         if (serverData == null) {
             return;
         }
@@ -172,7 +172,7 @@ public class LocalPlayerInputCorrectionHandler extends CorrectionHandler {
     }
 
     @Override
-    public void updateData(int frame) {}
+    public void updateVelocityData(int frame) {}
 
     public void clear() {
         positionHistory.clear();

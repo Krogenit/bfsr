@@ -58,6 +58,12 @@ public class EntityDataHistoryManager {
         }
     }
 
+    public VelocityData getVelocityData(int id, int frame) {
+        synchronized (velocityHistoryMap) {
+            return velocityHistoryMap.get(id).getInterpolated(frame);
+        }
+    }
+
     public TransformData getFirstTransformData(int id) {
         synchronized (positionHistoryMap) {
             return positionHistoryMap.get(id).getFirst();
@@ -70,15 +76,9 @@ public class EntityDataHistoryManager {
         }
     }
 
-    public VelocityData getAndRemoveFirstData(int id) {
+    public VelocityData getAndRemoveFirstVelocityData(int id) {
         synchronized (velocityHistoryMap) {
             return velocityHistoryMap.get(id).getAndRemoveFirst();
-        }
-    }
-
-    public VelocityData getData(int id, int frame) {
-        synchronized (velocityHistoryMap) {
-            return velocityHistoryMap.get(id).getInterpolated(frame);
         }
     }
 

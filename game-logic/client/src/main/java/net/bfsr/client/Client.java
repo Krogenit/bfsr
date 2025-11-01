@@ -150,10 +150,8 @@ public class Client extends ClientGameLogic {
     @Override
     public void update(int frame, double time) {
         super.update(frame, time);
-        renderTime = time
-                + networkSystem.getAveragePing() * 1_000_000.0
-                - renderDelayManager.getRenderDelayInNanos();
 
+        renderTime = time - renderDelayManager.getRenderDelayInNanos() + networkSystem.getAveragePing() * 1_000_000.0;
         renderFrame = frame - renderDelayManager.getRenderDelayInFrames() + networkSystem.getAveragePingInFrames();
 
         profiler.start("renderManager");
