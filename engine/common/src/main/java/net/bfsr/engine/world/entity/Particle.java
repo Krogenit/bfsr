@@ -70,7 +70,7 @@ public class Particle extends GameObject {
         this.angularVelocityCos = LUT.cos(angularVelocityInFrames);
         super.setSize(scaleX, scaleY);
         this.sizeVelocity = Engine.convertToDeltaTime(sizeVelocity);
-        this.zeroVelocity = velocity.lengthSquared() <= 0.01f;
+        this.zeroVelocity = velocity.lengthSquared() <= 0.0001f;
         this.isDead = false;
         this.updateLogic = updateLogic;
         addParticle();

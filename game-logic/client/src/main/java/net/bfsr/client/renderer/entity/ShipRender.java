@@ -425,7 +425,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
             Ship ship = event.ship();
             Vector2 velocity = ship.getLinearVelocity();
             Vector4f effectsColor = ship.getConfigData().getEffectsColor();
-            jumpEffects.jump(ship.getX(), ship.getY(), jumpEffectSize * 1.25f, velocity.x * 0.5f, velocity.y * 0.5f,
+            jumpEffects.jump(ship.getX(), ship.getY(), jumpEffectSize, velocity.x, velocity.y,
                     effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
             createName();
             if (spawnEffectId != -1) {

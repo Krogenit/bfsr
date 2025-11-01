@@ -246,7 +246,8 @@ public class Ship extends DamageableRigidBody {
 
     private void updateJump() {
         if (jumpTimer-- == 0) {
-            RotationHelper.angleToVelocity(getSin(), getCos(), 15.0f, rotationHelper);
+            float maxForwardSpeed = modules.getEngines().getMaxForwardVelocity();
+            RotationHelper.angleToVelocity(getSin(), getCos(), maxForwardSpeed, rotationHelper);
             setVelocity(rotationHelper.x, rotationHelper.y);
             setSpawned();
         }
