@@ -4,6 +4,7 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.Client;
 import net.bfsr.client.network.NetworkSystem;
+import net.bfsr.client.network.TimeSyncManager;
 import net.bfsr.engine.collection.UnorderedArrayList;
 import net.bfsr.engine.network.packet.PacketHandler;
 import net.bfsr.engine.network.packet.common.world.PacketWorldSnapshot;
@@ -18,15 +19,7 @@ public class PacketWorldSnapshotHandler extends PacketHandler<PacketWorldSnapsho
     @Override
     public void handle(PacketWorldSnapshot packet, NetworkSystem networkSystem, ChannelHandlerContext ctx,
                        InetSocketAddress remoteAddress) {
-        double time = client.getTime();
-        double serverTime = packet.getTime();
-        double clientPrediction = client.getNetworkSystem().getAveragePing() * 1_000_000.0;
-        if (time < serverTime || time > serverTime + clientPrediction) {
-            log.info("Adjust client time and frame, frame diff: {}", packet.getFrame() - client.getFrame());
-
-            client.setTime(serverTime);
-            client.setFrame(packet.getFrame());
-        }
+        client.getTimeSyncManager().addData(new TimeSyncManager.TimeData(packet.getFrame(), packet.getTime()));
 
         UnorderedArrayList<PacketWorldSnapshot.EntityData> entityDataList = packet.getEntityDataList();
         EntityDataHistoryManager historyManager = Client.get().getWorld().getEntityManager().getDataHistoryManager();

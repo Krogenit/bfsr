@@ -19,6 +19,7 @@ import net.bfsr.client.listener.gui.GuiEventListener;
 import net.bfsr.client.listener.world.WorldEventListener;
 import net.bfsr.client.module.ShieldLogic;
 import net.bfsr.client.network.NetworkSystem;
+import net.bfsr.client.network.TimeSyncManager;
 import net.bfsr.client.particle.effect.ParticleEffects;
 import net.bfsr.client.physics.CollisionHandler;
 import net.bfsr.client.renderer.EntityRenderer;
@@ -101,6 +102,7 @@ public class Client extends ClientGameLogic {
 
     private final RenderDelayManager renderDelayManager = new RenderDelayManager();
     private final NetworkSystem networkSystem = new NetworkSystem(this, renderDelayManager);
+    private final TimeSyncManager timeSyncManager = new TimeSyncManager(this);
 
     protected HUD hud;
 
@@ -153,6 +155,8 @@ public class Client extends ClientGameLogic {
 
         renderTime = time - renderDelayManager.getRenderDelayInNanos() + networkSystem.getAveragePing() * 1_000_000.0;
         renderFrame = frame - renderDelayManager.getRenderDelayInFrames() + networkSystem.getAveragePingInFrames();
+
+        timeSyncManager.update();
 
         profiler.start("renderManager");
 
