@@ -160,4 +160,36 @@ public class ShipSpawner {
     public void spawnShip(World world, Ship ship) {
         world.add(ship, false);
     }
+
+    public void spawnShipInEmptySpace(World world, Ship ship) {
+        AABB cache = new AABB();
+        AABB shipAABB = new AABB();
+        float x = ship.getX();
+        float y = ship.getY();
+        MathUtils.computeAABB(shipAABB, ship.getBody(), x, y, ship.getSin(), ship.getCos(), cache);
+        float sizeX = shipAABB.getMaxX() - shipAABB.getMinX();
+        float sizeY = shipAABB.getMaxY() - shipAABB.getMinY();
+        AtomicBoolean isEmpty = new AtomicBoolean(true);
+
+        while (true) {
+            isEmpty.set(true);
+
+            world.getPhysicWorld().queryAABB(fixture -> {
+                isEmpty.set(false);
+                return false;
+            }, shipAABB);
+
+            if (isEmpty.get()) {
+                // Change jump position for correct inertia
+                ship.getJumpPosition().add(x - ship.getX(), y - ship.getY());
+                ship.setPosition(x, y);
+                world.add(ship, false);
+                break;
+            } else {
+                x += sizeX;
+                y += sizeY;
+                MathUtils.computeAABB(shipAABB, ship.getBody(), x, y, ship.getSin(), ship.getCos(), cache);
+            }
+        }
+    }
 }
