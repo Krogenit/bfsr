@@ -17,4 +17,8 @@ final class Categories {
     static long all() {
         return SHIP_CATEGORY | BULLET_CATEGORY | BEAM_CATEGORY;
     }
+
+    static long none() {
+        return 0;
+    }
 }
