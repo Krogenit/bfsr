@@ -102,8 +102,7 @@ public class RemotePlayerRepositoryTest {
         assertThat(authenticatedPlayer.getUsername()).isEqualTo(username);
         assertThat(authenticatedPlayer.getFaction()).isEqualTo(faction);
         assertThat(authenticatedPlayer.getId()).isNotNull();
-        assertThat(authenticatedPlayer.getShips()).isNotNull();
-        assertThat(authenticatedPlayer.getShips().size()).isEqualTo(0);
+        assertThat(authenticatedPlayer.getShip()).isNull();
     }
 
     @Test
