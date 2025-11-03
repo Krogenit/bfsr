@@ -262,7 +262,7 @@ public class Ship extends DamageableRigidBody {
 
         if (!warpDrive) {
             float maxForwardSpeed = modules.getEngines().getMaxForwardVelocity();
-            float maxForwardSpeedSquared = maxForwardSpeed * maxForwardSpeed;
+            float maxForwardSpeedSquared = maxForwardSpeed * maxForwardSpeed * 2;
             float magnitudeSquared = body.getLinearVelocity().lengthSquared();
 
             float maxSideSpeed = maxForwardSpeedSquared * 0.8f;
