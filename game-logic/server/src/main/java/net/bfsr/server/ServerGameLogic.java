@@ -109,7 +109,7 @@ public abstract class ServerGameLogic extends GameLogic {
         eventBus.register(new ModuleEventListener(entityTrackingManager));
     }
 
-    protected void populateWorld() {
+    private void populateWorld() {
         StationRegistry registry = configConverterManager.getConverter(StationRegistry.class);
         StationData stationData = registry.get("human");
 
