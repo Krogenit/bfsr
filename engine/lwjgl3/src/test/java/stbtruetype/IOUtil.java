@@ -4,7 +4,8 @@ import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -36,7 +37,7 @@ public final class IOUtil {
      * @return the resource data
      * @throws IOException if an IO error occurs
      */
-    public static ByteBuffer ioResourceToByteBuffer(String resource, int bufferSize) throws IOException {
+    public static ByteBuffer resourceToByteBuffer(String resource, int bufferSize) throws IOException {
         ByteBuffer buffer;
 
         Path path = resource.startsWith("http") ? null : Paths.get(resource);
@@ -50,7 +51,7 @@ public final class IOUtil {
         } else {
             try (
                     InputStream source = resource.startsWith("http")
-                            ? new URL(resource).openStream()
+                            ? new URI(resource).toURL().openStream()
                             : IOUtil.class.getClassLoader().getResourceAsStream(resource);
                     ReadableByteChannel rbc = Channels.newChannel(source)
             ) {
@@ -65,6 +66,8 @@ public final class IOUtil {
                         buffer = resizeBuffer(buffer, buffer.capacity() * 3 / 2); // 50%
                     }
                 }
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
             }
         }
 
