@@ -47,7 +47,7 @@ public class Shield extends DamageableModule {
     }
 
     @Override
-    public void update() {
+    public void update(RigidBody rigidBody) {
         if (isDead) {
             return;
         }

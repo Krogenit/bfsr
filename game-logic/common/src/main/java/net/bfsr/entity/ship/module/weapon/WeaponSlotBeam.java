@@ -63,7 +63,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     }
 
     @Override
-    public void update() {
+    public void update(RigidBody rigidBody) {
         if (aliveTimerInFrames > 0) {
             aliveTimerInFrames--;
 
@@ -88,10 +88,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
                 }
             }
         }
-    }
 
-    @Override
-    public void postPhysicsUpdate(RigidBody rigidBody) {
         updatePos(rigidBody);
 
         if (beamPower > 0) {

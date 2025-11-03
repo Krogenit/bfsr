@@ -9,6 +9,6 @@ import net.bfsr.entity.ship.Ship;
 @RequiredArgsConstructor
 @Getter
 @Accessors(fluent = true)
-public class ShipPostPhysicsUpdate extends Event {
+public class ShipUpdateEvent extends Event {
     private final Ship ship;
 }

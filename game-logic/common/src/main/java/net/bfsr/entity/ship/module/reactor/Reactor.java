@@ -34,7 +34,7 @@ public class Reactor extends DamageableModule {
     }
 
     @Override
-    public void update() {
+    public void update(RigidBody rigidBody) {
         regenEnergy();
     }
 

@@ -7,6 +7,6 @@ import net.bfsr.engine.world.entity.RigidBody;
 
 @Getter
 @RequiredArgsConstructor
-public class RigidBodyPostPhysicsUpdateEvent extends Event {
+public class RigidBodyUpdateEvent extends Event {
     private final RigidBody rigidBody;
 }

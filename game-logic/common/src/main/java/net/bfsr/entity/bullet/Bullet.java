@@ -30,7 +30,7 @@ public class Bullet extends RigidBody {
     @Getter
     private final Vector4f spawnTransform;
 
-    private Runnable postPhysicsRotationUpdater = RunnableUtils.EMPTY_RUNNABLE;
+    private Runnable rotationUpdater = RunnableUtils.EMPTY_RUNNABLE;
     @Setter
     @Getter
     private int clientId;
@@ -66,9 +66,9 @@ public class Bullet extends RigidBody {
     }
 
     @Override
-    public void postPhysicsUpdate() {
-        super.postPhysicsUpdate();
-        postPhysicsRotationUpdater.run();
+    public void update() {
+        super.update();
+        rotationUpdater.run();
     }
 
     public void reflect(float normalX, float normalY) {
@@ -76,9 +76,9 @@ public class Bullet extends RigidBody {
         float dot = velocity.x * normalX + velocity.y * normalY;
         setVelocity(velocity.x - 2 * dot * normalX, velocity.y - 2 * dot * normalY);
         float rotateToVector = (float) Math.atan2(-velocity.x, velocity.y) + MathUtils.HALF_PI;
-        postPhysicsRotationUpdater = () -> {
+        rotationUpdater = () -> {
             setRotation(LUT.sin(rotateToVector), LUT.cos(rotateToVector));
-            postPhysicsRotationUpdater = RunnableUtils.EMPTY_RUNNABLE;
+            rotationUpdater = RunnableUtils.EMPTY_RUNNABLE;
         };
     }
 

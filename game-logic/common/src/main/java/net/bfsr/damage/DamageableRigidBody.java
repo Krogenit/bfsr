@@ -41,20 +41,8 @@ public class DamageableRigidBody extends RigidBody {
     @Override
     public void update() {
         super.update();
-        updateConnectedObjects();
-    }
-
-    protected void updateConnectedObjects() {
         for (int i = 0; i < connectedObjects.size(); i++) {
-            connectedObjects.get(i).update();
-        }
-    }
-
-    @Override
-    public void postPhysicsUpdate() {
-        super.postPhysicsUpdate();
-        for (int i = 0; i < connectedObjects.size(); i++) {
-            connectedObjects.get(i).postPhysicsUpdate(this);
+            connectedObjects.get(i).update(this);
         }
     }
 

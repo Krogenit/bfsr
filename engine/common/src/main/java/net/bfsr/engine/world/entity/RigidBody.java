@@ -7,8 +7,8 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.config.entity.GameObjectConfigData;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.entity.RigidBodyAddToWorldEvent;
-import net.bfsr.engine.event.entity.RigidBodyPostPhysicsUpdateEvent;
 import net.bfsr.engine.event.entity.RigidBodyRemovedFromWorldEvent;
+import net.bfsr.engine.event.entity.RigidBodyUpdateEvent;
 import net.bfsr.engine.network.packet.common.world.entity.spawn.RigidBodySpawnData;
 import net.bfsr.engine.physics.PhysicsUtils;
 import net.bfsr.engine.physics.correction.CorrectionHandler;
@@ -42,7 +42,7 @@ public class RigidBody extends GameObject {
     @Setter
     @Getter
     protected float health;
-    private final RigidBodyPostPhysicsUpdateEvent postPhysicsUpdateEvent = new RigidBodyPostPhysicsUpdateEvent(this);
+    private final RigidBodyUpdateEvent updateEvent = new RigidBodyUpdateEvent(this);
     @Getter
     private CorrectionHandler correctionHandler = new HistoryCorrectionHandler();
     private final List<Fixture> fixturesToAdd = new ArrayList<>();
@@ -74,7 +74,7 @@ public class RigidBody extends GameObject {
         this.world = world;
         this.id = id;
         this.eventBus = world.getEventBus();
-        this.eventBus.optimizeEvent(postPhysicsUpdateEvent);
+        this.eventBus.optimizeEvent(updateEvent);
         this.correctionHandler.setRigidBody(this);
         initBody();
     }
@@ -89,11 +89,6 @@ public class RigidBody extends GameObject {
         bodyFixture.setFilter(getCollisionFilter(bodyFixture));
         bodyFixture.setDensity(getFixtureDensity(bodyFixture));
         return bodyFixture;
-    }
-
-    @Override
-    public void update() {
-        updateLifeTime();
     }
 
     protected void updateLifeTime() {
@@ -125,8 +120,9 @@ public class RigidBody extends GameObject {
     }
 
     @Override
-    public void postPhysicsUpdate() {
-        eventBus.publishOptimized(postPhysicsUpdateEvent);
+    public void update() {
+        updateLifeTime();
+        eventBus.publishOptimized(updateEvent);
     }
 
     public void onAddedToWorld() {

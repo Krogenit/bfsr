@@ -5,7 +5,7 @@ import net.bfsr.client.renderer.EntityRenderer;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.event.entity.RigidBodyAddToWorldEvent;
-import net.bfsr.engine.event.entity.RigidBodyPostPhysicsUpdateEvent;
+import net.bfsr.engine.event.entity.RigidBodyUpdateEvent;
 import net.bfsr.engine.physics.correction.CorrectionHandler;
 import net.bfsr.engine.world.entity.RigidBody;
 import org.jbox2d.dynamics.BodyType;
@@ -20,7 +20,7 @@ public class WorldEventListener {
     }
 
     @EventHandler
-    public EventListener<RigidBodyPostPhysicsUpdateEvent> postPhysicsUpdateEvent() {
+    public EventListener<RigidBodyUpdateEvent> rigidBodyUpdateEvent() {
         return event -> {
             RigidBody rigidBody = event.getRigidBody();
             if (rigidBody.getBody().getType() == BodyType.STATIC) {

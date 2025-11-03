@@ -222,10 +222,9 @@ class FastForwardHUDTest {
             }
         }
 
-        bullet.update();
         world.getPhysicWorld().fastForwardStep(Engine.getUpdateDeltaTimeInSeconds(), Collections.singletonList(bullet.getBody()));
-        bullet.postPhysicsUpdate();
-        fastForwardShip.postPhysicsUpdate();
+        bullet.update();
+        fastForwardShip.update();
 
         if (i + 1 == max) {
             hud.remove(bulletAABB);

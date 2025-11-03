@@ -20,18 +20,6 @@ public class EntityManager extends CommonEntityManager {
         eventBus.register(this);
     }
 
-    @Override
-    public void update(int frame) {
-        for (int i = 0; i < entities.size(); i++) {
-            RigidBody rigidBody = entities.get(i);
-            if (rigidBody.isDead()) {
-                rigidBody.getWorld().remove(i--, rigidBody, frame);
-            } else {
-                rigidBody.update();
-            }
-        }
-    }
-
     @EventHandler
     public EventListener<RenderDelayChangeEvent> onRenderDelayChange() {
         return event -> {

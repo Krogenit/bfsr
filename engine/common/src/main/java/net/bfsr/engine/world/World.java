@@ -60,12 +60,10 @@ public class World {
     public void update(double timestamp, int frame) {
         this.timestamp = timestamp;
 
-        profiler.start("entityManager");
-        entityManager.update(frame);
-        profiler.endStart("physics");
+        profiler.start("physics");
         physicWorld.step(Engine.getUpdateDeltaTimeInSeconds(), VELOCITY_ITERATIONS, POSITION_ITERATIONS);
-        profiler.endStart("postPhysicsUpdate");
-        entityManager.postPhysicsUpdate();
+        profiler.endStart("entityManager");
+        entityManager.update(frame);
         profiler.endStart("entityIdManager");
         entityIdManager.update(frame);
         profiler.end();

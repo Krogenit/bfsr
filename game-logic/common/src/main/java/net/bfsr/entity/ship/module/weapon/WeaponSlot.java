@@ -136,14 +136,10 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
     }
 
     @Override
-    public void update() {
+    public void update(RigidBody rigidBody) {
         if (reloadTimer > 0) {
             reloadTimer -= 1;
         }
-    }
-
-    @Override
-    public void postPhysicsUpdate(RigidBody rigidBody) {
         updatePos(rigidBody);
     }
 

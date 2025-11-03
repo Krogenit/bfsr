@@ -2,6 +2,7 @@ package net.bfsr.entity.ship.module.hull;
 
 import lombok.Getter;
 import net.bfsr.config.component.hull.HullData;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.entity.ship.module.ModuleWithCells;
@@ -25,7 +26,7 @@ public class Hull extends ModuleWithCells<HullCell> {
     }
 
     @Override
-    public void update() {
+    public void update(RigidBody rigidBody) {
         for (int i = 0; i < cells.length; i++) {
             for (int i1 = 0; i1 < cells[0].length; i1++) {
                 HullCell cell = cells[i][i1];

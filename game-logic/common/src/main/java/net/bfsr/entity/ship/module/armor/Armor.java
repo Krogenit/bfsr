@@ -1,6 +1,7 @@
 package net.bfsr.entity.ship.module.armor;
 
 import net.bfsr.config.component.armor.ArmorPlateData;
+import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.entity.ship.module.ModuleWithCells;
@@ -23,7 +24,7 @@ public class Armor extends ModuleWithCells<ArmorPlate> {
     }
 
     @Override
-    public void update() {
+    public void update(RigidBody rigidBody) {
         ArmorPlate cell = getMostDamagedCell();
         if (cell != null) {
             if (cell.getValue() > 0 && cell.getValue() < cell.getMaxValue()) {

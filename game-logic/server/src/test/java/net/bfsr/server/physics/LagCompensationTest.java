@@ -123,7 +123,6 @@ public class LagCompensationTest {
          */
         shootingShip.shoot(weaponSlot -> {});
         shootingShip.update();
-        shootingShip.postPhysicsUpdate();
 
         /*
          * Test ship position after lag compensation

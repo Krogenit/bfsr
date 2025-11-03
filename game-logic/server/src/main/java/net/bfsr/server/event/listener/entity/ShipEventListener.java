@@ -12,8 +12,8 @@ import net.bfsr.event.entity.ship.ShipDestroyEvent;
 import net.bfsr.event.entity.ship.ShipDestroyingEvent;
 import net.bfsr.event.entity.ship.ShipDestroyingExplosionEvent;
 import net.bfsr.event.entity.ship.ShipNewMoveDirectionEvent;
-import net.bfsr.event.entity.ship.ShipPostPhysicsUpdate;
 import net.bfsr.event.entity.ship.ShipRemoveMoveDirectionEvent;
+import net.bfsr.event.entity.ship.ShipUpdateEvent;
 import net.bfsr.network.packet.server.entity.ship.PacketShipInfo;
 import net.bfsr.network.packet.server.entity.ship.PacketShipSetDestroying;
 import net.bfsr.network.packet.server.entity.ship.PacketShipSyncMoveDirection;
@@ -51,7 +51,7 @@ public class ShipEventListener {
     }
 
     @EventHandler
-    public EventListener<ShipPostPhysicsUpdate> shipPostPhysicsUpdateEvent() {
+    public EventListener<ShipUpdateEvent> shipUpdateEvent() {
         return event -> {
             Ship ship = event.ship();
             trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShipInfo(ship, gameLogic.getFrame()));

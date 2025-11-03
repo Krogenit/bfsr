@@ -35,13 +35,9 @@ public abstract class AbstractEntityManager {
             RigidBody rigidBody = entities.get(i);
             if (rigidBody.isDead()) {
                 rigidBody.world.remove(i--, rigidBody, frame);
-            } else {
-                rigidBody.update();
             }
         }
-    }
 
-    public void postPhysicsUpdate() {
         for (int i = 0; i < entities.size(); i++) {
             entities.get(i).processFixturesToRemove();
         }
@@ -51,8 +47,12 @@ public abstract class AbstractEntityManager {
         }
 
         for (int i = 0; i < entities.size(); i++) {
-            entities.get(i).postPhysicsUpdate();
+            update(entities.get(i), frame);
         }
+    }
+
+    protected void update(RigidBody rigidBody, int frame) {
+        rigidBody.update();
     }
 
     public void add(RigidBody entity, boolean force) {

@@ -30,8 +30,8 @@ import net.bfsr.event.entity.ship.ShipDestroyingEvent;
 import net.bfsr.event.entity.ship.ShipDestroyingExplosionEvent;
 import net.bfsr.event.entity.ship.ShipJumpInEvent;
 import net.bfsr.event.entity.ship.ShipNewMoveDirectionEvent;
-import net.bfsr.event.entity.ship.ShipPostPhysicsUpdate;
 import net.bfsr.event.entity.ship.ShipRemoveMoveDirectionEvent;
+import net.bfsr.event.entity.ship.ShipUpdateEvent;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.packet.common.entity.spawn.ship.ShipSpawnData;
 import net.bfsr.physics.collision.filter.Filters;
@@ -215,17 +215,6 @@ public class Ship extends DamageableRigidBody {
         }
     }
 
-    @Override
-    public void update() {
-        if (spawned) {
-            updateConnectedObjects();
-            updateRunnable.run();
-            updateLifeTime();
-        } else {
-            updateJump();
-        }
-    }
-
     private void updateAlive() {
         if (collisionTimer > 0) {
             collisionTimer -= 1;
@@ -257,8 +246,15 @@ public class Ship extends DamageableRigidBody {
     protected void updateLifeTime() {}
 
     @Override
-    public void postPhysicsUpdate() {
-        super.postPhysicsUpdate();
+    public void update() {
+        super.update();
+
+        if (spawned) {
+            updateRunnable.run();
+            updateLifeTime();
+        } else {
+            updateJump();
+        }
 
         if (!warpDrive) {
             float maxForwardSpeed = modules.getEngines().getMaxForwardVelocity();
@@ -277,7 +273,7 @@ public class Ship extends DamageableRigidBody {
 
         modules.update();
 
-        eventBus.publish(new ShipPostPhysicsUpdate(this));
+        eventBus.publish(new ShipUpdateEvent(this));
     }
 
     public void shoot(Consumer<WeaponSlot> onShotEvent) {
