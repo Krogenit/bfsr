@@ -134,7 +134,7 @@ public class AiJumpTask extends AiTask {
     }
 
     private void alignForWarpDrive() {
-        rigidBodyUtils.rotateToVector(ship, destination.x, destination.y, 0.01f);
+        rigidBodyUtils.rotateToVector(ship, destination.x, destination.y, ship.getModules().getEngines().getAngularVelocity());
 
         float diffRad = rigidBodyUtils.getRotationDifference(ship, destination.x, destination.y);
         float diffAbs = Math.abs(diffRad);

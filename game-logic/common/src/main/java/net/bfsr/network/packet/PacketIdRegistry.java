@@ -18,6 +18,7 @@ public final class PacketIdRegistry {
     public static final int RESPAWN = 110;
 
     public static final int SHIP_JUMP = 112;
+    public static final int SHIP_MOVE_TO_POINT = 113;
 
     /**
      * Server

@@ -12,6 +12,7 @@ import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.world.World;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.network.packet.client.input.PacketMoveToPoint;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Fixture;
@@ -98,7 +99,7 @@ public class PlayerInputController extends InputController {
     }
 
     @Override
-    public boolean mouseRightRelease() {
+    public boolean mouseLeftRelease() {
         Fixture fixture = selectFixtureWithMouse();
 
         if (fixture != null && fixture.getBody().getUserData() instanceof Ship ship) {
@@ -108,5 +109,16 @@ public class PlayerInputController extends InputController {
 
         eventBus.publish(new SelectShipEvent(null));
         return false;
+    }
+
+    public boolean mouseRightRelease() {
+        Ship ship = playerShipManager.getShip();
+        if (ship == null) {
+            return false;
+        }
+
+        Vector2f mousePosition = mouse.getWorldPosition(camera);
+        client.sendTCPPacket(new PacketMoveToPoint(mousePosition.x, mousePosition.y));
+        return true;
     }
 }

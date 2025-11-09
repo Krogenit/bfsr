@@ -39,7 +39,7 @@ public class AiSearchTarget extends AiTask {
             }
         } else if (type == AiAggressiveType.NOTHING) {
             if (ship.getLinearVelocity().length() > 0.1f && ship.getModules().getEngines().isSomeEngineAlive()) {
-                ship.move(Direction.STOP);
+                ship.addMoveDirection(Direction.STOP);
             }
             if (Math.abs(ship.getAngularVelocity()) > 0.01f) {
                 ship.setAngularVelocity(ship.getAngularVelocity() * 0.99f);

@@ -137,44 +137,40 @@ public class Ship extends DamageableRigidBody {
     }
 
     public void addForce(Vector2f normalizedForce, float power) {
-        body.applyForceToCenter(normalizedForce.x * power, normalizedForce.y * power);
+        addForce(normalizedForce.x * power, normalizedForce.y * power);
     }
 
-    public void move(Direction dir) {
-        if (dir == Direction.STOP) {
-            body.getLinearVelocity().mulLocal(modules.getEngines().getManeuverability() * 0.98f);
-            return;
-        }
-
-        float sin = getSin();
-        float cos = getCos();
-
-        if (dir == Direction.FORWARD) {
-            addForce(rotationHelper.set(cos, sin), modules.getEngines().getForwardAcceleration());
-        } else if (dir == Direction.BACKWARD) {
-            addForce(rotationHelper.set(-cos, -sin), modules.getEngines().getBackwardAcceleration());
-        } else if (dir == Direction.LEFT) {
-            addForce(rotationHelper.set(sin, -cos), modules.getEngines().getSideAcceleration());
-        } else if (dir == Direction.RIGHT) {
-            addForce(rotationHelper.set(-sin, cos), modules.getEngines().getSideAcceleration());
-        }
+    public void addForce(float x, float y) {
+        body.applyForceToCenter(x, y);
     }
 
     public void addMoveDirection(Direction direction) {
         if (moveDirections.add(direction)) {
+            if (direction == Direction.STOP) {
+                body.setLinearDamping(getBrakingStrength());
+            }
+
             eventBus.publish(new ShipNewMoveDirectionEvent(this, direction));
         }
     }
 
     public void removeMoveDirection(Direction direction) {
         if (moveDirections.remove(direction)) {
-            eventBus.publish(new ShipRemoveMoveDirectionEvent(this, direction));
+            onMoveDirectionRemoved(direction);
         }
+    }
+
+    private void onMoveDirectionRemoved(Direction direction) {
+        if (direction == Direction.STOP) {
+            body.setLinearDamping(0.05f);
+        }
+
+        eventBus.publish(new ShipRemoveMoveDirectionEvent(this, direction));
     }
 
     public void removeAllMoveDirections() {
         moveDirections.forEach(direction -> {
-            eventBus.publish(new ShipRemoveMoveDirectionEvent(this, direction));
+            onMoveDirectionRemoved(direction);
             return true;
         });
 
@@ -235,8 +231,8 @@ public class Ship extends DamageableRigidBody {
 
     private void updateJump() {
         if (jumpTimer-- == 0) {
-            float maxForwardSpeed = modules.getEngines().getMaxForwardVelocity();
-            RotationHelper.angleToVelocity(getSin(), getCos(), maxForwardSpeed, rotationHelper);
+            float afterJumpSpeed = modules.getEngines().getMaxForwardVelocity() * 0.2f;
+            RotationHelper.angleToVelocity(getSin(), getCos(), afterJumpSpeed, rotationHelper);
             setVelocity(rotationHelper.x, rotationHelper.y);
             setSpawned();
         }
@@ -249,6 +245,17 @@ public class Ship extends DamageableRigidBody {
     public void update() {
         super.update();
 
+        if (!warpDrive) {
+            float maxForwardSpeed = modules.getEngines().getMaxForwardVelocity();
+            float maxForwardSpeedSquared = maxForwardSpeed * maxForwardSpeed;
+            float magnitudeSquared = body.getLinearVelocity().lengthSquared();
+
+            if (magnitudeSquared > maxForwardSpeedSquared) {
+                float percent = (float) Math.sqrt(maxForwardSpeedSquared / magnitudeSquared);
+                getLinearVelocity().mulLocal(percent);
+            }
+        }
+
         if (spawned) {
             updateRunnable.run();
             updateLifeTime();
@@ -256,24 +263,24 @@ public class Ship extends DamageableRigidBody {
             updateJump();
         }
 
-        if (!warpDrive) {
-            float maxForwardSpeed = modules.getEngines().getMaxForwardVelocity();
-            float maxForwardSpeedSquared = maxForwardSpeed * maxForwardSpeed * 2;
-            float magnitudeSquared = body.getLinearVelocity().lengthSquared();
-
-            float maxSideSpeed = maxForwardSpeedSquared * 0.8f;
-            if (moveDirections.size() > 0 && !moveDirections.contains(Direction.FORWARD) && magnitudeSquared > maxSideSpeed) {
-                float percent = (float) Math.sqrt(maxSideSpeed / magnitudeSquared);
-                getLinearVelocity().mulLocal(percent);
-            } else if (magnitudeSquared > maxForwardSpeedSquared) {
-                float percent = (float) Math.sqrt(maxForwardSpeedSquared / magnitudeSquared);
-                getLinearVelocity().mulLocal(percent);
-            }
-        }
-
         modules.update();
 
         eventBus.publish(new ShipUpdateEvent(this));
+    }
+
+    public void move(Direction dir) {
+        float sin = getSin();
+        float cos = getCos();
+
+        if (dir == Direction.FORWARD) {
+            addForce(rotationHelper.set(cos, sin), modules.getEngines().getForwardAcceleration());
+        } else if (dir == Direction.BACKWARD) {
+            addForce(rotationHelper.set(-cos, -sin), modules.getEngines().getBackwardAcceleration());
+        } else if (dir == Direction.LEFT) {
+            addForce(rotationHelper.set(sin, -cos), modules.getEngines().getSideAcceleration());
+        } else if (dir == Direction.RIGHT) {
+            addForce(rotationHelper.set(-sin, cos), modules.getEngines().getSideAcceleration());
+        }
     }
 
     public void shoot(Consumer<WeaponSlot> onShotEvent) {
@@ -406,6 +413,14 @@ public class Ship extends DamageableRigidBody {
 
     public boolean isBot() {
         return owner == null;
+    }
+
+    public float getBrakingStrength() {
+        return modules.getEngines().getManeuverability();
+    }
+
+    public float getSpeed() {
+        return getLinearVelocity().length();
     }
 
     @Override

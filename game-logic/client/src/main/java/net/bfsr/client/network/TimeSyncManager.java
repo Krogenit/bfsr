@@ -48,11 +48,12 @@ public class TimeSyncManager {
             int serverFrame = timeData.getFrame();
             double serverTime = timeData.getServerTime();
             int clientPrediction = client.getNetworkSystem().getAveragePingInFrames();
-            if (frame < serverFrame || frame > serverFrame + clientPrediction) {
+            if (frame < serverFrame - 1 || frame > serverFrame + clientPrediction + 1) {
                 framesErrorCounter.errorCount += 1;
                 framesErrorCounter.lastErrorFrame = frame;
 
                 if (framesErrorCounter.errorCount > 60) {
+                    framesErrorCounter.errorCount = 0;
                     client.setTime(serverTime);
                     client.setFrame(serverFrame);
                     log.info("Adjust client time and frame, frame diff: {}", serverFrame - frame);

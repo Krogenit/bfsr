@@ -3,6 +3,7 @@ package net.bfsr.server.ai;
 import lombok.RequiredArgsConstructor;
 import net.bfsr.engine.ai.Ai;
 import net.bfsr.server.ai.task.AiAttackTarget;
+import net.bfsr.server.ai.task.AiFlyToPointTask;
 import net.bfsr.server.ai.task.AiJumpTask;
 import net.bfsr.server.ai.task.AiSearchTarget;
 import net.bfsr.server.entity.EntityTrackingManager;
@@ -22,6 +23,12 @@ public class AiFactory {
     public Ai createJumpAi(float x, float y) {
         Ai ai = new Ai();
         ai.addTask(new AiJumpTask(new Vector2f(x, y)));
+        return ai;
+    }
+
+    public Ai createFlyToPointAi(float x, float y) {
+        Ai ai = new Ai();
+        ai.addTask(new AiFlyToPointTask(new Vector2f(x, y)));
         return ai;
     }
 }
