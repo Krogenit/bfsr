@@ -10,7 +10,7 @@ public class JumpEffects {
         jump = effectsRegistry.get("jump");
     }
 
-    public void jump(float x, float y, float size, float velocityX, float velocityY, float r, float g, float b, float a) {
-        jump.play(x, y, size, velocityX, velocityY, r, g, b, a);
+    public void jump(float x, float y, float z, float size, float velocityX, float velocityY, float r, float g, float b, float a) {
+        jump.play(x, y, z, size, velocityX, velocityY, r, g, b, a);
     }
 }

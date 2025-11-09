@@ -15,13 +15,15 @@ public class BackgroundRenderer {
     private final AbstractSpriteRenderer spriteRenderer;
     private AbstractTexture texture;
     private Runnable renderRunnable = RunnableUtils.EMPTY_RUNNABLE;
+    private final Layers layers;
 
     private int renderId = -1;
 
-    BackgroundRenderer(AbstractRenderer renderer) {
+    BackgroundRenderer(Layers layers, AbstractRenderer renderer) {
         this.renderer = renderer;
         this.spriteRenderer = renderer.getSpriteRenderer();
         this.texture = renderer.getDummyTexture();
+        this.layers = layers;
     }
 
     @EventHandler
@@ -34,8 +36,8 @@ public class BackgroundRenderer {
         renderRunnable = this::renderBackground;
 
         float zoomFactor = 0.005f;
-        renderId = spriteRenderer.add(0, 0, texture.getWidth() * 0.05f, texture.getHeight() * 0.05f, 1.0f, 1.0f, 1.0f, 1.0f,
-                texture.getTextureHandle(), zoomFactor, BufferType.BACKGROUND);
+        renderId = spriteRenderer.add(0, 0, layers.getBackgroundLayer(), texture.getWidth() * 0.05f, texture.getHeight() * 0.05f, 1.0f,
+                1.0f, 1.0f, 1.0f, texture.getTextureHandle(), zoomFactor, BufferType.BACKGROUND);
     }
 
     public void render() {

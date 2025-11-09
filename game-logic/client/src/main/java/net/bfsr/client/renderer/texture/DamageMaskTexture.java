@@ -4,7 +4,8 @@ import lombok.Getter;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.AbstractRenderer;
-import net.bfsr.engine.renderer.opengl.GL;
+import net.bfsr.engine.renderer.constant.InternalTextureFormat;
+import net.bfsr.engine.renderer.constant.TextureFormat;
 import net.bfsr.engine.renderer.texture.AbstractDamageMaskTexture;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 
@@ -32,15 +33,15 @@ public class DamageMaskTexture extends AbstractDamageMaskTexture {
 
     public void createEmpty() {
         texture.create();
-        renderer.uploadFilledTexture(texture, GL.GL_R8, GL.GL_RED, WHITE_BUFFER);
+        renderer.uploadFilledTexture(texture, InternalTextureFormat.R8, TextureFormat.RED, WHITE_BUFFER);
     }
 
     public void fillEmpty() {
-        renderer.fullTexture(texture, GL.GL_R8, GL.GL_RED, WHITE_BUFFER);
+        renderer.fullTexture(texture, InternalTextureFormat.R8, TextureFormat.RED, WHITE_BUFFER);
     }
 
     public void upload(int x, int y, int width, int height, ByteBuffer byteBuffer) {
-        renderer.subImage2D(texture.getId(), x, y, width, height, GL.GL_RED, byteBuffer);
+        renderer.subImage2D(texture.getId(), x, y, width, height, TextureFormat.RED, byteBuffer);
     }
 
     public void updateEffects() {

@@ -21,8 +21,6 @@ import static net.bfsr.engine.renderer.Renderer.UBO_PROJECTION_MATRIX;
 import static net.bfsr.engine.renderer.Renderer.UBO_VIEW_DATA;
 
 public class Camera implements AbstractCamera {
-    private static final float Z_NEAR = -1.0f;
-    private static final float Z_FAR = 1.0f;
     private static final float ZOOM_MAX = 300.0f;
     private static final float ZOOM_MIN = 20.0f;
 

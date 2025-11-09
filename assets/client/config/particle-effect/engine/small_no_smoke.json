@@ -28,7 +28,7 @@
   "name": "small_no_smoke",
   "path": "engine",
   "r": 1.0,
-  "renderLayer": "BACKGROUND_ADDITIVE",
+  "particleType": "ADDITIVE",
   "soundEffects": [],
   "sourceSizeXMultiplier": 1.0,
   "sourceSizeYMultiplier": 1.0,

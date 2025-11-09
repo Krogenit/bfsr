@@ -3,7 +3,6 @@ package net.bfsr.engine.gui.renderer;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.ScrollPane;
 import net.bfsr.engine.gui.component.scroll.Scroll;
-import net.bfsr.engine.renderer.opengl.GL;
 
 import java.util.List;
 
@@ -18,8 +17,8 @@ public class ScrollPaneRenderer extends GuiObjectRenderer {
     @Override
     public void render(int mouseX, int mouseY) {
         guiRenderer.render();
-        renderer.glEnable(GL.GL_SCISSOR_TEST);
-        renderer.glScissor(guiObject.getSceneX(), guiObject.getSceneY(), guiObject.getWidth(), guiObject.getHeight());
+        renderer.enableScissorTest();
+        renderer.scissor(guiObject.getSceneX(), guiObject.getSceneY(), guiObject.getWidth(), guiObject.getHeight());
 
         List<GuiObject> guiObjects = guiObject.getGuiObjects();
         for (int i = 0; i < guiObjects.size(); i++) {
@@ -30,7 +29,7 @@ public class ScrollPaneRenderer extends GuiObjectRenderer {
         }
 
         guiRenderer.render();
-        renderer.glDisable(GL.GL_SCISSOR_TEST);
+        renderer.disableScissorTest();
 
         scroll.getRenderer().render(mouseX, mouseY);
     }

@@ -76,7 +76,7 @@ public abstract class GuiEntityEditor<CONFIG_TYPE extends Config, PROPERTIES_TYP
                            Class<PROPERTIES_TYPE> propertiesClass) {
         super(inspectionPanelName, configRegistry, converter, configClass, propertiesClass);
 
-        client.getEntityRenderer().addRender(new Render(polygonObject) {
+        client.getEntityRenderer().addRender(new Render(polygonObject, 1.0f) {
             private final Vector4f color = new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
 
             @Override

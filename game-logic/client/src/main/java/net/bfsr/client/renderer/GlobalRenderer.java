@@ -7,9 +7,9 @@ import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
+import net.bfsr.engine.renderer.constant.DrawMode;
 import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
-import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.shader.AbstractShaderProgram;
 import net.bfsr.engine.util.RunnableUtils;
@@ -41,7 +41,7 @@ public class GlobalRenderer {
 
         profiler.endStart("setup");
         renderer.resetDrawCalls();
-        renderer.glClear();
+        renderer.drawClear();
         camera.calculateInterpolatedViewMatrix(interpolation);
         camera.bindWorldViewMatrix();
         shader.enable();
@@ -61,7 +61,7 @@ public class GlobalRenderer {
 
     private void renderDebug() {
         entityRenderer.renderDebug();
-        debugRenderer.render(GL.GL_LINE_LOOP);
+        debugRenderer.render(DrawMode.LINE_LOOP);
         debugRenderer.reset();
         shader.enable();
     }

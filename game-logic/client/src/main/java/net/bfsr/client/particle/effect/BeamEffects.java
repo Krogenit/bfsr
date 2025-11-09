@@ -1,13 +1,15 @@
 package net.bfsr.client.particle.effect;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
+import net.bfsr.client.Client;
 import net.bfsr.client.config.particle.ParticleEffect;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
+import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.renderer.particle.ParticleRender;
-import net.bfsr.engine.renderer.particle.RenderLayer;
+import net.bfsr.engine.renderer.particle.ParticleType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.world.entity.Particle;
 import net.bfsr.engine.world.entity.ParticleManager;
@@ -31,22 +33,22 @@ public class BeamEffects {
         smallBeam = effectsRegistry.get("weapon/beam/small");
     }
 
-    public void beamDamage(float x, float y, float normalX, float normalY, float size, Vector4f color,
+    public void beamDamage(float x, float y, float z, float normalX, float normalY, float size, Vector4f color,
                            SpawnAccumulator spawnAccumulator) {
         float angle = (float) Math.atan2(normalX, -normalY) - MathUtils.HALF_PI;
-        beam(x, y, size, LUT.sin(angle), LUT.cos(angle), 0, 0, color.x, color.y, color.z, color.w, spawnAccumulator);
+        beam(x, y, z, size, LUT.sin(angle), LUT.cos(angle), 0, 0, color.x, color.y, color.z, color.w, spawnAccumulator);
     }
 
-    public void beam(float x, float y, float size, float sin, float cos, float velocityX, float velocityY, float r,
+    public void beam(float x, float y, float z, float size, float sin, float cos, float velocityX, float velocityY, float r,
                      float g, float b, float a, SpawnAccumulator spawnAccumulator) {
-        smallBeam.emit(x, y, size, size, sin, cos, velocityX, velocityY, r, g, b, a, spawnAccumulator);
+        smallBeam.emit(x, y, z, size, size, sin, cos, velocityX, velocityY, r, g, b, a, spawnAccumulator);
     }
 
-    public void beam(float x, float y, float localX, float localY, float size, float sin, float cos, float velocityX,
+    public void beam(float x, float y, float z, float localX, float localY, float size, float sin, float cos, float velocityX,
                      float velocityY, float r, float g, float b, float a, SpawnAccumulator spawnAccumulator,
                      Consumer<Particle> updateLogic, Consumer<ParticleRender> lastValuesUpdateConsumer) {
-        smallBeam.emit(x, y, localX, localY, size, size, sin, cos, velocityX, velocityY, r, g, b, a, spawnAccumulator,
-                updateLogic, lastValuesUpdateConsumer);
+        smallBeam.emit(x, y, localX, localY, z, size, size, sin, cos, velocityX, velocityY, r, g, b, a,
+                spawnAccumulator, updateLogic, lastValuesUpdateConsumer);
     }
 
     public Particle beamEffect(WeaponSlotBeam slot, Vector4f color) {
@@ -63,10 +65,11 @@ public class BeamEffects {
 
         float worldX = cos * l - sin * localY + slot.getX();
         float worldY = sin * l + cos * localY + slot.getY();
+        Render render = Client.get().getEntityRenderer().getRender(ship.getId());
 
-        return particleManager.createParticle().init(beamEffectTextureHandle, worldX, worldY, localX, localY, 0.0f, 0.0f, sin, cos, 0.0f,
-                5.0f + 2.8f * random.nextFloat(), slot.getSizeY() / 2.0f + 0.4f * random.nextFloat(), 0.0f, color.x, color.y,
-                color.z, color.w, 0.5f, false, RenderLayer.DEFAULT_ADDITIVE, particle -> {
+        return particleManager.createParticle().init(beamEffectTextureHandle, worldX, worldY, localX, localY, render.getZ(), 0.0f, 0.0f,
+                sin, cos, 0.0f, 5.0f + 2.8f * random.nextFloat(), slot.getSizeY() / 2.0f + 0.4f * random.nextFloat(), 0.0f, color.x,
+                color.y, color.z, color.w, 0.5f, false, ParticleType.ADDITIVE, particle -> {
                     float sin1 = ship.getSin();
                     float cos1 = ship.getCos();
                     float beamRange1 = slot.getCurrentBeamRange();
@@ -74,7 +77,8 @@ public class BeamEffects {
                     float offsetX = beamRange1 * localX + (random.nextFloat() * 2.0f - 1.0f);
 
                     particle.setRotation(sin1, cos1);
-                    particle.setPosition(cos1 * offsetX - sin1 * localY + slot.getX(), sin1 * offsetX + cos1 * localY + slot.getY());
+                    particle.setPosition(cos1 * offsetX - sin1 * localY + slot.getX(),
+                            sin1 * offsetX + cos1 * localY + slot.getY());
                 }, particleRender -> {
                     particleRender.setLastPosition();
                     particleRender.setLastRotation();

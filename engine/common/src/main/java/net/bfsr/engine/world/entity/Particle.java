@@ -7,7 +7,7 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.renderer.particle.ParticleRender;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
-import net.bfsr.engine.renderer.particle.RenderLayer;
+import net.bfsr.engine.renderer.particle.ParticleType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import org.joml.Vector2f;
 
@@ -33,33 +33,33 @@ public class Particle extends GameObject {
     private final Vector2f localPosition = new Vector2f();
     private Consumer<Particle> updateLogic;
     @Getter
-    private RenderLayer renderLayer;
+    private ParticleType particleType;
     private final AssetsManager assetsManager = Engine.getAssetsManager();
 
-    public Particle init(TextureRegister texture, float worldX, float worldY, float velocityX, float velocityY, float sin, float cos,
-                         float angularVelocity, float scaleX, float scaleY, float sizeVelocity, float r, float g, float b, float a,
-                         float alphaVelocity, boolean isAlphaFromZero, RenderLayer renderLayer) {
-        return init(assetsManager.getTexture(texture).getTextureHandle(), worldX, worldY, 0, 0, velocityX,
-                velocityY, sin, cos, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, isAlphaFromZero,
-                renderLayer, Particle::defaultUpdateLogic, ParticleRender::defaultUpdateLastValues);
+    public Particle init(TextureRegister texture, float worldX, float worldY, float z, float velocityX, float velocityY, float sin,
+                         float cos, float angularVelocity, float scaleX, float scaleY, float sizeVelocity, float r, float g, float b,
+                         float a, float alphaVelocity, boolean isAlphaFromZero, ParticleType particleType) {
+        return init(assetsManager.getTexture(texture).getTextureHandle(), worldX, worldY, 0, 0, z,
+                velocityX, velocityY, sin, cos, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity,
+                isAlphaFromZero, particleType, Particle::defaultUpdateLogic, ParticleRender::defaultUpdateLastValues);
     }
 
-    public Particle init(long textureHandle, float worldX, float worldY, float localX, float localY, float velocityX, float velocityY,
-                         float sin, float cos, float angularVelocity, float scaleX, float scaleY, float sizeVelocity, float r, float g,
-                         float b, float a, float alphaVelocity, boolean isAlphaFromZero, RenderLayer renderLayer) {
-        return init(textureHandle, worldX, worldY, localX, localY, velocityX, velocityY, sin, cos, angularVelocity, scaleX,
-                scaleY, sizeVelocity, r, g, b, a, alphaVelocity, isAlphaFromZero, renderLayer, Particle::defaultUpdateLogic,
-                ParticleRender::defaultUpdateLastValues);
+    public Particle init(long textureHandle, float worldX, float worldY, float localX, float localY, float z, float velocityX,
+                         float velocityY, float sin, float cos, float angularVelocity, float scaleX, float scaleY, float sizeVelocity,
+                         float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero, ParticleType particleType) {
+        return init(textureHandle, worldX, worldY, localX, localY, z, velocityX, velocityY, sin, cos, angularVelocity,
+                scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity, isAlphaFromZero, particleType,
+                Particle::defaultUpdateLogic, ParticleRender::defaultUpdateLastValues);
     }
 
-    public Particle init(long textureHandle, float worldX, float worldY, float localX, float localY, float velocityX, float velocityY,
-                         float sin, float cos, float angularVelocity, float scaleX, float scaleY, float sizeVelocity, float r, float g,
-                         float b, float a, float alphaVelocity, boolean isAlphaFromZero, RenderLayer renderLayer,
+    public Particle init(long textureHandle, float worldX, float worldY, float localX, float localY, float z, float velocityX,
+                         float velocityY, float sin, float cos, float angularVelocity, float scaleX, float scaleY, float sizeVelocity,
+                         float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero, ParticleType particleType,
                          Consumer<Particle> updateLogic, Consumer<ParticleRender> lastValuesUpdateConsumer) {
-        this.renderLayer = renderLayer;
-        render = particleRenderer.newRender(renderLayer).init(this, worldX, worldY, sin, cos, scaleX, scaleY, textureHandle,
-                r, g, b, a, isAlphaFromZero, Engine.convertToDeltaTime(alphaVelocity),
-                particleRenderer.getBuffersHolder(renderLayer), lastValuesUpdateConsumer);
+        this.particleType = particleType;
+        render = particleRenderer.newRender(particleType).init(this, worldX, worldY, z, sin, cos, scaleX, scaleY,
+                textureHandle, r, g, b, a, isAlphaFromZero,
+                Engine.convertToDeltaTime(alphaVelocity), particleRenderer.getBuffersHolder(particleType), lastValuesUpdateConsumer);
         super.setPosition(worldX, worldY);
         this.localPosition.set(localX, localY);
         this.velocity.set(Engine.convertToDeltaTime(velocityX), Engine.convertToDeltaTime(velocityY));
@@ -79,7 +79,7 @@ public class Particle extends GameObject {
 
     private void addParticle() {
         particleManager.addParticle(this);
-        particleRenderer.addParticleToRenderLayer(render, renderLayer);
+        particleRenderer.addParticle(render, particleType);
     }
 
     @Override
@@ -138,6 +138,6 @@ public class Particle extends GameObject {
 
     public void clear() {
         particleManager.remove(this);
-        particleRenderer.remove(renderLayer, render);
+        particleRenderer.remove(particleType, render);
     }
 }

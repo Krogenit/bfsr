@@ -6,6 +6,7 @@ import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.FrameBuffer;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.constant.DrawMode;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.renderer.shader.NebulaShader;
 import net.bfsr.engine.renderer.shader.StarsShader;
@@ -39,7 +40,6 @@ import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_T;
-import static org.lwjgl.opengl.GL11C.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
 import static org.lwjgl.opengl.GL11C.glBindTexture;
 import static org.lwjgl.opengl.GL11C.glClear;
@@ -128,9 +128,9 @@ public final class TextureGenerator extends AbstractTextureGenerator {
     public AbstractTexture generateShieldTexture(AbstractTexture texture, AbstractRenderer renderer, float outlineOffset, float blurSize) {
         int currentBindTexture = glGetInteger(GL_TEXTURE_BINDING_2D);
         AbstractSpriteRenderer spriteRenderer = renderer.getSpriteRenderer();
-        int rectangleRenderId = spriteRenderer.add(0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, BufferType.GUI);
-        int texturedRectangleRenderId = spriteRenderer.add(0.0f, 0.0f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 1.0f, texture.getTextureHandle(),
-                BufferType.GUI);
+        int rectangleRenderId = spriteRenderer.add(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, BufferType.GUI);
+        int texturedRectangleRenderId = spriteRenderer.add(0.0f, 0.0f, 0.0f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 1.0f,
+                texture.getTextureHandle(), BufferType.GUI);
 
         int textureOffset = 4;
         int viewportWidth = texture.getWidth() + textureOffset;
@@ -153,7 +153,7 @@ public final class TextureGenerator extends AbstractTextureGenerator {
         spriteRenderer.addDrawCommand(texturedRectangleRenderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.GUI);
         AbstractBuffersHolder buffersHolder = spriteRenderer.getBuffersHolder(BufferType.GUI);
         spriteRenderer.updateBuffers();
-        spriteRenderer.updateCommandBufferAndRender(GL_TRIANGLES, buffersHolder.getRenderObjects(), buffersHolder);
+        spriteRenderer.updateCommandBufferAndRender(DrawMode.TRIANGLES, buffersHolder.getRenderObjects(), buffersHolder);
         buffersHolder.setRenderObjects(0);
 
         AbstractTexture currentTexture = frameBuffer.getTexture(0);
@@ -165,7 +165,7 @@ public final class TextureGenerator extends AbstractTextureGenerator {
 
         spriteRenderer.addDrawCommand(rectangleRenderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.GUI);
         spriteRenderer.updateBuffers();
-        spriteRenderer.updateCommandBufferAndRender(GL_TRIANGLES, buffersHolder.getRenderObjects(), buffersHolder);
+        spriteRenderer.updateCommandBufferAndRender(DrawMode.TRIANGLES, buffersHolder.getRenderObjects(), buffersHolder);
         buffersHolder.setRenderObjects(0);
 
         currentTexture = secondFrameBuffer.getTexture(0);
@@ -181,7 +181,7 @@ public final class TextureGenerator extends AbstractTextureGenerator {
 
         spriteRenderer.addDrawCommand(rectangleRenderId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.GUI);
         spriteRenderer.updateBuffers();
-        spriteRenderer.updateCommandBufferAndRender(GL_TRIANGLES, buffersHolder.getRenderObjects(), buffersHolder);
+        spriteRenderer.updateCommandBufferAndRender(DrawMode.TRIANGLES, buffersHolder.getRenderObjects(), buffersHolder);
         buffersHolder.setRenderObjects(0);
 
         gaussianBlurShader.disable();

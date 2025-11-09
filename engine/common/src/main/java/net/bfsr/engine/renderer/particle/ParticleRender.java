@@ -17,8 +17,8 @@ public class ParticleRender extends Render {
     @Setter
     private Consumer<ParticleRender> lastValuesUpdateConsumer;
 
-    public ParticleRender init(Particle object, float x, float y, float sin, float cos, float width, float height, long textureHandle,
-                               float r, float g, float b, float a, boolean isAlphaFromZero, float alphaVelocity,
+    public ParticleRender init(Particle object, float x, float y, float z, float sin, float cos, float width, float height,
+                               long textureHandle, float r, float g, float b, float a, boolean isAlphaFromZero, float alphaVelocity,
                                AbstractBuffersHolder buffersHolder, Consumer<ParticleRender> lastValuesUpdateConsumer) {
         this.buffersHolder = buffersHolder;
         this.object = this.particle = object;
@@ -33,7 +33,7 @@ public class ParticleRender extends Render {
         }
 
         if (id == -1) {
-            id = spriteRenderer.add(x, y, sin, cos, width, height, color.x, color.y, color.z, color.w, textureHandle, buffersHolder);
+            id = spriteRenderer.add(x, y, z, sin, cos, width, height, color.x, color.y, color.z, color.w, textureHandle, buffersHolder);
         } else {
             spriteRenderer.setTexture(id, buffersHolder, textureHandle);
             spriteRenderer.setColor(id, buffersHolder, color);
@@ -41,6 +41,7 @@ public class ParticleRender extends Render {
 
             spriteRenderer.setPosition(id, buffersHolder, x, y);
             spriteRenderer.setLastPosition(id, buffersHolder, x, y);
+            spriteRenderer.setZ(id, buffersHolder, z);
             spriteRenderer.setRotation(id, buffersHolder, sin, cos);
             spriteRenderer.setLastRotation(id, buffersHolder, sin, cos);
             spriteRenderer.setSize(id, buffersHolder, width, height);

@@ -5,6 +5,7 @@ import net.bfsr.client.Client;
 import net.bfsr.client.particle.effect.ExplosionEffects;
 import net.bfsr.engine.network.NetworkHandler;
 import net.bfsr.engine.network.packet.PacketHandler;
+import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
@@ -44,7 +45,8 @@ public class PacketHullCellDestroyHandler extends PacketHandler<PacketHullCellDe
             float rotatedX = posX * cos - posY * sin + rigidBody.getX();
             float rotatedY = posY * cos + posX * sin + rigidBody.getY();
 
-            explosionEffects.spawnSmallExplosion(rotatedX, rotatedY, Math.max(rhombusWidth, rhombusHeight));
+            Render render = client.getEntityRenderer().getRender(ship.getId());
+            explosionEffects.spawnSmallExplosion(rotatedX, rotatedY, render.getZ(), Math.max(rhombusWidth, rhombusHeight));
         }
     }
 }

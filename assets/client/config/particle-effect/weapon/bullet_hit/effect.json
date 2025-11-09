@@ -28,7 +28,7 @@
   "name": "effect",
   "path": "weapon/bullet_hit",
   "r": 1.0,
-  "renderLayer": "DEFAULT_ADDITIVE",
+  "particleType": "ADDITIVE",
   "soundEffects": [],
   "sourceSizeXMultiplier": 1.0,
   "sourceSizeYMultiplier": 1.0,

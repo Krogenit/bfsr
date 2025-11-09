@@ -6,8 +6,8 @@ import net.bfsr.entity.Station;
 public class StationRender extends RigidBodyRender {
     private final Station station;
 
-    public StationRender(Station station) {
-        super(Engine.getAssetsManager().getTexture(station.getConfigData().getTexture()), station);
+    public StationRender(Station station, float z) {
+        super(station, z, Engine.getAssetsManager().getTexture(station.getConfigData().getTexture()));
         this.station = station;
     }
 }

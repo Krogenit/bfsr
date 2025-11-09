@@ -28,7 +28,7 @@
   "name": "jump",
   "path": "",
   "r": 1.0,
-  "renderLayer": "DEFAULT_ADDITIVE",
+  "particleType": "ADDITIVE",
   "soundEffects": [
     {
       "path": "sound/jump/jump.ogg",

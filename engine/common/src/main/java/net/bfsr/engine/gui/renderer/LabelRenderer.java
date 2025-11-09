@@ -3,6 +3,7 @@ package net.bfsr.engine.gui.renderer;
 import lombok.Getter;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
+import net.bfsr.engine.renderer.DepthBufferRenderLayers;
 import net.bfsr.engine.renderer.MaterialType;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
@@ -74,9 +75,9 @@ public class LabelRenderer extends GuiObjectRenderer {
 
             for (int i = 0, commandDataOffset = 0; i < glyphsData.size(); i++, commandDataOffset += COMMAND_SIZE_IN_BYTES) {
                 GlyphData glyphData = glyphsData.get(i);
-                int id = spriteRenderer.add(x + glyphData.getX(), y + glyphData.getY(), glyphData.getWidth(),
-                        glyphData.getHeight(), glyphData.getR(), glyphData.getG(), glyphData.getB(), glyphData.getA(),
-                        glyphData.getTextureHandle(), MaterialType.FONT, buffersHolder);
+                int id = spriteRenderer.add(x + glyphData.getX(), y + glyphData.getY(), DepthBufferRenderLayers.getUIZ(),
+                        glyphData.getWidth(), glyphData.getHeight(), glyphData.getR(), glyphData.getG(), glyphData.getB(),
+                        glyphData.getA(), glyphData.getTextureHandle(), MaterialType.FONT, buffersHolder);
                 glyphData.setBaseInstance(id);
                 putCommandData(commandDataOffset, AbstractSpriteRenderer.QUAD_INDEX_COUNT);
                 putCommandData(commandDataOffset + AbstractSpriteRenderer.INSTANCE_COUNT_OFFSET, 1);

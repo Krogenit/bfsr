@@ -31,23 +31,24 @@ public class RigidBodyRender extends Render {
 
     protected final RigidBody rigidBody;
 
-    RigidBodyRender(AbstractTexture texture, RigidBody rigidBody, float r, float g, float b, float a) {
-        super(texture, rigidBody, r, g, b, a);
+    RigidBodyRender(RigidBody rigidBody, float z, AbstractTexture texture, float r, float g, float b, float a) {
+        super(rigidBody, z, texture, r, g, b, a);
         this.rigidBody = rigidBody;
     }
 
-    RigidBodyRender(AbstractTexture texture, RigidBody rigidBody) {
-        this(texture, rigidBody, 1.0f, 1.0f, 1.0f, 1.0f);
+    RigidBodyRender(RigidBody rigidBody, float z, AbstractTexture texture) {
+        this(rigidBody, z, texture, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public RigidBodyRender(RigidBody rigidBody, Path texturePath) {
-        this(Engine.getAssetsManager().getTexture(texturePath), rigidBody, 1.0f, 1.0f, 1.0f, 1.0f);
+    public RigidBodyRender(RigidBody rigidBody, float z, Path texturePath) {
+        this(rigidBody, z, Engine.getAssetsManager().getTexture(texturePath), 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     @Override
     public void init() {
-        id = spriteRenderer.add(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), rigidBody.getSizeX(),
-                rigidBody.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
+        id = spriteRenderer.add(rigidBody.getX(), rigidBody.getY(), z, rigidBody.getSin(), rigidBody.getCos(),
+                rigidBody.getSizeX(), rigidBody.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(),
+                BufferType.ENTITIES_ALPHA);
     }
 
     @Override

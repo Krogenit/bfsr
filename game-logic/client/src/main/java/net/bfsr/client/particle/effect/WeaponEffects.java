@@ -24,22 +24,22 @@ public class WeaponEffects {
         lightingIon = effectsRegistry.get("weapon/lighting_ion");
     }
 
-    public void spawnWeaponShoot(float worldX, float worldY, float localX, float localY, float sin, float cos, float size,
+    public void spawnWeaponShoot(float worldX, float worldY, float localX, float localY, float z, float sin, float cos, float size,
                                  float r, float g, float b, float a, Consumer<Particle> updateLogic) {
-        smallWeapon.play(worldX, worldY, localX, localY, size, size, sin, cos, 0, 0, r, g, b, a, updateLogic);
+        smallWeapon.play(worldX, worldY, localX, localY, z, size, size, sin, cos, 0, 0, r, g, b, a, updateLogic);
     }
 
-    public void spawnDirectedSpark(float contactX, float contactY, float normalX, float normalY, float size, float r,
+    public void spawnDirectedSpark(float contactX, float contactY, float z, float normalX, float normalY, float size, float r,
                                    float g, float b, float a) {
         float angle = (float) Math.atan2(normalX, -normalY) - MathUtils.HALF_PI;
-        bulletHit.playSinCos(contactX, contactY, size, LUT.sin(angle), LUT.cos(angle), r, g, b, a);
+        bulletHit.playSinCos(contactX, contactY, z, size, LUT.sin(angle), LUT.cos(angle), r, g, b, a);
     }
 
-    public void lightingIon(Vector2f pos, float size) {
+    public void lightingIon(Vector2f pos, float z, float size) {
         int count = random.nextInt(3) + 1;
         for (int i = 0; i < count; i++) {
             RotationHelper.angleToVelocity(MathUtils.TWO_PI * random.nextFloat(), size * 0.25f, cachedVector);
-            lightingIon.play(pos.x + cachedVector.x, pos.y + cachedVector.y, size, size);
+            lightingIon.play(pos.x + cachedVector.x, pos.y + cachedVector.y, z, size, size);
         }
     }
 }

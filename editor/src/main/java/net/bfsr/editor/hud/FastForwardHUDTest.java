@@ -67,7 +67,7 @@ class FastForwardHUDTest {
             client.getShipOutfitter().outfit(fastForwardShip);
             world.add(fastForwardShip);
 
-            ShipRender shipRender = new ShipRender(fastForwardShip);
+            ShipRender shipRender = new ShipRender(fastForwardShip, 1.0f);
             shipRender.init();
             client.getEntityRenderer().addRender(shipRender);
 
@@ -253,7 +253,7 @@ class FastForwardHUDTest {
         bullet.init(world, 1);
         bullet.getBody().setActive(false);
 
-        BulletRender bulletRender = new BulletRender(bullet);
+        BulletRender bulletRender = new BulletRender(bullet, 1.0f);
         bulletRender.init();
         client.getEntityRenderer().addRender(bulletRender);
 

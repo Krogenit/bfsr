@@ -32,7 +32,7 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
     private final Client client = Client.get();
     private final ConfigurableGameObject gameObject = new ConfigurableGameObject();
     private final GameObject textureObject = new GameObject();
-    private final Render testRender = new Render(textureObject) {
+    private final Render testRender = new Render(textureObject, 1.0f) {
         @Override
         public void render() {
             if (particleEffect != null && playing) {
@@ -121,9 +121,9 @@ public class GuiParticleEditor extends GuiEditor<ParticleEffectConfig, ParticleE
                     spawnAccumulator.resetTime();
                 }
                 particleEffect.init();
-                particleEffect.debug(gameObject.getPosX(), gameObject.getPosY(), gameObject.getSizeX(), gameObject.getSizeY(),
-                        0.0f, 1.0f,
-                        gameObject.getVelocityX(), gameObject.getVelocityY(), spawnAccumulator);
+                particleEffect.debug(gameObject.getPosX(), gameObject.getPosY(), 1.0f, gameObject.getSizeX(),
+                        gameObject.getSizeY(), 0.0f,
+                        1.0f, gameObject.getVelocityX(), gameObject.getVelocityY(), spawnAccumulator);
             }
         }
     }

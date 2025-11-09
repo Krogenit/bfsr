@@ -20,30 +20,32 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
 
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 class EntityRenderRegistry {
-    private final TMap<Class<? extends RigidBody>, Function<RigidBody, RigidBodyRender>> renderRegistry = new THashMap<>();
+    private final TMap<Class<? extends RigidBody>, BiFunction<RigidBody, Float, RigidBodyRender>> renderRegistry = new THashMap<>();
+    private final Layers layers;
 
     EntityRenderRegistry(Client client) {
+        this.layers = client.getLayers();
         ConfigConverterManager configConverterManager = client.getConfigConverterManager();
         ShipRegistry shipRegistry = configConverterManager.getConverter(ShipRegistry.class);
 
-        put(RigidBody.class, rigidBody -> new RigidBodyRender(rigidBody, ((GameObjectConfigData) configConverterManager
+        put(RigidBody.class, (rigidBody, z) -> new RigidBodyRender(rigidBody, z, ((GameObjectConfigData) configConverterManager
                 .getConverter(rigidBody.getRegistryId()).get(rigidBody.getDataId())).getTexture()));
         put(Ship.class, ShipRender::new);
-        put(ShipWreck.class, rigidBody -> new ShipWreckRenderer(rigidBody, shipRegistry.get(rigidBody.getDataId()).getTexture()));
+        put(ShipWreck.class, (rigidBody, z) -> new ShipWreckRenderer(rigidBody, z, shipRegistry.get(rigidBody.getDataId()).getTexture()));
         put(Wreck.class, WreckRender::new);
         put(Bullet.class, BulletRender::new);
         put(Station.class, StationRender::new);
     }
 
-    private <T> void put(Class<T> rigidBodyClass, Function<T, RigidBodyRender> function) {
-        renderRegistry.put((Class<? extends RigidBody>) rigidBodyClass, (Function<RigidBody, RigidBodyRender>) function);
+    private <T> void put(Class<T> rigidBodyClass, BiFunction<T, Float, RigidBodyRender> function) {
+        renderRegistry.put((Class<? extends RigidBody>) rigidBodyClass, (BiFunction<RigidBody, Float, RigidBodyRender>) function);
     }
 
     Render createRender(RigidBody rigidBody) {
-        RigidBodyRender render = renderRegistry.get(rigidBody.getClass()).apply(rigidBody);
+        RigidBodyRender render = renderRegistry.get(rigidBody.getClass()).apply(rigidBody, layers.getLayerFor(rigidBody));
         render.init();
         return render;
     }

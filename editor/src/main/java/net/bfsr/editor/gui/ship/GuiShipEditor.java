@@ -79,7 +79,7 @@ public class GuiShipEditor extends GuiEntityEditor<ShipConfig, ShipProperties, S
 
     @Override
     protected RigidBodyRender createRender(Ship ship) {
-        ShipRender shipRender = new ShipRender(ship) {
+        ShipRender shipRender = new ShipRender(ship, 1.0f) {
             @Override
             public void render() {
                 if (!ship.isSpawned()) {

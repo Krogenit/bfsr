@@ -1,5 +1,7 @@
 package net.bfsr.engine;
 
+import net.bfsr.engine.renderer.constant.TextureFilter;
+import net.bfsr.engine.renderer.constant.TextureWrap;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.AbstractTextureLoader;
 import net.bfsr.engine.renderer.texture.TextureRegister;
@@ -30,7 +32,7 @@ public class AssetsManager {
         return textureLoader.newTexture(width, height);
     }
 
-    public AbstractTexture getTexture(TextureRegister texture, int wrap, int filter) {
+    public AbstractTexture getTexture(TextureRegister texture, TextureWrap wrap, TextureFilter filter) {
         return textureLoader.getTexture(texture, wrap, filter);
     }
 
@@ -38,7 +40,7 @@ public class AssetsManager {
         return textureLoader.getTexture(texture);
     }
 
-    public AbstractTexture getTexture(Path path, int wrap, int filter) {
+    public AbstractTexture getTexture(Path path, TextureWrap wrap, TextureFilter filter) {
         return textureLoader.getTexture(path, wrap, filter);
     }
 

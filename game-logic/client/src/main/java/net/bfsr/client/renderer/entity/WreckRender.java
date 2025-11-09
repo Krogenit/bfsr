@@ -42,8 +42,8 @@ public class WreckRender extends RigidBodyRender {
     private int fireId = -1;
     private int lightId = -1;
 
-    public WreckRender(Wreck object) {
-        super(Engine.getAssetsManager().getTexture(object.getConfigData().getTexture()), object, 0.5f, 0.5f, 0.5f, 1.0f);
+    public WreckRender(Wreck object, float z) {
+        super(object, z, Engine.getAssetsManager().getTexture(object.getConfigData().getTexture()), 0.5f, 0.5f, 0.5f, 1.0f);
         this.wreck = object;
 
         if (object.isEmitFire()) {
@@ -62,20 +62,22 @@ public class WreckRender extends RigidBodyRender {
         this.fire = object.isFire();
         this.light = object.isLight();
 
-        object.getWreckEventBus().register(this);
+        object.getEventBus().register(this);
     }
 
     @Override
     public void init() {
         super.init();
         if (fire) {
-            fireId = spriteRenderer.add(wreck.getX(), wreck.getY(), wreck.getSin(), wreck.getCos(), wreck.getSizeX(), wreck.getSizeY(),
-                    colorFire.x, colorFire.y, colorFire.z, colorFire.w, textureFire.getTextureHandle(), BufferType.ENTITIES_ADDITIVE);
+            fireId = spriteRenderer.add(wreck.getX(), wreck.getY(), z, wreck.getSin(), wreck.getCos(), wreck.getSizeX(),
+                    wreck.getSizeY(), colorFire.x, colorFire.y, colorFire.z, colorFire.w, textureFire.getTextureHandle(),
+                    BufferType.ENTITIES_ADDITIVE);
         }
 
         if (light) {
-            lightId = spriteRenderer.add(wreck.getX(), wreck.getY(), wreck.getSin(), wreck.getCos(), wreck.getSizeX(), wreck.getSizeY(),
-                    colorLight.x, colorLight.y, colorLight.z, colorLight.w, textureLight.getTextureHandle(), BufferType.ENTITIES_ADDITIVE);
+            lightId = spriteRenderer.add(wreck.getX(), wreck.getY(), z, wreck.getSin(), wreck.getCos(), wreck.getSizeX(),
+                    wreck.getSizeY(), colorLight.x, colorLight.y, colorLight.z, colorLight.w, textureLight.getTextureHandle(),
+                    BufferType.ENTITIES_ADDITIVE);
         }
     }
 
@@ -131,7 +133,7 @@ public class WreckRender extends RigidBodyRender {
 
     private void emitFire() {
         if (color.w > 0.6f) {
-            fireEffects.emitFire(object.getX(), object.getY(), spawnAccumulator);
+            fireEffects.emitFire(object.getX(), object.getY(), z, spawnAccumulator);
         }
     }
 
@@ -247,7 +249,7 @@ public class WreckRender extends RigidBodyRender {
         return event -> {
             Wreck wreck = event.wreck();
             if (color.w > 0.01f) {
-                explosionEffects.spawnSmallExplosion(wreck.getX(), wreck.getY(), wreck.getSizeX());
+                explosionEffects.spawnSmallExplosion(wreck.getX(), wreck.getY(), getZ(), wreck.getSizeX());
             }
         };
     }

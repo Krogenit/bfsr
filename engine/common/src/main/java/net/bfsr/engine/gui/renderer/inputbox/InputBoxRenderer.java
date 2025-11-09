@@ -6,7 +6,6 @@ import net.bfsr.engine.gui.component.InputBox;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.renderer.SimpleGuiObjectRenderer;
 import net.bfsr.engine.renderer.font.glyph.Font;
-import net.bfsr.engine.renderer.opengl.GL;
 import org.joml.Vector2i;
 import org.joml.Vector4f;
 
@@ -130,8 +129,8 @@ public class InputBoxRenderer extends SimpleGuiObjectRenderer {
         boolean stringOffsetBelowZero = inputBox.getStringOffset().x < 0;
         if (stringOffsetBelowZero) {
             guiRenderer.render();
-            renderer.glEnable(GL.GL_SCISSOR_TEST);
-            renderer.glScissor(guiObject.getSceneX() + 1, renderer.getScreenHeight() - guiObject.getSceneY() - guiObject.getHeight(),
+            renderer.enableScissorTest();
+            renderer.scissor(guiObject.getSceneX() + 1, renderer.getScreenHeight() - guiObject.getSceneY() - guiObject.getHeight(),
                     guiObject.getWidth() - 2, guiObject.getHeight());
         }
 
@@ -140,7 +139,7 @@ public class InputBoxRenderer extends SimpleGuiObjectRenderer {
 
         if (stringOffsetBelowZero) {
             guiRenderer.render();
-            renderer.glDisable(GL.GL_SCISSOR_TEST);
+            renderer.disableScissorTest();
         }
     }
 

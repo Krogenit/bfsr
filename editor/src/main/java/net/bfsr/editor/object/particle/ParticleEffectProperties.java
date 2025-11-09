@@ -7,7 +7,7 @@ import net.bfsr.editor.gui.property.PropertyGuiElementType;
 import net.bfsr.editor.object.ObjectProperties;
 import net.bfsr.editor.property.Property;
 import net.bfsr.editor.sound.SoundProperties;
-import net.bfsr.engine.renderer.particle.RenderLayer;
+import net.bfsr.engine.renderer.particle.ParticleType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.util.PathHelper;
 import net.bfsr.server.dto.Default;
@@ -45,7 +45,7 @@ public class ParticleEffectProperties extends ObjectProperties {
     @Property(elementType = PropertyGuiElementType.CHECK_BOX)
     private boolean isAlphaFromZero;
     @Property(elementType = PropertyGuiElementType.COMBO_BOX)
-    private RenderLayer renderLayer;
+    private ParticleType particleType;
     @Property(elementType = PropertyGuiElementType.MINIMIZABLE_LIST, arrayElementName = "sound")
     private List<SoundProperties> soundEffects;
     @Property(name = "srcSizeMultiplayer", fieldsAmount = 2)
@@ -66,7 +66,7 @@ public class ParticleEffectProperties extends ObjectProperties {
         minSizeY = 10.0f;
         maxSizeX = 10.0f;
         maxSizeY = 10.0f;
-        renderLayer = RenderLayer.DEFAULT_ADDITIVE;
+        particleType = ParticleType.ADDITIVE;
         soundEffects = new ArrayList<>();
         sourceSizeXMultiplier = 1.0f;
         sourceSizeYMultiplier = 1.0f;

@@ -2,7 +2,6 @@ package net.bfsr.entity.wreck;
 
 import lombok.Getter;
 import net.bfsr.config.entity.wreck.WreckData;
-import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.physics.PhysicsUtils;
 import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.engine.world.World;
@@ -18,7 +17,6 @@ import org.jbox2d.dynamics.Fixture;
 @Getter
 public class Wreck extends RigidBody {
     private final ObjectPool<Wreck> wreckPool;
-    private final EventBus wreckEventBus = new EventBus();
 
     private int wreckIndex;
 

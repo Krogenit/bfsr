@@ -28,7 +28,7 @@
   "name": "shockwave",
   "path": "explosion/ship_small",
   "r": 0.5,
-  "renderLayer": "DEFAULT_ADDITIVE",
+  "particleType": "ADDITIVE",
   "soundEffects": [],
   "sourceSizeXMultiplier": 1.0,
   "sourceSizeYMultiplier": 1.0,

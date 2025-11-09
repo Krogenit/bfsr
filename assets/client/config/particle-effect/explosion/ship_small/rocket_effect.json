@@ -28,7 +28,7 @@
   "name": "rocket_effect",
   "path": "explosion/ship_small",
   "r": 1.0,
-  "renderLayer": "DEFAULT_ADDITIVE",
+  "particleType": "ADDITIVE",
   "soundEffects": [],
   "sourceSizeXMultiplier": 0.8,
   "sourceSizeYMultiplier": 0.8,

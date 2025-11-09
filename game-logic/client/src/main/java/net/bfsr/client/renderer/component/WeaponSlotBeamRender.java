@@ -30,8 +30,8 @@ public class WeaponSlotBeamRender extends WeaponSlotRender {
 
     private Runnable particlesUpdateRunnable = RunnableUtils.EMPTY_RUNNABLE;
 
-    WeaponSlotBeamRender(WeaponSlotBeam weaponSlotBeam) {
-        super(weaponSlotBeam);
+    WeaponSlotBeamRender(WeaponSlotBeam weaponSlotBeam, float z) {
+        super(weaponSlotBeam, z);
         this.weaponSlotBeam = weaponSlotBeam;
         this.effectsColor.set(weaponSlotBeam.getGunData().getColor());
         this.effectsColor.w = 0.0f;
@@ -62,7 +62,7 @@ public class WeaponSlotBeamRender extends WeaponSlotRender {
     }
 
     private void onDamage(float normalX, float normalY, float hitX, float hitY) {
-        beamEffects.beamDamage(hitX, hitY, normalX, normalY, object.getSizeX(), effectsColor, damageSpawnAccumulator);
+        beamEffects.beamDamage(hitX, hitY, z, normalX, normalY, object.getSizeX(), effectsColor, damageSpawnAccumulator);
     }
 
     @EventHandler
@@ -76,8 +76,8 @@ public class WeaponSlotBeamRender extends WeaponSlotRender {
             Ship ship = event.ship();
             onDamage(event.normalX(), event.normalY(), event.hitX(), event.hitY());
 
-            garbageSpawner.beamArmorDamage(event.hitX(), event.hitY(), ship.getLinearVelocity().x * 0.005f,
-                    ship.getLinearVelocity().y * 0.005f);
+            garbageSpawner.beamArmorDamage(event.hitX(), event.hitY(), z,
+                    ship.getLinearVelocity().x * 0.005f, ship.getLinearVelocity().y * 0.005f);
         };
     }
 
@@ -87,8 +87,8 @@ public class WeaponSlotBeamRender extends WeaponSlotRender {
             RigidBody rigidBody = event.rigidBody();
             onDamage(event.normalX(), event.normalY(), event.hitX(), event.hitY());
 
-            garbageSpawner.beamHullDamage(event.hitX(), event.hitY(), rigidBody.getLinearVelocity().x * 0.005f,
-                    rigidBody.getLinearVelocity().y * 0.005f);
+            garbageSpawner.beamHullDamage(event.hitX(), event.hitY(), z,
+                    rigidBody.getLinearVelocity().x * 0.005f, rigidBody.getLinearVelocity().y * 0.005f);
         };
     }
 
@@ -97,8 +97,8 @@ public class WeaponSlotBeamRender extends WeaponSlotRender {
         return event -> {
             Wreck wreck = event.wreck();
             onDamage(event.normalX(), event.normalY(), event.hitX(), event.hitY());
-            garbageSpawner.beamHullDamage(event.hitX(), event.hitY(), wreck.getLinearVelocity().x * 0.005f,
-                    wreck.getLinearVelocity().y * 0.005f);
+            garbageSpawner.beamHullDamage(event.hitX(), event.hitY(), z,
+                    wreck.getLinearVelocity().x * 0.005f, wreck.getLinearVelocity().y * 0.005f);
         };
     }
 

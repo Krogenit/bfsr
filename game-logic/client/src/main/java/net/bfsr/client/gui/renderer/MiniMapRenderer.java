@@ -13,7 +13,6 @@ import net.bfsr.engine.event.entity.RigidBodyRemovedFromWorldEvent;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.renderer.RectangleTexturedRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
-import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
@@ -155,10 +154,10 @@ public class MiniMapRenderer extends RectangleTexturedRenderer {
         guiRenderer.render();
         List<Ship> ships = client.getWorld().getEntitiesByType(Ship.class);
 
-        renderer.glEnable(GL.GL_SCISSOR_TEST);
+        renderer.enableScissorTest();
         int offsetY = 17;
         int offsetX = 22;
-        renderer.glScissor(guiObject.getX() + offsetX, renderer.getScreenHeight() - height + offsetY,
+        renderer.scissor(guiObject.getX() + offsetX, renderer.getScreenHeight() - height + offsetY,
                 width - (offsetX << 1), height - (offsetY << 1));
 
         for (int i = 0; i < ships.size(); i++) {
@@ -169,7 +168,7 @@ public class MiniMapRenderer extends RectangleTexturedRenderer {
         }
 
         guiRenderer.render();
-        renderer.glDisable(GL.GL_SCISSOR_TEST);
+        renderer.disableScissorTest();
 
         super.render(mouseX, mouseY);
     }

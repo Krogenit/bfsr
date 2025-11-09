@@ -20,8 +20,8 @@ public class ModuleRenderer extends Render {
     private final Runnable updateRunnable;
     private final float sizeX, sizeY;
 
-    public ModuleRenderer(Ship ship, DamageableModule module, AbstractTexture texture) {
-        super(texture, module);
+    public ModuleRenderer(Ship ship, float z, DamageableModule module, AbstractTexture texture) {
+        super(module, z, texture);
 
         Polygon polygon = (Polygon) module.getFixture().getShape();
         Vector2 center = polygon.centroid;
@@ -58,8 +58,8 @@ public class ModuleRenderer extends Render {
         }
     }
 
-    public ModuleRenderer(Ship ship, Engine engine, AbstractTexture texture, Direction direction) {
-        super(texture, engine);
+    public ModuleRenderer(Ship ship, float z, Engine engine, AbstractTexture texture, Direction direction) {
+        super(engine, z, texture);
 
         Polygon shape = (Polygon) engine.getFixture().getShape();
         Vector2 center = shape.centroid;
@@ -115,8 +115,8 @@ public class ModuleRenderer extends Render {
     @Override
     public void init() {
         updateRunnable.run();
-        id = spriteRenderer.add(x, y, sin, cos, sizeX, sizeY, color.x, color.y, color.z, color.w,
-                texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
+        id = spriteRenderer.add(x, y, z, sin, cos, sizeX, sizeY, color.x, color.y, color.z,
+                color.w, texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
     }
 
     @Override

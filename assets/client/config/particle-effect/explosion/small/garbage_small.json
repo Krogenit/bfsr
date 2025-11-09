@@ -28,7 +28,7 @@
   "name": "garbage_small",
   "path": "explosion/small",
   "r": 0.5,
-  "renderLayer": "DEFAULT_ALPHA_BLENDED",
+  "particleType": "ALPHA_BLENDED",
   "soundEffects": [],
   "sourceSizeXMultiplier": 0.0,
   "sourceSizeYMultiplier": 0.0,

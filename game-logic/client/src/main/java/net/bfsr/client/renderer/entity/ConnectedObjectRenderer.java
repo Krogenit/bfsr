@@ -10,16 +10,16 @@ import net.bfsr.engine.world.entity.GameObject;
 public class ConnectedObjectRenderer extends Render {
     private final ConnectedObject<?> connectedObject;
 
-    ConnectedObjectRenderer(ConnectedObject<?> connectedObject) {
-        super(Engine.getAssetsManager().getTexture(connectedObject.getConfigData().getTexture()), new GameObject());
+    ConnectedObjectRenderer(ConnectedObject<?> connectedObject, float z) {
+        super(new GameObject(), z, Engine.getAssetsManager().getTexture(connectedObject.getConfigData().getTexture()));
         this.connectedObject = connectedObject;
     }
 
     @Override
     public void init() {
-        id = spriteRenderer.add(connectedObject.getX(), connectedObject.getY(), connectedObject.getSin(),
-                connectedObject.getCos(), connectedObject.getSizeX(), connectedObject.getSizeY(), 0.25f, 0.25f, 0.25f, 1.0f,
-                texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
+        id = spriteRenderer.add(connectedObject.getX(), connectedObject.getY(), z, connectedObject.getSin(), connectedObject.getCos(),
+                connectedObject.getSizeX(), connectedObject.getSizeY(), 0.25f, 0.25f, 0.25f, 1.0f, texture.getTextureHandle(),
+                BufferType.ENTITIES_ALPHA);
     }
 
     @Override

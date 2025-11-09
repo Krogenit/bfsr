@@ -28,7 +28,7 @@
   "name": "medium",
   "path": "garbage",
   "r": 0.7,
-  "renderLayer": "DEFAULT_ALPHA_BLENDED",
+  "particleType": "ALPHA_BLENDED",
   "soundEffects": [],
   "sourceSizeXMultiplier": 1.0,
   "sourceSizeYMultiplier": 1.0,

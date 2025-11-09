@@ -35,6 +35,7 @@ public class RigidBody extends GameObject {
     protected int id;
     @Getter
     protected int lifeTime, maxLifeTime = DEFAULT_MAX_LIFE_TIME_IN_FRAMES;
+    @Getter
     protected EventBus eventBus;
     @Setter
     @Getter

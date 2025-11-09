@@ -1,6 +1,8 @@
 package net.bfsr.engine.renderer.texture;
 
 import lombok.Getter;
+import net.bfsr.engine.renderer.constant.TextureFilter;
+import net.bfsr.engine.renderer.constant.TextureWrap;
 
 import java.nio.file.Path;
 
@@ -11,9 +13,9 @@ public abstract class AbstractTextureLoader {
 
     public abstract AbstractTexture newTexture(int width, int height);
 
-    public abstract AbstractTexture getTexture(TextureRegister texture, int wrap, int filter);
+    public abstract AbstractTexture getTexture(TextureRegister texture, TextureWrap wrap, TextureFilter filter);
     public abstract AbstractTexture getTexture(TextureRegister texture);
-    public abstract AbstractTexture getTexture(Path path, int wrap, int filter);
+    public abstract AbstractTexture getTexture(Path path, TextureWrap wrap, TextureFilter filter);
     public abstract AbstractTexture getTexture(Path path);
 
     public abstract void clear();

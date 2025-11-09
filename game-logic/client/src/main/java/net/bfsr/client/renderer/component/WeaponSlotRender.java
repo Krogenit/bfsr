@@ -25,15 +25,16 @@ public class WeaponSlotRender extends Render {
     private final AbstractSoundManager soundManager = Engine.getSoundManager();
     private final AssetsManager assetsManager = Engine.getAssetsManager();
 
-    WeaponSlotRender(WeaponSlot object) {
-        super(Engine.getAssetsManager().getTexture(object.getGunData().getTexture()), object);
+    WeaponSlotRender(WeaponSlot object, float z) {
+        super(object, z, Engine.getAssetsManager().getTexture(object.getGunData().getTexture()));
         this.weaponSlot = object;
     }
 
     @Override
     public void init() {
-        id = spriteRenderer.add(weaponSlot.getX(), weaponSlot.getY(), weaponSlot.getSin(), weaponSlot.getCos(), object.getSizeX(),
-                object.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
+        id = spriteRenderer.add(weaponSlot.getX(), weaponSlot.getY(), z, weaponSlot.getSin(), weaponSlot.getCos(),
+                object.getSizeX(), object.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(),
+                BufferType.ENTITIES_ALPHA);
     }
 
     @Override
@@ -66,8 +67,8 @@ public class WeaponSlotRender extends Render {
         float sin = ship.getSin();
         float cos = ship.getCos();
         RotationHelper.rotate(sin, cos, 0.1f, 0, rotationHelper);
-        weaponEffects.spawnWeaponShoot(x, y, rotationHelper.x, rotationHelper.y, sin, cos, weaponSlot.getSizeY() * 4.0f, color.x,
-                color.y, color.z, color.w, particle -> {
+        weaponEffects.spawnWeaponShoot(x, y, rotationHelper.x, rotationHelper.y, z, sin, cos, weaponSlot.getSizeY() * 4.0f,
+                color.x, color.y, color.z, color.w, particle -> {
                     particle.setRotation(ship.getSin(), ship.getCos());
                     particle.setPosition(object.getX() + rotationHelper.x, object.getY() + rotationHelper.y);
                 });

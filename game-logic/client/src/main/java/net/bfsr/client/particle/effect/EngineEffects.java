@@ -15,17 +15,17 @@ public class EngineEffects {
         smallEngineNoSmoke = particleEffectsRegistry.get("engine/small_no_smoke");
     }
 
-    public void secondaryEngine(float x, float y, SpawnAccumulator spawnAccumulator) {
-        secondaryEngine.emit(x, y, spawnAccumulator);
+    public void secondaryEngine(float x, float y, float z, SpawnAccumulator spawnAccumulator) {
+        secondaryEngine.emit(x, y, z, spawnAccumulator);
     }
 
-    public void smallEngine(float x, float y, float sin, float cos, float size, float velocityX, float velocityY, float r,
+    public void smallEngine(float x, float y, float z, float sin, float cos, float size, float velocityX, float velocityY, float r,
                             float g, float b, float a, SpawnAccumulator spawnAccumulator) {
-        smallEngine.emit(x, y, size, size, sin, cos, velocityX, velocityY, r, g, b, a, spawnAccumulator);
+        smallEngine.emit(x, y, z, size, size, sin, cos, velocityX, velocityY, r, g, b, a, spawnAccumulator);
     }
 
-    public void smallEngineNoSmoke(float x, float y, float sin, float cos, float size, float velocityX, float velocityY,
+    public void smallEngineNoSmoke(float x, float y, float z, float sin, float cos, float size, float velocityX, float velocityY,
                                    float r, float g, float b, float a, SpawnAccumulator spawnAccumulator) {
-        smallEngineNoSmoke.emit(x, y, size, sin, cos, velocityX, velocityY, r, g, b, a, spawnAccumulator);
+        smallEngineNoSmoke.emit(x, y, z, size, sin, cos, velocityX, velocityY, r, g, b, a, spawnAccumulator);
     }
 }

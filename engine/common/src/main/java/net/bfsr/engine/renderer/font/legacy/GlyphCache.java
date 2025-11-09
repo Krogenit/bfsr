@@ -3,7 +3,10 @@ package net.bfsr.engine.renderer.font.legacy;
 import net.bfsr.engine.AssetsManager;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractRenderer;
-import net.bfsr.engine.renderer.opengl.GL;
+import net.bfsr.engine.renderer.constant.InternalTextureFormat;
+import net.bfsr.engine.renderer.constant.TextureFilter;
+import net.bfsr.engine.renderer.constant.TextureFormat;
+import net.bfsr.engine.renderer.constant.TextureWrap;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.util.PathHelper;
 
@@ -509,7 +512,7 @@ public class GlyphCache {
         if (dirty != null) {
             /* Load imageBuffer with pixel data ready for transfer to OpenGL texture */
             updateImageBuffer(dirty.x, dirty.y, dirty.width, dirty.height);
-            renderer.subImage2D(texture.getId(), dirty.x, dirty.y, dirty.width, dirty.height, GL.GL_RED, imageBuffer);
+            renderer.subImage2D(texture.getId(), dirty.x, dirty.y, dirty.width, dirty.height, TextureFormat.RED, imageBuffer);
         }
     }
 
@@ -564,7 +567,8 @@ public class GlyphCache {
          * Initialize texture with the now cleared BufferedImage. Using a texture with GL_ALPHA8 internal format may result in
          * faster rendering since the GPU has to only fetch 1 byte per texel instead of 4 with a regular RGBA texture.
          */
-        renderer.uploadTexture(texture, GL.GL_R8, GL.GL_RED, GL.GL_CLAMP_TO_BORDER, GL.GL_NEAREST, imageBuffer);
+        renderer.uploadTexture(texture, InternalTextureFormat.R8, TextureFormat.RED, TextureWrap.CLAMP_TO_BORDER, TextureFilter.NEAREST,
+                imageBuffer);
     }
 
     /**

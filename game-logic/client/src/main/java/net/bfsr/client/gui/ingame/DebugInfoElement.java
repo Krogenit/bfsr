@@ -18,7 +18,6 @@ import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.renderer.font.glyph.Font;
-import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.util.DecimalUtils;
 import net.bfsr.engine.world.World;
@@ -49,8 +48,8 @@ public class DebugInfoElement extends MinimizableGuiObject {
     private final AbstractMouse mouse = Engine.getMouse();
 
     private final StringBuilder stringBuilder = new StringBuilder(64);
-    private final String openGlVersion = renderer.glGetString(GL.GL_VERSION);
-    private final String openGlRenderer = renderer.glGetString(GL.GL_RENDERER);
+    private final String openGlVersion = renderer.getDriverVersion();
+    private final String openGlRenderer = renderer.getGPUInfo();
 
     private final StringBuilder offset = new StringBuilder(32);
     private final StringBuilder fullCategoryName = new StringBuilder(32);

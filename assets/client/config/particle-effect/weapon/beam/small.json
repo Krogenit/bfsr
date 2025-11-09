@@ -28,7 +28,7 @@
   "name": "small",
   "path": "weapon/beam",
   "r": 1.0,
-  "renderLayer": "DEFAULT_ADDITIVE",
+  "particleType": "ADDITIVE",
   "soundEffects": [],
   "sourceSizeXMultiplier": 0.0,
   "sourceSizeYMultiplier": 0.0,

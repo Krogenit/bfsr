@@ -28,7 +28,7 @@
   "name": "explosion",
   "path": "explosion/ship_small",
   "r": 1.0,
-  "renderLayer": "DEFAULT_ADDITIVE",
+  "particleType": "ADDITIVE",
   "soundEffects": [],
   "sourceSizeXMultiplier": 0.9,
   "sourceSizeYMultiplier": 0.9,

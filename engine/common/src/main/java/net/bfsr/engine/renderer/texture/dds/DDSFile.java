@@ -16,11 +16,10 @@
  *  You should have received a copy of the GNU General Public License
  *  along with dds-lwjgl.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package net.bfsr.engine.renderer.texture.dds;
 
 import lombok.extern.log4j.Log4j2;
-import net.bfsr.engine.renderer.opengl.EXTTextureCompressionS3TC;
+import net.bfsr.engine.renderer.constant.TextureCompression;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,7 +76,7 @@ public class DDSFile {
     /**
      * The compression format for the current DDS document
      */
-    private int dxtFormat;
+    private TextureCompression dxtFormat;
 
     /**
      * Loads a DDS file from the given file.
@@ -134,12 +133,12 @@ public class DDSFile {
 
             int blockSize = 16;
             if ("DXT1".equalsIgnoreCase(header.ddspf.sFourCC)) {
-                dxtFormat = EXTTextureCompressionS3TC.GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+                dxtFormat = TextureCompression.COMPRESSED_RGB_S3TC_DXT1;
                 blockSize = 8;
             } else if ("DXT3".equalsIgnoreCase(header.ddspf.sFourCC)) {
-                dxtFormat = EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+                dxtFormat = TextureCompression.COMPRESSED_RGBA_S3TC_DXT3;
             } else if ("DXT5".equalsIgnoreCase(header.ddspf.sFourCC)) {
-                dxtFormat = EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+                dxtFormat = TextureCompression.COMPRESSED_RGBA_S3TC_DXT5;
             } else if ("DX10".equalsIgnoreCase(header.ddspf.sFourCC)) {
                 log.error("Uses DX10 extended header, which is not supported!");
                 fis.close();
@@ -232,7 +231,7 @@ public class DDSFile {
         return this.bdata2.get(Math.min(Math.min(header.dwMipMapCount - 1, level), Math.max(level, 0)));
     }
 
-    public int getDXTFormat() {
+    public TextureCompression getDXTFormat() {
         return dxtFormat;
     }
 }

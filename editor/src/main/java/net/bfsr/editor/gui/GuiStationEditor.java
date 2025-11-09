@@ -42,7 +42,7 @@ public class GuiStationEditor extends GuiEntityEditor<StationConfig, StationProp
 
     @Override
     protected RigidBodyRender createRender(Station station) {
-        StationRender render = new StationRender(station) {
+        StationRender render = new StationRender(station, 1.0f) {
             @Override
             public void renderDebug() {
                 if (polygonEditMode) {

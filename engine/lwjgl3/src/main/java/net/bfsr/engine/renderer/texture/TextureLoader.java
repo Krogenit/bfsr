@@ -3,6 +3,8 @@ package net.bfsr.engine.renderer.texture;
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.engine.renderer.constant.TextureFilter;
+import net.bfsr.engine.renderer.constant.TextureWrap;
 import net.bfsr.engine.renderer.texture.dds.DDSFile;
 import org.lwjgl.opengl.ARBBindlessTexture;
 import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
@@ -23,8 +25,8 @@ import java.nio.file.Path;
 
 @Log4j2
 public class TextureLoader extends AbstractTextureLoader {
-    private static final int DEFAULT_WRAP = GL12C.GL_CLAMP_TO_EDGE;
-    private static final int DEFAULT_FILTER = GL11.GL_NEAREST;
+    private static final TextureWrap DEFAULT_WRAP = TextureWrap.CLAMP_TO_EDGE;
+    private static final TextureFilter DEFAULT_FILTER = TextureFilter.NEAREST;
 
     private final TMap<String, Texture> loadedTextures = new THashMap<>();
 
@@ -53,7 +55,7 @@ public class TextureLoader extends AbstractTextureLoader {
     }
 
     @Override
-    public Texture getTexture(TextureRegister texture, int wrap, int filter) {
+    public Texture getTexture(TextureRegister texture, TextureWrap wrap, TextureFilter filter) {
         return getTexture(texture.getPath(), wrap, filter);
     }
 
@@ -63,15 +65,15 @@ public class TextureLoader extends AbstractTextureLoader {
     }
 
     @Override
-    public Texture getTexture(Path path, int wrap, int filter) {
+    public Texture getTexture(Path path, TextureWrap wrap, TextureFilter filter) {
         return getTexture(path, true, wrap, filter);
     }
 
-    public Texture getTexture(TextureRegister texture, boolean createMips, int wrap, int filter) {
+    public Texture getTexture(TextureRegister texture, boolean createMips, TextureWrap wrap, TextureFilter filter) {
         return getTexture(texture.getPath(), createMips, wrap, filter);
     }
 
-    private Texture getTexture(Path path, boolean createMips, int wrap, int filter) {
+    private Texture getTexture(Path path, boolean createMips, TextureWrap wrap, TextureFilter filter) {
         return loadedTextures.computeIfAbsent(path.toString(), s -> loadPngTexture(path, createMips, wrap, filter));
     }
 
@@ -93,7 +95,7 @@ public class TextureLoader extends AbstractTextureLoader {
         loadedTextures.put(path, texture);
     }
 
-    private Texture loadPngTexture(Path path, boolean createMips, int wrap, int filter) {
+    private Texture loadPngTexture(Path path, boolean createMips, TextureWrap wrap, TextureFilter filter) {
         ByteBuffer image;
         int width, height, channels;
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -119,8 +121,8 @@ public class TextureLoader extends AbstractTextureLoader {
     private Texture generateTexture(DDSFile dds) {
         Texture texture = new Texture(dds.getWidth(), dds.getHeight()).create();
 
-        GL45C.glTextureStorage2D(texture.getId(), dds.getMipMapCount() + 1, dds.getDXTFormat(), dds.getWidth(), dds.getHeight());
-        GL45C.glCompressedTextureSubImage2D(texture.getId(), 0, 0, 0, dds.getWidth(), dds.getHeight(), dds.getDXTFormat(),
+        GL45C.glTextureStorage2D(texture.getId(), dds.getMipMapCount() + 1, dds.getDXTFormat().gl(), dds.getWidth(), dds.getHeight());
+        GL45C.glCompressedTextureSubImage2D(texture.getId(), 0, 0, 0, dds.getWidth(), dds.getHeight(), dds.getDXTFormat().gl(),
                 dds.getBuffer());
         int mipMapCount = dds.getMipMapCount();
         int textureMagFilter = GL11C.GL_LINEAR;
@@ -137,7 +139,7 @@ public class TextureLoader extends AbstractTextureLoader {
                 width /= 2;
                 height /= 2;
                 ByteBuffer mipmapBuffer = dds.getMipMapLevel(i);
-                GL45C.glCompressedTextureSubImage2D(texture.getId(), i + 1, 0, 0, width, height, dds.getDXTFormat(),
+                GL45C.glCompressedTextureSubImage2D(texture.getId(), i + 1, 0, 0, width, height, dds.getDXTFormat().gl(),
                         mipmapBuffer);
             }
         }
@@ -156,8 +158,8 @@ public class TextureLoader extends AbstractTextureLoader {
         return createTexture(width, height, image, channels, createMips, DEFAULT_WRAP, DEFAULT_FILTER);
     }
 
-    private Texture createTexture(int width, int height, ByteBuffer image, int channels, boolean createMips, int wrap,
-                                  int filter) {
+    private Texture createTexture(int width, int height, ByteBuffer image, int channels, boolean createMips, TextureWrap wrap,
+                                  TextureFilter filter) {
         Texture texture = new Texture(width, height).create();
 
         int internalFormat;
@@ -183,12 +185,12 @@ public class TextureLoader extends AbstractTextureLoader {
 
         if (createMips) GL45C.glGenerateTextureMipmap(texture.getId());
 
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_WRAP_S, wrap);
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_WRAP_T, wrap);
+        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_WRAP_S, wrap.gl());
+        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_WRAP_T, wrap.gl());
         GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MIN_FILTER,
-                createMips ? (filter == GL11.GL_NEAREST ? GL11.GL_NEAREST_MIPMAP_NEAREST :
-                        GL11.GL_LINEAR_MIPMAP_LINEAR) : filter);
-        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MAG_FILTER, filter);
+                createMips ? (filter == TextureFilter.NEAREST ? GL11.GL_NEAREST_MIPMAP_NEAREST :
+                        GL11.GL_LINEAR_MIPMAP_LINEAR) : filter.gl());
+        GL45C.glTextureParameteri(texture.getId(), GL11.GL_TEXTURE_MAG_FILTER, filter.gl());
         GL45C.glTextureParameterf(texture.getId(), EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT,
                 GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
         long textureHandle = ARBBindlessTexture.glGetTextureHandleARB(texture.getId());

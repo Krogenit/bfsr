@@ -26,7 +26,7 @@ struct Material {
     int materialType;
     float fireAmount;
     float fireUVAnimation;
-    float zoomFactor;
+    bool padding0;
 };
 
 struct LastUpdateMaterial {
@@ -40,10 +40,12 @@ struct LastUpdateMaterial {
 struct ModelData {
     float x;
     float y;
+    float z;
     float sin;
     float cos;
     float width;
     float height;
+    float zoomFactor;
 };
 
 struct ViewData {

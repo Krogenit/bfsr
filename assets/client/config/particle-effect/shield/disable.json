@@ -28,7 +28,7 @@
   "name": "disable",
   "path": "shield",
   "r": 1.0,
-  "renderLayer": "DEFAULT_ADDITIVE",
+  "particleType": "ADDITIVE",
   "soundEffects": [
     {
       "path": "sound/shield/shielddown.ogg",

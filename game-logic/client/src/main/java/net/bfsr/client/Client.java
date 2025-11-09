@@ -24,6 +24,7 @@ import net.bfsr.client.particle.effect.ParticleEffects;
 import net.bfsr.client.physics.CollisionHandler;
 import net.bfsr.client.renderer.EntityRenderer;
 import net.bfsr.client.renderer.GlobalRenderer;
+import net.bfsr.client.renderer.Layers;
 import net.bfsr.client.renderer.WorldRenderer;
 import net.bfsr.client.server.LocalServer;
 import net.bfsr.client.server.ThreadLocalServer;
@@ -90,9 +91,10 @@ public class Client extends ClientGameLogic {
     private final ShipOutfitter shipOutfitter = new ShipOutfitter(configConverterManager);
     private final ShipFactory shipFactory = new ShipFactory(configConverterManager.getConverter(ShipRegistry.class), shipOutfitter);
 
+    private final Layers layers = new Layers();
     private final EntityRenderer entityRenderer = new EntityRenderer(this);
     private final GlobalRenderer globalRenderer = new GlobalRenderer(profiler, entityRenderer, particleManager,
-            new WorldRenderer(profiler, entityRenderer, eventBus));
+            new WorldRenderer(layers, profiler, entityRenderer, eventBus));
     private final AbstractCamera camera = Engine.getRenderer().getCamera();
 
     private final DamageHandler damageHandler = new DamageHandler(entityRenderer);

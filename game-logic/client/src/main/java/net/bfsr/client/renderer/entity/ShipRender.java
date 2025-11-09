@@ -20,6 +20,7 @@ import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.RigidBodyUtils;
 import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
+import net.bfsr.engine.renderer.DepthBufferRenderLayers;
 import net.bfsr.engine.renderer.MaterialType;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.font.string.StringOffsetType;
@@ -81,8 +82,8 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     @Getter
     private final AbstractTexture shieldTexture;
 
-    public ShipRender(Ship ship) {
-        super(Engine.getAssetsManager().getTexture(ship.getConfigData().getTexture()), ship);
+    public ShipRender(Ship ship, float z) {
+        super(ship, z, Engine.getAssetsManager().getTexture(ship.getConfigData().getTexture()));
         this.ship = ship;
         this.jumpPosition.set(ship.getJumpPosition());
         this.lastJumpPosition.set(jumpPosition);
@@ -105,16 +106,18 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         if (!ship.isSpawned()) {
             Vector4f effectsColor = ship.getConfigData().getEffectsColor();
             jumpEffectSize = 1.5f * Math.max(ship.getSizeX(), ship.getSizeY()) + 0.5f;
-            spawnEffectId = spriteRenderer.add(jumpPosition.x, jumpPosition.y, ship.getSin(), ship.getCos(), 0.0f, 0.0f, effectsColor.x,
-                    effectsColor.y, effectsColor.z, 0.0f, PARTICLE_JUMP_TEXTURE.getTextureHandle(), BufferType.ENTITIES_ADDITIVE);
+            spawnEffectId = spriteRenderer.add(jumpPosition.x, jumpPosition.y, z, ship.getSin(), ship.getCos(), 0.0f, 0.0f,
+                    effectsColor.x, effectsColor.y, effectsColor.z, 0.0f, PARTICLE_JUMP_TEXTURE.getTextureHandle(),
+                    BufferType.ENTITIES_ADDITIVE);
         }
 
         Shield shield = ship.getModules().getShield();
         if (shield != null) {
             Vector4f color = ship.getConfigData().getEffectsColor();
-            shieldId = spriteRenderer.add(ship.getX(), ship.getY(), ship.getSin(), ship.getCos(), ship.getSizeX() * SHIELD_SIZE,
-                    ship.getSizeY() * SHIELD_SIZE, color.x, color.y, color.z, 0.25f, shieldTexture.getTextureHandle(),
-                    maskTexture.getTextureHandle(), MaterialType.SHIELD, BufferType.ENTITIES_BACKGROUND_ADDITIVE);
+            shieldId = spriteRenderer.add(ship.getX(), ship.getY(), DepthBufferRenderLayers.prevZ(z), ship.getSin(), ship.getCos(),
+                    ship.getSizeX() * SHIELD_SIZE, ship.getSizeY() * SHIELD_SIZE, color.x, color.y, color.z, 0.25f,
+                    shieldTexture.getTextureHandle(), maskTexture.getTextureHandle(), MaterialType.SHIELD,
+                    BufferType.ENTITIES_ADDITIVE);
         }
     }
 
@@ -124,7 +127,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         WeaponRenderRegistry weaponRenderRegistry = client.getEntityRenderer().getWeaponRenderRegistry();
         for (int i = 0; i < weaponSlots.size(); i++) {
             WeaponSlot weaponSlot = weaponSlots.get(i);
-            WeaponSlotRender render = weaponRenderRegistry.createRender(weaponSlot);
+            WeaponSlotRender render = weaponRenderRegistry.createRender(weaponSlot, z);
             render.init();
             weaponRenders.add(render);
             weaponSlot.getWeaponSlotEventBus().addOneTimeListener(WeaponSlotRemovedEvent.class,
@@ -194,9 +197,11 @@ public class ShipRender extends DamageableRigidBodyRenderer {
                                 if (!engineModules.get(j).isDead()) {
                                     Vector2f effectPosition = engineDataList.get(j).effectPosition();
                                     RotationHelper.rotate(sin, cos, effectPosition.x, effectPosition.y, rotateToVector);
-                                    engineEffects.smallEngine(shipX + rotateToVector.x, shipY + rotateToVector.y, sin,
-                                            cos, 1.0f, shipVelocity.x / 50.0f, shipVelocity.y / 50.0f,
-                                            effectsColor.x, effectsColor.y, effectsColor.z, 1.0f, accumulators.get(j));
+                                    engineEffects.smallEngine(shipX + rotateToVector.x, shipY + rotateToVector.y,
+                                            DepthBufferRenderLayers.prevZ(z),
+                                            sin, cos, 1.0f, shipVelocity.x / 50.0f,
+                                            shipVelocity.y / 50.0f, effectsColor.x, effectsColor.y, effectsColor.z, 1.0f,
+                                            accumulators.get(j));
                                 }
                             }
                         };
@@ -216,6 +221,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
                                     Vector2f effectPosition = engineDataList.get(j).effectPosition();
                                     RotationHelper.rotate(sin, cos, effectPosition.x, effectPosition.y, rotateToVector);
                                     engineEffects.secondaryEngine(shipX + rotateToVector.x, shipY + rotateToVector.y,
+                                            DepthBufferRenderLayers.prevZ(z),
                                             accumulators.get(j));
                                 }
                             }
@@ -233,11 +239,11 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     private void createModuleRenders(Ship ship) {
         Modules modules = ship.getModules();
 
-        moduleRenders.add(new ModuleRenderer(ship, modules.getReactor(), REACTOR_MODULE_TEXTURE));
+        moduleRenders.add(new ModuleRenderer(ship, z, modules.getReactor(), REACTOR_MODULE_TEXTURE));
 
         Shield shield = modules.getShield();
         if (!shield.isDead()) {
-            addModuleRenderer(shield, new ModuleRenderer(ship, shield, SHIELD_MODULE_TEXTURE));
+            addModuleRenderer(shield, new ModuleRenderer(ship, z, shield, SHIELD_MODULE_TEXTURE));
         }
 
         Engines enginesModule = modules.getEngines();
@@ -247,7 +253,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
             for (int i = 0; i < engineDataList.size(); i++) {
                 net.bfsr.entity.ship.module.engine.Engine engine = enginesModule.getEngines(direction).get(i);
                 if (!engine.isDead()) {
-                    addModuleRenderer(engine, new ModuleRenderer(ship, engine, ENGINE_MODULE_TEXTURE, direction));
+                    addModuleRenderer(engine, new ModuleRenderer(ship, z, engine, ENGINE_MODULE_TEXTURE, direction));
                 }
             }
 
@@ -321,10 +327,10 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
             Shield shield = ship.getModules().getShield();
             if (shieldId != -1 && shield != null) {
-                spriteRenderer.setLastPosition(shieldId, BufferType.ENTITIES_BACKGROUND_ADDITIVE, ship.getX(), ship.getY());
-                spriteRenderer.setLastRotation(shieldId, BufferType.ENTITIES_BACKGROUND_ADDITIVE, ship.getSin(), ship.getCos());
+                spriteRenderer.setLastPosition(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getX(), ship.getY());
+                spriteRenderer.setLastRotation(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getSin(), ship.getCos());
                 float finalShieldSize = shield.getSizeX() * SHIELD_SIZE;
-                spriteRenderer.setLastSize(shieldId, BufferType.ENTITIES_BACKGROUND_ADDITIVE, ship.getSizeX() * finalShieldSize,
+                spriteRenderer.setLastSize(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getSizeX() * finalShieldSize,
                         ship.getSizeY() * finalShieldSize);
             }
         }
@@ -342,10 +348,10 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         } else {
             Shield shield = ship.getModules().getShield();
             if (shieldId != -1 && shield != null) {
-                spriteRenderer.setPosition(shieldId, BufferType.ENTITIES_BACKGROUND_ADDITIVE, ship.getX(), ship.getY());
-                spriteRenderer.setRotation(shieldId, BufferType.ENTITIES_BACKGROUND_ADDITIVE, ship.getSin(), ship.getCos());
+                spriteRenderer.setPosition(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getX(), ship.getY());
+                spriteRenderer.setRotation(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getSin(), ship.getCos());
                 float finalShieldSize = shield.getSizeX() * SHIELD_SIZE;
-                spriteRenderer.setSize(shieldId, BufferType.ENTITIES_BACKGROUND_ADDITIVE, ship.getSizeX() * finalShieldSize,
+                spriteRenderer.setSize(shieldId, BufferType.ENTITIES_ADDITIVE, ship.getSizeX() * finalShieldSize,
                         ship.getSizeY() * finalShieldSize);
             }
 
@@ -390,7 +396,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         Shield shield = ship.getModules().getShield();
         if (shieldId != -1 && shield != null && shield.isAlive()) {
             spriteRenderer.addDrawCommand(shieldId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX,
-                    BufferType.ENTITIES_BACKGROUND_ADDITIVE);
+                    BufferType.ENTITIES_ADDITIVE);
         }
     }
 
@@ -425,8 +431,8 @@ public class ShipRender extends DamageableRigidBodyRenderer {
             Ship ship = event.ship();
             Vector2 velocity = ship.getLinearVelocity();
             Vector4f effectsColor = ship.getConfigData().getEffectsColor();
-            jumpEffects.jump(ship.getX(), ship.getY(), jumpEffectSize, velocity.x, velocity.y,
-                    effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
+            jumpEffects.jump(ship.getX(), ship.getY(), z, jumpEffectSize, velocity.x,
+                    velocity.y, effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
             createName();
             if (spawnEffectId != -1) {
                 spriteRenderer.removeObject(spawnEffectId, BufferType.ENTITIES_ADDITIVE);
@@ -458,7 +464,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         }
 
         if (shieldId != -1) {
-            spriteRenderer.removeObject(shieldId, BufferType.ENTITIES_BACKGROUND_ADDITIVE);
+            spriteRenderer.removeObject(shieldId, BufferType.ENTITIES_ADDITIVE);
         }
     }
 }

@@ -1,6 +1,7 @@
 package net.bfsr.engine.renderer.debug;
 
 import net.bfsr.engine.Engine;
+import net.bfsr.engine.renderer.constant.DrawMode;
 import net.bfsr.engine.renderer.primitive.VAO;
 import net.bfsr.engine.renderer.shader.DebugShader;
 import net.bfsr.engine.util.MutableInt;
@@ -54,14 +55,14 @@ public class DebugRenderer implements AbstractDebugRenderer {
     }
 
     @Override
-    public void render(int mode) {
+    public void render(DrawMode mode) {
         if (objectsCount > 0) {
             debugShader.enable();
             vao.bind();
             vao.updateVertexBuffer(0, vertexBuffer.limit(vertexBufferIndex.get()), GL44C.GL_DYNAMIC_STORAGE_BIT, VERTEX_DATA_SIZE_IN_BYTES);
             vao.updateBuffer(1, cmdBuffer.limit(cmdBufferIndex.get()), GL44C.GL_DYNAMIC_STORAGE_BIT);
             vao.bindBuffer(GL40C.GL_DRAW_INDIRECT_BUFFER, 1);
-            glMultiDrawArraysIndirect(mode, 0, objectsCount, 0);
+            glMultiDrawArraysIndirect(mode.gl(), 0, objectsCount, 0);
             Engine.getRenderer().increaseDrawCalls();
         }
     }

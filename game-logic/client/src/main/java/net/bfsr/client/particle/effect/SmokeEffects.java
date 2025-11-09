@@ -11,7 +11,7 @@ public class SmokeEffects {
         damageSmoke = effectsRegistry.get("smoke/damage");
     }
 
-    public void damageSmoke(float x, float y, float size, SpawnAccumulator spawnAccumulator) {
-        damageSmoke.emit(x, y, size, spawnAccumulator);
+    public void damageSmoke(float x, float y, float z, float size, SpawnAccumulator spawnAccumulator) {
+        damageSmoke.emit(x, y, z, size, spawnAccumulator);
     }
 }
