@@ -26,9 +26,9 @@
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
   "name": "rebuild",
+  "particleType": "ADDITIVE",
   "path": "shield",
   "r": 1.0,
-  "particleType": "ADDITIVE",
   "soundEffects": [
     {
       "path": "sound/shield/shieldup0.ogg",

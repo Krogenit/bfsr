@@ -26,9 +26,9 @@
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
   "name": "ship_small",
+  "particleType": "ADDITIVE",
   "path": "explosion",
   "r": 1.0,
-  "particleType": "ADDITIVE",
   "soundEffects": [
     {
       "path": "sound/explosion/explosion1.ogg",
