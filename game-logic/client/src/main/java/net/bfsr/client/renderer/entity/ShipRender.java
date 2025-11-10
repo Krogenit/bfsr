@@ -114,7 +114,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         Shield shield = ship.getModules().getShield();
         if (shield != null) {
             Vector4f color = ship.getConfigData().getEffectsColor();
-            shieldId = spriteRenderer.add(ship.getX(), ship.getY(), DepthBufferRenderLayers.prevZ(z), ship.getSin(), ship.getCos(),
+            shieldId = spriteRenderer.add(ship.getX(), ship.getY(), DepthBufferRenderLayers.farZ(z), ship.getSin(), ship.getCos(),
                     ship.getSizeX() * SHIELD_SIZE, ship.getSizeY() * SHIELD_SIZE, color.x, color.y, color.z, 0.25f,
                     shieldTexture.getTextureHandle(), maskTexture.getTextureHandle(), MaterialType.SHIELD,
                     BufferType.ENTITIES_ADDITIVE);
@@ -198,7 +198,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
                                     Vector2f effectPosition = engineDataList.get(j).effectPosition();
                                     RotationHelper.rotate(sin, cos, effectPosition.x, effectPosition.y, rotateToVector);
                                     engineEffects.smallEngine(shipX + rotateToVector.x, shipY + rotateToVector.y,
-                                            DepthBufferRenderLayers.prevZ(z),
+                                            DepthBufferRenderLayers.farZ(z),
                                             sin, cos, 1.0f, shipVelocity.x / 50.0f,
                                             shipVelocity.y / 50.0f, effectsColor.x, effectsColor.y, effectsColor.z, 1.0f,
                                             accumulators.get(j));
@@ -221,7 +221,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
                                     Vector2f effectPosition = engineDataList.get(j).effectPosition();
                                     RotationHelper.rotate(sin, cos, effectPosition.x, effectPosition.y, rotateToVector);
                                     engineEffects.secondaryEngine(shipX + rotateToVector.x, shipY + rotateToVector.y,
-                                            DepthBufferRenderLayers.prevZ(z),
+                                            DepthBufferRenderLayers.farZ(z),
                                             accumulators.get(j));
                                 }
                             }
@@ -418,7 +418,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         labelYOffset = getStringYPosition();
         float yOffset = labelYOffset * 200.0f - label.getHeight();
         label.setString(ship.getName(), 0, yOffset).scale(0.005f, 0.005f);
-        label.getLabelRenderer().create(ship.getX(), ship.getY());
+        label.getLabelRenderer().create(ship.getX(), ship.getY(), z);
     }
 
     private float getStringYPosition() {

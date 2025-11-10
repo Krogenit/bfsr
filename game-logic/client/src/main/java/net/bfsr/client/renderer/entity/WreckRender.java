@@ -7,14 +7,11 @@ import net.bfsr.client.particle.effect.ExplosionEffects;
 import net.bfsr.client.particle.effect.FireEffects;
 import net.bfsr.config.entity.wreck.WreckData;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.event.EventHandler;
-import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.world.entity.SpawnAccumulator;
 import net.bfsr.entity.wreck.Wreck;
-import net.bfsr.event.entity.wreck.WreckDeathEvent;
 import org.joml.Vector4f;
 
 public class WreckRender extends RigidBodyRender {
@@ -61,8 +58,6 @@ public class WreckRender extends RigidBodyRender {
         this.sparkleActivationTimerInFrames = object.isLight() ? Engine.convertSecondsToFrames(200.0f + random.nextInt(200)) : 0;
         this.fire = object.isFire();
         this.light = object.isLight();
-
-        object.getEventBus().register(this);
     }
 
     @Override
@@ -244,14 +239,10 @@ public class WreckRender extends RigidBodyRender {
         }
     }
 
-    @EventHandler
-    public EventListener<WreckDeathEvent> wreckDeathEventEvent() {
-        return event -> {
-            Wreck wreck = event.wreck();
-            if (color.w > 0.01f) {
-                explosionEffects.spawnSmallExplosion(wreck.getX(), wreck.getY(), getZ(), wreck.getSizeX());
-            }
-        };
+    public void onDeath() {
+        if (color.w > 0.01f) {
+            explosionEffects.spawnSmallExplosion(wreck.getX(), wreck.getY(), getZ(), wreck.getSizeX());
+        }
     }
 
     @Override

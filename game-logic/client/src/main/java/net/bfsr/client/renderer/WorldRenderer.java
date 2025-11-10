@@ -56,6 +56,7 @@ public class WorldRenderer {
             buffersHolder.setRenderObjects(0);
             profiler.endStart("entitiesAdditive");
             renderer.blendFunc(BlendFactor.SRC_ALPHA, BlendFactor.ONE);
+            renderer.depthMask(false);
             buffersHolder = spriteRenderer.getBuffersHolder(BufferType.ENTITIES_ADDITIVE);
             cullingSystem.renderFrustumCulled(buffersHolder.getRenderObjects(), buffersHolder);
             buffersHolder.setRenderObjects(0);
@@ -64,6 +65,7 @@ public class WorldRenderer {
             spriteRenderer.render(BufferType.ENTITIES_ALPHA);
             profiler.endStart("entitiesAdditive");
             renderer.blendFunc(BlendFactor.SRC_ALPHA, BlendFactor.ONE);
+            renderer.depthMask(false);
             spriteRenderer.render(BufferType.ENTITIES_ADDITIVE);
         }
 

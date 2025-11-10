@@ -77,7 +77,7 @@ public class ShipEventListener {
             float halfSizeY = ship.getSizeY() * 0.5f;
             wreckSpawner.spawnDamageDebris(world, 1, ship.getX() + RandomHelper.randomFloat(random, -halfSizeX, halfSizeX),
                     ship.getY() + RandomHelper.randomFloat(random, -halfSizeY, halfSizeY), linearVelocity.x * 0.1f, linearVelocity.y * 0.1f,
-                    1.0f);
+                    1.0f, ship.getId());
         };
     }
 

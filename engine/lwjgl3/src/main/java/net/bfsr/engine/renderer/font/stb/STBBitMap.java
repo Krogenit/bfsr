@@ -50,7 +50,6 @@ class STBBitMap extends FontBitMap {
     STBBitMap(int width, int height) {
         super(width, height);
         packContext = STBTTPackContext.create();
-        packedCharMap.defaultReturnValue(-1);
         stbtt_PackSetSkipMissingCodepoints(packContext, true);
     }
 

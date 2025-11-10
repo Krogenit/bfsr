@@ -93,7 +93,7 @@ public class CollisionHandler extends CommonCollisionHandler {
                 float velocityX = ship.getLinearVelocity().x * 0.005f;
                 float velocityY = ship.getLinearVelocity().y * 0.005f;
                 wreckSpawner.spawnDamageDebris(world, random.nextInt(2), contactX, contactY,
-                        velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f);
+                        velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f, ship.getId());
             }
             bullet.setDead();
         }, clipPolygon, clipPolygonRadius);

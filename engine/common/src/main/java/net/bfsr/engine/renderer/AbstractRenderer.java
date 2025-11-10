@@ -114,6 +114,7 @@ public abstract class AbstractRenderer {
                                              ByteBuffer value);
     public abstract void fullTexture(AbstractTexture texture, InternalTextureFormat internalFormat, TextureFormat format, ByteBuffer value);
     public abstract void setDefaultClearColor();
+    public abstract void depthMask(boolean value);
     public abstract int getDepthBits();
 
     public void resetDrawCalls() {

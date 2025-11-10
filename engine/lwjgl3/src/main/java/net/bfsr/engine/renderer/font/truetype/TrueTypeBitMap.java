@@ -100,6 +100,7 @@ public class TrueTypeBitMap extends FontBitMap {
                 glyphsByCharCodeMap.put(charCode, new Glyph(x1, y1, x2, y2, u1, v1, u2, v2, bitmapTexture.getTextureHandle(),
                         (int) (glyph.advance().x() >> 6), charCode, false));
                 packedCharsList.add(charCode);
+                packedCharMap.put(charCode, getNextCharIndex());
 
                 ByteBuffer buffer = glyphBitMap.buffer(glyphBitMap.width() * glyphBitMap.rows());
 

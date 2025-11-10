@@ -106,7 +106,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
                     label1.setString("Ping: " + DecimalUtils.strictFormatWithToDigits(ping) + "ms" +
                             "\nAverage ping: " + DecimalUtils.strictFormatWithToDigits(averagePing) + "ms" +
                             "\nClient render delay: " + renderDelayManager.getRenderDelayInNanos() / 1_000_000 + "ms" +
-                            "\nClient render delay: " + renderDelayManager.getRenderDelayInFrames() + "frames"
+                            ", " + renderDelayManager.getRenderDelayInFrames() + " frames"
                     );
                 })).getHeight();
         y -= addMinimizableWithLabel(width, height, y, "Render", createLabel(0, "",

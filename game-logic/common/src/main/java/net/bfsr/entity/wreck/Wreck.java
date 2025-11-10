@@ -64,9 +64,9 @@ public class Wreck extends RigidBody {
 
     public Wreck init(World world, int id, int wreckIndex, boolean light, boolean fire, boolean emitFire, float x, float y, float velocityX,
                       float velocityY, float sin, float cos, float angularVelocity, float scaleX, float scaleY, int maxLifeTime,
-                      WreckType wreckType, WreckData wreckData) {
+                      int destroyedShipId, WreckType wreckType, WreckData wreckData) {
         return init(world, id, x, y, velocityX, velocityY, sin, cos, angularVelocity, scaleX, scaleY, maxLifeTime,
-                wreckIndex, fire, light, emitFire, 10, 0, wreckType, wreckData);
+                wreckIndex, fire, light, emitFire, 10, destroyedShipId, wreckType, wreckData);
     }
 
     @Override

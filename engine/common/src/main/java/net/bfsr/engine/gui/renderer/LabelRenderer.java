@@ -60,14 +60,14 @@ public class LabelRenderer extends GuiObjectRenderer {
     }
 
     public void create(AbstractBuffersHolder buffersHolder) {
-        create(buffersHolder, label.getSceneX(), label.getSceneY());
+        create(buffersHolder, label.getSceneX(), label.getSceneY(), DepthBufferRenderLayers.getUIZ());
     }
 
-    public void create(float x, float y) {
-        create(spriteRenderer.getBuffersHolder(bufferType), x, y);
+    public void create(float x, float y, float z) {
+        create(spriteRenderer.getBuffersHolder(bufferType), x, y, z);
     }
 
-    public void create(AbstractBuffersHolder buffersHolder, float x, float y) {
+    public void create(AbstractBuffersHolder buffersHolder, float x, float y, float z) {
         List<GlyphData> glyphsData = stringGeometry.getGlyphsData();
         if (glyphsData.size() > 0) {
             commandBuffer = renderer.createByteBuffer(glyphsData.size() * COMMAND_SIZE_IN_BYTES);
@@ -75,7 +75,7 @@ public class LabelRenderer extends GuiObjectRenderer {
 
             for (int i = 0, commandDataOffset = 0; i < glyphsData.size(); i++, commandDataOffset += COMMAND_SIZE_IN_BYTES) {
                 GlyphData glyphData = glyphsData.get(i);
-                int id = spriteRenderer.add(x + glyphData.getX(), y + glyphData.getY(), DepthBufferRenderLayers.getUIZ(),
+                int id = spriteRenderer.add(x + glyphData.getX(), y + glyphData.getY(), z,
                         glyphData.getWidth(), glyphData.getHeight(), glyphData.getR(), glyphData.getG(), glyphData.getB(),
                         glyphData.getA(), glyphData.getTextureHandle(), MaterialType.FONT, buffersHolder);
                 glyphData.setBaseInstance(id);

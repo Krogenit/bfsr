@@ -21,7 +21,7 @@ public class ShipWreckSpawnLogic extends DamageableRigidBodySpawnLogic<ShipWreck
         ShipData shipData = shipRegistry.get(spawnData.getDataId());
         ShipWreck wreck = new ShipWreck(spawnData.getPosX(), spawnData.getPosY(), spawnData.getSin(), spawnData.getCos(),
                 shipData.getSizeX(), shipData.getSizeY(), shipData, spawnData.getPolygon(),
-                spawnData.getLocalOffsetX(), spawnData.getLocalOffsetY());
+                spawnData.getLocalOffsetX(), spawnData.getLocalOffsetY(), spawnData.getShipId());
 
         wreck.init(world, spawnData.getEntityId());
         Body body = wreck.getBody();

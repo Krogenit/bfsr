@@ -20,6 +20,7 @@ public class WreckSpawnData extends RigidBodySpawnData<Wreck> {
     private float velocityX, velocityY;
     private float sizeX, sizeY;
     private WreckType wreckType;
+    private int destroyedShipId;
 
     @Override
     public void setData(Wreck wreck) {
@@ -36,6 +37,7 @@ public class WreckSpawnData extends RigidBodySpawnData<Wreck> {
         this.sizeX = wreck.getSizeX();
         this.sizeY = wreck.getSizeY();
         this.wreckType = wreck.getWreckType();
+        this.destroyedShipId = wreck.getDestroyedShipId();
     }
 
     @Override
@@ -54,6 +56,7 @@ public class WreckSpawnData extends RigidBodySpawnData<Wreck> {
         data.writeFloat(rotationSpeed);
         data.writeFloat(sizeX);
         data.writeFloat(sizeY);
+        data.writeInt(destroyedShipId);
     }
 
     @Override
@@ -72,5 +75,6 @@ public class WreckSpawnData extends RigidBodySpawnData<Wreck> {
         rotationSpeed = data.readFloat();
         sizeX = data.readFloat();
         sizeY = data.readFloat();
+        destroyedShipId = data.readInt();
     }
 }

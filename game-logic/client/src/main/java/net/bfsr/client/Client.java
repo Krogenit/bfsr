@@ -25,6 +25,7 @@ import net.bfsr.client.physics.CollisionHandler;
 import net.bfsr.client.renderer.EntityRenderer;
 import net.bfsr.client.renderer.GlobalRenderer;
 import net.bfsr.client.renderer.Layers;
+import net.bfsr.client.renderer.RenderEventListener;
 import net.bfsr.client.renderer.WorldRenderer;
 import net.bfsr.client.server.LocalServer;
 import net.bfsr.client.server.ThreadLocalServer;
@@ -143,6 +144,7 @@ public class Client extends ClientGameLogic {
         eventBus.register(new ShipEventListener());
         eventBus.register(new WorldEventListener());
         eventBus.register(new GuiEventListener());
+        eventBus.register(new RenderEventListener());
     }
 
     private void registerFonts() {

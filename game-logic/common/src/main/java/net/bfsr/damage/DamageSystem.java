@@ -245,7 +245,7 @@ public final class DamageSystem {
                     configData.getBufferYOffset());
             Coordinate localCenter = polygon.getCentroid().getCoordinate();
             ShipWreck wreck = createWreck(world, x, y, sin, cos, sizeX, sizeY, polygon,
-                    damageMask, configData, localCenter);
+                    damageMask, configData, localCenter, rigidBody.getId());
             wreck.setVelocity(rigidBody.getLinearVelocity());
             wreck.setAngularVelocity(rigidBody.getAngularVelocity());
 
@@ -526,7 +526,7 @@ public final class DamageSystem {
     }
 
     private ShipWreck createWreck(World world, double x, double y, double sin, double cos, float scaleX, float scaleY, Polygon polygon,
-                                  DamageMask damageMask, DamageableRigidBodyConfigData configData, Coordinate localCenter) {
+                                  DamageMask damageMask, DamageableRigidBodyConfigData configData, Coordinate localCenter, int shipId) {
         RotationHelper.rotate((float) sin, (float) cos, (float) localCenter.x, (float) localCenter.y, rotatedLocalCenter);
         x += rotatedLocalCenter.x;
         y += rotatedLocalCenter.y;
@@ -537,14 +537,14 @@ public final class DamageSystem {
         List<Shape> convexes = new ArrayList<>(32);
         GeometryUtils.decompose(polygon, convexes::add);
         return createWreck(world, x, y, sin, cos, scaleX, scaleY, convexes, polygon, damageMask, configData, (float) localCenter.x,
-                (float) localCenter.y);
+                (float) localCenter.y, shipId);
     }
 
     private ShipWreck createWreck(World world, double x, double y, double sin, double cos, float scaleX, float scaleY, List<Shape> convexes,
                                   Polygon polygon, DamageMask damageMask, DamageableRigidBodyConfigData configData, float localOffsetX,
-                                  float localOffsetY) {
+                                  float localOffsetY, int shipId) {
         ShipWreck wreck = new ShipWreck((float) x, (float) y, (float) sin, (float) cos, scaleX, scaleY, configData, damageMask,
-                polygon, localOffsetX, localOffsetY);
+                polygon, localOffsetX, localOffsetY, shipId);
         wreck.init(world, world.getNextId());
         for (int i = 0; i < convexes.size(); i++) {
             wreck.addHullFixture(wreck.setupFixture(new Fixture(convexes.get(i))));

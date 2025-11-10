@@ -20,10 +20,10 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.wreck.ShipWreck;
 import net.bfsr.entity.wreck.Wreck;
 
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 class EntityRenderRegistry {
-    private final TMap<Class<? extends RigidBody>, BiFunction<RigidBody, Float, RigidBodyRender>> renderRegistry = new THashMap<>();
+    private final TMap<Class<? extends RigidBody>, Function<RigidBody, RigidBodyRender>> renderRegistry = new THashMap<>();
     private final Layers layers;
 
     EntityRenderRegistry(Client client) {
@@ -31,21 +31,23 @@ class EntityRenderRegistry {
         ConfigConverterManager configConverterManager = client.getConfigConverterManager();
         ShipRegistry shipRegistry = configConverterManager.getConverter(ShipRegistry.class);
 
-        put(RigidBody.class, (rigidBody, z) -> new RigidBodyRender(rigidBody, z, ((GameObjectConfigData) configConverterManager
-                .getConverter(rigidBody.getRegistryId()).get(rigidBody.getDataId())).getTexture()));
-        put(Ship.class, ShipRender::new);
-        put(ShipWreck.class, (rigidBody, z) -> new ShipWreckRenderer(rigidBody, z, shipRegistry.get(rigidBody.getDataId()).getTexture()));
-        put(Wreck.class, WreckRender::new);
-        put(Bullet.class, BulletRender::new);
-        put(Station.class, StationRender::new);
+        put(RigidBody.class, rigidBody -> new RigidBodyRender(rigidBody, layers.getLayerFor(rigidBody),
+                ((GameObjectConfigData) configConverterManager.getConverter(rigidBody.getRegistryId())
+                        .get(rigidBody.getDataId())).getTexture()));
+        put(Ship.class, ship -> new ShipRender(ship, layers.getLayerFor(ship)));
+        put(ShipWreck.class, wreck -> new ShipWreckRenderer(wreck, layers.getUsedZ(wreck.getShipId()),
+                shipRegistry.get(wreck.getDataId()).getTexture()));
+        put(Wreck.class, wreck -> new WreckRender(wreck, layers.getUsedZ(wreck.getDestroyedShipId())));
+        put(Bullet.class, bullet -> new BulletRender(bullet, layers.getLayerFor(bullet)));
+        put(Station.class, station -> new StationRender(station, layers.getLayerFor(station)));
     }
 
-    private <T> void put(Class<T> rigidBodyClass, BiFunction<T, Float, RigidBodyRender> function) {
-        renderRegistry.put((Class<? extends RigidBody>) rigidBodyClass, (BiFunction<RigidBody, Float, RigidBodyRender>) function);
+    private <T> void put(Class<T> rigidBodyClass, Function<T, RigidBodyRender> function) {
+        renderRegistry.put((Class<? extends RigidBody>) rigidBodyClass, (Function<RigidBody, RigidBodyRender>) function);
     }
 
     Render createRender(RigidBody rigidBody) {
-        RigidBodyRender render = renderRegistry.get(rigidBody.getClass()).apply(rigidBody, layers.getLayerFor(rigidBody));
+        RigidBodyRender render = renderRegistry.get(rigidBody.getClass()).apply(rigidBody);
         render.init();
         return render;
     }

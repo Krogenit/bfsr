@@ -105,7 +105,6 @@ public class Renderer extends AbstractRenderer {
         glViewport(0, 0, screenWidth, screenHeight);
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
-        glDepthMask(true);
         glEnable(GL_ALPHA_TEST);
         glEnable(GL_BLEND);
         glEnable(GL_CULL_FACE);
@@ -309,6 +308,11 @@ public class Renderer extends AbstractRenderer {
     @Override
     public void setDefaultClearColor() {
         glClearColor(0.05F, 0.1F, 0.2F, 1.0F);
+    }
+
+    @Override
+    public void depthMask(boolean value) {
+        glDepthMask(value);
     }
 
     @Override

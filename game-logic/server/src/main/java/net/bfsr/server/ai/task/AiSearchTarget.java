@@ -27,7 +27,7 @@ public class AiSearchTarget extends AiTask {
     public void execute() {
         if (type == AiAggressiveType.ATTACK) {
             RigidBody attacker = ship.getLastAttacker();
-            if (attacker != null && !attacker.isDead() && attacker instanceof Ship && isEnemy((Ship) attacker) &&
+            if (attacker instanceof Ship && !attacker.isDead() && isEnemy((Ship) attacker) &&
                     Math.abs(attacker.getX()) < 1000 && Math.abs(attacker.getY()) < 1000) {
                 ship.setTarget(attacker);
             } else findNewTarget();

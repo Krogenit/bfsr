@@ -16,11 +16,11 @@ public final class DepthBufferRenderLayers {
         return 1.0f;
     }
 
-    public static float prevZ(float z) {
-        return z - 1.0f / MAX_LAYER_INDEX_FLOAT * 2.0f;
+    public static float closeZ(float z) {
+        return z + 1.0f / MAX_LAYER_INDEX_FLOAT * 2.0f;
     }
 
-    public static float nextZ(float z) {
-        return z + 1.0f / MAX_LAYER_INDEX_FLOAT * 2.0f;
+    public static float farZ(float z) {
+        return z - 1.0f / MAX_LAYER_INDEX_FLOAT * 2.0f;
     }
 }

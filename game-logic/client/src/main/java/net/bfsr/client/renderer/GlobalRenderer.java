@@ -41,6 +41,7 @@ public class GlobalRenderer {
 
         profiler.endStart("setup");
         renderer.resetDrawCalls();
+        renderer.depthMask(true);// Need to be turned on for proper depth buffer clearing
         renderer.drawClear();
         camera.calculateInterpolatedViewMatrix(interpolation);
         camera.bindWorldViewMatrix();

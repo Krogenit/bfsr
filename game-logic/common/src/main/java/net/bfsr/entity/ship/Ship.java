@@ -9,7 +9,6 @@ import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.ai.Ai;
-import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.physics.CommonRayCastManager;
@@ -90,8 +89,6 @@ public class Ship extends DamageableRigidBody {
     @Setter
     private RigidBody target;
     private final Vector2f rotationHelper = new Vector2f();
-    @Getter
-    private final EventBus shipEventBus = new EventBus();
     @Setter
     private Runnable updateRunnable = this::updateAlive;
     @Getter
@@ -377,9 +374,7 @@ public class Ship extends DamageableRigidBody {
     public void setSpawned() {
         spawned = true;
         world.getPhysicWorld().addBody(body);
-        ShipJumpInEvent event = new ShipJumpInEvent(this);
-        eventBus.publish(event);
-        shipEventBus.publish(event);
+        eventBus.publish(new ShipJumpInEvent(this));
     }
 
     private void setJumpPosition() {

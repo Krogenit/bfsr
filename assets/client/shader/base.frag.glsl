@@ -64,6 +64,8 @@ void main() {
                 fireMask = clamp(pow(1.0 - (maskAlpha - 0.6) * 4.0, 1), 0.0, 1.0);
             } else if (maskAlpha > 0.3) {
                 fireMask = clamp(pow((maskAlpha - 0.3) * 3.33, 1), 0.0, 1.0);
+            } else {
+                discard;
             }
         }
         fireMask *= fireAmount;

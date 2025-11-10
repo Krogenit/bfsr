@@ -28,11 +28,11 @@ public final class WreckSpawner {
         float y = ship.getY();
         Vector2 linearVelocity = ship.getLinearVelocity();
         World w = ship.getWorld();
-        spawnDamageDebris(w, random.nextInt(3), x, y, linearVelocity.x * 0.025f, linearVelocity.y * 0.025f, 1.0f);
-        spawnDamageWrecks(w, random.nextInt(2), x, y, linearVelocity.x * 0.25f, linearVelocity.y * 0.25f);
+        spawnDamageDebris(w, random.nextInt(3), x, y, linearVelocity.x * 0.025f, linearVelocity.y * 0.025f, 1.0f, ship.getId());
+        spawnDamageWrecks(w, random.nextInt(2), x, y, linearVelocity.x * 0.25f, linearVelocity.y * 0.25f, ship.getId());
     }
 
-    public void spawnDamageDebris(World world, int count, float x, float y, float velocityX, float velocityY, float size) {
+    public void spawnDamageDebris(World world, int count, float x, float y, float velocityX, float velocityY, float size, int shipId) {
         for (int i = 0; i < count; i++) {
             RotationHelper.angleToVelocity(random.nextFloat() * MathUtils.TWO_PI, RandomHelper.randomFloat(random, 0.4f, 0.6f),
                     angleToVelocity);
@@ -45,12 +45,12 @@ public final class WreckSpawner {
             boolean isFireExplosion = isFire && random.nextInt(5) == 0;
             int wreckIndex = random.nextInt(6);
             world.add(wreckPool.get().init(world, world.getNextId(), wreckIndex, false, isFire, isFireExplosion, x, y, angleToVelocity.x,
-                    angleToVelocity.y, LUT.sin(angle), LUT.cos(angle), angleVel, size2, size2, maxLifeTime, WreckType.SMALL,
+                    angleToVelocity.y, LUT.sin(angle), LUT.cos(angle), angleVel, size2, size2, maxLifeTime, shipId, WreckType.SMALL,
                     wreckRegistry.getWreck(WreckType.SMALL, wreckIndex)));
         }
     }
 
-    private void spawnDamageWrecks(World world, int count, float x, float y, float velocityX, float velocityY) {
+    private void spawnDamageWrecks(World world, int count, float x, float y, float velocityX, float velocityY, int shipId) {
         for (int i = 0; i < count; i++) {
             RotationHelper.angleToVelocity(random.nextFloat() * MathUtils.TWO_PI, 0.4f + random.nextFloat() * 0.2f, angleToVelocity);
             float angle = random.nextFloat() * MathUtils.TWO_PI;
@@ -61,7 +61,7 @@ public final class WreckSpawner {
             int wreckIndex = random.nextInt(3);
             world.add(wreckPool.get().init(world, world.getNextId(), wreckIndex, true, true, isFireExplosion, x, y,
                     angleToVelocity.x + velocityX * 0.7f, angleToVelocity.y + velocityY * 0.7f, LUT.sin(angle), LUT.cos(angle), angleVel,
-                    size, size, maxLifeTime, WreckType.DEFAULT, wreckRegistry.getWreck(WreckType.DEFAULT, wreckIndex)));
+                    size, size, maxLifeTime, shipId, WreckType.DEFAULT, wreckRegistry.getWreck(WreckType.DEFAULT, wreckIndex)));
         }
     }
 }
