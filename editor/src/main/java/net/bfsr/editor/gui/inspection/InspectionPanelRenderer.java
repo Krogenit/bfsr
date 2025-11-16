@@ -48,24 +48,31 @@ public class InspectionPanelRenderer<PROPERTIES_TYPE extends PropertiesHolder> e
     private void updateInsertingPreview(int mouseY) {
         InspectionEntry<?> movableObject = inspectionPanel.getMovableObject();
         GuiObject guiObject = inspectionPanel.getGuiManager().getHoveredGuiObject();
+        int betweenObjectsLineHeight = 4;
         if (guiObject instanceof InspectionEntry<?> inspectionEntry) {
             int sceneX = inspectionEntry.getSceneX();
             int sceneY = inspectionEntry.getSceneY();
-            int betweenObjectsLineHeight = 4;
-            if (mouseY < sceneY + exactObjectSelectionOffsetY) {
-                updateSelection(sceneX, sceneY - betweenObjectsLineHeight / 2, inspectionEntry.getWidth(), betweenObjectsLineHeight);
-            } else if (mouseY >= sceneY + elementHeight - exactObjectSelectionOffsetY) {
-                if (inspectionEntry.isMaximized() && inspectionEntry.getGuiObjects().size() > 0) {
-                    GuiObject guiObject1 = inspectionEntry.getGuiObjects().get(0);
-                    updateSelection(guiObject1.getSceneX(), sceneY + elementHeight - betweenObjectsLineHeight / 2, guiObject1.getWidth(),
-                            betweenObjectsLineHeight);
-                } else {
-                    updateSelection(sceneX, sceneY + elementHeight - betweenObjectsLineHeight / 2, inspectionEntry.getWidth(),
-                            betweenObjectsLineHeight);
-                }
-            } else if (inspectionEntry != movableObject &&
+            int height = guiObject.getHeight();
+            if (mouseY < sceneY + height - elementHeight + exactObjectSelectionOffsetY) { // Below hovered object
+                updateSelection(sceneX, sceneY - betweenObjectsLineHeight / 2, inspectionEntry.getWidth(),
+                        betweenObjectsLineHeight);
+            } else if (mouseY >= sceneY + guiObject.getHeight() - exactObjectSelectionOffsetY) { // Above hovered object
+                updateSelection(sceneX, sceneY + height - betweenObjectsLineHeight / 2, inspectionEntry.getWidth(),
+                        betweenObjectsLineHeight);
+            } else if (inspectionEntry != movableObject && // In hovered object
                     !inspectionPanel.isInHierarchy(movableObject, (InspectionEntry<PROPERTIES_TYPE>) inspectionEntry)) {
-                updateSelection(sceneX, sceneY, inspectionEntry.getWidth());
+                updateSelection(sceneX, sceneY + height - elementHeight, inspectionEntry.getWidth());
+            }
+        } else {
+            List<GuiObject> guiObjects = inspectionPanel.getScrollPane().getGuiObjects();
+            GuiObject first = guiObjects.get(0);
+            GuiObject last = guiObjects.get(guiObjects.size() - 1);
+            if (mouseY < last.getSceneY()) {
+                updateSelection(last.getSceneX(), last.getSceneY() - betweenObjectsLineHeight / 2, last.getWidth(),
+                        betweenObjectsLineHeight);
+            } else {
+                updateSelection(first.getSceneX(), first.getSceneY() + first.getHeight() - betweenObjectsLineHeight / 2,
+                        first.getWidth(), betweenObjectsLineHeight);
             }
         }
     }
@@ -89,7 +96,9 @@ public class InspectionPanelRenderer<PROPERTIES_TYPE extends PropertiesHolder> e
         super.render(mouseX, mouseY);
 
         InspectionEntry<?> movableObject = inspectionPanel.getMovableObject();
-        if (movableObject == null) return;
+        if (movableObject == null) {
+            return;
+        }
 
         guiRenderer.addDrawCommand(selectionId);
 
@@ -108,6 +117,7 @@ public class InspectionPanelRenderer<PROPERTIES_TYPE extends PropertiesHolder> e
         guiObject.setPosition(x, y);
         guiObject.updateLastValues();
         guiObject.getRenderer().render(x, y);
+        guiRenderer.updateBuffers();
         guiRenderer.render();
         guiObject.setParent(parent);
         guiObject.setPosition(lastX, lastY);
