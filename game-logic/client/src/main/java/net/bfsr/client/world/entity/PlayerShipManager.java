@@ -5,9 +5,14 @@ import lombok.Setter;
 import net.bfsr.client.Client;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.client.event.player.SetPlayerShipEvent;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
+import net.bfsr.engine.physics.correction.CorrectionHandler;
+import net.bfsr.engine.physics.correction.DynamicCorrectionHandler;
+import net.bfsr.engine.physics.correction.HistoryCorrectionHandler;
+import net.bfsr.engine.physics.correction.LocalPlayerInputCorrectionHandler;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 
@@ -16,6 +21,7 @@ public class PlayerShipManager {
 
     private final Client client;
     private final EventBus eventBus;
+    private final LocalPlayerInputCorrectionHandler localPlayerInputCorrectionHandler = new LocalPlayerInputCorrectionHandler();
 
     private int shipId = NO_SHIP_ID;
     @Getter
@@ -39,9 +45,23 @@ public class PlayerShipManager {
                 return;
             }
 
+            if (this.ship != null) {
+                this.ship.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.2f),
+                        new CorrectionHandler(), new HistoryCorrectionHandler()));
+                this.ship.setControlledByPlayer(false);
+            }
+
+            this.ship = ship;
+
+            ship.setCorrectionHandler(new DynamicCorrectionHandler(0.0f, Engine.convertToDeltaTime(0.2f),
+                    localPlayerInputCorrectionHandler, localPlayerInputCorrectionHandler));
+            ship.setControlledByPlayer(true);
+
             this.ship = ship;
             eventBus.publish(new SetPlayerShipEvent(ship));
         }
+
+        localPlayerInputCorrectionHandler.setRenderDelayInFrames(client.getRenderDelayManager().getRenderDelayInFrames());
 
         if (ship.isDead()) {
             resetShip();
@@ -59,6 +79,7 @@ public class PlayerShipManager {
     private void resetShip() {
         ship = null;
         shipId = NO_SHIP_ID;
+        localPlayerInputCorrectionHandler.clear();
     }
 
     @EventHandler

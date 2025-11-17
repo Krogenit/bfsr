@@ -17,12 +17,15 @@ import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.entity.wreck.WreckSpawner;
 import net.bfsr.server.physics.CollisionHandler;
+import net.bfsr.server.player.Player;
+import net.bfsr.server.player.PlayerManager;
 
 @RequiredArgsConstructor
 public class ShipEventListener {
     private final ServerGameLogic gameLogic = ServerGameLogic.get();
     private final WreckSpawner wreckSpawner = gameLogic.getWreckSpawner();
     private final EntityTrackingManager trackingManager = gameLogic.getEntityTrackingManager();
+    private final PlayerManager playerManager = gameLogic.getPlayerManager();
     private final CollisionHandler collisionHandler = gameLogic.getCollisionHandler();
     private final DamageSystem damageSystem = gameLogic.getDamageSystem();
 
@@ -30,8 +33,14 @@ public class ShipEventListener {
     public EventListener<ShipNewMoveDirectionEvent> shipNewMoveDirectionEvent() {
         return event -> {
             Ship ship = event.ship();
-            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShipSyncMoveDirection(ship.getId(),
-                    event.direction().ordinal(), false, gameLogic.getFrame()));
+            if (ship.isControlledByPlayer()) {
+                Player player = playerManager.getPlayerControllingShip(ship);
+                trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketShipSyncMoveDirection(ship.getId(),
+                        event.direction().ordinal(), false, gameLogic.getFrame()), player);
+            } else {
+                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShipSyncMoveDirection(ship.getId(),
+                        event.direction().ordinal(), false, gameLogic.getFrame()));
+            }
         };
     }
 
@@ -39,8 +48,14 @@ public class ShipEventListener {
     public EventListener<ShipRemoveMoveDirectionEvent> shipRemoveMoveDirectionEvent() {
         return event -> {
             Ship ship = event.ship();
-            trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShipSyncMoveDirection(ship.getId(),
-                    event.direction().ordinal(), true, gameLogic.getFrame()));
+            if (ship.isControlledByPlayer()) {
+                Player player = playerManager.getPlayerControllingShip(ship);
+                trackingManager.sendPacketToPlayersTrackingEntityExcept(ship.getId(), new PacketShipSyncMoveDirection(ship.getId(),
+                        event.direction().ordinal(), true, gameLogic.getFrame()), player);
+            } else {
+                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketShipSyncMoveDirection(ship.getId(),
+                        event.direction().ordinal(), true, gameLogic.getFrame()));
+            }
         };
     }
 

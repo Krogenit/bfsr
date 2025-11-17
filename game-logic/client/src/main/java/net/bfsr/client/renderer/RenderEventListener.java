@@ -39,7 +39,9 @@ public class RenderEventListener {
         return event -> {
             DamageableModule module = event.getModule();
             ShipRender shipRender = entityRenderer.getRender(module.getShip().getId());
-            shipRender.onModuleDestroy(module);
+            if (shipRender != null) {
+                shipRender.onModuleDestroy(module);
+            }
         };
     }
 }

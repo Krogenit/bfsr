@@ -13,7 +13,6 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.network.packet.server.component.PacketWeaponSlotShoot;
-import net.bfsr.server.ServerGameLogic;
 import net.bfsr.server.ai.AiFactory;
 import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
@@ -24,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerInputController {
-    private final ServerGameLogic gameLogic = ServerGameLogic.get();
     private final Player player;
     private final PlayerNetworkHandler networkHandler;
     private final Vector2f mousePosition = new Vector2f();
@@ -52,16 +50,6 @@ public class PlayerInputController {
         this.trackingManager = trackingManager;
         this.aiFactory = aiFactory;
         this.lagCompensationRayCastManager = new LagCompensationRayCastManager(networkHandler.getWorld(), lagCompensation);
-    }
-
-    public void update() {
-        if (mouseStates[0]) {
-            ship.shoot(weaponSlot -> {
-                weaponSlot.createBullet(false);
-                trackingManager.sendPacketToPlayersTrackingEntity(ship.getId(), new PacketWeaponSlotShoot(
-                        ship.getId(), weaponSlot.getId(), gameLogic.getFrame()));
-            });
-        }
     }
 
     public void update(int frame) {

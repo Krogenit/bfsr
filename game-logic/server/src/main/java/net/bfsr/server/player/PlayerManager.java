@@ -2,6 +2,9 @@ package net.bfsr.server.player;
 
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,7 @@ public class PlayerManager {
     @Getter
     protected final List<Player> players = new ArrayList<>();
     private final TMap<String, Player> playerMap = new THashMap<>();
+    private final Object2ObjectMap<Ship, Player> playerByShipMap = new Object2ObjectOpenHashMap<>();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
     private final ShipFactory shipFactory;
 
@@ -83,6 +87,7 @@ public class PlayerManager {
     }
 
     private void setShip(Player player, Ship ship, int frame) {
+        playerByShipMap.put(ship, player);
         player.setShip(ship);
         player.getPlayerInputController().setShip(ship);
         player.getNetworkHandler().sendTCPPacket(new PacketSetPlayerShip(ship, frame));
@@ -95,7 +100,7 @@ public class PlayerManager {
     }
 
     private void updatePlayer(Player player, int frame) {
-        player.getPlayerInputController().update();
+        player.getPlayerInputController().update(frame);
         updatePlayerShips(player, frame);
     }
 
@@ -132,6 +137,10 @@ public class PlayerManager {
         playerRepository.saveAllSync(players);
     }
 
+    public Player getPlayerControllingShip(Ship ship) {
+        return playerByShipMap.get(ship);
+    }
+
     public boolean hasPlayer(String username) {
         return playerMap.containsKey(username);
     }
@@ -148,6 +157,14 @@ public class PlayerManager {
     public void removePlayer(Player player) {
         this.players.remove(player);
         this.playerMap.remove(player.getUsername());
+        ObjectIterator<Player> iterator = playerByShipMap.values().iterator();
+        while (iterator.hasNext()) {
+            Player player1 = iterator.next();
+            if (player1 == player) {
+                iterator.remove();
+                break;
+            }
+        }
     }
 
     public void clear() {

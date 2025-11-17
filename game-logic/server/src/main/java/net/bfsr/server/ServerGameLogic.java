@@ -6,21 +6,17 @@ import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.config.entity.ship.ShipRegistry;
-import net.bfsr.config.entity.station.StationData;
-import net.bfsr.config.entity.station.StationRegistry;
 import net.bfsr.config.entity.wreck.WreckRegistry;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.config.ConfigConverterManager;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.logic.GameLogic;
 import net.bfsr.engine.loop.AbstractGameLoop;
-import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.engine.util.Side;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.EntityIdManager;
-import net.bfsr.entity.Station;
 import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.entity.wreck.Wreck;
@@ -109,16 +105,7 @@ public abstract class ServerGameLogic extends GameLogic {
         eventBus.register(new ModuleEventListener(entityTrackingManager));
     }
 
-    private void populateWorld() {
-        StationRegistry registry = configConverterManager.getConverter(StationRegistry.class);
-        StationData stationData = registry.get("human");
-
-        Station station = new Station(stationData);
-        station.init(world, world.getNextId());
-        float angle = 1.75f;
-        station.setRotation(LUT.sin(angle), LUT.cos(angle));
-        world.add(station);
-    }
+    private void populateWorld() {}
 
     @Override
     public void update(int frame, double time) {
