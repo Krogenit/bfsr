@@ -6,7 +6,7 @@ import net.bfsr.editor.object.Vector2fConverter;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(uses = {Vector2fConverter.class})
+@Mapper(uses = Vector2fConverter.class)
 public interface StationConverter extends EditorObjectConverter<StationConfig, StationProperties> {
     @Mapping(target = "name", ignore = true)
     @Override
