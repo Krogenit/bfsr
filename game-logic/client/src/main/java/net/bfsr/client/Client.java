@@ -2,10 +2,10 @@ package net.bfsr.client;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.client.assets.FontType;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.damage.DamageHandler;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
-import net.bfsr.client.font.FontType;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.gui.main.GuiMainMenu;
 import net.bfsr.client.input.CameraInputController;
@@ -57,6 +57,7 @@ import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.logic.LogicType;
 import net.bfsr.physics.collision.CollisionMatrix;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector2f;
 
 import java.net.InetAddress;
 
@@ -77,8 +78,9 @@ public class Client extends ClientGameLogic {
 
     private final PlayerShipManager playerShipManager = new PlayerShipManager(this);
     private final PlayerInputController playerInputController = new PlayerInputController(this);
-    private final InputHandler inputHandler = new InputHandler(new GuiInputController(),
-            new CameraInputController(this, playerShipManager), playerInputController, new DebugInputController(this));
+    private final CameraInputController cameraInputController = new CameraInputController(this, playerShipManager);
+    private final InputHandler inputHandler = new InputHandler(new GuiInputController(), cameraInputController, playerInputController,
+            new DebugInputController(this));
 
     private final GuiManager guiManager = Engine.getGuiManager();
 
@@ -174,7 +176,10 @@ public class Client extends ClientGameLogic {
         profiler.endStart("inputHandler");
         inputHandler.update(frame);
         profiler.endStart("soundManager");
-        soundManager.updateListenerPosition(camera.getPosition());
+        Vector2f cameraPosition = camera.getPosition();
+        float zoom = 1 - (float) Math.pow(1 - cameraInputController.getNormalizedZoom(), 3);
+        float z = -53.0f + zoom * 50.0f;
+        soundManager.updateListenerPosition(cameraPosition.x, cameraPosition.y, z);
 
         if (!isPaused()) {
             profiler.endStart("world");

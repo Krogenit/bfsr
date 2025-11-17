@@ -21,25 +21,20 @@ import static net.bfsr.engine.renderer.Renderer.UBO_PROJECTION_MATRIX;
 import static net.bfsr.engine.renderer.Renderer.UBO_VIEW_DATA;
 
 public class Camera implements AbstractCamera {
-    private static final float ZOOM_MAX = 300.0f;
-    private static final float ZOOM_MIN = 20.0f;
-
     private final Matrix4f orthographicMatrix = new Matrix4f();
     @Getter
     private final AABB boundingBox = new AABB();
 
     @Getter
     private final Vector2f position = new Vector2f();
-    private final Vector2f movingAccumulator = new Vector2f();
     @Getter
     private final Vector2f lastPosition = new Vector2f();
     @Getter
     private final Vector2f origin = new Vector2f();
     @Getter
-    private float zoom = 100.0f;
+    private float zoom;
     @Getter
     private float lastZoom = zoom;
-    private float zoomAccumulator;
 
     @Getter
     private int width, height;
@@ -100,54 +95,14 @@ public class Camera implements AbstractCamera {
     }
 
     @Override
-    public void zoom(float value) {
-        zoomAccumulator += value * zoom;
-    }
-
-    @Override
-    public void move(float x, float y) {
-        movingAccumulator.x += x;
-        movingAccumulator.y += y;
-    }
-
-    @Override
-    public void moveByMouse(float dx, float dy) {
-        movingAccumulator.x -= dx / zoom;
-        movingAccumulator.y -= dy / zoom;
-    }
-
-    @Override
     public void update() {
         lastPosition.set(position.x, position.y);
-
-        updateZoom();
-
-        position.x += movingAccumulator.x;
-        position.y += movingAccumulator.y;
-
-        if (movingAccumulator.x != 0 || movingAccumulator.y != 0 || zoomAccumulator != 0) {
-            updateBoundingBox();
-        }
-
-        movingAccumulator.set(0, 0);
-        zoomAccumulator = 0;
+        lastZoom = zoom;
     }
 
     private void updateBoundingBox() {
         setBoundingBox(position.x + origin.x / zoom, position.y + origin.y / zoom, position.x - origin.x / zoom,
                 position.y - origin.y / zoom);
-    }
-
-    private void updateZoom() {
-        lastZoom = zoom;
-
-        zoom += zoomAccumulator;
-
-        if (zoom > ZOOM_MAX) {
-            zoom = ZOOM_MAX;
-        } else if (zoom < ZOOM_MIN) {
-            zoom = ZOOM_MIN;
-        }
     }
 
     @Override
@@ -217,8 +172,20 @@ public class Camera implements AbstractCamera {
     }
 
     @Override
+    public void move(float x, float y) {
+        position.add(x, y);
+        updateBoundingBox();
+    }
+
+    @Override
     public void setPosition(float x, float y) {
         position.set(x, y);
+        updateBoundingBox();
+    }
+
+    @Override
+    public void setZoom(float zoom) {
+        this.zoom = zoom;
         updateBoundingBox();
     }
 

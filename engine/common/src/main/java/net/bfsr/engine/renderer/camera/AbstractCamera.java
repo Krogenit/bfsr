@@ -16,12 +16,10 @@ public interface AbstractCamera {
     void bindWorldViewMatrix();
     void bindGUI();
 
-    void zoom(float value);
     void move(float x, float y);
-    void moveByMouse(float dx, float dy);
-
     void setBoundingBox(float minX, float minY, float maxX, float maxY);
     void setPosition(float x, float y);
+    void setZoom(float zoom);
 
     float getZoom();
     Vector2f getLastPosition();
