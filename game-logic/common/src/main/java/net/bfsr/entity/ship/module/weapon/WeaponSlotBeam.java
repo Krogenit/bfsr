@@ -112,7 +112,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
 
         float cos = ship.getCos();
         float sin = ship.getSin();
-        float startRange = -getSizeX();
+        float startRange = 0;
         float startX = cos * startRange;
         float startY = sin * startRange;
 
