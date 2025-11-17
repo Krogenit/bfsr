@@ -23,6 +23,10 @@ public class PropertyFileSelector extends PropertyComponent {
                 changeValueListener);
         this.propertyOffsetX = label.getWidth() + MINIMIZABLE_STRING_X_OFFSET;
         path = (String) values[0];
+        if (path == null) {
+            path = "";
+        }
+
         addNonConcealable(button = new Button(width - propertyOffsetX, height, path, FONT, fontSize, stringOffsetY, (mouseX, mouseY) -> {
             try {
                 String selectedFilePath = Engine.getSystemDialogs()
