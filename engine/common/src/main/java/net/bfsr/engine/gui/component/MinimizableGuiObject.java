@@ -175,6 +175,12 @@ public class MinimizableGuiObject extends GuiObject {
         removeHideable(guiObject);
     }
 
+    public void removeAllHideable() {
+        removeHideable();
+        hideableObjects.clear();
+        updatePositionAndSize();
+    }
+
     @Override
     public void updatePositionAndSize(int width, int height) {
         updateConcealableObjectsPositions();
