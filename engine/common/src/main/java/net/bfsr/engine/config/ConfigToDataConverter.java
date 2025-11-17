@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.engine.util.PathHelper;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +47,7 @@ public class ConfigToDataConverter<CONFIG_TYPE, DATA_TYPE extends ConfigData> {
             DATA_TYPE data = mapFunction.convert(config, fileName, dataTypeList.size(), id);
             add(data, nameFunction.apply(fileName, config));
         } catch (Exception e) {
-            throw new RuntimeException("Can't map config " + config + " to data", e);
+            throw new RuntimeException("Can't map config " + config + " to data, path: " + path + File.separator + fileName, e);
         }
     }
 
@@ -54,7 +55,7 @@ public class ConfigToDataConverter<CONFIG_TYPE, DATA_TYPE extends ConfigData> {
         if (registry.containsKey(name)) {
             throw new IllegalStateException("Key name " + name + " already taken in config registry " + this.getClass().getSimpleName());
         }
-        
+
         dataTypeList.add(data);
         registry.put(name, data);
     }
