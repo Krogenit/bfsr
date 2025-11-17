@@ -10,9 +10,11 @@ import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.faction.Faction;
 import net.bfsr.server.ai.AiFactory;
+import org.jbox2d.collision.AABB;
 import org.joml.Vector2f;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @RequiredArgsConstructor
 public class ShipSpawner {
@@ -82,8 +84,8 @@ public class ShipSpawner {
         }
 
         if (hugeShip == null || hugeShip.isDead()) {
-            world.add(hugeShip = shipFactory.createBot(world, -30, -20, rand.nextFloat() * MathUtils.TWO_PI, Faction.ENGI,
-                    shipFactory.getShipRegistry().get("engi_huge0"), aiFactory.createAi()));
+//            world.add(hugeShip = shipFactory.createBot(world, -30, -20, rand.nextFloat() * MathUtils.TWO_PI, Faction.ENGI,
+//                    shipFactory.getShipRegistry().get("engi_huge0"), aiFactory.createAi()));
         }
     }
 
