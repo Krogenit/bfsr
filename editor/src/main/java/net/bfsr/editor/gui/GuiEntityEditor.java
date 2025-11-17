@@ -210,9 +210,12 @@ public abstract class GuiEntityEditor<CONFIG_TYPE extends Config, PROPERTIES_TYP
                 if (debugDamageSystem) {
                     add(debugDamageSystemModeLabel.atTop(0, -elementHeight << 1));
                     clipPolygon = createClipPolygon(0, 0);
+                    lastDebugBoxesMode = ClientSettings.SHOW_DEBUG_BOXES.getBoolean();
+                    ClientSettings.SHOW_DEBUG_BOXES.setValue(true);
                 } else {
                     remove(debugDamageSystemModeLabel);
                     clipPolygon = null;
+                    ClientSettings.SHOW_DEBUG_BOXES.setValue(lastDebugBoxesMode);
                 }
             });
 
@@ -232,6 +235,7 @@ public abstract class GuiEntityEditor<CONFIG_TYPE extends Config, PROPERTIES_TYP
         if (testEntity != null) {
             testEntity.setDead();
             client.getEntityRenderer().removeRenderById(testEntity.getId());
+            testEntity = null;
         }
 
         try {
@@ -256,6 +260,8 @@ public abstract class GuiEntityEditor<CONFIG_TYPE extends Config, PROPERTIES_TYP
     protected void onEntryDeselected(@Nullable InspectionEntry<PROPERTIES_TYPE> selectedEntry) {
         if (testEntity != null) {
             testEntity.setDead();
+            client.getEntityRenderer().removeRenderById(testEntity.getId());
+            testEntity = null;
         }
 
         selectedShipProperties = null;
