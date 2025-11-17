@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.geometry.GeometryUtils;
+import net.bfsr.engine.sound.AbstractSoundManager;
 import net.bfsr.engine.sound.Sound;
 import net.bfsr.engine.sound.SoundEffect;
 import net.bfsr.engine.util.PathHelper;
@@ -68,6 +69,11 @@ public class ConfigData {
     }
 
     protected SoundEffect convert(ConfigurableSoundEffect soundEffects) {
+        AbstractSoundManager soundManager = Engine.getSoundManager();
+        if (soundManager == null) {
+            return new SoundEffect(null, false);
+        }
+
         List<ConfigurableSound> configurableSounds = soundEffects.sounds();
         List<Sound> soundEffectsList = new ArrayList<>(configurableSounds.size());
         for (int i = 0; i < configurableSounds.size(); i++) {
