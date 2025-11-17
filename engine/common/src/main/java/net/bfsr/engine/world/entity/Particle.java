@@ -50,11 +50,11 @@ public class Particle extends GameObject {
     }
 
     public Particle init(long textureHandle, float worldX, float worldY, float localX, float localY, float z, float velocityX,
-                         float velocityY, float sin, float cos, float angularVelocity, float scaleX, float scaleY, float sizeVelocity,
+                         float velocityY, float sin, float cos, float angularVelocity, float sizeX, float sizeY, float sizeVelocity,
                          float r, float g, float b, float a, float alphaVelocity, boolean isAlphaFromZero, ParticleType particleType,
                          Consumer<Particle> updateLogic, Consumer<ParticleRender> lastValuesUpdateConsumer) {
         this.particleType = particleType;
-        render = particleRenderer.newRender(particleType).init(this, worldX, worldY, z, sin, cos, scaleX, scaleY,
+        render = particleRenderer.newRender(particleType).init(this, worldX, worldY, z, sin, cos, sizeX, sizeY,
                 textureHandle, r, g, b, a, isAlphaFromZero,
                 Engine.convertToDeltaTime(alphaVelocity), particleRenderer.getBuffersHolder(particleType), lastValuesUpdateConsumer);
         super.setPosition(worldX, worldY);
@@ -65,7 +65,7 @@ public class Particle extends GameObject {
         float angularVelocityInFrames = Engine.convertToDeltaTime(angularVelocity);
         this.angularVelocitySin = LUT.sin(angularVelocityInFrames);
         this.angularVelocityCos = LUT.cos(angularVelocityInFrames);
-        super.setSize(scaleX, scaleY);
+        super.setSize(sizeX, sizeY);
         this.sizeVelocity = Engine.convertToDeltaTime(sizeVelocity);
         this.zeroVelocity = velocity.lengthSquared() == 0.0f;
         this.isDead = false;
@@ -91,8 +91,10 @@ public class Particle extends GameObject {
 
         if (!zeroVelocity) {
             addPosition(velocity.x, velocity.y);
-            velocity.x *= 0.99f;
-            velocity.y *= 0.99f;
+            float dt = Engine.getUpdateDeltaTimeInSeconds();
+            float linearDamping = 0.05f;
+            velocity.x *= 1.0f / (1.0f + dt * linearDamping);
+            velocity.y *= 1.0f / (1.0f + dt * linearDamping);
         }
 
         if (sizeVelocity != 0) {

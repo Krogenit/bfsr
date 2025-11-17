@@ -67,14 +67,23 @@ public class ParticleRender extends Render {
             if (isAlphaFromZero) {
                 if (maxAlpha == 0) {
                     color.w -= alphaVelocity;
-                    if (color.w <= 0) object.setDead();
+                    if (color.w <= 0) {
+                        object.setDead();
+                        color.w = 0.0f;
+                    }
                 } else {
                     color.w += alphaVelocity;
-                    if (color.w >= maxAlpha) maxAlpha = 0.0f;
+                    if (color.w >= maxAlpha) {
+                        color.w = maxAlpha;
+                        maxAlpha = 0.0f;
+                    }
                 }
             } else {
                 color.w -= alphaVelocity;
-                if (color.w <= 0) object.setDead();
+                if (color.w <= 0) {
+                    object.setDead();
+                    color.w = 0.0f;
+                }
             }
 
             spriteRenderer.setColorAlpha(id, buffersHolder, color.w);
