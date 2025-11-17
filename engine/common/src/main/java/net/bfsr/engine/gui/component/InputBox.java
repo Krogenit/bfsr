@@ -90,8 +90,8 @@ public class InputBox extends GuiObject {
         }
 
         this.maxLineSize = maxLineSize;
-        this.cursorHeight = (int) (height / 1.7f);
-        this.renderer = new InputBoxRenderer(this);
+        this.cursorHeight = label.getHeight();
+        setRenderer(renderer = new InputBoxRenderer(this));
     }
 
     public InputBox(int width, int height, String emptyString, Font font, int fontSize, int stringOffsetX, int stringOffsetY,
@@ -196,9 +196,9 @@ public class InputBox extends GuiObject {
 
         if (key == KEY_LEFT) {
             if (keyboard.isKeyDown(KEY_LEFT_SHIFT)) {
-                cursorPositionEnd--;
-                if (cursorPositionEnd < 0) cursorPositionEnd = 0;
-                checkCursorOutOfBoundsPosition(cursorPositionEnd);
+                cursorPosition--;
+                if (cursorPosition < 0) cursorPosition = 0;
+                checkCursorOutOfBoundsPosition(cursorPosition);
             } else {
                 if (cursorPosition == cursorPositionEnd) {
                     cursorPosition--;
@@ -206,7 +206,7 @@ public class InputBox extends GuiObject {
                     cursorPositionEnd = cursorPosition;
                     checkCursorOutOfBoundsPosition(cursorPosition);
                 } else {
-                    cursorPosition = cursorPositionEnd;
+                    cursorPositionEnd = cursorPosition;
                 }
                 showCursor();
             }
