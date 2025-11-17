@@ -72,7 +72,7 @@ void main() {
 
         float fireAmount = texture(fireTexture, rotateUV(textureCoords, fireUVAnimation)).r;
         vec3 fireColor = vec3(fireAmount * 1.0, fireAmount * 0.45, fireAmount * 0.2);
-        out_Color = vec4(albedo.rgb * color.rgb * colorMask + fireColor * fireMask, albedo.a * clamp(maskAlpha * 4.0, 0.0, 1.0));
+        out_Color = vec4(albedo.rgb * color.rgb * colorMask + fireColor * fireMask, albedo.a * color.a * clamp(maskAlpha * 4.0, 0.0, 1.0));
         return;
     }
 
