@@ -2,7 +2,6 @@ package net.bfsr.client.gui;
 
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.Client;
-import net.bfsr.client.font.FontType;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
 import net.bfsr.engine.gui.component.Button;
@@ -26,7 +25,7 @@ public class GuiJump extends Gui {
         rectangle.setOutlineHoverColor(0.3f, 0.3f, 0.3f, 0.9f);
         rectangle.setRenderer(new RectangleOutlinedRenderer(rectangle));
 
-        Font font = Engine.getFontManager().getFont(FontType.CONSOLA.getFontName());
+        Font font = Engine.getFontManager().getDefaultFont();
         rectangle.add(new Label(font, "Select dest", 14).atTop(0, -10));
 
         rectangle.add(new Label(font, "X: ", 14).atCenter(-60, 10));

@@ -18,9 +18,9 @@ public class Label extends GuiObject {
     private final LabelRenderer labelRenderer;
     private int maxWidth;
 
-    protected Label(Font font, String string, int x, int y, int fontSize, float r, float g, float b, float a,
-                    StringOffsetType offsetType, BufferType bufferType) {
-        super(x, y, font.getWidth(string, fontSize), Math.round(font.getHeight(string, fontSize, 0)));
+    public Label(Font font, String string, int x, int y, int fontSize, float r, float g, float b, float a,
+                 StringOffsetType offsetType, BufferType bufferType, int width, int height) {
+        super(x, y, width, height);
         this.font = font;
         this.string = string;
         this.fontSize = fontSize;
@@ -29,6 +29,12 @@ public class Label extends GuiObject {
         this.setCanBeHovered(false);
         setRenderer(this.labelRenderer = new LabelRenderer(this, font, bufferType));
         packGlyphs();
+    }
+
+    public Label(Font font, String string, int x, int y, int fontSize, float r, float g, float b, float a,
+                 StringOffsetType offsetType, BufferType bufferType) {
+        this(font, string, x, y, fontSize, r, g, b, a, offsetType, bufferType, font.getWidth(string, fontSize),
+                Math.round(font.getHeight(string, fontSize, 0)));
     }
 
     public Label(Font font, int fontSize, float r, float g, float b, float a) {
@@ -43,19 +49,12 @@ public class Label extends GuiObject {
         this(Engine.getFontManager().getFont(fontName), string, x, y, fontSize, offsetType);
     }
 
-    public Label(String fontName, String string, int fontSize, int x, int y, StringOffsetType offsetType,
-                 BufferType bufferType) {
-        this(Engine.getFontManager().getFont(fontName), string, x, y, fontSize, 1.0f, 1.0f, 1.0f, 1.0f, offsetType, bufferType);
+    public Label(Font font, String string, int fontSize, int x, int y, StringOffsetType offsetType, BufferType bufferType) {
+        this(font, string, x, y, fontSize, 1.0f, 1.0f, 1.0f, 1.0f, offsetType, bufferType);
     }
 
     public Label(Font font, String string, int fontSize, float r, float g, float b, float a) {
         this(font, string, 0, 0, fontSize, r, g, b, a, StringOffsetType.DEFAULT, BufferType.GUI);
-    }
-
-    protected Label(String fontName, String string, int x, int y, int fontSize, float r, float g, float b,
-                    float a) {
-        this(Engine.getFontManager().getFont(fontName), string, x, y, fontSize, r, g, b, a, StringOffsetType.DEFAULT,
-                BufferType.GUI);
     }
 
     public Label(Font font, String string, int fontSize, StringOffsetType offsetType) {
@@ -74,8 +73,8 @@ public class Label extends GuiObject {
         this(font, string, fontSize, StringOffsetType.DEFAULT);
     }
 
-    public Label(String fontName, int fontSize, StringOffsetType offsetType, BufferType bufferType) {
-        this(fontName, "", fontSize, 0, 0, offsetType, bufferType);
+    public Label(Font font, int fontSize, StringOffsetType offsetType, BufferType bufferType) {
+        this(font, "", fontSize, 0, 0, offsetType, bufferType);
     }
 
     public Label(Font font, int fontSize) {

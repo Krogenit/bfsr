@@ -10,15 +10,16 @@ import org.joml.Vector4f;
 
 import java.util.function.BiConsumer;
 
-import static net.bfsr.engine.renderer.font.AbstractFontManager.DEFAULT_FONT_NAME;
-
 public class Button extends GuiObject {
     private final Label label;
 
     public Button(int width, int height, String string, Font font, int fontSize, int stringXOffset, int stringYOffset,
                   StringOffsetType stringOffsetType, BiConsumer<Integer, Integer> leftReleaseConsumer) {
         super(width, height);
-        label = new Label(font, string, stringXOffset, 0, fontSize, stringOffsetType);
+        label = new Label(font, string, fontSize, stringOffsetType);
+        label.setShadow(true);
+        label.setShadowOffsetX(2);
+        label.setShadowOffsetY(-2);
         add(label.atBottomLeft(stringXOffset, stringYOffset));
         setLeftReleaseConsumer(leftReleaseConsumer);
         setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
@@ -27,8 +28,7 @@ public class Button extends GuiObject {
 
     public Button(int width, int height, String string, Font font, int fontSize, int stringYOffset,
                   BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(width, height, string, font, fontSize, width / 2, stringYOffset,
-                StringOffsetType.CENTERED, leftReleaseConsumer);
+        this(width, height, string, font, fontSize, width / 2, stringYOffset, StringOffsetType.CENTERED, leftReleaseConsumer);
     }
 
     public Button(int width, int height, String string, Font font, int fontSize, BiConsumer<Integer, Integer> leftReleaseConsumer) {
@@ -36,7 +36,7 @@ public class Button extends GuiObject {
     }
 
     public Button(int width, int height, String string, int fontSize, BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(width, height, string, Engine.getFontManager().getFont(DEFAULT_FONT_NAME), fontSize, leftReleaseConsumer);
+        this(width, height, string, Engine.getFontManager().getDefaultFont(), fontSize, leftReleaseConsumer);
     }
 
     public Button(TextureRegister texture, int width, int height, String string, int fontSize) {

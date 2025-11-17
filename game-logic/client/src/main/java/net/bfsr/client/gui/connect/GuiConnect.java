@@ -2,7 +2,8 @@ package net.bfsr.client.gui.connect;
 
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.Client;
-import net.bfsr.client.font.FontType;
+import net.bfsr.client.gui.objects.SimpleButton;
+import net.bfsr.client.gui.objects.SimpleInputBox;
 import net.bfsr.client.language.LanguageManager;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
@@ -16,7 +17,7 @@ import java.net.UnknownHostException;
 
 @Log4j2
 public class GuiConnect extends Gui {
-    private final Label connectingText = new Label(Engine.getFontManager().getFont(FontType.XOLONIUM.getFontName()), 20)
+    private final Label connectingText = new Label(Engine.getFontManager().getDefaultFont(), 20)
             .setColor(1.0f, 1.0f, 1.0f, 0.0f);
 
     public GuiConnect(Gui parentGui) {

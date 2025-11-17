@@ -33,7 +33,6 @@ import static net.bfsr.engine.input.Keys.KEY_LEFT_CONTROL;
 import static net.bfsr.engine.input.Keys.KEY_LEFT_SHIFT;
 import static net.bfsr.engine.input.Keys.KEY_RIGHT;
 import static net.bfsr.engine.input.Keys.KEY_V;
-import static net.bfsr.engine.renderer.font.AbstractFontManager.DEFAULT_FONT_NAME;
 
 public class InputBox extends GuiObject {
     private final AbstractKeyboard keyboard = Engine.getKeyboard();
@@ -73,15 +72,18 @@ public class InputBox extends GuiObject {
                     int maxLineSize) {
         super(width, height);
         this.font = font;
-        this.stringOffset = new Vector2i(stringOffsetX, font.getCenteredOffsetY(emptyString, height, fontSize) + stringOffsetY);
+        this.stringOffset = new Vector2i(stringOffsetX, stringOffsetY);
         this.maxStringOffsetX = stringOffset.x;
 
         int stringX = stringOffset.x;
         int stringY = stringOffset.y;
 
-        this.label = new Label(font, string, fontSize, textColor.x, textColor.y, textColor.z, textColor.w).atBottomLeft(stringX, stringY);
-        this.emptyLabel = new Label(font, emptyString, fontSize, textColor.x, textColor.y, textColor.z, textColor.w).atBottomLeft(
-                stringX, stringY);
+        this.label = new Label(font, string, fontSize, textColor.x, textColor.y, textColor.z, textColor.w)
+                .setShadow(true).setShadowOffsetX(2).setShadowOffsetY(-2);
+        this.emptyLabel = new Label(font, emptyString, fontSize, textColor.x, textColor.y, textColor.z, textColor.w)
+                .setShadow(true).setShadowOffsetX(2).setShadowOffsetY(-2);
+        this.label.atLeft(stringX, stringY);
+        this.emptyLabel.atLeft(stringX, stringY);
 
         if (string.isEmpty()) {
             add(emptyLabel);
@@ -326,7 +328,7 @@ public class InputBox extends GuiObject {
             }
         }
 
-        label.atBottomLeft(stringOffset.x, stringOffset.y);
+        label.atLeft(stringOffset.x, stringOffset.y);
         label.updatePositionAndSize();
     }
 

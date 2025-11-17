@@ -1,7 +1,7 @@
 package net.bfsr.client.gui.ingame;
 
 import net.bfsr.client.Client;
-import net.bfsr.client.font.FontType;
+import net.bfsr.client.assets.FontType;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.settings.ClientSettings;
@@ -36,8 +36,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class DebugInfoElement extends MinimizableGuiObject {
-    private static final Font FONT = Engine.getFontManager().getFont(FontType.CONSOLA.getFontName());
-    private static final int FONT_SIZE = 13;
+    private static final Font FONT = Engine.getFontManager().getFont(FontType.JETBRAINSMONO_LIGHT.getFontName());
+    private static final int FONT_SIZE = 12;
 
     private final Client client = Client.get();
     private final ParticleRenderer particleRenderer = client.getGlobalRenderer().getParticleRenderer();
@@ -193,7 +193,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
     }
 
     private Label createLabel(int y, String text, Consumer<Label> updateConsumer) {
-        return new Label(Engine.getFontManager().getFont(FontType.CONSOLA.getFontName()), text, 0, 0, FONT_SIZE) {
+        return new Label(font, text, 0, 0, FONT_SIZE) {
             @Override
             public void update(int mouseX, int mouseY) {
                 super.update(mouseX, mouseY);

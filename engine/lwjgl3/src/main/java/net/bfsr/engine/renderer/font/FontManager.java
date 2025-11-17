@@ -29,6 +29,11 @@ public class FontManager implements AbstractFontManager {
     }
 
     @Override
+    public Font getDefaultFont() {
+        return fonts.get(0);
+    }
+
+    @Override
     public Font getFont(String fontName) {
         return fontsMap.get(fontName);
     }

@@ -59,8 +59,8 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     private final JumpEffects jumpEffects = client.getParticleEffects().getJumpEffects();
 
     protected final Ship ship;
-    private final Label label = new Label(FontType.XOLONIUM.getFontName(), 24, StringOffsetType.CENTERED, BufferType.ENTITIES_ALPHA)
-            .setShadow(true).setShadowOffsetX(4).setShadowOffsetY(-4);
+    private final Label label = new Label(Engine.getFontManager().getDefaultFont(), 24, StringOffsetType.CENTERED,
+            BufferType.ENTITIES_ALPHA).setShadow(true).setShadowOffsetX(4).setShadowOffsetY(-4);
 
     private final List<WeaponSlotRender> weaponRenders = new ArrayList<>();
 

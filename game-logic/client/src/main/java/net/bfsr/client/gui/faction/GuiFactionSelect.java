@@ -1,7 +1,9 @@
 package net.bfsr.client.gui.faction;
 
 import net.bfsr.client.Client;
-import net.bfsr.client.font.FontType;
+import net.bfsr.client.assets.TextureRegister;
+import net.bfsr.client.gui.GuiStyle;
+import net.bfsr.client.gui.objects.SimpleButton;
 import net.bfsr.client.language.LanguageManager;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
@@ -43,7 +45,7 @@ public class GuiFactionSelect extends Gui {
         scale = 1.66f;
         add(new GuiShip(TextureRegister.shipEngiSmall0, (int) (69 * scale), (int) (42 * scale)).atCenter(309, -70));
 
-        Font font = Engine.getFontManager().getFont(FontType.XOLONIUM.getFontName());
+        Font font = Engine.getFontManager().getDefaultFont();
         Label label = new Label(font, languageManager.getString("gui.selectFaction.maintext"), 24);
         add(label.atCenter(0, 108));
 

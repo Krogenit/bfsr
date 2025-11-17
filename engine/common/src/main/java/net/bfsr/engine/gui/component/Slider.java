@@ -6,9 +6,7 @@ import net.bfsr.engine.renderer.font.string.StringOffsetType;
 import net.bfsr.engine.renderer.texture.TextureRegister;
 import org.joml.Vector4f;
 
-import static net.bfsr.engine.renderer.font.AbstractFontManager.DEFAULT_FONT_NAME;
-
-public class Slider extends TexturedRectangle {
+public class Slider extends Rectangle {
     private final AbstractMouse mouse = Engine.getMouse();
 
     protected float value;
@@ -25,7 +23,7 @@ public class Slider extends TexturedRectangle {
         add(slider.atBottomLeft(this::calculateSliderXPos, () -> 0));
         setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
 
-        this.label = new Label(Engine.getFontManager().getFont(DEFAULT_FONT_NAME), string, fontSize, StringOffsetType.CENTERED);
+        this.label = new Label(Engine.getFontManager().getDefaultFont(), string, fontSize, StringOffsetType.CENTERED);
         add(label.atBottomLeft(width / 2, label.getCenteredOffsetY(height)));
     }
 

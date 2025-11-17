@@ -48,8 +48,8 @@ public class InputBoxRenderer extends SimpleGuiObjectRenderer {
         int cursorHeight = inputBox.getCursorHeight();
         float lineWidth;
         int x = guiObject.getSceneX();
-        int cursorY = guiObject.getSceneY() + guiObject.getHeight() / 2 - cursorHeight / 2;
         Label label = inputBox.getLabel();
+        int cursorY = label.getSceneY();
         int fontSize = label.getFontSize();
         int cursorPosition = inputBox.getCursorPosition();
         int cursorPositionEnd = inputBox.getCursorPositionEnd();
@@ -87,8 +87,8 @@ public class InputBoxRenderer extends SimpleGuiObjectRenderer {
         int cursorHeight = inputBox.getCursorHeight();
         float lineWidth;
         int x = guiObject.getSceneX();
-        int cursorY = guiObject.getSceneY() + guiObject.getHeight() / 2 - cursorHeight / 2;
         Label label = inputBox.getLabel();
+        int cursorY = label.getSceneY();
         int fontSize = label.getFontSize();
         int cursorPosition = inputBox.getCursorPosition();
         int cursorPositionEnd = inputBox.getCursorPositionEnd();
