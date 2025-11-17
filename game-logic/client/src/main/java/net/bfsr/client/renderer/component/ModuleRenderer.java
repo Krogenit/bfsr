@@ -65,7 +65,7 @@ public class ModuleRenderer extends Render {
         Vector2 center = shape.centroid;
         AABB aabb1 = new AABB();
         shape.computeAABB(aabb1, 0, 0, 0, 1, 0);
-        float offset = -0.1f;
+        float offset = -0.02f;
         float dx = aabb1.getWidth() + offset;
         float dy = aabb1.getHeight() + offset;
 
