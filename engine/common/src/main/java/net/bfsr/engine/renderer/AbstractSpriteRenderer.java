@@ -41,6 +41,7 @@ public interface AbstractSpriteRenderer extends GeometryBuffer {
 
     void updateBuffers();
     void updateBuffers(AbstractBuffersHolder[] buffersHolderArray);
+    void updateBuffer(AbstractBuffersHolder buffersHolder);
     void waitForLockedRange();
     void waitForLockedRange(AbstractBuffersHolder[] buffersHolderArray);
 
@@ -66,21 +67,17 @@ public interface AbstractSpriteRenderer extends GeometryBuffer {
     int add(float x, float y, float z, float width, float height, float r, float g, float b, float a, long textureHandle,
             float zoomFactor, BufferType bufferType);
     int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
-            long textureHandle,
-            BufferType bufferType);
+            long textureHandle, BufferType bufferType);
     int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
-            long textureHandle,
-            MaterialType materialType, BufferType bufferType);
+            long textureHandle, MaterialType materialType, BufferType bufferType);
     int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
             long textureHandle, long maskTextureHandle, BufferType bufferType);
     int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
-            long textureHandle,
-            long maskTextureHandle, MaterialType materialType, BufferType bufferType);
+            long textureHandle, long maskTextureHandle, MaterialType materialType, BufferType bufferType);
     int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
             long textureHandle, AbstractBuffersHolder buffersHolder);
     int add(float x, float y, float z, float width, float height, float r, float g, float b, float a, long textureHandle,
-            MaterialType materialType,
-            AbstractBuffersHolder buffersHolder);
+            MaterialType materialType, AbstractBuffersHolder buffersHolder);
     int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
             long textureHandle, MaterialType materialType, AbstractBuffersHolder buffersHolder);
 

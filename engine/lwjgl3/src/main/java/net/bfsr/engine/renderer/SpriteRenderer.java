@@ -74,7 +74,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     private final IntBuffer indexBuffer;
     private final VBO indexVBO;
 
-    private final ObjectSet<Primitive> primitiveMap = new ObjectOpenHashSet<>();
+    private final ObjectSet<Primitive> primitiveSet = new ObjectOpenHashSet<>();
 
     protected AbstractRenderer renderer;
     private ExecutorService executorService;
@@ -145,7 +145,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     public void updateBuffers() {
         for (int i = 0; i < buffersHolders.length; i++) {
             BuffersHolder buffersHolder = buffersHolders[i];
-            updateBuffers(buffersHolder);
+            updateBuffer(buffersHolder);
         }
     }
 
@@ -153,11 +153,11 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     public void updateBuffers(AbstractBuffersHolder[] buffersHolderArray) {
         for (int i = 0; i < buffersHolderArray.length; i++) {
             AbstractBuffersHolder buffersHolder = buffersHolderArray[i];
-            updateBuffers(buffersHolder);
+            updateBuffer(buffersHolder);
         }
     }
 
-    public void updateBuffers(AbstractBuffersHolder buffersHolder) {
+    public void updateBuffer(AbstractBuffersHolder buffersHolder) {
         buffersHolder.updateBuffers(MODEL_BUFFER_INDEX, MATERIAL_BUFFER_INDEX, LAST_UPDATE_MODEL_BUFFER_INDEX,
                 LAST_UPDATE_MATERIAL_BUFFER_INDEX);
     }
@@ -181,7 +181,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
 
     @Override
     public boolean addPrimitive(Primitive primitive) {
-        if (primitiveMap.contains(primitive)) {
+        if (primitiveSet.contains(primitive)) {
             return false;
         }
 
@@ -231,7 +231,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
         }
 
         primitive.setBaseVertex(vertexIndex / VERTEX_DATA_SIZE);
-        primitiveMap.add(primitive);
+        primitiveSet.add(primitive);
         return true;
     }
 

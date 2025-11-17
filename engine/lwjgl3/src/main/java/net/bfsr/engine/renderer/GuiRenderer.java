@@ -39,6 +39,11 @@ public class GuiRenderer extends AbstractGUIRenderer {
     }
 
     @Override
+    public void updateBuffers() {
+        spriteRenderer.updateBuffers();
+    }
+
+    @Override
     public void render() {
         render(DrawMode.TRIANGLES);
     }

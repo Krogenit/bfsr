@@ -16,6 +16,8 @@ public abstract class AbstractGUIRenderer {
 
     public abstract void addPrimitive(Primitive primitive);
 
+    public abstract void updateBuffers();
+
     public abstract void render();
     public abstract void render(DrawMode mode);
     public abstract void render(List<GuiObject> guiStack, int mouseX, int mouseY);
