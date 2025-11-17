@@ -29,12 +29,23 @@
   "particleType": "ADDITIVE",
   "path": "explosion",
   "r": 1.0,
-  "soundEffects": [
-    {
-      "path": "sound/explosion/explosion1.ogg",
-      "volume": 1.0
-    }
-  ],
+  "soundEffect": {
+    "sounds": [
+      {
+        "path": "sound/explosion/explosion_ship_small0.ogg",
+        "volume": 0.5,
+        "minPitch": 0.1,
+        "maxPitch": 1.2
+      },
+      {
+        "path": "sound/explosion/explosion_ship_small1.ogg",
+        "volume": 1.0,
+        "minPitch": 0.1,
+        "maxPitch": 1.2
+      }
+    ],
+    "randomFromList": true
+  },
   "sourceSizeXMultiplier": 1.0,
   "sourceSizeYMultiplier": 1.0,
   "sourceVelocityXMultiplier": 1.0,

@@ -29,14 +29,17 @@
   "particleType": "ADDITIVE",
   "path": "explosion/ship_small",
   "r": 0.5,
-  "soundEffects": [],
+  "soundEffect": {
+    "sounds": [],
+    "randomFromList": false
+  },
   "sourceSizeXMultiplier": 1.0,
   "sourceSizeYMultiplier": 1.0,
   "sourceVelocityXMultiplier": 0.0,
   "sourceVelocityYMultiplier": 0.0,
   "spawnOverTime": 0.0,
   "texturePaths": [
-    "texture/particle/basicshockwave.png"
+    "texture/particle/shockwave.png"
   ],
   "treeIndex": 4
 }

@@ -56,14 +56,14 @@ public class WeaponSlotRender extends Render {
     }
 
     public void onShot() {
-        float x = object.getX();
-        float y = object.getY();
         Vector4f color = weaponSlot.getGunData().getColor();
         Ship ship = weaponSlot.getShip();
         float sin = ship.getSin();
         float cos = ship.getCos();
         RotationHelper.rotate(sin, cos, 0.1f, 0, rotationHelper);
-        weaponEffects.spawnWeaponShoot(x, y, rotationHelper.x, rotationHelper.y, z, sin, cos, weaponSlot.getSizeY() * 4.0f,
+        float x = object.getX() + rotationHelper.x;
+        float y = object.getY() + rotationHelper.y;
+        weaponEffects.spawnWeaponShoot(x, y, 0, 0, z, sin, cos, weaponSlot.getSizeY() * 4.0f,
                 color.x, color.y, color.z, color.w, particle -> {
                     particle.setRotation(ship.getSin(), ship.getCos());
                     particle.setPosition(object.getX() + rotationHelper.x, object.getY() + rotationHelper.y);

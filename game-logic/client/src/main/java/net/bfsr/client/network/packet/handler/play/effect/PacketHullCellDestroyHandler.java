@@ -11,6 +11,7 @@ import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.hull.HullCell;
 import net.bfsr.network.packet.server.effect.PacketHullCellDestroy;
+import org.jbox2d.common.Vector2;
 
 import java.net.InetSocketAddress;
 
@@ -44,9 +45,11 @@ public class PacketHullCellDestroyHandler extends PacketHandler<PacketHullCellDe
             float cos = ship.getCos();
             float rotatedX = posX * cos - posY * sin + rigidBody.getX();
             float rotatedY = posY * cos + posX * sin + rigidBody.getY();
+            Vector2 linearVelocity = ship.getLinearVelocity();
 
             Render render = client.getEntityRenderer().getRender(ship.getId());
-            explosionEffects.spawnSmallExplosion(rotatedX, rotatedY, render.getZ(), Math.max(rhombusWidth, rhombusHeight));
+            explosionEffects.spawnSmallExplosion(rotatedX, rotatedY, render.getZ(), Math.max(rhombusWidth, rhombusHeight),
+                    linearVelocity.x, linearVelocity.y);
         }
     }
 }

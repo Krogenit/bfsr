@@ -3,7 +3,7 @@
   "b": 1.0,
   "g": 1.0,
   "isAlphaFromZero": false,
-  "maxAlphaVelocity": 0.8,
+  "maxAlphaVelocity": 0.7,
   "maxAngle": 1.0,
   "maxAngularVelocity": 0.0,
   "maxPosX": 0.0,
@@ -14,7 +14,7 @@
   "maxSpawnCount": 4,
   "maxVelocityX": 0.15,
   "maxVelocityY": 0.15,
-  "minAlphaVelocity": 0.7,
+  "minAlphaVelocity": 0.6,
   "minAngle": 0.0,
   "minAngularVelocity": 0.0,
   "minPosX": 0.0,
@@ -29,14 +29,17 @@
   "particleType": "ALPHA_BLENDED",
   "path": "fire/small",
   "r": 1.0,
-  "soundEffects": [],
+  "soundEffect": {
+    "sounds": [],
+    "randomFromList": false
+  },
   "sourceSizeXMultiplier": 0.0,
   "sourceSizeYMultiplier": 0.0,
   "sourceVelocityXMultiplier": 1.0,
   "sourceVelocityYMultiplier": 1.0,
   "spawnOverTime": 0.0,
   "texturePaths": [
-    "texture/particle/smokering.png"
+    "texture/particle/smoke6.png"
   ],
   "treeIndex": 0
 }

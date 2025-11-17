@@ -19,12 +19,12 @@ public class ParticleEffects {
     public ParticleEffects(ParticleManager particleManager, ParticleEffectsRegistry effectsRegistry) {
         weaponEffects = new WeaponEffects(effectsRegistry);
         engineEffects = new EngineEffects(effectsRegistry);
-        garbageSpawner = new GarbageSpawner(particleManager, effectsRegistry);
+        garbageSpawner = new GarbageSpawner(particleManager);
         smokeEffects = new SmokeEffects(effectsRegistry);
         fireEffects = new FireEffects(effectsRegistry);
         explosionEffects = new ExplosionEffects(effectsRegistry);
         jumpEffects = new JumpEffects(effectsRegistry);
         shieldEffects = new ShieldEffects(effectsRegistry);
-        beamEffects = new BeamEffects(particleManager, effectsRegistry);
+        beamEffects = new BeamEffects(effectsRegistry);
     }
 }

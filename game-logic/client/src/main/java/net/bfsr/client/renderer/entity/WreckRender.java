@@ -241,7 +241,7 @@ public class WreckRender extends RigidBodyRender {
 
     public void onDeath() {
         if (color.w > 0.01f) {
-            explosionEffects.spawnSmallExplosion(wreck.getX(), wreck.getY(), getZ(), wreck.getSizeX());
+            explosionEffects.spawnSmallExplosion(wreck.getX(), wreck.getY(), z, wreck.getSizeX(), 0.0f, 0.0f);
         }
     }
 

@@ -5,6 +5,7 @@ import lombok.Getter;
 import net.bfsr.client.Client;
 import net.bfsr.client.assets.TextureRegister;
 import net.bfsr.client.particle.effect.EngineEffects;
+import net.bfsr.client.particle.effect.ExplosionEffects;
 import net.bfsr.client.particle.effect.JumpEffects;
 import net.bfsr.client.renderer.component.ModuleRenderer;
 import net.bfsr.client.renderer.component.WeaponRenderRegistry;
@@ -60,6 +61,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     private final Client client = Client.get();
     private final EngineEffects engineEffects = client.getParticleEffects().getEngineEffects();
     private final JumpEffects jumpEffects = client.getParticleEffects().getJumpEffects();
+    private final ExplosionEffects explosionEffects = client.getParticleEffects().getExplosionEffects();
 
     protected final Ship ship;
     private final Label label = new Label(Engine.getFontManager().getDefaultFont(), 24, StringOffsetType.CENTERED,
@@ -428,20 +430,32 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         return -(geometryAABB.getMaxY() - geometryAABB.getMinY()) * 0.5f - 0.05f;
     }
 
-    @EventHandler
-    public EventListener<ShipJumpInEvent> shipJumpInEvent() {
-        return event -> {
-            Ship ship = event.ship();
-            Vector2 velocity = ship.getLinearVelocity();
-            Vector4f effectsColor = ship.getConfigData().getEffectsColor();
-            jumpEffects.jump(ship.getX(), ship.getY(), z, jumpEffectSize, velocity.x,
-                    velocity.y, effectsColor.x, effectsColor.y, effectsColor.z, 1.0f);
-            createName();
-            if (spawnEffectId != -1) {
-                spriteRenderer.removeObject(spawnEffectId, BufferType.ENTITIES_ADDITIVE);
-                spawnEffectId = -1;
+    public void onJumpIn() {
+        Vector2 velocity = ship.getLinearVelocity();
+        Vector4f effectsColor = ship.getConfigData().getEffectsColor();
+        jumpEffects.jump(ship.getX(), ship.getY(), z, jumpEffectSize, velocity.x, velocity.y, effectsColor.x, effectsColor.y,
+                effectsColor.z, 1.0f);
+        createName();
+        if (spawnEffectId != -1) {
+            spriteRenderer.removeObject(spawnEffectId, BufferType.ENTITIES_ADDITIVE);
+            spawnEffectId = -1;
+        }
+    }
+
+    public void onModuleDestroy(DamageableModule module) {
+        for (int i = 0; i < moduleRenders.size(); i++) {
+            ModuleRenderer moduleRenderer = moduleRenders.get(i);
+            if (moduleRenderer.getObject() == module) {
+                moduleRenderer.clear();
+                moduleRenders.remove(i);
+                float x = moduleRenderer.getX();
+                float y = moduleRenderer.getY();
+                float size = (moduleRenderer.getSizeX() + moduleRenderer.getSizeY()) / 2;
+                Vector2 linearVelocity = ship.getLinearVelocity();
+                explosionEffects.spawnSmallExplosion(x, y, z, size, linearVelocity.x, linearVelocity.y);
+                return;
             }
-        };
+        }
     }
 
     public AbstractTexture getWeaponSlotTexture(int id) {

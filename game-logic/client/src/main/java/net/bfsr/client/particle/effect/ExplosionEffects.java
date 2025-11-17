@@ -23,7 +23,7 @@ public class ExplosionEffects {
         shipDestroySmall.play(ship.getX(), ship.getY(), render.getZ(), size, size, velocity.x, velocity.y);
     }
 
-    public void spawnSmallExplosion(float x, float y, float z, float size) {
-        smallExplosion.play(x, y, z, size, size);
+    public void spawnSmallExplosion(float x, float y, float z, float size, float velocityX, float velocityY) {
+        smallExplosion.play(x, y, z, size, size, velocityX, velocityY);
     }
 }

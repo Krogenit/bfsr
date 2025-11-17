@@ -29,7 +29,10 @@
   "particleType": "ADDITIVE",
   "path": "explosion/ship_small",
   "r": 1.0,
-  "soundEffects": [],
+  "soundEffect": {
+    "sounds": [],
+    "randomFromList": false
+  },
   "sourceSizeXMultiplier": 0.9,
   "sourceSizeYMultiplier": 0.9,
   "sourceVelocityXMultiplier": 0.0,

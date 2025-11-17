@@ -9,7 +9,6 @@ import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.geometry.GeometryUtils;
-import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.util.RandomHelper;
 import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.engine.world.World;
@@ -86,17 +85,7 @@ public class CollisionHandler extends CommonCollisionHandler {
         damageShip(ship, bullet.getDamage(), 1.0f, contactX, contactY, shipFixture, () -> {
             bullet.damage();
             bullet.reflect(normalX, normalY);
-        }, bullet::setDead, () -> {
-            World world = ship.getWorld();
-            if (random.nextInt(2) == 0) {
-                RotationHelper.angleToVelocity(net.bfsr.engine.math.MathUtils.TWO_PI * random.nextFloat(), 1.5f, angleToVelocity);
-                float velocityX = ship.getLinearVelocity().x * 0.005f;
-                float velocityY = ship.getLinearVelocity().y * 0.005f;
-                wreckSpawner.spawnDamageDebris(world, random.nextInt(2), contactX, contactY,
-                        velocityX + angleToVelocity.x, velocityY + angleToVelocity.y, 0.75f, ship.getId());
-            }
-            bullet.setDead();
-        }, clipPolygon, clipPolygonRadius);
+        }, bullet::setDead, bullet::setDead, clipPolygon, clipPolygonRadius);
     }
 
     private Polygon createBulletClipPolygon(float x, float y, float sin, float cos, float radius) {
@@ -286,7 +275,11 @@ public class CollisionHandler extends CommonCollisionHandler {
         float maxSize = Math.max(rhombusScaledWidth, rhombusScaledHeight);
         float waveRadius = maxSize * 2.0f;
         float wavePower = maxSize * 0.0175f;
-        createWave(rigidBody.getWorld(), rigidBody.getX() + rotatedX, rigidBody.getY() + rotatedY, waveRadius, wavePower);
+        float x = rigidBody.getX() + rotatedX;
+        float y = rigidBody.getY() + rotatedY;
+        Vector2 linearVelocity = rigidBody.getLinearVelocity();
+        wreckSpawner.spawnSmallWrecks(rigidBody.getWorld(), 1, x, y, linearVelocity.x, linearVelocity.y, 0.5f, rigidBody.getId());
+        createWave(rigidBody.getWorld(), x, y, waveRadius, wavePower);
     }
 
     public void createWave(World world, float x, float y, float radius, float power) {

@@ -29,7 +29,10 @@
   "particleType": "ALPHA_BLENDED",
   "path": "engine/small",
   "r": 1.0,
-  "soundEffects": [],
+  "soundEffect": {
+    "sounds": [],
+    "randomFromList": false
+  },
   "sourceSizeXMultiplier": 0.0,
   "sourceSizeYMultiplier": 0.0,
   "sourceVelocityXMultiplier": 1.0,
