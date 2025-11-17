@@ -9,6 +9,7 @@ import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.event.entity.ship.ShipDestroyEvent;
 import net.bfsr.event.entity.ship.ShipDestroyingExplosionEvent;
+import org.jbox2d.common.Vector2;
 
 public class ShipEventListener {
     private final XoRoShiRo128PlusRandom rand = new XoRoShiRo128PlusRandom();
@@ -28,7 +29,9 @@ public class ShipEventListener {
             float randomVectorX = -sizeX * 0.4f + sizeX * 0.8f * rand.nextFloat();
             float randomVectorY = -sizeY * 0.4f + sizeY * 0.8f * rand.nextFloat();
             Render render = Client.get().getEntityRenderer().getRender(ship.getId());
-            explosionEffects.spawnSmallExplosion(ship.getX() + randomVectorX, ship.getY() + randomVectorY, render.getZ(), 0.2f);
+            Vector2 linearVelocity = ship.getLinearVelocity();
+            explosionEffects.spawnSmallExplosion(ship.getX() + randomVectorX, ship.getY() + randomVectorY, render.getZ(), 0.2f,
+                    linearVelocity.x, linearVelocity.y);
         };
     }
 }
