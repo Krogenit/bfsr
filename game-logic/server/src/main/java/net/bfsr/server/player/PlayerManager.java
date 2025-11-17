@@ -90,9 +90,13 @@ public class PlayerManager {
 
     public void update(int frame) {
         for (int i = 0; i < players.size(); i++) {
-            Player player = players.get(i);
-            updatePlayerShips(player, frame);
+            updatePlayer(players.get(i), frame);
         }
+    }
+
+    private void updatePlayer(Player player, int frame) {
+        player.getPlayerInputController().update();
+        updatePlayerShips(player, frame);
     }
 
     private void updatePlayerShips(Player player, int frame) {
