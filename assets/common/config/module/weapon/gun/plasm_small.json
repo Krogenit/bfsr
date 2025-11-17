@@ -1,19 +1,28 @@
 {
   "name": "plasm_small",
-  "sounds": [
-    {
-      "path": "sound/weapon/plasm0.ogg",
-      "volume": 1.0
-    },
-    {
-      "path": "sound/weapon/plasm1.ogg",
-      "volume": 1.0
-    },
-    {
-      "path": "sound/weapon/plasm2.ogg",
-      "volume": 1.0
-    }
-  ],
+  "soundEffect": {
+    "sounds": [
+      {
+        "path": "sound/weapon/plasm0.ogg",
+        "volume": 0.1,
+        "minPitch": 0.9,
+        "maxPitch": 1.1
+      },
+      {
+        "path": "sound/weapon/plasm1.ogg",
+        "volume": 0.1,
+        "minPitch": 0.9,
+        "maxPitch": 1.1
+      },
+      {
+        "path": "sound/weapon/plasm2.ogg",
+        "volume": 0.1,
+        "minPitch": 0.9,
+        "maxPitch": 1.1
+      }
+    ],
+    "randomFromList": true
+  },
   "reloadTimeInSeconds": 0.5,
   "energyCost": 4.0,
   "hp": 15.0,
