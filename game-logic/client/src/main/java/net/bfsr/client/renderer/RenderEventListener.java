@@ -6,9 +6,11 @@ import net.bfsr.client.renderer.entity.WreckRender;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.entity.ship.Ship;
+import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.event.entity.ship.ShipJumpInEvent;
 import net.bfsr.event.entity.wreck.WreckDeathEvent;
+import net.bfsr.event.module.ModuleDestroyEvent;
 
 public class RenderEventListener {
     private final Client client = Client.get();
@@ -24,11 +26,20 @@ public class RenderEventListener {
     }
 
     @EventHandler
-    public EventListener<WreckDeathEvent> wreckDeathEventEvent() {
+    public EventListener<WreckDeathEvent> wreckDeathEvent() {
         return event -> {
             Wreck wreck = event.wreck();
             WreckRender wreckRender = entityRenderer.getRender(wreck.getId());
             wreckRender.onDeath();
+        };
+    }
+
+    @EventHandler
+    public EventListener<ModuleDestroyEvent> moduleDestroyEvent() {
+        return event -> {
+            DamageableModule module = event.getModule();
+            ShipRender shipRender = entityRenderer.getRender(module.getShip().getId());
+            shipRender.onModuleDestroy(module);
         };
     }
 }

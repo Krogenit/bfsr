@@ -14,8 +14,6 @@ import net.bfsr.config.entity.ship.EngineData;
 import net.bfsr.config.entity.ship.EnginesData;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.event.EventHandler;
-import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.RigidBodyUtils;
@@ -34,8 +32,6 @@ import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
-import net.bfsr.event.entity.ship.ShipJumpInEvent;
-import net.bfsr.event.module.ModuleDestroyEvent;
 import net.bfsr.event.module.weapon.WeaponShotEvent;
 import net.bfsr.event.module.weapon.WeaponSlotRemovedEvent;
 import org.jbox2d.common.Vector2;
@@ -96,8 +92,6 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         createWeaponSlotsRenders(ship);
         initEngineEffectsRunnable(ship);
         createModuleRenders(ship);
-
-        ship.getShipEventBus().register(this);
 
         ShipData configData = ship.getConfigData();
         shieldTexture = renderer.getTextureGenerator().generateShieldTexture(texture, getRenderer(), configData.getShieldOutlineOffset(),
@@ -248,7 +242,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
 
         Shield shield = modules.getShield();
         if (!shield.isDead()) {
-            addModuleRenderer(shield, new ModuleRenderer(ship, z, shield, SHIELD_MODULE_TEXTURE));
+            addModuleRenderer(new ModuleRenderer(ship, z, shield, SHIELD_MODULE_TEXTURE));
         }
 
         Engines enginesModule = modules.getEngines();
@@ -258,7 +252,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
             for (int i = 0; i < engineDataList.size(); i++) {
                 net.bfsr.entity.ship.module.engine.Engine engine = enginesModule.getEngines(direction).get(i);
                 if (!engine.isDead()) {
-                    addModuleRenderer(engine, new ModuleRenderer(ship, z, engine, ENGINE_MODULE_TEXTURE, direction));
+                    addModuleRenderer(new ModuleRenderer(ship, z, engine, ENGINE_MODULE_TEXTURE, direction));
                 }
             }
 
@@ -270,12 +264,8 @@ public class ShipRender extends DamageableRigidBodyRenderer {
         }
     }
 
-    private void addModuleRenderer(DamageableModule module, ModuleRenderer moduleRenderer) {
+    private void addModuleRenderer(ModuleRenderer moduleRenderer) {
         moduleRenders.add(moduleRenderer);
-        module.getModuleEventBus().addOneTimeListener(ModuleDestroyEvent.class, event -> {
-            moduleRenderer.clear();
-            moduleRenders.remove(moduleRenderer);
-        });
     }
 
     @Override
@@ -465,7 +455,6 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     @Override
     public void clear() {
         super.clear();
-        ship.getShipEventBus().unregister(this);
 
         for (int i = 0; i < weaponRenders.size(); i++) {
             weaponRenders.get(i).clear();

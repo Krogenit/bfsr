@@ -1,5 +1,6 @@
 package net.bfsr.client.renderer.component;
 
+import lombok.Getter;
 import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
@@ -14,6 +15,7 @@ import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.common.Vector2;
 
+@Getter
 public class ModuleRenderer extends Render {
     private float x, y;
     private float sin, cos;
