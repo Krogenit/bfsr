@@ -7,6 +7,7 @@ import net.bfsr.client.renderer.entity.ShipRender;
 import net.bfsr.config.entity.ship.ShipConfig;
 import net.bfsr.config.entity.ship.ShipData;
 import net.bfsr.config.entity.ship.ShipRegistry;
+import net.bfsr.editor.EditorGameLogic;
 import net.bfsr.editor.gui.GuiEntityEditor;
 import net.bfsr.editor.gui.component.MinimizableHolder;
 import net.bfsr.editor.gui.property.PropertyCheckBox;
@@ -79,7 +80,7 @@ public class GuiShipEditor extends GuiEntityEditor<ShipConfig, ShipProperties, S
 
     @Override
     protected RigidBodyRender createRender(Ship ship) {
-        ShipRender shipRender = new ShipRender(ship, 1.0f) {
+        ShipRender shipRender = new ShipRender(ship, EditorGameLogic.EDITOR_Z_LAYER) {
             @Override
             public void render() {
                 if (!ship.isSpawned()) {

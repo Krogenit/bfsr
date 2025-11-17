@@ -7,6 +7,7 @@ import net.bfsr.client.renderer.entity.StationRender;
 import net.bfsr.config.entity.station.StationConfig;
 import net.bfsr.config.entity.station.StationData;
 import net.bfsr.config.entity.station.StationRegistry;
+import net.bfsr.editor.EditorGameLogic;
 import net.bfsr.editor.gui.component.MinimizableHolder;
 import net.bfsr.editor.object.station.StationConverter;
 import net.bfsr.editor.object.station.StationProperties;
@@ -42,7 +43,7 @@ public class GuiStationEditor extends GuiEntityEditor<StationConfig, StationProp
 
     @Override
     protected RigidBodyRender createRender(Station station) {
-        StationRender render = new StationRender(station, 1.0f) {
+        StationRender render = new StationRender(station, EditorGameLogic.EDITOR_Z_LAYER) {
             @Override
             public void renderDebug() {
                 if (polygonEditMode) {
