@@ -42,4 +42,30 @@ public class ComboBoxRenderer extends RectangleOutlinedRenderer {
         super.renderBody();
         guiRenderer.addDrawCommand(triangleId, TRIANGLE_PRIMITIVE.getBaseVertex());
     }
+
+    @Override
+    protected void setBodyLastValues() {
+        super.setBodyLastValues();
+        int x = guiObject.getSceneX();
+        int y = guiObject.getSceneY();
+        int width = guiObject.getWidth();
+        int height = guiObject.getHeight();
+        int triangleHalfWidth = 7;
+        int triangleX = x + width - triangleHalfWidth - triangleXOffset;
+        int triangleY = y + height / 2;
+        guiRenderer.setLastPosition(triangleId, triangleX, triangleY);
+    }
+
+    @Override
+    public void updatePosition() {
+        super.updatePosition();
+        int x = guiObject.getSceneX();
+        int y = guiObject.getSceneY();
+        int width = guiObject.getWidth();
+        int height = guiObject.getHeight();
+        int triangleHalfWidth = 7;
+        int triangleX = x + width - triangleHalfWidth - triangleXOffset;
+        int triangleY = y + height / 2;
+        guiRenderer.setPosition(triangleId, triangleX, triangleY);
+    }
 }
