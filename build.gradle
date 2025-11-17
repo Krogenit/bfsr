@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
-    id 'org.springframework.boot' version '3.4.4'
+    id 'org.springframework.boot' version '3.5.7'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'me.champeau.jmh' version '0.7.3'
 }
@@ -34,13 +34,16 @@ subprojects {
         testCompileOnly 'org.projectlombok:lombok:1.18.38'
         testAnnotationProcessor 'org.projectlombok:lombok:1.18.38'
 
-        testImplementation 'org.junit.jupiter:junit-jupiter:5.14.1'
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.14.1'
-        testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.14.1'
-        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.14.1'
-        testImplementation 'org.junit.platform:junit-platform-commons:1.14.1'
-        testImplementation 'org.junit.platform:junit-platform-engine:1.14.1'
-        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+        annotationProcessor "org.mapstruct:mapstruct-processor:1.6.3", "org.projectlombok:lombok-mapstruct-binding:0.2.0"
+        testAnnotationProcessor "org.mapstruct:mapstruct-processor:1.6.3"
+
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'org.springframework.security:spring-security-test'
+
+        testImplementation 'org.testcontainers:testcontainers:1.21.3'
+        testImplementation 'org.testcontainers:junit-jupiter:1.21.3'
+        testImplementation 'org.testcontainers:mongodb:1.21.3'
+        testImplementation 'io.projectreactor:reactor-test'
 
         jmh 'org.openjdk.jmh:jmh-core:1.37'
         jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
