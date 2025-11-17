@@ -6,14 +6,14 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.bfsr.client.Client;
+import net.bfsr.client.gui.GuiStyle;
+import net.bfsr.client.gui.ingame.MiniMap;
 import net.bfsr.engine.event.EventHandler;
 import net.bfsr.engine.event.EventListener;
 import net.bfsr.engine.event.entity.RigidBodyAddToWorldEvent;
 import net.bfsr.engine.event.entity.RigidBodyRemovedFromWorldEvent;
-import net.bfsr.engine.gui.component.GuiObject;
-import net.bfsr.engine.gui.renderer.RectangleTexturedRenderer;
+import net.bfsr.engine.gui.renderer.RectangleOutlinedRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
-import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
 import org.jbox2d.collision.AABB;
@@ -21,7 +21,7 @@ import org.joml.Vector2f;
 
 import java.util.List;
 
-public class MiniMapRenderer extends RectangleTexturedRenderer {
+public class MiniMapRenderer extends RectangleOutlinedRenderer {
     private final Client client = Client.get();
     private final AABB boundingBox = new AABB();
     private final AABB shipAABB = new AABB();
@@ -39,9 +39,10 @@ public class MiniMapRenderer extends RectangleTexturedRenderer {
         private boolean visible;
     }
 
-    public MiniMapRenderer(GuiObject guiObject) {
-        super(guiObject, TextureRegister.guiHudShip);
+    public MiniMapRenderer(MiniMap miniMap) {
+        super(miniMap);
         client.getEventBus().register(this);
+        GuiStyle.setupTransparentRectangle(miniMap);
     }
 
     @Override

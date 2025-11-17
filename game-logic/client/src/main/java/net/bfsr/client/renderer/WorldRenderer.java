@@ -1,6 +1,7 @@
 package net.bfsr.client.renderer;
 
 import lombok.Getter;
+import net.bfsr.client.assets.TextureRegister;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
@@ -15,7 +16,6 @@ import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.constant.BlendFactor;
 import net.bfsr.engine.renderer.culling.AbstractGPUFrustumCullingSystem;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
-import net.bfsr.engine.renderer.texture.TextureRegister;
 
 public class WorldRenderer {
     private final AbstractRenderer renderer = Engine.getRenderer();
@@ -33,7 +33,7 @@ public class WorldRenderer {
         this.backgroundRenderer = new BackgroundRenderer(layers, renderer);
         this.entityRenderer = entityRenderer;
 
-        Engine.getAssetsManager().getTexture(TextureRegister.damageFire).bind();
+        Engine.getAssetsManager().getTexture(TextureRegister.damageFire.getTextureData()).bind();
         eventBus.register(this);
     }
 

@@ -1,11 +1,8 @@
 package net.bfsr.engine;
 
-import net.bfsr.engine.renderer.constant.TextureFilter;
-import net.bfsr.engine.renderer.constant.TextureWrap;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.AbstractTextureLoader;
-import net.bfsr.engine.renderer.texture.TextureRegister;
-import net.bfsr.engine.sound.AbstractSoundBuffer;
+import net.bfsr.engine.renderer.texture.TextureData;
 import net.bfsr.engine.sound.AbstractSoundLoader;
 import net.bfsr.engine.sound.SoundRegistry;
 
@@ -32,24 +29,8 @@ public class AssetsManager {
         return textureLoader.newTexture(width, height);
     }
 
-    public AbstractTexture getTexture(TextureRegister texture, TextureWrap wrap, TextureFilter filter) {
-        return textureLoader.getTexture(texture, wrap, filter);
-    }
-
-    public AbstractTexture getTexture(TextureRegister texture) {
-        return textureLoader.getTexture(texture);
-    }
-
-    public AbstractTexture getTexture(Path path, TextureWrap wrap, TextureFilter filter) {
-        return textureLoader.getTexture(path, wrap, filter);
-    }
-
-    public AbstractTexture getTexture(Path path) {
-        return textureLoader.getTexture(path);
-    }
-
-    public AbstractSoundBuffer getSound(SoundRegistry sound) {
-        return soundLoader.getBuffer(sound);
+    public AbstractTexture getTexture(TextureData textureData) {
+        return textureLoader.getTexture(textureData);
     }
 
     public AbstractSoundBuffer getSound(Path path) {

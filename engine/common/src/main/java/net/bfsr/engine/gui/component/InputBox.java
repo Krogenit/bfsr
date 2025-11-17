@@ -9,7 +9,7 @@ import net.bfsr.engine.gui.renderer.inputbox.TexturedInputBoxRenderer;
 import net.bfsr.engine.input.AbstractKeyboard;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.renderer.font.glyph.Font;
-import net.bfsr.engine.renderer.texture.TextureRegister;
+import net.bfsr.engine.renderer.texture.TextureData;
 import net.bfsr.engine.util.RunnableUtils;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
@@ -101,15 +101,15 @@ public class InputBox extends GuiObject {
         this(width, height, "", emptyString, font, fontSize, stringOffsetX, stringOffsetY, maxLineSize);
     }
 
-    public InputBox(TextureRegister texture, int width, int height, String string, String emptyString, Font font, int fontSize,
+    public InputBox(TextureData textureData, int width, int height, String string, String emptyString, Font font, int fontSize,
                     int stringOffsetX, int stringOffsetY) {
         this(width, height, string, emptyString, font, fontSize, stringOffsetX, stringOffsetY, (int) (width / 1.2f));
-        setRenderer(renderer = new TexturedInputBoxRenderer(this, texture));
+        setRenderer(renderer = new TexturedInputBoxRenderer(this, textureData));
     }
 
-    public InputBox(TextureRegister texture, int width, int height, String string, String emptyString, int fontSize, int stringOffsetX,
+    public InputBox(TextureData textureData, int width, int height, String string, String emptyString, int fontSize, int stringOffsetX,
                     int stringOffsetY) {
-        this(texture, width, height, string, emptyString, Engine.getFontManager().getFont(DEFAULT_FONT_NAME), fontSize, stringOffsetX,
+        this(textureData, width, height, string, emptyString, Engine.getFontManager().getDefaultFont(), fontSize, stringOffsetX,
                 stringOffsetY);
     }
 
@@ -123,12 +123,12 @@ public class InputBox extends GuiObject {
     }
 
     public InputBox(int width, int height, String string, String emptyString, int fontSize, int stringOffsetX, int stringOffsetY) {
-        this(width, height, string, emptyString, Engine.getFontManager().getFont(DEFAULT_FONT_NAME), fontSize, stringOffsetX,
+        this(width, height, string, emptyString, Engine.getFontManager().getDefaultFont(), fontSize, stringOffsetX,
                 stringOffsetY);
     }
 
-    public InputBox(TextureRegister texture, String string, String emptyString, int fontSize, int stringOffsetX, int stringOffsetY) {
-        this(texture, 300, 50, string, emptyString, fontSize, stringOffsetX, stringOffsetY);
+    public InputBox(String string, String emptyString, int fontSize, int stringOffsetX, int stringOffsetY) {
+        this(300, 50, string, emptyString, fontSize, stringOffsetX, stringOffsetY);
     }
 
     @Override

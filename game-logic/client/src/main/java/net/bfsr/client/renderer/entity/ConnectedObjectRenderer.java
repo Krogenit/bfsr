@@ -11,7 +11,7 @@ public class ConnectedObjectRenderer extends Render {
     private final ConnectedObject<?> connectedObject;
 
     ConnectedObjectRenderer(ConnectedObject<?> connectedObject, float z) {
-        super(new GameObject(), z, Engine.getAssetsManager().getTexture(connectedObject.getConfigData().getTexture()));
+        super(new GameObject(), z, Engine.getAssetsManager().getTexture(connectedObject.getConfigData().getTextureData()));
         this.connectedObject = connectedObject;
     }
 

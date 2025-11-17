@@ -25,9 +25,6 @@ import java.nio.file.Path;
 
 @Log4j2
 public class TextureLoader extends AbstractTextureLoader {
-    private static final TextureWrap DEFAULT_WRAP = TextureWrap.CLAMP_TO_EDGE;
-    private static final TextureFilter DEFAULT_FILTER = TextureFilter.NEAREST;
-
     private final TMap<String, Texture> loadedTextures = new THashMap<>();
 
     @Override
@@ -45,32 +42,13 @@ public class TextureLoader extends AbstractTextureLoader {
                 }
             }
 
-            return createTexture(width, height, byteBuffer.flip(), 3, false);
+            return createTexture(width, height, byteBuffer.flip(), 3, false, TextureWrap.CLAMP_TO_EDGE, TextureFilter.NEAREST);
         }
     }
 
     @Override
-    public Texture getTexture(TextureRegister texture) {
-        return getTexture(texture.getPath(), texture.getWrap(), texture.getFilter());
-    }
-
-    @Override
-    public Texture getTexture(TextureRegister texture, TextureWrap wrap, TextureFilter filter) {
-        return getTexture(texture.getPath(), wrap, filter);
-    }
-
-    @Override
-    public Texture getTexture(Path path) {
-        return getTexture(path, true, DEFAULT_WRAP, DEFAULT_FILTER);
-    }
-
-    @Override
-    public Texture getTexture(Path path, TextureWrap wrap, TextureFilter filter) {
-        return getTexture(path, true, wrap, filter);
-    }
-
-    public Texture getTexture(TextureRegister texture, boolean createMips, TextureWrap wrap, TextureFilter filter) {
-        return getTexture(texture.getPath(), createMips, wrap, filter);
+    public Texture getTexture(TextureData textureData) {
+        return getTexture(textureData.getPath(), true, textureData.getWrap(), textureData.getFilter());
     }
 
     private Texture getTexture(Path path, boolean createMips, TextureWrap wrap, TextureFilter filter) {
@@ -106,8 +84,7 @@ public class TextureLoader extends AbstractTextureLoader {
             STBImage.stbi_set_flip_vertically_on_load(true);
             image = STBImage.stbi_load(path.toString(), w, h, comp, 0);
             if (image == null) {
-                log.error("Failed to load a texture file {}!{}{}", path, System.lineSeparator(), STBImage.stbi_failure_reason());
-                return null;
+                throw new RuntimeException("Failed to load a texture file " + path + ", " + STBImage.stbi_failure_reason());
             }
 
             channels = comp.get();
@@ -152,10 +129,6 @@ public class TextureLoader extends AbstractTextureLoader {
                 GL11C.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
 
         return texture;
-    }
-
-    private Texture createTexture(int width, int height, ByteBuffer image, int channels, boolean createMips) {
-        return createTexture(width, height, image, channels, createMips, DEFAULT_WRAP, DEFAULT_FILTER);
     }
 
     private Texture createTexture(int width, int height, ByteBuffer image, int channels, boolean createMips, TextureWrap wrap,

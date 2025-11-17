@@ -1,6 +1,7 @@
 package net.bfsr.client.gui.settings;
 
 import net.bfsr.client.Client;
+import net.bfsr.client.gui.GuiStyle;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.gui.component.Slider;
 import net.bfsr.engine.util.DecimalUtils;
@@ -13,6 +14,7 @@ public class OptionSlider extends Slider {
                 Client.get().getLanguageManager().getString("settings." + option.getOptionName()) + ": " +
                         DecimalUtils.strictFormatWithToDigits(option.getFloat()));
         this.option = option;
+        GuiStyle.setupTransparentSlider(this);
     }
 
     @Override

@@ -5,7 +5,7 @@ import net.bfsr.engine.gui.renderer.RectangleRenderer;
 import net.bfsr.engine.gui.renderer.RectangleTexturedRenderer;
 import net.bfsr.engine.renderer.font.glyph.Font;
 import net.bfsr.engine.renderer.font.string.StringOffsetType;
-import net.bfsr.engine.renderer.texture.TextureRegister;
+import net.bfsr.engine.renderer.texture.TextureData;
 import org.joml.Vector4f;
 
 import java.util.function.BiConsumer;
@@ -39,20 +39,20 @@ public class Button extends GuiObject {
         this(width, height, string, Engine.getFontManager().getDefaultFont(), fontSize, leftReleaseConsumer);
     }
 
-    public Button(TextureRegister texture, int width, int height, String string, int fontSize) {
-        this(texture, width, height, string, fontSize, EMPTY_BI_CONSUMER);
+    public Button(TextureData textureData, int width, int height, String string, int fontSize) {
+        this(textureData, width, height, string, fontSize, EMPTY_BI_CONSUMER);
     }
 
-    public Button(TextureRegister texture, int width, int height, String string, int fontSize,
+    public Button(TextureData textureData, int width, int height, String string, int fontSize,
                   BiConsumer<Integer, Integer> leftReleaseConsumer) {
         this(width, height, string, fontSize, leftReleaseConsumer);
-        setRenderer(new RectangleTexturedRenderer(this, texture));
+        setRenderer(new RectangleTexturedRenderer(this, Engine.getAssetsManager().getTexture(textureData)));
     }
 
-    public Button(TextureRegister texture, int width, int height, String string, Font font, int fontSize,
+    public Button(TextureData textureData, int width, int height, String string, Font font, int fontSize,
                   BiConsumer<Integer, Integer> leftReleaseConsumer) {
         this(width, height, string, font, fontSize, leftReleaseConsumer);
-        setRenderer(new RectangleTexturedRenderer(this, texture));
+        setRenderer(new RectangleTexturedRenderer(this, Engine.getAssetsManager().getTexture(textureData)));
     }
 
     public Button(int width, int height, String string, Font font, int fontSize, int stringYOffset) {
@@ -64,31 +64,31 @@ public class Button extends GuiObject {
     }
 
     public Button(String string, int fontSize, BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(TextureRegister.guiButtonBase, 300, 50, string, fontSize, leftReleaseConsumer);
+        this(300, 50, string, fontSize, leftReleaseConsumer);
     }
 
     public Button(int width, int height, String string, BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(TextureRegister.guiButtonBase, width, height, string, 20, leftReleaseConsumer);
+        this(width, height, string, 20, leftReleaseConsumer);
     }
 
     public Button(String string, BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(TextureRegister.guiButtonBase, 300, 50, string, 20, leftReleaseConsumer);
+        this(300, 50, string, 20, leftReleaseConsumer);
     }
 
-    public Button(TextureRegister texture, int width, int height, String string) {
-        this(texture, width, height, string, 20, EMPTY_BI_CONSUMER);
+    public Button(TextureData textureData, int width, int height, BiConsumer<Integer, Integer> leftReleaseConsumer) {
+        this(textureData, width, height, "", 20, leftReleaseConsumer);
     }
 
-    public Button(TextureRegister texture, int width, int height, BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(texture, width, height, "", 20, leftReleaseConsumer);
-    }
-
-    public Button(TextureRegister texture, BiConsumer<Integer, Integer> leftReleaseConsumer) {
-        this(texture, 300, 50, "", 20, leftReleaseConsumer);
+    public Button(int width, int height, String string) {
+        this(width, height, string, 20, EMPTY_BI_CONSUMER);
     }
 
     public Button(int width, int height, BiConsumer<Integer, Integer> leftReleaseConsumer) {
         this(width, height, "", 20, leftReleaseConsumer);
+    }
+
+    public Button(BiConsumer<Integer, Integer> leftReleaseConsumer) {
+        this(300, 50, "", 20, leftReleaseConsumer);
     }
 
     public Button(int width, int height) {

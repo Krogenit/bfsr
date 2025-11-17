@@ -1,9 +1,9 @@
 package net.bfsr.engine.gui.component;
 
+import lombok.Getter;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.input.AbstractMouse;
 import net.bfsr.engine.renderer.font.string.StringOffsetType;
-import net.bfsr.engine.renderer.texture.TextureRegister;
 import org.joml.Vector4f;
 
 public class Slider extends Rectangle {
@@ -13,14 +13,16 @@ public class Slider extends Rectangle {
     private boolean movingByMouse;
     private final int indent;
     protected final Label label;
-    private final TexturedRectangle slider = new TexturedRectangle(TextureRegister.guiSlider, 0, 0, 29, 50);
+    @Getter
+    private final Rectangle movingValue;
 
     public Slider(int width, int height, int fontSize, float value, String string) {
-        super(TextureRegister.guiButtonBase, width, height);
+        super(width, height);
+        this.movingValue = new Rectangle(29, 50);
         this.value = value;
         this.indent = 28;
 
-        add(slider.atBottomLeft(this::calculateSliderXPos, () -> 0));
+        add(movingValue.atBottomLeft(this::calculateSliderXPos, () -> 0));
         setHoverColor(0.5f, 1.0f, 1.0f, 1.0f);
 
         this.label = new Label(Engine.getFontManager().getDefaultFont(), string, fontSize, StringOffsetType.CENTERED);
@@ -32,7 +34,7 @@ public class Slider extends Rectangle {
         super.update(mouseX, mouseY);
 
         if (movingByMouse) {
-            int sliderX = (int) mouse.getScreenPosition().x - getSceneX() - slider.getWidth() / 2;
+            int sliderX = (int) mouse.getScreenPosition().x - getSceneX() - movingValue.getWidth() / 2;
 
             int maxXPos = getMaxX();
             int minXPos = getMinX();
@@ -40,7 +42,7 @@ public class Slider extends Rectangle {
             if (sliderX > maxXPos) sliderX = maxXPos;
             else if (sliderX < minXPos) sliderX = minXPos;
 
-            slider.setX(sliderX);
+            movingValue.setX(sliderX);
 
             float prevValue = value;
             value = (sliderX - minXPos) / (float) (maxXPos - minXPos);
@@ -60,7 +62,7 @@ public class Slider extends Rectangle {
     }
 
     private int getMaxX() {
-        return width - indent - slider.getWidth();
+        return width - indent - movingValue.getWidth();
     }
 
     private int getMinX() {
@@ -69,7 +71,7 @@ public class Slider extends Rectangle {
 
     @Override
     public boolean isMouseHover() {
-        return super.isMouseHover() || slider.isMouseHover();
+        return super.isMouseHover() || movingValue.isMouseHover();
     }
 
     @Override
@@ -78,7 +80,7 @@ public class Slider extends Rectangle {
 
         if (isMouseHover()) {
             movingByMouse = true;
-            Engine.getGuiManager().setActiveGuiObject(slider);
+            Engine.getGuiManager().setActiveGuiObject(movingValue);
         }
 
         return guiObject;
@@ -99,19 +101,19 @@ public class Slider extends Rectangle {
             return childGuiObject;
         }
 
-        return wasMovingByMouse ? slider : null;
+        return wasMovingByMouse ? movingValue : null;
     }
 
     @Override
     public Slider setHoverColor(float r, float g, float b, float a) {
-        slider.setHoverColor(r, g, b, a);
+        movingValue.setHoverColor(r, g, b, a);
         super.setHoverColor(r, g, b, a);
         return this;
     }
 
     @Override
     public Slider setHoverColor(Vector4f color) {
-        slider.setHoverColor(color.x, color.y, color.z, color.w);
+        movingValue.setHoverColor(color.x, color.y, color.z, color.w);
         super.setHoverColor(color);
         return this;
     }

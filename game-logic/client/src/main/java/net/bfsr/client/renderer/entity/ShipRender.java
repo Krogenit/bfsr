@@ -3,7 +3,7 @@ package net.bfsr.client.renderer.entity;
 import gnu.trove.map.TMap;
 import lombok.Getter;
 import net.bfsr.client.Client;
-import net.bfsr.client.font.FontType;
+import net.bfsr.client.assets.TextureRegister;
 import net.bfsr.client.particle.effect.EngineEffects;
 import net.bfsr.client.particle.effect.JumpEffects;
 import net.bfsr.client.renderer.component.ModuleRenderer;
@@ -25,7 +25,6 @@ import net.bfsr.engine.renderer.MaterialType;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.font.string.StringOffsetType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
-import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.engine.world.entity.SpawnAccumulator;
 import net.bfsr.entity.ship.Ship;
@@ -48,11 +47,15 @@ import java.util.EnumMap;
 import java.util.List;
 
 public class ShipRender extends DamageableRigidBodyRenderer {
-    private static final AbstractTexture PARTICLE_JUMP_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.particleJump);
-    private static final AbstractTexture REACTOR_MODULE_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.moduleReactor);
-    private static final AbstractTexture ENGINE_MODULE_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.moduleEngine);
-    private static final AbstractTexture SHIELD_MODULE_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.moduleShield);
-    public static final float SHIELD_SIZE = 1.25f;
+    private static final AbstractTexture PARTICLE_JUMP_TEXTURE = Engine.getAssetsManager()
+            .getTexture(TextureRegister.jump.getTextureData());
+    private static final AbstractTexture REACTOR_MODULE_TEXTURE = Engine.getAssetsManager()
+            .getTexture(TextureRegister.moduleReactor.getTextureData());
+    private static final AbstractTexture ENGINE_MODULE_TEXTURE = Engine.getAssetsManager()
+            .getTexture(TextureRegister.moduleEngine.getTextureData());
+    private static final AbstractTexture SHIELD_MODULE_TEXTURE = Engine.getAssetsManager()
+            .getTexture(TextureRegister.moduleShield.getTextureData());
+    private static final float SHIELD_SIZE = 1.25f;
 
     private final Client client = Client.get();
     private final EngineEffects engineEffects = client.getParticleEffects().getEngineEffects();
@@ -83,7 +86,7 @@ public class ShipRender extends DamageableRigidBodyRenderer {
     private final AbstractTexture shieldTexture;
 
     public ShipRender(Ship ship, float z) {
-        super(ship, z, Engine.getAssetsManager().getTexture(ship.getConfigData().getTexture()));
+        super(ship, z, Engine.getAssetsManager().getTexture(ship.getConfigData().getTextureData()));
         this.ship = ship;
         this.jumpPosition.set(ship.getJumpPosition());
         this.lastJumpPosition.set(jumpPosition);

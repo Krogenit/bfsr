@@ -7,6 +7,7 @@ import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
+import net.bfsr.engine.renderer.texture.TextureData;
 import net.bfsr.engine.world.entity.RigidBody;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.shapes.Polygon;
@@ -14,8 +15,6 @@ import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.Fixture;
 import org.joml.Vector4f;
-
-import java.nio.file.Path;
 
 public class RigidBodyRender extends Render {
     private static final AABB CACHE = new AABB();
@@ -40,8 +39,8 @@ public class RigidBodyRender extends Render {
         this(rigidBody, z, texture, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public RigidBodyRender(RigidBody rigidBody, float z, Path texturePath) {
-        this(rigidBody, z, Engine.getAssetsManager().getTexture(texturePath), 1.0f, 1.0f, 1.0f, 1.0f);
+    public RigidBodyRender(RigidBody rigidBody, float z, TextureData textureData) {
+        this(rigidBody, z, Engine.getAssetsManager().getTexture(textureData), 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     @Override

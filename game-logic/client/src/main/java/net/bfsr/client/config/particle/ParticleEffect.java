@@ -13,6 +13,7 @@ import net.bfsr.engine.renderer.constant.TextureWrap;
 import net.bfsr.engine.renderer.particle.ParticleRender;
 import net.bfsr.engine.renderer.particle.ParticleType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
+import net.bfsr.engine.renderer.texture.TextureData;
 import net.bfsr.engine.sound.AbstractSoundManager;
 import net.bfsr.engine.util.PathHelper;
 import net.bfsr.engine.util.RandomHelper;
@@ -79,8 +80,8 @@ public class ParticleEffect extends ConfigData {
         List<String> texturePaths = config.getTexturePaths();
         textures = new AbstractTexture[texturePaths.size()];
         for (int i = 0; i < texturePaths.size(); i++) {
-            textures[i] = Engine.getAssetsManager().getTexture(PathHelper.convertPath(texturePaths.get(i)), TextureWrap.CLAMP_TO_EDGE,
-                    TextureFilter.LINEAR);
+            textures[i] = Engine.getAssetsManager().getTexture(new TextureData(PathHelper.convertPath(texturePaths.get(i)),
+                    TextureWrap.CLAMP_TO_EDGE, TextureFilter.LINEAR));
         }
 
         this.spawnOverTime = config.getSpawnOverTime();

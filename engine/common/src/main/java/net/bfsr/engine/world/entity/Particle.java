@@ -2,13 +2,11 @@ package net.bfsr.engine.world.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.bfsr.engine.AssetsManager;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.renderer.particle.ParticleRender;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.renderer.particle.ParticleType;
-import net.bfsr.engine.renderer.texture.TextureRegister;
 import org.joml.Vector2f;
 
 import java.util.function.Consumer;
@@ -34,12 +32,11 @@ public class Particle extends GameObject {
     private Consumer<Particle> updateLogic;
     @Getter
     private ParticleType particleType;
-    private final AssetsManager assetsManager = Engine.getAssetsManager();
 
-    public Particle init(TextureRegister texture, float worldX, float worldY, float z, float velocityX, float velocityY, float sin,
+    public Particle init(long textureHandle, float worldX, float worldY, float z, float velocityX, float velocityY, float sin,
                          float cos, float angularVelocity, float scaleX, float scaleY, float sizeVelocity, float r, float g, float b,
                          float a, float alphaVelocity, boolean isAlphaFromZero, ParticleType particleType) {
-        return init(assetsManager.getTexture(texture).getTextureHandle(), worldX, worldY, 0, 0, z,
+        return init(textureHandle, worldX, worldY, 0, 0, z,
                 velocityX, velocityY, sin, cos, angularVelocity, scaleX, scaleY, sizeVelocity, r, g, b, a, alphaVelocity,
                 isAlphaFromZero, particleType, Particle::defaultUpdateLogic, ParticleRender::defaultUpdateLastValues);
     }

@@ -26,7 +26,7 @@ public class WeaponSlotRender extends Render {
     private final AssetsManager assetsManager = Engine.getAssetsManager();
 
     WeaponSlotRender(WeaponSlot object, float z) {
-        super(object, z, Engine.getAssetsManager().getTexture(object.getGunData().getTexture()));
+        super(object, z, Engine.getAssetsManager().getTexture(object.getGunData().getTextureData()));
         this.weaponSlot = object;
     }
 

@@ -22,7 +22,7 @@ public class GunData extends GameObjectConfigData {
     private final float bulletSpeed;
     private final int bulletLifeTimeInFrames;
     private final float bulletSizeX, bulletSizeY;
-    private final Path bulletTexture;
+    private final TextureData bulletTextureData;
     private final Polygon bulletPolygon;
     private final float hp;
 
@@ -38,7 +38,7 @@ public class GunData extends GameObjectConfigData {
         this.bulletLifeTimeInFrames = Engine.convertSecondsToFrames(config.getBulletLifeTimeInSeconds());
         this.bulletSizeX = config.getBulletSize().x();
         this.bulletSizeY = config.getBulletSize().y();
-        this.bulletTexture = PathHelper.CLIENT_CONTENT.resolve(config.getBulletTexture());
+        this.bulletTextureData = new TextureData(PathHelper.CLIENT_CONTENT.resolve(config.getBulletTexture()));
         this.bulletPolygon = convertToPolygon(config.getBulletVertices());
         this.hp = config.getHp();
     }

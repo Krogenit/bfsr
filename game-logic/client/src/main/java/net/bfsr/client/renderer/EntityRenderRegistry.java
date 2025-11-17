@@ -33,10 +33,10 @@ class EntityRenderRegistry {
 
         put(RigidBody.class, rigidBody -> new RigidBodyRender(rigidBody, layers.getLayerFor(rigidBody),
                 ((GameObjectConfigData) configConverterManager.getConverter(rigidBody.getRegistryId())
-                        .get(rigidBody.getDataId())).getTexture()));
+                        .get(rigidBody.getDataId())).getTextureData()));
         put(Ship.class, ship -> new ShipRender(ship, layers.getLayerFor(ship)));
         put(ShipWreck.class, wreck -> new ShipWreckRenderer(wreck, layers.getUsedZ(wreck.getShipId()),
-                shipRegistry.get(wreck.getDataId()).getTexture()));
+                shipRegistry.get(wreck.getDataId()).getTextureData()));
         put(Wreck.class, wreck -> new WreckRender(wreck, layers.getUsedZ(wreck.getDestroyedShipId())));
         put(Bullet.class, bullet -> new BulletRender(bullet, layers.getLayerFor(bullet)));
         put(Station.class, station -> new StationRender(station, layers.getLayerFor(station)));

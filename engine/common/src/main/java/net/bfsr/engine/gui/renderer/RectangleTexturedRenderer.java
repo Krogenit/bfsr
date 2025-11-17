@@ -1,18 +1,12 @@
 package net.bfsr.engine.gui.renderer;
 
 import lombok.Getter;
-import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
-import net.bfsr.engine.renderer.texture.TextureRegister;
 
 @Getter
 public class RectangleTexturedRenderer extends SimpleGuiObjectRenderer {
     protected final AbstractTexture texture;
-
-    public RectangleTexturedRenderer(GuiObject guiObject, TextureRegister textureRegister) {
-        this(guiObject, Engine.getAssetsManager().getTexture(textureRegister));
-    }
 
     public RectangleTexturedRenderer(GuiObject guiObject, AbstractTexture texture) {
         super(guiObject);

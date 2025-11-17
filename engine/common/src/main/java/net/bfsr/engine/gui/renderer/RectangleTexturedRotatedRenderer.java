@@ -5,8 +5,8 @@ import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 
 public class RectangleTexturedRotatedRenderer extends RectangleTexturedRenderer {
-    public RectangleTexturedRotatedRenderer(GuiObject guiObject, AbstractTexture texture) {
-        super(guiObject, texture);
+    public RectangleTexturedRotatedRenderer(GuiObject guiObject, AbstractTexture abstractTexture) {
+        super(guiObject, abstractTexture);
     }
 
     @Override

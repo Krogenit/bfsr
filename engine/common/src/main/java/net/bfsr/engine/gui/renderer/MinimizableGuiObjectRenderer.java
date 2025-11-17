@@ -88,6 +88,7 @@ public class MinimizableGuiObjectRenderer extends SimpleGuiObjectRenderer {
         guiRenderer.setLastSize(id, guiObject.getWidth(), height);
         guiRenderer.setLastPosition(maximizedTriangleId, centerX, centerY);
         guiRenderer.setLastPosition(triangleId, centerX, centerY);
+        guiRenderer.setLastColor(id, activeColor);
     }
 
     @Override

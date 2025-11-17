@@ -8,6 +8,5 @@ public class ShipOverlay extends CommonShipOverlay {
         addShip();
         addWeaponSlots();
         addShieldValue();
-        addEnergy();
     }
 }

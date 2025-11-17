@@ -15,7 +15,6 @@ import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
-import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.ModuleWithCells;
 import net.bfsr.entity.ship.module.armor.Armor;
@@ -26,12 +25,13 @@ import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class CommonShipOverlay extends TexturedRectangle {
+public abstract class CommonShipOverlay extends Rectangle {
     protected final Client client = Client.get();
     private final EntityRenderer entityRenderer = client.getEntityRenderer();
     private final Vector2f rotationVector = new Vector2f();
@@ -42,11 +42,10 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
     private final List<Rectangle> hullCells = new ArrayList<>();
     private final List<Rectangle> armorCells = new ArrayList<>();
     private final List<TexturedRotatedRectangle> weaponSlotGuiObjects = new ArrayList<>();
-    private final List<TexturedRotatedRectangle> energyValues = new ArrayList<>();
+    private final Rectangle reactorValueRectangle = new Rectangle(10, 100);
 
-    private final TexturedRectangle shieldGuiObject = new TexturedRectangle(TextureRegister.guiShield, 210, 210);
-    private final TexturedRectangle shieldValueGuiObject = new TexturedRectangle(TextureRegister.shieldSmall0, textShield.getWidth() + 8,
-            18);
+    private final TexturedRectangle shieldGuiObject = new TexturedRectangle(TextureRegister.guiShield.getTextureData(), 190, 190);
+    private final Rectangle shieldValueBackground = new Rectangle(textShield.getWidth() + 8, 18);
     private final float fixedShipScale = 145.0f;
     private final float fixedCellSize = 150.0f;
     private final float fixedOffsetSize = 7.5f;
@@ -59,9 +58,16 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
     protected Ship ship;
 
     CommonShipOverlay() {
-        super(TextureRegister.guiHudShip, 280, 220);
+        super(280, 220);
         add(shieldGuiObject.atCenter(0, 0));
-        shieldValueGuiObject.add(textShield.atBottom(0, 0));
+        shieldValueBackground.add(textShield.atBottom(0, 0));
+        GuiStyle.setupTransparentRectangle(this);
+
+        Rectangle rectangle = new Rectangle(10, 100);
+        GuiStyle.setupTransparentRectangle(rectangle);
+        add(rectangle.atLeft(10, 0));
+        Vector3f uiColor = GuiStyle.UI_COLOR;
+        rectangle.add(reactorValueRectangle.setAllColors(uiColor.x, uiColor.y, uiColor.z, 0.9f).atBottom(0, 0));
     }
 
     void addShip() {
@@ -165,9 +171,9 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
     }
 
     void addShieldValue() {
-        remove(shieldValueGuiObject);
-        add(shieldValueGuiObject.atCenter(0, -72).setWidthFunction((width, height) -> textShield.getWidth() + 8)
-                .setAllColors(0.0f, 0.0f, 0.0f, 1.0f));
+        remove(shieldValueBackground);
+        add(shieldValueBackground.atCenter(0, -72).setWidthFunction((width, height) -> textShield.getWidth() + 8)
+                .setAllColors(0.0f, 0.0f, 0.0f, 0.8f));
     }
 
     void addWeaponSlots() {
@@ -201,33 +207,6 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
         }
     }
 
-    void addEnergy() {
-        if (energyValues.size() > 0) {
-            for (int i = 0; i < energyValues.size(); i++) {
-                remove(energyValues.get(i));
-            }
-
-            energyValues.clear();
-        }
-
-        int energyWidth = 16;
-        int energyHeight = 8;
-        Reactor reactor = ship.getModules().getReactor();
-        float energy = reactor.getEnergy() / reactor.getMaxEnergy() * 20.0f;
-        for (int i = 0; i < 20; i++) {
-            float rot = (float) (i * -0.08f + Math.PI / 4.0f);
-            RotationHelper.rotate(rot, -100, 0, rotationVector);
-            TexturedRotatedRectangle rectangle = new TexturedRotatedRectangle(TextureRegister.guiEnergy, energyWidth, energyHeight);
-            add(rectangle.atCenter((int) rotationVector.x, (int) rotationVector.y).setRotation(-MathUtils.PI + rot));
-            energyValues.add(rectangle);
-            if (energy >= i) {
-                rectangle.setColor(0.25f, 0.5f, 1.0f, 1.0f);
-            } else {
-                rectangle.setColor(0.0f, 0.0f, 0.0f, 1.0f);
-            }
-        }
-    }
-
     @Override
     public void addToScene() {
         super.addToScene();
@@ -255,7 +234,7 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
         Shield shield = ship.getModules().getShield();
         if (shield != null && shield.isAlive()) {
             addIfAbsent(shieldGuiObject);
-            addIfAbsent(shieldValueGuiObject);
+            addIfAbsent(shieldValueBackground);
 
             float shieldValue = shield.getShieldHp() / shield.getShieldMaxHp();
             shieldGuiObject.setAllColors(1.0f - shieldValue, shieldValue, 0.0f, 1.0f);
@@ -266,7 +245,7 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
             }
         } else {
             remove(shieldGuiObject);
-            remove(shieldValueGuiObject);
+            remove(shieldValueBackground);
         }
     }
 
@@ -322,21 +301,9 @@ public abstract class CommonShipOverlay extends TexturedRectangle {
     }
 
     private void updateReactor() {
-        if (energyValues.isEmpty()) {
-            return;
-        }
-
         Reactor reactor = ship.getModules().getReactor();
-        float energy = reactor.getEnergy() / reactor.getMaxEnergy() * 20.0f;
-        for (int i = 0; i < 20; i++) {
-            TexturedRotatedRectangle rectangle = energyValues.get(i);
-
-            if (energy >= i) {
-                rectangle.setColor(0.25f, 0.5f, 1.0f, 1.0f);
-            } else {
-                rectangle.setColor(0.0f, 0.0f, 0.0f, 1.0f);
-            }
-        }
+        float energy = reactor.getEnergy() / reactor.getMaxEnergy();
+        reactorValueRectangle.setSize(10, Math.round(100 * energy));
     }
 
     protected abstract void rebuildScene();

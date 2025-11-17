@@ -3,34 +3,22 @@ package net.bfsr.engine.gui.component;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.renderer.RectangleTexturedRenderer;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
-import net.bfsr.engine.renderer.texture.TextureRegister;
+import net.bfsr.engine.renderer.texture.TextureData;
 
 public class TexturedRectangle extends GuiObject {
     private RectangleTexturedRenderer renderer;
 
-    public TexturedRectangle(TextureRegister textureRegister) {
-        this(textureRegister, 0, 0, 0, 0);
-    }
-
-    public TexturedRectangle(AbstractTexture texture) {
-        this(texture, 0, 0);
-    }
-
-    public TexturedRectangle(TextureRegister textureRegister, int width, int height) {
-        this(textureRegister, 0, 0, width, height);
-    }
-
-    public TexturedRectangle(AbstractTexture texture, int width, int height) {
-        this(texture, 0, 0, width, height);
-    }
-
-    public TexturedRectangle(TextureRegister textureRegister, int x, int y, int width, int height) {
-        this(Engine.getAssetsManager().getTexture(textureRegister), x, y, width, height);
-    }
-
-    public TexturedRectangle(AbstractTexture texture, int x, int y, int width, int height) {
+    public TexturedRectangle(TextureData textureData, int x, int y, int width, int height) {
         super(x, y, width, height);
-        setRenderer(new RectangleTexturedRenderer(this, texture));
+        setRenderer(new RectangleTexturedRenderer(this, Engine.getAssetsManager().getTexture(textureData)));
+    }
+
+    public TexturedRectangle(TextureData textureData, int width, int height) {
+        this(textureData, 0, 0, width, height);
+    }
+
+    public TexturedRectangle(TextureData textureData) {
+        this(textureData, 0, 0);
     }
 
     public void setRenderer(RectangleTexturedRenderer renderer) {

@@ -1,14 +1,15 @@
 package net.bfsr.client.renderer.entity;
 
+import net.bfsr.client.assets.TextureRegister;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
-import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.bullet.Bullet;
 
 public class BulletRender extends RigidBodyRender {
-    private static final AbstractTexture LIGHT_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.particleLight);
+    private static final AbstractTexture LIGHT_TEXTURE = Engine.getAssetsManager()
+            .getTexture(TextureRegister.light.getTextureData());
 
     private final Bullet bullet;
     private final float lightSize;
@@ -16,7 +17,7 @@ public class BulletRender extends RigidBodyRender {
     private int lightId = -1;
 
     public BulletRender(Bullet bullet, float z) {
-        super(bullet, z, Engine.getAssetsManager().getTexture(bullet.getGunData().getBulletTexture()),
+        super(bullet, z, Engine.getAssetsManager().getTexture(bullet.getGunData().getBulletTextureData()),
                 bullet.getGunData().getColor().x, bullet.getGunData().getColor().y, bullet.getGunData().getColor().z,
                 bullet.getGunData().getColor().w);
         this.bullet = bullet;

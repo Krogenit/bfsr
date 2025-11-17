@@ -30,6 +30,9 @@ public class GuiObjectRenderer {
     protected final Vector4f hoverColor;
     protected final Vector4f outlineHoverColor;
 
+    protected Vector4f activeColor;
+    protected Vector4f activeOutlineColor;
+
     private Runnable lastValuesUpdater = RunnableUtils.EMPTY_RUNNABLE;
 
     public GuiObjectRenderer(GuiObject guiObject) {
@@ -38,6 +41,8 @@ public class GuiObjectRenderer {
         this.outlineColor = guiObject.getOutlineColor();
         this.hoverColor = guiObject.getHoverColor();
         this.outlineHoverColor = guiObject.getOutlineHoverColor();
+        this.activeColor = color;
+        this.activeOutlineColor = outlineColor;
     }
 
     public void addToScene() {
