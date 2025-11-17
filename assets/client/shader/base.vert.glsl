@@ -71,10 +71,10 @@ void main() {
     gl_Position = projectionMatrix * vec4(vx * cameraZoom, vy * cameraZoom, modelData.z, 1.0);
 
     textureCoords = in_PositionUV.zw;
-    color = material.color;
+    color = lastMaterialData.color + (material.color - lastMaterialData.color) * interpolation;
     materialType = material.materialType;
     textureHandle = material.textureHandle;
     maskTextureHandle = material.maskTextureHandle;
-    fireAmount = material.fireAmount;
-    fireUVAnimation = material.fireUVAnimation;
+    fireAmount = lastMaterialData.fireAmount + (material.fireAmount - lastMaterialData.fireAmount) * interpolation;
+    fireUVAnimation = lastMaterialData.fireUVAnimation + (material.fireUVAnimation - lastMaterialData.fireUVAnimation) * interpolation;
 }

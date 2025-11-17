@@ -67,7 +67,7 @@ public class GuiObject {
         this.height = height;
     }
 
-    protected GuiObject(int width, int height) {
+    public GuiObject(int width, int height) {
         this(0, 0, width, height);
     }
 
@@ -140,11 +140,9 @@ public class GuiObject {
     }
 
     public void removeAllChild() {
-        for (int i = 0; i < guiObjects.size(); i++) {
-            guiObjects.get(i).setParent(BlankGuiObject.INSTANCE);
+        while (guiObjects.size() > 0) {
+            remove(guiObjects.get(0));
         }
-
-        guiObjects.clear();
     }
 
     public void update(int mouseX, int mouseY) {

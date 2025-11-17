@@ -53,49 +53,59 @@ public class PlayButton extends Button {
             if (playing) {
                 if (guiObject.isMouseHover()) {
                     float scale = 1.2f;
-                    guiRenderer.setColor(bodyId, 35 / 255.0f * scale, 74 / 255.0f * scale, 108 / 255.0f * scale, color.w);
+                    activeColor.set(35 / 255.0f * scale, 74 / 255.0f * scale, 108 / 255.0f * scale, color.w);
                 } else {
-                    guiRenderer.setColor(bodyId, 35 / 255.0f, 74 / 255.0f, 108 / 255.0f, hoverColor.w);
+                    activeColor.set(35 / 255.0f, 74 / 255.0f, 108 / 255.0f, hoverColor.w);
                 }
             } else {
                 if (guiObject.isMouseHover()) {
-                    guiRenderer.setColor(bodyId, hoverColor);
+                    activeColor.set(hoverColor);
                 } else {
-                    guiRenderer.setColor(bodyId, color);
+                    activeColor.set(color);
                 }
             }
+
+            guiRenderer.setColor(bodyId, activeColor);
         }
 
         @Override
         public void onMouseHover() {
-            guiRenderer.setColor(outlineId, outlineHoverColor);
+            activeOutlineColor = outlineHoverColor;
+            guiRenderer.setColor(outlineId, activeOutlineColor);
             if (playButton.playble.isPlaying()) {
                 float scale = 1.2f;
-                guiRenderer.setColor(bodyId, 35 / 255.0f * scale, 74 / 255.0f * scale, 108 / 255.0f * scale, color.w);
+                activeColor.set(35 / 255.0f * scale, 74 / 255.0f * scale, 108 / 255.0f * scale, color.w);
             } else {
-                guiRenderer.setColor(bodyId, hoverColor);
+                activeColor.set(hoverColor);
             }
+
+            guiRenderer.setColor(bodyId, activeColor);
 
             float color = 210 / 255.0f;
             guiRenderer.setColor(playId, color, color, color, 1.0f);
+            guiRenderer.setLastColor(playId, color, color, color, 1.0f);
         }
 
         @Override
         public void onMouseStopHover() {
-            guiRenderer.setColor(outlineId, outlineColor);
+            activeOutlineColor = outlineColor;
+            guiRenderer.setColor(outlineId, activeOutlineColor);
             if (playButton.playble.isPlaying()) {
-                guiRenderer.setColor(bodyId, 35 / 255.0f, 74 / 255.0f, 108 / 255.0f, hoverColor.w);
+                activeColor.set(35 / 255.0f, 74 / 255.0f, 108 / 255.0f, hoverColor.w);
             } else {
-                guiRenderer.setColor(bodyId, color);
+                activeColor.set(color);
             }
+
+            guiRenderer.setColor(bodyId, activeColor);
 
             float color = 192 / 255.0f;
             guiRenderer.setColor(playId, color, color, color, 1.0f);
+            guiRenderer.setLastColor(playId, color, color, color, 1.0f);
         }
 
         @Override
-        public void updateLastValues() {
-            super.updateLastValues();
+        protected void setLastUpdateValues() {
+            super.setLastUpdateValues();
             int x = guiObject.getSceneX();
             int y = guiObject.getSceneY();
             int width = guiObject.getWidth();
@@ -105,6 +115,8 @@ public class PlayButton extends Button {
             guiRenderer.setLastPosition(outlineId, x, y);
             guiRenderer.setLastPosition(bodyId, x + 1, y + 1);
             guiRenderer.setLastPosition(playId, centerX, centerY);
+            guiRenderer.setLastColor(outlineId, activeOutlineColor);
+            guiRenderer.setLastColor(bodyId, activeColor);
         }
 
         @Override
