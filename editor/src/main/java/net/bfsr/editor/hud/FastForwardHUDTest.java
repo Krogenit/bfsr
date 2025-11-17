@@ -105,13 +105,9 @@ class FastForwardHUDTest {
             world.add(bullet);
 
             float additionalSeconds = 0.5f;
-            int fastForwardTimeInFrames = Client.get().getRenderDelayManager().getRenderDelayInFrames() +
+            int iterations = Client.get().getRenderDelayManager().getRenderDelayInFrames() +
                     Engine.convertSecondsToFrames(additionalSeconds);
-
             float updateDeltaTime = Engine.getUpdateDeltaTimeInSeconds();
-            float updateDeltaTimeInMills = updateDeltaTime * 1000.0f;
-            float updateDeltaTimeInNanos = updateDeltaTimeInMills * 1_000_000.0f;
-            int iterations = Math.round(fastForwardTimeInFrames / 1_000_000.0f / updateDeltaTimeInMills);
 
             float bulletX = bullet.getX();
             float bulletY = bullet.getY();
@@ -136,8 +132,7 @@ class FastForwardHUDTest {
             hud.add(bulletAABB.atBottomLeft((int) guiX, (int) guiY));
 
             if (iterations > 0) {
-                detectAndFastForward(new AABB(new Vector2(minX, minY), new Vector2(maxX, maxY)), iterations,
-                        fastForwardTimeInFrames, updateDeltaTimeInNanos, renderFrame);
+                detectAndFastForward(new AABB(new Vector2(minX, minY), new Vector2(maxX, maxY)), iterations, iterations, renderFrame);
                 return;
             }
         }
@@ -150,8 +145,7 @@ class FastForwardHUDTest {
         }
     }
 
-    private void detectAndFastForward(AABB aabb, int iterations, int fastForwardTimeInFrames, float updateDeltaTimeInNanos,
-                                      int renderFrame) {
+    private void detectAndFastForward(AABB aabb, int iterations, int fastForwardTimeInFrames, int renderFrame) {
         Set<Body> affectedBodies = new HashSet<>();
 
         world.getPhysicWorld().queryAABB(fixture -> {
@@ -180,35 +174,29 @@ class FastForwardHUDTest {
 
         world.getPhysicWorld().beginFastForward();
 
-        fastForwardIterationThread(0, iterations, affectedBodies, fastForwardTimeInFrames,
-                updateDeltaTimeInNanos, entityDataHistoryManager, renderFrame, fastForwardTimeInFrames);
+        fastForwardIterationThread(0, iterations, affectedBodies, entityDataHistoryManager, renderFrame, fastForwardTimeInFrames);
     }
 
-    private void fastForwardIterationThread(int i, int max, Set<Body> affectedBodies, double fastForwardTimeInNanos,
-                                            float updateDeltaTimeInNanos, EntityDataHistoryManager entityDataHistoryManager,
+    private void fastForwardIterationThread(int i, int max, Set<Body> affectedBodies, EntityDataHistoryManager entityDataHistoryManager,
                                             int renderFrame, int fastForwardTimeInFrames) {
-        Thread thread = Thread.ofVirtual().start(() -> {
+        Thread.ofVirtual().start(() -> {
             try {
                 Thread.sleep(50L);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
-            fastForwardIteration(i, max, affectedBodies, fastForwardTimeInNanos, updateDeltaTimeInNanos,
-                    entityDataHistoryManager, renderFrame, fastForwardTimeInFrames);
+            fastForwardIteration(i, max, affectedBodies, entityDataHistoryManager, renderFrame, fastForwardTimeInFrames);
         });
-        thread.start();
     }
 
-    private void fastForwardIteration(int i, int max, Set<Body> affectedBodies, double fastForwardTimeInNanos,
-                                      float updateDeltaTimeInNanos, EntityDataHistoryManager entityDataHistoryManager,
+    private void fastForwardIteration(int i, int max, Set<Body> affectedBodies, EntityDataHistoryManager entityDataHistoryManager,
                                       int renderFrame, int fastForwardTimeInFrames) {
-        Client.get().addFutureTask(() -> fastForwardIterationTask(i, max, affectedBodies, fastForwardTimeInNanos, updateDeltaTimeInNanos,
+        Client.get().addFutureTask(() -> fastForwardIterationTask(i, max, affectedBodies,
                 entityDataHistoryManager, renderFrame, fastForwardTimeInFrames));
     }
 
-    private void fastForwardIterationTask(int i, int max, Set<Body> affectedBodies, double fastForwardTimeInNanos,
-                                          float updateDeltaTimeInNanos, EntityDataHistoryManager entityDataHistoryManager,
+    private void fastForwardIterationTask(int i, int max, Set<Body> affectedBodies, EntityDataHistoryManager entityDataHistoryManager,
                                           int renderFrame, int fastForwardTimeInFrames) {
         EntityDataHistoryManager dataHistoryManager = world.getEntityManager().getDataHistoryManager();
 
@@ -238,8 +226,7 @@ class FastForwardHUDTest {
                 body.setTransform(position.x, position.y, transformData.getSin(), transformData.getCos());
             }
         } else {
-            fastForwardIteration(i + 1, max, affectedBodies, fastForwardTimeInNanos - updateDeltaTimeInNanos,
-                    updateDeltaTimeInNanos, entityDataHistoryManager, renderFrame, fastForwardTimeInFrames - 1);
+            fastForwardIterationThread(i + 1, max, affectedBodies, entityDataHistoryManager, renderFrame, fastForwardTimeInFrames - 1);
         }
     }
 
