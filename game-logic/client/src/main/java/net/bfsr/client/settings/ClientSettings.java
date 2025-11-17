@@ -20,7 +20,7 @@ public enum ClientSettings {
     CAMERA_MOVE_BY_SCREEN_BORDERS_OFFSET(SettingsCategory.CAMERA, 2.0f, 25.0f, new FloatOption(15.0f),
             ConsumerUtils.FLOAT_DEFAULT_CONSUMER),
     CAMERA_MOVE_BY_KEY_SPEED(SettingsCategory.CAMERA, 0.025f, 4.0f, new FloatOption(1.0f), ConsumerUtils.FLOAT_DEFAULT_CONSUMER),
-    CAMERA_ZOOM_SPEED(SettingsCategory.CAMERA, 0.01f, 0.5f, new FloatOption(0.2f), ConsumerUtils.FLOAT_DEFAULT_CONSUMER),
+    CAMERA_ZOOM_SPEED(SettingsCategory.CAMERA, 0.01f, 0.1f, new FloatOption(0.2f), ConsumerUtils.FLOAT_DEFAULT_CONSUMER),
     CAMERA_FOLLOW_PLAYER(SettingsCategory.CAMERA, new BooleanOption(true), ConsumerUtils.BOOLEAN_DEFAULT_CONSUMER),
 
     LANGUAGE(SettingsCategory.LANGUAGE, new StringOption("eng"), (option, value) -> {
