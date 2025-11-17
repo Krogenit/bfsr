@@ -14,7 +14,6 @@ import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.world.entity.AbstractEntityManager;
 import net.bfsr.engine.world.entity.EntityIdManager;
 import net.bfsr.engine.world.entity.RigidBody;
-import org.jbox2d.common.Settings;
 
 import java.util.List;
 
@@ -48,8 +47,6 @@ public class World {
         this.contactFilter = new ContactFilter(collisionMatrix);
         this.physicWorld.setContactListener(new ContactListener(collisionMatrix));
         this.physicWorld.setContactFilter(contactFilter);
-        Settings.maxTranslation = Engine.convertToDeltaTime(120);
-        Settings.maxTranslationSquared = Settings.maxTranslation * Settings.maxTranslation;
     }
 
     public void init() {
