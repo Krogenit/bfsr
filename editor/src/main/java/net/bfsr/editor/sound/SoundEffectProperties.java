@@ -8,25 +8,22 @@ import net.bfsr.editor.gui.property.PropertyGuiElementType;
 import net.bfsr.editor.property.Property;
 import net.bfsr.editor.property.holder.PropertiesHolderAdapter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class SoundProperties extends PropertiesHolderAdapter {
-    @Property(elementType = PropertyGuiElementType.FILE_SELECTOR)
-    private String path;
+public class SoundEffectProperties extends PropertiesHolderAdapter {
+    @Property(elementType = PropertyGuiElementType.MINIMIZABLE_LIST, arrayElementName = "sound")
+    private List<SoundProperties> sounds;
     @Property
-    private float volume;
-    @Property
-    private float minPitch;
-    @Property
-    private float maxPitch;
+    private boolean randomFromList;
 
     @Override
     public void setDefaultValues() {
-        path = "sound/gui/buttonClick.ogg";
-        volume = 1.0f;
-        minPitch = 1.0f;
-        maxPitch = 1.0f;
+        sounds = new ArrayList<>();
+        randomFromList = false;
     }
 }

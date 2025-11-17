@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.bfsr.engine.config.Config;
 import net.bfsr.engine.config.Configurable;
-import net.bfsr.engine.config.ConfigurableSound;
+import net.bfsr.engine.config.ConfigurableSoundEffect;
 import net.bfsr.engine.renderer.particle.ParticleType;
 
 import java.util.List;
@@ -26,7 +26,7 @@ public class ParticleEffectConfig extends Config {
     private final float minAlphaVelocity, maxAlphaVelocity;
     private final boolean isAlphaFromZero;
     private final ParticleType particleType;
-    private final List<ConfigurableSound> soundEffects;
+    private final ConfigurableSoundEffect soundEffect;
     private final float sourceSizeXMultiplier, sourceSizeYMultiplier;
     private final float sourceVelocityXMultiplier, sourceVelocityYMultiplier;
 

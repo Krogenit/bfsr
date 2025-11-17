@@ -4,7 +4,6 @@ import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.AbstractTextureLoader;
 import net.bfsr.engine.renderer.texture.TextureData;
 import net.bfsr.engine.sound.AbstractSoundLoader;
-import net.bfsr.engine.sound.SoundRegistry;
 
 import java.nio.file.Path;
 
@@ -33,7 +32,7 @@ public class AssetsManager {
         return textureLoader.getTexture(textureData);
     }
 
-    public AbstractSoundBuffer getSound(Path path) {
+    public int getSound(Path path) {
         return soundLoader.getBuffer(path);
     }
 

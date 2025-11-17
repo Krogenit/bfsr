@@ -1,17 +1,15 @@
 package net.bfsr.client.renderer.component;
 
-import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import net.bfsr.client.Client;
 import net.bfsr.client.particle.effect.WeaponEffects;
 import net.bfsr.config.component.weapon.gun.GunData;
-import net.bfsr.engine.AssetsManager;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.config.SoundData;
 import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.sound.AbstractSoundManager;
+import net.bfsr.engine.sound.SoundEffect;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import org.joml.Vector2f;
@@ -20,10 +18,8 @@ import org.joml.Vector4f;
 public class WeaponSlotRender extends Render {
     private final Vector2f rotationHelper = new Vector2f();
     private final WeaponSlot weaponSlot;
-    private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
     private final WeaponEffects weaponEffects = Client.get().getParticleEffects().getWeaponEffects();
     private final AbstractSoundManager soundManager = Engine.getSoundManager();
-    private final AssetsManager assetsManager = Engine.getAssetsManager();
 
     WeaponSlotRender(WeaponSlot object, float z) {
         super(object, z, Engine.getAssetsManager().getTexture(object.getGunData().getTextureData()));
@@ -76,10 +72,9 @@ public class WeaponSlotRender extends Render {
     }
 
     void playSounds(GunData gunData, float x, float y) {
-        SoundData[] sounds = gunData.getSounds();
-        if (sounds.length > 0) {
-            SoundData sound = sounds[random.nextInt(sounds.length)];
-            soundManager.play(assetsManager.getSound(sound.path()), sound.volume(), x, y);
+        SoundEffect soundEffect = gunData.getSoundEffect();
+        if (soundEffect.getSounds().size() > 0) {
+            soundManager.play(soundEffect, x, y);
         }
     }
 }

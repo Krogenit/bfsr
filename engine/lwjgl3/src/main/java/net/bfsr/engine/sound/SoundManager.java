@@ -1,11 +1,11 @@
 package net.bfsr.engine.sound;
 
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
+import net.bfsr.engine.util.RandomHelper;
 import org.joml.Matrix4f;
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
-import org.lwjgl.openal.AL11;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALC10;
 import org.lwjgl.openal.ALCCapabilities;
@@ -19,12 +19,13 @@ import java.util.List;
 public class SoundManager extends AbstractSoundManager {
     private final long device;
     private final long context;
-    private AbstractSoundListener listener;
+    private final AbstractSoundListener listener;
 
-    private final Matrix4f cameraMatrix = new Matrix4f();
     private final List<SoundSource> playingSounds = new ArrayList<>();
 
     private float lastSoundVolume;
+
+    private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
     public SoundManager() {
         this.device = ALC10.alcOpenDevice((ByteBuffer) null);
@@ -39,8 +40,15 @@ public class SoundManager extends AbstractSoundManager {
         ALC10.alcMakeContextCurrent(context);
         AL.createCapabilities(deviceCaps);
 
-        setAttenuationModel(AL11.AL_EXPONENT_DISTANCE);
-        setListener(new SoundListener(new Vector3f(0, 0, 0)));
+        SoundListener soundListener = new SoundListener(new Vector3f(0, 0, 0));
+        soundListener.setExponentClampedDistanceModel();
+        Vector3f at = new Vector3f();
+        Matrix4f cameraMatrix = new Matrix4f();
+        cameraMatrix.positiveZ(at).negate();
+        Vector3f up = new Vector3f();
+        cameraMatrix.positiveY(up);
+        soundListener.setOrientation(at, up);
+        listener = soundListener;
     }
 
     @Override
@@ -61,34 +69,51 @@ public class SoundManager extends AbstractSoundManager {
     }
 
     @Override
-    public SoundSource play(AbstractSoundBuffer soundBuffer, float volume, float x, float y) {
-        SoundSource soundSource = new SoundSource(soundBuffer, volume, x, y);
+    public SoundSource play(int soundBuffer, float volume) {
+        Vector3f position = listener.getPosition();
+        SoundSource soundSource = new SoundSource(soundBuffer, volume, position.x, position.y, position.z, 1.0f);
         play(soundSource);
         return soundSource;
     }
 
     @Override
-    public SoundSource play(SoundRegistry sound) {
-        SoundSource soundSource = new SoundSource(sound);
+    public SoundSource play(int soundBuffer, float volume, float x, float y) {
+        return play(soundBuffer, volume, x, y, 1.0f);
+    }
+
+    @Override
+    public SoundSource play(int soundBuffer, float volume, float x, float y, float pitch) {
+        SoundSource soundSource = new SoundSource(soundBuffer, volume, x, y, 0.0f, pitch);
         play(soundSource);
         return soundSource;
+    }
+
+    private void play(Sound sound, float x, float y) {
+        float minRandomPitch = sound.minPitch();
+        float maxRandomPitch = sound.maxPitch();
+        if (minRandomPitch != maxRandomPitch) {
+            float pitch = RandomHelper.randomFloat(random, minRandomPitch, maxRandomPitch);
+            play(sound.soundBuffer(), sound.volume(), x, y, pitch);
+        } else {
+            play(sound.soundBuffer(), sound.volume(), x, y, maxRandomPitch);
+        }
+    }
+
+    @Override
+    public void play(SoundEffect soundEffect, float x, float y) {
+        List<Sound> soundEffectsList = soundEffect.getSounds();
+        if (soundEffect.isRandomFromList()) {
+            play(soundEffectsList.get(random.nextInt(soundEffectsList.size())), x, y);
+        } else {
+            for (int i = 0; i < soundEffectsList.size(); i++) {
+                play(soundEffectsList.get(i), x, y);
+            }
+        }
     }
 
     private void play(SoundSource source) {
         AL10.alSourcePlay(source.getSource());
         playingSounds.add(source);
-    }
-
-    @Override
-    public void setListener(AbstractSoundListener soundListener) {
-        this.listener = soundListener;
-        this.listener.setExponentClampedDistanceModel();
-
-        Vector3f at = new Vector3f();
-        cameraMatrix.positiveZ(at).negate();
-        Vector3f up = new Vector3f();
-        cameraMatrix.positiveY(up);
-        this.listener.setOrientation(at, up);
     }
 
     @Override
@@ -108,9 +133,9 @@ public class SoundManager extends AbstractSoundManager {
     }
 
     @Override
-    public void updateListenerPosition(Vector2f position) {
+    public void updateListenerPosition(float x, float y, float z) {
         checkSoundsToClear();
-        listener.setPosition(position);
+        listener.setPosition(x, y, z);
     }
 
     @Override
@@ -137,8 +162,8 @@ public class SoundManager extends AbstractSoundManager {
     }
 
     @Override
-    public void setPosition(int source, float x, float y) {
-        AL10.alSource3f(source, AL10.AL_POSITION, x, y, 0);
+    public void setPosition(int source, float x, float y, float z) {
+        AL10.alSource3f(source, AL10.AL_POSITION, x, y, z);
     }
 
     @Override
@@ -157,8 +182,13 @@ public class SoundManager extends AbstractSoundManager {
     }
 
     @Override
-    public void setAttenuationModel(int model) {
-        AL10.alDistanceModel(model);
+    public void setMaxDistance(int source, float value) {
+        AL10.alSourcef(source, AL10.AL_MAX_DISTANCE, value);
+    }
+
+    @Override
+    public void setPitch(int source, float value) {
+        AL10.alSourcef(source, AL10.AL_PITCH, value);
     }
 
     @Override

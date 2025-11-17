@@ -2,14 +2,13 @@ package net.bfsr.config.component.weapon.gun;
 
 import lombok.Getter;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.config.SoundData;
 import net.bfsr.engine.config.entity.GameObjectConfigData;
+import net.bfsr.engine.renderer.texture.TextureData;
+import net.bfsr.engine.sound.SoundEffect;
 import net.bfsr.engine.util.PathHelper;
 import net.bfsr.entity.bullet.BulletDamage;
 import org.jbox2d.collision.shapes.Polygon;
 import org.joml.Vector4f;
-
-import java.nio.file.Path;
 
 @Getter
 public class GunData extends GameObjectConfigData {
@@ -18,7 +17,7 @@ public class GunData extends GameObjectConfigData {
     private final BulletDamage damage;
     private final Vector4f color;
     private final Polygon polygon;
-    private final SoundData[] sounds;
+    private final SoundEffect soundEffect;
     private final float bulletSpeed;
     private final int bulletLifeTimeInFrames;
     private final float bulletSizeX, bulletSizeY;
@@ -33,7 +32,7 @@ public class GunData extends GameObjectConfigData {
         this.damage = new BulletDamage(config.getDamage());
         this.color = convert(config.getColor());
         this.polygon = convertToPolygon(config.getVertices());
-        this.sounds = convert(config.getSounds());
+        this.soundEffect = convert(config.getSoundEffect());
         this.bulletSpeed = config.getBulletSpeed();
         this.bulletLifeTimeInFrames = Engine.convertSecondsToFrames(config.getBulletLifeTimeInSeconds());
         this.bulletSizeX = config.getBulletSize().x();

@@ -2,10 +2,8 @@ package net.bfsr.client.config.particle;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.Getter;
-import net.bfsr.client.sound.SoundEffect;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.config.ConfigData;
-import net.bfsr.engine.config.ConfigurableSound;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.constant.TextureFilter;
@@ -15,6 +13,8 @@ import net.bfsr.engine.renderer.particle.ParticleType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.renderer.texture.TextureData;
 import net.bfsr.engine.sound.AbstractSoundManager;
+import net.bfsr.engine.sound.Sound;
+import net.bfsr.engine.sound.SoundEffect;
 import net.bfsr.engine.util.PathHelper;
 import net.bfsr.engine.util.RandomHelper;
 import net.bfsr.engine.world.entity.Particle;
@@ -47,7 +47,7 @@ public class ParticleEffect extends ConfigData {
     private float minAlphaVelocity, maxAlphaVelocity;
     private boolean isAlphaFromZero;
     private ParticleType particleType;
-    private SoundEffect[] soundEffects;
+    private SoundEffect soundEffect;
     private float sourceSizeXMultiplier, sourceSizeYMultiplier;
     private float sourceVelocityXMultiplier, sourceVelocityYMultiplier;
     private String path;
@@ -116,17 +116,7 @@ public class ParticleEffect extends ConfigData {
         this.sourceVelocityYMultiplier = config.getSourceVelocityYMultiplier();
         this.path = config.getPath();
         this.treeIndex = config.getTreeIndex();
-        List<ConfigurableSound> effects = config.getSoundEffects();
-        if (effects != null && effects.size() > 0) {
-            this.soundEffects = new SoundEffect[effects.size()];
-            for (int i = 0; i < effects.size(); i++) {
-                ConfigurableSound soundEffect = effects.get(i);
-                this.soundEffects[i] = new SoundEffect(Engine.getAssetsManager().getSound(PathHelper.convertPath(soundEffect.path())),
-                        soundEffect.volume());
-            }
-        } else {
-            this.soundEffects = null;
-        }
+        this.soundEffect = convert(config.getSoundEffect());
     }
 
     public void init() {
@@ -138,14 +128,11 @@ public class ParticleEffect extends ConfigData {
             spawnTime = 0;
         }
 
-        if (soundEffects != null && soundEffects.length > 0) {
-            spawnRunnableList.add((worldX, worldY, localX, localY, z, sizeX, sizeY, sin, cos, velocityX, velocityY, r, g, b, a, updateLogic,
-                                   lastValuesUpdateConsumer) -> {
-                for (int i = 0; i < soundEffects.length; i++) {
-                    SoundEffect soundEffect = soundEffects[i];
-                    soundManager.play(soundEffect.soundBuffer(), soundEffect.volume(), worldX, worldY);
-                }
-            });
+        List<Sound> soundEffectsList = soundEffect.getSounds();
+        if (soundEffectsList.size() > 0) {
+            spawnRunnableList.add((worldX, worldY, localX, localY, z, sizeX, sizeY, sin, cos,
+                                   velocityX, velocityY, r, g, b, a, updateLogic,
+                                   lastValuesUpdateConsumer) -> soundManager.play(soundEffect, worldX, worldY));
         }
 
         Supplier<Float> localXSupplier = minPosX == maxPosX ? () -> minPosX : () -> RandomHelper.randomFloat(random, minPosX, maxPosX);

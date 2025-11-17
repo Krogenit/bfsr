@@ -4,7 +4,10 @@ import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import net.bfsr.engine.Engine;
 import net.bfsr.engine.geometry.GeometryUtils;
+import net.bfsr.engine.sound.Sound;
+import net.bfsr.engine.sound.SoundEffect;
 import net.bfsr.engine.util.PathHelper;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.common.Vector2;
@@ -64,14 +67,16 @@ public class ConfigData {
         return new Vector4f(effectsColor.r(), effectsColor.g(), effectsColor.b(), effectsColor.a());
     }
 
-    protected SoundData[] convert(ConfigurableSound[] configurableSounds) {
-        SoundData[] sounds = new SoundData[configurableSounds.length];
-        for (int i = 0; i < configurableSounds.length; i++) {
-            ConfigurableSound configurableSound = configurableSounds[i];
-            sounds[i] = new SoundData(PathHelper.convertPath(configurableSound.path()), configurableSound.volume());
+    protected SoundEffect convert(ConfigurableSoundEffect soundEffects) {
+        List<ConfigurableSound> configurableSounds = soundEffects.sounds();
+        List<Sound> soundEffectsList = new ArrayList<>(configurableSounds.size());
+        for (int i = 0; i < configurableSounds.size(); i++) {
+            ConfigurableSound soundEffect = configurableSounds.get(i);
+            soundEffectsList.add(new Sound(Engine.getAssetsManager().getSound(PathHelper.convertPath(soundEffect.path())),
+                    soundEffect.volume(), soundEffect.minPitch(), soundEffect.maxPitch()));
         }
 
-        return sounds;
+        return new SoundEffect(soundEffectsList, soundEffects.randomFromList());
     }
 
     protected <DEST_KEY, DEST_VALUE, SRC_KEY, SRC_VALUE> TMap<DEST_KEY, DEST_VALUE> convert(Map<SRC_KEY, SRC_VALUE> map,
