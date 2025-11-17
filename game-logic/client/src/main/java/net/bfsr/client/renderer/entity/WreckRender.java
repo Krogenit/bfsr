@@ -1,18 +1,16 @@
 package net.bfsr.client.renderer.entity;
 
 import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
-import lombok.Getter;
 import net.bfsr.client.Client;
 import net.bfsr.client.particle.effect.ExplosionEffects;
 import net.bfsr.client.particle.effect.FireEffects;
-import net.bfsr.config.entity.wreck.WreckData;
+import net.bfsr.client.renderer.texture.DamageMaskTexture;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
-import net.bfsr.engine.renderer.texture.AbstractTexture;
 import net.bfsr.engine.world.entity.SpawnAccumulator;
 import net.bfsr.entity.wreck.Wreck;
-import org.joml.Vector4f;
+
+import java.nio.ByteBuffer;
 
 public class WreckRender extends RigidBodyRender {
     private final FireEffects fireEffects = Client.get().getParticleEffects().getFireEffects();
@@ -21,88 +19,65 @@ public class WreckRender extends RigidBodyRender {
     private final SpawnAccumulator spawnAccumulator = new SpawnAccumulator();
 
     private final Wreck wreck;
-    @Getter
-    private final AbstractTexture textureFire, textureLight;
     private final float fireAnimationSpeed = Engine.convertToDeltaTime(0.18f);
-    private final float lightAnimationSpeed = Engine.convertToDeltaTime(12.0f);
-    private boolean changeLight;
-    @Getter
-    private final Vector4f colorFire = new Vector4f(), colorLight = new Vector4f();
-    @Getter
-    private final Vector4f lastColorFire = new Vector4f(), lastColorLight = new Vector4f();
+    private float fireAmount;
     private boolean fireFadingOut;
-    private int sparkleActivationTimerInFrames;
-    private boolean fire;
-    private boolean light;
-    private float sparkleBlinkTimer;
+    private final DamageMaskTexture maskTexture;
+    private final ByteBuffer byteBuffer;
 
-    private int fireId = -1;
-    private int lightId = -1;
+    public WreckRender(Wreck wreck, float z) {
+        super(wreck, z, Engine.getAssetsManager().getTexture(wreck.getConfigData().getTextureData()), 0.5f, 0.5f, 0.5f, 1.0f);
+        this.wreck = wreck;
 
-    public WreckRender(Wreck object, float z) {
-        super(object, z, Engine.getAssetsManager().getTexture(object.getConfigData().getTexture()), 0.5f, 0.5f, 0.5f, 1.0f);
-        this.wreck = object;
-
-        if (object.isEmitFire()) {
+        if (wreck.isEmitFire()) {
             spawnAccumulator.resetTime();
         }
 
-        WreckData wreckData = object.getWreckData();
-        this.textureFire = Engine.getAssetsManager().getTexture(wreckData.getFireTexture());
-        this.textureLight = wreckData.getSparkleTexture() != null ? Engine.getAssetsManager().getTexture(wreckData.getSparkleTexture())
-                : null;
-        this.colorFire.set(object.isFire() ? 1.0f : 0.0f);
-        this.lastColorFire.set(colorFire);
-        this.colorLight.set(1.0f, 1.0f, 1.0f, 0.0f);
-        this.lastColorLight.set(colorLight);
-        this.sparkleActivationTimerInFrames = object.isLight() ? Engine.convertSecondsToFrames(200.0f + random.nextInt(200)) : 0;
-        this.fire = object.isFire();
-        this.light = object.isLight();
+        fireAmount = 3.0f;
+        int damageMaskWidth = texture.getWidth() / 2;
+        int damageMaskHeight = texture.getHeight() / 2;
+        this.maskTexture = new DamageMaskTexture(damageMaskWidth, damageMaskHeight);
+        this.maskTexture.createEmpty();
+        byteBuffer = renderer.createByteBuffer(damageMaskWidth * damageMaskHeight);
+        for (int j = 0; j < damageMaskHeight; j++) {
+            for (int i = 0; i < damageMaskWidth; i++) {
+                int index = j * damageMaskWidth + i;
+                byteBuffer.put(index, (byte) random.nextInt(256));
+            }
+        }
+
+        maskTexture.upload(0, 0, damageMaskWidth, damageMaskHeight, byteBuffer);
     }
 
     @Override
     public void init() {
-        super.init();
-        if (fire) {
-            fireId = spriteRenderer.add(wreck.getX(), wreck.getY(), z, wreck.getSin(), wreck.getCos(), wreck.getSizeX(),
-                    wreck.getSizeY(), colorFire.x, colorFire.y, colorFire.z, colorFire.w, textureFire.getTextureHandle(),
-                    BufferType.ENTITIES_ADDITIVE);
-        }
+        id = spriteRenderer.add(rigidBody.getX(), rigidBody.getY(), z, rigidBody.getSin(), rigidBody.getCos(),
+                rigidBody.getSizeX(), rigidBody.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(),
+                maskTexture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
 
-        if (light) {
-            lightId = spriteRenderer.add(wreck.getX(), wreck.getY(), z, wreck.getSin(), wreck.getCos(), wreck.getSizeX(),
-                    wreck.getSizeY(), colorLight.x, colorLight.y, colorLight.z, colorLight.w, textureLight.getTextureHandle(),
-                    BufferType.ENTITIES_ADDITIVE);
-        }
+        spriteRenderer.setLastFireAmount(id, BufferType.ENTITIES_ALPHA, fireAmount);
+        spriteRenderer.setLastFireUVAnimation(id, BufferType.ENTITIES_ALPHA, maskTexture.getFireUVAnimation());
+        spriteRenderer.setFireAmount(id, BufferType.ENTITIES_ALPHA, fireAmount);
+        spriteRenderer.setFireUVAnimation(id, BufferType.ENTITIES_ALPHA, maskTexture.getFireUVAnimation());
     }
 
     @Override
     public void update() {
         super.update();
+        maskTexture.updateEffects();
 
         updateLifeTime();
         updateFireAndExplosion();
-        updateSparkle();
     }
 
     @Override
     protected void updateLastRenderValues() {
         super.updateLastRenderValues();
-        lastColor.w = color.w;
-        lastColorFire.set(colorFire);
-        lastColorLight.set(colorLight);
-        spriteRenderer.setLastColorAlpha(id, BufferType.ENTITIES_ALPHA, color.w);
 
-        if (fire) {
-            spriteRenderer.setLastPosition(fireId, BufferType.ENTITIES_ADDITIVE, object.getX(), object.getY());
-            spriteRenderer.setLastRotation(fireId, BufferType.ENTITIES_ADDITIVE, rigidBody.getSin(), rigidBody.getCos());
-            spriteRenderer.setLastColor(fireId, BufferType.ENTITIES_ADDITIVE, colorFire);
-        }
-
-        if (light) {
-            spriteRenderer.setLastPosition(lightId, BufferType.ENTITIES_ADDITIVE, object.getX(), object.getY());
-            spriteRenderer.setLastRotation(lightId, BufferType.ENTITIES_ADDITIVE, rigidBody.getSin(), rigidBody.getCos());
-            spriteRenderer.setLastColor(lightId, BufferType.ENTITIES_ADDITIVE, colorLight);
+        if (fireAmount > 0) {
+            spriteRenderer.setLastFireAmount(id, BufferType.ENTITIES_ALPHA, fireAmount);
+            spriteRenderer.setLastFireUVAnimation(id, BufferType.ENTITIES_ALPHA, maskTexture.getFireUVAnimation());
+            spriteRenderer.setLastColorAlpha(id, BufferType.ENTITIES_ALPHA, color.w);
         }
     }
 
@@ -110,16 +85,6 @@ public class WreckRender extends RigidBodyRender {
     protected void updateRenderValues() {
         super.updateRenderValues();
         spriteRenderer.setColorAlpha(id, BufferType.ENTITIES_ALPHA, color.w);
-
-        if (fire) {
-            spriteRenderer.setPosition(fireId, BufferType.ENTITIES_ADDITIVE, object.getX(), object.getY());
-            spriteRenderer.setRotation(fireId, BufferType.ENTITIES_ADDITIVE, rigidBody.getSin(), rigidBody.getCos());
-        }
-
-        if (light) {
-            spriteRenderer.setPosition(lightId, BufferType.ENTITIES_ADDITIVE, object.getX(), object.getY());
-            spriteRenderer.setRotation(lightId, BufferType.ENTITIES_ADDITIVE, rigidBody.getSin(), rigidBody.getCos());
-        }
     }
 
     private void updateLifeTime() {
@@ -141,101 +106,38 @@ public class WreckRender extends RigidBodyRender {
     }
 
     private void updateFire() {
-        if (fire) {
-            if (fireFadingOut) {
-                if (colorFire.w > 0.4f) {
-                    colorFire.w -= fireAnimationSpeed;
-                    if (colorFire.w < 0.0f) {
-                        colorFire.w = 0.0f;
-                    }
-                } else {
-                    fireFadingOut = false;
+        if (fireFadingOut) {
+            if (fireAmount > 0.4f) {
+                fireAmount -= fireAnimationSpeed;
+                if (fireAmount < 0.0f) {
+                    fireAmount = 0.0f;
                 }
             } else {
-                if (colorFire.w < 1.0f) {
-                    colorFire.w += fireAnimationSpeed;
-                } else {
-                    fireFadingOut = true;
-                }
+                fireFadingOut = false;
             }
-
-            spriteRenderer.setColor(fireId, BufferType.ENTITIES_ADDITIVE, colorFire);
+        } else {
+            if (fireAmount < 1.0f) {
+                fireAmount += fireAnimationSpeed;
+            } else {
+                fireFadingOut = true;
+            }
         }
+
+        spriteRenderer.setFireAmount(id, BufferType.ENTITIES_ALPHA, fireAmount);
+        spriteRenderer.setFireUVAnimation(id, BufferType.ENTITIES_ALPHA, maskTexture.getFireUVAnimation());
 
         if (color.w <= 0.5f) {
-            if (colorFire.w > 0.0f) {
+            if (fireAmount > 0.0f) {
                 float fireSpeed = fireAnimationSpeed * 4.0f;
 
-                fire = false;
-                colorFire.w -= fireSpeed;
-                if (colorFire.w < 0.0f) {
-                    colorFire.w = 0.0f;
+                fireAmount -= fireSpeed;
+                if (fireAmount < 0.0f) {
+                    fireAmount = 0.0f;
                 }
 
-                spriteRenderer.setColor(fireId, BufferType.ENTITIES_ADDITIVE, colorFire);
+                spriteRenderer.setFireAmount(id, BufferType.ENTITIES_ALPHA, fireAmount);
+                spriteRenderer.setFireUVAnimation(id, BufferType.ENTITIES_ALPHA, maskTexture.getFireUVAnimation());
             }
-        }
-    }
-
-    private void updateSparkle() {
-        if (light) {
-            sparkleActivationTimerInFrames -= 1;
-            if (sparkleActivationTimerInFrames <= 0.0f) {
-                if (changeLight) {
-                    if (colorLight.w > 0.0f) {
-                        colorLight.w -= lightAnimationSpeed;
-                        if (colorLight.w < 0.0f) {
-                            colorLight.w = 0.0f;
-                        }
-                    } else {
-                        changeLight = false;
-                        sparkleBlinkTimer += 25.0f;
-                    }
-                } else {
-                    if (colorLight.w < color.w) {
-                        colorLight.w += lightAnimationSpeed;
-                    } else {
-                        changeLight = true;
-                        sparkleBlinkTimer += 25.0f;
-                    }
-                }
-            }
-
-            if (sparkleBlinkTimer >= 100.0f) {
-                sparkleActivationTimerInFrames = Engine.convertSecondsToFrames(200.0f + random.nextInt(200));
-                sparkleBlinkTimer = 0.0f;
-            }
-
-            spriteRenderer.setColor(lightId, BufferType.ENTITIES_ADDITIVE, colorLight);
-        }
-
-        updateSparkleFading();
-    }
-
-    private void updateSparkleFading() {
-        if (color.w < 0.3f) {
-            if (colorLight.w > 0.0f) {
-                light = false;
-                colorLight.w -= lightAnimationSpeed;
-                if (colorLight.w < 0.0f) {
-                    colorLight.w = 0.0f;
-                }
-
-                spriteRenderer.setColor(lightId, BufferType.ENTITIES_ADDITIVE, colorLight);
-            }
-        }
-    }
-
-    @Override
-    public void render() {
-        super.render();
-
-        if (colorFire.w > 0) {
-            spriteRenderer.addDrawCommand(fireId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ADDITIVE);
-        }
-
-        if (colorLight.w > 0) {
-            spriteRenderer.addDrawCommand(lightId, AbstractSpriteRenderer.CENTERED_QUAD_BASE_VERTEX, BufferType.ENTITIES_ADDITIVE);
         }
     }
 
@@ -249,12 +151,7 @@ public class WreckRender extends RigidBodyRender {
     public void clear() {
         super.clear();
 
-        if (fireId != -1) {
-            spriteRenderer.removeObject(fireId, BufferType.ENTITIES_ADDITIVE);
-        }
-
-        if (lightId != -1) {
-            spriteRenderer.removeObject(lightId, BufferType.ENTITIES_ADDITIVE);
-        }
+        maskTexture.delete();
+        renderer.memFree(byteBuffer);
     }
 }

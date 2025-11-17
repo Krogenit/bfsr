@@ -16,12 +16,9 @@ class WreckSpawnLogic implements EntitySpawnLogic<WreckSpawnData> {
 
     @Override
     public void spawn(WreckSpawnData spawnData, World world, ConfigConverterManager configConverterManager, AbstractRenderer renderer) {
-        world.add(wreckPool.get().init(world, spawnData.getEntityId(), spawnData.getWreckIndex(),
-                spawnData.isLight(), spawnData.isFire(), spawnData.isFireExplosion(), spawnData.getPosX(), spawnData.getPosY(),
-                spawnData.getVelocityX(), spawnData.getVelocityY(), spawnData.getSin(), spawnData.getCos(),
-                spawnData.getRotationSpeed(), spawnData.getSizeX(), spawnData.getSizeY(), spawnData.getMaxLifeTime(),
-                spawnData.getDestroyedShipId(), spawnData.getWreckType(),
-                wreckRegistry.getWreck(spawnData.getWreckType(), spawnData.getWreckIndex()))
-        );
+        world.add(wreckPool.get().init(world, spawnData.getEntityId(), spawnData.getPosX(), spawnData.getPosY(),
+                spawnData.getSin(), spawnData.getCos(), spawnData.getSizeX(), spawnData.getSizeY(), 0.0f, 0.0f, 0.0f,
+                spawnData.getMaxLifeTime(), spawnData.getDestroyedShipId(), spawnData.isEmitFire(),
+                wreckRegistry.get(spawnData.getDataId())));
     }
 }
