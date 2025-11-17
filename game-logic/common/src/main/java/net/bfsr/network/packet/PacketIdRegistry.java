@@ -19,6 +19,7 @@ public final class PacketIdRegistry {
 
     public static final int SHIP_JUMP = 112;
     public static final int SHIP_MOVE_TO_POINT = 113;
+    public static final int SHIP_TOGGLE_WEAPON = 114;
 
     /**
      * Server

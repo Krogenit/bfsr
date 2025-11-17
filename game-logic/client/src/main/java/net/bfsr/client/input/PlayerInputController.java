@@ -13,6 +13,7 @@ import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.world.World;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.network.packet.client.input.PacketMoveToPoint;
+import net.bfsr.network.packet.client.input.PacketToggleWeapon;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Fixture;
@@ -21,6 +22,7 @@ import org.joml.Vector2f;
 
 import static net.bfsr.engine.input.Keys.KEY_J;
 import static net.bfsr.engine.input.Keys.KEY_LEFT_CONTROL;
+import static net.bfsr.engine.input.Keys.KEY_Q;
 
 public class PlayerInputController extends InputController {
     private final Client client;
@@ -46,8 +48,14 @@ public class PlayerInputController extends InputController {
             return false;
         }
 
-        if (key == KEY_J && keyboard.isKeyDown(KEY_LEFT_CONTROL)) {
-            guiManager.openGui(new GuiJump());
+        if (keyboard.isKeyDown(KEY_LEFT_CONTROL)) {
+            if (key == KEY_J) {
+                guiManager.openGui(new GuiJump());
+            }
+        } else {
+            if (key == KEY_Q) {
+                client.sendTCPPacket(new PacketToggleWeapon());
+            }
         }
 
         return false;

@@ -24,13 +24,11 @@ public class PacketMoveToPoint extends PacketAdapter {
 
     @Override
     public void write(ByteBuf data) throws IOException {
-        super.write(data);
         ByteBufUtils.writeVector(data, point);
     }
 
     @Override
     public void read(ByteBuf data, GameLogic gameLogic) throws IOException {
-        super.read(data, gameLogic);
         ByteBufUtils.readVector(data, point);
     }
 }
