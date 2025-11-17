@@ -1,6 +1,7 @@
 package net.bfsr.entity.ship.module.weapon;
 
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.weapon.gun.GunData;
@@ -9,7 +10,9 @@ import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.physics.PhysicsUtils;
+import net.bfsr.engine.util.RandomHelper;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
@@ -46,6 +49,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
     private float sin, cos;
     @Getter
     protected final EventBus weaponSlotEventBus = new EventBus();
+    private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
     public WeaponSlot(GunData gunData, WeaponType weaponType) {
         super(gunData, gunData.getHp(), gunData.getSizeX(), gunData.getSizeY());
@@ -129,7 +133,13 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
         float sin = ship.getSin();
         float x = getX() + getSizeX() * cos;
         float y = getY() + getSizeX() * sin;
-        Bullet bullet = new Bullet(x, y, sin, cos, gunData, ship, gunData.getDamage().copy());
+
+        float randomAngle = RandomHelper.randomFloat(random, -0.05f, 0.05f);
+        float randomSin = LUT.sin(randomAngle);
+        float randomCos = LUT.cos(randomAngle);
+
+        Bullet bullet = new Bullet(x, y, sin * randomCos + cos * randomSin, cos * randomCos - sin * randomSin, gunData, ship,
+                gunData.getDamage().copy());
         bullet.init(world, world.getNextId());
         world.add(bullet, true, forceSpawn);
         return bullet;
