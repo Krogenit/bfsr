@@ -1,9 +1,10 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'com.gradleup.shadow' version '9.2.2'
     id 'org.springframework.boot' version '3.5.7'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'me.champeau.jmh' version '0.7.3'
+    id 'edu.sc.seis.launch4j' version '4.0.0'
 }
 
 dependencies {
@@ -95,10 +96,78 @@ bootJar {
     enabled = false
 }
 
+// Общая конфигурация для всех JAR
+def commonManifest = {
+    attributes(
+            'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
+            'Multi-Release': true//log4j2 workaround
+    )
+}
+
 jar {
     manifest {
         attributes 'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
                 'Main-Class': 'net.bfsr.client.launch.LWJGL3Main',
                 'Multi-Release': true//log4j2 workaround
     }
+}
+
+// Client JAR
+tasks.register('clientJar', Jar) {
+    archiveBaseName = 'client'
+    archiveClassifier = '' // убираем classifier
+
+    from sourceSets.main.output
+
+    manifest {
+        from commonManifest
+        attributes(
+                'Main-Class': 'com.example.ClientMain'
+        )
+    }
+
+    // Исключаем ненужные классы если нужно
+    exclude 'net/bfsr/editor/**'
+    exclude 'net/bfsr/benchmark/**'
+}
+
+// Editor JAR
+tasks.register('editorJar', Jar) {
+    archiveBaseName = 'editor'
+    archiveClassifier = ''
+
+    from sourceSets.main.output
+
+    manifest {
+        from commonManifest
+        attributes(
+                'Main-Class': 'com.example.EditorMain'
+        )
+    }
+
+    // Исключаем ненужные классы если нужно
+    exclude 'net/bfsr/benchmark/**'
+}
+
+// Benchmark JAR
+tasks.register('benchmarkJar', Jar) {
+    archiveBaseName = 'benchmark'
+    archiveClassifier = ''
+
+    from sourceSets.main.output
+
+    manifest {
+        from commonManifest
+        attributes(
+                'Main-Class': 'com.example.BenchmarkMain'
+        )
+    }
+
+    // Исключаем ненужные классы если нужно
+    exclude 'net/bfsr/editor/**'
+}
+
+// Мета-задача для сборки всех JAR
+tasks.register('buildAllJars') {
+    dependsOn clientJar, editorJar, benchmarkJar
 }

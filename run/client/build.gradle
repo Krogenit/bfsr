@@ -1,9 +1,197 @@
+apply plugin: 'edu.sc.seis.launch4j'
+
 jar {
-    archiveBaseName = 'run-client'
+    archiveBaseName = 'client'
     archiveVersion = '0.0.1-SNAPSHOT'
+
+    manifest {
+        attributes(
+                'Main-Class': 'net.bfsr.client.launch.LWJGL3Main'
+        )
+    }
 }
+
+var dependsDir = file('build/dependencies')
 
 dependencies {
     api project(':engine:lwjgl3')
     api project(':game-logic:client')
+}
+
+tasks.register('copyDepends', Copy) {
+    from configurations.runtimeClasspath
+    into dependsDir
+}
+
+// Функция для рекурсивного сбора всех проектнных зависимостей
+def collectAllProjectDependencies(Set<Project> collected, Configuration config) {
+    config.allDependencies.each { dep ->
+        if (dep instanceof ProjectDependency) {
+            def depProject = dep.dependencyProject
+            if (!collected.contains(depProject)) {
+                collected.add(depProject)
+                // Рекурсивно собираем зависимости этого проекта
+                collectAllProjectDependencies(collected, depProject.configurations.api)
+                collectAllProjectDependencies(collected, depProject.configurations.implementation)
+            }
+        }
+    }
+}
+
+tasks.register('fatJar', Jar) {
+    archiveBaseName = 'clientFat'
+    archiveVersion = '0.0.1-SNAPSHOT'
+
+    // Включаем классы текущего проекта
+    from sourceSets.main.output
+
+    // Собираем все проектнные зависимости
+    def allProjects = [] as Set<Project>
+    collectAllProjectDependencies(allProjects, configurations.api)
+    collectAllProjectDependencies(allProjects, configurations.implementation)
+
+    // Включаем классы и ресурсы всех найденных проектов
+    allProjects.each { depProject ->
+        println "Включаем проект: ${depProject.path}"
+        from(depProject.sourceSets.main.output)
+        from(depProject.sourceSets.main.resources)
+    }
+
+    manifest {
+        attributes(
+                'Main-Class': 'net.bfsr.client.launch.LWJGL3Main'
+        )
+    }
+
+    // Стратегия для дубликатов
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+launch4j {
+    setJarTask(fatJar)
+    mainClassName = "net.bfsr.client.launch.LWJGL3Main"
+    classpath = [
+            'lib/*.jar'
+    ]
+
+    // icon = "${projectDir}/favicon.ico"
+    copyright = "Spaceclipse"
+    companyName = "Spaceclipse Games"
+    fileDescription = "MMO 2D Space Game"
+    productName = "Spaceclipse"
+
+    bundledJrePath = 'jre'
+    jreMinVersion = "21"
+
+    headerType = "gui"
+    outfile = "Spaceclipse.exe"
+}
+
+// Единая задача для создания архива со всей игрой
+tasks.register('packageClient', Zip) {
+    dependsOn createExe
+
+    group = 'distribution'
+    description = 'Создает архив со всей игрой (EXE, lib, assets, JRE)'
+
+    // Путь для выходного архива
+    destinationDirectory = file("${projectDir}/output")
+    archiveBaseName = 'client'
+    archiveExtension = 'zip'
+
+    // 1. EXE файл из launch4j
+    from("${buildDir}/launch4j") {
+        include 'Spaceclipse.exe'
+        into '.'
+    }
+
+    // 2. Папка lib из launch4j
+    from("${buildDir}/launch4j/lib") {
+        into 'lib'
+    }
+
+    // 3. Папка assets из корня проекта
+    from(rootDir.path) {
+        include 'assets/**'
+        into '.'
+    }
+
+    // 4. JRE - несколько вариантов
+
+    // Вариант A: Из текущего Gradle runtime
+    doFirst {
+        def javaHome = System.getProperty('java.home')
+        def jreDir = file(javaHome)
+
+        if (jreDir.exists()) {
+            println "Копируем JRE из: $javaHome"
+
+            // Копируем JRE во временную папку
+            copy {
+                from(javaHome) {
+                    // Включаем только необходимое для JRE
+                    include 'bin/**'
+                    include 'lib/**'
+                    include 'conf/**'
+                }
+                into "${buildDir}/temp-jre"
+            }
+        } else {
+            println "Не удалось найти JRE в: $javaHome"
+        }
+    }
+
+    // Добавляем JRE из временной папки
+    from("${buildDir}/temp-jre") {
+        into 'jre'
+    }
+
+    // Вариант B: Из стандартного пути (раскомментировать если нужно)
+    /*
+    from('C:/Program Files/Java/jdk-21/') {
+        into 'jre'
+        include 'bin/**'
+        include 'lib/**'
+        include 'conf/**'
+        include 'release'
+        exclude 'bin/server/**'
+        exclude 'lib/src.zip'
+    }
+    */
+
+    // Вариант C: Если JRE уже есть в проекте
+    /*
+    from('jre-dist') {
+        into 'jre'
+    }
+    */
+
+    // Очистка временных файлов
+    doLast {
+        delete "${buildDir}/temp-jre"
+    }
+
+    // Информация о сборке
+    doLast {
+        def archiveFile = archiveFile.get().asFile
+        def fileCount = 0
+        def totalSize = 0
+
+        // Подсчет файлов в архиве
+        new java.util.zip.ZipFile(archiveFile).withCloseable { zip ->
+            fileCount = zip.size()
+            totalSize = zip.entries().collect { it.size }.sum()
+        }
+
+        println "========================================="
+        println "Архив создан: ${archiveFile.absolutePath}"
+        println "Размер архива: ${archiveFile.length() / 1024 / 1024} MB"
+        println "Файлов в архиве: $fileCount"
+        println "Содержимое:"
+        println "  - Spaceclipse.exe"
+        println "  - lib/ (библиотеки)"
+        println "  - assets/ (ресурсы игры)"
+        println "  - jre/ (Java Runtime)"
+        println "========================================="
+    }
 }
