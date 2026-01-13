@@ -30,8 +30,10 @@ public class ComboBox<V> extends GuiObject {
         this.fontSize = fontSize;
         this.stringOffsetY = stringOffsetY;
 
-        add(this.label = new Label(font, "", fontSize, StringOffsetType.CENTERED));
-        label.atBottomLeft(width / 2, label.getCenteredOffsetY(height));
+        label = new Label(font, "", fontSize, StringOffsetType.CENTERED);
+        label.setShadow(true).setShadowOffsetX(2).setShadowOffsetY(-2);
+        add(label);
+        this.label.atBottomLeft(width / 2, this.label.getCenteredOffsetY(height));
 
         setRenderer(new ComboBoxRenderer(this));
         setLeftReleaseConsumer((mouseX, mouseY) -> {
