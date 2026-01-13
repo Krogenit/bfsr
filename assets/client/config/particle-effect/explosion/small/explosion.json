@@ -39,7 +39,8 @@
   "sourceVelocityYMultiplier": 1.0,
   "spawnOverTime": 0.0,
   "texturePaths": [
-    "texture/particle/explosion.png"
+    "texture/particle/spark0.png",
+    "texture/particle/spark1.png"
   ],
-  "treeIndex": 2
+  "treeIndex": 1
 }
