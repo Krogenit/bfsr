@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public final class PathHelper {
-    private static final String ROOT_PATH = System.getProperty("assets.path", ".");
+    private static final String ROOT_PATH = System.getProperty("assets.path", "");
 
     public static final Path CLIENT_CONTENT = Path.of(ROOT_PATH + "assets/client");
     public static final Path CLIENT_CONFIG = CLIENT_CONTENT.resolve("config");
