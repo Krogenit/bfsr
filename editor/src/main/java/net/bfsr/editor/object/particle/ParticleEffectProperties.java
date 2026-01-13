@@ -20,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 public class ParticleEffectProperties extends ObjectProperties {
     @Property(elementType = PropertyGuiElementType.SIMPLE_LIST, arrayElementType = PropertyGuiElementType.FILE_SELECTOR,
-            arrayElementName = "assets/client/texture")
+            arrayElementName = "texture")
     private List<String> texturePaths;
     @Property
     private float spawnOverTime;
