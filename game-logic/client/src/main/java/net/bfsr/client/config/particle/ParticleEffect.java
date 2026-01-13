@@ -78,8 +78,22 @@ public class ParticleEffect extends ConfigData {
 
     public void applyConfig(ParticleEffectConfig config) {
         List<String> texturePaths = config.getTexturePaths();
-        textures = new AbstractTexture[texturePaths.size()];
+
+        int validTextures = 0;
         for (int i = 0; i < texturePaths.size(); i++) {
+            String texturePath = texturePaths.get(i);
+            if (!texturePath.isEmpty()) {
+                validTextures++;
+            }
+        }
+
+        textures = new AbstractTexture[validTextures];
+        for (int i = 0; i < texturePaths.size(); i++) {
+            String texturePath = texturePaths.get(i);
+            if (texturePath.isEmpty()) {
+                continue;
+            }
+
             textures[i] = Engine.getAssetsManager().getTexture(new TextureData(PathHelper.convertPath(texturePaths.get(i)),
                     TextureWrap.CLAMP_TO_EDGE, TextureFilter.LINEAR));
         }
