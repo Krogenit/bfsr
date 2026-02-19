@@ -45,7 +45,18 @@ public class ShipFactory {
     }
 
     public Ship createBotSaimonSmall(World world, float x, float y, float angle, Ai ai) {
-        return createBot(world, x, y, angle, Faction.SAIMON, shipRegistry.get("saimon_small0"), ai);
+        ShipData shipData;
+
+        int i = random.nextInt(3);
+        if (i == 0) {
+            shipData = shipRegistry.get("saimon_small0");
+        } else if (i == 1) {
+            shipData = shipRegistry.get("alan");
+        } else {
+            shipData = shipRegistry.get("alan_shade");
+        }
+
+        return createBot(world, x, y, angle, Faction.SAIMON, shipData, ai);
     }
 
     public Ship createBotEngiSmall(World world, float x, float y, float angle, Ai ai) {
