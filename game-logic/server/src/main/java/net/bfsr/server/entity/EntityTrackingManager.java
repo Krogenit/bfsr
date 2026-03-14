@@ -55,6 +55,10 @@ public class EntityTrackingManager {
     public void update(int frame, double time, List<? extends RigidBody> entities) {
         playerEntitiesInRangeMap.object2ObjectEntrySet().fastForEach(entry -> {
             Player player = entry.getKey();
+            if (player.getShip() == null) {
+                return;
+            }
+
             IntOpenHashSet entitiesInRange = entry.getValue();
 
             for (int i = 0, size = entities.size(); i < size; i++) {
