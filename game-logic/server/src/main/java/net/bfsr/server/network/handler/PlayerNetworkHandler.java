@@ -164,13 +164,9 @@ public class PlayerNetworkHandler extends NetworkHandler {
         }
 
         try {
-            if (singlePlayer) {
-                player = playerManager.load(username);
-            } else {
-                player = playerManager.load(username);
-            }
+            player = playerManager.load(username);
         } catch (Exception e) {
-            log.error("Couldn't auth user {}", username, e);
+            log.error("Couldn't load user {}", username, e);
             disconnect("Player service not available, try again later");
             return;
         }
@@ -189,14 +185,16 @@ public class PlayerNetworkHandler extends NetworkHandler {
         player.init(this, playerInputController);
         playerManager.addPlayer(player);
 
-        sendTCPPacket(new PacketLoginSuccess());
+        sendTCPPacket(new PacketLoginSuccess(world.getSeed(), gameLogic.getFrame(), gameLogic.getTime(),
+                ((byte) gameLogic.getGameplayMode().ordinal())));
         log.info("Player with username {} successful logged in", player.getUsername());
+        connectionState = ConnectionState.CONNECTED;
+        lastPingReceiveTime = System.currentTimeMillis();
     }
 
     public void joinGame() {
-        connectionState = ConnectionState.CONNECTED;
-        sendTCPPacket(new PacketJoinGame(world.getSeed(), gameLogic.getFrame(), gameLogic.getTime(),
-                ((byte) gameLogic.getGameplayMode().ordinal())));
+        sendTCPPacket(new PacketJoinGame());
+
         if (player.getFaction() != null) {
             playerManager.joinGame(world, player, shipSpawner, gameLogic.getFrame());
         } else {
@@ -204,7 +202,6 @@ public class PlayerNetworkHandler extends NetworkHandler {
         }
 
         world.getEventBus().publish(new PlayerJoinGameEvent(player));
-        lastPingReceiveTime = System.currentTimeMillis();
         log.info("Player with username {} successful joined game", player.getUsername());
     }
 
