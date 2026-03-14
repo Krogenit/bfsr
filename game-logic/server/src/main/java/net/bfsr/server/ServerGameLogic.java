@@ -6,6 +6,7 @@ import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.GameplayMode;
+import net.bfsr.config.ConfigProfiles;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.config.entity.station.StationData;
 import net.bfsr.config.entity.station.StationRegistry;
@@ -78,6 +79,7 @@ public abstract class ServerGameLogic extends GameLogic {
     }
 
     public void init() {
+        configConverterManager.applyProfileOverrides(ConfigProfiles.getOverlayRoot(gameplayMode));
         playerManager.init(createPlayerRepository(settings));
         long seed = new XoRoShiRo128PlusPlusRandom().nextLong();
         log.info("Creating world with seed {}", seed);

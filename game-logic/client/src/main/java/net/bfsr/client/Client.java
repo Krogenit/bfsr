@@ -39,6 +39,7 @@ import net.bfsr.client.world.entity.ClientEntityIdManager;
 import net.bfsr.client.world.entity.EntityManager;
 import net.bfsr.client.world.entity.PlayerShipManager;
 import net.bfsr.client.world.entity.spawn.EntitySpawnDataRegistry;
+import net.bfsr.config.ConfigProfiles;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.config.ConfigConverterManager;
@@ -290,6 +291,8 @@ public class Client extends ClientGameLogic {
 
     public void setGameplayMode(GameplayMode gameplayMode) {
         this.gameplayMode = gameplayMode;
+
+        configConverterManager.applyProfileOverrides(ConfigProfiles.getOverlayRoot(gameplayMode));
 
         if (playerInputController != null) {
             inputHandler.removeInputController(playerInputController);
