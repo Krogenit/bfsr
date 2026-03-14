@@ -104,7 +104,8 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
 
     @Override
     protected void createFixture(RigidBody rigidBody) {
-        fixture = new Fixture(polygon, world.getCollisionProfile().getShipFilter(), this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
+        fixture = new Fixture(polygon, rigidBody.getWorld().getCollisionProfile().getShipFilter(), this,
+                PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         rigidBody.addFixture(fixture);
     }
 
