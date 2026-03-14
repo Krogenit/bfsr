@@ -39,7 +39,10 @@ public class RenderEventListener {
         return event -> {
             DamageableModule module = event.getModule();
             ShipRender shipRender = entityRenderer.getRender(module.getShip().getId());
-            shipRender.onModuleDestroy(module);
+            // For removing this if you need to refactor ship spawn logic (ShipSpawnLogic:71 engine.setDead();)
+            if (shipRender != null) {
+                shipRender.onModuleDestroy(module);
+            }
         };
     }
 }
