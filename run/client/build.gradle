@@ -23,14 +23,14 @@ tasks.register('copyDepends', Copy) {
     into dependsDir
 }
 
-// Функция для рекурсивного сбора всех проектнных зависимостей
+// Helper to recursively collect all project dependencies
 def collectAllProjectDependencies(Set<Project> collected, Configuration config) {
     config.allDependencies.each { dep ->
         if (dep instanceof ProjectDependency) {
             def depProject = dep.dependencyProject
             if (!collected.contains(depProject)) {
                 collected.add(depProject)
-                // Рекурсивно собираем зависимости этого проекта
+                // Recursively collect this project's dependencies
                 collectAllProjectDependencies(collected, depProject.configurations.api)
                 collectAllProjectDependencies(collected, depProject.configurations.implementation)
             }
@@ -42,15 +42,15 @@ tasks.register('fatJar', Jar) {
     archiveBaseName = 'clientFat'
     archiveVersion = '0.0.1-SNAPSHOT'
 
-    // Включаем классы текущего проекта
+    // Include classes from this project
     from sourceSets.main.output
 
-    // Собираем все проектнные зависимости
+    // Collect all project dependencies
     def allProjects = [] as Set<Project>
     collectAllProjectDependencies(allProjects, configurations.api)
     collectAllProjectDependencies(allProjects, configurations.implementation)
 
-    // Включаем классы и ресурсы всех найденных проектов
+    // Include classes and resources from all discovered projects
     allProjects.each { depProject ->
         println "Включаем проект: ${depProject.path}"
         from(depProject.sourceSets.main.output)
@@ -63,7 +63,7 @@ tasks.register('fatJar', Jar) {
         )
     }
 
-    // Стратегия для дубликатов
+    // Duplicates handling strategy
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
@@ -87,38 +87,38 @@ launch4j {
     outfile = "Spaceclipse.exe"
 }
 
-// Единая задача для создания архива со всей игрой
+// Task for creating game archive with all included
 tasks.register('packageClient', Zip) {
     dependsOn createExe
 
     group = 'distribution'
-    description = 'Создает архив со всей игрой (EXE, lib, assets, JRE)'
+    description = 'Creates game archive (EXE, lib, assets, JRE)'
 
-    // Путь для выходного архива
-    destinationDirectory = file("${projectDir}/output")
+    // Output settings
+    destinationDirectory = file("${buildDir}/output")
     archiveBaseName = 'client'
     archiveExtension = 'zip'
 
-    // 1. EXE файл из launch4j
+    // 1. EXE from launch4j
     from("${buildDir}/launch4j") {
         include 'Spaceclipse.exe'
         into '.'
     }
 
-    // 2. Папка lib из launch4j
+    // 2. lib folder from launch4j
     from("${buildDir}/launch4j/lib") {
         into 'lib'
     }
 
-    // 3. Папка assets из корня проекта
+    // 3. assets folder from project root
     from(rootDir.path) {
         include 'assets/**'
         into '.'
     }
 
-    // 4. JRE - несколько вариантов
+    // 4. JRE - several options
 
-    // Вариант A: Из текущего Gradle runtime
+    // Option A: from current Gradle runtime
     doFirst {
         def javaHome = System.getProperty('java.home')
         def jreDir = file(javaHome)
@@ -126,10 +126,10 @@ tasks.register('packageClient', Zip) {
         if (jreDir.exists()) {
             println "Копируем JRE из: $javaHome"
 
-            // Копируем JRE во временную папку
+            // Copy JRE into a temporary directory
             copy {
                 from(javaHome) {
-                    // Включаем только необходимое для JRE
+                    // Include only what is needed for JRE
                     include 'bin/**'
                     include 'lib/**'
                     include 'conf/**'
@@ -141,12 +141,12 @@ tasks.register('packageClient', Zip) {
         }
     }
 
-    // Добавляем JRE из временной папки
+    // Add JRE from temporary directory
     from("${buildDir}/temp-jre") {
         into 'jre'
     }
 
-    // Вариант B: Из стандартного пути (раскомментировать если нужно)
+    // Option B: from a standard path (uncomment if needed)
     /*
     from('C:/Program Files/Java/jdk-21/') {
         into 'jre'
@@ -159,25 +159,25 @@ tasks.register('packageClient', Zip) {
     }
     */
 
-    // Вариант C: Если JRE уже есть в проекте
+    // Option C: if a JRE already exists in the project
     /*
     from('jre-dist') {
         into 'jre'
     }
     */
 
-    // Очистка временных файлов
+    // Cleanup temporary files
     doLast {
         delete "${buildDir}/temp-jre"
     }
 
-    // Информация о сборке
+    // Build info
     doLast {
         def archiveFile = archiveFile.get().asFile
         def fileCount = 0
         def totalSize = 0
 
-        // Подсчет файлов в архиве
+        // Count files in archive
         new java.util.zip.ZipFile(archiveFile).withCloseable { zip ->
             fileCount = zip.size()
             totalSize = zip.entries().collect { it.size }.sum()
