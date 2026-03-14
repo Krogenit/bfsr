@@ -9,6 +9,7 @@ import net.bfsr.engine.physics.CommonRayCastManager;
 import net.bfsr.engine.physics.DefaultRayCastManager;
 import net.bfsr.engine.physics.collision.AbstractCollisionMatrix;
 import net.bfsr.engine.physics.collision.ContactListener;
+import net.bfsr.engine.physics.collision.filter.CollisionProfile;
 import net.bfsr.engine.physics.collision.filter.ContactFilter;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.world.entity.AbstractEntityManager;
@@ -34,9 +35,11 @@ public class World {
     private final GameLogic gameLogic;
     private final AbstractCollisionMatrix collisionMatrix;
     private final ContactFilter contactFilter;
+    private final CollisionProfile collisionProfile;
 
     public World(Profiler profiler, long seed, EventBus eventBus, AbstractEntityManager entityManager,
-                 EntityIdManager entityIdManager, GameLogic gameLogic, AbstractCollisionMatrix collisionMatrix) {
+                 EntityIdManager entityIdManager, GameLogic gameLogic, AbstractCollisionMatrix collisionMatrix,
+                 CollisionProfile collisionProfile) {
         this.profiler = profiler;
         this.seed = seed;
         this.eventBus = eventBus;
@@ -44,6 +47,7 @@ public class World {
         this.entityIdManager = entityIdManager;
         this.gameLogic = gameLogic;
         this.collisionMatrix = collisionMatrix;
+        this.collisionProfile = collisionProfile;
         this.contactFilter = new ContactFilter(collisionMatrix);
         this.physicWorld.setContactListener(new ContactListener(collisionMatrix));
         this.physicWorld.setContactFilter(contactFilter);

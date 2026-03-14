@@ -22,7 +22,7 @@ public class PacketWorldSnapshotHandler extends PacketHandler<PacketWorldSnapsho
         client.getTimeSyncManager().addData(new TimeSyncManager.TimeData(packet.getFrame(), packet.getTime()));
 
         UnorderedArrayList<PacketWorldSnapshot.EntityData> entityDataList = packet.getEntityDataList();
-        EntityDataHistoryManager historyManager = Client.get().getWorld().getEntityManager().getDataHistoryManager();
+        EntityDataHistoryManager historyManager = client.getWorld().getEntityManager().getDataHistoryManager();
         for (int i = 0; i < entityDataList.size(); i++) {
             historyManager.addData(entityDataList.get(i), packet.getFrame());
         }

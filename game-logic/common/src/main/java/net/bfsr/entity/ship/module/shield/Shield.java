@@ -8,7 +8,6 @@ import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.module.CommonShieldLogic;
-import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.dynamics.Fixture;
 
@@ -42,7 +41,8 @@ public class Shield extends DamageableModule {
 
     @Override
     public void createFixture(RigidBody rigidBody) {
-        fixture = new Fixture(shieldShape, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
+        fixture = new Fixture(shieldShape, rigidBody.getWorld().getCollisionProfile().getShipFilter(), this,
+                PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         rigidBody.addFixture(fixture);
     }
 

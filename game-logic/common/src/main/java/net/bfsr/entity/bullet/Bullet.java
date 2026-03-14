@@ -9,7 +9,6 @@ import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.EntityTypes;
 import net.bfsr.network.packet.common.entity.spawn.BulletSpawnData;
-import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Fixture;
@@ -53,7 +52,7 @@ public class Bullet extends RigidBody {
     @Override
     protected void initBody() {
         super.initBody();
-        addFixture(new Fixture(polygon, Filters.BULLET_FILTER, this, 0.0f));
+        addFixture(new Fixture(polygon, world.getCollisionProfile().getBulletFilter(), this, 0.0f));
     }
 
     @Override

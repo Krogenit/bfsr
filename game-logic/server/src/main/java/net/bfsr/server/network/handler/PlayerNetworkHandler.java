@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.GameplayMode;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.network.ConnectionState;
 import net.bfsr.engine.network.NetworkHandler;
@@ -30,7 +31,10 @@ import net.bfsr.server.entity.ship.ShipSpawner;
 import net.bfsr.server.event.PlayerDisconnectEvent;
 import net.bfsr.server.event.PlayerJoinGameEvent;
 import net.bfsr.server.player.Player;
+import net.bfsr.server.player.PlayerInputController;
 import net.bfsr.server.player.PlayerManager;
+import net.bfsr.server.player.SessionPlayerInputController;
+import net.bfsr.server.player.StrategicPlayerInputController;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.InetSocketAddress;
@@ -161,9 +165,9 @@ public class PlayerNetworkHandler extends NetworkHandler {
 
         try {
             if (singlePlayer) {
-                player = playerManager.get(username);
+                player = playerManager.load(username);
             } else {
-                player = playerManager.get(username);
+                player = playerManager.load(username);
             }
         } catch (Exception e) {
             log.error("Couldn't auth user {}", username, e);
@@ -171,7 +175,18 @@ public class PlayerNetworkHandler extends NetworkHandler {
             return;
         }
 
-        player.init(this, entityTrackingManager, playerManager, aiFactory);
+        PlayerInputController playerInputController;
+        if (gameLogic.getGameplayMode() == GameplayMode.MMO) {
+            playerInputController = new StrategicPlayerInputController(
+                    player, this, entityTrackingManager, aiFactory
+            );
+        } else {
+            playerInputController = new SessionPlayerInputController(
+                    player, this, entityTrackingManager, aiFactory
+            );
+        }
+
+        player.init(this, playerInputController);
         playerManager.addPlayer(player);
 
         sendTCPPacket(new PacketLoginSuccess());
@@ -180,7 +195,8 @@ public class PlayerNetworkHandler extends NetworkHandler {
 
     public void joinGame() {
         connectionState = ConnectionState.CONNECTED;
-        sendTCPPacket(new PacketJoinGame(world.getSeed(), gameLogic.getFrame(), gameLogic.getTime()));
+        sendTCPPacket(new PacketJoinGame(world.getSeed(), gameLogic.getFrame(), gameLogic.getTime(),
+                ((byte) gameLogic.getGameplayMode().ordinal())));
         if (player.getFaction() != null) {
             playerManager.joinGame(world, player, shipSpawner, gameLogic.getFrame());
         } else {

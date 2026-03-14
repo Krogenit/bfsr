@@ -2,6 +2,7 @@ package net.bfsr.client;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.GameplayMode;
 import net.bfsr.client.assets.FontType;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.damage.DamageHandler;
@@ -13,6 +14,8 @@ import net.bfsr.client.input.DebugInputController;
 import net.bfsr.client.input.GuiInputController;
 import net.bfsr.client.input.InputHandler;
 import net.bfsr.client.input.PlayerInputController;
+import net.bfsr.client.input.SessionPlayerInputController;
+import net.bfsr.client.input.StrategicPlayerInputController;
 import net.bfsr.client.language.LanguageManager;
 import net.bfsr.client.listener.entity.ShipEventListener;
 import net.bfsr.client.listener.gui.GuiEventListener;
@@ -56,6 +59,7 @@ import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.logic.LogicType;
 import net.bfsr.physics.collision.CollisionMatrix;
+import net.bfsr.physics.collision.filter.CollisionProfiles;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2f;
 
@@ -67,9 +71,7 @@ public class Client extends ClientGameLogic {
     public static final String GAME_VERSION = "Dev 0.1.8";
     private static Client instance;
 
-    @Getter
     private double renderTime;
-    @Getter
     private int renderFrame;
 
     private final LanguageManager languageManager = new LanguageManager().load();
@@ -77,9 +79,9 @@ public class Client extends ClientGameLogic {
     private final ConfigSettings settings = new ConfigSettings();
 
     private final PlayerShipManager playerShipManager = new PlayerShipManager(this);
-    private final PlayerInputController playerInputController = new PlayerInputController(this);
+    private PlayerInputController playerInputController;
     private final CameraInputController cameraInputController = new CameraInputController(this, playerShipManager);
-    private final InputHandler inputHandler = new InputHandler(new GuiInputController(), cameraInputController, playerInputController,
+    private final InputHandler inputHandler = new InputHandler(new GuiInputController(), cameraInputController,
             new DebugInputController(this));
 
     private final GuiManager guiManager = Engine.getGuiManager();
@@ -113,10 +115,10 @@ public class Client extends ClientGameLogic {
 
     protected HUD hud;
 
+    private GameplayMode gameplayMode;
     private World world = BlankWorld.get();
     private String playerName;
 
-    @Getter
     private LocalServer localServer;
     private ThreadLocalServer threadLocalServer;
 
@@ -286,9 +288,24 @@ public class Client extends ClientGameLogic {
         guiManager.resize(width, height);
     }
 
+    public void setGameplayMode(GameplayMode gameplayMode) {
+        this.gameplayMode = gameplayMode;
+
+        if (playerInputController != null) {
+            inputHandler.removeInputController(playerInputController);
+        }
+
+        this.playerInputController = gameplayMode == GameplayMode.MMO ?
+                new StrategicPlayerInputController(this) :
+                new SessionPlayerInputController(this);
+
+        inputHandler.addInputControllerAfter(playerInputController, cameraInputController);
+    }
+
     public void createWorld(long seed) {
+        GameplayMode effectiveMode = gameplayMode == null ? GameplayMode.MMO : gameplayMode;
         world = new World(profiler, seed, eventBus, new EntityManager(eventBus), entityIdManager, this,
-                new CollisionMatrix(new CollisionHandler(this)));
+                new CollisionMatrix(new CollisionHandler(this)), CollisionProfiles.forGameplayMode(effectiveMode));
         world.init();
     }
 

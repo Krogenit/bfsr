@@ -5,6 +5,7 @@ import io.netty.channel.socket.SocketChannel;
 import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.GameplayMode;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.config.entity.station.StationData;
 import net.bfsr.config.entity.station.StationRegistry;
@@ -26,6 +27,7 @@ import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.logic.LogicType;
 import net.bfsr.physics.collision.CollisionMatrix;
+import net.bfsr.physics.collision.filter.CollisionProfiles;
 import net.bfsr.server.ai.AiFactory;
 import net.bfsr.server.config.ServerSettings;
 import net.bfsr.server.database.PlayerRepository;
@@ -65,6 +67,7 @@ public abstract class ServerGameLogic extends GameLogic {
             addObjectPool(Wreck.class, new ObjectPool<>(Wreck::new)));
     private final CollisionHandler collisionHandler = new CollisionHandler(this, eventBus, damageSystem, entityTrackingManager,
             wreckSpawner);
+    private final GameplayMode gameplayMode = settings.getGameplayMode();
 
     private int ups;
     private World world;
@@ -79,7 +82,7 @@ public abstract class ServerGameLogic extends GameLogic {
         long seed = new XoRoShiRo128PlusPlusRandom().nextLong();
         log.info("Creating world with seed {}", seed);
         world = new World(profiler, seed, eventBus, new EntityManager(), new EntityIdManager(), this,
-                new CollisionMatrix(collisionHandler));
+                new CollisionMatrix(collisionHandler), CollisionProfiles.forGameplayMode(gameplayMode));
         world.init();
         profiler.setEnable(true);
         networkSystem.init();
@@ -110,14 +113,16 @@ public abstract class ServerGameLogic extends GameLogic {
     }
 
     private void populateWorld() {
-        StationRegistry registry = configConverterManager.getConverter(StationRegistry.class);
-        StationData stationData = registry.get("human");
+        if (gameplayMode == GameplayMode.MMO) {
+            StationRegistry registry = configConverterManager.getConverter(StationRegistry.class);
+            StationData stationData = registry.get("human");
 
-        Station station = new Station(stationData);
-        station.init(world, world.getNextId());
-        float angle = 1.75f;
-        station.setRotation(LUT.sin(angle), LUT.cos(angle));
-        world.add(station);
+            Station station = new Station(stationData);
+            station.init(world, world.getNextId());
+            float angle = 1.75f;
+            station.setRotation(LUT.sin(angle), LUT.cos(angle));
+            world.add(station);
+        }
     }
 
     @Override

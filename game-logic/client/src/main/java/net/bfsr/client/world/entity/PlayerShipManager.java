@@ -39,12 +39,11 @@ public class PlayerShipManager {
                 return;
             }
 
-            this.ship = ship;
-            eventBus.publish(new SetPlayerShipEvent(ship));
-        }
-
-        if (ship.isDead()) {
-            resetShip();
+            setShip(ship);
+        } else {
+            if (ship.isDead()) {
+                resetShip();
+            }
         }
     }
 
@@ -56,8 +55,14 @@ public class PlayerShipManager {
         }
     }
 
+    private void setShip(Ship ship) {
+        Ship oldShip = this.ship;
+        this.ship = ship;
+        eventBus.publish(new SetPlayerShipEvent(oldShip, ship));
+    }
+
     private void resetShip() {
-        ship = null;
+        setShip(null);
         shipId = NO_SHIP_ID;
     }
 

@@ -12,7 +12,6 @@ import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.physics.RayCastType;
-import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Fixture;
 import org.jetbrains.annotations.Nullable;
@@ -123,7 +122,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
         rayCastResultFixture = null;
 
         ship.getRayCastManager().rayCast(ship, (fixture, point, normal, fraction) -> {
-            if (!world.getContactFilter().shouldCollide(fixture.getFilter(), Filters.BEAM_FILTER)) {
+            if (!world.getContactFilter().shouldCollide(fixture.getFilter(), world.getCollisionProfile().getBeamFilter())) {
                 return -1.0f;
             }
 

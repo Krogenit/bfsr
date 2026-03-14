@@ -19,12 +19,14 @@ public class PacketJoinGame extends PacketAdapter {
     private long seed;
     private int frame;
     private double serverTime;
+    private byte gameplayMode;
 
     @Override
     public void write(ByteBuf data) throws IOException {
         data.writeLong(seed);
         data.writeInt(frame);
         data.writeDouble(serverTime);
+        data.writeByte(gameplayMode);
     }
 
     @Override
@@ -32,5 +34,6 @@ public class PacketJoinGame extends PacketAdapter {
         seed = data.readLong();
         frame = data.readInt();
         serverTime = data.readDouble();
+        gameplayMode = data.readByte();
     }
 }

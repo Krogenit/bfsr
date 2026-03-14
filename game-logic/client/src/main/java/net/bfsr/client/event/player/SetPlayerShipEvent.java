@@ -8,5 +8,6 @@ import net.bfsr.entity.ship.Ship;
 @Getter
 @RequiredArgsConstructor
 public class SetPlayerShipEvent extends Event {
+    private final Ship oldShip;
     private final Ship ship;
 }

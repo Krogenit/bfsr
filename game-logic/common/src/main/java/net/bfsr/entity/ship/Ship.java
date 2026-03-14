@@ -33,7 +33,6 @@ import net.bfsr.event.entity.ship.ShipRemoveMoveDirectionEvent;
 import net.bfsr.event.entity.ship.ShipUpdateEvent;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.packet.common.entity.spawn.ship.ShipSpawnData;
-import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Filter;
@@ -420,7 +419,7 @@ public class Ship extends DamageableRigidBody {
 
     @Override
     public Filter getCollisionFilter(Fixture fixture) {
-        return Filters.SHIP_FILTER;
+        return world.getCollisionProfile().getShipFilter();
     }
 
     @Override

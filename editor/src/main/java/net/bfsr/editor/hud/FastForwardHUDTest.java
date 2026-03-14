@@ -1,6 +1,7 @@
 package net.bfsr.editor.hud;
 
 import lombok.RequiredArgsConstructor;
+import net.bfsr.GameplayMode;
 import net.bfsr.client.Client;
 import net.bfsr.client.physics.CollisionHandler;
 import net.bfsr.client.renderer.entity.BulletRender;
@@ -25,6 +26,7 @@ import net.bfsr.entity.bullet.Bullet;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
 import net.bfsr.physics.collision.CollisionMatrix;
+import net.bfsr.physics.collision.filter.CollisionProfiles;
 import net.bfsr.server.entity.EntityManager;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.common.Vector2;
@@ -56,7 +58,8 @@ class FastForwardHUDTest {
         if (fastForwardTesting) {
             Client client = Client.get();
             world = new World(new Profiler(), 0L, new EventBus(), new EntityManager(), new ClientEntityIdManager(client),
-                    client, new CollisionMatrix(new CollisionHandler(client)));
+                    client, new CollisionMatrix(new CollisionHandler(client)),
+                    CollisionProfiles.forGameplayMode(GameplayMode.SESSION));
             world.init();
 
             ShipRegistry shipRegistry = client.getConfigConverterManager().getConverter(ShipRegistry.class);

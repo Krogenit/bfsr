@@ -3,7 +3,6 @@ package net.bfsr.entity;
 import net.bfsr.config.entity.station.StationData;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.network.packet.common.entity.spawn.StationSpawnData;
-import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.dynamics.BodyType;
 import org.jbox2d.dynamics.Filter;
@@ -81,7 +80,7 @@ public class Station extends RigidBody {
 
     @Override
     public Filter getCollisionFilter(Fixture fixture) {
-        return Filters.SHIP_FILTER;
+        return world.getCollisionProfile().getShipFilter();
     }
 
     @Override

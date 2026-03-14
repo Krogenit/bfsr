@@ -1,5 +1,6 @@
 package net.bfsr.server.world;
 
+import net.bfsr.GameplayMode;
 import net.bfsr.engine.ai.Ai;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.profiler.Profiler;
@@ -12,6 +13,7 @@ import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.entity.ship.module.Modules;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.physics.collision.CollisionMatrix;
+import net.bfsr.physics.collision.filter.CollisionProfiles;
 import net.bfsr.server.dedicated.DedicatedServerGameLogic;
 import net.bfsr.server.engine.EmptyGameLoop;
 import net.bfsr.server.entity.EntityManager;
@@ -37,7 +39,7 @@ public class ShipOutfitterTest {
         CollisionMatrix collisionMatrix = new CollisionMatrix(new CollisionHandler(gameLogic, gameLogic.getEventBus(),
                 gameLogic.getDamageSystem(), gameLogic.getEntityTrackingManager(), gameLogic.getWreckSpawner()));
         world = new World(gameLogic.getProfiler(), 0, gameLogic.getEventBus(), entityManager, entityIdManager, gameLogic,
-                collisionMatrix);
+                collisionMatrix, CollisionProfiles.forGameplayMode(GameplayMode.MMO));
     }
 
     @Test

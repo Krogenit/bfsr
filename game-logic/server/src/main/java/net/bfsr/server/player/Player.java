@@ -5,9 +5,7 @@ import lombok.Setter;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.faction.Faction;
-import net.bfsr.server.ai.AiFactory;
 import net.bfsr.server.dto.Default;
-import net.bfsr.server.entity.EntityTrackingManager;
 import net.bfsr.server.network.handler.PlayerNetworkHandler;
 
 @Getter
@@ -33,10 +31,9 @@ public class Player {
         this(null, username);
     }
 
-    public void init(PlayerNetworkHandler networkHandler, EntityTrackingManager entityTrackingManager, PlayerManager playerManager,
-                     AiFactory aiFactory) {
+    public void init(PlayerNetworkHandler networkHandler, PlayerInputController playerInputController) {
         this.networkHandler = networkHandler;
-        this.playerInputController = new PlayerInputController(this, networkHandler, entityTrackingManager, aiFactory);
+        this.playerInputController = playerInputController;
     }
 
     public float getX() {

@@ -9,7 +9,6 @@ import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.EntityTypes;
 import net.bfsr.event.entity.wreck.WreckDeathEvent;
 import net.bfsr.network.packet.common.entity.spawn.WreckSpawnData;
-import net.bfsr.physics.collision.filter.Filters;
 import org.dyn4j.geometry.Geometry;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.common.Vector2;
@@ -77,7 +76,7 @@ public class Wreck extends RigidBody {
             centroid.setZero();
         }
 
-        addFixture(new Fixture(polygon, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
+        addFixture(new Fixture(polygon, world.getCollisionProfile().getShipFilter(), this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
     }
 
     @Override

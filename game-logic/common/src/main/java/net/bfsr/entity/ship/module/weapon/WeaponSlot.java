@@ -22,7 +22,6 @@ import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.event.module.weapon.WeaponShotEvent;
 import net.bfsr.event.module.weapon.WeaponSlotRemovedEvent;
-import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.Fixture;
@@ -93,8 +92,8 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
         rigidBody.init(world, world.getNextId());
         Body body = rigidBody.getBody();
 
-        rigidBody.addFixture(new Fixture(new Polygon(gunData.getPolygon().getVertices()), Filters.SHIP_FILTER, this,
-                PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
+        rigidBody.addFixture(new Fixture(new Polygon(gunData.getPolygon().getVertices()),
+                world.getCollisionProfile().getShipFilter(), this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
         body.setLinearDamping(0.05f);
         body.setAngularDamping(0.005f);
         body.setLinearVelocity(this.ship.getBody().getLinearVelocity());
@@ -105,7 +104,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
 
     @Override
     protected void createFixture(RigidBody rigidBody) {
-        fixture = new Fixture(polygon, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
+        fixture = new Fixture(polygon, world.getCollisionProfile().getShipFilter(), this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         rigidBody.addFixture(fixture);
     }
 
