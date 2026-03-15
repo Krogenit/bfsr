@@ -1,7 +1,7 @@
 plugins {
     id 'java'
-    id 'com.gradleup.shadow' version '9.2.2'
-    id 'org.springframework.boot' version '3.5.7' apply false
+    id 'com.gradleup.shadow' version '9.4.0'
+    id 'org.springframework.boot' version '4.0.3' apply false
     id 'io.spring.dependency-management' version '1.1.7' apply false
     id 'me.champeau.jmh' version '0.7.3' apply false
 }
@@ -46,16 +46,16 @@ subprojects {
     rootProject.ext.arch = detectArch()
 
     dependencies {
-        compileOnly 'org.projectlombok:lombok:1.18.38'
-        annotationProcessor 'org.projectlombok:lombok:1.18.38'
+        compileOnly 'org.projectlombok:lombok:1.18.44'
+        annotationProcessor 'org.projectlombok:lombok:1.18.44'
 
-        testCompileOnly 'org.projectlombok:lombok:1.18.38'
-        testAnnotationProcessor 'org.projectlombok:lombok:1.18.38'
+        testCompileOnly 'org.projectlombok:lombok:1.18.44'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.44'
 
         annotationProcessor "org.mapstruct:mapstruct-processor:1.6.3", "org.projectlombok:lombok-mapstruct-binding:0.2.0"
         testAnnotationProcessor "org.mapstruct:mapstruct-processor:1.6.3"
 
-        testImplementation platform('org.junit:junit-bom:5.12.2')
+        testImplementation platform('org.junit:junit-bom:6.0.3')
         testImplementation 'org.junit.jupiter:junit-jupiter'
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     }

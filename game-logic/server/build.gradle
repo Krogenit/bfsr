@@ -15,7 +15,7 @@ jar {
 dependencies {
     api project(':common-server-data-model')
 
-    implementation 'org.springframework.boot:spring-boot-starter-rsocket:3.5.7'
+    implementation 'org.springframework.boot:spring-boot-starter-rsocket:4.0.3'
 
     testImplementation(testFixtures(project(':mongodb-service')))
 }
