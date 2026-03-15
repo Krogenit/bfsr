@@ -95,7 +95,7 @@ jobs:
           Compress-Archive -Path "$src\*" -DestinationPath $dst
 
       - name: Upload platform artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: artifacts-${{ matrix.platform }}
           path: artifact-${{ matrix.platform }}.zip
@@ -109,10 +109,10 @@ jobs:
     env:
       VERSION: ${{ needs.release-please.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
@@ -122,19 +122,19 @@ jobs:
 
       # Скачиваем все три платформы чтобы manifest был полным
       - name: Download linux artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: artifacts-linux
           path: ./downloads/linux
 
       - name: Download mac artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: artifacts-mac
           path: ./downloads/mac
 
       - name: Download windows artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: artifacts-windows
           path: ./downloads/windows
@@ -166,7 +166,7 @@ jobs:
           ls -laR out/manifest
 
       - name: Upload manifests artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: manifests
           path: out/manifest/
@@ -179,25 +179,25 @@ jobs:
     if: needs.release-please.outputs.release_created == 'true'
     steps:
       - name: Download platform artifacts (linux)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: artifacts-linux
           path: ./downloads/linux
 
       - name: Download platform artifacts (mac)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: artifacts-mac
           path: ./downloads/mac
 
       - name: Download platform artifacts (windows)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: artifacts-windows
           path: ./downloads/windows
 
       - name: Download manifest (from linux build)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: manifest
           path: ./downloads/manifest
