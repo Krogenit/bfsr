@@ -1,8 +1,70 @@
+//run/client/build.gradle:
+plugins {
+    id 'org.beryx.runtime' version '2.0.1'
+    id 'edu.sc.seis.launch4j' version '4.0.0'
+}
+
 apply plugin: 'edu.sc.seis.launch4j'
+apply plugin: 'org.beryx.runtime'
+
+application {
+    mainClass = 'net.bfsr.client.launch.LWJGL3Main'
+}
+
+def targetPlatform = rootProject.ext.targetPlatform
+def isWindowsTarget = targetPlatform == 'windows'
+def isMacTarget = targetPlatform == 'mac'
+
+def releaseVersion = project.findProperty('releaseVersion')?.toString()
+if (!releaseVersion) {
+    def v = project.version?.toString()
+    if (v && v != 'unspecified') {
+        releaseVersion = v
+    }
+}
+if (!releaseVersion) {
+    releaseVersion = System.getenv('VERSION')?.toString()
+}
+if (releaseVersion) {
+    project.version = releaseVersion
+} else if (project.version == 'unspecified') {
+    project.version = '0.0.1-SNAPSHOT'
+}
+
+runtime {
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    modules = [
+            'java.base',
+            'java.compiler',
+            'java.desktop',
+            'java.instrument',
+            'java.management',
+            'java.naming',
+            'java.net.http',
+            'java.prefs',
+            'java.rmi',
+            'java.scripting',
+            'java.security.jgss',
+            'java.security.sasl',
+            'java.sql',
+            'jdk.attach',
+            'jdk.jdi',
+            'jdk.jfr',
+            'jdk.sctp',
+            'jdk.unsupported'
+    ]
+
+    imageDir = file("$buildDir/runtime-image")
+
+    // optional jpackage config
+    jpackage {
+        imageName = 'Spaceclipse'
+    }
+}
 
 jar {
     archiveBaseName = 'client'
-    archiveVersion = '0.0.1-SNAPSHOT'
+    archiveVersion = project.version.toString()
 
     manifest {
         attributes(
@@ -40,7 +102,7 @@ def collectAllProjectDependencies(Set<Project> collected, Configuration config) 
 
 tasks.register('fatJar', Jar) {
     archiveBaseName = 'clientFat'
-    archiveVersion = '0.0.1-SNAPSHOT'
+    archiveVersion = project.version.toString()
 
     // Include classes from this project
     from sourceSets.main.output
@@ -52,7 +114,7 @@ tasks.register('fatJar', Jar) {
 
     // Include classes and resources from all discovered projects
     allProjects.each { depProject ->
-        println "Включаем проект: ${depProject.path}"
+        println "Including project: ${depProject.path}"
         from(depProject.sourceSets.main.output)
         from(depProject.sourceSets.main.resources)
     }
@@ -76,7 +138,7 @@ launch4j {
 
     // icon = "${projectDir}/favicon.ico"
     copyright = "Spaceclipse"
-    companyName = "Spaceclipse Games"
+    companyName = "Spaceclipse"
     fileDescription = "MMO 2D Space Game"
     productName = "Spaceclipse"
 
@@ -87,111 +149,120 @@ launch4j {
     outfile = "Spaceclipse.exe"
 }
 
-// Task for creating game archive with all included
-tasks.register('packageClient', Zip) {
-    dependsOn createExe
-
+tasks.register('assembleClientLayout') {
     group = 'distribution'
-    description = 'Creates game archive (EXE, lib, assets, JRE)'
-
-    // Output settings
-    destinationDirectory = file("${buildDir}/output")
-    archiveBaseName = 'client'
-    archiveExtension = 'zip'
-
-    // 1. EXE from launch4j
-    from("${buildDir}/launch4j") {
-        include 'Spaceclipse.exe'
-        into '.'
+    description = 'Prepare client folder layout (already unpacked)'
+    dependsOn 'runtime'
+    if (isWindowsTarget) {
+        dependsOn 'createExe'
+    } else {
+        dependsOn 'jar'
+        dependsOn 'copyDepends'
     }
 
-    // 2. lib folder from launch4j
-    from("${buildDir}/launch4j/lib") {
-        into 'lib'
-    }
-
-    // 3. assets folder from project root
-    from(rootDir.path) {
-        include 'assets/**'
-        into '.'
-    }
-
-    // 4. JRE - several options
-
-    // Option A: from current Gradle runtime
     doFirst {
-        def javaHome = System.getProperty('java.home')
-        def jreDir = file(javaHome)
+        println "Preparing client layout in build/output/"
+        def outDir = file("${buildDir}/output")
+        if (outDir.exists()) {
+            outDir.deleteDir()
+        }
+        outDir.mkdirs()
 
-        if (jreDir.exists()) {
-            println "Копируем JRE из: $javaHome"
-
-            // Copy JRE into a temporary directory
-            copy {
-                from(javaHome) {
-                    // Include only what is needed for JRE
-                    include 'bin/**'
-                    include 'lib/**'
-                    include 'conf/**'
+        if (isWindowsTarget) {
+            // 1) Copy EXE (from launch4j output)
+            def launch4jDir = file("${buildDir}/launch4j")
+            if (launch4jDir.exists()) {
+                copy {
+                    from launch4jDir
+                    include 'Spaceclipse.exe'
+                    into outDir
+                    // Windows exe: no chmod required, но на Unix сохраняем mode 0755 на всякий случай
+                    fileMode = 0755
                 }
-                into "${buildDir}/temp-jre"
+            } else {
+                println "Warning: launch4j dir not found: ${launch4jDir}"
+            }
+
+            // 2) Copy lib folder
+            def libSrc = file("${buildDir}/launch4j/lib")
+            if (libSrc.exists()) {
+                copy {
+                    from libSrc
+                    into "${outDir}/lib"
+                    fileMode = 0644
+                }
+            } else {
+                println "Warning: lib dir not found: ${libSrc}"
             }
         } else {
-            println "Не удалось найти JRE в: $javaHome"
+            // 1) Create unix launcher script
+            def launcherName = isMacTarget ? 'Spaceclipse.command' : 'Spaceclipse'
+            def launcherFile = file("${outDir}/${launcherName}")
+            launcherFile.text = '''#!/usr/bin/env bash
+                set -e
+                DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+                "$DIR/jre/bin/java" -cp "$DIR/lib/*" net.bfsr.client.launch.LWJGL3Main
+                '''
+            launcherFile.setExecutable(true, false)
+
+            // 2) Copy app jar and dependencies
+            def jarFile = tasks.named('jar').get().archiveFile.get().asFile
+            if (jarFile.exists()) {
+                copy {
+                    from jarFile
+                    into "${outDir}/lib"
+                    fileMode = 0644
+                }
+            } else {
+                println "Warning: client jar not found: ${jarFile}"
+            }
+
+            if (dependsDir.exists()) {
+                copy {
+                    from dependsDir
+                    into "${outDir}/lib"
+                    fileMode = 0644
+                }
+            } else {
+                println "Warning: dependencies dir not found: ${dependsDir}"
+            }
+        }
+
+        // 3) Copy assets (relative to project root)
+        def assetsSrc = file("${rootDir}/assets")
+        if (assetsSrc.exists()) {
+            copy {
+                from assetsSrc
+                into "${outDir}/assets"
+            }
+        } else {
+            println "Warning: assets dir not found: ${assetsSrc}"
+        }
+
+        // 4) Copy runtime image built by org.beryx.runtime
+        def runtimeImageDir = file("${buildDir}/runtime-image")
+        if (runtimeImageDir.exists()) {
+            println "Copying runtime image from: ${runtimeImageDir}"
+            copy {
+                from runtimeImageDir
+                into "${outDir}/jre"
+                eachFile { FileCopyDetails fcd ->
+                    if (fcd.name == 'java' || fcd.name == 'java.exe' || fcd.name == 'javaw.exe') {
+                        fcd.mode = 0755
+                    }
+                }
+            }
+        } else {
+            println "Warning: runtime image not found: ${runtimeImageDir}"
         }
     }
 
-    // Add JRE from temporary directory
-    from("${buildDir}/temp-jre") {
-        into 'jre'
-    }
-
-    // Option B: from a standard path (uncomment if needed)
-    /*
-    from('C:/Program Files/Java/jdk-21/') {
-        into 'jre'
-        include 'bin/**'
-        include 'lib/**'
-        include 'conf/**'
-        include 'release'
-        exclude 'bin/server/**'
-        exclude 'lib/src.zip'
-    }
-    */
-
-    // Option C: if a JRE already exists in the project
-    /*
-    from('jre-dist') {
-        into 'jre'
-    }
-    */
-
-    // Cleanup temporary files
     doLast {
-        delete "${buildDir}/temp-jre"
-    }
-
-    // Build info
-    doLast {
-        def archiveFile = archiveFile.get().asFile
-        def fileCount = 0
-        def totalSize = 0
-
-        // Count files in archive
-        new java.util.zip.ZipFile(archiveFile).withCloseable { zip ->
-            fileCount = zip.size()
-            totalSize = zip.entries().collect { it.size }.sum()
-        }
-
-        println "========================================="
-        println "Архив создан: ${archiveFile.absolutePath}"
-        println "Размер архива: ${archiveFile.length() / 1024 / 1024} MB"
-        println "Файлов в архиве: $fileCount"
-        println "Содержимое:"
-        println "  - Spaceclipse.exe"
-        println "  - lib/ (библиотеки)"
-        println "  - assets/ (ресурсы игры)"
-        println "  - jre/ (Java Runtime)"
-        println "========================================="
+        println "Client layout prepared at ${buildDir}/output"
+        def out = file("${buildDir}/output")
+        def cnt = 0
+        out.eachFileRecurse { cnt++ }
+        println "Files count: ${cnt}"
     }
 }
+

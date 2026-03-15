@@ -1,3 +1,12 @@
+plugins {
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+}
+
+bootJar {
+    enabled = false
+}
+
 jar {
     archiveBaseName = 'bfsr-server'
     archiveVersion = '0.0.1-SNAPSHOT'
@@ -6,7 +15,7 @@ jar {
 dependencies {
     api project(':common-server-data-model')
 
-    implementation 'org.springframework.boot:spring-boot-starter-rsocket'
+    implementation 'org.springframework.boot:spring-boot-starter-rsocket:3.5.7'
 
-    testImplementation project(':mongodb-service')
+    testImplementation(testFixtures(project(':mongodb-service')))
 }

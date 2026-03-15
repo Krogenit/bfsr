@@ -1,3 +1,8 @@
+plugins {
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+}
+
 bootJar {
     enabled = true
 }
@@ -7,4 +12,12 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-rsocket'
     implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+
+    testFixturesApi 'org.springframework.boot:spring-boot-starter-test'
+    testFixturesApi 'org.springframework.security:spring-security-test'
+    testFixturesApi 'io.projectreactor:reactor-test'
+
+    testFixturesApi 'org.testcontainers:testcontainers:1.21.3'
+    testFixturesApi 'org.testcontainers:junit-jupiter:1.21.3'
+    testFixturesApi 'org.testcontainers:mongodb:1.21.3'
 }
