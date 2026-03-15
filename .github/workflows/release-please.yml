@@ -175,7 +175,7 @@ jobs:
   publish:
     name: Publish artifacts to update server
     runs-on: ubuntu-latest
-    needs: [ release-please, build-platform ]
+    needs: [ release-please, build-platform, build-manifest ]
     if: needs.release-please.outputs.release_created == 'true'
     steps:
       - name: Download platform artifacts (linux)
