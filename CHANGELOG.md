@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/Krogenit/bfsr/compare/v0.2.0...v0.3.0) (2026-03-15)
+
+
+### Features
+
+* **ci:** parallel publish ([46d21c1](https://github.com/Krogenit/bfsr/commit/46d21c1597dde41a16905a05cc5137e34ae0166d))
+
 ## [0.2.0](https://github.com/Krogenit/bfsr/compare/v0.1.12...v0.2.0) (2026-03-15)
 
 
