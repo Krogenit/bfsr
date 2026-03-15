@@ -199,7 +199,7 @@ jobs:
       - name: Download manifest (from linux build)
         uses: actions/download-artifact@v8
         with:
-          name: manifest
+          name: manifests
           path: ./downloads/manifest
 
       - name: Prepare rsync payload
@@ -207,14 +207,16 @@ jobs:
           mkdir -p payload/archive/${{ needs.release-please.outputs.version }}/linux
           mkdir -p payload/archive/${{ needs.release-please.outputs.version }}/mac
           mkdir -p payload/archive/${{ needs.release-please.outputs.version }}/windows
+          
           # copy downloaded outputs into payload dirs (adjust paths if necessary)
           cp -r downloads/linux/* payload/archive/${{ needs.release-please.outputs.version }}/linux/
           cp -r downloads/mac/* payload/archive/${{ needs.release-please.outputs.version }}/mac/
           cp -r downloads/windows/* payload/archive/${{ needs.release-please.outputs.version }}/windows/
-          # copy signed manifest into each platform folder (so each has manifest)
+          
+          # copy signed manifest into each platform folder (downloads/manifest/<platform>/manifest.signed.json)
           for p in linux mac windows; do
             mkdir -p payload/archive/${{ needs.release-please.outputs.version }}/${p}/manifest
-            cp downloads/manifest/manifest.signed.json payload/archive/${{ needs.release-please.outputs.version }}/${p}/manifest/manifest.signed.json
+            cp downloads/manifest/${p}/manifest.signed.json payload/archive/${{ needs.release-please.outputs.version }}/${p}/manifest/manifest.signed.json
           done
           # also prepare latest/ per platform
           mkdir -p payload/latest/linux
