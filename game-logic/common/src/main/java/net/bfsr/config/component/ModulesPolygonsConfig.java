@@ -1,6 +1,8 @@
 package net.bfsr.config.component;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.bfsr.config.entity.ship.EnginesConfig;
 import net.bfsr.engine.config.Configurable;
@@ -9,9 +11,11 @@ import net.bfsr.engine.math.Direction;
 
 import java.util.Map;
 
+@Configurable
 @Setter
 @Getter
-@Configurable
+@NoArgsConstructor
+@AllArgsConstructor
 public class ModulesPolygonsConfig {
     private PolygonConfigurable reactor;
     private PolygonConfigurable shield;
