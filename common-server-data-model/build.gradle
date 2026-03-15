@@ -1,3 +1,8 @@
+jar {
+    archiveBaseName = 'spaceclipse-common-server-data-model'
+    archiveVersion = project.version.toString()
+}
+
 dependencies {
     api project(':game-logic:common')
 

@@ -14,22 +14,6 @@ def targetPlatform = rootProject.ext.targetPlatform
 def isWindowsTarget = targetPlatform == 'windows'
 def isMacTarget = targetPlatform == 'mac'
 
-def releaseVersion = project.findProperty('releaseVersion')?.toString()
-if (!releaseVersion) {
-    def v = project.version?.toString()
-    if (v && v != 'unspecified') {
-        releaseVersion = v
-    }
-}
-if (!releaseVersion) {
-    releaseVersion = System.getenv('VERSION')?.toString()
-}
-if (releaseVersion) {
-    project.version = releaseVersion
-} else if (project.version == 'unspecified') {
-    project.version = '0.0.1-SNAPSHOT'
-}
-
 def jvmOpts = [
         '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED',
         '--add-opens=java.base/java.nio=ALL-UNNAMED',
@@ -71,7 +55,7 @@ runtime {
 }
 
 jar {
-    archiveBaseName = 'client'
+    archiveBaseName = 'spaceclipse-run-client'
     archiveVersion = project.version.toString()
 
     manifest {
@@ -140,16 +124,16 @@ launch4j {
     jvmOptions = jvmOpts
 
     // icon = "${projectDir}/favicon.ico"
-    copyright = "Spaceclipse"
-    companyName = "Spaceclipse"
-    fileDescription = "MMO 2D Space Game"
-    productName = "Spaceclipse"
+    copyright = 'Spaceclipse'
+    companyName = 'Spaceclipse'
+    fileDescription = 'MMO 2D Space Game'
+    productName = 'Spaceclipse'
 
     bundledJrePath = 'jre'
-    jreMinVersion = "21"
+    jreMinVersion = '21'
 
-    headerType = "gui"
-    outfile = "Spaceclipse.exe"
+    headerType = 'gui'
+    outfile = 'Spaceclipse.exe'
 }
 
 tasks.register('assembleClientLayout') {
@@ -172,7 +156,7 @@ tasks.register('assembleClientLayout') {
         outDir.mkdirs()
 
         if (isWindowsTarget) {
-            // 1) Copy EXE (from launch4j output)
+            // Copy EXE (from launch4j output)
             def launch4jDir = file("${buildDir}/launch4j")
             if (launch4jDir.exists()) {
                 copy {
@@ -201,7 +185,7 @@ tasks.register('assembleClientLayout') {
                 println "Warning: lib dir not found: ${libSrc}"
             }
         } else {
-            // 1) Create unix launcher script
+            // Create unix launcher script
             def javaOptions = jvmOpts.join(' ')
             assert javaOptions != null
             def launcherName = isMacTarget ? 'Spaceclipse.command' : 'Spaceclipse'
@@ -240,7 +224,7 @@ tasks.register('assembleClientLayout') {
             }
         }
 
-        // 3) Copy assets (relative to project root)
+        // Copy assets (relative to project root)
         def assetsSrc = file("${rootDir}/assets")
         if (assetsSrc.exists()) {
             copy {
@@ -251,7 +235,7 @@ tasks.register('assembleClientLayout') {
             println "Warning: assets dir not found: ${assetsSrc}"
         }
 
-        // 4) Copy runtime image built by org.beryx.runtime
+        // Copy runtime image built by org.beryx.runtime
         def runtimeImageDir = file("${buildDir}/runtime-image")
         if (runtimeImageDir.exists()) {
             println "Copying runtime image from: ${runtimeImageDir}"
@@ -265,13 +249,9 @@ tasks.register('assembleClientLayout') {
                 into "${outDir}/jre"
 
                 // files get rw-r--r-- (0644)
-                filePermissions {
-                    unix('rw-r--r--')
-                }
+                filePermissions { unix('rw-r--r--') }
                 // directories must be executable so traversal works
-                dirPermissions {
-                    unix('rwxr-xr-x')
-                }
+                dirPermissions { unix('rwxr-xr-x') }
 
                 includeEmptyDirs = false
             }
@@ -284,12 +264,8 @@ tasks.register('assembleClientLayout') {
                 into "${outDir}/jre"
 
                 // these need to be executable
-                filePermissions {
-                    unix('rwxr-xr-x')
-                }
-                dirPermissions {
-                    unix('rwxr-xr-x')
-                }
+                filePermissions { unix('rwxr-xr-x') }
+                dirPermissions { unix('rwxr-xr-x') }
 
                 includeEmptyDirs = false
             }
