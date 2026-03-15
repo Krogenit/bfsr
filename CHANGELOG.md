@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.0](https://github.com/Krogenit/bfsr/compare/v0.1.12...v0.2.0) (2026-03-15)
+
+
+### Features
+
+* **ci:** add creation of fat jar ([4fd27fe](https://github.com/Krogenit/bfsr/commit/4fd27fe3a593b52f55231a4db30a2d650ab2b7c0))
+
+
+### Bug Fixes
+
+* **ci:** add jvm params ([da5fc5b](https://github.com/Krogenit/bfsr/commit/da5fc5ba1c14cf913ce8c003b3e665da02fbcb4f))
+* **ci:** class-path in jar manifest ([4fd27fe](https://github.com/Krogenit/bfsr/commit/4fd27fe3a593b52f55231a4db30a2d650ab2b7c0))
+* **ci:** duplicates of external lib in jar and project libs in libs folder ([4fd27fe](https://github.com/Krogenit/bfsr/commit/4fd27fe3a593b52f55231a4db30a2d650ab2b7c0))
+* **ci:** remove zip creation ([3bda901](https://github.com/Krogenit/bfsr/commit/3bda901414ba238bf115011a8bb07543b7c1e9bb))
+* **ci:** unused variable ([770c329](https://github.com/Krogenit/bfsr/commit/770c329bb9ebea75ad9f7f4d2599b1c7aa7da243))
+* config loading with moshi in production env ([f2b3b34](https://github.com/Krogenit/bfsr/commit/f2b3b348a2b91d4f260e2b759b6a05443a6663ce))
+
 ## [0.1.12](https://github.com/Krogenit/bfsr/compare/v0.1.11...v0.1.12) (2026-03-15)
 
 
