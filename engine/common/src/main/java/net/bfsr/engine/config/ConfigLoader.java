@@ -21,7 +21,7 @@ public final class ConfigLoader {
     public static <T> T load(Path file, Class<T> type) {
         try {
             return MOSHI.adapter(type).indent(INDENT).fromJson(Files.readString(file));
-        } catch (IOException | JsonDataException e) {
+        } catch (IOException | JsonDataException | AssertionError e) {
             log.error("Error during loading json file {}", file, e);
             throw new RuntimeException(e);
         }
