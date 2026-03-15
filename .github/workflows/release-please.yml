@@ -158,30 +158,22 @@ jobs:
           path: out/manifest/
 
   publish:
-    name: Publish artifacts to update server
+    name: Publish ${{ matrix.platform }}
     runs-on: ubuntu-latest
     needs: [ release-please, build-platform, build-manifest ]
     if: needs.release-please.outputs.release_created == 'true'
+    strategy:
+      matrix:
+        platform: [ linux, mac, windows ]
+      fail-fast: false
     steps:
-      - name: Download platform artifacts (linux)
+      - name: Download platform artifact (${{ matrix.platform }})
         uses: actions/download-artifact@v8
         with:
-          name: artifacts-linux
-          path: ./downloads/linux
+          name: artifacts-${{ matrix.platform }}
+          path: ./downloads/raw
 
-      - name: Download platform artifacts (mac)
-        uses: actions/download-artifact@v8
-        with:
-          name: artifacts-mac
-          path: ./downloads/mac
-
-      - name: Download platform artifacts (windows)
-        uses: actions/download-artifact@v8
-        with:
-          name: artifacts-windows
-          path: ./downloads/windows
-
-      - name: Download manifest (from linux build)
+      - name: Download manifests
         uses: actions/download-artifact@v8
         with:
           name: manifests
@@ -190,45 +182,35 @@ jobs:
       - name: Prepare rsync payload
         run: |
           set -euo pipefail
-          
-          echo "DEBUG: list downloaded dirs"
-          ls -laR downloads || true
-          
           VERSION=${{ needs.release-please.outputs.version }}
-          echo "Preparing payload for version: $VERSION"
+          PLATFORM=${{ matrix.platform }}
           
-          mkdir -p payload/${VERSION}/linux
-          mkdir -p payload/${VERSION}/mac
-          mkdir -p payload/${VERSION}/windows
+          mkdir -p flat
           
-          # copy downloaded outputs into payload dirs (adjust paths if necessary)
-          cp -r downloads/linux/* payload/${VERSION}/linux/ || true
-          cp -r downloads/mac/* payload/${VERSION}/mac/ || true
-          cp -r downloads/windows/* payload/${VERSION}/windows/ || true
+          if [[ -d downloads/raw/output ]]; then
+            cp -r downloads/raw/output/. flat/
+          else
+            cp -r downloads/raw/. flat/
+          fi
           
-           # copy signed manifest into each platform folder
-          for p in linux mac windows; do
-            mkdir -p payload/${VERSION}/${p}/manifest
-            src="downloads/manifest/${p}/manifest.signed.json"
-            if [[ -f "$src" ]]; then
-              echo "Copying $src -> payload/${VERSION}/${p}/manifest/manifest.signed.json"
-              cp "$src" "payload/${VERSION}/${p}/manifest/manifest.signed.json"
-            else
-              echo "ERROR: manifest missing: $src"
-              echo "Contents of downloads/manifest/:"
-              ls -la downloads/manifest || true
-              exit 1
-            fi
-          done
+          rm -rf flat/manifest
           
-          echo "Payload prepared. Summary:"
-          ls -laR payload | sed -n '1,200p'
+          cp "downloads/manifest/${PLATFORM}/manifest.signed.json" flat/manifest.signed.json
+          
+          echo "=== flat/ structure ==="
+          ls -laR flat | head -60
+          
+          mkdir -p "payload_archive/${VERSION}/${PLATFORM}"
+          cp -r flat/. "payload_archive/${VERSION}/${PLATFORM}/"
+
+          mkdir -p "payload_latest/${PLATFORM}"
+          cp -r flat/. "payload_latest/${PLATFORM}/"
 
       - name: Upload to update server (archive)
         uses: burnett01/rsync-deployments@v8
         with:
-          switches: -avz
-          path: payload/
+          switches: -avz --checksum
+          path: payload_archive/
           remote_path: ${{ secrets.UPDATE_SERVER_PATH }}/archive/
           remote_host: ${{ secrets.UPDATE_SERVER_HOST }}
           remote_port: ${{ secrets.UPDATE_SERVER_PORT }}
@@ -238,9 +220,9 @@ jobs:
       - name: Upload to update server (latest)
         uses: burnett01/rsync-deployments@v8
         with:
-          switches: -avz --delete
-          path: payload/
-          remote_path: ${{ secrets.UPDATE_SERVER_PATH }}/latest/
+          switches: -avz --delete --checksum
+          path: payload_latest/${{ matrix.platform }}/
+          remote_path: ${{ secrets.UPDATE_SERVER_PATH }}/latest/${{ matrix.platform }}/
           remote_host: ${{ secrets.UPDATE_SERVER_HOST }}
           remote_port: ${{ secrets.UPDATE_SERVER_PORT }}
           remote_user: ${{ secrets.UPDATE_SERVER_USER }}
