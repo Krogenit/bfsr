@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.10](https://github.com/Krogenit/bfsr/compare/v0.1.9...v0.1.10) (2026-03-15)
+
+
+### Bug Fixes
+
+* **ci:** add build-manifest dependency for publish job ([e279b6c](https://github.com/Krogenit/bfsr/commit/e279b6c4706c6e4505ff8fb9f36ded0a2bf78068))
+* **ci:** add package-lock.json ([653c898](https://github.com/Krogenit/bfsr/commit/653c8989027f7981c0a0eacbebecb5b9bde2878a))
+
 ## [0.1.9](https://github.com/Krogenit/bfsr/compare/v0.1.8...v0.1.9) (2026-03-15)
 
 
