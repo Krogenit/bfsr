@@ -66,7 +66,8 @@ public class LagCompensationTest {
              */
             for (int j = 0; j < ships.size(); j++) {
                 Ship ship = ships.get(j);
-                ship.getBody().setLinearVelocity(1.0f * Engine.UPDATES_PER_SECOND, 1.0f * Engine.UPDATES_PER_SECOND);
+                float maxForwardVelocity = ship.getModules().getEngines().getMaxForwardVelocity();
+                ship.setVelocity(maxForwardVelocity, maxForwardVelocity);
             }
 
             int frame = dedicatedServer.getFrame();
@@ -80,25 +81,27 @@ public class LagCompensationTest {
          * Test ship position after world steps
          */
         Ship testShip = ships.get(0);
+        float maxForwardVelocity = testShip.getModules().getEngines().getMaxForwardVelocity();
         float x = testShip.getX();
         float y = testShip.getY();
 
-        Assertions.assertThat(x).isCloseTo(3.5f, Offset.offset(0.1f));
-        Assertions.assertThat(y).isCloseTo(3.5f, Offset.offset(0.1f));
+        float moveAmount = maxForwardVelocity * Engine.getUpdateDeltaTimeInSeconds() * steps;
+        Assertions.assertThat(x).isCloseTo(0.5f + moveAmount, Offset.offset(0.1f));
+        Assertions.assertThat(y).isCloseTo(0.5f + moveAmount, Offset.offset(0.1f));
 
         testShip = ships.get(1);
         x = testShip.getX();
         y = testShip.getY();
 
-        Assertions.assertThat(x).isCloseTo(3.0f, Offset.offset(0.1f));
-        Assertions.assertThat(y).isCloseTo(3.5f, Offset.offset(0.1f));
+        Assertions.assertThat(x).isCloseTo(0.0f + moveAmount, Offset.offset(0.1f));
+        Assertions.assertThat(y).isCloseTo(0.5f + moveAmount, Offset.offset(0.1f));
 
         testShip = ships.get(2);
         x = testShip.getX();
         y = testShip.getY();
 
-        Assertions.assertThat(x).isCloseTo(3.5f, Offset.offset(0.1f));
-        Assertions.assertThat(y).isCloseTo(3.0f, Offset.offset(0.1f));
+        Assertions.assertThat(x).isCloseTo(0.5f + moveAmount, Offset.offset(0.1f));
+        Assertions.assertThat(y).isCloseTo(0.0f + moveAmount, Offset.offset(0.1f));
 
         LagCompensationRayCastManager rayCastManager = (LagCompensationRayCastManager) shootingShip.getRayCastManager();
         rayCastManager.setCompensateTimeInFrames(steps);
@@ -111,7 +114,8 @@ public class LagCompensationTest {
         for (int i = 0; i < steps; i++) {
             TransformData transformData = dataHistoryManager.getTransformData(ships.get(0).getId(), i);
             Assertions.assertThat(transformData).isNotNull();
-            Assertions.assertThat(transformData.getPosition().x).isCloseTo(0.5f + 1.0f * i, Offset.offset(0.1f));
+            float expectedMoveAmount = maxForwardVelocity * Engine.getUpdateDeltaTimeInSeconds() * i;
+            Assertions.assertThat(transformData.getPosition().x).isCloseTo(0.5f + expectedMoveAmount, Offset.offset(0.1f));
         }
 
         /*
@@ -119,7 +123,6 @@ public class LagCompensationTest {
          */
         shootingShip.shoot(weaponSlot -> {});
         shootingShip.update();
-        shootingShip.postPhysicsUpdate();
 
         /*
          * Test ship position after lag compensation
@@ -128,22 +131,22 @@ public class LagCompensationTest {
         x = testShip.getX();
         y = testShip.getY();
 
-        Assertions.assertThat(x).isCloseTo(3.5f, Offset.offset(0.1f));
-        Assertions.assertThat(y).isCloseTo(3.5f, Offset.offset(0.1f));
+        Assertions.assertThat(x).isCloseTo(0.5f + moveAmount, Offset.offset(0.1f));
+        Assertions.assertThat(y).isCloseTo(0.5f + moveAmount, Offset.offset(0.1f));
 
         testShip = ships.get(1);
         x = testShip.getX();
         y = testShip.getY();
 
-        Assertions.assertThat(x).isCloseTo(3.0f, Offset.offset(0.1f));
-        Assertions.assertThat(y).isCloseTo(3.5f, Offset.offset(0.1f));
+        Assertions.assertThat(x).isCloseTo(0.0f + moveAmount, Offset.offset(0.1f));
+        Assertions.assertThat(y).isCloseTo(0.5f + moveAmount, Offset.offset(0.1f));
 
         testShip = ships.get(2);
         x = testShip.getX();
         y = testShip.getY();
 
-        Assertions.assertThat(x).isCloseTo(3.5f, Offset.offset(0.1f));
-        Assertions.assertThat(y).isCloseTo(3.0f, Offset.offset(0.1f));
+        Assertions.assertThat(x).isCloseTo(0.5f + moveAmount, Offset.offset(0.1f));
+        Assertions.assertThat(y).isCloseTo(0.0f + moveAmount, Offset.offset(0.1f));
     }
 
     private Ship createShipWithBeamGunsAndLagCompensatingRayCastManager() {

@@ -9,12 +9,12 @@ import net.bfsr.engine.physics.CommonRayCastManager;
 import net.bfsr.engine.physics.DefaultRayCastManager;
 import net.bfsr.engine.physics.collision.AbstractCollisionMatrix;
 import net.bfsr.engine.physics.collision.ContactListener;
+import net.bfsr.engine.physics.collision.filter.CollisionProfile;
 import net.bfsr.engine.physics.collision.filter.ContactFilter;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.world.entity.AbstractEntityManager;
 import net.bfsr.engine.world.entity.EntityIdManager;
 import net.bfsr.engine.world.entity.RigidBody;
-import org.jbox2d.common.Settings;
 
 import java.util.List;
 
@@ -35,9 +35,11 @@ public class World {
     private final GameLogic gameLogic;
     private final AbstractCollisionMatrix collisionMatrix;
     private final ContactFilter contactFilter;
+    private final CollisionProfile collisionProfile;
 
     public World(Profiler profiler, long seed, EventBus eventBus, AbstractEntityManager entityManager,
-                 EntityIdManager entityIdManager, GameLogic gameLogic, AbstractCollisionMatrix collisionMatrix) {
+                 EntityIdManager entityIdManager, GameLogic gameLogic, AbstractCollisionMatrix collisionMatrix,
+                 CollisionProfile collisionProfile) {
         this.profiler = profiler;
         this.seed = seed;
         this.eventBus = eventBus;
@@ -45,11 +47,10 @@ public class World {
         this.entityIdManager = entityIdManager;
         this.gameLogic = gameLogic;
         this.collisionMatrix = collisionMatrix;
+        this.collisionProfile = collisionProfile;
         this.contactFilter = new ContactFilter(collisionMatrix);
         this.physicWorld.setContactListener(new ContactListener(collisionMatrix));
         this.physicWorld.setContactFilter(contactFilter);
-        Settings.maxTranslation = Engine.convertToDeltaTime(120);
-        Settings.maxTranslationSquared = Settings.maxTranslation * Settings.maxTranslation;
     }
 
     public void init() {
@@ -60,12 +61,10 @@ public class World {
     public void update(double timestamp, int frame) {
         this.timestamp = timestamp;
 
-        profiler.start("entityManager");
-        entityManager.update(frame);
-        profiler.endStart("physics");
+        profiler.start("physics");
         physicWorld.step(Engine.getUpdateDeltaTimeInSeconds(), VELOCITY_ITERATIONS, POSITION_ITERATIONS);
-        profiler.endStart("postPhysicsUpdate");
-        entityManager.postPhysicsUpdate();
+        profiler.endStart("entityManager");
+        entityManager.update(frame);
         profiler.endStart("entityIdManager");
         entityIdManager.update(frame);
         profiler.end();

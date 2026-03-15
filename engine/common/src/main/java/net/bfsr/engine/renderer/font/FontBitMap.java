@@ -7,6 +7,8 @@ import net.bfsr.engine.renderer.texture.AbstractTexture;
 import java.nio.ByteBuffer;
 
 public class FontBitMap {
+    public static final int NO_PACKED_CHAR_VALUE = -1;
+
     protected final int width;
     protected final int height;
     protected final ByteBuffer bitmap;
@@ -18,6 +20,7 @@ public class FontBitMap {
         this.width = width;
         this.height = height;
         this.bitmap = Engine.getRenderer().createByteBuffer(width * height);
+        this.packedCharMap.defaultReturnValue(NO_PACKED_CHAR_VALUE);
     }
 
     public int getCharIndex(char charCode) {

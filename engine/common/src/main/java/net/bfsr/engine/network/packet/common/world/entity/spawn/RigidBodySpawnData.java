@@ -29,9 +29,4 @@ public class RigidBodySpawnData<T extends RigidBody> extends EntityPacketSpawnDa
         registryId = data.readInt();
         dataId = data.readInt();
     }
-
-    @Override
-    public int getTypeId() {
-        return 0;
-    }
 }

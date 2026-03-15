@@ -335,12 +335,14 @@ public class Island {
                         / MathUtils.sqrt(translationx * translationx + translationy * translationy);
                 v.x *= ratio;
                 v.y *= ratio;
+                System.out.println("Reached max velocity for body " + m_bodies[i].getUserData());
             }
 
             float rotation = h * w;
             if (rotation * rotation > Settings.maxRotationSquared) {
                 float ratio = Settings.maxRotation / MathUtils.abs(rotation);
                 w *= ratio;
+                System.out.println("Reached max angular velocity for body " + m_bodies[i].getUserData());
             }
 
             // Integrate

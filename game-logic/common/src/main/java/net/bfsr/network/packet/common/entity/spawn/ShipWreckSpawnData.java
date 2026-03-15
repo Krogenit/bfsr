@@ -10,6 +10,7 @@ public class ShipWreckSpawnData extends DamageableRigidBodySpawnData<ShipWreck> 
     private float velocityX, velocityY;
     private float angularVelocity;
     private float localOffsetX, localOffsetY;
+    private int shipId;
 
     @Override
     public void setData(ShipWreck wreck) {
@@ -20,6 +21,7 @@ public class ShipWreckSpawnData extends DamageableRigidBodySpawnData<ShipWreck> 
         this.angularVelocity = wreck.getAngularVelocity();
         this.localOffsetX = wreck.getLocalOffsetX();
         this.localOffsetY = wreck.getLocalOffsetY();
+        this.shipId = wreck.getShipId();
     }
 
     @Override
@@ -32,6 +34,7 @@ public class ShipWreckSpawnData extends DamageableRigidBodySpawnData<ShipWreck> 
         data.writeFloat(velocityX);
         data.writeFloat(velocityY);
         data.writeFloat(angularVelocity);
+        data.writeInt(shipId);
     }
 
     @Override
@@ -44,10 +47,6 @@ public class ShipWreckSpawnData extends DamageableRigidBodySpawnData<ShipWreck> 
         velocityX = data.readFloat();
         velocityY = data.readFloat();
         angularVelocity = data.readFloat();
-    }
-
-    @Override
-    public int getTypeId() {
-        return EntityPacketSpawnType.SHIP_WRECK.ordinal();
+        shipId = data.readInt();
     }
 }

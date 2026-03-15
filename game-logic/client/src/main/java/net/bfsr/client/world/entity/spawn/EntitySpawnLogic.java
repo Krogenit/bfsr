@@ -1,0 +1,11 @@
+package net.bfsr.client.world.entity.spawn;
+
+import net.bfsr.engine.config.ConfigConverterManager;
+import net.bfsr.engine.network.packet.common.world.entity.spawn.EntityPacketSpawnData;
+import net.bfsr.engine.renderer.AbstractRenderer;
+import net.bfsr.engine.world.World;
+
+@FunctionalInterface
+public interface EntitySpawnLogic<T extends EntityPacketSpawnData> {
+    void spawn(T spawnData, World world, ConfigConverterManager configConverterManager, AbstractRenderer renderer);
+}

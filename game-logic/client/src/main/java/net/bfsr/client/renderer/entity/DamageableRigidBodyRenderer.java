@@ -25,8 +25,8 @@ public class DamageableRigidBodyRenderer extends RigidBodyRender {
     protected final DamageMaskTexture maskTexture;
     protected final DamageableRigidBody damageableRigidBody;
 
-    DamageableRigidBodyRenderer(AbstractTexture texture, DamageableRigidBody object, float r, float g, float b, float a) {
-        super(texture, object, r, g, b, a);
+    DamageableRigidBodyRenderer(DamageableRigidBody object, float z, AbstractTexture texture, float r, float g, float b, float a) {
+        super(object, z, texture, r, g, b, a);
         this.damageableRigidBody = object;
 
         DamageMask mask = object.getDamageMask();
@@ -34,15 +34,15 @@ public class DamageableRigidBodyRenderer extends RigidBodyRender {
         maskTexture.createEmpty();
     }
 
-    DamageableRigidBodyRenderer(AbstractTexture texture, DamageableRigidBody object) {
-        this(texture, object, 1.0f, 1.0f, 1.0f, 1.0f);
+    DamageableRigidBodyRenderer(DamageableRigidBody object, float z, AbstractTexture texture) {
+        this(object, z, texture, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     @Override
     public void init() {
-        id = spriteRenderer.add(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), rigidBody.getSizeX(),
-                rigidBody.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(), maskTexture.getTextureHandle(),
-                BufferType.ENTITIES_ALPHA);
+        id = spriteRenderer.add(rigidBody.getX(), rigidBody.getY(), z, rigidBody.getSin(), rigidBody.getCos(),
+                rigidBody.getSizeX(), rigidBody.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(),
+                maskTexture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
     }
 
     @Override

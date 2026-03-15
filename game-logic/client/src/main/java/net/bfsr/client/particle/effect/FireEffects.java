@@ -11,7 +11,7 @@ public class FireEffects {
         smallFire = effectsRegistry.get("fire/small");
     }
 
-    public void emitFire(float x, float y, SpawnAccumulator spawnAccumulator) {
-        smallFire.emit(x, y, spawnAccumulator);
+    public void emitFire(float x, float y, float z, SpawnAccumulator spawnAccumulator) {
+        smallFire.emit(x, y, z, spawnAccumulator);
     }
 }

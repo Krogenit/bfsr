@@ -1,0 +1,8 @@
+{
+  "name": "release-tools",
+  "version": "1.0.0",
+  "devDependencies": {
+    "minimist": "^1.2.8",
+    "tweetnacl": "^1.0.3"
+  }
+}

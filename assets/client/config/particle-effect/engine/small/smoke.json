@@ -26,10 +26,13 @@
   "minVelocityX": -0.12,
   "minVelocityY": -0.12,
   "name": "smoke",
+  "particleType": "ALPHA_BLENDED",
   "path": "engine/small",
   "r": 1.0,
-  "renderLayer": "BACKGROUND_ALPHA_BLENDED",
-  "soundEffects": [],
+  "soundEffect": {
+    "sounds": [],
+    "randomFromList": false
+  },
   "sourceSizeXMultiplier": 0.0,
   "sourceSizeYMultiplier": 0.0,
   "sourceVelocityXMultiplier": 1.0,

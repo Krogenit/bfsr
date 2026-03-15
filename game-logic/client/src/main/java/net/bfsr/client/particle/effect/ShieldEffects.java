@@ -12,11 +12,11 @@ public class ShieldEffects {
         disable = effectsRegistry.get("shield/disable");
     }
 
-    public void rebuild(float x, float y, float size, float r, float g, float b, float a) {
-        rebuild.play(x, y, size, r, g, b, a);
+    public void rebuild(float x, float y, float z, float size, float r, float g, float b, float a) {
+        rebuild.play(x, y, z, size, r, g, b, a);
     }
 
-    public void disable(float x, float y, float size, float r, float g, float b, float a) {
-        disable.play(x, y, size, r, g, b, a);
+    public void disable(float x, float y, float z, float size, float r, float g, float b, float a) {
+        disable.play(x, y, z, size, r, g, b, a);
     }
 }

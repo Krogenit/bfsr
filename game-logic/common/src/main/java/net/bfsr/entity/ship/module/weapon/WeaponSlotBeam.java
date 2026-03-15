@@ -12,7 +12,6 @@ import net.bfsr.entity.bullet.BulletDamage;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.physics.RayCastType;
-import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Fixture;
 import org.jetbrains.annotations.Nullable;
@@ -63,7 +62,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
     }
 
     @Override
-    public void update() {
+    public void update(RigidBody rigidBody) {
         if (aliveTimerInFrames > 0) {
             aliveTimerInFrames--;
 
@@ -88,10 +87,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
                 }
             }
         }
-    }
 
-    @Override
-    public void postPhysicsUpdate(RigidBody rigidBody) {
         updatePos(rigidBody);
 
         if (beamPower > 0) {
@@ -115,7 +111,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
 
         float cos = ship.getCos();
         float sin = ship.getSin();
-        float startRange = -getSizeX();
+        float startRange = 0;
         float startX = cos * startRange;
         float startY = sin * startRange;
 
@@ -126,7 +122,7 @@ public class WeaponSlotBeam extends WeaponSlot implements RayCastSource {
         rayCastResultFixture = null;
 
         ship.getRayCastManager().rayCast(ship, (fixture, point, normal, fraction) -> {
-            if (!world.getContactFilter().shouldCollide(fixture.getFilter(), Filters.BEAM_FILTER)) {
+            if (!world.getContactFilter().shouldCollide(fixture.getFilter(), world.getCollisionProfile().getBeamFilter())) {
                 return -1.0f;
             }
 

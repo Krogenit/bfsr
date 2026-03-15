@@ -29,12 +29,24 @@ public class EditorInputController extends InputController {
     private final Client client = Client.get();
     private final GuiManager guiManager = Engine.getGuiManager();
     private final AbstractMouse mouse = Engine.getMouse();
+    private final Vector2i mouseRightClickPosition = new Vector2i();
+
+    @Override
+    public boolean mouseRightClick() {
+        mouseRightClickPosition.set(mouse.getGuiPosition());
+        return false;
+    }
 
     @Override
     public boolean mouseRightRelease() {
         Vector2i mousePosition = mouse.getGuiPosition();
-        showDefaultContextMenu(mousePosition.x, mousePosition.y);
-        return true;
+
+        if (mousePosition.equals(mouseRightClickPosition)) {
+            showDefaultContextMenu(mousePosition.x, mousePosition.y);
+            return true;
+        }
+
+        return false;
     }
 
     private void showDefaultContextMenu(int mouseX, int mouseY) {

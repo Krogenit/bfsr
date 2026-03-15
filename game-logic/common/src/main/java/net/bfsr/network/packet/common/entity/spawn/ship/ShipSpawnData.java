@@ -10,7 +10,6 @@ import net.bfsr.entity.ship.module.engine.Engine;
 import net.bfsr.entity.ship.module.engine.Engines;
 import net.bfsr.entity.ship.module.shield.Shield;
 import net.bfsr.network.packet.common.entity.spawn.DamageableRigidBodySpawnData;
-import net.bfsr.network.packet.common.entity.spawn.EntityPacketSpawnType;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -33,6 +32,7 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
     private int armorDataId;
     private int cargoDataId;
     private int crewDataId;
+    private boolean warpDrive;
 
     @Override
     public void setData(Ship ship) {
@@ -73,6 +73,7 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
         this.armorDataId = modules.getArmor().getData().getId();
         this.cargoDataId = modules.getCargo().getData().getId();
         this.crewDataId = modules.getCrew().getData().getId();
+        this.warpDrive = ship.isWarpDrive();
     }
 
     @Override
@@ -108,6 +109,7 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
         data.writeInt(armorDataId);
         data.writeInt(cargoDataId);
         data.writeInt(crewDataId);
+        data.writeBoolean(warpDrive);
 
         super.writeData(data);
     }
@@ -145,12 +147,8 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
         armorDataId = data.readInt();
         cargoDataId = data.readInt();
         crewDataId = data.readInt();
+        warpDrive = data.readBoolean();
 
         super.readData(data);
-    }
-
-    @Override
-    public int getTypeId() {
-        return EntityPacketSpawnType.SHIP.ordinal();
     }
 }

@@ -8,29 +8,21 @@ public class SoundSource {
     private final AbstractSoundManager soundManager = Engine.getSoundManager();
     private final int source;
 
-    public SoundSource(AbstractSoundBuffer soundBuffer, float volume, boolean loop, boolean relative) {
-        source = soundManager.createSoundSource(soundBuffer.getBuffer(), loop, relative);
+    public SoundSource(int soundBuffer, float volume, float x, float y, float z, float pitch, boolean loop, boolean relative) {
+        source = soundManager.createSoundSource(soundBuffer, loop, relative);
         setGain(volume);
+        setPosition(x, y, z);
         setRolloffFactor(3.0f);
-        setReferenceDistance(90.0f);
+        setReferenceDistance(8.0f);
+        setPitch(pitch);
     }
 
-    public SoundSource(AbstractSoundBuffer soundBuffer, float volume, boolean loop,
-                       boolean relative, float x, float y) {
-        this(soundBuffer, volume, loop, relative);
-        setPosition(x, y);
+    public SoundSource(int soundBuffer, float volume, float x, float y, float z, float pitch) {
+        this(soundBuffer, volume, x, y, z, pitch, false, false);
     }
 
-    public SoundSource(AbstractSoundBuffer soundBuffer, float volume, float x, float y) {
-        this(soundBuffer, volume, false, false, x, y);
-    }
-
-    public SoundSource(SoundRegistry soundName) {
-        this(Engine.getAssetsManager().getSound(soundName), soundName.getVolume(), false, true);
-    }
-
-    public void setPosition(float x, float y) {
-        soundManager.setPosition(source, x, y);
+    public void setPosition(float x, float y, float z) {
+        soundManager.setPosition(source, x, y, z);
     }
 
     public void setGain(float gain) {
@@ -43,6 +35,14 @@ public class SoundSource {
 
     public void setReferenceDistance(float value) {
         soundManager.setReferenceDistance(source, value);
+    }
+
+    public void setMaxDistance(float value) {
+        soundManager.setMaxDistance(source, value);
+    }
+
+    private void setPitch(float value) {
+        soundManager.setPitch(source, value);
     }
 
     public boolean isPlaying() {

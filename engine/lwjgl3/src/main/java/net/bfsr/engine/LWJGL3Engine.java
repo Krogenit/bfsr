@@ -97,7 +97,7 @@ public class LWJGL3Engine extends AbstractGameLoop {
 
         vidMode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
         if (vidMode == null) throw new IllegalStateException("Failed to get GLFW video mode");
-        window = GLFW.glfwCreateWindow(vidMode.width(), vidMode.height(), "Battle For Space Resources", MemoryUtil.NULL,
+        window = GLFW.glfwCreateWindow(vidMode.width(), vidMode.height(), "Spaceclipse", MemoryUtil.NULL,
                 MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) throw new IllegalStateException("Failed to create the GLFW window");
 

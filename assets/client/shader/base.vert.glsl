@@ -49,14 +49,14 @@ void main() {
     float cameraX = viewData.x;
     float cameraY = viewData.y;
     float cameraZoom = viewData.zoom;
-    float zoomFactor = material.zoomFactor;
+    float zoomFactor = modelData.zoomFactor;
 
     if (zoomFactor < 1.0) {
         cameraX *= zoomFactor;
         cameraY *= zoomFactor;
 
         float maxMinDiff = MAX_CAMERA_ZOOM - MIN_CAMERA_ZOOM;
-        cameraZoom = MIN_CAMERA_ZOOM + log(cameraZoom) * zoomFactor * 0.05f * maxMinDiff;
+        cameraZoom = MIN_CAMERA_ZOOM + log(cameraZoom) * zoomFactor * 0.05 * maxMinDiff;
     }
 
     float width = (lastModelData.width + (modelData.width - lastModelData.width) * interpolation);
@@ -68,13 +68,13 @@ void main() {
     float vx = in_PositionUV.x * cos * width - in_PositionUV.y * sin * height + x + cameraX;
     float vy = in_PositionUV.y * cos * height + in_PositionUV.x * sin * width + y + cameraY;
 
-    gl_Position = projectionMatrix * vec4(vx * cameraZoom, vy * cameraZoom, 0.0, 1.0);
+    gl_Position = projectionMatrix * vec4(vx * cameraZoom, vy * cameraZoom, modelData.z, 1.0);
 
     textureCoords = in_PositionUV.zw;
-    color = material.color;
+    color = lastMaterialData.color + (material.color - lastMaterialData.color) * interpolation;
     materialType = material.materialType;
     textureHandle = material.textureHandle;
     maskTextureHandle = material.maskTextureHandle;
-    fireAmount = material.fireAmount;
-    fireUVAnimation = material.fireUVAnimation;
+    fireAmount = lastMaterialData.fireAmount + (material.fireAmount - lastMaterialData.fireAmount) * interpolation;
+    fireUVAnimation = lastMaterialData.fireUVAnimation + (material.fireUVAnimation - lastMaterialData.fireUVAnimation) * interpolation;
 }

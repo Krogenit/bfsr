@@ -18,6 +18,14 @@ public class InputHandler extends AbstractInputHandler {
         inputControllers.add(controller);
     }
 
+    public void addInputControllerAfter(InputController controller, InputController afterController) {
+        for (int i = 0; i < inputControllers.size(); i++) {
+            if (inputControllers.get(i) == afterController) {
+                inputControllers.add(i + 1, controller);
+            }
+        }
+    }
+
     public void update(int frame) {
         for (int i = 0; i < inputControllers.size(); i++) {
             inputControllers.get(i).update(frame);
@@ -101,5 +109,9 @@ public class InputHandler extends AbstractInputHandler {
                 break;
             }
         }
+    }
+
+    public void removeInputController(InputController controller) {
+        inputControllers.remove(controller);
     }
 }

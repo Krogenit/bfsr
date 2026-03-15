@@ -21,9 +21,14 @@ public class PacketSetPlayerShip extends PacketScheduled {
 
     public PacketSetPlayerShip(Ship ship, int frame) {
         super(frame);
-        this.id = ship.getId();
-        this.x = ship.getX();
-        this.y = ship.getY();
+
+        if (ship == null) {
+            this.id = -1;
+        } else {
+            this.id = ship.getId();
+            this.x = ship.getX();
+            this.y = ship.getY();
+        }
     }
 
     @Override

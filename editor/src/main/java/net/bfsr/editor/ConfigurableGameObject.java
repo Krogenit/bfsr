@@ -2,13 +2,16 @@ package net.bfsr.editor;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.bfsr.client.Client;
+import net.bfsr.config.entity.ship.ShipData;
+import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.editor.gui.property.PropertyGuiElementType;
 import net.bfsr.editor.property.Property;
 import net.bfsr.editor.property.event.ChangeNameEventListener;
 import net.bfsr.editor.property.holder.PropertiesHolder;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
-import net.bfsr.engine.renderer.texture.TextureRegister;
+import net.bfsr.engine.renderer.texture.TextureData;
 import net.bfsr.engine.util.PathHelper;
 
 @Getter
@@ -28,11 +31,13 @@ public class ConfigurableGameObject implements PropertiesHolder {
     @Override
     public void setDefaultValues() {
         sizeX = sizeY = 1.0f;
-        texturePath = PathHelper.convertToLocalPath(TextureRegister.shipHumanSmall0.getPath());
+        ShipRegistry shipRegistry = Client.get().getConfigConverterManager().getConverter(ShipRegistry.class);
+        ShipData shipData = shipRegistry.get(0);
+        texturePath = PathHelper.convertToLocalPath(shipData.getTextureData().getPath());
     }
 
     public void init() {
-        texture = Engine.getAssetsManager().getTexture(PathHelper.convertPath(texturePath));
+        texture = Engine.getAssetsManager().getTexture(new TextureData(PathHelper.convertPath(texturePath)));
     }
 
     @Override

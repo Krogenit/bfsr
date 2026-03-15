@@ -1,7 +1,7 @@
 package net.bfsr.client.gui.settings;
 
 import net.bfsr.client.Client;
-import net.bfsr.client.font.FontType;
+import net.bfsr.client.gui.objects.SimpleButton;
 import net.bfsr.client.language.LanguageManager;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.client.settings.SettingsCategory;
@@ -11,7 +11,6 @@ import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.Label;
 import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.gui.component.ScrollPane;
-import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.engine.settings.SettingsOption;
 
 import java.util.ArrayList;
@@ -62,7 +61,7 @@ public class GuiSettings extends Gui {
         for (Map.Entry<SettingsCategory, List<ClientSettings>> entry : optionsByCategory.entrySet()) {
             List<ClientSettings> options = entry.getValue();
 
-            Label sectionText = new Label(Engine.getFontManager().getFont(FontType.XOLONIUM.getFontName()),
+            Label sectionText = new Label(Engine.getFontManager().getDefaultFont(),
                     languageManager.getString("settings.section." + entry.getKey().getCategoryName()), fontSectionSize);
             scrollPane.add(sectionText.atTop(0, y - 20));
 
@@ -79,7 +78,7 @@ public class GuiSettings extends Gui {
                 if (option.useSlider()) {
                     scrollPane.add(new OptionSlider(buttonWidth, buttonHeight, option).atTop(x, y - 5));
                 } else {
-                    Button button = new Button(TextureRegister.guiButtonBase, buttonWidth, buttonHeight,
+                    Button button = new SimpleButton(buttonWidth, buttonHeight,
                             languageManager.getString("settings." + option.getOptionName()) + ": " + option.getValue());
                     button.setLeftReleaseConsumer((mouseX, mouseY) -> {
                         option.changeValue(client);
@@ -98,11 +97,11 @@ public class GuiSettings extends Gui {
         add(new Rectangle(width, backgroundHeight).setWidthFunction((width, height) -> width).atTopLeft(0, 0)
                 .setAllColors(0.1f, 0.2f, 0.4f, 1.0f));
 
-        Label label = new Label(Engine.getFontManager().getFont(FontType.XOLONIUM.getFontName()),
+        Label label = new Label(Engine.getFontManager().getDefaultFont(),
                 languageManager.getString("gui.settings.mainText"), 24);
         add(label.atTop(0, label.getCenteredOffsetY(backgroundHeight) - 36));
 
-        add(new Button(languageManager.getString("gui.settings.save"), 20, (mouseX, mouseY) -> {
+        add(new SimpleButton(languageManager.getString("gui.settings.save"), 20, (mouseX, mouseY) -> {
             client.getSettings().save();
             client.openGui(parentGui);
         }).atBottom(0, 6));

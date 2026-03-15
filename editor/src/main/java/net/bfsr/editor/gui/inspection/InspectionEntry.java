@@ -102,7 +102,8 @@ public class InspectionEntry<T extends PropertiesHolder> extends MinimizableGuiO
         wasSelected = selected;
 
         if (!isMouseHover() && (inputBox == null || !inputBox.isIntersectsWithMouse(mouseX, mouseY))) {
-            if (selected) {
+            GuiObject hovered = inspectionPanel.getHovered(null, mouseX, mouseY);
+            if (selected && (hovered == inspectionPanel.getScrollPane() || hovered instanceof InspectionEntry)) {
                 unselect();
             }
 

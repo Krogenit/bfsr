@@ -5,10 +5,10 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.entity.Render;
+import net.bfsr.engine.renderer.texture.TextureData;
 import net.bfsr.entity.wreck.ShipWreck;
 import org.joml.Vector2f;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,13 +17,13 @@ public class ShipWreckRenderer extends DamageableRigidBodyRenderer {
     private final List<Render> connectedObjectRenders = new ArrayList<>();
     private final Vector2f localOffsetRotated = new Vector2f();
 
-    public ShipWreckRenderer(ShipWreck wreck, Path texturePath) {
-        super(Engine.getAssetsManager().getTexture(texturePath), wreck, 0.25f, 0.25f, 0.25f, 1.0f);
+    public ShipWreckRenderer(ShipWreck wreck, float z, TextureData textureData) {
+        super(wreck, z, Engine.getAssetsManager().getTexture(textureData), 0.25f, 0.25f, 0.25f, 1.0f);
         this.wreck = wreck;
 
         List<ConnectedObject<?>> connectedObjects = wreck.getConnectedObjects();
         for (int i = 0; i < connectedObjects.size(); i++) {
-            connectedObjectRenders.add(new ConnectedObjectRenderer(connectedObjects.get(i)));
+            connectedObjectRenders.add(new ConnectedObjectRenderer(connectedObjects.get(i), z));
         }
     }
 
@@ -34,9 +34,9 @@ public class ShipWreckRenderer extends DamageableRigidBodyRenderer {
         float localOffsetX = wreck.getLocalOffsetX();
         float localOffsetY = wreck.getLocalOffsetY();
         RotationHelper.rotate(sin, cos, localOffsetX, localOffsetY, localOffsetRotated);
-        id = spriteRenderer.add(rigidBody.getX() - localOffsetRotated.x, rigidBody.getY() - localOffsetRotated.y, sin, cos,
-                object.getSizeX(), object.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(),
-                maskTexture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
+        id = spriteRenderer.add(rigidBody.getX() - localOffsetRotated.x, rigidBody.getY() - localOffsetRotated.y, z, sin,
+                cos, object.getSizeX(), object.getSizeY(), color.x, color.y, color.z, color.w,
+                texture.getTextureHandle(), maskTexture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
 
         for (int i = 0; i < connectedObjectRenders.size(); i++) {
             connectedObjectRenders.get(i).init();

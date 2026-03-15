@@ -2,6 +2,7 @@ package net.bfsr.server.config;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.bfsr.GameplayMode;
 import net.bfsr.engine.config.ConfigLoader;
 
 import java.nio.file.Path;
@@ -17,7 +18,9 @@ public class ServerSettings {
     private String dataBaseServiceHost = "localhost";
     private int databaseServicePort = 7000;
 
-    public void saveSettings(Path path) {
+    private GameplayMode gameplayMode = GameplayMode.MMO;
+
+    private void saveSettings(Path path) {
         ConfigLoader.save(path, this);
     }
 

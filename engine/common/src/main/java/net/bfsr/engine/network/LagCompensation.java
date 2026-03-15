@@ -98,14 +98,10 @@ public final class LagCompensation {
                 }
             }
 
-            for (int i1 = 0; i1 < bullets.size(); i1++) {
-                bullets.get(i1).update();
-            }
-
             physicWorld.fastForwardStep(updateDeltaTime, bulletsBodies);
 
             for (int i1 = 0; i1 < bullets.size(); i1++) {
-                bullets.get(i1).postPhysicsUpdate();
+                bullets.get(i1).update();
             }
 
             fastForwardTimeInFrames -= 1;

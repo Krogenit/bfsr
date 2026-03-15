@@ -26,17 +26,21 @@
   "minVelocityX": -0.15,
   "minVelocityY": -0.15,
   "name": "explosion",
+  "particleType": "ADDITIVE",
   "path": "fire/small",
   "r": 1.0,
-  "renderLayer": "DEFAULT_ADDITIVE",
-  "soundEffects": [],
+  "soundEffect": {
+    "sounds": [],
+    "randomFromList": false
+  },
   "sourceSizeXMultiplier": 0.0,
   "sourceSizeYMultiplier": 0.0,
   "sourceVelocityXMultiplier": 1.0,
   "sourceVelocityYMultiplier": 1.0,
   "spawnOverTime": 0.0,
   "texturePaths": [
-    "texture/particle/explosion.png"
+    "texture/particle/spark0.png",
+    "texture/particle/spark1.png"
   ],
   "treeIndex": 1
 }

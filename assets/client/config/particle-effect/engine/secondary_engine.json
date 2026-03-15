@@ -26,10 +26,13 @@
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
   "name": "secondary_engine",
+  "particleType": "ALPHA_BLENDED",
   "path": "engine",
   "r": 0.5,
-  "renderLayer": "BACKGROUND_ALPHA_BLENDED",
-  "soundEffects": [],
+  "soundEffect": {
+    "sounds": [],
+    "randomFromList": false
+  },
   "sourceSizeXMultiplier": 0.0,
   "sourceSizeYMultiplier": 0.0,
   "sourceVelocityXMultiplier": 0.0,

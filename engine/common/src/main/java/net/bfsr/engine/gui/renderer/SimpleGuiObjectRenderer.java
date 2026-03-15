@@ -13,7 +13,7 @@ public class SimpleGuiObjectRenderer extends GuiObjectRenderer {
     @Override
     protected void create() {
         idList.add(id = guiRenderer.add(guiObject.getSceneX(), guiObject.getSceneY(), guiObject.getWidth(), guiObject.getHeight(),
-                guiObject.getColor()));
+                activeColor));
     }
 
     @Override
@@ -24,6 +24,7 @@ public class SimpleGuiObjectRenderer extends GuiObjectRenderer {
     protected void setBodyLastValues() {
         guiRenderer.setLastPosition(id, lastX, lastY);
         guiRenderer.setLastSize(id, guiObject.getWidth(), guiObject.getHeight());
+        guiRenderer.setLastColor(id, activeColor);
     }
 
     @Override
@@ -38,12 +39,16 @@ public class SimpleGuiObjectRenderer extends GuiObjectRenderer {
 
     @Override
     public void onMouseHover() {
-        guiRenderer.setColor(id, hoverColor);
+        activeColor = hoverColor;
+        activeOutlineColor = outlineHoverColor;
+        guiRenderer.setColor(id, activeColor);
     }
 
     @Override
     public void onMouseStopHover() {
-        guiRenderer.setColor(id, color);
+        activeColor = color;
+        activeOutlineColor = outlineColor;
+        guiRenderer.setColor(id, activeColor);
     }
 
     @Override

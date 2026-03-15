@@ -26,10 +26,13 @@
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
   "name": "small",
+  "particleType": "ADDITIVE",
   "path": "fire",
   "r": 1.0,
-  "renderLayer": "DEFAULT_ADDITIVE",
-  "soundEffects": [],
+  "soundEffect": {
+    "sounds": [],
+    "randomFromList": false
+  },
   "sourceSizeXMultiplier": 1.0,
   "sourceSizeYMultiplier": 1.0,
   "sourceVelocityXMultiplier": 0.0,

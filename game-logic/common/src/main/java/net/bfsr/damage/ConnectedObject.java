@@ -10,8 +10,7 @@ import org.locationtech.jts.geom.Polygon;
 public interface ConnectedObject<CONFIG_DATA extends GameObjectConfigData> {
     void init(RigidBody rigidBody);
     void spawn();
-    void update();
-    void postPhysicsUpdate(RigidBody rigidBody);
+    void update(RigidBody rigidBody);
     default boolean isInside(Polygon polygon) {
         return isInside(polygon, 0, 0);
     }

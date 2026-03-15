@@ -5,7 +5,4 @@ jar {
 
 dependencies {
     implementation project(':game-logic:client')
-
-    annotationProcessor "org.mapstruct:mapstruct-processor:1.6.3", "org.projectlombok:lombok-mapstruct-binding:0.2.0"
-    testAnnotationProcessor "org.mapstruct:mapstruct-processor:1.6.3"
 }

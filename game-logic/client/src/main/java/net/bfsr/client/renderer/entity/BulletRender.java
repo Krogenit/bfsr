@@ -1,22 +1,23 @@
 package net.bfsr.client.renderer.entity;
 
+import net.bfsr.client.assets.TextureRegister;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
-import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.entity.bullet.Bullet;
 
 public class BulletRender extends RigidBodyRender {
-    private static final AbstractTexture LIGHT_TEXTURE = Engine.getAssetsManager().getTexture(TextureRegister.particleLight);
+    private static final AbstractTexture LIGHT_TEXTURE = Engine.getAssetsManager()
+            .getTexture(TextureRegister.light.getTextureData());
 
     private final Bullet bullet;
     private final float lightSize;
 
     private int lightId = -1;
 
-    public BulletRender(Bullet bullet) {
-        super(Engine.getAssetsManager().getTexture(bullet.getGunData().getBulletTexture()), bullet,
+    public BulletRender(Bullet bullet, float z) {
+        super(bullet, z, Engine.getAssetsManager().getTexture(bullet.getGunData().getBulletTextureData()),
                 bullet.getGunData().getColor().x, bullet.getGunData().getColor().y, bullet.getGunData().getColor().z,
                 bullet.getGunData().getColor().w);
         this.bullet = bullet;
@@ -25,10 +26,11 @@ public class BulletRender extends RigidBodyRender {
 
     @Override
     public void init() {
-        lightId = spriteRenderer.add(object.getX(), object.getY(), lightSize, lightSize, color.x / 1.5f, color.y / 1.5f, color.z / 1.5f,
-                color.w / 4.0f, LIGHT_TEXTURE.getTextureHandle(), BufferType.ENTITIES_ADDITIVE);
-        id = spriteRenderer.add(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), rigidBody.getSizeX(),
-                rigidBody.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(), BufferType.ENTITIES_ADDITIVE);
+        lightId = spriteRenderer.add(object.getX(), object.getY(), z, lightSize, lightSize, color.x / 1.5f, color.y / 1.5f,
+                color.z / 1.5f, color.w / 4.0f, LIGHT_TEXTURE.getTextureHandle(), BufferType.ENTITIES_ADDITIVE);
+        id = spriteRenderer.add(rigidBody.getX(), rigidBody.getY(), z, rigidBody.getSin(), rigidBody.getCos(),
+                rigidBody.getSizeX(), rigidBody.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(),
+                BufferType.ENTITIES_ADDITIVE);
     }
 
     @Override

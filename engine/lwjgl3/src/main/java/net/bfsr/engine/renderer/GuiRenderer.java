@@ -4,11 +4,11 @@ import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.constant.DrawMode;
 import net.bfsr.engine.renderer.gui.AbstractGUIRenderer;
 import net.bfsr.engine.renderer.primitive.Primitive;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.GL11C;
 
 import java.util.List;
 
@@ -39,12 +39,17 @@ public class GuiRenderer extends AbstractGUIRenderer {
     }
 
     @Override
-    public void render() {
-        render(GL11C.GL_TRIANGLES);
+    public void updateBuffers() {
+        spriteRenderer.updateBuffers();
     }
 
     @Override
-    public void render(int mode) {
+    public void render() {
+        render(DrawMode.TRIANGLES);
+    }
+
+    @Override
+    public void render(DrawMode mode) {
         if (buffersHolder.getRenderObjects() > 0) {
             spriteRenderer.updateCommandBufferAndRender(mode, buffersHolder.getRenderObjects(), buffersHolder);
             buffersHolder.setRenderObjects(0);
@@ -110,7 +115,8 @@ public class GuiRenderer extends AbstractGUIRenderer {
     @Override
     public int add(int x, int y, float sin, float cos, int width, int height, float r, float g, float b, float a,
                    long textureHandle, MaterialType materialType) {
-        return spriteRenderer.add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, materialType, buffersHolder);
+        return spriteRenderer.add(x, y, DepthBufferRenderLayers.getUIZ(), sin, cos, width, height, r, g, b, a, textureHandle, materialType,
+                buffersHolder);
     }
 
     @Override
@@ -136,8 +142,9 @@ public class GuiRenderer extends AbstractGUIRenderer {
     @Override
     public int addCentered(int x, int y, float sin, float cos, int width, int height, float r, float g, float b, float a,
                            long textureHandle) {
-        return spriteRenderer.add(x + width * 0.5f, y + height * 0.5f, sin, cos, width, height, r, g, b, a, textureHandle,
-                textureHandle != 0 ? MaterialType.TEXTURED : MaterialType.NOT_TEXTURED, buffersHolder);
+        return spriteRenderer.add(x + width * 0.5f, y + height * 0.5f, DepthBufferRenderLayers.getUIZ(), sin, cos, width, height, r, g, b,
+                a,
+                textureHandle, textureHandle != 0 ? MaterialType.TEXTURED : MaterialType.NOT_TEXTURED, buffersHolder);
     }
 
     @Override

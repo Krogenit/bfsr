@@ -129,40 +129,12 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
     private void onEntryMoved(InspectionEntry<PROPERTIES_TYPE> entry, int mouseY) {
         GuiObject guiObject = guiManager.getHoveredGuiObject();
         if (guiObject instanceof InspectionEntry<?> inspectionEntry) {
-            if (mouseY < inspectionEntry.getSceneY() + exactObjectSelectionOffsetY) {
-                GuiObject parent = inspectionEntry.getParent();
-                List<GuiObject> guiObjects = parent.getGuiObjects();
-                int index = guiObjects.indexOf(inspectionEntry) + 1;
-                entry.removeFromParent();
-                if (index >= guiObjects.size()) {
-                    parent.add(entry);
-                } else {
-                    parent.addAt(index, entry);
-                }
-
-                if (parent == scrollPane) {
-                    entry.setParent(scrollPane);
-                }
-
-                updatePositionAndSize();
-            } else if (mouseY >= inspectionEntry.getSceneY() + inspectionEntry.getBaseHeight() - exactObjectSelectionOffsetY) {
-                GuiObject parent;
-                if (inspectionEntry.isMaximized()) {
-                    parent = inspectionEntry;
-                } else {
-                    parent = inspectionEntry.getParent();
-                }
-
-                List<GuiObject> guiObjects = parent.getGuiObjects();
-                int index = guiObjects.indexOf(inspectionEntry);
-                entry.removeFromParent();
-                parent.addAt(index, entry);
-
-                if (parent == scrollPane) {
-                    entry.setParent(scrollPane);
-                }
-
-                updatePositionAndSize();
+            int sceneY = inspectionEntry.getSceneY();
+            int height = guiObject.getHeight();
+            if (mouseY < sceneY + height - elementHeight + exactObjectSelectionOffsetY) { // Below
+                insertBelow(inspectionEntry, entry);
+            } else if (mouseY >= sceneY + height - exactObjectSelectionOffsetY) { // Above
+                insertAbove(inspectionEntry, entry);
             } else if (inspectionEntry != movableObject &&
                     !isInHierarchy(movableObject, (InspectionEntry<PROPERTIES_TYPE>) inspectionEntry)) {
                 entry.removeFromParent();
@@ -171,10 +143,36 @@ public class InspectionPanel<PROPERTIES_TYPE extends PropertiesHolder> extends R
                 updatePositionAndSize();
             }
         } else {
-            entry.removeFromParent();
-            add(entry);
-            updatePositionAndSize();
+            List<GuiObject> guiObjects = scrollPane.getGuiObjects();
+            GuiObject first = guiObjects.get(0);
+            GuiObject last = guiObjects.get(guiObjects.size() - 1);
+            if (mouseY < last.getSceneY()) { // Below last
+                insertBelow(((InspectionEntry<?>) last), entry);
+            } else { // Above first
+                insertAbove(((InspectionEntry<?>) first), entry);
+            }
         }
+    }
+
+    private void insertBelow(InspectionEntry<?> inspectionEntry, InspectionEntry<PROPERTIES_TYPE> insertEntry) {
+        GuiObject parent = inspectionEntry.getParent();
+        List<GuiObject> guiObjects = parent.getGuiObjects();
+        int index = guiObjects.indexOf(inspectionEntry) + 1;
+        insertEntry.removeFromParent();
+        if (index >= guiObjects.size()) {
+            parent.add(insertEntry);
+        } else {
+            parent.addAt(index, insertEntry);
+        }
+
+        updatePositionAndSize();
+    }
+
+    private void insertAbove(InspectionEntry<?> inspectionEntry, InspectionEntry<PROPERTIES_TYPE> insertEntry) {
+        GuiObject parent = inspectionEntry.getParent();
+        insertEntry.removeFromParent();
+        parent.addBefore(insertEntry, inspectionEntry);
+        updatePositionAndSize();
     }
 
     @Override

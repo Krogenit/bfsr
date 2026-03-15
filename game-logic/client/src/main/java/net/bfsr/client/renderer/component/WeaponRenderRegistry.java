@@ -5,17 +5,17 @@ import gnu.trove.map.hash.THashMap;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 public final class WeaponRenderRegistry {
-    private final TMap<Class<? extends WeaponSlot>, Function<WeaponSlot, ? extends WeaponSlotRender>> renderRegistry = new THashMap<>();
+    private final TMap<Class<? extends WeaponSlot>, BiFunction<WeaponSlot, Float, ? extends WeaponSlotRender>> renderRegistry = new THashMap<>();
 
     public WeaponRenderRegistry() {
         renderRegistry.put(WeaponSlot.class, WeaponSlotRender::new);
-        renderRegistry.put(WeaponSlotBeam.class, weaponSlot -> new WeaponSlotBeamRender((WeaponSlotBeam) weaponSlot));
+        renderRegistry.put(WeaponSlotBeam.class, (weaponSlot, z) -> new WeaponSlotBeamRender((WeaponSlotBeam) weaponSlot, z));
     }
 
-    public WeaponSlotRender createRender(WeaponSlot weaponSlot) {
-        return renderRegistry.get(weaponSlot.getClass()).apply(weaponSlot);
+    public WeaponSlotRender createRender(WeaponSlot weaponSlot, float z) {
+        return renderRegistry.get(weaponSlot.getClass()).apply(weaponSlot, z);
     }
 }

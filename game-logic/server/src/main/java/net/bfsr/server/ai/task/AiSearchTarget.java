@@ -27,7 +27,7 @@ public class AiSearchTarget extends AiTask {
     public void execute() {
         if (type == AiAggressiveType.ATTACK) {
             RigidBody attacker = ship.getLastAttacker();
-            if (attacker != null && !attacker.isDead() && attacker instanceof Ship && isEnemy((Ship) attacker) &&
+            if (attacker instanceof Ship && !attacker.isDead() && isEnemy((Ship) attacker) &&
                     Math.abs(attacker.getX()) < 1000 && Math.abs(attacker.getY()) < 1000) {
                 ship.setTarget(attacker);
             } else findNewTarget();
@@ -39,7 +39,7 @@ public class AiSearchTarget extends AiTask {
             }
         } else if (type == AiAggressiveType.NOTHING) {
             if (ship.getLinearVelocity().length() > 0.1f && ship.getModules().getEngines().isSomeEngineAlive()) {
-                ship.move(Direction.STOP);
+                ship.addMoveDirection(Direction.STOP);
             }
             if (Math.abs(ship.getAngularVelocity()) > 0.01f) {
                 ship.setAngularVelocity(ship.getAngularVelocity() * 0.99f);

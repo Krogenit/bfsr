@@ -3,6 +3,7 @@ package net.bfsr.engine.renderer.culling;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
+import net.bfsr.engine.renderer.constant.DrawMode;
 import net.bfsr.engine.renderer.primitive.AbstractVAO;
 import net.bfsr.engine.renderer.primitive.AbstractVBO;
 import net.bfsr.engine.renderer.shader.AbstractShaderProgram;
@@ -13,7 +14,6 @@ import java.nio.ByteBuffer;
 
 import static net.bfsr.engine.renderer.SpriteRenderer.MATERIAL_BUFFER_INDEX;
 import static net.bfsr.engine.renderer.SpriteRenderer.MODEL_BUFFER_INDEX;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL42C.GL_COMMAND_BARRIER_BIT;
 import static org.lwjgl.opengl.GL42C.glMemoryBarrier;
 import static org.lwjgl.opengl.GL43.GL_SHADER_STORAGE_BUFFER;
@@ -56,7 +56,7 @@ public class GPUFrustumCullingSystem implements AbstractGPUFrustumCullingSystem 
 
         glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
 
-        spriteRenderer.render(GL_TRIANGLES, count, buffersHolder);
+        spriteRenderer.render(DrawMode.TRIANGLES, count, buffersHolder);
     }
 
     private void frustumTest(int renderObjects, AbstractBuffersHolder buffersHolder, AbstractVBO modelData, AbstractVBO materialData) {

@@ -10,8 +10,7 @@ import org.mapstruct.Mappings;
 public interface PlayerConverter {
     @Mappings({
             @Mapping(source = "name", target = "username"), @Mapping(target = "playerInputController", ignore = true),
-            @Mapping(target = "networkHandler", ignore = true),
-            @Mapping(target = "position", ignore = true)
+            @Mapping(target = "networkHandler", ignore = true)
     })
     Player from(PlayerModel playerModel);
 

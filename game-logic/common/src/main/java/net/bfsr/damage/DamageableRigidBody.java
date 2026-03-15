@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.bfsr.config.entity.damageable.DamageableRigidBodyConfigData;
 import net.bfsr.engine.world.entity.RigidBody;
-import net.bfsr.physics.CollisionMatrixType;
 import org.jbox2d.dynamics.Fixture;
 import org.locationtech.jts.geom.Polygon;
 
@@ -42,20 +41,8 @@ public class DamageableRigidBody extends RigidBody {
     @Override
     public void update() {
         super.update();
-        updateConnectedObjects();
-    }
-
-    protected void updateConnectedObjects() {
         for (int i = 0; i < connectedObjects.size(); i++) {
-            connectedObjects.get(i).update();
-        }
-    }
-
-    @Override
-    public void postPhysicsUpdate() {
-        super.postPhysicsUpdate();
-        for (int i = 0; i < connectedObjects.size(); i++) {
-            connectedObjects.get(i).postPhysicsUpdate(this);
+            connectedObjects.get(i).update(this);
         }
     }
 
@@ -90,10 +77,5 @@ public class DamageableRigidBody extends RigidBody {
 
     public void initConnectedObject(ConnectedObject<?> connectedObject) {
         connectedObject.init(this);
-    }
-
-    @Override
-    public int getCollisionMatrixId() {
-        return CollisionMatrixType.DAMAGEABLE_RIGID_BODY.ordinal();
     }
 }

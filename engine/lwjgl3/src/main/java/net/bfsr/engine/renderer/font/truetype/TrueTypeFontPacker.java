@@ -45,6 +45,7 @@ class TrueTypeFontPacker extends FontPacker<TrueTypeBitMap> {
             }
         }
 
+        ascender = (int) (ftFace.size().metrics().ascender() >> 6);
         descender = (int) (ftFace.size().metrics().descender() >> 6);
     }
 

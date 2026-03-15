@@ -7,9 +7,8 @@ import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.util.RunnableUtils;
 import net.bfsr.engine.world.entity.RigidBody;
+import net.bfsr.entity.EntityTypes;
 import net.bfsr.network.packet.common.entity.spawn.BulletSpawnData;
-import net.bfsr.physics.CollisionMatrixType;
-import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Fixture;
@@ -30,7 +29,7 @@ public class Bullet extends RigidBody {
     @Getter
     private final Vector4f spawnTransform;
 
-    private Runnable postPhysicsRotationUpdater = RunnableUtils.EMPTY_RUNNABLE;
+    private Runnable rotationUpdater = RunnableUtils.EMPTY_RUNNABLE;
     @Setter
     @Getter
     private int clientId;
@@ -53,7 +52,7 @@ public class Bullet extends RigidBody {
     @Override
     protected void initBody() {
         super.initBody();
-        addFixture(new Fixture(polygon, Filters.BULLET_FILTER, this, 0.0f));
+        addFixture(new Fixture(polygon, world.getCollisionProfile().getBulletFilter(), this, 0.0f));
     }
 
     @Override
@@ -66,9 +65,9 @@ public class Bullet extends RigidBody {
     }
 
     @Override
-    public void postPhysicsUpdate() {
-        super.postPhysicsUpdate();
-        postPhysicsRotationUpdater.run();
+    public void update() {
+        super.update();
+        rotationUpdater.run();
     }
 
     public void reflect(float normalX, float normalY) {
@@ -76,9 +75,9 @@ public class Bullet extends RigidBody {
         float dot = velocity.x * normalX + velocity.y * normalY;
         setVelocity(velocity.x - 2 * dot * normalX, velocity.y - 2 * dot * normalY);
         float rotateToVector = (float) Math.atan2(-velocity.x, velocity.y) + MathUtils.HALF_PI;
-        postPhysicsRotationUpdater = () -> {
+        rotationUpdater = () -> {
             setRotation(LUT.sin(rotateToVector), LUT.cos(rotateToVector));
-            postPhysicsRotationUpdater = RunnableUtils.EMPTY_RUNNABLE;
+            rotationUpdater = RunnableUtils.EMPTY_RUNNABLE;
         };
     }
 
@@ -101,7 +100,7 @@ public class Bullet extends RigidBody {
     }
 
     @Override
-    public int getCollisionMatrixId() {
-        return CollisionMatrixType.BULLET.ordinal();
+    public int getEntityType() {
+        return EntityTypes.BULLET.ordinal();
     }
 }

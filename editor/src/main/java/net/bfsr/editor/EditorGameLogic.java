@@ -11,6 +11,8 @@ import net.engio.mbassy.listener.Listener;
 
 @Listener
 public class EditorGameLogic extends Client {
+    public static final float EDITOR_Z_LAYER = -0.5f;
+
     public EditorGameLogic(AbstractGameLoop gameLoop, Profiler profiler, EventBus eventBus) {
         super(gameLoop, profiler, eventBus);
     }

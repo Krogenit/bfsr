@@ -52,7 +52,7 @@ public class AbstractCollisionMatrix {
     @SuppressWarnings("unchecked")
     void collision(RigidBody rigidBody1, RigidBody rigidBody2, Fixture fixture1, Fixture fixture2,
                    float contactX, float contactY, float normalX, float normalY) {
-        matrix[rigidBody1.getCollisionMatrixId()][rigidBody2.getCollisionMatrixId()].handle(rigidBody1, rigidBody2,
+        matrix[rigidBody1.getEntityType()][rigidBody2.getEntityType()].handle(rigidBody1, rigidBody2,
                 fixture1, fixture2, contactX, contactY, normalX, normalY);
     }
 
@@ -60,13 +60,13 @@ public class AbstractCollisionMatrix {
     public void rayCast(RayCastSource rayCastSource, Fixture fixture, float contactX, float contactY,
                         float normalX, float normalY) {
         RigidBody rigidBody = ((RigidBody) fixture.getBody().getUserData());
-        rayCastMatrix[rayCastSource.getRayCastType()][rigidBody.getCollisionMatrixId()].handle(rayCastSource, rigidBody,
+        rayCastMatrix[rayCastSource.getRayCastType()][rigidBody.getEntityType()].handle(rayCastSource, rigidBody,
                 fixture, contactX, contactY, normalX, normalY);
     }
 
     @SuppressWarnings("unchecked")
     public boolean canCollideWith(RigidBody rigidBody1, RigidBody rigidBody2) {
-        return canCollideFunctions[rigidBody1.getCollisionMatrixId()][rigidBody2.getCollisionMatrixId()].apply(rigidBody1,
+        return canCollideFunctions[rigidBody1.getEntityType()][rigidBody2.getEntityType()].apply(rigidBody1,
                 rigidBody2);
     }
 

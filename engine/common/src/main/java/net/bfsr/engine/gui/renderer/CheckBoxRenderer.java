@@ -1,7 +1,7 @@
 package net.bfsr.engine.gui.renderer;
 
 import net.bfsr.engine.gui.component.CheckBox;
-import net.bfsr.engine.renderer.opengl.GL;
+import net.bfsr.engine.renderer.constant.DrawMode;
 import net.bfsr.engine.renderer.primitive.Primitive;
 
 public class CheckBoxRenderer extends RectangleOutlinedRenderer {
@@ -37,7 +37,7 @@ public class CheckBoxRenderer extends RectangleOutlinedRenderer {
             guiRenderer.render();
             guiRenderer.addDrawCommand(checkId, CHECK_PRIMITIVE.getBaseVertex());
             renderer.lineWidth(2.0f);
-            guiRenderer.render(GL.GL_LINES);
+            guiRenderer.render(DrawMode.LINES);
             renderer.lineWidth(1.0f);
         }
     }

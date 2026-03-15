@@ -1,6 +1,7 @@
 package net.bfsr.entity.ship.module.weapon;
 
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.config.component.weapon.gun.GunData;
@@ -9,7 +10,9 @@ import net.bfsr.damage.ConnectedObjectType;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.damage.DamageableRigidBody;
 import net.bfsr.engine.event.EventBus;
+import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.physics.PhysicsUtils;
+import net.bfsr.engine.util.RandomHelper;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
@@ -19,7 +22,6 @@ import net.bfsr.entity.ship.module.ModuleType;
 import net.bfsr.entity.ship.module.reactor.Reactor;
 import net.bfsr.event.module.weapon.WeaponShotEvent;
 import net.bfsr.event.module.weapon.WeaponSlotRemovedEvent;
-import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.Fixture;
@@ -46,6 +48,7 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
     private float sin, cos;
     @Getter
     protected final EventBus weaponSlotEventBus = new EventBus();
+    private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
 
     public WeaponSlot(GunData gunData, WeaponType weaponType) {
         super(gunData, gunData.getHp(), gunData.getSizeX(), gunData.getSizeY());
@@ -89,8 +92,8 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
         rigidBody.init(world, world.getNextId());
         Body body = rigidBody.getBody();
 
-        rigidBody.addFixture(new Fixture(new Polygon(gunData.getPolygon().getVertices()), Filters.SHIP_FILTER, this,
-                PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
+        rigidBody.addFixture(new Fixture(new Polygon(gunData.getPolygon().getVertices()),
+                world.getCollisionProfile().getShipFilter(), this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
         body.setLinearDamping(0.05f);
         body.setAngularDamping(0.005f);
         body.setLinearVelocity(this.ship.getBody().getLinearVelocity());
@@ -101,7 +104,8 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
 
     @Override
     protected void createFixture(RigidBody rigidBody) {
-        fixture = new Fixture(polygon, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
+        fixture = new Fixture(polygon, rigidBody.getWorld().getCollisionProfile().getShipFilter(), this,
+                PhysicsUtils.DEFAULT_FIXTURE_DENSITY);
         rigidBody.addFixture(fixture);
     }
 
@@ -129,21 +133,23 @@ public class WeaponSlot extends DamageableModule implements ConnectedObject<GunD
         float sin = ship.getSin();
         float x = getX() + getSizeX() * cos;
         float y = getY() + getSizeX() * sin;
-        Bullet bullet = new Bullet(x, y, sin, cos, gunData, ship, gunData.getDamage().copy());
+
+        float randomAngle = RandomHelper.randomFloat(random, -0.05f, 0.05f);
+        float randomSin = LUT.sin(randomAngle);
+        float randomCos = LUT.cos(randomAngle);
+
+        Bullet bullet = new Bullet(x, y, sin * randomCos + cos * randomSin, cos * randomCos - sin * randomSin, gunData, ship,
+                gunData.getDamage().copy());
         bullet.init(world, world.getNextId());
         world.add(bullet, true, forceSpawn);
         return bullet;
     }
 
     @Override
-    public void update() {
+    public void update(RigidBody rigidBody) {
         if (reloadTimer > 0) {
             reloadTimer -= 1;
         }
-    }
-
-    @Override
-    public void postPhysicsUpdate(RigidBody rigidBody) {
         updatePos(rigidBody);
     }
 

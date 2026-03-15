@@ -16,16 +16,14 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.ArrayList;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = Main.class)
+@SpringBootTest(classes = Main.class, properties = "spring.rsocket.server.port=0")
 @Testcontainers(disabledWithoutDocker = true)
 @DirtiesContext
 public class PlayerServiceTest {
     @Container
-    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.5");
+    private static final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.5");
 
     @Autowired
     private PlayerRepository playerRepository;
@@ -35,7 +33,11 @@ public class PlayerServiceTest {
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
-        dynamicPropertyRegistry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        if (!mongoDBContainer.isRunning()) {
+            mongoDBContainer.start();
+        }
+        String mongoUri = mongoDBContainer.getReplicaSetUrl();
+        dynamicPropertyRegistry.add("spring.mongodb.uri", () -> mongoUri);
     }
 
     @BeforeEach
@@ -46,38 +48,38 @@ public class PlayerServiceTest {
     @Test
     void addPlayer() {
         String username = "test";
-        PlayerModel playerModel = playerService.save(new PlayerModel(null, username, Faction.HUMAN, new ArrayList<>())).block();
+        PlayerModel playerModel = playerService.save(new PlayerModel(null, username, Faction.HUMAN, null)).block();
         assertThat(playerModel).isNotNull();
         assertThat(playerModel.name()).isEqualTo(username);
         assertThat(playerModel.id()).isNotNull();
         assertThat(playerModel.faction()).isEqualTo(Faction.HUMAN);
-        assertThat(playerModel.ships().size()).isEqualTo(0);
+        assertThat(playerModel.ship()).isNull();
     }
 
     @Test
     void getPlayerByName() {
         String username = "test";
-        playerService.save(new PlayerModel(null, username, Faction.HUMAN, new ArrayList<>())).block();
+        playerService.save(new PlayerModel(null, username, Faction.HUMAN, null)).block();
         PlayerModel playerModel = playerService.getPlayer(username).block();
         assertThat(playerModel).isNotNull();
         assertThat(playerModel.name()).isEqualTo(username);
         assertThat(playerModel.id()).isNotNull();
         assertThat(playerModel.faction()).isEqualTo(Faction.HUMAN);
-        assertThat(playerModel.ships().size()).isEqualTo(0);
+        assertThat(playerModel.ship()).isNull();
     }
 
     @Test
     void deletePlayerByName() {
         String username = "test";
-        playerService.save(new PlayerModel(null, username, Faction.HUMAN, new ArrayList<>())).block();
+        playerService.save(new PlayerModel(null, username, Faction.HUMAN, null)).block();
         playerService.deleteByName(username).block();
         assertThat(playerService.getPlayer(username).block()).isNull();
     }
 
     @Test
     void deleteAll() {
-        playerService.save(new PlayerModel(null, "test", Faction.HUMAN, new ArrayList<>())).block();
-        playerService.save(new PlayerModel(null, "test1", Faction.HUMAN, new ArrayList<>())).block();
+        playerService.save(new PlayerModel(null, "test", Faction.HUMAN, null)).block();
+        playerService.save(new PlayerModel(null, "test1", Faction.HUMAN, null)).block();
         playerService.deleteAll().block();
         assertThat(playerService.getPlayer("test").block()).isNull();
         assertThat(playerService.getPlayer("test1").block()).isNull();

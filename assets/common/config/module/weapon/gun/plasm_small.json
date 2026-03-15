@@ -1,19 +1,28 @@
 {
   "name": "plasm_small",
-  "sounds": [
-    {
-      "path": "sound/weapon/plasm0.ogg",
-      "volume": 1.0
-    },
-    {
-      "path": "sound/weapon/plasm1.ogg",
-      "volume": 1.0
-    },
-    {
-      "path": "sound/weapon/plasm2.ogg",
-      "volume": 1.0
-    }
-  ],
+  "soundEffect": {
+    "sounds": [
+      {
+        "path": "sound/weapon/plasm0.ogg",
+        "volume": 0.1,
+        "minPitch": 0.9,
+        "maxPitch": 1.1
+      },
+      {
+        "path": "sound/weapon/plasm1.ogg",
+        "volume": 0.1,
+        "minPitch": 0.9,
+        "maxPitch": 1.1
+      },
+      {
+        "path": "sound/weapon/plasm2.ogg",
+        "volume": 0.1,
+        "minPitch": 0.9,
+        "maxPitch": 1.1
+      }
+    ],
+    "randomFromList": true
+  },
   "reloadTimeInSeconds": 0.5,
   "energyCost": 4.0,
   "hp": 15.0,
@@ -24,8 +33,8 @@
     "shield": 2.5
   },
   "size": {
-    "x": 0.26,
-    "y": 0.14
+    "x": 0.18,
+    "y": 0.1
   },
   "texture": "texture/component/weapon/plasm1.png",
   "color": {
@@ -36,20 +45,20 @@
   },
   "vertices": [
     {
-      "x": -0.12,
-      "y": -0.07
+      "x": -0.09,
+      "y": -0.05
     },
     {
-      "x": 0.12,
-      "y": -0.07
+      "x": 0.09,
+      "y": -0.05
     },
     {
-      "x": 0.12,
-      "y": 0.07
+      "x": 0.09,
+      "y": 0.05
     },
     {
-      "x": -0.12,
-      "y": 0.07
+      "x": -0.09,
+      "y": 0.05
     }
   ],
   "minDistanceBetweenVerticesSq": 0.03,

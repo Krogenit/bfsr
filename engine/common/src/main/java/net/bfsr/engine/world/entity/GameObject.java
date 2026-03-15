@@ -22,8 +22,6 @@ public class GameObject {
 
     public void update() {}
 
-    public void postPhysicsUpdate() {}
-
     public void setPosition(float x, float y) {
         position.set(x, y);
     }

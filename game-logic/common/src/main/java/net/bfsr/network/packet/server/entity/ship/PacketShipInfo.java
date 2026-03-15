@@ -26,6 +26,7 @@ public class PacketShipInfo extends PacketScheduled {
     private float[][] hull;
     private float energy;
     private float shield;
+    private boolean warpDrive;
 
     public PacketShipInfo(Ship ship, int frame) {
         super(frame);
@@ -58,6 +59,7 @@ public class PacketShipInfo extends PacketScheduled {
         this.crew = modules.getCrew() != null ? modules.getCrew().getCrewSize() : 0;
         this.energy = modules.getReactor().getEnergy();
         this.shield = modules.getShield() != null ? modules.getShield().getShieldHp() : 0;
+        this.warpDrive = ship.isWarpDrive();
     }
 
     @Override
@@ -84,6 +86,7 @@ public class PacketShipInfo extends PacketScheduled {
         data.writeInt(crew);
         data.writeFloat(energy);
         data.writeFloat(shield);
+        data.writeBoolean(warpDrive);
     }
 
     @Override
@@ -112,5 +115,6 @@ public class PacketShipInfo extends PacketScheduled {
         crew = data.readInt();
         energy = data.readFloat();
         shield = data.readFloat();
+        warpDrive = data.readBoolean();
     }
 }

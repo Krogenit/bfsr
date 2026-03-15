@@ -2,7 +2,6 @@ package net.bfsr.editor.gui;
 
 import net.bfsr.client.Client;
 import net.bfsr.editor.gui.property.PolygonProperty;
-import net.bfsr.editor.gui.ship.GuiShipEditor;
 import net.bfsr.editor.property.holder.Vector2fPropertiesHolder;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.Button;
@@ -22,7 +21,7 @@ import static net.bfsr.editor.gui.EditorTheme.setupContextMenuButton;
 
 public class GuiVertex extends GuiObject {
     private final AbstractMouse mouse = Engine.getMouse();
-    private final GuiShipEditor guiShipEditor;
+    private final GuiEntityEditor<?, ?, ?> guiEditor;
     private final Vector2fPropertiesHolder vertex;
     private final Label indexLabel;
 
@@ -32,13 +31,13 @@ public class GuiVertex extends GuiObject {
     private float vertexStartX;
     private float vertexStartY;
 
-    public GuiVertex(GuiShipEditor guiShipEditor, Vector2fPropertiesHolder vertex, Font font, int fontSize, int elementHeight,
-                     int contextMenuStringOffsetX) {
+    GuiVertex(GuiEntityEditor<?, ?, ?> guiEditor, Vector2fPropertiesHolder vertex, Font font, int fontSize, int elementHeight,
+              int contextMenuStringOffsetX) {
         super(14, 14);
-        this.guiShipEditor = guiShipEditor;
+        this.guiEditor = guiEditor;
         this.vertex = vertex;
 
-        PolygonProperty polygonProperty = guiShipEditor.getPolygonProperty();
+        PolygonProperty polygonProperty = guiEditor.getPolygonProperty();
         List<Vector2fPropertiesHolder> vertices = polygonProperty.getVertices();
         indexLabel = new Label(font, "" + vertices.indexOf(vertex), fontSize);
         add(indexLabel.atCenter(0, 0));
@@ -54,7 +53,7 @@ public class GuiVertex extends GuiObject {
             Button removeVertexButton = new Button(font.getWidth(title, fontSize) + contextMenuStringOffsetX, elementHeight, title, font,
                     fontSize, contextMenuStringOffsetX / 2, 0, StringOffsetType.DEFAULT, (mouseX1, mouseY1) -> {
                 polygonProperty.removeObject(vertex);
-                guiShipEditor.removeVertex(this);
+                guiEditor.removeVertex(this);
             });
 
             int x = mouseX;
@@ -75,7 +74,7 @@ public class GuiVertex extends GuiObject {
                     Vector2fPropertiesHolder newVertex = new Vector2fPropertiesHolder((vertex.getX() + prevVertex.getX()) / 2,
                             (vertex.getY() + prevVertex.getY()) / 2);
                     polygonProperty.addObjectAt(index, newVertex);
-                    guiShipEditor.addVertex(index, new GuiVertex(guiShipEditor, newVertex, font, fontSize, elementHeight,
+                    guiEditor.addVertex(index, new GuiVertex(guiEditor, newVertex, font, fontSize, elementHeight,
                             contextMenuStringOffsetX));
                 }
             });
@@ -97,7 +96,7 @@ public class GuiVertex extends GuiObject {
                     Vector2fPropertiesHolder newVertex = new Vector2fPropertiesHolder((vertex.getX() + prevVertex.getX()) / 2,
                             (vertex.getY() + prevVertex.getY()) / 2);
                     polygonProperty.addObjectAt(insertIndex, newVertex);
-                    guiShipEditor.addVertex(insertIndex, new GuiVertex(guiShipEditor, newVertex, font, fontSize, elementHeight,
+                    guiEditor.addVertex(insertIndex, new GuiVertex(guiEditor, newVertex, font, fontSize, elementHeight,
                             contextMenuStringOffsetX));
                 }
             });
@@ -122,7 +121,7 @@ public class GuiVertex extends GuiObject {
     public void update(int mouseX, int mouseY) {
         super.update(mouseX, mouseY);
 
-        PolygonProperty polygonProperty = guiShipEditor.getPolygonProperty();
+        PolygonProperty polygonProperty = guiEditor.getPolygonProperty();
         int index = polygonProperty.getVertices().indexOf(vertex);
         indexLabel.setString("" + index);
 

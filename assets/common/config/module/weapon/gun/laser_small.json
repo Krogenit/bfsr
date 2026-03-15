@@ -1,15 +1,22 @@
 {
   "name": "laser_small",
-  "sounds": [
-    {
-      "path": "sound/weapon/laser0.ogg",
-      "volume": 1.0
-    },
-    {
-      "path": "sound/weapon/laser1.ogg",
-      "volume": 1.0
-    }
-  ],
+  "soundEffect": {
+    "sounds": [
+      {
+        "path": "sound/weapon/laser0.ogg",
+        "volume": 0.1,
+        "minPitch": 0.9,
+        "maxPitch": 1.1
+      },
+      {
+        "path": "sound/weapon/laser1.ogg",
+        "volume": 0.1,
+        "minPitch": 0.9,
+        "maxPitch": 1.1
+      }
+    ],
+    "randomFromList": true
+  },
   "hp": 15.0,
   "reloadTimeInSeconds": 0.5,
   "energyCost": 4.0,
@@ -20,8 +27,8 @@
     "shield": 5.0
   },
   "size": {
-    "x": 0.26,
-    "y": 0.14
+    "x": 0.22,
+    "y": 0.08
   },
   "texture": "texture/component/weapon/laser1.png",
   "color": {
@@ -32,20 +39,20 @@
   },
   "vertices": [
     {
-      "x": -0.12,
-      "y": -0.07
+      "x": -0.11,
+      "y": -0.04
     },
     {
-      "x": 0.12,
-      "y": -0.07
+      "x": 0.11,
+      "y": -0.04
     },
     {
-      "x": 0.12,
-      "y": 0.07
+      "x": 0.11,
+      "y": 0.04
     },
     {
-      "x": -0.12,
-      "y": 0.07
+      "x": -0.11,
+      "y": 0.04
     }
   ],
   "minDistanceBetweenVerticesSq": 0.03,

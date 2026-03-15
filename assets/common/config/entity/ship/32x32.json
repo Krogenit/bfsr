@@ -221,7 +221,7 @@
     "x": 0.2,
     "y": 0.2
   },
-  "texture": "texture/entity/ship/broadsword_hftr.png",
+  "texture": "texture/entity/ship/32_32.png",
   "treeIndex": 0,
   "vertices": [
     {

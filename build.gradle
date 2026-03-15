@@ -1,13 +1,9 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
-    id 'org.springframework.boot' version '3.4.4'
-    id 'io.spring.dependency-management' version '1.1.7'
-    id 'me.champeau.jmh' version '0.7.3'
-}
-
-dependencies {
-    implementation subprojects
+    id 'com.gradleup.shadow' version '9.4.0'
+    id 'org.springframework.boot' version '4.0.3' apply false
+    id 'io.spring.dependency-management' version '1.1.7' apply false
+    id 'me.champeau.jmh' version '0.7.3' apply false
 }
 
 allprojects {
@@ -18,35 +14,48 @@ allprojects {
 }
 
 subprojects {
+    // For using parent module dependencies
     apply plugin: 'java-library'
-    apply plugin: 'org.springframework.boot'
-    apply plugin: 'io.spring.dependency-management'
-    apply plugin: 'me.champeau.jmh'
+    // For using parent module test dependencies
+    apply plugin: 'java-test-fixtures'
 
-    project.ext.lwjglVersion = '3.3.6'
-    project.ext.lwjglNatives = 'natives-windows'
-    project.ext.jomlVersion = '1.10.8'
+    // -PtargetPlatform=windows|linux|mac
+    // -PtargetArch=x64|arm64
+    def targetPlatformProp = project.findProperty('targetPlatform')?.toString()
+    def targetArchProp = project.findProperty('targetArch')?.toString()
+
+    def detectPlatform = { ->
+        if (targetPlatformProp) return targetPlatformProp
+        def os = org.gradle.internal.os.OperatingSystem.current()
+        if (os.isWindows()) return 'windows'
+        if (os.isMacOsX()) return 'mac'
+        if (os.isLinux()) return 'linux'
+        throw new GradleException("Unsupported OS: ${os}")
+    }
+
+    def detectArch = { ->
+        if (targetArchProp) return targetArchProp
+        def arch = System.getProperty('os.arch') ?: ''
+        if (arch.contains('aarch64') || arch.startsWith('arm')) return 'arm64'
+        return 'x64'
+    }
+
+    rootProject.ext.targetPlatform = detectPlatform()
+    rootProject.ext.arch = detectArch()
 
     dependencies {
-        compileOnly 'org.projectlombok:lombok:1.18.38'
-        annotationProcessor 'org.projectlombok:lombok:1.18.38'
+        compileOnly 'org.projectlombok:lombok:1.18.44'
+        annotationProcessor 'org.projectlombok:lombok:1.18.44'
 
-        testCompileOnly 'org.projectlombok:lombok:1.18.38'
-        testAnnotationProcessor 'org.projectlombok:lombok:1.18.38'
+        testCompileOnly 'org.projectlombok:lombok:1.18.44'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.44'
 
-        testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
-        testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
-        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
-        testImplementation 'org.junit.platform:junit-platform-commons:1.12.1'
-        testImplementation 'org.junit.platform:junit-platform-engine:1.12.1'
-        testImplementation 'org.mockito:mockito-core:5.20.0'
-        testImplementation 'org.mockito:mockito-junit-jupiter:5.20.0'
-        testImplementation 'org.assertj:assertj-core:3.27.6'
+        annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3', 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+        testAnnotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 
-        jmh 'org.openjdk.jmh:jmh-core:1.37'
-        jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
-        jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+        testImplementation platform('org.junit:junit-bom:6.0.3')
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     }
 
     compileJava.options.encoding = compileTestJava.options.encoding = 'UTF-8'
@@ -61,10 +70,7 @@ subprojects {
 
     test {
         useJUnitPlatform()
-    }
-
-    bootJar {
-        enabled = false
+        failOnNoDiscoveredTests = false
     }
 }
 
@@ -90,14 +96,81 @@ shadowJar {
     }
 }
 
-bootJar {
-    enabled = false
+// Общая конфигурация для всех JAR
+def runtimeClasspathNames = providers.provider {
+    configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
+}
+def commonManifest = {
+    attributes(
+            'Class-Path': runtimeClasspathNames,
+            'Multi-Release': true//log4j2 workaround
+    )
 }
 
 jar {
     manifest {
-        attributes 'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
+        attributes 'Class-Path': runtimeClasspathNames,
                 'Main-Class': 'net.bfsr.client.launch.LWJGL3Main',
                 'Multi-Release': true//log4j2 workaround
     }
+}
+
+// Client JAR
+tasks.register('clientJar', Jar) {
+    archiveBaseName = 'client'
+    archiveClassifier = '' // убираем classifier
+
+    from sourceSets.main.output
+
+    manifest {
+        from commonManifest
+        attributes(
+                'Main-Class': 'com.example.ClientMain'
+        )
+    }
+
+    // Исключаем ненужные классы если нужно
+    exclude 'net/bfsr/editor/**'
+    exclude 'net/bfsr/benchmark/**'
+}
+
+// Editor JAR
+tasks.register('editorJar', Jar) {
+    archiveBaseName = 'editor'
+    archiveClassifier = ''
+
+    from sourceSets.main.output
+
+    manifest {
+        from commonManifest
+        attributes(
+                'Main-Class': 'com.example.EditorMain'
+        )
+    }
+
+    // Исключаем ненужные классы если нужно
+    exclude 'net/bfsr/benchmark/**'
+}
+
+// Benchmark JAR
+tasks.register('benchmarkJar', Jar) {
+    archiveBaseName = 'benchmark'
+    archiveClassifier = ''
+
+    from sourceSets.main.output
+
+    manifest {
+        from commonManifest
+        attributes(
+                'Main-Class': 'com.example.BenchmarkMain'
+        )
+    }
+
+    // Исключаем ненужные классы если нужно
+    exclude 'net/bfsr/editor/**'
+}
+
+// Мета-задача для сборки всех JAR
+tasks.register('buildAllJars') {
+    dependsOn clientJar, editorJar, benchmarkJar
 }

@@ -5,23 +5,30 @@ import io.netty.channel.socket.SocketChannel;
 import it.unimi.dsi.util.XoRoShiRo128PlusPlusRandom;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.GameplayMode;
+import net.bfsr.config.ConfigProfiles;
 import net.bfsr.config.entity.ship.ShipRegistry;
+import net.bfsr.config.entity.station.StationData;
+import net.bfsr.config.entity.station.StationRegistry;
 import net.bfsr.config.entity.wreck.WreckRegistry;
 import net.bfsr.damage.DamageSystem;
 import net.bfsr.engine.config.ConfigConverterManager;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.logic.GameLogic;
 import net.bfsr.engine.loop.AbstractGameLoop;
+import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.util.ObjectPool;
 import net.bfsr.engine.util.Side;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.EntityIdManager;
+import net.bfsr.entity.Station;
 import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.entity.wreck.Wreck;
 import net.bfsr.logic.LogicType;
 import net.bfsr.physics.collision.CollisionMatrix;
+import net.bfsr.physics.collision.filter.CollisionProfiles;
 import net.bfsr.server.ai.AiFactory;
 import net.bfsr.server.config.ServerSettings;
 import net.bfsr.server.database.PlayerRepository;
@@ -61,6 +68,7 @@ public abstract class ServerGameLogic extends GameLogic {
             addObjectPool(Wreck.class, new ObjectPool<>(Wreck::new)));
     private final CollisionHandler collisionHandler = new CollisionHandler(this, eventBus, damageSystem, entityTrackingManager,
             wreckSpawner);
+    private final GameplayMode gameplayMode = settings.getGameplayMode();
 
     private int ups;
     private World world;
@@ -71,27 +79,19 @@ public abstract class ServerGameLogic extends GameLogic {
     }
 
     public void init() {
+        configConverterManager.applyProfileOverrides(ConfigProfiles.getOverlayRoot(gameplayMode));
         playerManager.init(createPlayerRepository(settings));
         long seed = new XoRoShiRo128PlusPlusRandom().nextLong();
         log.info("Creating world with seed {}", seed);
         world = new World(profiler, seed, eventBus, new EntityManager(), new EntityIdManager(), this,
-                new CollisionMatrix(collisionHandler));
+                new CollisionMatrix(collisionHandler), CollisionProfiles.forGameplayMode(gameplayMode));
         world.init();
         profiler.setEnable(true);
         networkSystem.init();
         startupNetworkSystem();
         initListeners();
         registerLogic(LogicType.SHIELD_UPDATE.ordinal(), new ShieldLogic(entityTrackingManager));
-    }
-
-    private void initListeners() {
-        eventBus.register(new ShipEventListener());
-        eventBus.register(new WeaponEventListener(entityTrackingManager));
-        eventBus.register(new ModuleEventListener(entityTrackingManager));
-    }
-
-    protected ServerSettings createSettings() {
-        return new ServerSettings();
+        populateWorld();
     }
 
     protected abstract PlayerRepository createPlayerRepository(ServerSettings settings);
@@ -105,6 +105,25 @@ public abstract class ServerGameLogic extends GameLogic {
         } catch (UnknownHostException e) {
             throw new IllegalStateException(
                     "Can't start server on address " + settings.getHostName() + ":" + settings.getPort(), e);
+        }
+    }
+
+    private void initListeners() {
+        eventBus.register(new ShipEventListener());
+        eventBus.register(new WeaponEventListener(entityTrackingManager));
+        eventBus.register(new ModuleEventListener(entityTrackingManager));
+    }
+
+    private void populateWorld() {
+        if (gameplayMode == GameplayMode.MMO) {
+            StationRegistry registry = configConverterManager.getConverter(StationRegistry.class);
+            StationData stationData = registry.get("human");
+
+            Station station = new Station(stationData);
+            station.init(world, world.getNextId());
+            float angle = 1.75f;
+            station.setRotation(LUT.sin(angle), LUT.cos(angle));
+            world.add(station);
         }
     }
 
@@ -130,7 +149,11 @@ public abstract class ServerGameLogic extends GameLogic {
     public PlayerNetworkHandler createPlayerNetworkHandler(int connectionId, SocketChannel socketChannel, DatagramChannel datagramChannel,
                                                            boolean singlePlayer) {
         return new PlayerNetworkHandler(connectionId, socketChannel, datagramChannel, singlePlayer, this, world, playerManager,
-                entityTrackingManager, aiFactory, eventBus, networkSystem.getPacketRegistry(), shipOutfitter);
+                entityTrackingManager, aiFactory, eventBus, networkSystem.getPacketRegistry(), shipOutfitter, shipSpawner);
+    }
+
+    protected ServerSettings createSettings() {
+        return new ServerSettings();
     }
 
     void setFps(int fps) {

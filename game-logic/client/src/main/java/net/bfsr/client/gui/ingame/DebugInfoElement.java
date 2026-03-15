@@ -1,11 +1,11 @@
 package net.bfsr.client.gui.ingame;
 
 import net.bfsr.client.Client;
-import net.bfsr.client.font.FontType;
+import net.bfsr.client.assets.FontType;
 import net.bfsr.client.gui.hud.HUD;
-import net.bfsr.client.input.PlayerInputController;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.settings.ClientSettings;
+import net.bfsr.client.world.entity.PlayerShipManager;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.BlankGuiObject;
 import net.bfsr.engine.gui.component.GuiObject;
@@ -18,7 +18,6 @@ import net.bfsr.engine.profiler.Profiler;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
 import net.bfsr.engine.renderer.font.glyph.Font;
-import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
 import net.bfsr.engine.util.DecimalUtils;
 import net.bfsr.engine.world.World;
@@ -37,20 +36,20 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class DebugInfoElement extends MinimizableGuiObject {
-    private static final Font FONT = Engine.getFontManager().getFont(FontType.CONSOLA.getFontName());
-    private static final int FONT_SIZE = 13;
+    private static final Font FONT = Engine.getFontManager().getFont(FontType.JETBRAINSMONO_LIGHT.getFontName());
+    private static final int FONT_SIZE = 12;
 
     private final Client client = Client.get();
     private final ParticleRenderer particleRenderer = client.getGlobalRenderer().getParticleRenderer();
-    private final PlayerInputController playerInputController = client.getPlayerInputController();
+    private final PlayerShipManager playerShipManager = client.getPlayerShipManager();
 
     private final AbstractRenderer renderer = Engine.getRenderer();
     private final AbstractCamera camera = renderer.getCamera();
     private final AbstractMouse mouse = Engine.getMouse();
 
     private final StringBuilder stringBuilder = new StringBuilder(64);
-    private final String openGlVersion = renderer.glGetString(GL.GL_VERSION);
-    private final String openGlRenderer = renderer.glGetString(GL.GL_RENDERER);
+    private final String openGlVersion = renderer.getDriverVersion();
+    private final String openGlRenderer = renderer.getGPUInfo();
 
     private final StringBuilder offset = new StringBuilder(32);
     private final StringBuilder fullCategoryName = new StringBuilder(32);
@@ -107,7 +106,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
                     label1.setString("Ping: " + DecimalUtils.strictFormatWithToDigits(ping) + "ms" +
                             "\nAverage ping: " + DecimalUtils.strictFormatWithToDigits(averagePing) + "ms" +
                             "\nClient render delay: " + renderDelayManager.getRenderDelayInNanos() / 1_000_000 + "ms" +
-                            "\nClient render delay: " + renderDelayManager.getRenderDelayInFrames() + "frames"
+                            ", " + renderDelayManager.getRenderDelayInFrames() + " frames"
                     );
                 })).getHeight();
         y -= addMinimizableWithLabel(width, height, y, "Render", createLabel(0, "",
@@ -156,7 +155,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
                 })).getHeight();
         y -= addMinimizableWithLabel(width, height, y, "Player ship", createLabel(0, "",
                 label1 -> {
-                    Ship playerShip = playerInputController.getShip();
+                    Ship playerShip = playerShipManager.getShip();
                     if (playerShip != null) {
                         Vector2 velocity = playerShip.getLinearVelocity();
                         Shield shield = playerShip.getModules().getShield();
@@ -194,7 +193,7 @@ public class DebugInfoElement extends MinimizableGuiObject {
     }
 
     private Label createLabel(int y, String text, Consumer<Label> updateConsumer) {
-        return new Label(Engine.getFontManager().getFont(FontType.CONSOLA.getFontName()), text, 0, 0, FONT_SIZE) {
+        return new Label(font, text, 0, 0, FONT_SIZE) {
             @Override
             public void update(int mouseX, int mouseY) {
                 super.update(mouseX, mouseY);

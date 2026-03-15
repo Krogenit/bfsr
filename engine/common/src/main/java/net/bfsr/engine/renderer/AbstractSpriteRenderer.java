@@ -2,6 +2,7 @@ package net.bfsr.engine.renderer;
 
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.constant.DrawMode;
 import net.bfsr.engine.renderer.primitive.AbstractVAO;
 import net.bfsr.engine.renderer.primitive.GeometryBuffer;
 import org.joml.Vector4f;
@@ -10,7 +11,7 @@ import java.util.concurrent.Future;
 
 public interface AbstractSpriteRenderer extends GeometryBuffer {
     int VERTEX_DATA_SIZE = 4;
-    int MODEL_DATA_SIZE = 6;
+    int MODEL_DATA_SIZE = 8;
     int MODEL_DATA_SIZE_IN_BYTES = MODEL_DATA_SIZE << 2;
     int COMMAND_SIZE = 5;
     int COMMAND_SIZE_IN_BYTES = COMMAND_SIZE << 2;
@@ -40,6 +41,7 @@ public interface AbstractSpriteRenderer extends GeometryBuffer {
 
     void updateBuffers();
     void updateBuffers(AbstractBuffersHolder[] buffersHolderArray);
+    void updateBuffer(AbstractBuffersHolder buffersHolder);
     void waitForLockedRange();
     void waitForLockedRange(AbstractBuffersHolder[] buffersHolderArray);
 
@@ -56,40 +58,43 @@ public interface AbstractSpriteRenderer extends GeometryBuffer {
     void syncAndRender(BufferType bufferType);
     void render(BufferType bufferType);
     void render(int objectCount, AbstractBuffersHolder buffersHolder);
-    void updateCommandBufferAndRender(int mode, int renderObjects, AbstractBuffersHolder buffersHolder);
-    void render(int mode, int objectCount, AbstractBuffersHolder buffersHolder);
+    void updateCommandBufferAndRender(DrawMode mode, int renderObjects, AbstractBuffersHolder buffersHolder);
+    void render(DrawMode mode, int objectCount, AbstractBuffersHolder buffersHolder);
 
-    int add(float x, float y, float width, float height, float r, float g, float b, float a, BufferType bufferType);
-    int add(float x, float y, float width, float height, float r, float g, float b, float a,
+    int add(float x, float y, float z, float width, float height, float r, float g, float b, float a, BufferType bufferType);
+    int add(float x, float y, float z, float width, float height, float r, float g, float b, float a,
             long textureHandle, BufferType bufferType);
-    int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle,
+    int add(float x, float y, float z, float width, float height, float r, float g, float b, float a, long textureHandle,
             float zoomFactor, BufferType bufferType);
-    int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a, long textureHandle,
-            BufferType bufferType);
-    int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a, long textureHandle,
-            MaterialType materialType, BufferType bufferType);
-    int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+    int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
+            long textureHandle, BufferType bufferType);
+    int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
+            long textureHandle, MaterialType materialType, BufferType bufferType);
+    int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
             long textureHandle, long maskTextureHandle, BufferType bufferType);
-    int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a, long textureHandle,
-            long maskTextureHandle, MaterialType materialType, BufferType bufferType);
-    int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+    int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
+            long textureHandle, long maskTextureHandle, MaterialType materialType, BufferType bufferType);
+    int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
             long textureHandle, AbstractBuffersHolder buffersHolder);
-    int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle, MaterialType materialType,
-            AbstractBuffersHolder buffersHolder);
-    int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+    int add(float x, float y, float z, float width, float height, float r, float g, float b, float a, long textureHandle,
+            MaterialType materialType, AbstractBuffersHolder buffersHolder);
+    int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
             long textureHandle, MaterialType materialType, AbstractBuffersHolder buffersHolder);
 
     void addMaterialData(float r, float g, float b, float a, long textureHandle, MaterialType materialType, int offset,
                          AbstractBuffersHolder buffersHolder);
-    void addModelData(float x, float y, float sin, float cos, float width, float height, int offset,
+    void addModelData(float x, float y, float z, float sin, float cos, float width, float height, float zoomFactor, int offset,
                       AbstractBuffersHolder buffersHolder);
 
     void setPosition(int id, BufferType bufferType, float x, float y);
     void setPosition(int id, AbstractBuffersHolder buffersHolder, float x, float y);
+    void setZ(int id, AbstractBuffersHolder buffersHolder, float z);
     void setRotation(int id, BufferType bufferType, float sin, float cos);
     void setRotation(int id, AbstractBuffersHolder buffersHolder, float sin, float cos);
     void setSize(int id, BufferType bufferType, float width, float height);
     void setSize(int id, AbstractBuffersHolder buffersHolder, float width, float height);
+    void setZoomFactor(int id, BufferType bufferType, float value);
+
     void setColor(int id, BufferType bufferType, Vector4f color);
     void setColor(int id, AbstractBuffersHolder buffersHolder, Vector4f color);
     void setColorAlpha(int id, BufferType bufferType, float a);
@@ -98,7 +103,6 @@ public interface AbstractSpriteRenderer extends GeometryBuffer {
     void setTexture(int id, AbstractBuffersHolder buffersHolder, long textureHandle);
     void setFireAmount(int id, BufferType bufferType, float value);
     void setFireUVAnimation(int id, BufferType bufferType, float value);
-    void setZoomFactor(int id, BufferType bufferType, float value);
 
     void setLastPosition(int id, BufferType bufferType, float x, float y);
     void setLastPosition(int id, AbstractBuffersHolder buffersHolder, float x, float y);

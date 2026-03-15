@@ -7,8 +7,8 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.config.entity.GameObjectConfigData;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.event.entity.RigidBodyAddToWorldEvent;
-import net.bfsr.engine.event.entity.RigidBodyPostPhysicsUpdateEvent;
 import net.bfsr.engine.event.entity.RigidBodyRemovedFromWorldEvent;
+import net.bfsr.engine.event.entity.RigidBodyUpdateEvent;
 import net.bfsr.engine.network.packet.common.world.entity.spawn.RigidBodySpawnData;
 import net.bfsr.engine.physics.PhysicsUtils;
 import net.bfsr.engine.physics.correction.CorrectionHandler;
@@ -35,6 +35,7 @@ public class RigidBody extends GameObject {
     protected int id;
     @Getter
     protected int lifeTime, maxLifeTime = DEFAULT_MAX_LIFE_TIME_IN_FRAMES;
+    @Getter
     protected EventBus eventBus;
     @Setter
     @Getter
@@ -42,7 +43,7 @@ public class RigidBody extends GameObject {
     @Setter
     @Getter
     protected float health;
-    private final RigidBodyPostPhysicsUpdateEvent postPhysicsUpdateEvent = new RigidBodyPostPhysicsUpdateEvent(this);
+    private final RigidBodyUpdateEvent updateEvent = new RigidBodyUpdateEvent(this);
     @Getter
     private CorrectionHandler correctionHandler = new HistoryCorrectionHandler();
     private final List<Fixture> fixturesToAdd = new ArrayList<>();
@@ -74,7 +75,7 @@ public class RigidBody extends GameObject {
         this.world = world;
         this.id = id;
         this.eventBus = world.getEventBus();
-        this.eventBus.optimizeEvent(postPhysicsUpdateEvent);
+        this.eventBus.optimizeEvent(updateEvent);
         this.correctionHandler.setRigidBody(this);
         initBody();
     }
@@ -89,11 +90,6 @@ public class RigidBody extends GameObject {
         bodyFixture.setFilter(getCollisionFilter(bodyFixture));
         bodyFixture.setDensity(getFixtureDensity(bodyFixture));
         return bodyFixture;
-    }
-
-    @Override
-    public void update() {
-        updateLifeTime();
     }
 
     protected void updateLifeTime() {
@@ -125,8 +121,9 @@ public class RigidBody extends GameObject {
     }
 
     @Override
-    public void postPhysicsUpdate() {
-        eventBus.publishOptimized(postPhysicsUpdateEvent);
+    public void update() {
+        updateLifeTime();
+        eventBus.publishOptimized(updateEvent);
     }
 
     public void onAddedToWorld() {
@@ -197,12 +194,12 @@ public class RigidBody extends GameObject {
         body.setLinearVelocity(x, y);
     }
 
-    public void setAngularVelocity(float angularVelocity) {
-        body.setAngularVelocity(angularVelocity);
+    public void setVelocity(Vector2 velocity) {
+        body.setLinearVelocity(velocity);
     }
 
-    public void setLinearVelocity(Vector2 velocity) {
-        body.setLinearVelocity(velocity);
+    public void setAngularVelocity(float angularVelocity) {
+        body.setAngularVelocity(angularVelocity);
     }
 
     public void setCorrectionHandler(CorrectionHandler correctionHandler) {
@@ -244,15 +241,15 @@ public class RigidBody extends GameObject {
         return configData.getId();
     }
 
-    public int getCollisionMatrixId() {
-        return 0;
-    }
-
     public Filter getCollisionFilter(Fixture fixture) {
         return PhysicsUtils.DEFAULT_COLLISION_FILTER;
     }
 
     public float getFixtureDensity(Fixture fixture) {
         return PhysicsUtils.DEFAULT_FIXTURE_DENSITY;
+    }
+
+    public int getEntityType() {
+        return 0;
     }
 }

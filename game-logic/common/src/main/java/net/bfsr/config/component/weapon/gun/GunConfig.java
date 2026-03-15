@@ -4,7 +4,7 @@ import lombok.Getter;
 import net.bfsr.config.entity.bullet.DamageConfigurable;
 import net.bfsr.engine.config.ColorConfigurable;
 import net.bfsr.engine.config.Configurable;
-import net.bfsr.engine.config.ConfigurableSound;
+import net.bfsr.engine.config.ConfigurableSoundEffect;
 import net.bfsr.engine.config.Vector2fConfigurable;
 import net.bfsr.engine.config.entity.GameObjectConfig;
 
@@ -15,7 +15,7 @@ public class GunConfig extends GameObjectConfig {
     private float energyCost;
     private DamageConfigurable damage;
     private ColorConfigurable color;
-    private ConfigurableSound[] sounds;
+    private ConfigurableSoundEffect soundEffect;
     private float bulletSpeed;
     private float bulletLifeTimeInSeconds;
     private Vector2fConfigurable bulletSize;

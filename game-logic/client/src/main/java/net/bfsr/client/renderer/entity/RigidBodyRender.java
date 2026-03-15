@@ -7,6 +7,7 @@ import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
+import net.bfsr.engine.renderer.texture.TextureData;
 import net.bfsr.engine.world.entity.RigidBody;
 import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.shapes.Polygon;
@@ -14,8 +15,6 @@ import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.Fixture;
 import org.joml.Vector4f;
-
-import java.nio.file.Path;
 
 public class RigidBodyRender extends Render {
     private static final AABB CACHE = new AABB();
@@ -31,23 +30,24 @@ public class RigidBodyRender extends Render {
 
     protected final RigidBody rigidBody;
 
-    RigidBodyRender(AbstractTexture texture, RigidBody rigidBody, float r, float g, float b, float a) {
-        super(texture, rigidBody, r, g, b, a);
+    RigidBodyRender(RigidBody rigidBody, float z, AbstractTexture texture, float r, float g, float b, float a) {
+        super(rigidBody, z, texture, r, g, b, a);
         this.rigidBody = rigidBody;
     }
 
-    RigidBodyRender(AbstractTexture texture, RigidBody rigidBody) {
-        this(texture, rigidBody, 1.0f, 1.0f, 1.0f, 1.0f);
+    RigidBodyRender(RigidBody rigidBody, float z, AbstractTexture texture) {
+        this(rigidBody, z, texture, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public RigidBodyRender(RigidBody rigidBody, Path texturePath) {
-        this(Engine.getAssetsManager().getTexture(texturePath), rigidBody, 1.0f, 1.0f, 1.0f, 1.0f);
+    public RigidBodyRender(RigidBody rigidBody, float z, TextureData textureData) {
+        this(rigidBody, z, Engine.getAssetsManager().getTexture(textureData), 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     @Override
     public void init() {
-        id = spriteRenderer.add(rigidBody.getX(), rigidBody.getY(), rigidBody.getSin(), rigidBody.getCos(), rigidBody.getSizeX(),
-                rigidBody.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
+        id = spriteRenderer.add(rigidBody.getX(), rigidBody.getY(), z, rigidBody.getSin(), rigidBody.getCos(),
+                rigidBody.getSizeX(), rigidBody.getSizeY(), color.x, color.y, color.z, color.w, texture.getTextureHandle(),
+                BufferType.ENTITIES_ALPHA);
     }
 
     @Override

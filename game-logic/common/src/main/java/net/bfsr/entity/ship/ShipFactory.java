@@ -45,24 +45,22 @@ public class ShipFactory {
     }
 
     public Ship createBotSaimonSmall(World world, float x, float y, float angle, Ai ai) {
-        return createBot(world, x, y, angle, Faction.SAIMON, shipRegistry.get("saimon_small0"), ai);
+        ShipData shipData;
+
+        int i = random.nextInt(3);
+        if (i == 0) {
+            shipData = shipRegistry.get("saimon_small0");
+        } else if (i == 1) {
+            shipData = shipRegistry.get("alan");
+        } else {
+            shipData = shipRegistry.get("alan_shade");
+        }
+
+        return createBot(world, x, y, angle, Faction.SAIMON, shipData, ai);
     }
 
     public Ship createBotEngiSmall(World world, float x, float y, float angle, Ai ai) {
         return createBot(world, x, y, angle, Faction.ENGI, shipRegistry.get("engi_small0"), ai);
-    }
-
-    private Ship create(World world, int id, float x, float y, float angle, Faction faction, ShipData shipData) {
-        Ship ship = create(x, y, LUT.sin(angle), LUT.cos(angle), faction, shipData);
-        ship.getDamageMask().init();
-        ship.init(world, id);
-        return ship;
-    }
-
-    public Ship create(float x, float y, float sin, float cos, Faction faction, ShipData shipData) {
-        Ship ship = create(faction, shipData);
-        ship.setTransform(x, y, sin, cos);
-        return ship;
     }
 
     public Ship createBot(World world, float x, float y, float angle, Faction faction, ShipData shipData, Ai ai) {
@@ -70,6 +68,23 @@ public class ShipFactory {
         ship.setName("[BOT] " + ship.getFaction().toString());
         shipOutfitter.outfit(ship);
         ship.setAi(ai);
+        return ship;
+    }
+
+    private Ship create(World world, int id, float x, float y, float angle, Faction faction, ShipData shipData) {
+        Ship ship = create(x, y, LUT.sin(angle), LUT.cos(angle), faction, shipData);
+        initShip(ship, world, id);
+        return ship;
+    }
+
+    public void initShip(Ship ship, World world, int id) {
+        ship.getDamageMask().init();
+        ship.init(world, id);
+    }
+
+    public Ship create(float x, float y, float sin, float cos, Faction faction, ShipData shipData) {
+        Ship ship = create(faction, shipData);
+        ship.setTransform(x, y, sin, cos);
         return ship;
     }
 

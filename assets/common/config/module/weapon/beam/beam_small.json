@@ -1,26 +1,23 @@
 {
   "name": "beam_small",
-  "sounds": [
-    {
-      "path": "sound/weapon/beam0.ogg",
-      "volume": 1.0
-    },
-    {
-      "path": "sound/weapon/beam1.ogg",
-      "volume": 1.0
-    },
-    {
-      "path": "sound/weapon/beam2.ogg",
-      "volume": 1.0
-    }
-  ],
+  "soundEffect": {
+    "sounds": [
+      {
+        "path": "sound/weapon/beam0.ogg",
+        "volume": 0.05,
+        "minPitch": 1.15,
+        "maxPitch": 1.5
+      }
+    ],
+    "randomFromList": true
+  },
   "hp": 15.0,
   "reloadTimeInSeconds": 1.0,
   "aliveTimeInSeconds": 2.0,
   "energyCost": 15.0,
   "size": {
-    "x": 0.14,
-    "y": 0.1
+    "x": 0.2,
+    "y": 0.08
   },
   "beamMaxRange": 4.0,
   "damage": {
@@ -37,20 +34,20 @@
   },
   "vertices": [
     {
-      "x": -0.07,
-      "y": -0.05
+      "x": -0.1,
+      "y": -0.04
     },
     {
-      "x": 0.07,
-      "y": -0.05
+      "x": 0.1,
+      "y": -0.04
     },
     {
-      "x": 0.07,
-      "y": 0.05
+      "x": 0.1,
+      "y": 0.04
     },
     {
-      "x": -0.07,
-      "y": 0.05
+      "x": -0.1,
+      "y": 0.04
     }
   ],
   "minDistanceBetweenVerticesSq": 0.03,

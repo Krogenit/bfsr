@@ -21,12 +21,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.ArrayList;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings("unused")
-@SpringBootTest(classes = Main.class)
+@SpringBootTest(classes = Main.class, properties = "spring.rsocket.server.port=0")
 @Testcontainers(disabledWithoutDocker = true)
 @DirtiesContext
 public class PlayerControllerTest {
@@ -40,11 +38,16 @@ public class PlayerControllerTest {
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
-        dynamicPropertyRegistry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        if (!mongoDBContainer.isRunning()) {
+            mongoDBContainer.start();
+        }
+        String mongoUri = mongoDBContainer.getReplicaSetUrl();
+        dynamicPropertyRegistry.add("spring.mongodb.uri", () -> mongoUri);
     }
 
     @BeforeAll
-    static void setup(@Autowired RSocketRequester.Builder builder, @LocalRSocketServerPort Integer port, @Autowired RSocketStrategies strategies) {
+    static void setup(@Autowired RSocketRequester.Builder builder, @LocalRSocketServerPort Integer port,
+                      @Autowired RSocketStrategies strategies) {
         requester = builder.tcp("localhost", port);
     }
 
@@ -57,7 +60,8 @@ public class PlayerControllerTest {
     void test() {
         String username = "Local Player";
 
-        Mono<PlayerModel> voidMono = requester.route("save-player").data(new PlayerModel(null, username, Faction.HUMAN, new ArrayList<>())).retrieveMono(PlayerModel.class);
+        Mono<PlayerModel> voidMono = requester.route("save-player").data(new PlayerModel(null, username, Faction.HUMAN, null))
+                .retrieveMono(PlayerModel.class);
 
         StepVerifier
                 .create(voidMono)
@@ -65,7 +69,7 @@ public class PlayerControllerTest {
                     assertThat(playerModel.id()).isNotNull();
                     assertThat(playerModel.name()).isEqualTo(username);
                     assertThat(playerModel.faction()).isEqualTo(Faction.HUMAN);
-                    assertThat(playerModel.ships().size()).isEqualTo(0);
+                    assertThat(playerModel.ship()).isNull();
                 })
                 .verifyComplete();
 
@@ -77,7 +81,7 @@ public class PlayerControllerTest {
                     assertThat(playerModel.id()).isNotNull();
                     assertThat(playerModel.name()).isEqualTo(username);
                     assertThat(playerModel.faction()).isEqualTo(Faction.HUMAN);
-                    assertThat(playerModel.ships().size()).isEqualTo(0);
+                    assertThat(playerModel.ship()).isNull();
                 })
                 .verifyComplete();
     }

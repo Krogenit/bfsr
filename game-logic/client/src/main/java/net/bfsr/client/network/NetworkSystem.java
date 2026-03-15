@@ -148,7 +148,7 @@ public class NetworkSystem extends NetworkHandler {
     }
 
     public Packet decodePacket(ByteBuf buffer) throws IOException {
-        int packetId = buffer.readByte();
+        int packetId = buffer.readShort();
 
         try {
             Packet packet = packetRegistry.createPacket(packetId);

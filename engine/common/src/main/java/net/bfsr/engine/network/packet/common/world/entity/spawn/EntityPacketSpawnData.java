@@ -37,6 +37,4 @@ public abstract class EntityPacketSpawnData<T extends RigidBody> {
         data.writeFloat(sin);
         data.writeFloat(cos);
     }
-
-    public abstract int getTypeId();
 }
