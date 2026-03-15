@@ -2,21 +2,20 @@ package net.bfsr.client.gui.connect;
 
 import lombok.extern.log4j.Log4j2;
 import net.bfsr.client.Client;
-import net.bfsr.client.font.FontType;
+import net.bfsr.client.gui.objects.SimpleButton;
+import net.bfsr.client.gui.objects.SimpleInputBox;
 import net.bfsr.client.language.LanguageManager;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
-import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.InputBox;
 import net.bfsr.engine.gui.component.Label;
-import net.bfsr.engine.renderer.texture.TextureRegister;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 @Log4j2
 public class GuiConnect extends Gui {
-    private final Label connectingText = new Label(Engine.getFontManager().getFont(FontType.XOLONIUM.getFontName()), 20)
+    private final Label connectingText = new Label(Engine.getFontManager().getDefaultFont(), 20)
             .setColor(1.0f, 1.0f, 1.0f, 0.0f);
 
     public GuiConnect(Gui parentGui) {
@@ -25,20 +24,20 @@ public class GuiConnect extends Gui {
         LanguageManager languageManager = Client.get().getLanguageManager();
         int fontSize = 20;
         int offsetX = 24;
-        InputBox hostInputBox = new InputBox(TextureRegister.guiButtonBase, "192.168.2.2:34000",
+        InputBox hostInputBox = new SimpleInputBox("192.168.2.2:34000",
                 languageManager.getString("gui.connect.host"),
                 fontSize, offsetX, 0);
         add(hostInputBox.atCenter(0, 50));
-        InputBox usernameInputBox = new InputBox(TextureRegister.guiButtonBase, "Krogenit",
+        InputBox usernameInputBox = new SimpleInputBox("Krogenit",
                 languageManager.getString("gui.connect.username"),
                 fontSize, offsetX, 0);
         add(usernameInputBox.atCenter(0, 0));
-        InputBox passwordInputBox = new InputBox(TextureRegister.guiButtonBase, "test", languageManager.getString("gui.connect.password"),
+        InputBox passwordInputBox = new SimpleInputBox("test", languageManager.getString("gui.connect.password"),
                 fontSize, offsetX, 0);
         add(passwordInputBox.atCenter(0, -50));
 
         Client client = Client.get();
-        add(new Button(languageManager.getString("gui.connect.connect"), (mouseX, mouseY) -> {
+        add(new SimpleButton(languageManager.getString("gui.connect.connect"), (mouseX, mouseY) -> {
             if (connectingText.getColor().w <= 0.01f) {
                 setErrorMessage(languageManager.getString("gui.connecting"));
                 Thread t = new Thread(() -> {
@@ -96,7 +95,7 @@ public class GuiConnect extends Gui {
                 t.start();
             }
         }).atCenter(0, -100));
-        add(new Button(languageManager.getString("gui.back"), (mouseX, mouseY) -> {
+        add(new SimpleButton(languageManager.getString("gui.back"), (mouseX, mouseY) -> {
             client.clearNetwork();
             client.openGui(parentGui);
         }).atCenter(0, -250));

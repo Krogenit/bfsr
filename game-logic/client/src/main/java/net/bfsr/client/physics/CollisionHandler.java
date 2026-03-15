@@ -10,6 +10,7 @@ import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.math.RotationHelper;
 import net.bfsr.engine.physics.correction.CorrectionHandler;
 import net.bfsr.engine.physics.correction.DynamicCorrectionHandler;
+import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.util.RandomHelper;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.bullet.Bullet;
@@ -57,19 +58,22 @@ public class CollisionHandler extends CommonCollisionHandler {
 
         Vector4f color = bullet.getGunData().getColor();
         float colorAlpha = (1.0f - bullet.getLifeTime() / (float) bullet.getMaxLifeTime()) * 1.5f;
+        Render render = Client.get().getEntityRenderer().getRender(ship.getId());
         damageShip(ship, contactX, contactY, () -> {
             bullet.reflect(normalX, normalY);
-            weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
-                    color.z, colorAlpha);
+            weaponEffects.spawnDirectedSpark(contactX, contactY, render.getZ(), normalX, normalY, bullet.getSizeX() * 1.5f, color.x,
+                    color.y, color.z, colorAlpha);
         }, () -> {
-            weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
-                    color.z, colorAlpha);
-            garbageSpawner.bulletArmorDamage(contactX, contactY, ship.getLinearVelocity().x, ship.getLinearVelocity().y, normalX, normalY);
+            weaponEffects.spawnDirectedSpark(contactX, contactY, render.getZ(), normalX, normalY, bullet.getSizeX() * 1.5f, color.x,
+                    color.y, color.z, colorAlpha);
+            garbageSpawner.bulletArmorDamage(contactX, contactY, render.getZ(), ship.getLinearVelocity().x, ship.getLinearVelocity().y,
+                    normalX, normalY);
             bullet.setDead();
         }, () -> {
-            weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, bullet.getSizeX() * 1.5f, color.x, color.y,
-                    color.z, colorAlpha);
-            garbageSpawner.bulletHullDamage(contactX, contactY, ship.getLinearVelocity().x, ship.getLinearVelocity().y, normalX, normalY);
+            weaponEffects.spawnDirectedSpark(contactX, contactY, render.getZ(), normalX, normalY, bullet.getSizeX() * 1.5f, color.x,
+                    color.y, color.z, colorAlpha);
+            garbageSpawner.bulletHullDamage(contactX, contactY, render.getZ(), ship.getLinearVelocity().x, ship.getLinearVelocity().y,
+                    normalX, normalY);
             bullet.setDead();
         });
     }
@@ -114,11 +118,13 @@ public class CollisionHandler extends CommonCollisionHandler {
         if (ship.getCollisionTimer() <= 0) {
             ship.setCollisionTimer(Engine.convertSecondsToFrames(0.5f));
             Shield shield = ship.getModules().getShield();
+            Render render = Client.get().getEntityRenderer().getRender(ship.getId());
             if (shield != null && isShieldAlive(shield)) {
                 Vector4f color = ship.getConfigData().getEffectsColor();
-                weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 0.45f, color.x, color.y, color.z, color.w);
+                weaponEffects.spawnDirectedSpark(contactX, contactY, render.getZ(), normalX, normalY, 0.45f, color.x, color.y, color.z,
+                        color.w);
             } else {
-                weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 0.375f, 1.0f, 1.0f, 1.0f, 1.0f);
+                weaponEffects.spawnDirectedSpark(contactX, contactY, render.getZ(), normalX, normalY, 0.375f, 1.0f, 1.0f, 1.0f, 1.0f);
             }
         }
 
@@ -167,19 +173,19 @@ public class CollisionHandler extends CommonCollisionHandler {
     private void damageShipByCollision(Ship ship, float contactX, float contactY, float normalX, float normalY) {
         Modules modules = ship.getModules();
         Shield shield = modules.getShield();
+        Render render = Client.get().getEntityRenderer().getRender(ship.getId());
         if (shield != null && isShieldAlive(shield)) {
             Vector4f color = ship.getConfigData().getEffectsColor();
-            weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 0.45f, color.x, color.y, color.z, color.w);
+            weaponEffects.spawnDirectedSpark(contactX, contactY, render.getZ(), normalX, normalY, 0.45f, color.x, color.y, color.z,
+                    color.w);
             return;
         }
 
         Vector2 velocity = ship.getLinearVelocity();
-        weaponEffects.spawnDirectedSpark(contactX, contactY, normalX, normalY, 0.375f, 1.0f,
-                1.0f, 1.0f, 1.0f);
+        weaponEffects.spawnDirectedSpark(contactX, contactY, render.getZ(), normalX, normalY, 0.375f, 1.0f, 1.0f, 1.0f, 1.0f);
         RotationHelper.angleToVelocity(MathUtils.TWO_PI * random.nextFloat(), 0.15f, angleToVelocity);
-        garbageSpawner.smallGarbage(random.nextInt(4), contactX, contactY,
-                velocity.x * 0.25f + angleToVelocity.x, velocity.y * 0.25f + angleToVelocity.y,
-                RandomHelper.randomFloat(random, 0.02f, 0.2f));
+        garbageSpawner.smallGarbage(random.nextInt(4), contactX, contactY, render.getZ(), velocity.x * 0.25f + angleToVelocity.x,
+                velocity.y * 0.25f + angleToVelocity.y, RandomHelper.randomFloat(random, 0.02f, 0.2f));
     }
 
     private void setDynamicCorrectionForLocalPlayer(RigidBody rigidBody) {

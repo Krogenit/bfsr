@@ -99,10 +99,9 @@ public class PropertiesPanel extends Rectangle {
             pasteButton.setLeftReleaseConsumer((mouseX1, mouseY1) -> {
                 if (clipboard != null && clipboard.getClass() == propertiesHolder.getClass()) {
                     propertiesHolder.paste(clipboard);
-                    minimizableHolder.removeAllChild();
+                    minimizableHolder.removeAllHideable();
                     PropertiesBuilder.createGuiProperties(propertiesHolder, width - MinimizableGuiObject.MINIMIZABLE_STRING_X_OFFSET,
                             height, font, fontSize, propertyOffsetX, 0, minimizableHolder::add, changeValueListener);
-                    updatePositionAndSize();
                 }
             });
             guiManager.openContextMenu(setupContextMenuButton(copyButton), setupContextMenuButton(pasteButton));

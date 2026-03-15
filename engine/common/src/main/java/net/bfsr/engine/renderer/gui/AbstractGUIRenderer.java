@@ -4,6 +4,7 @@ import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.MaterialType;
 import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.constant.DrawMode;
 import net.bfsr.engine.renderer.primitive.Primitive;
 import net.bfsr.engine.renderer.texture.AbstractTexture;
 import org.joml.Vector4f;
@@ -15,8 +16,10 @@ public abstract class AbstractGUIRenderer {
 
     public abstract void addPrimitive(Primitive primitive);
 
+    public abstract void updateBuffers();
+
     public abstract void render();
-    public abstract void render(int mode);
+    public abstract void render(DrawMode mode);
     public abstract void render(List<GuiObject> guiStack, int mouseX, int mouseY);
 
     public abstract int add(int x, int y, int width, int height, Vector4f color);

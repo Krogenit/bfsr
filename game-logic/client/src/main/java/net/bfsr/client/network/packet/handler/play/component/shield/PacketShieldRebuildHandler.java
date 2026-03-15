@@ -5,6 +5,7 @@ import net.bfsr.client.Client;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.particle.effect.ShieldEffects;
 import net.bfsr.engine.network.packet.PacketHandler;
+import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.world.entity.GameObject;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.shield.Shield;
@@ -25,10 +26,10 @@ public class PacketShieldRebuildHandler extends PacketHandler<PacketShieldRebuil
             Shield shield = ship.getModules().getShield();
             if (shield != null) {
                 shield.rebuildShield();
-
+                Render render = client.getEntityRenderer().getRender(ship.getId());
                 Vector4f shipEffectColor = ship.getConfigData().getEffectsColor();
-                shieldEffects.rebuild(ship.getX(), ship.getY(), ship.getSizeX() * 2.0f, shipEffectColor.x, shipEffectColor.y,
-                        shipEffectColor.z, 1.0f);
+                shieldEffects.rebuild(ship.getX(), ship.getY(), render.getZ(), ship.getSizeX() * 2.0f, shipEffectColor.x,
+                        shipEffectColor.y, shipEffectColor.z, 1.0f);
             }
         }
     }

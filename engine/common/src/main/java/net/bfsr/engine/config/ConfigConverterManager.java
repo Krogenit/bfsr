@@ -2,18 +2,23 @@ package net.bfsr.engine.config;
 
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
+import net.bfsr.engine.util.PathHelper;
 import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class ConfigConverterManager {
     private final List<ConfigToDataConverter<?, ?>> configRegistryList = new ArrayList<>();
     private final TIntObjectMap<ConfigToDataConverter<?, ?>> configConverterById = new TIntObjectHashMap<>();
+    private final Map<ConfigToDataConverter<?, ?>, Set<Path>> appliedOverrides = new HashMap<>();
 
     public ConfigConverterManager(ConfigToDataConverter<?, ?>... configToDataConverters) {
         Reflections reflections = new Reflections("net.bfsr.config");
@@ -32,7 +37,7 @@ public class ConfigConverterManager {
         }
     }
 
-    public void registerConfigRegistry(ConfigToDataConverter<?, ?> converter) {
+    private void registerConfigRegistry(ConfigToDataConverter<?, ?> converter) {
         int id = configRegistryList.size();
         converter.init(id);
         configRegistryList.add(converter);
@@ -52,5 +57,33 @@ public class ConfigConverterManager {
         }
 
         return null;
+    }
+
+    public void applyProfileOverrides(@Nullable Path overlayRoot) {
+        resetProfileOverrides();
+
+        if (overlayRoot == null || !overlayRoot.toFile().exists()) {
+            return;
+        }
+
+        for (int i = 0; i < configRegistryList.size(); i++) {
+            ConfigToDataConverter<?, ?> converter = configRegistryList.get(i);
+            if (!converter.getFolder().startsWith(PathHelper.CONFIG)) {
+                continue;
+            }
+
+            Set<Path> overridden = converter.applyProfileOverrides(overlayRoot);
+            if (!overridden.isEmpty()) {
+                appliedOverrides.put(converter, overridden);
+            }
+        }
+    }
+
+    private void resetProfileOverrides() {
+        for (Map.Entry<ConfigToDataConverter<?, ?>, Set<Path>> entry : appliedOverrides.entrySet()) {
+            entry.getKey().resetOverrides(entry.getValue());
+        }
+
+        appliedOverrides.clear();
     }
 }

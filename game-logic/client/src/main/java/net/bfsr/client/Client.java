@@ -2,10 +2,11 @@ package net.bfsr.client;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.GameplayMode;
+import net.bfsr.client.assets.FontType;
 import net.bfsr.client.config.particle.ParticleEffectsRegistry;
 import net.bfsr.client.damage.DamageHandler;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
-import net.bfsr.client.font.FontType;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.client.gui.main.GuiMainMenu;
 import net.bfsr.client.input.CameraInputController;
@@ -13,16 +14,21 @@ import net.bfsr.client.input.DebugInputController;
 import net.bfsr.client.input.GuiInputController;
 import net.bfsr.client.input.InputHandler;
 import net.bfsr.client.input.PlayerInputController;
+import net.bfsr.client.input.SessionPlayerInputController;
+import net.bfsr.client.input.StrategicPlayerInputController;
 import net.bfsr.client.language.LanguageManager;
 import net.bfsr.client.listener.entity.ShipEventListener;
 import net.bfsr.client.listener.gui.GuiEventListener;
 import net.bfsr.client.listener.world.WorldEventListener;
 import net.bfsr.client.module.ShieldLogic;
 import net.bfsr.client.network.NetworkSystem;
+import net.bfsr.client.network.TimeSyncManager;
 import net.bfsr.client.particle.effect.ParticleEffects;
 import net.bfsr.client.physics.CollisionHandler;
 import net.bfsr.client.renderer.EntityRenderer;
 import net.bfsr.client.renderer.GlobalRenderer;
+import net.bfsr.client.renderer.Layers;
+import net.bfsr.client.renderer.RenderEventListener;
 import net.bfsr.client.renderer.WorldRenderer;
 import net.bfsr.client.server.LocalServer;
 import net.bfsr.client.server.ThreadLocalServer;
@@ -31,7 +37,9 @@ import net.bfsr.client.settings.ConfigSettings;
 import net.bfsr.client.world.BlankWorld;
 import net.bfsr.client.world.entity.ClientEntityIdManager;
 import net.bfsr.client.world.entity.EntityManager;
-import net.bfsr.client.world.entity.EntitySpawnDataRegistry;
+import net.bfsr.client.world.entity.PlayerShipManager;
+import net.bfsr.client.world.entity.spawn.EntitySpawnDataRegistry;
+import net.bfsr.config.ConfigProfiles;
 import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.config.ConfigConverterManager;
@@ -52,7 +60,9 @@ import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.entity.ship.ShipOutfitter;
 import net.bfsr.logic.LogicType;
 import net.bfsr.physics.collision.CollisionMatrix;
+import net.bfsr.physics.collision.filter.CollisionProfiles;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector2f;
 
 import java.net.InetAddress;
 
@@ -62,18 +72,18 @@ public class Client extends ClientGameLogic {
     public static final String GAME_VERSION = "Dev 0.1.8";
     private static Client instance;
 
-    @Getter
     private double renderTime;
-    @Getter
     private int renderFrame;
 
     private final LanguageManager languageManager = new LanguageManager().load();
 
     private final ConfigSettings settings = new ConfigSettings();
 
-    private final PlayerInputController playerInputController = new PlayerInputController(this);
-    private final InputHandler inputHandler = new InputHandler(new GuiInputController(),
-            new CameraInputController(this, playerInputController), playerInputController, new DebugInputController(this));
+    private final PlayerShipManager playerShipManager = new PlayerShipManager(this);
+    private PlayerInputController playerInputController;
+    private final CameraInputController cameraInputController = new CameraInputController(this, playerShipManager);
+    private final InputHandler inputHandler = new InputHandler(new GuiInputController(), cameraInputController,
+            new DebugInputController(this));
 
     private final GuiManager guiManager = Engine.getGuiManager();
 
@@ -87,9 +97,10 @@ public class Client extends ClientGameLogic {
     private final ShipOutfitter shipOutfitter = new ShipOutfitter(configConverterManager);
     private final ShipFactory shipFactory = new ShipFactory(configConverterManager.getConverter(ShipRegistry.class), shipOutfitter);
 
+    private final Layers layers = new Layers();
     private final EntityRenderer entityRenderer = new EntityRenderer(this);
     private final GlobalRenderer globalRenderer = new GlobalRenderer(profiler, entityRenderer, particleManager,
-            new WorldRenderer(profiler, entityRenderer, eventBus));
+            new WorldRenderer(layers, profiler, entityRenderer, eventBus));
     private final AbstractCamera camera = Engine.getRenderer().getCamera();
 
     private final DamageHandler damageHandler = new DamageHandler(entityRenderer);
@@ -99,15 +110,16 @@ public class Client extends ClientGameLogic {
 
     private final ClientEntityIdManager entityIdManager = new ClientEntityIdManager(this);
 
-    private final RenderDelayManager renderDelayManager = new RenderDelayManager();
+    private final RenderDelayManager renderDelayManager = new RenderDelayManager(eventBus);
     private final NetworkSystem networkSystem = new NetworkSystem(this, renderDelayManager);
+    private final TimeSyncManager timeSyncManager = new TimeSyncManager(this);
 
     protected HUD hud;
 
+    private GameplayMode gameplayMode;
     private World world = BlankWorld.get();
     private String playerName;
 
-    @Getter
     private LocalServer localServer;
     private ThreadLocalServer threadLocalServer;
 
@@ -137,6 +149,7 @@ public class Client extends ClientGameLogic {
         eventBus.register(new ShipEventListener());
         eventBus.register(new WorldEventListener());
         eventBus.register(new GuiEventListener());
+        eventBus.register(new RenderEventListener());
     }
 
     private void registerFonts() {
@@ -150,11 +163,12 @@ public class Client extends ClientGameLogic {
     @Override
     public void update(int frame, double time) {
         super.update(frame, time);
-        renderTime = time
-                + networkSystem.getAveragePing() * 1_000_000.0
-                - renderDelayManager.getRenderDelayInNanos();
 
+        renderTime = time - renderDelayManager.getRenderDelayInNanos() + networkSystem.getAveragePing() * 1_000_000.0;
         renderFrame = frame - renderDelayManager.getRenderDelayInFrames() + networkSystem.getAveragePingInFrames();
+
+        timeSyncManager.update();
+        playerShipManager.update();
 
         profiler.start("renderManager");
 
@@ -165,7 +179,10 @@ public class Client extends ClientGameLogic {
         profiler.endStart("inputHandler");
         inputHandler.update(frame);
         profiler.endStart("soundManager");
-        soundManager.updateListenerPosition(camera.getPosition());
+        Vector2f cameraPosition = camera.getPosition();
+        float zoom = 1 - (float) Math.pow(1 - cameraInputController.getNormalizedZoom(), 3);
+        float z = -53.0f + zoom * 50.0f;
+        soundManager.updateListenerPosition(cameraPosition.x, cameraPosition.y, z);
 
         if (!isPaused()) {
             profiler.endStart("world");
@@ -272,9 +289,26 @@ public class Client extends ClientGameLogic {
         guiManager.resize(width, height);
     }
 
+    public void setGameplayMode(GameplayMode gameplayMode) {
+        this.gameplayMode = gameplayMode;
+
+        configConverterManager.applyProfileOverrides(ConfigProfiles.getOverlayRoot(gameplayMode));
+
+        if (playerInputController != null) {
+            inputHandler.removeInputController(playerInputController);
+        }
+
+        this.playerInputController = gameplayMode == GameplayMode.MMO ?
+                new StrategicPlayerInputController(this) :
+                new SessionPlayerInputController(this);
+
+        inputHandler.addInputControllerAfter(playerInputController, cameraInputController);
+    }
+
     public void createWorld(long seed) {
-        world = new World(profiler, seed, eventBus, new EntityManager(), entityIdManager, this,
-                new CollisionMatrix(new CollisionHandler(this)));
+        GameplayMode effectiveMode = gameplayMode == null ? GameplayMode.MMO : gameplayMode;
+        world = new World(profiler, seed, eventBus, new EntityManager(eventBus), entityIdManager, this,
+                new CollisionMatrix(new CollisionHandler(this)), CollisionProfiles.forGameplayMode(effectiveMode));
         world.init();
     }
 

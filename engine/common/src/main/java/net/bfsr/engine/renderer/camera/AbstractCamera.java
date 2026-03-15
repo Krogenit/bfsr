@@ -6,6 +6,9 @@ import org.joml.Vector2f;
 import org.joml.Vector2i;
 
 public interface AbstractCamera {
+    float Z_NEAR = -1.0f;
+    float Z_FAR = 1.0f;
+
     void init(int width, int height, AbstractRenderer renderer);
     void resize(int width, int height);
     void update();
@@ -13,12 +16,10 @@ public interface AbstractCamera {
     void bindWorldViewMatrix();
     void bindGUI();
 
-    void zoom(float value);
     void move(float x, float y);
-    void moveByMouse(float dx, float dy);
-
     void setBoundingBox(float minX, float minY, float maxX, float maxY);
     void setPosition(float x, float y);
+    void setZoom(float zoom);
 
     float getZoom();
     Vector2f getLastPosition();

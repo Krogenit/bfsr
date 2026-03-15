@@ -1,16 +1,15 @@
 package net.bfsr.client.gui.input;
 
 import net.bfsr.client.Client;
+import net.bfsr.client.gui.GuiStyle;
 import net.bfsr.engine.gui.component.InputBox;
-import net.bfsr.engine.gui.renderer.inputbox.EmptyInputRenderer;
 import net.bfsr.network.packet.common.PacketChatMessage;
 
 public class ChatInput extends InputBox {
-    public ChatInput() {
-        super(298, 25, "", Client.get().getLanguageManager().getString("gui.chat.typeSomething"), 14, 4, 0);
-        setCursorHeight(16);
-        setMaxLineSize(290);
-        setRenderer(new EmptyInputRenderer(this));
+    public ChatInput(int width, int height, int inputOffsetX) {
+        super(width, height, "", Client.get().getLanguageManager().getString("gui.chat.typeSomething"), 14, inputOffsetX, 0);
+        setMaxLineSize(width - 8);
+        GuiStyle.setupTransparentInputBox(this);
     }
 
     @Override

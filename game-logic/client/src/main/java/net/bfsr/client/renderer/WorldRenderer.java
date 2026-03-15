@@ -1,6 +1,7 @@
 package net.bfsr.client.renderer;
 
 import lombok.Getter;
+import net.bfsr.client.assets.TextureRegister;
 import net.bfsr.client.event.gui.ExitToMainMenuEvent;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.event.EventBus;
@@ -12,10 +13,9 @@ import net.bfsr.engine.renderer.AbstractRenderer;
 import net.bfsr.engine.renderer.AbstractSpriteRenderer;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
+import net.bfsr.engine.renderer.constant.BlendFactor;
 import net.bfsr.engine.renderer.culling.AbstractGPUFrustumCullingSystem;
-import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.renderer.particle.ParticleRenderer;
-import net.bfsr.engine.renderer.texture.TextureRegister;
 
 public class WorldRenderer {
     private final AbstractRenderer renderer = Engine.getRenderer();
@@ -28,51 +28,44 @@ public class WorldRenderer {
     private final EntityRenderer entityRenderer;
     private final BackgroundRenderer backgroundRenderer;
 
-    public WorldRenderer(Profiler profiler, EntityRenderer entityRenderer, EventBus eventBus) {
+    public WorldRenderer(Layers layers, Profiler profiler, EntityRenderer entityRenderer, EventBus eventBus) {
         this.profiler = profiler;
-        this.backgroundRenderer = new BackgroundRenderer(renderer);
+        this.backgroundRenderer = new BackgroundRenderer(layers, renderer);
         this.entityRenderer = entityRenderer;
 
-        Engine.getAssetsManager().getTexture(TextureRegister.damageFire).bind();
+        Engine.getAssetsManager().getTexture(TextureRegister.damageFire.getTextureData()).bind();
         eventBus.register(this);
     }
 
     void prepareRender(int totalParticlesCount) {
-        particleRenderer.putBackgroundParticlesToBuffers(totalParticlesCount);
+        particleRenderer.putParticlesToBuffers(totalParticlesCount);
         backgroundRenderer.render();
         entityRenderer.render();
-        particleRenderer.putParticlesToBuffers();
     }
 
     public void render() {
         profiler.start("background");
         spriteRenderer.render(BufferType.BACKGROUND);
 
-        profiler.endStart("particlesBackground");
-        profiler.start("waitTasks");
-        particleRenderer.waitBackgroundTasks();
-        profiler.end();
-        particleRenderer.renderBackground();
-
         profiler.endStart("entitiesAlpha");
 
         if (renderer.isEntitiesGPUFrustumCulling()) {
-            renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+            renderer.blendFunc(BlendFactor.SRC_ALPHA, BlendFactor.ONE_MINUS_SRC_ALPHA);
             AbstractBuffersHolder buffersHolder = spriteRenderer.getBuffersHolder(BufferType.ENTITIES_ALPHA);
             cullingSystem.renderFrustumCulled(buffersHolder.getRenderObjects(), buffersHolder);
             buffersHolder.setRenderObjects(0);
             profiler.endStart("entitiesAdditive");
-            renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
+            renderer.blendFunc(BlendFactor.SRC_ALPHA, BlendFactor.ONE);
+            renderer.depthMask(false);
             buffersHolder = spriteRenderer.getBuffersHolder(BufferType.ENTITIES_ADDITIVE);
             cullingSystem.renderFrustumCulled(buffersHolder.getRenderObjects(), buffersHolder);
             buffersHolder.setRenderObjects(0);
         } else {
-            renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
-            spriteRenderer.render(BufferType.ENTITIES_BACKGROUND_ADDITIVE);
-            renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+            renderer.blendFunc(BlendFactor.SRC_ALPHA, BlendFactor.ONE_MINUS_SRC_ALPHA);
             spriteRenderer.render(BufferType.ENTITIES_ALPHA);
             profiler.endStart("entitiesAdditive");
-            renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE);
+            renderer.blendFunc(BlendFactor.SRC_ALPHA, BlendFactor.ONE);
+            renderer.depthMask(false);
             spriteRenderer.render(BufferType.ENTITIES_ADDITIVE);
         }
 
@@ -81,7 +74,7 @@ public class WorldRenderer {
         particleRenderer.waitTasks();
         profiler.end();
         particleRenderer.render();
-        renderer.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+        renderer.blendFunc(BlendFactor.SRC_ALPHA, BlendFactor.ONE_MINUS_SRC_ALPHA);
         profiler.end();
     }
 

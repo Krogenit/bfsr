@@ -8,10 +8,13 @@ import lombok.Getter;
 import net.bfsr.engine.AssetsManager;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.renderer.AbstractRenderer;
+import net.bfsr.engine.renderer.constant.InternalTextureFormat;
+import net.bfsr.engine.renderer.constant.TextureFilter;
+import net.bfsr.engine.renderer.constant.TextureFormat;
+import net.bfsr.engine.renderer.constant.TextureWrap;
 import net.bfsr.engine.renderer.font.FontBitMap;
 import net.bfsr.engine.renderer.font.FontManager;
 import net.bfsr.engine.renderer.font.FontPackResult;
-import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.util.IOUtils;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTTPackContext;
@@ -47,7 +50,6 @@ class STBBitMap extends FontBitMap {
     STBBitMap(int width, int height) {
         super(width, height);
         packContext = STBTTPackContext.create();
-        packedCharMap.defaultReturnValue(-1);
         stbtt_PackSetSkipMissingCodepoints(packContext, true);
     }
 
@@ -76,9 +78,10 @@ class STBBitMap extends FontBitMap {
 
             if (bitmapTexture == null) {
                 bitmapTexture = assetsManager.createTexture(width, height);
-                renderer.uploadTexture(bitmapTexture, GL.GL_R8, GL.GL_RED, GL.GL_CLAMP_TO_BORDER, GL.GL_NEAREST, bitmap);
+                renderer.uploadTexture(bitmapTexture, InternalTextureFormat.R8, TextureFormat.RED, TextureWrap.CLAMP_TO_BORDER,
+                        TextureFilter.NEAREST, bitmap);
             } else {
-                renderer.subImage2D(bitmapTexture.getId(), 0, 0, width, height, GL.GL_RED, bitmap);
+                renderer.subImage2D(bitmapTexture.getId(), 0, 0, width, height, TextureFormat.RED, bitmap);
             }
 
             if (FontManager.DEBUG) {

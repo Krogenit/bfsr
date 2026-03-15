@@ -32,6 +32,7 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
     private int armorDataId;
     private int cargoDataId;
     private int crewDataId;
+    private boolean warpDrive;
 
     @Override
     public void setData(Ship ship) {
@@ -72,6 +73,7 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
         this.armorDataId = modules.getArmor().getData().getId();
         this.cargoDataId = modules.getCargo().getData().getId();
         this.crewDataId = modules.getCrew().getData().getId();
+        this.warpDrive = ship.isWarpDrive();
     }
 
     @Override
@@ -107,6 +109,7 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
         data.writeInt(armorDataId);
         data.writeInt(cargoDataId);
         data.writeInt(crewDataId);
+        data.writeBoolean(warpDrive);
 
         super.writeData(data);
     }
@@ -144,6 +147,7 @@ public class ShipSpawnData extends DamageableRigidBodySpawnData<Ship> {
         armorDataId = data.readInt();
         cargoDataId = data.readInt();
         crewDataId = data.readInt();
+        warpDrive = data.readBoolean();
 
         super.readData(data);
     }

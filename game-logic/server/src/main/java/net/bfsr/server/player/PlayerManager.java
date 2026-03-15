@@ -2,13 +2,12 @@ package net.bfsr.server.player;
 
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.util.XoRoShiRo128PlusRandom;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.world.World;
 import net.bfsr.engine.world.entity.RigidBody;
@@ -17,6 +16,7 @@ import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.GuiType;
 import net.bfsr.network.packet.server.gui.PacketOpenGui;
+import net.bfsr.network.packet.server.player.PacketSetPlayerShip;
 import net.bfsr.server.database.PlayerRepository;
 import net.bfsr.server.entity.ship.ShipSpawner;
 
@@ -26,10 +26,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PlayerManager {
     @Getter
-    protected final List<Player> players = new ArrayList<>();
+    private final List<Player> players = new ArrayList<>();
     private final TMap<String, Player> playerMap = new THashMap<>();
-
-    private final Object2ObjectMap<Ship, Player> playerByShipMap = new Object2ObjectOpenHashMap<>();
+    private final Int2ObjectMap<Player> playerByShipMap = new Int2ObjectOpenHashMap<>();
     private final XoRoShiRo128PlusRandom random = new XoRoShiRo128PlusRandom();
     private final ShipFactory shipFactory;
 
@@ -40,20 +39,19 @@ public class PlayerManager {
     }
 
     public void joinGame(World world, Player player, ShipSpawner shipSpawner, int frame) {
-        List<Ship> ships = player.getShips();
-        if (ships.isEmpty()) {
+        Ship ship = player.getShip();
+        if (ship == null) {
             respawnPlayer(world, player, 0, 0, frame, shipSpawner);
         } else {
             initShips(player, world);
             spawnShips(player, world, shipSpawner);
-            player.setShip(player.getShip(0), frame);
+            setShip(player, ship, frame);
         }
     }
 
     public void respawnPlayer(World world, Player player, float x, float y, int frame, ShipSpawner shipSpawner) {
         Ship ship = createPlayerShip(world, x, y, random.nextFloat() * MathUtils.TWO_PI, player);
-        player.addShip(ship);
-        player.setShip(ship, frame);
+        setShip(player, ship, frame);
         shipSpawner.spawnShip(world, ship);
     }
 
@@ -71,15 +69,10 @@ public class PlayerManager {
     }
 
     private void initShips(Player player, World world) {
-        List<Ship> ships = player.getShips();
-        for (int i = 0; i < ships.size(); i++) {
-            Ship ship = ships.get(i);
-            float angle = random.nextFloat() * MathUtils.TWO_PI;
-            ship.setRotation(LUT.sin(angle), LUT.cos(angle));
-            shipFactory.initShip(ship, world, world.getNextId());
-            ship.setFaction(player.getFaction());
-            initShip(player, ship);
-        }
+        Ship ship = player.getShip();
+        shipFactory.initShip(ship, world, world.getNextId());
+        ship.setFaction(player.getFaction());
+        initShip(player, ship);
     }
 
     private void initShip(Player player, Ship ship) {
@@ -89,42 +82,50 @@ public class PlayerManager {
     }
 
     private void spawnShips(Player player, World world, ShipSpawner shipSpawner) {
-        List<Ship> ships = player.getShips();
-        for (int i = 0; i < ships.size(); i++) {
-            Ship ship = ships.get(i);
-            shipSpawner.spawnShip(world, ship);
-        }
+        Ship ship = player.getShip();
+        shipSpawner.spawnShip(world, ship);
+    }
+
+    private void setShip(Player player, Ship ship, int frame) {
+        playerByShipMap.put(ship.getId(), player);
+        player.setShip(ship);
+        player.getPlayerInputController().setShip(ship);
+        player.getNetworkHandler().sendTCPPacket(new PacketSetPlayerShip(ship, frame));
     }
 
     public void update(int frame) {
         for (int i = 0; i < players.size(); i++) {
-            Player player = players.get(i);
-            updatePlayerShips(player);
-            player.getPlayerInputController().update(frame);
+            updatePlayer(players.get(i), frame);
         }
     }
 
-    private void updatePlayerShips(Player player) {
-        List<Ship> ships = player.getShips();
+    private void updatePlayer(Player player, int frame) {
+        player.getPlayerInputController().update(frame);
+        updatePlayerShips(player, frame);
+    }
+
+    private void updatePlayerShips(Player player, int frame) {
         RigidBody lastAttacker = null;
-        for (int i1 = 0; i1 < ships.size(); i1++) {
-            Ship ship = ships.get(i1);
-            if (ship.isDead()) {
-                ships.remove(i1--);
-                lastAttacker = ship.getLastAttacker();
-            }
+        Ship ship = player.getShip();
+        if (ship == null) {
+            return;
         }
 
-        if (ships.isEmpty() && lastAttacker != null) {
+        if (ship.isDead()) {
+            setShip(player, ship, frame);
+            lastAttacker = ship.getLastAttacker();
+        }
+
+        if (player.getShip() == null && lastAttacker != null) {
             String attacker = "";
             if (lastAttacker instanceof Ship attackerShip) {
                 attacker = attackerShip.getName();
             }
-            player.getNetworkHandler().sendUDPPacket(new PacketOpenGui(GuiType.DESTROYED, attacker));
+            player.getNetworkHandler().sendTCPPacket(new PacketOpenGui(GuiType.DESTROYED, attacker));
         }
     }
 
-    public Player get(String username) {
+    public Player load(String username) {
         return playerRepository.load(username);
     }
 
@@ -136,17 +137,21 @@ public class PlayerManager {
         playerRepository.saveAllSync(players);
     }
 
-    public boolean hasPlayer(String username) {
-        return playerMap.containsKey(username);
-    }
-
     public void addPlayer(Player player) {
         players.add(player);
         playerMap.put(player.getUsername(), player);
     }
 
+    public boolean hasPlayer(String username) {
+        return playerMap.containsKey(username);
+    }
+
     public Player getPlayer(String username) {
         return playerMap.get(username);
+    }
+
+    public Player getPlayerControllingShip(Ship ship) {
+        return playerByShipMap.get(ship.getId());
     }
 
     public void removePlayer(Player player) {
@@ -160,18 +165,6 @@ public class PlayerManager {
                 break;
             }
         }
-    }
-
-    public void setPlayerControlledShip(Player player, Ship ship) {
-        playerByShipMap.put(ship, player);
-    }
-
-    public void removePlayerControlledShip(Ship ship) {
-        playerByShipMap.remove(ship);
-    }
-
-    public Player getPlayerControllingShip(Ship ship) {
-        return playerByShipMap.get(ship);
     }
 
     public void clear() {

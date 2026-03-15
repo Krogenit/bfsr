@@ -1,17 +1,21 @@
 package net.bfsr.client.gui.faction;
 
 import net.bfsr.client.Client;
-import net.bfsr.client.font.FontType;
+import net.bfsr.client.assets.TextureRegister;
+import net.bfsr.client.gui.GuiStyle;
+import net.bfsr.client.gui.objects.SimpleButton;
 import net.bfsr.client.language.LanguageManager;
+import net.bfsr.config.entity.ship.ShipRegistry;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
-import net.bfsr.engine.gui.component.Button;
+import net.bfsr.engine.gui.component.GuiObject;
 import net.bfsr.engine.gui.component.Label;
+import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.gui.component.TexturedRectangle;
 import net.bfsr.engine.gui.component.TexturedRotatedRectangle;
 import net.bfsr.engine.math.MathUtils;
 import net.bfsr.engine.renderer.font.glyph.Font;
-import net.bfsr.engine.renderer.texture.TextureRegister;
+import net.bfsr.engine.renderer.texture.TextureData;
 import net.bfsr.faction.Faction;
 import net.bfsr.network.packet.client.PacketFactionSelect;
 
@@ -19,43 +23,56 @@ public class GuiFactionSelect extends Gui {
     public GuiFactionSelect() {
         Client client = Client.get();
         LanguageManager languageManager = client.getLanguageManager();
-        add(new TexturedRectangle(TextureRegister.guiFactionSelect).atCenter(0, 0)
-                .setSize(1024, 600));
-        add(new TexturedRectangle(TextureRegister.guiLogoBFSR).atCenter(0, 200)
-                .setSize(216, 216));
-        add(new TexturedRectangle(TextureRegister.guiBfsrText2, 860, 80).atCenter(0, 200));
-        add(new Button(languageManager.getString("gui.selectFaction.human"), (mouseX, mouseY) -> {
+        GuiObject background = new GuiObject(930, 560);
+        Rectangle top = new Rectangle(930, 208);
+        background.add(GuiStyle.setupTransparentRectangle(top).atTopLeft(0, 0));
+        Rectangle left = new Rectangle(310, 352);
+        background.add(GuiStyle.setupTransparentRectangle(left).atTopLeft(0, -208));
+        Rectangle center = new Rectangle(310, 352);
+        background.add(GuiStyle.setupTransparentRectangle(center).atTopLeft(310, -208));
+        Rectangle right = new Rectangle(310, 352);
+        background.add(GuiStyle.setupTransparentRectangle(right).atTopLeft(620, -208));
+        add(background.atCenter(0, 0));
+
+        top.add(new TexturedRectangle(TextureRegister.guiLogoBFSR.getTextureData(), 216, 216).atTop(0, 20));
+        left.add(new SimpleButton(languageManager.getString("gui.selectFaction.human"), (mouseX, mouseY) -> {
             client.sendTCPPacket(new PacketFactionSelect(Faction.HUMAN));
             client.closeGui();
-        }).atCenter(-309, -230));
-        add(new Button(languageManager.getString("gui.selectFaction.saimon"), (mouseX, mouseY) -> {
+        }).atBottom(0, 5));
+        center.add(new SimpleButton(languageManager.getString("gui.selectFaction.saimon"), (mouseX, mouseY) -> {
             client.sendTCPPacket(new PacketFactionSelect(Faction.SAIMON));
             client.closeGui();
-        }).atCenter(-1, -230));
-        add(new Button(languageManager.getString("gui.selectFaction.engi"), (mouseX, mouseY) -> {
+        }).atBottom(0, 5));
+        right.add(new SimpleButton(languageManager.getString("gui.selectFaction.engi"), (mouseX, mouseY) -> {
             client.sendTCPPacket(new PacketFactionSelect(Faction.ENGI));
             client.closeGui();
-        }).atCenter(309, -230));
+        }).atBottom(0, 5));
 
-        add(new GuiShip(TextureRegister.shipHumanSmall0, 103, 118).atCenter(-309, -70));
+        ShipRegistry shipRegistry = client.getConfigConverterManager().getConverter(ShipRegistry.class);
+        left.add(new GuiShip(shipRegistry.get("human_small0").getTextureData(), 103, 118).atCenter(0, 0));
         float scale = 1.33f;
-        add(new GuiShip(TextureRegister.shipSaimonSmall0, (int) (100 * scale), (int) (65 * scale)).atCenter(0, -70));
+        center.add(new GuiShip(shipRegistry.get("saimon_small0").getTextureData(), (int) (100 * scale), (int) (65 * scale))
+                .atCenter(0, 0));
         scale = 1.66f;
-        add(new GuiShip(TextureRegister.shipEngiSmall0, (int) (69 * scale), (int) (42 * scale)).atCenter(309, -70));
+        right.add(new GuiShip(shipRegistry.get("engi_small0").getTextureData(), (int) (69 * scale), (int) (42 * scale))
+                .atCenter(0, 0));
 
-        Font font = Engine.getFontManager().getFont(FontType.XOLONIUM.getFontName());
+        Font font = Engine.getFontManager().getDefaultFont();
         Label label = new Label(font, languageManager.getString("gui.selectFaction.maintext"), 24);
-        add(label.atCenter(0, 108));
+        top.add(label.atBottom(0, 10));
 
         int discFontSize = 16;
-        add(new Label(font, languageManager.getString("gui.selectFaction.humanDisc"), discFontSize).setMaxWidth(300).atCenter(-248, 64));
-        add(new Label(font, languageManager.getString("gui.selectFaction.saimonDisc"), discFontSize).setMaxWidth(300).atCenter(69, 64));
-        add(new Label(font, languageManager.getString("gui.selectFaction.engiDisc"), discFontSize).setMaxWidth(300).atCenter(378, 64));
+        left.add(new Label(font, languageManager.getString("gui.selectFaction.humanDisc"), discFontSize).setMaxWidth(300)
+                .atTopLeft(6, -6));
+        center.add(new Label(font, languageManager.getString("gui.selectFaction.saimonDisc"), discFontSize).setMaxWidth(300)
+                .atTopLeft(6, -6));
+        right.add(new Label(font, languageManager.getString("gui.selectFaction.engiDisc"), discFontSize).setMaxWidth(300)
+                .atTopLeft(6, -6));
     }
 
     private static class GuiShip extends TexturedRotatedRectangle {
-        GuiShip(TextureRegister textureRegister, int width, int height) {
-            super(textureRegister, width, height);
+        GuiShip(TextureData textureData, int width, int height) {
+            super(textureData, width, height);
         }
 
         @Override

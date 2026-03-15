@@ -26,14 +26,17 @@
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
   "name": "spark",
+  "particleType": "ADDITIVE",
   "path": "explosion/small",
   "r": 1.0,
-  "renderLayer": "DEFAULT_ADDITIVE",
-  "soundEffects": [],
+  "soundEffect": {
+    "sounds": [],
+    "randomFromList": false
+  },
   "sourceSizeXMultiplier": 1.0,
   "sourceSizeYMultiplier": 1.0,
-  "sourceVelocityXMultiplier": 0.0,
-  "sourceVelocityYMultiplier": 0.0,
+  "sourceVelocityXMultiplier": 1.0,
+  "sourceVelocityYMultiplier": 1.0,
   "spawnOverTime": 0.0,
   "texturePaths": [
     "texture/particle/spark0.png",

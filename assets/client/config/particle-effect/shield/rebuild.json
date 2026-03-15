@@ -26,15 +26,26 @@
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
   "name": "rebuild",
+  "particleType": "ADDITIVE",
   "path": "shield",
   "r": 1.0,
-  "renderLayer": "DEFAULT_ADDITIVE",
-  "soundEffects": [
-    {
-      "path": "sound/shield/shieldup0.ogg",
-      "volume": 1.0
-    }
-  ],
+  "soundEffect": {
+    "sounds": [
+      {
+        "path": "sound/shield/shieldup0.ogg",
+        "volume": 0.1,
+        "minPitch": 0.9,
+        "maxPitch": 1.1
+      },
+      {
+        "path": "sound/shield/shieldup1.ogg",
+        "volume": 0.1,
+        "minPitch": 0.9,
+        "maxPitch": 1.1
+      }
+    ],
+    "randomFromList": true
+  },
   "sourceSizeXMultiplier": 1.0,
   "sourceSizeYMultiplier": 1.0,
   "sourceVelocityXMultiplier": 1.0,

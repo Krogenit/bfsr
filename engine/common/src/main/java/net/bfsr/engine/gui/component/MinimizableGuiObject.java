@@ -33,7 +33,7 @@ public class MinimizableGuiObject extends GuiObject {
         this.baseHeight = height;
         this.font = font;
         this.fontSize = fontSize;
-        this.label = new Label(font, name, fontSize);
+        this.label = new Label(font, name, fontSize).setShadow(true).setShadowOffsetX(2).setShadowOffsetY(-2);
         this.stringOffsetX = stringOffsetX;
         this.stringOffsetY = stringOffsetY;
         addNonConcealable(label.atBottomLeft(this::getStringOffsetX,
@@ -173,6 +173,12 @@ public class MinimizableGuiObject extends GuiObject {
     @Override
     public void remove(GuiObject guiObject) {
         removeHideable(guiObject);
+    }
+
+    public void removeAllHideable() {
+        removeHideable();
+        hideableObjects.clear();
+        updatePositionAndSize();
     }
 
     @Override

@@ -16,8 +16,6 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.ArrayList;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = Main.class)
@@ -46,38 +44,38 @@ public class PlayerServiceTest {
     @Test
     void addPlayer() {
         String username = "test";
-        PlayerModel playerModel = playerService.save(new PlayerModel(null, username, Faction.HUMAN, new ArrayList<>())).block();
+        PlayerModel playerModel = playerService.save(new PlayerModel(null, username, Faction.HUMAN, null)).block();
         assertThat(playerModel).isNotNull();
         assertThat(playerModel.name()).isEqualTo(username);
         assertThat(playerModel.id()).isNotNull();
         assertThat(playerModel.faction()).isEqualTo(Faction.HUMAN);
-        assertThat(playerModel.ships().size()).isEqualTo(0);
+        assertThat(playerModel.ship()).isNull();
     }
 
     @Test
     void getPlayerByName() {
         String username = "test";
-        playerService.save(new PlayerModel(null, username, Faction.HUMAN, new ArrayList<>())).block();
+        playerService.save(new PlayerModel(null, username, Faction.HUMAN, null)).block();
         PlayerModel playerModel = playerService.getPlayer(username).block();
         assertThat(playerModel).isNotNull();
         assertThat(playerModel.name()).isEqualTo(username);
         assertThat(playerModel.id()).isNotNull();
         assertThat(playerModel.faction()).isEqualTo(Faction.HUMAN);
-        assertThat(playerModel.ships().size()).isEqualTo(0);
+        assertThat(playerModel.ship()).isNull();
     }
 
     @Test
     void deletePlayerByName() {
         String username = "test";
-        playerService.save(new PlayerModel(null, username, Faction.HUMAN, new ArrayList<>())).block();
+        playerService.save(new PlayerModel(null, username, Faction.HUMAN, null)).block();
         playerService.deleteByName(username).block();
         assertThat(playerService.getPlayer(username).block()).isNull();
     }
 
     @Test
     void deleteAll() {
-        playerService.save(new PlayerModel(null, "test", Faction.HUMAN, new ArrayList<>())).block();
-        playerService.save(new PlayerModel(null, "test1", Faction.HUMAN, new ArrayList<>())).block();
+        playerService.save(new PlayerModel(null, "test", Faction.HUMAN, null)).block();
+        playerService.save(new PlayerModel(null, "test1", Faction.HUMAN, null)).block();
         playerService.deleteAll().block();
         assertThat(playerService.getPlayer("test").block()).isNull();
         assertThat(playerService.getPlayer("test1").block()).isNull();

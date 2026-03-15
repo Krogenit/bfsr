@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import net.bfsr.GameplayMode;
 import net.bfsr.engine.event.EventBus;
 import net.bfsr.engine.network.ConnectionState;
 import net.bfsr.engine.network.NetworkHandler;
@@ -30,12 +31,14 @@ import net.bfsr.server.entity.ship.ShipSpawner;
 import net.bfsr.server.event.PlayerDisconnectEvent;
 import net.bfsr.server.event.PlayerJoinGameEvent;
 import net.bfsr.server.player.Player;
+import net.bfsr.server.player.PlayerInputController;
 import net.bfsr.server.player.PlayerManager;
+import net.bfsr.server.player.SessionPlayerInputController;
+import net.bfsr.server.player.StrategicPlayerInputController;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -161,27 +164,37 @@ public class PlayerNetworkHandler extends NetworkHandler {
         }
 
         try {
-            if (singlePlayer) {
-                player = playerManager.get(username);
-            } else {
-                player = playerManager.get(username);
-            }
+            player = playerManager.load(username);
         } catch (Exception e) {
-            log.error("Couldn't auth user {}", username, e);
+            log.error("Couldn't load user {}", username, e);
             disconnect("Player service not available, try again later");
             return;
         }
 
-        player.init(this, entityTrackingManager, playerManager, aiFactory);
+        PlayerInputController playerInputController;
+        if (gameLogic.getGameplayMode() == GameplayMode.MMO) {
+            playerInputController = new StrategicPlayerInputController(
+                    player, this, entityTrackingManager, aiFactory
+            );
+        } else {
+            playerInputController = new SessionPlayerInputController(
+                    player, this, entityTrackingManager, aiFactory
+            );
+        }
+
+        player.init(this, playerInputController);
         playerManager.addPlayer(player);
 
-        sendTCPPacket(new PacketLoginSuccess());
+        sendTCPPacket(new PacketLoginSuccess(world.getSeed(), gameLogic.getFrame(), gameLogic.getTime(),
+                ((byte) gameLogic.getGameplayMode().ordinal())));
         log.info("Player with username {} successful logged in", player.getUsername());
+        connectionState = ConnectionState.CONNECTED;
+        lastPingReceiveTime = System.currentTimeMillis();
     }
 
     public void joinGame() {
-        connectionState = ConnectionState.CONNECTED;
-        sendTCPPacket(new PacketJoinGame(world.getSeed(), gameLogic.getFrame(), gameLogic.getTime()));
+        sendTCPPacket(new PacketJoinGame());
+
         if (player.getFaction() != null) {
             playerManager.joinGame(world, player, shipSpawner, gameLogic.getFrame());
         } else {
@@ -189,7 +202,6 @@ public class PlayerNetworkHandler extends NetworkHandler {
         }
 
         world.getEventBus().publish(new PlayerJoinGameEvent(player));
-        lastPingReceiveTime = System.currentTimeMillis();
         log.info("Player with username {} successful joined game", player.getUsername());
     }
 
@@ -213,12 +225,9 @@ public class PlayerNetworkHandler extends NetworkHandler {
         if (player != null) {
             playerManager.removePlayer(player);
             playerManager.save(player);
-            List<Ship> ships = player.getShips();
-            for (int i = 0, shipsSize = ships.size(); i < shipsSize; i++) {
-                Ship ship = ships.get(i);
-                if (ship.getWorld() != null) {
-                    ship.setDead();
-                }
+            Ship ship = player.getShip();
+            if (ship.getWorld() != null) {
+                ship.setDead();
             }
 
             eventBus.publish(new PlayerDisconnectEvent(player));
@@ -228,7 +237,7 @@ public class PlayerNetworkHandler extends NetworkHandler {
         }
     }
 
-    public void closeChannel(String reason) {
+    private void closeChannel(String reason) {
         socketChannel.close();
         terminationReason = reason;
         connectionStateBeforeDisconnect = connectionState;

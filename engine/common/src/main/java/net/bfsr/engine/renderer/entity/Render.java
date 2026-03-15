@@ -21,6 +21,7 @@ public class Render {
     protected final AbstractDebugRenderer debugRenderer = renderer.getDebugRenderer();
 
     protected GameObject object;
+    protected float z;
     protected AbstractTexture texture;
     protected final Vector4f color = new Vector4f();
 
@@ -36,8 +37,9 @@ public class Render {
 
     protected int id = -1;
 
-    public Render(AbstractTexture texture, GameObject object, float r, float g, float b, float a) {
+    public Render(GameObject object, float z, AbstractTexture texture, float r, float g, float b, float a) {
         this.object = object;
+        this.z = z;
         this.texture = texture;
         this.lastPosition.set(object.getX(), object.getY());
         this.color.set(r, g, b, a);
@@ -45,17 +47,17 @@ public class Render {
         this.lastSize.set(object.getSizeX(), object.getSizeY());
     }
 
-    public Render(AbstractTexture texture, GameObject object) {
-        this(texture, object, 1.0f, 1.0f, 1.0f, 1.0f);
+    public Render(GameObject object, float z, AbstractTexture texture) {
+        this(object, z, texture, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public Render(GameObject object) {
-        this(Engine.getRenderer().getDummyTexture(), object);
+    public Render(GameObject object, float z) {
+        this(object, z, Engine.getRenderer().getDummyTexture());
     }
 
     public void init() {
-        id = spriteRenderer.add(object.getX(), object.getY(), object.getSizeX(), object.getSizeY(), color.x, color.y, color.z, color.w,
-                texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
+        id = spriteRenderer.add(object.getX(), object.getY(), z, object.getSizeX(), object.getSizeY(), color.x, color.y, color.z,
+                color.w, texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
     }
 
     public void update() {

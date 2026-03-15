@@ -58,7 +58,7 @@ public class SimplePropertyList<PRIMITIVE_TYPE> extends PropertyList<PropertyCom
             } else {
                 addPropertyComponentAt(index, ComponentBuilder.build(propertyGuiElementType, baseWidth - MINIMIZABLE_STRING_X_OFFSET,
                         baseHeight, propertyName, font.getWidth(propertyName, fontSize), font, fontSize, stringOffsetY, fields,
-                        new Object[]{object}, object, (o, integer) -> ((List) values[0]).set(integer, o), changeValueListener));
+                        new Object[]{object}, object, (o, integer) -> objects.set(index, (PRIMITIVE_TYPE) o), changeValueListener));
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);

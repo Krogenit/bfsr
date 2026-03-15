@@ -1,6 +1,6 @@
 package net.bfsr.editor.gui;
 
-import net.bfsr.client.font.FontType;
+import net.bfsr.client.assets.FontType;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.CheckBox;
@@ -47,8 +47,8 @@ public final class EditorTheme {
     private static final Vector4f SCROLL_COLOR = new Vector4f(77 / 255.0f, 78 / 255.0f, 81 / 255.0f, 1.0f);
     private static final Vector4f SCROLL_HOVER_COLOR = new Vector4f(92 / 255.0f, 93 / 255.0f, 94 / 255.0f, 1.0f);
 
-    public static final Font FONT = Engine.getFontManager().getFont(FontType.SEGOE_UI.getFontName());
-    public static final int FONT_SIZE = 13;
+    public static final Font FONT = Engine.getFontManager().getFont(FontType.JETBRAINSMONO_LIGHT.getFontName());
+    public static final int FONT_SIZE = 12;
 
     public static final int CONTEXT_MENU_STRING_OFFSET_X = 8;
     public static final int CONTEXT_MENU_BUTTON_HEIGHT = 20;

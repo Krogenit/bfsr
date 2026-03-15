@@ -1,14 +1,14 @@
 package net.bfsr.client.particle;
 
 import net.bfsr.client.Client;
+import net.bfsr.client.assets.TextureRegister;
 import net.bfsr.client.particle.effect.BeamEffects;
+import net.bfsr.client.renderer.entity.ShipRender;
 import net.bfsr.engine.AssetsManager;
 import net.bfsr.engine.Engine;
-import net.bfsr.engine.collection.UnorderedArrayList;
 import net.bfsr.engine.math.RotationHelper;
-import net.bfsr.engine.renderer.particle.RenderLayer;
-import net.bfsr.engine.renderer.texture.TextureRegister;
-import net.bfsr.engine.world.entity.Particle;
+import net.bfsr.engine.renderer.entity.Render;
+import net.bfsr.engine.renderer.particle.ParticleType;
 import net.bfsr.engine.world.entity.ParticleManager;
 import net.bfsr.engine.world.entity.SpawnAccumulator;
 import net.bfsr.entity.ship.Ship;
@@ -22,11 +22,12 @@ public class BeamParticles {
 
     private final WeaponSlotBeam slot;
     private final Vector4f color;
-    private final UnorderedArrayList<Particle> lightingParticles = new UnorderedArrayList<>();
     private final Vector2f angleToVelocity = new Vector2f();
     private final SpawnAccumulator weaponSpawnAccumulator = new SpawnAccumulator();
     private final ParticleManager particleManager = Client.get().getParticleManager();
     private final BeamEffects beamEffects = Client.get().getParticleEffects().getBeamEffects();
+    private final long lightTextureHandle = assetsManager.getTexture(TextureRegister.light.getTextureData()).getTextureHandle();
+    private final long beamTextureHandle = assetsManager.getTexture(TextureRegister.beam.getTextureData()).getTextureHandle();
 
     private boolean isDead;
 
@@ -40,9 +41,10 @@ public class BeamParticles {
         weaponSpawnAccumulator.resetTime();
 
         Ship ship = slot.getShip();
-        particleManager.createParticle().init(assetsManager.getTexture(TextureRegister.particleLight).getTextureHandle(),
-                slot.getX(), slot.getY(), 0, 0, 0, 0, slot.getSin(), slot.getCos(), 0.0f, slot.getSizeX() * 2.5f, slot.getSizeY() * 2.5f, 0,
-                color.x, color.y, color.z, color.w, 0, false, RenderLayer.DEFAULT_ADDITIVE, particle1 -> {
+        Render render = Client.get().getEntityRenderer().getRender(ship.getId());
+        particleManager.createParticle().init(lightTextureHandle, slot.getX(), slot.getY(), 0, 0, render.getZ(), 0, 0, slot.getSin(),
+                slot.getCos(), 0.0f, slot.getSizeX() * 2.5f, slot.getSizeY() * 2.5f, 0, color.x, color.y, color.z, color.w, 0, false,
+                ParticleType.ADDITIVE, particle1 -> {
                     particle1.setPosition(slot.getX(), slot.getY());
                     particle1.setRotation(ship.getSin(), ship.getCos());
                     particle1.getRender().setColorAlpha(slot.getBeamPower() * 0.6f);
@@ -61,13 +63,12 @@ public class BeamParticles {
     }
 
     private void spawnBeam(float sizeYMultiplayer, float colorMultiplayer) {
-        float slotSizeX = slot.getSizeX();
         float slotSizeY = slot.getSizeY();
         Ship ship = slot.getShip();
         float cos = ship.getCos();
         float sin = ship.getSin();
 
-        float startRange = -slotSizeX;
+        float startRange = 0;
 
         float startX = cos * startRange;
         float startY = sin * startRange;
@@ -77,17 +78,17 @@ public class BeamParticles {
 
         float worldX = slot.getX() + localX * 0.5f;
         float worldY = slot.getY() + localY * 0.5f;
+        Render render = Client.get().getEntityRenderer().getRender(ship.getId());
 
-        particleManager.createParticle().init(assetsManager.getTexture(TextureRegister.particleBeam).getTextureHandle(),
-                worldX, worldY, 0, 0, 0, 0, sin, cos, 0.0f, 0.0f, slotSizeY * sizeYMultiplayer, 0,
-                color.x, color.y, color.z, color.w * colorMultiplayer, 0, false, RenderLayer.DEFAULT_ADDITIVE, particle1 -> {
+        particleManager.createParticle().init(beamTextureHandle, worldX, worldY, 0, 0, render.getZ(), 0, 0, sin, cos, 0.0f, 0.0f,
+                slotSizeY * sizeYMultiplayer, 0, color.x, color.y, color.z, color.w * colorMultiplayer, 0, false, ParticleType.ADDITIVE,
+                particle1 -> {
                     float cos1 = ship.getCos();
                     float sin1 = ship.getSin();
                     particle1.setRotation(sin1, cos1);
 
-                    float startRange1 = -slotSizeX;
-                    float startX1 = cos1 * startRange1;
-                    float startY1 = sin1 * startRange1;
+                    float startX1 = cos1 * startRange;
+                    float startY1 = sin1 * startRange;
                     float localX1 = startX1 + cos1 * slot.getCurrentBeamRange();
                     float localY1 = startY1 + sin1 * slot.getCurrentBeamRange();
                     particle1.setPosition(slot.getX() + localX1 * 0.5f, slot.getY() + localY1 * 0.5f);
@@ -111,8 +112,9 @@ public class BeamParticles {
         float sin = ship.getSin();
         float cos = ship.getCos();
         RotationHelper.angleToVelocity(sin, cos, 1.5f, angleToVelocity);
-        beamEffects.beam(slot.getX(), slot.getY(), 0, 0, 2.0f, sin, cos, angleToVelocity.x, angleToVelocity.y, color.x,
-                color.y, color.z, color.w * 0.6f, weaponSpawnAccumulator, particle -> {
+        ShipRender shipRender = Client.get().getEntityRenderer().getRender(ship.getId());
+        beamEffects.beam(slot.getX(), slot.getY(), shipRender.getZ(), 0, 0, 2.0f, sin, cos, angleToVelocity.x, angleToVelocity.y,
+                color.x, color.y, color.z, color.w * 0.6f, weaponSpawnAccumulator, particle -> {
                     Vector2f localPosition = particle.getLocalPosition();
                     Vector2f velocity = particle.getVelocity();
                     localPosition.add(velocity);
@@ -131,25 +133,9 @@ public class BeamParticles {
                     render.setLastRotation();
                     render.setLastSize();
                 });
-
-        while (lightingParticles.size() < (int) (slot.getCurrentBeamRange() / 10)) {
-            lightingParticles.add(beamEffects.beamEffect(slot, color));
-        }
-
-        for (int i = 0; i < lightingParticles.size(); i++) {
-            Particle p = lightingParticles.get(i);
-            if (p.isDead()) {
-                lightingParticles.remove(i--);
-            }
-        }
     }
 
     public void clear() {
         isDead = true;
-        for (int i = 0; i < lightingParticles.size(); i++) {
-            lightingParticles.get(i).setDead();
-        }
-
-        lightingParticles.clear();
     }
 }

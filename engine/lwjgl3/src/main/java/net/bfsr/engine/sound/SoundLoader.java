@@ -1,7 +1,7 @@
 package net.bfsr.engine.sound;
 
-import gnu.trove.map.TMap;
-import gnu.trove.map.hash.THashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.extern.log4j.Log4j2;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
@@ -20,16 +20,16 @@ import java.nio.file.Path;
 
 @Log4j2
 public final class SoundLoader extends AbstractSoundLoader {
-    private final TMap<String, AbstractSoundBuffer> loadedSounds = new THashMap<>();
+    private final Object2IntMap<String> loadedSounds = new Object2IntOpenHashMap<>();
 
-    private SoundBuffer loadSound(Path path) {
+    private int loadSound(Path path) {
         try (STBVorbisInfo info = STBVorbisInfo.malloc()) {
             ShortBuffer pcm = readVorbis(path, info);
 
             int bufferId = AL10.alGenBuffers();
             AL10.alBufferData(bufferId, info.channels() == 1 ? AL10.AL_FORMAT_MONO16 : AL10.AL_FORMAT_STEREO16, pcm, info.sample_rate());
             MemoryUtil.memFree(pcm);
-            return new SoundBuffer(bufferId);
+            return bufferId;
         } catch (IOException e) {
             log.error("Can't load sound {}", path, e);
             throw new RuntimeException(e);
@@ -67,22 +67,13 @@ public final class SoundLoader extends AbstractSoundLoader {
     }
 
     @Override
-    public AbstractSoundBuffer getBuffer(SoundRegistry sound) {
-        return getBuffer(sound.getPath());
-    }
-
-    @Override
-    public AbstractSoundBuffer getBuffer(Path path) {
+    public int getBuffer(Path path) {
         return loadedSounds.computeIfAbsent(path.toString(), soundRegistry -> loadSound(path));
     }
 
     @Override
     public void clear() {
-        loadedSounds.forEachValue(soundBuffer -> {
-            soundBuffer.clear();
-            return true;
-        });
-
+        loadedSounds.values().forEach(AL10::alDeleteBuffers);
         loadedSounds.clear();
     }
 }

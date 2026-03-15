@@ -9,23 +9,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class RigidBodyUtils {
-    public final Vector2f rotateToVector = new Vector2f();
-    public final Vector2f angleToVelocity = new Vector2f();
+    private final Vector2f rotateToVector = new Vector2f();
+    private final Vector2f angleToVelocity = new Vector2f();
     private final List<Direction> directions = new ArrayList<>();
 
     public float getRotationDifference(RigidBody gameObject, Vector2f vector) {
         return getRotationDifference(gameObject, vector.x, vector.y);
     }
 
-    private float getRotationDifference(RigidBody gameObject, float x, float y) {
+    public float getRotationDifference(RigidBody gameObject, float x, float y) {
         return angleToVelocity.set(gameObject.getCos(), gameObject.getSin()).angle(rotateToVector.set(x - gameObject.getX(),
                 y - gameObject.getY()));
     }
 
     public void rotateToVector(RigidBody gameObject, Vector2f vector, float rotationSpeed) {
+        rotateToVector(gameObject, vector.x, vector.y, rotationSpeed);
+    }
+
+    public void rotateToVector(RigidBody gameObject, float x, float y, float rotationSpeed) {
         Body body = gameObject.getBody();
 
-        float diffRad = getRotationDifference(gameObject, vector);
+        float diffRad = getRotationDifference(gameObject, x, y);
         float diffAbs = Math.abs(diffRad);
         float addRot = Math.min(diffAbs, rotationSpeed);
 

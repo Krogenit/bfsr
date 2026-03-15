@@ -26,15 +26,32 @@
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
   "name": "disable",
+  "particleType": "ADDITIVE",
   "path": "shield",
   "r": 1.0,
-  "renderLayer": "DEFAULT_ADDITIVE",
-  "soundEffects": [
-    {
-      "path": "sound/shield/shielddown.ogg",
-      "volume": 1.0
-    }
-  ],
+  "soundEffect": {
+    "sounds": [
+      {
+        "path": "sound/shield/shielddown0.ogg",
+        "volume": 0.3,
+        "minPitch": 0.9,
+        "maxPitch": 1.1
+      },
+      {
+        "path": "sound/shield/shielddown1.ogg",
+        "volume": 0.3,
+        "minPitch": 0.9,
+        "maxPitch": 1.1
+      },
+      {
+        "path": "sound/shield/shielddown2.ogg",
+        "volume": 0.3,
+        "minPitch": 0.9,
+        "maxPitch": 1.1
+      }
+    ],
+    "randomFromList": true
+  },
   "sourceSizeXMultiplier": 1.0,
   "sourceSizeYMultiplier": 1.0,
   "sourceVelocityXMultiplier": 1.0,

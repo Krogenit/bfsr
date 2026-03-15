@@ -38,21 +38,20 @@ public class EntityRenderer {
 
     public void update() {
         for (int i = 0; i < renders.size(); i++) {
-            Render render = renders.get(i);
-            if (render.isDead()) {
-                render.clear();
-                renders.remove(i--);
-                rendersMap.remove(render.getObject().getId());
-            } else {
-                render.update();
-            }
+            renders.get(i).update();
         }
     }
 
     public void postWorldUpdate() {
         for (int i = 0; i < renders.size(); i++) {
             Render render = renders.get(i);
-            render.postWorldUpdate();
+            if (render.isDead()) {
+                render.clear();
+                renders.remove(i--);
+                rendersMap.remove(render.getObject().getId());
+            } else {
+                render.postWorldUpdate();
+            }
         }
     }
 

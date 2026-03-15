@@ -46,7 +46,7 @@ public abstract class FontPacker<BITMAP extends FontBitMap> {
         for (int i = 0, to = text.length(); i < to; i++) {
             char charCode = text.charAt(i);
             BITMAP stbBitMap = bitmapByCharMap.get(charCode);
-            if (stbBitMap == null || stbBitMap.getCharIndex(charCode) == -1) {
+            if (stbBitMap == null || stbBitMap.getCharIndex(charCode) == FontBitMap.NO_PACKED_CHAR_VALUE) {
                 if (isCharCodeSupported(charCode) && !charList.contains(charCode)) {
                     charList.add(charCode);
                 }

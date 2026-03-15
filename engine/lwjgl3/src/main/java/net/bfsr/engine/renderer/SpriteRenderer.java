@@ -7,6 +7,7 @@ import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.renderer.buffer.AbstractBuffersHolder;
 import net.bfsr.engine.renderer.buffer.BufferType;
 import net.bfsr.engine.renderer.buffer.BuffersHolder;
+import net.bfsr.engine.renderer.constant.DrawMode;
 import net.bfsr.engine.renderer.primitive.AbstractVAO;
 import net.bfsr.engine.renderer.primitive.Primitive;
 import net.bfsr.engine.renderer.primitive.VAO;
@@ -26,9 +27,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
-import static org.lwjgl.opengl.GL11C.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL43.glMultiDrawElementsIndirect;
 import static org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BUFFER;
+import static org.lwjgl.opengl.GL43C.glMultiDrawElementsIndirect;
 
 public class SpriteRenderer implements AbstractSpriteRenderer {
     private static final int VERTEX_STRIDE = 16;
@@ -44,10 +44,12 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     private static final int SSBO_LAST_UPDATE_MATERIAL_DATA = 3;
 
     public static final int Y_OFFSET = 1;
-    public static final int SIN_OFFSET = 2;
-    public static final int COS_OFFSET = 3;
-    public static final int WIDTH_OFFSET = 4;
-    public static final int HEIGHT_OFFSET = 5;
+    public static final int Z_OFFSET = 2;
+    public static final int SIN_OFFSET = 3;
+    public static final int COS_OFFSET = 4;
+    public static final int WIDTH_OFFSET = 5;
+    public static final int HEIGHT_OFFSET = 6;
+    private static final int ZOOM_FACTOR_OFFSET = 7;
 
     public static final int COLOR_G_OFFSET = 4;
     public static final int COLOR_B_OFFSET = 8;
@@ -57,7 +59,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     private static final int MATERIAL_TYPE_OFFSET = 32;
     private static final int FIRE_AMOUNT_OFFSET = 36;
     private static final int FIRE_UV_ANIMATION_OFFSET = 40;
-    private static final int ZOOM_FACTOR_OFFSET = 44;
+    private static final int MATERIAL_PADDING_0_OFFSET = 44;
 
     private static final int LAST_FIRE_AMOUNT_OFFSET = 16;
     private static final int LAST_FIRE_UV_ANIMATION_OFFSET = 20;
@@ -72,7 +74,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     private final IntBuffer indexBuffer;
     private final VBO indexVBO;
 
-    private final ObjectSet<Primitive> primitiveMap = new ObjectOpenHashSet<>();
+    private final ObjectSet<Primitive> primitiveSet = new ObjectOpenHashSet<>();
 
     protected AbstractRenderer renderer;
     private ExecutorService executorService;
@@ -110,7 +112,6 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
         indexVBO.storeData(indexBuffer, 0);
 
         buffersHolders[BufferType.BACKGROUND.ordinal()] = createBuffersHolder(1, true);
-        buffersHolders[BufferType.ENTITIES_BACKGROUND_ADDITIVE.ordinal()] = createBuffersHolder(512, true);
         buffersHolders[BufferType.ENTITIES_ALPHA.ordinal()] = createBuffersHolder(512, true);
         buffersHolders[BufferType.ENTITIES_ADDITIVE.ordinal()] = createBuffersHolder(512, true);
         buffersHolders[BufferType.GUI.ordinal()] = createBuffersHolder(512, false);
@@ -144,7 +145,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     public void updateBuffers() {
         for (int i = 0; i < buffersHolders.length; i++) {
             BuffersHolder buffersHolder = buffersHolders[i];
-            updateBuffers(buffersHolder);
+            updateBuffer(buffersHolder);
         }
     }
 
@@ -152,11 +153,11 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     public void updateBuffers(AbstractBuffersHolder[] buffersHolderArray) {
         for (int i = 0; i < buffersHolderArray.length; i++) {
             AbstractBuffersHolder buffersHolder = buffersHolderArray[i];
-            updateBuffers(buffersHolder);
+            updateBuffer(buffersHolder);
         }
     }
 
-    public void updateBuffers(AbstractBuffersHolder buffersHolder) {
+    public void updateBuffer(AbstractBuffersHolder buffersHolder) {
         buffersHolder.updateBuffers(MODEL_BUFFER_INDEX, MATERIAL_BUFFER_INDEX, LAST_UPDATE_MODEL_BUFFER_INDEX,
                 LAST_UPDATE_MATERIAL_BUFFER_INDEX);
     }
@@ -180,7 +181,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
 
     @Override
     public boolean addPrimitive(Primitive primitive) {
-        if (primitiveMap.contains(primitive)) {
+        if (primitiveSet.contains(primitive)) {
             return false;
         }
 
@@ -230,7 +231,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
         }
 
         primitive.setBaseVertex(vertexIndex / VERTEX_DATA_SIZE);
-        primitiveMap.add(primitive);
+        primitiveSet.add(primitive);
         return true;
     }
 
@@ -297,10 +298,10 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
 
     @Override
     public void syncAndRender(BufferType bufferType) {
-        syncAndRender(GL_TRIANGLES, bufferType);
+        syncAndRender(DrawMode.TRIANGLES, bufferType);
     }
 
-    void syncAndRender(int type, BufferType bufferType) {
+    private void syncAndRender(DrawMode drawMode, BufferType bufferType) {
         BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
 
         try {
@@ -310,23 +311,23 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
         }
 
         if (buffersHolder.getRenderObjects() > 0) {
-            render(type, buffersHolder.getRenderObjects(), buffersHolder);
+            render(drawMode, buffersHolder.getRenderObjects(), buffersHolder);
             buffersHolder.setRenderObjects(0);
         }
     }
 
     @Override
     public void render(BufferType bufferType) {
-        render(GL_TRIANGLES, bufferType);
+        render(DrawMode.TRIANGLES, bufferType);
     }
 
-    private void render(int mode, BufferType bufferType) {
+    private void render(DrawMode drawMode, BufferType bufferType) {
         BuffersHolder buffersHolder = buffersHolders[bufferType.ordinal()];
         if (buffersHolder.getRenderObjects() > 0) {
             if (persistentMappedBuffers) {
-                render(mode, buffersHolder.getRenderObjects(), buffersHolder);
+                render(drawMode, buffersHolder.getRenderObjects(), buffersHolder);
             } else {
-                updateCommandBufferAndRender(mode, buffersHolder.getRenderObjects(), buffersHolder);
+                updateCommandBufferAndRender(drawMode, buffersHolder.getRenderObjects(), buffersHolder);
             }
             buffersHolder.setRenderObjects(0);
         }
@@ -335,20 +336,20 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     @Override
     public void render(int objectCount, AbstractBuffersHolder buffersHolder) {
         if (persistentMappedBuffers) {
-            render(GL_TRIANGLES, objectCount, buffersHolder);
+            render(DrawMode.TRIANGLES, objectCount, buffersHolder);
         } else {
-            updateCommandBufferAndRender(GL_TRIANGLES, objectCount, buffersHolder);
+            updateCommandBufferAndRender(DrawMode.TRIANGLES, objectCount, buffersHolder);
         }
     }
 
     @Override
-    public void updateCommandBufferAndRender(int mode, int objectCount, AbstractBuffersHolder buffersHolder) {
+    public void updateCommandBufferAndRender(DrawMode mode, int objectCount, AbstractBuffersHolder buffersHolder) {
         buffersHolder.updateCommandBuffer(objectCount);
         render(mode, objectCount, buffersHolder);
     }
 
     @Override
-    public void render(int mode, int objectCount, AbstractBuffersHolder buffersHolder) {
+    public void render(DrawMode mode, int objectCount, AbstractBuffersHolder buffersHolder) {
         AbstractVAO vao = buffersHolder.getVao();
         vao.bind();
 
@@ -358,111 +359,111 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
         vao.bindBufferBase(GL_SHADER_STORAGE_BUFFER, SSBO_LAST_UPDATE_MATERIAL_DATA, LAST_UPDATE_MATERIAL_BUFFER_INDEX);
         buffersHolder.bindCommandBuffer();
 
-        glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, 0, objectCount, 0);
+        glMultiDrawElementsIndirect(mode.gl(), GL_UNSIGNED_INT, 0, objectCount, 0);
         renderer.increaseDrawCalls();
         buffersHolder.lockRange();
         buffersHolder.switchRenderingIndex();
     }
 
     @Override
-    public int add(float x, float y, float width, float height, float r, float g, float b, float a, BufferType bufferType) {
-        return add(x, y, 0, 1, width, height, r, g, b, a, 0, MaterialType.NOT_TEXTURED, bufferType);
+    public int add(float x, float y, float z, float width, float height, float r, float g, float b, float a, BufferType bufferType) {
+        return add(x, y, z, 0, 1, width, height, r, g, b, a, 0, MaterialType.NOT_TEXTURED, bufferType);
     }
 
     @Override
-    public int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle,
+    public int add(float x, float y, float z, float width, float height, float r, float g, float b, float a, long textureHandle,
                    BufferType bufferType) {
-        return add(x, y, 0, 1, width, height, r, g, b, a, textureHandle, bufferType);
+        return add(x, y, z, 0, 1, width, height, r, g, b, a, textureHandle, bufferType);
     }
 
     @Override
-    public int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle, float zoomFactor,
+    public int add(float x, float y, float z, float width, float height, float r, float g, float b, float a, long textureHandle,
+                   float zoomFactor,
                    BufferType bufferType) {
-        return add(x, y, 0, 1, width, height, r, g, b, a, textureHandle, zoomFactor, bufferType);
+        return add(x, y, z, 0, 1, width, height, r, g, b, a, textureHandle, zoomFactor, bufferType);
     }
 
-    public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+    public int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
                    long textureHandle, float zoomFactor, BufferType bufferType) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, MaterialType.TEXTURED, zoomFactor, bufferType);
+        return add(x, y, z, sin, cos, width, height, r, g, b, a, textureHandle, MaterialType.TEXTURED, zoomFactor, bufferType);
     }
 
-    private int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+    private int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
                     long textureHandle, MaterialType materialType, float zoomFactor, BufferType bufferType) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, 0, materialType, zoomFactor,
-                buffersHolders[bufferType.ordinal()]);
+        return add(x, y, z, sin, cos, width, height, zoomFactor, r, g, b, a, textureHandle, 0,
+                materialType, buffersHolders[bufferType.ordinal()]);
     }
 
     @Override
-    public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+    public int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
                    long textureHandle, BufferType bufferType) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, 0, MaterialType.TEXTURED,
-                buffersHolders[bufferType.ordinal()]);
+        return add(x, y, z, sin, cos, width, height, r, g, b, a, textureHandle, 0,
+                MaterialType.TEXTURED, buffersHolders[bufferType.ordinal()]);
     }
 
     @Override
-    public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+    public int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
                    long textureHandle, MaterialType materialType, BufferType bufferType) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, 0, materialType, buffersHolders[bufferType.ordinal()]);
+        return add(x, y, z, sin, cos, width, height, r, g, b, a, textureHandle, 0, materialType, buffersHolders[bufferType.ordinal()]);
     }
 
     @Override
-    public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+    public int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
                    long textureHandle, long maskTextureHandle, BufferType bufferType) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, maskTextureHandle, MaterialType.MASKED,
-                buffersHolders[bufferType.ordinal()]);
+        return add(x, y, z, sin, cos, width, height, r, g, b, a, textureHandle, maskTextureHandle,
+                MaterialType.MASKED, buffersHolders[bufferType.ordinal()]);
     }
 
     @Override
-    public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+    public int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
                    long textureHandle, long maskTextureHandle, MaterialType materialType, BufferType bufferType) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, maskTextureHandle, materialType,
-                buffersHolders[bufferType.ordinal()]);
+        return add(x, y, z, sin, cos, width, height, r, g, b, a, textureHandle, maskTextureHandle,
+                materialType, buffersHolders[bufferType.ordinal()]);
     }
 
     @Override
-    public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+    public int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
                    long textureHandle, AbstractBuffersHolder buffersHolder) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, MaterialType.TEXTURED, buffersHolder);
+        return add(x, y, z, sin, cos, width, height, r, g, b, a, textureHandle, MaterialType.TEXTURED, buffersHolder);
     }
 
     @Override
-    public int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle,
+    public int add(float x, float y, float z, float width, float height, float r, float g, float b, float a, long textureHandle,
                    MaterialType materialType, AbstractBuffersHolder buffersHolder) {
-        return add(x, y, 0, 1, width, height, r, g, b, a, textureHandle, materialType, buffersHolder);
+        return add(x, y, z, 0, 1, width, height, r, g, b, a, textureHandle, materialType, buffersHolder);
     }
 
-    public int add(float x, float y, float width, float height, float r, float g, float b, float a, long textureHandle,
+    public int add(float x, float y, float z, float width, float height, float r, float g, float b, float a, long textureHandle,
                    MaterialType materialType, float zoomFactor, BuffersHolder buffersHolder) {
-        return add(x, y, 0, 1, width, height, r, g, b, a, textureHandle, materialType, zoomFactor, buffersHolder);
+        return add(x, y, z, 0, 1, width, height, zoomFactor, r, g, b, a, textureHandle, materialType, buffersHolder);
     }
 
-    private int add(float x, float y, int sin, int cos, float width, float height, float r, float g, float b, float a, long textureHandle,
-                    MaterialType materialType, float zoomFactor, BuffersHolder buffersHolder) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, 0, materialType, zoomFactor, buffersHolder);
+    private int add(float x, float y, float z, int sin, int cos, float width, float height, float zoomFactor, float r, float g, float b,
+                    float a, long textureHandle, MaterialType materialType, BuffersHolder buffersHolder) {
+        return add(x, y, z, sin, cos, width, height, zoomFactor, r, g, b, a, textureHandle, 0, materialType, buffersHolder);
     }
 
     @Override
-    public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+    public int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
                    long textureHandle, MaterialType materialType, AbstractBuffersHolder buffersHolder) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, 0, materialType, buffersHolder);
+        return add(x, y, z, sin, cos, width, height, r, g, b, a, textureHandle, 0, materialType, buffersHolder);
     }
 
-    private int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
+    private int add(float x, float y, float z, float sin, float cos, float width, float height, float r, float g, float b, float a,
                     long textureHandle, long maskTextureHandle, MaterialType materialType, AbstractBuffersHolder buffersHolder) {
-        return add(x, y, sin, cos, width, height, r, g, b, a, textureHandle, maskTextureHandle, materialType, 1.0f, buffersHolder);
+        return add(x, y, z, sin, cos, width, height, 1.0f, r, g, b, a, textureHandle, maskTextureHandle, materialType, buffersHolder);
     }
 
-    public int add(float x, float y, float sin, float cos, float width, float height, float r, float g, float b, float a,
-                   long textureHandle, long maskTextureHandle, MaterialType materialType, float zoomFactor,
-                   AbstractBuffersHolder buffersHolder) {
+    public int add(float x, float y, float z, float sin, float cos, float width, float height, float zoomFactor, float r, float g, float b,
+                   float a, long textureHandle, long maskTextureHandle, MaterialType materialType, AbstractBuffersHolder buffersHolder) {
         int id = buffersHolder.getNextBaseInstanceId();
         int modelDataOffset = id * MODEL_DATA_SIZE;
         int materialOffset = id * MATERIAL_DATA_SIZE_IN_BYTES;
         int lastMaterialOffset = id * LAST_UPDATE_MATERIAL_DATA_SIZE_IN_BYTES;
 
         addLastUpdateModelData(x, y, sin, cos, width, height, modelDataOffset, buffersHolder);
-        addModelData(x, y, sin, cos, width, height, modelDataOffset, buffersHolder);
-        addMaterialData(r, g, b, a, textureHandle, maskTextureHandle, materialType, zoomFactor, materialOffset, buffersHolder);
+        addModelData(x, y, z, sin, cos, width, height, zoomFactor, modelDataOffset, buffersHolder);
+        addMaterialData(r, g, b, a, textureHandle, maskTextureHandle, materialType, materialOffset, buffersHolder);
         addLastUpdateMaterialData(r, g, b, a, lastMaterialOffset, buffersHolder);
         buffersHolder.markAllBuffersDirty();
 
@@ -470,14 +471,16 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
     }
 
     @Override
-    public void addModelData(float x, float y, float sin, float cos, float width, float height, int offset,
+    public void addModelData(float x, float y, float z, float sin, float cos, float width, float height, float zoomFactor, int offset,
                              AbstractBuffersHolder buffersHolder) {
         buffersHolder.putModelData(offset, x);
         buffersHolder.putModelData(offset + Y_OFFSET, y);
+        buffersHolder.putModelData(offset + Z_OFFSET, z);
         buffersHolder.putModelData(offset + SIN_OFFSET, sin);
         buffersHolder.putModelData(offset + COS_OFFSET, cos);
         buffersHolder.putModelData(offset + WIDTH_OFFSET, width);
         buffersHolder.putModelData(offset + HEIGHT_OFFSET, height);
+        buffersHolder.putModelData(offset + ZOOM_FACTOR_OFFSET, zoomFactor);
     }
 
     public void addLastUpdateModelData(float x, float y, float sin, float cos, float width, float height, int offset,
@@ -490,20 +493,10 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
         buffersHolder.putLastUpdateModelData(offset + HEIGHT_OFFSET, height);
     }
 
-    private void addMaterialData(float r, float g, float b, float a, long textureHandle, long maskTextureHandle, MaterialType materialType,
-                                 int offset, float zoomFactor, AbstractBuffersHolder buffersHolder) {
-        addMaterialData(r, g, b, a, textureHandle, maskTextureHandle, materialType, zoomFactor, offset, buffersHolder);
-    }
-
     @Override
     public void addMaterialData(float r, float g, float b, float a, long textureHandle, MaterialType materialType, int offset,
                                 AbstractBuffersHolder buffersHolder) {
         addMaterialData(r, g, b, a, textureHandle, 0, materialType, offset, buffersHolder);
-    }
-
-    private void addMaterialData(float r, float g, float b, float a, long textureHandle, long maskTextureHandle, MaterialType materialType,
-                                 float zoomFactor, int offset, AbstractBuffersHolder buffersHolder) {
-        addMaterialData(r, g, b, a, textureHandle, maskTextureHandle, materialType, 0.0f, 0.0f, zoomFactor, offset, buffersHolder);
     }
 
     private void addMaterialData(float r, float g, float b, float a, long textureHandle, long maskTextureHandle, MaterialType materialType,
@@ -513,13 +506,6 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
 
     public void addMaterialData(float r, float g, float b, float a, long textureHandle, long maskTextureHandle, MaterialType materialType,
                                 float fireAmount, float fireUVAnimation, int offset, AbstractBuffersHolder buffersHolder) {
-        addMaterialData(r, g, b, a, textureHandle, maskTextureHandle, materialType, fireAmount, fireUVAnimation, 1.0f, offset,
-                buffersHolder);
-    }
-
-    public void addMaterialData(float r, float g, float b, float a, long textureHandle, long maskTextureHandle, MaterialType materialType,
-                                float fireAmount, float fireUVAnimation, float zoomFactor, int offset,
-                                AbstractBuffersHolder buffersHolder) {
         buffersHolder.putMaterialData(offset, r);
         buffersHolder.putMaterialData(offset + COLOR_G_OFFSET, g);
         buffersHolder.putMaterialData(offset + COLOR_B_OFFSET, b);
@@ -530,7 +516,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
         buffersHolder.putMaterialData(offset + MATERIAL_TYPE_OFFSET, materialType.ordinal());
         buffersHolder.putMaterialData(offset + FIRE_AMOUNT_OFFSET, fireAmount);
         buffersHolder.putMaterialData(offset + FIRE_UV_ANIMATION_OFFSET, fireUVAnimation);
-        buffersHolder.putMaterialData(offset + ZOOM_FACTOR_OFFSET, zoomFactor);
+        buffersHolder.putMaterialData(offset + MATERIAL_PADDING_0_OFFSET, 0);
     }
 
     public void addLastUpdateMaterialData(float r, float g, float b, float a, int offset,
@@ -581,6 +567,12 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
 
     public void setY(int id, BuffersHolder buffersHolder, float y) {
         buffersHolder.putModelData(id * MODEL_DATA_SIZE + Y_OFFSET, y);
+        buffersHolder.setModelBufferDirty(true);
+    }
+
+    @Override
+    public void setZ(int id, AbstractBuffersHolder buffersHolder, float z) {
+        buffersHolder.putModelData(id * MODEL_DATA_SIZE + Z_OFFSET, z);
         buffersHolder.setModelBufferDirty(true);
     }
 

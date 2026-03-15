@@ -4,10 +4,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
-import net.bfsr.engine.network.packet.common.world.PacketWorldSnapshot;
 import net.bfsr.engine.world.entity.EntityDataHistoryManager;
 import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.engine.world.entity.TransformData;
+import net.bfsr.engine.world.entity.VelocityData;
 import org.jbox2d.common.Vector2;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -30,7 +30,7 @@ public class CorrectionHandler {
 
     public void update(double time, int frame) {
         updateTransform(frame);
-        updateData(frame);
+        updateVelocityData(frame);
     }
 
     public void updateTransform(int frame) {
@@ -52,17 +52,17 @@ public class CorrectionHandler {
         rigidBody.setTransform(transform.x, transform.y, transform.z, transform.w);
     }
 
-    public void updateData(int frame) {
-        PacketWorldSnapshot.EntityData entityData = dataHistoryManager.getData(rigidBody.getId(), frame);
-        if (entityData == null) {
+    public void updateVelocityData(int frame) {
+        VelocityData velocityData = dataHistoryManager.getVelocityData(rigidBody.getId(), frame);
+        if (velocityData == null) {
             return;
         }
 
-        Vector2f serverVelocity = entityData.getVelocity();
+        Vector2f serverVelocity = velocityData.getVelocity();
         Vector2 linearVelocity = rigidBody.getLinearVelocity();
         correction(serverVelocity, linearVelocity.x, linearVelocity.y,
                 (dx, dy) -> rigidBody.setVelocity(linearVelocity.x + dx, linearVelocity.y + dy));
-        correction(entityData.getAngularVelocity(), rigidBody.getAngularVelocity(), rigidBody::setAngularVelocity);
+        correction(velocityData.getAngularVelocity(), rigidBody.getAngularVelocity(), rigidBody::setAngularVelocity);
     }
 
     private void correction(Vector2f serverVector, float localX, float localY, BiConsumer<Float, Float> correctionConsumer) {

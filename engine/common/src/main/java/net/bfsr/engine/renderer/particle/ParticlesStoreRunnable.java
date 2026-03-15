@@ -6,26 +6,17 @@ public class ParticlesStoreRunnable implements Runnable {
     private int alphaParticlesStartIndex, alphaParticlesEndIndex;
     private int additiveParticlesStartIndex, additiveParticlesEndIndex;
     private final Runnable[] runnables = new Runnable[2];
-    private final List<ParticleRender>[] particlesByRenderLayer;
-    private final RenderLayer renderLayer;
+    private final List<ParticleRender>[] particlesByType;
 
-    ParticlesStoreRunnable(List<ParticleRender>[] particlesByRenderLayer, RenderLayer renderLayer) {
-        this.particlesByRenderLayer = particlesByRenderLayer;
-        this.renderLayer = renderLayer;
+    ParticlesStoreRunnable(List<ParticleRender>[] particlesByType) {
+        this.particlesByType = particlesByType;
     }
 
     public void init() {
-        if (renderLayer == RenderLayer.DEFAULT_ALPHA_BLENDED) {
-            runnables[0] = () -> storeParticles(particlesByRenderLayer[RenderLayer.DEFAULT_ALPHA_BLENDED.ordinal()],
-                    alphaParticlesStartIndex, alphaParticlesEndIndex);
-            runnables[1] = () -> storeParticles(particlesByRenderLayer[RenderLayer.DEFAULT_ADDITIVE.ordinal()],
-                    additiveParticlesStartIndex, additiveParticlesEndIndex);
-        } else {
-            runnables[0] = () -> storeParticles(particlesByRenderLayer[RenderLayer.BACKGROUND_ALPHA_BLENDED.ordinal()],
-                    alphaParticlesStartIndex, alphaParticlesEndIndex);
-            runnables[1] = () -> storeParticles(particlesByRenderLayer[RenderLayer.BACKGROUND_ADDITIVE.ordinal()],
-                    additiveParticlesStartIndex, additiveParticlesEndIndex);
-        }
+        runnables[0] = () -> storeParticles(particlesByType[ParticleType.ALPHA_BLENDED.ordinal()],
+                alphaParticlesStartIndex, alphaParticlesEndIndex);
+        runnables[1] = () -> storeParticles(particlesByType[ParticleType.ADDITIVE.ordinal()],
+                additiveParticlesStartIndex, additiveParticlesEndIndex);
     }
 
     public void update(int alphaParticlesStartIndex, int alphaParticlesEndIndex, int additiveParticlesStartIndex,

@@ -47,7 +47,7 @@ public class Modules {
 
     public void update() {
         for (int i = 0; i < moduleList.size(); i++) {
-            moduleList.get(i).update();
+            moduleList.get(i).update(ship);
         }
 
         hull.repair(crew.getCrewRegen());

@@ -21,8 +21,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.ArrayList;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings("unused")
@@ -44,7 +42,8 @@ public class PlayerControllerTest {
     }
 
     @BeforeAll
-    static void setup(@Autowired RSocketRequester.Builder builder, @LocalRSocketServerPort Integer port, @Autowired RSocketStrategies strategies) {
+    static void setup(@Autowired RSocketRequester.Builder builder, @LocalRSocketServerPort Integer port,
+                      @Autowired RSocketStrategies strategies) {
         requester = builder.tcp("localhost", port);
     }
 
@@ -57,7 +56,8 @@ public class PlayerControllerTest {
     void test() {
         String username = "Local Player";
 
-        Mono<PlayerModel> voidMono = requester.route("save-player").data(new PlayerModel(null, username, Faction.HUMAN, new ArrayList<>())).retrieveMono(PlayerModel.class);
+        Mono<PlayerModel> voidMono = requester.route("save-player").data(new PlayerModel(null, username, Faction.HUMAN, null))
+                .retrieveMono(PlayerModel.class);
 
         StepVerifier
                 .create(voidMono)
@@ -65,7 +65,7 @@ public class PlayerControllerTest {
                     assertThat(playerModel.id()).isNotNull();
                     assertThat(playerModel.name()).isEqualTo(username);
                     assertThat(playerModel.faction()).isEqualTo(Faction.HUMAN);
-                    assertThat(playerModel.ships().size()).isEqualTo(0);
+                    assertThat(playerModel.ship()).isNull();
                 })
                 .verifyComplete();
 
@@ -77,7 +77,7 @@ public class PlayerControllerTest {
                     assertThat(playerModel.id()).isNotNull();
                     assertThat(playerModel.name()).isEqualTo(username);
                     assertThat(playerModel.faction()).isEqualTo(Faction.HUMAN);
-                    assertThat(playerModel.ships().size()).isEqualTo(0);
+                    assertThat(playerModel.ship()).isNull();
                 })
                 .verifyComplete();
     }

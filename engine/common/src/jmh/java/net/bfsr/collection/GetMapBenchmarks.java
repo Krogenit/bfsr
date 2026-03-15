@@ -39,7 +39,6 @@ public class GetMapBenchmarks {
     Int2ObjectMap<Entity> fastUtilMap;
     io.netty.util.collection.IntObjectMap<Entity> nettyMap;
     IntObjectMap<Entity> hppcMap;
-    IntObjectMap<Entity> hppcWormMap;
     MutableIntObjectMap<Entity> eclipseMap;
     Int2ObjectHashMap<Entity> agronaMap;
 
@@ -67,7 +66,6 @@ public class GetMapBenchmarks {
             fastUtilMap.put(addedKeys[i], addedValues[i]);
             nettyMap.put(addedKeys[i], addedValues[i]);
             hppcMap.put(addedKeys[i], addedValues[i]);
-            hppcWormMap.put(addedKeys[i], addedValues[i]);
             eclipseMap.put(addedKeys[i], addedValues[i]);
             agronaMap.put(addedKeys[i], addedValues[i]);
         }
@@ -105,13 +103,6 @@ public class GetMapBenchmarks {
     public void getHPPCMap(Blackhole blackhole) {
         for (int i = 0; i < setSize; i++) {
             blackhole.consume(hppcMap.get(addedKeys[i]));
-        }
-    }
-
-    @Benchmark
-    public void getHPPCWormMap(Blackhole blackhole) {
-        for (int i = 0; i < setSize; i++) {
-            blackhole.consume(hppcWormMap.get(addedKeys[i]));
         }
     }
 

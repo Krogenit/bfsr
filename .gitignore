@@ -7,6 +7,10 @@
 **/out/
 **/generated/
 
+# Mode.js
+/node_modules/
+package-lock.json
+
 # Logs
 *.log
 *.log.gz

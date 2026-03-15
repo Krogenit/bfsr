@@ -9,11 +9,14 @@ import net.bfsr.engine.pack.RectanglesPackingAlgorithm;
 import net.bfsr.engine.pack.maxrects.MaxRectanglesBinPack;
 import net.bfsr.engine.pack.maxrects.Rectangle;
 import net.bfsr.engine.renderer.AbstractRenderer;
+import net.bfsr.engine.renderer.constant.InternalTextureFormat;
+import net.bfsr.engine.renderer.constant.TextureFilter;
+import net.bfsr.engine.renderer.constant.TextureFormat;
+import net.bfsr.engine.renderer.constant.TextureWrap;
 import net.bfsr.engine.renderer.font.FontBitMap;
 import net.bfsr.engine.renderer.font.FontManager;
 import net.bfsr.engine.renderer.font.FontPackResult;
 import net.bfsr.engine.renderer.font.glyph.Glyph;
-import net.bfsr.engine.renderer.opengl.GL;
 import net.bfsr.engine.util.IOUtils;
 import org.lwjgl.util.freetype.FT_Bitmap;
 import org.lwjgl.util.freetype.FT_Face;
@@ -36,7 +39,8 @@ public class TrueTypeBitMap extends FontBitMap {
         super(width, height);
         this.rectanglesPackingAlgorithm = new MaxRectanglesBinPack(width, height, false);
         this.bitmapTexture = Engine.getAssetsManager().createTexture(width, height);
-        renderer.uploadTexture(bitmapTexture, GL.GL_R8, GL.GL_RED, GL.GL_CLAMP_TO_BORDER, GL.GL_NEAREST, bitmap);
+        renderer.uploadTexture(bitmapTexture, InternalTextureFormat.R8, TextureFormat.RED, TextureWrap.CLAMP_TO_BORDER,
+                TextureFilter.NEAREST, bitmap);
     }
 
     public FontPackResult packChars(String fontName, CharList charList, FT_Face ftFace, int fontSize, int index) {
@@ -96,6 +100,7 @@ public class TrueTypeBitMap extends FontBitMap {
                 glyphsByCharCodeMap.put(charCode, new Glyph(x1, y1, x2, y2, u1, v1, u2, v2, bitmapTexture.getTextureHandle(),
                         (int) (glyph.advance().x() >> 6), charCode, false));
                 packedCharsList.add(charCode);
+                packedCharMap.put(charCode, getNextCharIndex());
 
                 ByteBuffer buffer = glyphBitMap.buffer(glyphBitMap.width() * glyphBitMap.rows());
 
@@ -108,7 +113,7 @@ public class TrueTypeBitMap extends FontBitMap {
             }
         }
 
-        renderer.subImage2D(bitmapTexture.getId(), 0, 0, width, height, GL.GL_RED, bitmap);
+        renderer.subImage2D(bitmapTexture.getId(), 0, 0, width, height, TextureFormat.RED, bitmap);
 
         if (FontManager.DEBUG) {
             IOUtils.writePNGGrayScale(bitmap, width, height, "truetype_" + fontName + "_atlas_" + fontSize + "_" + index);

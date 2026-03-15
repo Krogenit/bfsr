@@ -8,7 +8,6 @@ import net.bfsr.engine.world.entity.RigidBody;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.DamageableModule;
 import net.bfsr.entity.ship.module.ModuleType;
-import net.bfsr.physics.collision.filter.Filters;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.common.Vector2;
 import org.jbox2d.dynamics.Fixture;
@@ -38,7 +37,8 @@ public class Engine extends DamageableModule {
 
     @Override
     protected void createFixture(RigidBody rigidBody) {
-        rigidBody.addFixture(fixture = new Fixture(polygon, Filters.SHIP_FILTER, this, PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
+        rigidBody.addFixture(fixture = new Fixture(polygon, rigidBody.getWorld().getCollisionProfile().getShipFilter(), this,
+                PhysicsUtils.DEFAULT_FIXTURE_DENSITY));
     }
 
     @Override

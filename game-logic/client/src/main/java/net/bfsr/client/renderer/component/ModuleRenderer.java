@@ -1,5 +1,6 @@
 package net.bfsr.client.renderer.component;
 
+import lombok.Getter;
 import net.bfsr.engine.math.Direction;
 import net.bfsr.engine.math.LUT;
 import net.bfsr.engine.math.MathUtils;
@@ -14,14 +15,15 @@ import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.shapes.Polygon;
 import org.jbox2d.common.Vector2;
 
+@Getter
 public class ModuleRenderer extends Render {
     private float x, y;
     private float sin, cos;
     private final Runnable updateRunnable;
     private final float sizeX, sizeY;
 
-    public ModuleRenderer(Ship ship, DamageableModule module, AbstractTexture texture) {
-        super(texture, module);
+    public ModuleRenderer(Ship ship, float z, DamageableModule module, AbstractTexture texture) {
+        super(module, z, texture);
 
         Polygon polygon = (Polygon) module.getFixture().getShape();
         Vector2 center = polygon.centroid;
@@ -58,14 +60,14 @@ public class ModuleRenderer extends Render {
         }
     }
 
-    public ModuleRenderer(Ship ship, Engine engine, AbstractTexture texture, Direction direction) {
-        super(texture, engine);
+    public ModuleRenderer(Ship ship, float z, Engine engine, AbstractTexture texture, Direction direction) {
+        super(engine, z, texture);
 
         Polygon shape = (Polygon) engine.getFixture().getShape();
         Vector2 center = shape.centroid;
         AABB aabb1 = new AABB();
         shape.computeAABB(aabb1, 0, 0, 0, 1, 0);
-        float offset = -0.1f;
+        float offset = -0.02f;
         float dx = aabb1.getWidth() + offset;
         float dy = aabb1.getHeight() + offset;
 
@@ -115,8 +117,8 @@ public class ModuleRenderer extends Render {
     @Override
     public void init() {
         updateRunnable.run();
-        id = spriteRenderer.add(x, y, sin, cos, sizeX, sizeY, color.x, color.y, color.z, color.w,
-                texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
+        id = spriteRenderer.add(x, y, z, sin, cos, sizeX, sizeY, color.x, color.y, color.z,
+                color.w, texture.getTextureHandle(), BufferType.ENTITIES_ALPHA);
     }
 
     @Override

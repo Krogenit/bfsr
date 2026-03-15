@@ -3,6 +3,11 @@ package net.bfsr.engine.renderer;
 import lombok.Getter;
 import lombok.Setter;
 import net.bfsr.engine.renderer.camera.AbstractCamera;
+import net.bfsr.engine.renderer.constant.BlendFactor;
+import net.bfsr.engine.renderer.constant.InternalTextureFormat;
+import net.bfsr.engine.renderer.constant.TextureFilter;
+import net.bfsr.engine.renderer.constant.TextureFormat;
+import net.bfsr.engine.renderer.constant.TextureWrap;
 import net.bfsr.engine.renderer.culling.AbstractGPUFrustumCullingSystem;
 import net.bfsr.engine.renderer.debug.AbstractDebugRenderer;
 import net.bfsr.engine.renderer.font.string.StringGeometryBuilder;
@@ -63,7 +68,7 @@ public abstract class AbstractRenderer {
         this.cullingSystem = cullingSystem;
         this.particleRenderer = particleRenderer;
 
-        setupOpenGL();
+        setup();
 
         camera.init(screenWidth, screenHeight, this);
         spriteRenderer.init(this);
@@ -76,7 +81,7 @@ public abstract class AbstractRenderer {
         textureGenerator.init();
     }
 
-    public abstract void setupOpenGL();
+    public abstract void setup();
 
     public abstract void update();
 
@@ -91,22 +96,26 @@ public abstract class AbstractRenderer {
     public abstract void memFree(IntBuffer intBuffer);
     public abstract long getAddress(Buffer buffer);
 
-    public abstract void glClear();
-    public abstract String glGetString(int name);
-    public abstract void glEnable(int target);
-    public abstract void glDisable(int target);
-    public abstract void glScissor(int x, int y, int width, int height);
-    public abstract void glBlendFunc(int sFactor, int dFactor);
+    public abstract void drawClear();
+    public abstract String getDriverVersion();
+    public abstract String getGPUInfo();
+    public abstract void enableScissorTest();
+    public abstract void disableScissorTest();
+    public abstract void scissor(int x, int y, int width, int height);
+    public abstract void blendFunc(BlendFactor sFactor, BlendFactor dFactor);
     public abstract void lineWidth(float value);
-    public abstract void subImage2D(int id, int x, int y, int width, int height, int format, ByteBuffer byteBuffer);
-    public abstract void subImage2D(int id, int x, int y, int width, int height, int format, IntBuffer buffer);
-    public abstract void uploadTexture(AbstractTexture texture, int internalFormat, int format, int wrap, int filter,
-                                       ByteBuffer byteBuffer);
-    public abstract void uploadTexture(AbstractTexture texture, int internalFormat, int format, int wrap, int filter,
-                                       IntBuffer buffer);
-    public abstract void uploadFilledTexture(AbstractTexture texture, int internalFormat, int format, ByteBuffer value);
-    public abstract void fullTexture(AbstractTexture texture, int internalFormat, int format, ByteBuffer value);
+    public abstract void subImage2D(int id, int x, int y, int width, int height, TextureFormat format, ByteBuffer byteBuffer);
+    public abstract void subImage2D(int id, int x, int y, int width, int height, TextureFormat format, IntBuffer buffer);
+    public abstract void uploadTexture(AbstractTexture texture, InternalTextureFormat internalFormat, TextureFormat format,
+                                       TextureWrap wrap, TextureFilter filter, ByteBuffer byteBuffer);
+    public abstract void uploadTexture(AbstractTexture texture, InternalTextureFormat internalFormat, TextureFormat format,
+                                       TextureWrap wrap, TextureFilter filter, IntBuffer buffer);
+    public abstract void uploadFilledTexture(AbstractTexture texture, InternalTextureFormat internalFormat, TextureFormat format,
+                                             ByteBuffer value);
+    public abstract void fullTexture(AbstractTexture texture, InternalTextureFormat internalFormat, TextureFormat format, ByteBuffer value);
     public abstract void setDefaultClearColor();
+    public abstract void depthMask(boolean value);
+    public abstract int getDepthBits();
 
     public void resetDrawCalls() {
         lastFrameDrawCalls = drawCalls;

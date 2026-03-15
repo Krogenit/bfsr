@@ -1,9 +1,14 @@
 package net.bfsr.engine.gui.renderer;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import lombok.Setter;
 import net.bfsr.engine.gui.component.GuiObject;
 
 public class RectangleOutlinedRenderer extends RectangleRenderer {
-    private int bodyId;
+    private final IntList outlineIds = new IntArrayList(4);
+    @Setter
+    private int outlineSize = 1;
 
     public RectangleOutlinedRenderer(GuiObject guiObject) {
         super(guiObject);
@@ -12,45 +17,89 @@ public class RectangleOutlinedRenderer extends RectangleRenderer {
     @Override
     protected void create() {
         super.create();
-        guiRenderer.setColor(id, outlineColor);
-        idList.add(bodyId = guiRenderer.add(guiObject.getSceneX() + 1, guiObject.getSceneY() + 1, guiObject.getWidth() - 2,
-                guiObject.getHeight() - 2, color));
+
+        outlineIds.add(guiRenderer.add(guiObject.getSceneX(), guiObject.getSceneY(), outlineSize, guiObject.getHeight(), outlineColor));
+        outlineIds.add(guiRenderer.add(guiObject.getSceneX() + outlineSize, guiObject.getSceneY(), guiObject.getWidth() - outlineSize,
+                outlineSize, outlineColor));
+        outlineIds.add(guiRenderer.add(guiObject.getSceneX() + guiObject.getWidth() - outlineSize,
+                guiObject.getSceneY() + outlineSize, outlineSize, guiObject.getHeight() - (outlineSize << 1), outlineColor));
+        outlineIds.add(guiRenderer.add(guiObject.getSceneX() + outlineSize, guiObject.getSceneY() + guiObject.getHeight() - outlineSize,
+                guiObject.getWidth() - outlineSize, outlineSize, outlineColor));
+
+        for (int i = 0; i < outlineIds.size(); i++) {
+            idList.add(outlineIds.getInt(i));
+        }
     }
 
     @Override
     protected void setLastUpdateValues() {
         super.setLastUpdateValues();
-        guiRenderer.setLastPosition(bodyId, guiObject.getSceneX() + 1, guiObject.getSceneY() + 1);
-        guiRenderer.setLastSize(bodyId, guiObject.getWidth() - 2, guiObject.getHeight() - 2);
+
+        int sceneX = guiObject.getSceneX();
+        int sceneY = guiObject.getSceneY();
+        guiRenderer.setLastPosition(outlineIds.getInt(0), sceneX, sceneY);
+        guiRenderer.setLastPosition(outlineIds.getInt(1), sceneX + outlineSize, sceneY);
+        guiRenderer.setLastPosition(outlineIds.getInt(2), sceneX + guiObject.getWidth() - outlineSize, sceneY + outlineSize);
+        guiRenderer.setLastPosition(outlineIds.getInt(3), sceneX + outlineSize, sceneY + guiObject.getHeight() - outlineSize);
+
+        guiRenderer.setLastSize(outlineIds.getInt(0), outlineSize, guiObject.getHeight());
+        guiRenderer.setLastSize(outlineIds.getInt(1), guiObject.getWidth() - outlineSize, outlineSize);
+        guiRenderer.setLastSize(outlineIds.getInt(2), outlineSize, guiObject.getHeight() - (outlineSize << 1));
+        guiRenderer.setLastSize(outlineIds.getInt(3), guiObject.getWidth() - outlineSize, outlineSize);
+
+        guiRenderer.setLastColor(outlineIds.getInt(0), activeOutlineColor);
+        guiRenderer.setLastColor(outlineIds.getInt(1), activeOutlineColor);
+        guiRenderer.setLastColor(outlineIds.getInt(2), activeOutlineColor);
+        guiRenderer.setLastColor(outlineIds.getInt(3), activeOutlineColor);
     }
 
     @Override
     protected void renderBody() {
         super.renderBody();
-        guiRenderer.addDrawCommand(bodyId);
+        for (int i = 0; i < outlineIds.size(); i++) {
+            guiRenderer.addDrawCommand(outlineIds.getInt(i));
+        }
     }
 
     @Override
     public void onMouseHover() {
-        guiRenderer.setColor(id, outlineHoverColor);
-        guiRenderer.setColor(bodyId, hoverColor);
+        super.onMouseHover();
+        for (int i = 0; i < outlineIds.size(); i++) {
+            guiRenderer.setColor(outlineIds.getInt(i), activeOutlineColor);
+        }
     }
 
     @Override
     public void onMouseStopHover() {
-        guiRenderer.setColor(id, outlineColor);
-        guiRenderer.setColor(bodyId, color);
+        super.onMouseStopHover();
+        for (int i = 0; i < outlineIds.size(); i++) {
+            guiRenderer.setColor(outlineIds.getInt(i), activeOutlineColor);
+        }
     }
 
     @Override
     public void updatePosition() {
         super.updatePosition();
-        guiRenderer.setPosition(bodyId, guiObject.getSceneX() + 1, guiObject.getSceneY() + 1);
+        int sceneX = guiObject.getSceneX();
+        int sceneY = guiObject.getSceneY();
+        guiRenderer.setPosition(outlineIds.getInt(0), sceneX, sceneY);
+        guiRenderer.setPosition(outlineIds.getInt(1), sceneX + outlineSize, sceneY);
+        guiRenderer.setPosition(outlineIds.getInt(2), sceneX + guiObject.getWidth() - outlineSize, sceneY + outlineSize);
+        guiRenderer.setPosition(outlineIds.getInt(3), sceneX + outlineSize, sceneY + guiObject.getHeight() - outlineSize);
     }
 
     @Override
     public void updateSize() {
         super.updateSize();
-        guiRenderer.setSize(bodyId, guiObject.getWidth() - 2, guiObject.getHeight() - 2);
+        guiRenderer.setSize(outlineIds.getInt(0), outlineSize, guiObject.getHeight());
+        guiRenderer.setSize(outlineIds.getInt(1), guiObject.getWidth() - outlineSize, outlineSize);
+        guiRenderer.setSize(outlineIds.getInt(2), outlineSize, guiObject.getHeight() - (outlineSize << 1));
+        guiRenderer.setSize(outlineIds.getInt(3), guiObject.getWidth() - outlineSize, outlineSize);
+    }
+
+    @Override
+    protected void removeRenderIds() {
+        super.removeRenderIds();
+        outlineIds.clear();
     }
 }

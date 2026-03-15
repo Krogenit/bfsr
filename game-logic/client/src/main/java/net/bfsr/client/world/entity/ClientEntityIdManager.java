@@ -10,7 +10,7 @@ import net.bfsr.engine.world.entity.EntityIdManager;
 public class ClientEntityIdManager extends EntityIdManager {
     private final Client client;
 
-    private final IntegerSync idSync = new IntegerSync(NetworkHandler.GLOBAL_HISTORY_LENGTH_MILLIS);
+    private final IntegerSync idSync = new IntegerSync(NetworkHandler.GLOBAL_HISTORY_LENGTH_FRAMES);
 
     public ClientEntityIdManager(Client client) {
         super(-1);

@@ -33,11 +33,11 @@ public abstract class Module extends GameObject {
         modules.add(this);
     }
 
-    public void postPhysicsUpdate(RigidBody rigidBody) {}
+    public void update(RigidBody rigidBody) {}
 
     @Override
-    public void postPhysicsUpdate() {
-        throw new RuntimeException("Use postPhysicsUpdate with RigidBody param instead");
+    public final void update() {
+        throw new RuntimeException("Use update with RigidBody param instead");
     }
 
     public int getDataId() {

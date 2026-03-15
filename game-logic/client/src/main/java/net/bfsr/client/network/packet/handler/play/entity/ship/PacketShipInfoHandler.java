@@ -56,6 +56,10 @@ public class PacketShipInfoHandler extends PacketHandler<PacketShipInfo, Network
             if (shipShield != null) {
                 shipShield.setShieldHp(packet.getShield());
             }
+
+            if (ship.isWarpDrive() != packet.isWarpDrive()) {
+                ship.setWarpDrive(packet.isWarpDrive());
+            }
         }
     }
 }

@@ -47,7 +47,7 @@ public final class ConfigLoader {
                             config.setName(fileNameWithoutExtension);
                         }
 
-                        fileConsumer.accept(path, fileNameWithoutExtension, loadedConfig);
+                        fileConsumer.accept(folder.toString(), fileNameWithoutExtension, loadedConfig);
                     }
                     return FileVisitResult.CONTINUE;
                 }

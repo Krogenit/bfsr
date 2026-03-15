@@ -22,7 +22,6 @@ import net.bfsr.entity.ship.ShipFactory;
 import net.bfsr.entity.ship.module.weapon.WeaponSlot;
 import net.bfsr.entity.ship.module.weapon.WeaponSlotBeam;
 import net.bfsr.entity.wreck.Wreck;
-import net.bfsr.entity.wreck.WreckType;
 
 import java.util.List;
 
@@ -103,8 +102,7 @@ public class BenchmarkGameLogic extends Client {
         ObjectPool<Wreck> wreckPool = getObjectPool(Wreck.class);
         for (int i = 0; i < wreckCount; i++) {
             Wreck wreck = wreckPool.get();
-            wreck.init(world, world.getNextId(), 0, true, true, true, x, y, 0, 0, 0, 1, 0, 0.5f, 0.5f, 1200, WreckType.DEFAULT,
-                    wreckRegistry.getWreck(WreckType.DEFAULT, 0));
+            wreck.init(world, world.getNextId(), x, y, 0, 1, 0.5f, 0.5f, 0, 0, 0, 100, -1, true, wreckRegistry.get(0));
             world.add(wreck);
             x += offset;
             if (x >= rectangleSpawnHalfWidth) {

@@ -1,0 +1,30 @@
+{
+  "name": "small2",
+  "path": "",
+  "size": {
+    "x": 1.0,
+    "y": 1.0
+  },
+  "sparkleTexture": "",
+  "texture": "texture/entity/wreck/small2.png",
+  "treeIndex": 2,
+  "type": "SMALL",
+  "vertices": [
+    {
+      "x": -0.11404999,
+      "y": 0.41845
+    },
+    {
+      "x": -0.42995,
+      "y": 0.04675
+    },
+    {
+      "x": 0.091299996,
+      "y": -0.42995
+    },
+    {
+      "x": 0.4588,
+      "y": -0.24949999
+    }
+  ]
+}

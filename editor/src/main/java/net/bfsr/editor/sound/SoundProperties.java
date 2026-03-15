@@ -17,10 +17,16 @@ public class SoundProperties extends PropertiesHolderAdapter {
     private String path;
     @Property
     private float volume;
+    @Property
+    private float minPitch;
+    @Property
+    private float maxPitch;
 
     @Override
     public void setDefaultValues() {
         path = "sound/gui/buttonClick.ogg";
         volume = 1.0f;
+        minPitch = 1.0f;
+        maxPitch = 1.0f;
     }
 }

@@ -1,0 +1,309 @@
+name: Release Please
+
+on:
+  push:
+    branches: [ "master" ]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          release-type: simple
+          target-branch: master
+
+  build-platform:
+    name: Build and Test
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+          - os: macos-latest
+            platform: mac
+            arch: x64
+          - os: windows-latest
+            platform: windows
+            arch: x64
+    env:
+      VERSION: ${{ needs.release-please.outputs.version }}
+      PLATFORM: ${{ matrix.platform }}
+      ARCH: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v5
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Build & assemble client layout
+        # use appropriate gradlew on each runner
+        shell: bash
+        run: |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            echo "Running on Windows"
+            ./gradlew.bat --no-daemon clean build runtime assembleClientLayout -PtargetPlatform=${{ matrix.platform }} -PtargetArch=${{ matrix.arch }} -PreleaseVersion=${{ env.VERSION }}
+          else
+            ./gradlew --no-daemon clean build runtime assembleClientLayout -PtargetPlatform=${{ matrix.platform }} -PtargetArch=${{ matrix.arch }} -PreleaseVersion=${{ env.VERSION }}
+          fi
+
+      - name: Prepare artifacts directory
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          # copy built output (module path)
+          cp -R run/client/build/output ./artifacts
+
+      - name: Create artifact archive (unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          cd run/client/build/output
+          zip -r "${{ github.workspace }}/artifact-${{ matrix.platform }}.zip" .
+
+      - name: Create artifact archive (windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $src = "run\client\build\output"
+          $dst = "artifact-${{ matrix.platform }}.zip"
+          if (Test-Path $dst) { Remove-Item -Force $dst }
+          Compress-Archive -Path "$src\*" -DestinationPath $dst
+
+      - name: Upload platform artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ matrix.platform }}
+          path: artifact-${{ matrix.platform }}.zip
+
+  # Отдельный job — запускается строго после того как ВСЕ платформы готовы
+  build-manifest:
+    name: Build & Sign manifest
+    needs: [ release-please, build-platform ]
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.release-please.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install manifest tools
+        run: npm ci
+
+      # Скачиваем все три платформы чтобы manifest был полным
+      - name: Download linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: artifacts-linux
+          path: ./downloads/linux
+
+      - name: Download mac artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: artifacts-mac
+          path: ./downloads/mac
+
+      - name: Download windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: artifacts-windows
+          path: ./downloads/windows
+
+      - name: Unpack artifacts
+        run: |
+          for platform in linux mac windows; do
+            mkdir -p unpacked/$platform
+            unzip -q downloads/$platform/artifact-$platform.zip -d unpacked/$platform
+          done
+
+      # Строим манифест для каждой платформы отдельно
+      - name: Build manifests per platform
+        env:
+          MANIFEST_PRIVATE_KEY: ${{ secrets.MANIFEST_PRIVATE_KEY }}
+        run: |
+          for platform in linux mac windows; do
+            echo "Building manifest for $platform..."
+            mkdir -p out/manifest/$platform
+            node scripts/build-manifest.js \
+              --src=unpacked/$platform \
+              --out=out/manifest/$platform \
+              --version=${{ env.VERSION }} \
+              --platform=$platform
+            node scripts/sign-manifest.js \
+              out/manifest/$platform/manifest.json \
+              out/manifest/$platform/manifest.signed.json
+          done
+          ls -laR out/manifest
+
+      - name: Upload manifests artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: manifests
+          path: out/manifest/
+          # Структура внутри: linux/manifest.signed.json, mac/..., windows/...
+
+  publish:
+    name: Publish artifacts to update server
+    runs-on: ubuntu-latest
+    needs: [ release-please, build-platform ]
+    if: needs.release-please.outputs.release_created == 'true'
+    steps:
+      - name: Download platform artifacts (linux)
+        uses: actions/download-artifact@v4
+        with:
+          name: artifacts-linux
+          path: ./downloads/linux
+
+      - name: Download platform artifacts (mac)
+        uses: actions/download-artifact@v4
+        with:
+          name: artifacts-mac
+          path: ./downloads/mac
+
+      - name: Download platform artifacts (windows)
+        uses: actions/download-artifact@v4
+        with:
+          name: artifacts-windows
+          path: ./downloads/windows
+
+      - name: Download manifest (from linux build)
+        uses: actions/download-artifact@v4
+        with:
+          name: manifest
+          path: ./downloads/manifest
+
+      - name: Prepare rsync payload
+        run: |
+          mkdir -p payload/archive/${{ needs.release-please.outputs.version }}/linux
+          mkdir -p payload/archive/${{ needs.release-please.outputs.version }}/mac
+          mkdir -p payload/archive/${{ needs.release-please.outputs.version }}/windows
+          # copy downloaded outputs into payload dirs (adjust paths if necessary)
+          cp -r downloads/linux/* payload/archive/${{ needs.release-please.outputs.version }}/linux/
+          cp -r downloads/mac/* payload/archive/${{ needs.release-please.outputs.version }}/mac/
+          cp -r downloads/windows/* payload/archive/${{ needs.release-please.outputs.version }}/windows/
+          # copy signed manifest into each platform folder (so each has manifest)
+          for p in linux mac windows; do
+            mkdir -p payload/archive/${{ needs.release-please.outputs.version }}/${p}/manifest
+            cp downloads/manifest/manifest.signed.json payload/archive/${{ needs.release-please.outputs.version }}/${p}/manifest/manifest.signed.json
+          done
+          # also prepare latest/ per platform
+          mkdir -p payload/latest/linux
+          mkdir -p payload/latest/mac
+          mkdir -p payload/latest/windows
+          cp -r payload/archive/${{ needs.release-please.outputs.version }}/linux/* payload/latest/linux/
+          cp -r payload/archive/${{ needs.release-please.outputs.version }}/mac/* payload/latest/mac/
+          cp -r payload/archive/${{ needs.release-please.outputs.version }}/windows/* payload/latest/windows/
+          for p in linux mac windows; do
+            mkdir -p payload/latest/${p}/manifest
+            cp downloads/manifest/manifest.signed.json payload/latest/${p}/manifest/manifest.signed.json
+          done
+
+      - name: Upload to update server (archive)
+        uses: burnett01/rsync-deployments@v8
+        with:
+          switches: -avz
+          path: payload/archive/
+          remote_path: ${{ secrets.UPDATE_SERVER_PATH }}/archive/
+          remote_host: ${{ secrets.UPDATE_SERVER_HOST }}
+          remote_port: ${{ secrets.UPDATE_SERVER_PORT }}
+          remote_user: ${{ secrets.UPDATE_SERVER_USER }}
+          remote_key: ${{ secrets.UPDATE_SERVER_KEY }}
+
+      - name: Upload to update server (latest)
+        uses: burnett01/rsync-deployments@v8
+        with:
+          switches: -avz --delete
+          path: payload/latest/
+          remote_path: ${{ secrets.UPDATE_SERVER_PATH }}/latest/
+          remote_host: ${{ secrets.UPDATE_SERVER_HOST }}
+          remote_port: ${{ secrets.UPDATE_SERVER_PORT }}
+          remote_user: ${{ secrets.UPDATE_SERVER_USER }}
+          remote_key: ${{ secrets.UPDATE_SERVER_KEY }}
+  
+  sync-master-to-dev:
+    name: Sync master -> dev
+    needs: publish
+    if: needs.publish.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Create PR from master to dev
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const base = 'dev';
+            const head = 'master';
+
+            const compare = await github.rest.repos.compareCommitsWithBasehead({
+              owner,
+              repo,
+              basehead: `${base}...${head}`
+            });
+
+            if (compare.data.ahead_by === 0) {
+              core.info('No new commits to sync from master to dev.');
+              return;
+            }
+
+            const existing = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: 'open',
+              base,
+              head: `${owner}:${head}`
+            });
+
+            if (existing.data.length > 0) {
+              core.info(`Sync PR already exists: #${existing.data[0].number}`);
+              return;
+            }
+
+            const pr = await github.rest.pulls.create({
+              owner,
+              repo,
+              base,
+              head,
+              title: 'chore: sync master into dev after release',
+              body: [
+                'Automated sync PR created after successful release.',
+                '',
+                '- Source branch: `master`',
+                '- Target branch: `dev`'
+              ].join('\n')
+            });
+
+            core.info(`Created sync PR #${pr.data.number}`);

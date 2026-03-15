@@ -26,15 +26,20 @@
   "minVelocityX": 0.0,
   "minVelocityY": 0.0,
   "name": "small",
+  "particleType": "ADDITIVE",
   "path": "explosion",
   "r": 1.0,
-  "renderLayer": "DEFAULT_ADDITIVE",
-  "soundEffects": [
-    {
-      "path": "sound/explosion/explosion0.ogg",
-      "volume": 1.0
-    }
-  ],
+  "soundEffect": {
+    "sounds": [
+      {
+        "path": "sound/explosion/explosion_small.ogg",
+        "volume": 0.5,
+        "minPitch": 0.5,
+        "maxPitch": 1.2
+      }
+    ],
+    "randomFromList": false
+  },
   "sourceSizeXMultiplier": 1.0,
   "sourceSizeYMultiplier": 1.0,
   "sourceVelocityXMultiplier": 1.0,

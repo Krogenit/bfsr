@@ -76,7 +76,7 @@ public abstract class GuiEntityEditor<CONFIG_TYPE extends Config, PROPERTIES_TYP
                            Class<PROPERTIES_TYPE> propertiesClass) {
         super(inspectionPanelName, configRegistry, converter, configClass, propertiesClass);
 
-        client.getEntityRenderer().addRender(new Render(polygonObject) {
+        client.getEntityRenderer().addRender(new Render(polygonObject, 1.0f) {
             private final Vector4f color = new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
 
             @Override
@@ -210,9 +210,12 @@ public abstract class GuiEntityEditor<CONFIG_TYPE extends Config, PROPERTIES_TYP
                 if (debugDamageSystem) {
                     add(debugDamageSystemModeLabel.atTop(0, -elementHeight << 1));
                     clipPolygon = createClipPolygon(0, 0);
+                    lastDebugBoxesMode = ClientSettings.SHOW_DEBUG_BOXES.getBoolean();
+                    ClientSettings.SHOW_DEBUG_BOXES.setValue(true);
                 } else {
                     remove(debugDamageSystemModeLabel);
                     clipPolygon = null;
+                    ClientSettings.SHOW_DEBUG_BOXES.setValue(lastDebugBoxesMode);
                 }
             });
 
@@ -232,6 +235,7 @@ public abstract class GuiEntityEditor<CONFIG_TYPE extends Config, PROPERTIES_TYP
         if (testEntity != null) {
             testEntity.setDead();
             client.getEntityRenderer().removeRenderById(testEntity.getId());
+            testEntity = null;
         }
 
         try {
@@ -256,6 +260,8 @@ public abstract class GuiEntityEditor<CONFIG_TYPE extends Config, PROPERTIES_TYP
     protected void onEntryDeselected(@Nullable InspectionEntry<PROPERTIES_TYPE> selectedEntry) {
         if (testEntity != null) {
             testEntity.setDead();
+            client.getEntityRenderer().removeRenderById(testEntity.getId());
+            testEntity = null;
         }
 
         selectedShipProperties = null;

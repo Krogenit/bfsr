@@ -20,8 +20,6 @@ public abstract class DamageableModule extends Module {
     private EventBus eventBus;
     @Getter
     protected Ship ship;
-    @Getter
-    private final EventBus moduleEventBus = new EventBus();
 
     protected DamageableModule(ConfigData data) {
         this(data, 0.0f);
@@ -74,8 +72,6 @@ public abstract class DamageableModule extends Module {
     }
 
     protected void destroy() {
-        ModuleDestroyEvent event = new ModuleDestroyEvent(this);
-        eventBus.publish(event);
-        moduleEventBus.publish(event);
+        eventBus.publish(new ModuleDestroyEvent(this));
     }
 }

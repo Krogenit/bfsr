@@ -4,6 +4,8 @@ import net.bfsr.client.Client;
 import net.bfsr.client.gui.hud.HUD;
 import net.bfsr.command.Command;
 import net.bfsr.editor.gui.EditorTheme;
+import net.bfsr.editor.gui.GuiStationEditor;
+import net.bfsr.editor.gui.GuiWreckEditor;
 import net.bfsr.editor.gui.particle.GuiParticleEditor;
 import net.bfsr.editor.gui.ship.GuiShipEditor;
 import net.bfsr.engine.gui.component.Button;
@@ -33,6 +35,12 @@ public class EditorHUD extends HUD {
         y += buttonHeight;
         add(EditorTheme.setupButton(new Button(buttonWidth, buttonHeight, "Ship Editor", 22,
                 (mouseX, mouseY) -> Client.get().openGui(new GuiShipEditor()))).atLeft(0, y));
+        y += buttonHeight;
+        add(EditorTheme.setupButton(new Button(buttonWidth, buttonHeight, "Station Editor", 22,
+                (mouseX, mouseY) -> Client.get().openGui(new GuiStationEditor()))).atLeft(0, y));
+        y += buttonHeight;
+        add(EditorTheme.setupButton(new Button(buttonWidth, buttonHeight, "Wrecks Editor", 22,
+                (mouseX, mouseY) -> Client.get().openGui(new GuiWreckEditor()))).atLeft(0, y));
         y += buttonHeight;
         add(EditorTheme.setupButton(new Button(buttonWidth, buttonHeight, "Fast Forward Test", 22,
                 (mouseX, mouseY) -> fastForwardHUDTest.toggle())).atLeft(0, y));
@@ -70,8 +78,8 @@ public class EditorHUD extends HUD {
     }
 
     @Override
-    public void selectShipSecondary(Ship ship) {
-        super.selectShipSecondary(ship);
+    public void selectShip(Ship ship) {
+        super.selectShip(ship);
 
         if (ship != null) {
             addIfAbsent(commandsRectangle);

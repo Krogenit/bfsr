@@ -1,16 +1,15 @@
 package net.bfsr.client.gui.state;
 
 import net.bfsr.client.Client;
-import net.bfsr.client.font.FontType;
+import net.bfsr.client.gui.GuiStyle;
+import net.bfsr.client.gui.objects.SimpleButton;
 import net.bfsr.client.language.LanguageManager;
 import net.bfsr.client.settings.ClientSettings;
 import net.bfsr.engine.Engine;
 import net.bfsr.engine.gui.Gui;
-import net.bfsr.engine.gui.component.Button;
 import net.bfsr.engine.gui.component.Label;
-import net.bfsr.engine.gui.component.TexturedRectangle;
+import net.bfsr.engine.gui.component.Rectangle;
 import net.bfsr.engine.renderer.font.glyph.Font;
-import net.bfsr.engine.renderer.texture.TextureRegister;
 import net.bfsr.network.packet.client.PacketRespawn;
 import org.joml.Vector2f;
 
@@ -23,24 +22,25 @@ public class GuiDestroyed extends Gui {
     public GuiDestroyed(String destroyedBy) {
         LanguageManager languageManager = client.getLanguageManager();
 
-        TexturedRectangle rectangle = new TexturedRectangle(TextureRegister.guiAdd);
-        add(rectangle.atCenter(0, 0).setSize(600, 278));
+        Rectangle rectangle = new Rectangle(600, 278);
+        add(GuiStyle.setupTransparentRectangle(rectangle).atCenter(0, 0));
 
         int buttonWidth = 220;
         int buttonHeight = 40;
         int buttonsOffset = 160;
-        rectangle.add(new Button(TextureRegister.guiButtonBase, buttonWidth, buttonHeight,
-                languageManager.getString("gui.destroyed.respawn"), 16, (mouseX, mouseY) -> {
-            Vector2f position = renderer.getCamera().getPosition();
-            client.sendTCPPacket(new PacketRespawn(position.x, position.y));
-            client.closeGui();
-        }).atBottom(buttonsOffset, 24));
+        rectangle.add(new SimpleButton(buttonWidth, buttonHeight, languageManager.getString("gui.destroyed.respawn"), 16,
+                (mouseX, mouseY) -> {
+                    Vector2f position = renderer.getCamera().getPosition();
+                    client.sendTCPPacket(new PacketRespawn(position.x, position.y));
+                    client.closeGui();
+                }).atBottom(buttonsOffset, 24));
 
-        rectangle.add(new Button(TextureRegister.guiButtonBase, buttonWidth, buttonHeight,
-                languageManager.getString("gui.ingamemenu.tomainmenu"), 16, (mouseX, mouseY) -> client.quitToMainMenu()).atBottom(
-                -buttonsOffset, 24));
-        Font font = Engine.getFontManager().getFont(FontType.XOLONIUM.getFontName());
-        rectangle.add(new Label(font, languageManager.getString("gui.destroyed.shipWasDestroyed"), 20).atTopLeft(14, -20));
+        rectangle.add(new SimpleButton(buttonWidth, buttonHeight, languageManager.getString("gui.ingamemenu.tomainmenu"), 16,
+                (mouseX, mouseY) -> client.quitToMainMenu()).atBottom(-buttonsOffset, 24));
+        Font font = Engine.getFontManager().getDefaultFont();
+        Rectangle header = new Rectangle(600, 50);
+        header.add(new Label(font, languageManager.getString("gui.destroyed.shipWasDestroyed"), 20).atTopLeft(14, -16));
+        rectangle.add(GuiStyle.setupTransparentRectangle(header).atTop(0, 0));
         rectangle.add(new Label(font, languageManager.getString("gui.destroyed.destroyedBy") + ": " + destroyedBy, 16).atTopLeft(14, -60));
     }
 

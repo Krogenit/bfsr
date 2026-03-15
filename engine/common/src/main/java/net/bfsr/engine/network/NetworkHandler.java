@@ -7,7 +7,7 @@ import net.bfsr.engine.Engine;
 import net.bfsr.engine.network.packet.Packet;
 
 public abstract class NetworkHandler {
-    public static final int GLOBAL_HISTORY_LENGTH_MILLIS = 750;
+    public static final int GLOBAL_HISTORY_LENGTH_FRAMES = Engine.convertSecondsToFrames(0.75f);
 
     @Getter
     private double ping;

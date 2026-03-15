@@ -5,6 +5,7 @@ import net.bfsr.client.Client;
 import net.bfsr.client.network.NetworkSystem;
 import net.bfsr.client.particle.effect.ShieldEffects;
 import net.bfsr.engine.network.packet.PacketHandler;
+import net.bfsr.engine.renderer.entity.Render;
 import net.bfsr.engine.world.entity.GameObject;
 import net.bfsr.entity.ship.Ship;
 import net.bfsr.entity.ship.module.shield.Shield;
@@ -26,8 +27,9 @@ public class PacketShieldRemoveHandler extends PacketHandler<PacketShieldRemove,
             if (shield != null) {
                 shield.removeShield();
                 Vector4f shipEffectColor = ship.getConfigData().getEffectsColor();
-                shieldEffects.disable(ship.getX(), ship.getY(), ship.getSizeX() * 2.0f, shipEffectColor.x, shipEffectColor.y,
-                        shipEffectColor.z, 1.0f);
+                Render render = client.getEntityRenderer().getRender(ship.getId());
+                shieldEffects.disable(ship.getX(), ship.getY(), render.getZ(), ship.getSizeX() * 2.0f, shipEffectColor.x,
+                        shipEffectColor.y, shipEffectColor.z, 1.0f);
             }
         }
     }

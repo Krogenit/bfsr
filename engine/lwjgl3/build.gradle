@@ -1,7 +1,31 @@
 jar {
     archiveBaseName = 'engine-desktop'
-    archiveVersion = '0.0.1-SNAPSHOT'
+    archiveVersion = project.version.toString()
 }
+
+project.ext.lwjglVersion = '3.3.6'
+
+def computeLwjglNatives = { p, a ->
+    if (p == 'linux') {
+        def classifier = 'natives-linux'
+        if (a == 'arm64') classifier += '-arm64'
+        if (a == 'arm32') classifier += '-arm32'
+        return classifier
+    }
+    if (p == 'mac') {
+        return (a == 'arm64') ? 'natives-macos-arm64' : 'natives-macos'
+    }
+    if (p == 'windows') {
+        if (a == 'x64') return 'natives-windows'
+        if (a == 'arm64') return 'natives-windows-arm64'
+        return 'natives-windows-x86'
+    }
+    throw new GradleException("Unknown targetPlatform/arch: ${p}/${a}")
+}
+
+project.ext.lwjglNatives = computeLwjglNatives(targetPlatform, arch)
+
+println "LWJGL target: targetPlatform=${targetPlatform}, arch=${arch}, classifier=${project.ext.lwjglNatives}"
 
 dependencies {
     api project(':engine:common')
@@ -25,5 +49,5 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl-tinyfd::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-freetype::$lwjglNatives"
 
-    testImplementation project(path: ':engine:common', configuration: 'testArtifacts')
+    testImplementation(testFixtures(project(':engine:common')))
 }
