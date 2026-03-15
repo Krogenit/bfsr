@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/Krogenit/bfsr/compare/v0.3.0...v0.4.0) (2026-03-15)
+
+
+### Features
+
+* **ci:** publish job ([485116d](https://github.com/Krogenit/bfsr/commit/485116d826715b2bc637fc4ded53f39e81cc8b3b))
+
 ## [0.3.0](https://github.com/Krogenit/bfsr/compare/v0.2.0...v0.3.0) (2026-03-15)
 
 
