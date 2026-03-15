@@ -32,7 +32,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = Main.class)
+@SpringBootTest(classes = Main.class, properties = "spring.rsocket.server.port=0")
 @Testcontainers(disabledWithoutDocker = true)
 @DirtiesContext
 public class RemotePlayerRepositoryTest {
@@ -43,7 +43,7 @@ public class RemotePlayerRepositoryTest {
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
-        dynamicPropertyRegistry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        dynamicPropertyRegistry.add("spring.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
     }
 
     @BeforeAll

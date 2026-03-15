@@ -24,7 +24,7 @@ import reactor.test.StepVerifier;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings("unused")
-@SpringBootTest(classes = Main.class)
+@SpringBootTest(classes = Main.class, properties = "spring.rsocket.server.port=0")
 @Testcontainers(disabledWithoutDocker = true)
 @DirtiesContext
 public class PlayerControllerTest {
@@ -38,7 +38,11 @@ public class PlayerControllerTest {
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
-        dynamicPropertyRegistry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        if (!mongoDBContainer.isRunning()) {
+            mongoDBContainer.start();
+        }
+        String mongoUri = mongoDBContainer.getReplicaSetUrl();
+        dynamicPropertyRegistry.add("spring.mongodb.uri", () -> mongoUri);
     }
 
     @BeforeAll

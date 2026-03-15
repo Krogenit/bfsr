@@ -1,15 +1,15 @@
 package net.bfsr.server.rsocket;
 
-import org.springframework.http.codec.cbor.Jackson2CborDecoder;
-import org.springframework.http.codec.cbor.Jackson2CborEncoder;
+import org.springframework.http.codec.cbor.JacksonCborDecoder;
+import org.springframework.http.codec.cbor.JacksonCborEncoder;
 import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.messaging.rsocket.RSocketStrategies;
 import reactor.core.publisher.Mono;
 
 public class RSocketClient {
     private final RSocketStrategies rSocketStrategies = RSocketStrategies.builder()
-            .decoder(new Jackson2CborDecoder())
-            .encoder(new Jackson2CborEncoder())
+            .decoder(new JacksonCborDecoder())
+            .encoder(new JacksonCborEncoder())
             .build();
 
     private RSocketRequester rSocketRequester;

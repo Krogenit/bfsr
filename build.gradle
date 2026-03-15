@@ -19,8 +19,6 @@ subprojects {
     // For using parent module test dependencies
     apply plugin: 'java-test-fixtures'
 
-    def hasSpringBoot = false
-
     // -PtargetPlatform=windows|linux|mac
     // -PtargetArch=x64|arm64
     def targetPlatformProp = project.findProperty('targetPlatform')?.toString()
@@ -52,8 +50,8 @@ subprojects {
         testCompileOnly 'org.projectlombok:lombok:1.18.44'
         testAnnotationProcessor 'org.projectlombok:lombok:1.18.44'
 
-        annotationProcessor "org.mapstruct:mapstruct-processor:1.6.3", "org.projectlombok:lombok-mapstruct-binding:0.2.0"
-        testAnnotationProcessor "org.mapstruct:mapstruct-processor:1.6.3"
+        annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3', 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+        testAnnotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 
         testImplementation platform('org.junit:junit-bom:6.0.3')
         testImplementation 'org.junit.jupiter:junit-jupiter'

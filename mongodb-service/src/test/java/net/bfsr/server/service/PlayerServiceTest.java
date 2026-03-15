@@ -18,12 +18,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = Main.class)
+@SpringBootTest(classes = Main.class, properties = "spring.rsocket.server.port=0")
 @Testcontainers(disabledWithoutDocker = true)
 @DirtiesContext
 public class PlayerServiceTest {
     @Container
-    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.5");
+    private static final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.5");
 
     @Autowired
     private PlayerRepository playerRepository;
@@ -33,7 +33,11 @@ public class PlayerServiceTest {
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
-        dynamicPropertyRegistry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        if (!mongoDBContainer.isRunning()) {
+            mongoDBContainer.start();
+        }
+        String mongoUri = mongoDBContainer.getReplicaSetUrl();
+        dynamicPropertyRegistry.add("spring.mongodb.uri", () -> mongoUri);
     }
 
     @BeforeEach
