@@ -31,6 +31,15 @@ if (releaseVersion) {
     project.version = '0.0.1-SNAPSHOT'
 }
 
+def jvmOpts = [
+        '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED',
+        '--add-opens=java.base/java.nio=ALL-UNNAMED',
+        '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
+        '-Dio.netty.tryReflectionSetAccessible=true',
+        '-Djoml.fastmath=true',
+        '-Djoml.sinLookup=true'
+]
+
 runtime {
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     modules = [
@@ -85,21 +94,6 @@ tasks.register('copyDepends', Copy) {
     into dependsDir
 }
 
-// Helper to recursively collect all project dependencies
-def collectAllProjectDependencies(Set<Project> collected, Configuration config) {
-    config.allDependencies.each { dep ->
-        if (dep instanceof ProjectDependency) {
-            def depProject = dep.getDependencyProject()
-            if (!collected.contains(depProject)) {
-                collected.add(depProject)
-                // Recursively collect this project's dependencies
-                collectAllProjectDependencies(collected, depProject.configurations.api)
-                collectAllProjectDependencies(collected, depProject.configurations.implementation)
-            }
-        }
-    }
-}
-
 tasks.register('fatJar', Jar) {
     archiveBaseName = 'clientFat'
     archiveVersion = project.version.toString()
@@ -143,6 +137,8 @@ launch4j {
     classpath = [
             'lib/*.jar'
     ]
+
+    jvmOptions = jvmOpts
 
     // icon = "${projectDir}/favicon.ico"
     copyright = "Spaceclipse"
@@ -207,12 +203,13 @@ tasks.register('assembleClientLayout') {
             }
         } else {
             // 1) Create unix launcher script
+            def javaOptions = jvmOpts.join(' ')
             def launcherName = isMacTarget ? 'Spaceclipse.command' : 'Spaceclipse'
             def launcherFile = file("${outDir}/${launcherName}")
             launcherFile.text = '''#!/usr/bin/env bash
                 set -e
                 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-                "$DIR/jre/bin/java" -cp "$DIR/lib/*" net.bfsr.client.launch.LWJGL3Main
+                "$DIR/jre/bin/java" ${javaOptions} -cp "$DIR/lib/*" net.bfsr.client.launch.LWJGL3Main
                 '''
             launcherFile.setExecutable(true, false)
 
