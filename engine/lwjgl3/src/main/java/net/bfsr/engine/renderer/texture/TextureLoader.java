@@ -18,7 +18,7 @@ import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
@@ -63,9 +63,9 @@ public class TextureLoader extends AbstractTextureLoader {
 
         DDSFile dds;
 
-        try {
-            dds = new DDSFile(new FileInputStream(path));
-        } catch (FileNotFoundException e) {
+        try (FileInputStream fis = new FileInputStream(path)) {
+            dds = new DDSFile(fis);
+        } catch (IOException e) {
             throw new IllegalStateException("Failed to load a texture file " + path, e);
         }
 

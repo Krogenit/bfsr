@@ -157,6 +157,7 @@ public class SpriteRenderer implements AbstractSpriteRenderer {
         }
     }
 
+    @Override
     public void updateBuffer(AbstractBuffersHolder buffersHolder) {
         buffersHolder.updateBuffers(MODEL_BUFFER_INDEX, MATERIAL_BUFFER_INDEX, LAST_UPDATE_MODEL_BUFFER_INDEX,
                 LAST_UPDATE_MATERIAL_BUFFER_INDEX);
