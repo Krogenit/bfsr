@@ -110,7 +110,7 @@ tasks.register('fatJar', Jar) {
                 'Main-Class': 'net.bfsr.client.launch.LWJGL3Main'
         )
     }
-    
+
     from sourceSets.main.output
 
     def projectDeps = configurations
@@ -184,8 +184,9 @@ tasks.register('assembleClientLayout') {
                     from launch4jDir
                     include 'Spaceclipse.exe'
                     into outDir
-                    // Windows exe: no chmod required, но на Unix сохраняем mode 0755 на всякий случай
-                    fileMode = 0755
+                    filePermissions {
+                        unix('rwxr-xr-x') // 0755
+                    }
                 }
             } else {
                 println "Warning: launch4j dir not found: ${launch4jDir}"
@@ -197,7 +198,9 @@ tasks.register('assembleClientLayout') {
                 copy {
                     from libSrc
                     into "${outDir}/lib"
-                    fileMode = 0644
+                    filePermissions {
+                        unix('rw-r--r--') // 0644
+                    }
                 }
             } else {
                 println "Warning: lib dir not found: ${libSrc}"
@@ -219,7 +222,9 @@ tasks.register('assembleClientLayout') {
                 copy {
                     from jarFile
                     into "${outDir}/lib"
-                    fileMode = 0644
+                    filePermissions {
+                        unix('rw-r--r--') // 0644
+                    }
                 }
             } else {
                 println "Warning: client jar not found: ${jarFile}"
@@ -229,7 +234,9 @@ tasks.register('assembleClientLayout') {
                 copy {
                     from dependsDir
                     into "${outDir}/lib"
-                    fileMode = 0644
+                    filePermissions {
+                        unix('rw-r--r--') // 0644
+                    }
                 }
             } else {
                 println "Warning: dependencies dir not found: ${dependsDir}"
