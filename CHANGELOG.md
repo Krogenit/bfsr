@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.9](https://github.com/Krogenit/bfsr/compare/v0.1.8...v0.1.9) (2026-03-15)
+
+
+### Bug Fixes
+
+* **ci:** file perms setup for runtime in assembleClientLayout task ([7af39e8](https://github.com/Krogenit/bfsr/commit/7af39e813d4f410fabc55676a18d3a1831011063))
+* **ci:** file perms setup for runtime in assembleClientLayout task ([831e088](https://github.com/Krogenit/bfsr/commit/831e088db5ee623ad79e675ef1694f0a2807425a))
+
 ## [0.1.8](https://github.com/Krogenit/bfsr/compare/v1.0.0...v0.1.8) (2026-03-15)
 
 
