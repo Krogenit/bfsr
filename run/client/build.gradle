@@ -6,10 +6,6 @@ plugins {
 apply plugin: 'edu.sc.seis.launch4j'
 apply plugin: 'org.beryx.runtime'
 
-application {
-    mainClass = 'net.bfsr.client.launch.LWJGL3Main'
-}
-
 def targetPlatform = rootProject.ext.targetPlatform
 def isWindowsTarget = targetPlatform == 'windows'
 def isMacTarget = targetPlatform == 'mac'
@@ -22,6 +18,25 @@ def jvmOpts = [
         '-Djoml.fastmath=true',
         '-Djoml.sinLookup=true'
 ]
+
+var dependsDir = file("${buildDir}/dependencies")
+
+def projectJarFiles() {
+    rootProject.allprojects
+            .collect { p -> p.tasks.findByName('jar')?.archiveFile?.get()?.asFile }
+            .findAll { it != null }
+            .collect { it.absolutePath }
+            .toSet()
+}
+
+dependencies {
+    api project(':engine:lwjgl3')
+    api project(':game-logic:client')
+}
+
+application {
+    mainClass = 'net.bfsr.client.launch.LWJGL3Main'
+}
 
 runtime {
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
@@ -63,55 +78,61 @@ jar {
                 'Main-Class': 'net.bfsr.client.launch.LWJGL3Main'
         )
     }
+
+    // Include only project sources
+    from sourceSets.main.output
 }
 
-var dependsDir = file('build/dependencies')
+tasks.register('copyDepends') {
+    group = 'build'
+    description = 'Copy only external (non-project) runtime dependencies to build/dependencies.'
 
-dependencies {
-    api project(':engine:lwjgl3')
-    api project(':game-logic:client')
-}
+    dependsOn configurations.runtimeClasspath
 
-tasks.register('copyDepends', Copy) {
-    from configurations.runtimeClasspath
-    into dependsDir
+    doLast {
+        def knownProjectJars = projectJarFiles()
+
+        copy {
+            from configurations.runtimeClasspath.filter { file ->
+                file.isFile() && !knownProjectJars.contains(file.absolutePath)
+            }
+            into dependsDir
+        }
+    }
 }
 
 tasks.register('fatJar', Jar) {
-    archiveBaseName = 'clientFat'
-    archiveVersion = project.version.toString()
+    group = 'build'
+    description = 'Fat jar with all project-module classes; no external dependencies.'
+
+    archiveBaseName = 'Spaceclipse'
+    archiveVersion = ''
+    archiveClassifier = ''
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     manifest {
         attributes(
-                'Main-Class': 'net.bfsr.client.launch.LWJGL3Main'
+                'Main-Class': 'net.bfsr.client.launch.LWJGL3Main',
+                'Class-Path': project.provider {
+                    def knownProjectJars = projectJarFiles()
+                    configurations.runtimeClasspath
+                            .filter { f -> f.isFile() && !knownProjectJars.contains(f.absolutePath) }
+                            .collect { f -> "lib/${f.name}" }
+                            .join(' ')
+                }
         )
     }
 
     from sourceSets.main.output
 
-    def projectDeps = configurations
-            .matching { it.name in ['api', 'implementation', 'runtimeClasspath'] }
-            .collectMany { cfg -> cfg.allDependencies.withType(org.gradle.api.artifacts.ProjectDependency) }
-            .unique()
+    rootProject.allprojects.each { p ->
+        if (p == project) return
+        def jarTask = p.tasks.findByName('jar')
+        if (jarTask == null) return
 
-    projectDeps.each { pd ->
-        try {
-            def depProj = (pd.hasProperty('path')) ? project.project(pd.path) : pd.dependencyProject
-            tasks.named('fatJar').configure { dependsOn depProj.tasks.named('jar') }
-        } catch (Exception ignored) {
-
-        }
+        dependsOn jarTask
+        from(zipTree(jarTask.archiveFile))
     }
-
-    dependsOn configurations.runtimeClasspath
-    from {
-        configurations.runtimeClasspath
-                .filter { it.exists() }
-                .collect { it.isDirectory() ? it : zipTree(it) }
-    }
-
-    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
 }
 
 launch4j {
@@ -139,12 +160,10 @@ launch4j {
 tasks.register('assembleClientLayout') {
     group = 'distribution'
     description = 'Prepare client folder layout (already unpacked)'
-    dependsOn 'runtime'
+
+    dependsOn 'runtime', 'fatJar', 'copyDepends'
     if (isWindowsTarget) {
         dependsOn 'createExe'
-    } else {
-        dependsOn 'jar'
-        dependsOn 'copyDepends'
     }
 
     doFirst {
@@ -154,6 +173,27 @@ tasks.register('assembleClientLayout') {
             outDir.deleteDir()
         }
         outDir.mkdirs()
+
+        def fatJarFile = tasks.named('fatJar').get().archiveFile.get().asFile
+        if (fatJarFile.exists()) {
+            copy {
+                from fatJarFile
+                into outDir
+                filePermissions { unix('rw-r--r--') }
+            }
+        } else {
+            println "Warning: fatJar not found: ${fatJarFile}"
+        }
+
+        if (dependsDir.exists()) {
+            copy {
+                from dependsDir
+                into "${outDir}/lib"
+                filePermissions { unix('rw-r--r--') }
+            }
+        } else {
+            println "Warning: dependencies dir not found: ${dependsDir}"
+        }
 
         if (isWindowsTarget) {
             // Copy EXE (from launch4j output)
@@ -170,58 +210,19 @@ tasks.register('assembleClientLayout') {
             } else {
                 println "Warning: launch4j dir not found: ${launch4jDir}"
             }
-
-            // 2) Copy lib folder
-            def libSrc = file("${buildDir}/launch4j/lib")
-            if (libSrc.exists()) {
-                copy {
-                    from libSrc
-                    into "${outDir}/lib"
-                    filePermissions {
-                        unix('rw-r--r--') // 0644
-                    }
-                }
-            } else {
-                println "Warning: lib dir not found: ${libSrc}"
-            }
         } else {
             // Create unix launcher script
             def javaOptions = jvmOpts.join(' ')
             assert javaOptions != null
             def launcherName = isMacTarget ? 'Spaceclipse.command' : 'Spaceclipse'
             def launcherFile = file("${outDir}/${launcherName}")
-            launcherFile.text = '''#!/usr/bin/env bash
+            launcherFile.text = """\
+                #!/usr/bin/env bash
                 set -e
-                DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-                "$DIR/jre/bin/java" ${javaOptions} -cp "$DIR/lib/*" net.bfsr.client.launch.LWJGL3Main
-                '''
+                DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+                "\$DIR/jre/bin/java" ${javaOptions} -jar "\$DIR/Spaceclipse.jar"
+                """
             launcherFile.setExecutable(true, false)
-
-            // 2) Copy app jar and dependencies
-            def jarFile = tasks.named('jar').get().archiveFile.get().asFile
-            if (jarFile.exists()) {
-                copy {
-                    from jarFile
-                    into "${outDir}/lib"
-                    filePermissions {
-                        unix('rw-r--r--') // 0644
-                    }
-                }
-            } else {
-                println "Warning: client jar not found: ${jarFile}"
-            }
-
-            if (dependsDir.exists()) {
-                copy {
-                    from dependsDir
-                    into "${outDir}/lib"
-                    filePermissions {
-                        unix('rw-r--r--') // 0644
-                    }
-                }
-            } else {
-                println "Warning: dependencies dir not found: ${dependsDir}"
-            }
         }
 
         // Copy assets (relative to project root)
