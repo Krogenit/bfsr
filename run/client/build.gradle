@@ -258,14 +258,43 @@ tasks.register('assembleClientLayout') {
         def runtimeImageDir = file("${buildDir}/runtime-image")
         if (runtimeImageDir.exists()) {
             println "Copying runtime image from: ${runtimeImageDir}"
+
+            // 1) everything except the java executables
             copy {
-                from runtimeImageDir
-                into "${outDir}/jre"
-                eachFile { FileCopyDetails fcd ->
-                    if (fcd.name == 'java' || fcd.name == 'java.exe' || fcd.name == 'javaw.exe') {
-                        fcd.mode = 0755
-                    }
+                from(runtimeImageDir) {
+                    // exclude JVM executables which need different perms
+                    exclude 'bin/java', 'bin/java.exe', 'bin/javaw.exe'
                 }
+                into "${outDir}/jre"
+
+                // files get rw-r--r-- (0644)
+                filePermissions {
+                    unix('rw-r--r--')
+                }
+                // directories must be executable so traversal works
+                dirPermissions {
+                    unix('rwxr-xr-x')
+                }
+
+                includeEmptyDirs = false
+            }
+
+            // 2) java executables (make them executable)
+            copy {
+                from(runtimeImageDir) {
+                    include 'bin/java', 'bin/java.exe', 'bin/javaw.exe'
+                }
+                into "${outDir}/jre"
+
+                // these need to be executable
+                filePermissions {
+                    unix('rwxr-xr-x')
+                }
+                dirPermissions {
+                    unix('rwxr-xr-x')
+                }
+
+                includeEmptyDirs = false
             }
         } else {
             println "Warning: runtime image not found: ${runtimeImageDir}"
