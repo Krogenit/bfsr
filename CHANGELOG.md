@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.12](https://github.com/Krogenit/bfsr/compare/v0.1.11...v0.1.12) (2026-03-15)
+
+
+### Bug Fixes
+
+* **ci:** prepare rsync payload in publish job ([fa090e2](https://github.com/Krogenit/bfsr/commit/fa090e2a24bc3751e2bcbc4af73b9e6a61bfc763))
+* **ci:** prepare rsync payload in publish job ([0f9681e](https://github.com/Krogenit/bfsr/commit/0f9681e87686468dfa523a347d74dd767ab2bc30))
+
 ## [0.1.11](https://github.com/Krogenit/bfsr/compare/v0.1.10...v0.1.11) (2026-03-15)
 
 
