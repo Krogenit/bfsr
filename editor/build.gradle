@@ -1,6 +1,6 @@
 jar {
-    archiveBaseName = 'bfsr-editor'
-    archiveVersion = '0.0.1-SNAPSHOT'
+    archiveBaseName = 'spaceclipse-editor'
+    archiveVersion = project.version.toString()
 }
 
 dependencies {

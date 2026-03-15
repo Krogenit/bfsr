@@ -3,6 +3,11 @@ plugins {
     id 'io.spring.dependency-management'
 }
 
+jar {
+    archiveBaseName = 'spaceclipse-mongodb-service'
+    archiveVersion = project.version.toString()
+}
+
 bootJar {
     enabled = true
 }

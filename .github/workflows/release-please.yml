@@ -78,27 +78,11 @@ jobs:
           # copy built output (module path)
           cp -R run/client/build/output ./artifacts
 
-      - name: Create artifact archive (unix)
-        if: runner.os != 'Windows'
-        shell: bash
-        run: |
-          cd run/client/build/output
-          zip -r "${{ github.workspace }}/artifact-${{ matrix.platform }}.zip" .
-
-      - name: Create artifact archive (windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $src = "run\client\build\output"
-          $dst = "artifact-${{ matrix.platform }}.zip"
-          if (Test-Path $dst) { Remove-Item -Force $dst }
-          Compress-Archive -Path "$src\*" -DestinationPath $dst
-
       - name: Upload platform artifact
         uses: actions/upload-artifact@v7
         with:
           name: artifacts-${{ matrix.platform }}
-          path: artifact-${{ matrix.platform }}.zip
+          path: artifacts
 
   # Отдельный job — запускается строго после того как ВСЕ платформы готовы
   build-manifest:
@@ -141,9 +125,11 @@ jobs:
 
       - name: Unpack artifacts
         run: |
+          set -euo pipefail
           for platform in linux mac windows; do
+            echo "Copying downloads/$platform -> unpacked/$platform"
             mkdir -p unpacked/$platform
-            unzip -q downloads/$platform/artifact-$platform.zip -d unpacked/$platform
+            cp -R downloads/$platform/* unpacked/$platform/ || true
           done
 
       # Строим манифест для каждой платформы отдельно
@@ -170,7 +156,6 @@ jobs:
         with:
           name: manifests
           path: out/manifest/
-          # Структура внутри: linux/manifest.signed.json, mac/..., windows/...
 
   publish:
     name: Publish artifacts to update server

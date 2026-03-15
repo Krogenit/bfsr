@@ -8,8 +8,8 @@ bootJar {
 }
 
 jar {
-    archiveBaseName = 'bfsr-server'
-    archiveVersion = '0.0.1-SNAPSHOT'
+    archiveBaseName = 'spaceclipse-game-logic-server'
+    archiveVersion = project.version.toString()
 }
 
 dependencies {

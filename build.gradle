@@ -19,6 +19,22 @@ subprojects {
     // For using parent module test dependencies
     apply plugin: 'java-test-fixtures'
 
+    def releaseVersion = project.findProperty('releaseVersion')?.toString()
+    if (!releaseVersion) {
+        def v = project.version?.toString()
+        if (v && v != 'unspecified') {
+            releaseVersion = v
+        }
+    }
+    if (!releaseVersion) {
+        releaseVersion = System.getenv('VERSION')?.toString()
+    }
+    if (releaseVersion) {
+        project.version = releaseVersion
+    } else if (project.version == 'unspecified') {
+        project.version = '0.0.1-SNAPSHOT'
+    }
+
     // -PtargetPlatform=windows|linux|mac
     // -PtargetArch=x64|arm64
     def targetPlatformProp = project.findProperty('targetPlatform')?.toString()

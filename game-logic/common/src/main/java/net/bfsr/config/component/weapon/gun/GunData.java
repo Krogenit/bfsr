@@ -27,18 +27,18 @@ public class GunData extends GameObjectConfigData {
 
     public GunData(GunConfig config, String fileName, int id, int registryId) {
         super(config, fileName, id, registryId);
-        this.reloadTimeInFrames = Engine.convertSecondsToFrames(config.getReloadTimeInSeconds());
-        this.energyCost = config.getEnergyCost();
-        this.damage = new BulletDamage(config.getDamage());
-        this.color = convert(config.getColor());
+        this.reloadTimeInFrames = Engine.convertSecondsToFrames(config.reloadTimeInSeconds());
+        this.energyCost = config.energyCost();
+        this.damage = new BulletDamage(config.damage());
+        this.color = convert(config.color());
         this.polygon = convertToPolygon(config.getVertices());
-        this.soundEffect = convert(config.getSoundEffect());
-        this.bulletSpeed = config.getBulletSpeed();
-        this.bulletLifeTimeInFrames = Engine.convertSecondsToFrames(config.getBulletLifeTimeInSeconds());
-        this.bulletSizeX = config.getBulletSize().x();
-        this.bulletSizeY = config.getBulletSize().y();
-        this.bulletTextureData = new TextureData(PathHelper.CLIENT_CONTENT.resolve(config.getBulletTexture()));
-        this.bulletPolygon = convertToPolygon(config.getBulletVertices());
-        this.hp = config.getHp();
+        this.soundEffect = convert(config.soundEffect());
+        this.bulletSpeed = config.bulletSpeed();
+        this.bulletLifeTimeInFrames = Engine.convertSecondsToFrames(config.bulletLifeTimeInSeconds());
+        this.bulletSizeX = config.bulletSize().x();
+        this.bulletSizeY = config.bulletSize().y();
+        this.bulletTextureData = new TextureData(PathHelper.CLIENT_CONTENT.resolve(config.bulletTexture()));
+        this.bulletPolygon = convertToPolygon(config.bulletVertices());
+        this.hp = config.hp();
     }
 }

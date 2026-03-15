@@ -1,0 +1,4 @@
+jar {
+    archiveBaseName = 'spaceclipse-physics-engine'
+    archiveVersion = project.version.toString()
+}

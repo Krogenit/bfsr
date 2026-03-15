@@ -1,5 +1,5 @@
 jar {
-    archiveBaseName = 'engine-desktop'
+    archiveBaseName = 'spaceclipse-engine-lwjgl3'
     archiveVersion = project.version.toString()
 }
 
