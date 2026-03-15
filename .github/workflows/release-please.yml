@@ -198,7 +198,7 @@ jobs:
           cp "downloads/manifest/${PLATFORM}/manifest.signed.json" flat/manifest.signed.json
           
           echo "=== flat/ structure ==="
-          ls -laR flat | head -60
+          ls -la flat | head -60 || true
           
           mkdir -p "payload_archive/${VERSION}/${PLATFORM}"
           cp -r flat/. "payload_archive/${VERSION}/${PLATFORM}/"
