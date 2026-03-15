@@ -204,37 +204,46 @@ jobs:
 
       - name: Prepare rsync payload
         run: |
-          mkdir -p payload/archive/${{ needs.release-please.outputs.version }}/linux
-          mkdir -p payload/archive/${{ needs.release-please.outputs.version }}/mac
-          mkdir -p payload/archive/${{ needs.release-please.outputs.version }}/windows
+          set -euo pipefail
+          
+          echo "DEBUG: list downloaded dirs"
+          ls -laR downloads || true
+          
+          VERSION=${{ needs.release-please.outputs.version }}
+          echo "Preparing payload for version: $VERSION"
+          
+          mkdir -p payload/${VERSION}/linux
+          mkdir -p payload/${VERSION}/mac
+          mkdir -p payload/${VERSION}/windows
           
           # copy downloaded outputs into payload dirs (adjust paths if necessary)
-          cp -r downloads/linux/* payload/archive/${{ needs.release-please.outputs.version }}/linux/
-          cp -r downloads/mac/* payload/archive/${{ needs.release-please.outputs.version }}/mac/
-          cp -r downloads/windows/* payload/archive/${{ needs.release-please.outputs.version }}/windows/
+          cp -r downloads/linux/* payload/${VERSION}/linux/ || true
+          cp -r downloads/mac/* payload/${VERSION}/mac/ || true
+          cp -r downloads/windows/* payload/${VERSION}/windows/ || true
           
-          # copy signed manifest into each platform folder (downloads/manifest/<platform>/manifest.signed.json)
+           # copy signed manifest into each platform folder
           for p in linux mac windows; do
-            mkdir -p payload/archive/${{ needs.release-please.outputs.version }}/${p}/manifest
-            cp downloads/manifest/${p}/manifest.signed.json payload/archive/${{ needs.release-please.outputs.version }}/${p}/manifest/manifest.signed.json
+            mkdir -p payload/${VERSION}/${p}/manifest
+            src="downloads/manifest/${p}/manifest.signed.json"
+            if [[ -f "$src" ]]; then
+              echo "Copying $src -> payload/${VERSION}/${p}/manifest/manifest.signed.json"
+              cp "$src" "payload/${VERSION}/${p}/manifest/manifest.signed.json"
+            else
+              echo "ERROR: manifest missing: $src"
+              echo "Contents of downloads/manifest/:"
+              ls -la downloads/manifest || true
+              exit 1
+            fi
           done
-          # also prepare latest/ per platform
-          mkdir -p payload/latest/linux
-          mkdir -p payload/latest/mac
-          mkdir -p payload/latest/windows
-          cp -r payload/archive/${{ needs.release-please.outputs.version }}/linux/* payload/latest/linux/
-          cp -r payload/archive/${{ needs.release-please.outputs.version }}/mac/* payload/latest/mac/
-          cp -r payload/archive/${{ needs.release-please.outputs.version }}/windows/* payload/latest/windows/
-          for p in linux mac windows; do
-            mkdir -p payload/latest/${p}/manifest
-            cp downloads/manifest/manifest.signed.json payload/latest/${p}/manifest/manifest.signed.json
-          done
+          
+          echo "Payload prepared. Summary:"
+          ls -laR payload | sed -n '1,200p'
 
       - name: Upload to update server (archive)
         uses: burnett01/rsync-deployments@v8
         with:
           switches: -avz
-          path: payload/archive/
+          path: payload/
           remote_path: ${{ secrets.UPDATE_SERVER_PATH }}/archive/
           remote_host: ${{ secrets.UPDATE_SERVER_HOST }}
           remote_port: ${{ secrets.UPDATE_SERVER_PORT }}
@@ -245,7 +254,7 @@ jobs:
         uses: burnett01/rsync-deployments@v8
         with:
           switches: -avz --delete
-          path: payload/latest/
+          path: payload/
           remote_path: ${{ secrets.UPDATE_SERVER_PATH }}/latest/
           remote_host: ${{ secrets.UPDATE_SERVER_HOST }}
           remote_port: ${{ secrets.UPDATE_SERVER_PORT }}
