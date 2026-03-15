@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.11](https://github.com/Krogenit/bfsr/compare/v0.1.10...v0.1.11) (2026-03-15)
+
+
+### Bug Fixes
+
+* **ci:** manifests publish ([0dbc496](https://github.com/Krogenit/bfsr/commit/0dbc4962f7d295b5e863d34cded9f3c5859d6ecf))
+* **ci:** manifests publish ([b172a33](https://github.com/Krogenit/bfsr/commit/b172a339136524a1dff05e468b8268400e715574))
+
 ## [0.1.10](https://github.com/Krogenit/bfsr/compare/v0.1.9...v0.1.10) (2026-03-15)
 
 
