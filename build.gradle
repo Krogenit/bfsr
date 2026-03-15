@@ -54,6 +54,10 @@ subprojects {
 
         annotationProcessor "org.mapstruct:mapstruct-processor:1.6.3", "org.projectlombok:lombok-mapstruct-binding:0.2.0"
         testAnnotationProcessor "org.mapstruct:mapstruct-processor:1.6.3"
+
+        testImplementation platform('org.junit:junit-bom:5.12.2')
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     }
 
     compileJava.options.encoding = compileTestJava.options.encoding = 'UTF-8'
@@ -68,20 +72,7 @@ subprojects {
 
     test {
         useJUnitPlatform()
-    }
-
-    plugins.withId('org.springframework.boot') {
-        hasSpringBoot = true
-    }
-
-    // Add test engine for non sprint boot modules
-    afterEvaluate {
-        if (!hasSpringBoot) {
-            dependencies {
-                testImplementation enforcedPlatform('org.junit:junit-bom:5.8.2')
-                testImplementation 'org.junit.jupiter:junit-jupiter'
-            }
-        }
+        failOnNoDiscoveredTests = false
     }
 }
 

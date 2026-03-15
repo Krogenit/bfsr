@@ -89,7 +89,7 @@ tasks.register('copyDepends', Copy) {
 def collectAllProjectDependencies(Set<Project> collected, Configuration config) {
     config.allDependencies.each { dep ->
         if (dep instanceof ProjectDependency) {
-            def depProject = dep.dependencyProject
+            def depProject = dep.getDependencyProject()
             if (!collected.contains(depProject)) {
                 collected.add(depProject)
                 // Recursively collect this project's dependencies
@@ -103,30 +103,38 @@ def collectAllProjectDependencies(Set<Project> collected, Configuration config) 
 tasks.register('fatJar', Jar) {
     archiveBaseName = 'clientFat'
     archiveVersion = project.version.toString()
-
-    // Include classes from this project
-    from sourceSets.main.output
-
-    // Collect all project dependencies
-    def allProjects = [] as Set<Project>
-    collectAllProjectDependencies(allProjects, configurations.api)
-    collectAllProjectDependencies(allProjects, configurations.implementation)
-
-    // Include classes and resources from all discovered projects
-    allProjects.each { depProject ->
-        println "Including project: ${depProject.path}"
-        from(depProject.sourceSets.main.output)
-        from(depProject.sourceSets.main.resources)
-    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     manifest {
         attributes(
                 'Main-Class': 'net.bfsr.client.launch.LWJGL3Main'
         )
     }
+    
+    from sourceSets.main.output
 
-    // Duplicates handling strategy
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    def projectDeps = configurations
+            .matching { it.name in ['api', 'implementation', 'runtimeClasspath'] }
+            .collectMany { cfg -> cfg.allDependencies.withType(org.gradle.api.artifacts.ProjectDependency) }
+            .unique()
+
+    projectDeps.each { pd ->
+        try {
+            def depProj = (pd.hasProperty('path')) ? project.project(pd.path) : pd.dependencyProject
+            tasks.named('fatJar').configure { dependsOn depProj.tasks.named('jar') }
+        } catch (Exception ignored) {
+
+        }
+    }
+
+    dependsOn configurations.runtimeClasspath
+    from {
+        configurations.runtimeClasspath
+                .filter { it.exists() }
+                .collect { it.isDirectory() ? it : zipTree(it) }
+    }
+
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
 }
 
 launch4j {
