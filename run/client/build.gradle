@@ -204,6 +204,7 @@ tasks.register('assembleClientLayout') {
         } else {
             // 1) Create unix launcher script
             def javaOptions = jvmOpts.join(' ')
+            assert javaOptions != null
             def launcherName = isMacTarget ? 'Spaceclipse.command' : 'Spaceclipse'
             def launcherFile = file("${outDir}/${launcherName}")
             launcherFile.text = '''#!/usr/bin/env bash
