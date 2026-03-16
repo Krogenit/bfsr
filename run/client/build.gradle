@@ -23,7 +23,7 @@ var dependsDir = file("${buildDir}/dependencies")
 
 def projectJarFiles() {
     rootProject.allprojects
-            .collect { p -> p.tasks.findByName('jar')?.archiveFile?.get()?.asFile }
+            .collect { project -> project.tasks.named('jar')?.archiveFile?.get()?.asFile }
             .findAll { it != null }
             .collect { it.absolutePath }
             .toSet()
@@ -116,8 +116,8 @@ tasks.register('fatJar', Jar) {
                 'Class-Path': project.provider {
                     def knownProjectJars = projectJarFiles()
                     configurations.runtimeClasspath
-                            .filter { f -> f.isFile() && !knownProjectJars.contains(f.absolutePath) }
-                            .collect { f -> "lib/${f.name}" }
+                            .filter { file -> file.isFile() && !knownProjectJars.contains(file.absolutePath) }
+                            .collect { file -> "lib/${file.name}" }
                             .join(' ')
                 }
         )
@@ -125,9 +125,9 @@ tasks.register('fatJar', Jar) {
 
     from sourceSets.main.output
 
-    rootProject.allprojects.each { p ->
-        if (p == project) return
-        def jarTask = p.tasks.findByName('jar')
+    rootProject.allprojects.each { project ->
+        if (project == project) return
+        def jarTask = project.tasks.named('jar')
         if (jarTask == null) return
 
         dependsOn jarTask
@@ -166,56 +166,62 @@ tasks.register('assembleClientLayout') {
         dependsOn 'createExe'
     }
 
+    def outDir = file("${buildDir}/output")
+    def platformDir = file("${outDir}/platform")
+    def sharedDir = file("${outDir}/shared")
+    def sharedLibDir = file("${sharedDir}/lib")
+    def platformLibDir = file("${platformDir}/lib")
+    def runtimeImageDir = file("${buildDir}/runtime-image")
+
     doFirst {
         println "Preparing client layout in build/output/"
-        def outDir = file("${buildDir}/output")
+
         if (outDir.exists()) {
             outDir.deleteDir()
         }
-        outDir.mkdirs()
 
-        def fatJarFile = tasks.named('fatJar').get().archiveFile.get().asFile
-        if (fatJarFile.exists()) {
-            copy {
-                from fatJarFile
-                into outDir
-                filePermissions { unix('rw-r--r--') }
-            }
-        } else {
-            println "Warning: fatJar not found: ${fatJarFile}"
+        [outDir, platformDir, platformLibDir, sharedDir, sharedLibDir].each { it.mkdirs() }
+
+        def fatJarFile = fatJar.archiveFile.get().asFile
+        copy {
+            from fatJarFile
+            into sharedDir
+            filePermissions { unix('rw-r--r--') }
         }
 
-        if (dependsDir.exists()) {
-            copy {
-                from dependsDir
-                into "${outDir}/lib"
-                filePermissions { unix('rw-r--r--') }
-            }
-        } else {
-            println "Warning: dependencies dir not found: ${dependsDir}"
+        copy {
+            from dependsDir
+            into "${sharedDir}/lib"
+            exclude '**/*-natives-*'
+            filePermissions { unix('rw-r--r--') }
+        }
+
+        copy {
+            from dependsDir
+            into "${platformDir}/lib"
+            include '**/*-natives-*'
+            filePermissions { unix('rw-r--r--') }
+        }
+
+        // Copy assets (relative to project root)
+        copy {
+            from file("${rootDir}/assets")
+            into "${sharedDir}/assets"
         }
 
         if (isWindowsTarget) {
             // Copy EXE (from launch4j output)
-            def launch4jDir = file("${buildDir}/launch4j")
-            if (launch4jDir.exists()) {
-                copy {
-                    from launch4jDir
-                    include 'Spaceclipse.exe'
-                    into outDir
-                    filePermissions {
-                        unix('rwxr-xr-x') // 0755
-                    }
-                }
-            } else {
-                println "Warning: launch4j dir not found: ${launch4jDir}"
+            copy {
+                from file("${buildDir}/launch4j")
+                include 'Spaceclipse.exe'
+                into platformDir
             }
         } else {
             // Create unix launcher script
             def javaOptions = jvmOpts.join(' ')
             assert javaOptions != null
             def launcherName = isMacTarget ? 'Spaceclipse.command' : 'Spaceclipse'
-            def launcherFile = file("${outDir}/${launcherName}")
+            def launcherFile = file("${platformDir}/${launcherName}")
             launcherFile.text = """\
                 #!/usr/bin/env bash
                 set -e
@@ -225,62 +231,44 @@ tasks.register('assembleClientLayout') {
             launcherFile.setExecutable(true, false)
         }
 
-        // Copy assets (relative to project root)
-        def assetsSrc = file("${rootDir}/assets")
-        if (assetsSrc.exists()) {
-            copy {
-                from assetsSrc
-                into "${outDir}/assets"
+        // Copy runtime image built by org.beryx.runtime
+        println "Copying runtime image from: ${runtimeImageDir}"
+
+        // 1) everything except the java executables
+        copy {
+            from(runtimeImageDir) {
+                // exclude JVM executables which need different perms
+                exclude 'bin/java', 'bin/java.exe', 'bin/javaw.exe'
             }
-        } else {
-            println "Warning: assets dir not found: ${assetsSrc}"
+            into "${platformDir}/jre"
+            // files get rw-r--r-- (0644)
+            filePermissions { unix('rw-r--r--') }
+            // directories must be executable so traversal works
+            dirPermissions { unix('rwxr-xr-x') }
+            includeEmptyDirs = false
         }
 
-        // Copy runtime image built by org.beryx.runtime
-        def runtimeImageDir = file("${buildDir}/runtime-image")
-        if (runtimeImageDir.exists()) {
-            println "Copying runtime image from: ${runtimeImageDir}"
-
-            // 1) everything except the java executables
-            copy {
-                from(runtimeImageDir) {
-                    // exclude JVM executables which need different perms
-                    exclude 'bin/java', 'bin/java.exe', 'bin/javaw.exe'
-                }
-                into "${outDir}/jre"
-
-                // files get rw-r--r-- (0644)
-                filePermissions { unix('rw-r--r--') }
-                // directories must be executable so traversal works
-                dirPermissions { unix('rwxr-xr-x') }
-
-                includeEmptyDirs = false
+        // 2) java executables (make them executable)
+        copy {
+            from(runtimeImageDir) {
+                include 'bin/java', 'bin/java.exe', 'bin/javaw.exe'
             }
-
-            // 2) java executables (make them executable)
-            copy {
-                from(runtimeImageDir) {
-                    include 'bin/java', 'bin/java.exe', 'bin/javaw.exe'
-                }
-                into "${outDir}/jre"
-
-                // these need to be executable
-                filePermissions { unix('rwxr-xr-x') }
-                dirPermissions { unix('rwxr-xr-x') }
-
-                includeEmptyDirs = false
-            }
-        } else {
-            println "Warning: runtime image not found: ${runtimeImageDir}"
+            into "${platformDir}/jre"
+            // these need to be executable
+            filePermissions { unix('rwxr-xr-x') }
+            dirPermissions { unix('rwxr-xr-x') }
+            includeEmptyDirs = false
         }
     }
 
     doLast {
         println "Client layout prepared at ${buildDir}/output"
-        def out = file("${buildDir}/output")
-        def cnt = 0
-        out.eachFileRecurse { cnt++ }
-        println "Files count: ${cnt}"
+        ['shared', 'platform'].each { folderName ->
+            def outputDir = file("${buildDir}/output/${folderName}")
+            def count = 0
+            outputDir.eachFileRecurse { count++ }
+            println "  ${folderName}/ files: ${count}"
+        }
     }
 }
 
