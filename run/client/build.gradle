@@ -125,11 +125,9 @@ tasks.register('fatJar', Jar) {
 
     from sourceSets.main.output
 
-    rootProject.allprojects.each { project ->
-        if (project == project) return
-        def jarTask = project.tasks.named('jar')?.get()
-        if (jarTask == null) return
-
+    rootProject.allprojects.each { p ->
+        if (p == project) return
+        def jarTask = p.tasks.named('jar').get()
         dependsOn jarTask
         from(zipTree(jarTask.archiveFile))
     }
