@@ -23,7 +23,7 @@ var dependsDir = file("${buildDir}/dependencies")
 
 def projectJarFiles() {
     rootProject.allprojects
-            .collect { project -> project.tasks.named('jar')?.archiveFile?.get()?.asFile }
+            .collect { project -> project.tasks.named('jar')?.get()?.archiveFile?.get()?.asFile }
             .findAll { it != null }
             .collect { it.absolutePath }
             .toSet()
@@ -127,7 +127,7 @@ tasks.register('fatJar', Jar) {
 
     rootProject.allprojects.each { project ->
         if (project == project) return
-        def jarTask = project.tasks.named('jar')
+        def jarTask = project.tasks.named('jar')?.get()
         if (jarTask == null) return
 
         dependsOn jarTask
