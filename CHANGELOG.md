@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.2](https://github.com/Krogenit/bfsr/compare/v0.4.1...v0.4.2) (2026-03-16)
+
+
+### Bug Fixes
+
+* **ci:** get archiveFile from named task ([a007d07](https://github.com/Krogenit/bfsr/commit/a007d077eb094d0f30db0f3f4c9f821766a1813f))
+* **ci:** get archiveFile from named task ([9a0c3b4](https://github.com/Krogenit/bfsr/commit/9a0c3b4ebf552ae02f7544d72af902db621d0ae5))
+
+## [0.4.1](https://github.com/Krogenit/bfsr/compare/v0.4.0...v0.4.1) (2026-03-16)
+
+
+### Bug Fixes
+
+* **ci:** upload optimization ([1dc1930](https://github.com/Krogenit/bfsr/commit/1dc19309378342ac120792641fe29a80e7b0a992))
+
 ## [0.4.0](https://github.com/Krogenit/bfsr/compare/v0.3.0...v0.4.0) (2026-03-15)
 
 
