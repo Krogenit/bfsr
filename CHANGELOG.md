@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/Krogenit/bfsr/compare/v0.4.0...v0.4.1) (2026-03-16)
+
+
+### Bug Fixes
+
+* **ci:** upload optimization ([1dc1930](https://github.com/Krogenit/bfsr/commit/1dc19309378342ac120792641fe29a80e7b0a992))
+
 ## [0.4.0](https://github.com/Krogenit/bfsr/compare/v0.3.0...v0.4.0) (2026-03-15)
 
 
