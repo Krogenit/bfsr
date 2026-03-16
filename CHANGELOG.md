@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.3](https://github.com/Krogenit/bfsr/compare/v0.4.2...v0.4.3) (2026-03-16)
+
+
+### Bug Fixes
+
+* **ci:** fat jar task ([1580f93](https://github.com/Krogenit/bfsr/commit/1580f93ce42e7341e3dc647f2223ed4f975960cf))
+
 ## [0.4.2](https://github.com/Krogenit/bfsr/compare/v0.4.1...v0.4.2) (2026-03-16)
 
 
