@@ -23,7 +23,7 @@ dependencies {
     testFixturesApi 'org.springframework.boot:spring-boot-starter-rsocket-test'
     testFixturesApi 'io.projectreactor:reactor-test'
 
-    testFixturesApi 'org.testcontainers:testcontainers:2.0.3'
-    testFixturesApi 'org.testcontainers:testcontainers-junit-jupiter:2.0.3'
-    testFixturesApi 'org.testcontainers:testcontainers-mongodb:2.0.3'
+    testFixturesApi 'org.testcontainers:testcontainers:2.0.4'
+    testFixturesApi 'org.testcontainers:testcontainers-junit-jupiter:2.0.4'
+    testFixturesApi 'org.testcontainers:testcontainers-mongodb:2.0.4'
 }
