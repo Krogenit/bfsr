@@ -55,10 +55,10 @@ jobs:
           cache: gradle
 
       - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v5
+        uses: gradle/actions/wrapper-validation@v6
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Build & assemble client layout
         shell: bash
@@ -270,7 +270,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Create PR from master to dev
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const owner = context.repo.owner;
