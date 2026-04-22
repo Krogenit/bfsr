@@ -6,5 +6,5 @@ jar {
 dependencies {
     api project(':game-logic:common')
 
-    api 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive:4.0.3'
+    api 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive:4.0.5'
 }
